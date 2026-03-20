@@ -1826,6 +1826,8 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
                 <div style="display:flex;gap:10px;margin-top:6px;flex-wrap:wrap;">
                   <span id="mcd-tel" style="font-size:11px;color:var(--text-m);display:none;"></span>
                   <span id="mcd-email" style="font-size:11px;color:var(--text-m);display:none;"></span>
+                  <span id="mcd-dni" style="font-size:11px;color:var(--text-m);display:none;"></span>
+                  <span id="mcd-direccion" style="font-size:11px;color:var(--text-m);display:none;"></span>
                   <span id="mcd-seguimiento-alert" style="font-size:11px;padding:2px 9px;border-radius:20px;display:none;"></span>
                 </div>
               </div>
@@ -1855,9 +1857,9 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
           <!-- KPIs financieros del cliente -->
           <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px;">
             <div style="background:var(--sage-xl);border:.5px solid var(--sage-light);border-radius:12px;padding:14px;">
-              <div style="font-size:9px;color:var(--topbar);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;">Servicio acordado</div>
+              <div style="font-size:9px;color:var(--topbar);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;">Presupuestado aprobado</div>
               <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:500;color:var(--topbar);" id="mcd-total">—</div>
-              <div style="font-size:10px;color:var(--topbar);opacity:.7;margin-top:2px;">USD total</div>
+              <div style="font-size:10px;color:var(--topbar);opacity:.7;margin-top:2px;">monto acordado</div>
             </div>
             <div style="background:var(--ok-bg);border-radius:12px;padding:14px;">
               <div style="font-size:9px;color:var(--ok);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;">Cobrado</div>
@@ -1952,7 +1954,7 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
           </div>
 
           <!-- KPI cards -->
-          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:16px;">
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:16px;">
             <div style="background:var(--white);border:.5px solid var(--cream-d);border-radius:12px;padding:14px;">
               <div style="font-size:9px;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;">Cálculos activos</div>
               <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;" id="calc-kpi-count">0</div>
@@ -1960,10 +1962,6 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
             <div style="background:var(--ok-bg);border-radius:12px;padding:14px;">
               <div style="font-size:9px;color:var(--ok);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;">Margen promedio</div>
               <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;color:var(--ok);" id="calc-kpi-margen">0%</div>
-            </div>
-            <div style="background:var(--sage-xl);border:.5px solid var(--sage-light);border-radius:12px;padding:14px;">
-              <div style="font-size:9px;color:var(--topbar);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;">Precio promedio</div>
-              <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;color:var(--topbar);" id="calc-kpi-precio">$0</div>
             </div>
           </div>
 
@@ -1973,11 +1971,6 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
             <div id="calc-items"><div style="text-align:center;padding:20px;color:var(--text-l);font-size:13px;">Sin cálculos aún. Creá el primero.</div></div>
           </div>
 
-          <!-- Gráfico comparativo -->
-          <div class="card" id="calc-chart-card" style="display:none;">
-            <div style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;">Comparativa costo vs precio de venta</div>
-            <div id="calc-compare-bars"></div>
-          </div>
         </div>
         <div id="calc-detail-view" style="display:none;">
           <button class="back-btn" onclick="closeCalcDetail()">← Volver</button>
@@ -2505,9 +2498,9 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
     <button class="mc2" onclick="closeModal('newMclienteModal')">×</button>
     <div class="mt">Nuevo cliente</div>
     <div class="fg"><label class="fl">Nombre</label><input type="text" class="fi" id="mcc-nombre" placeholder="Ej: Familia Rodríguez"/></div>
-    <div class="fg"><label class="fl">Rubro</label><input type="text" class="fi" id="mcc-rubro" placeholder="Ej: Piletas, Construcción..."/></div>
     <div class="fg"><label class="fl">Estado</label><select class="fi" id="mcc-estado" style="margin-top:0;"><option value="Potencial">Nuevo contacto</option><option value="Activo">Activo</option><option value="En pausa">En pausa</option><option value="Cerrado">Cerrado</option></select></div>
-    <div class="fg"><label class="fl">Total a cobrar (USD)</label><input type="number" class="fi" id="mc-precio" placeholder="0"/></div>
+    <div class="fg"><label class="fl">DNI / CUIT</label><input type="text" class="fi" id="mcc-dni" placeholder="20-12345678-9"/></div>
+    <div class="fg"><label class="fl">Dirección</label><input type="text" class="fi" id="mcc-direccion" placeholder="Calle 123, Ciudad"/></div>
     <div class="fg"><label class="fl">Teléfono</label><input type="tel" class="fi" id="mcc-tel" placeholder="+54 11..."/></div>
     <div class="fg"><label class="fl">Email</label><input type="email" class="fi" id="mcc-email" placeholder="cliente@email.com"/></div>
     <div class="fg"><label class="fl">Notas</label><textarea class="na" id="mcc-notas" style="min-height:50px;" placeholder="Observaciones..."></textarea></div>
@@ -4796,6 +4789,7 @@ let currentCalcId = null;
 
 async function loadCalcItems(clientId) {
   try {
+    calcData = {};  // reset antes de cargar
     const snap = await getDocs(collection(db,'clientes',clientId,'calculos'));
     snap.forEach(d => { calcData[d.id] = { id:d.id, ...d.data() }; });
     renderCalcList();
@@ -4819,7 +4813,6 @@ function renderCalcList() {
 
   if(items.length === 0) {
     document.getElementById('calc-items').innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-l);font-size:13px;">Sin cálculos aún. Creá el primero.</div>';
-    document.getElementById('calc-chart-card').style.display = 'none';
     return;
   }
 
@@ -4848,33 +4841,6 @@ function renderCalcList() {
       </div>
     </div>`;
   }).join('');
-
-  // Gráfico comparativo
-  const chartCard = document.getElementById('calc-chart-card');
-  const barsEl = document.getElementById('calc-compare-bars');
-  if(chartCard && barsEl && items.length > 0) {
-    chartCard.style.display = 'block';
-    const maxPrecio = Math.max(...precios);
-    barsEl.innerHTML = items.map((c,i) => {
-      const total = (c.costs||[]).reduce((a,x)=>a+x.m,0);
-      const precio = Math.round(total*(1+(c.margen||30)/100));
-      const ganancia = precio - total;
-      const pctCosto = maxPrecio > 0 ? Math.round((total/maxPrecio)*100) : 0;
-      const pctPrecio = maxPrecio > 0 ? Math.round((precio/maxPrecio)*100) : 0;
-      const color = colors[i%colors.length];
-      return `<div style="margin-bottom:14px;">
-        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;">
-          <span style="font-weight:500;">${c.nombre}</span>
-          <span style="color:var(--text-l);">$${total.toLocaleString('es-AR')} costo · <span style="color:var(--ok);">$${precio.toLocaleString('es-AR')} precio</span></span>
-        </div>
-        <div style="height:8px;background:var(--cream-d);border-radius:4px;overflow:hidden;margin-bottom:2px;position:relative;">
-          <div style="position:absolute;left:0;top:0;height:100%;width:${pctPrecio}%;background:${color};opacity:.2;border-radius:4px;"></div>
-          <div style="position:absolute;left:0;top:0;height:100%;width:${pctCosto}%;background:${color};border-radius:4px;"></div>
-        </div>
-        <div style="font-size:10px;color:var(--ok);">Ganancia: $${ganancia.toLocaleString('es-AR')} (${c.margen||30}%)</div>
-      </div>`;
-    }).join('');
-  }
 }
 
 window.openCalcDetail = function(id) {
@@ -5054,14 +5020,33 @@ function renderCalc() {
     <button style="background:none;border:none;color:var(--text-l);cursor:pointer;font-size:16px;" onclick="deleteCalcCost(${i})">×</button></div>`).join('');
 
   if(window._calcChart){window._calcChart.destroy();window._calcChart=null;}
-  const ctx = document.getElementById('calcChart').getContext('2d');
+  const ctx = document.getElementById('calcChart');
+  if(!ctx) return;
+
+  if(costs.length === 0) {
+    ctx.style.display = 'none';
+    const parent = ctx.parentElement;
+    if(parent && !parent.querySelector('.calc-empty-msg')) {
+      const msg = document.createElement('div');
+      msg.className = 'calc-empty-msg';
+      msg.style.cssText = 'text-align:center;padding:32px 20px;color:var(--text-l);font-size:12px;';
+      msg.textContent = 'Agregá costos para ver la distribución';
+      parent.appendChild(msg);
+    }
+    return;
+  }
+
+  // limpiar mensaje vacío si había
+  ctx.style.display = 'block';
+  const emptyMsg = ctx.parentElement?.querySelector('.calc-empty-msg');
+  if(emptyMsg) emptyMsg.remove();
 
   // Un segmento por cada concepto de costo + ganancia
   const labels = [...costs.map(c=>c.n), 'Ganancia'];
   const valores = [...costs.map(c=>c.m), gan];
   const colores = [...costs.map((_,i)=>calcColors[i%calcColors.length]), '#C8D4CA'];
 
-  window._calcChart = new Chart(ctx, {
+  window._calcChart = new Chart(ctx.getContext('2d'), {
     type: 'doughnut',
     data: {
       labels,
@@ -6581,8 +6566,10 @@ async function loadMcModule() {
 function renderMcModule() {
   const setEl=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
 
-  // KPIs financieros — solo números reales
+  // KPIs financieros
+  // Total aprobado = suma de presupuestos aprobados
   const totalAprobado = _mcPresupuestos.filter(p=>p.estado==='Aprobado').reduce((s,p)=>s+(parseFloat(p.monto)||0),0);
+  // Cobrado = suma de totalCobrado real de cada cliente
   const cobrado = _mcClientes.reduce((s,c)=>s+(parseFloat(c.totalCobrado)||0),0);
   const pendiente = Math.max(0, totalAprobado - cobrado);
   setEl('mc-kpi-total', _mcClientes.length);
@@ -6614,11 +6601,11 @@ function renderMcModule() {
   setEl('mc-ps-monto-sub', montoApr > 0 ? '$'+montoApr.toLocaleString('es-AR')+' aprobados' : tot+' presupuestos en total');
   renderMcPresupuestos(_mcPresupuestos);
 
-  // Reuniones — clientes + externas
+  // Fix 3: Reuniones — solo futuras (fecha >= hoy)
   const today = new Date().toISOString().split('T')[0];
   const reunClientes = _mcClientes
-    .filter(c => c.proximaReunion?.fecha)
-    .map(c => ({ nombre: c.nombre, rubro: c.rubro||'', hora: c.proximaReunion.hora, fecha: c.proximaReunion.fecha, clienteId: c.id, externo: false }));
+    .filter(c => c.proximaReunion?.fecha && c.proximaReunion.fecha >= today)
+    .map(c => ({ nombre: c.nombre, hora: c.proximaReunion.hora, fecha: c.proximaReunion.fecha, clienteId: c.id, externo: false }));
 
   // Cargar reuniones externas si no están cacheadas
   if (!window._mcReunionesExternas) window._mcReunionesExternas = [];
@@ -6753,7 +6740,7 @@ window.filterMcLista = function() {
   const q     = (document.getElementById('mc-search')?.value || '').toLowerCase();
   const est   = document.getElementById('mc-filter-estado')?.value || 'todos';
   const filtered = _mcClientes.filter(c => {
-    const matchQ   = !q || (c.nombre||'').toLowerCase().includes(q) || (c.rubro||'').toLowerCase().includes(q);
+    const matchQ   = !q || (c.nombre||'').toLowerCase().includes(q);
     const matchEst = est === 'todos' || (c.estado || 'Potencial') === est;
     return matchQ && matchEst;
   });
@@ -6774,8 +6761,11 @@ function renderMcLista(clientes) {
     const init   = (c.nombre||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     const estado = c.estado || 'Potencial';
     const ecfg   = MC_ESTADO_CFG[estado] || MC_ESTADO_CFG['Potencial'];
-    const presups = _mcPresupuestos.filter(p => p.clienteId === c.id || p.cliente === c.nombre);
-    const cobrado = presups.filter(p => p.estado === 'Aprobado').reduce((s,p) => s + (parseFloat(p.monto)||0), 0);
+    // Fix 2: usar totalCobrado real, no presupuestos aprobados
+    const cobradoReal = parseFloat(c.totalCobrado)||0;
+    // Pago pendiente: presupuestos aprobados del cliente − cobrado real
+    const presapsAprobados = _mcPresupuestos.filter(p=>(p.clienteId===c.id||p.cliente===c.nombre)&&p.estado==='Aprobado').reduce((s,p)=>s+(parseFloat(p.monto)||0),0);
+    const pagosPendientes = Math.max(0, presapsAprobados - cobradoReal);
     // Seguimiento alert
     let alertHtml = '';
     const hoy = new Date(); hoy.setHours(0,0,0,0);
@@ -6785,11 +6775,7 @@ function renderMcLista(clientes) {
       if (dias >= 14) alertHtml += `<span style="font-size:10px;color:var(--err);font-weight:500;">⚠ ${dias}d sin contacto</span>`;
       else if (dias >= 7) alertHtml += `<span style="font-size:10px;color:var(--warn);">${dias}d sin contacto</span>`;
     }
-    // Alerta pago pendiente
-    const precioTotal = parseFloat(c.precio)||0;
-    const cobradoReal = parseFloat(c.totalCobrado)||0;
-    const pagosPendientes = precioTotal - cobradoReal;
-    if (precioTotal > 0 && pagosPendientes > 0) {
+    if (pagosPendientes > 0) {
       alertHtml += `<span style="font-size:10px;font-weight:500;padding:1px 8px;border-radius:20px;background:var(--err-bg);color:var(--err);">$ Pago pendiente: $${pagosPendientes.toLocaleString('es-AR')}</span>`;
     }
     return `<div style="padding:12px 0;border-bottom:.5px solid var(--cream-d);">
@@ -6800,9 +6786,8 @@ function renderMcLista(clientes) {
             <div style="font-size:13px;font-weight:500;color:var(--text);">${c.nombre}</div>
             <span style="font-size:9px;font-weight:500;padding:1px 8px;border-radius:20px;background:${ecfg.bg};color:${ecfg.color};">${estado}</span>
           </div>
-          <div style="font-size:11px;color:var(--text-l);margin-top:1px;">${c.rubro||''}${c.precio?' · $'+parseFloat(c.precio).toLocaleString('es-AR')+' USD':''}</div>
           <div style="display:flex;gap:8px;margin-top:3px;flex-wrap:wrap;">
-            ${cobrado>0?`<span style="font-size:10px;color:var(--ok);">Cobrado: $${cobrado.toLocaleString('es-AR')}</span>`:''}
+            ${cobradoReal>0?`<span style="font-size:10px;color:var(--ok);">Cobrado: $${cobradoReal.toLocaleString('es-AR')}</span>`:''}
             ${alertHtml}
           </div>
         </div>
@@ -6833,13 +6818,11 @@ function renderMcKanban() {
     if (!col) return;
     const init    = (c.nombre||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     const presups = _mcPresupuestos.filter(p => p.clienteId === c.id || p.cliente === c.nombre);
-    const cobrado = presups.filter(p=>p.estado==='Aprobado').reduce((s,p)=>s+(parseFloat(p.monto)||0),0);
+    const cobradoKanban = parseFloat(c.totalCobrado)||0;
     const card    = document.createElement('div');
     card.innerHTML = `<div onclick="openMcDetalle('${c.id}')" style="background:var(--white);border:.5px solid var(--cream-d);border-radius:9px;padding:10px;margin-bottom:6px;cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='var(--sage)'" onmouseout="this.style.borderColor='var(--cream-d)'">
       <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:3px;">${c.nombre}</div>
-      <div style="font-size:10px;color:var(--text-l);">${c.rubro||''}</div>
-      ${c.precio?`<div style="font-size:11px;color:var(--topbar);margin-top:4px;font-weight:500;">$${parseFloat(c.precio).toLocaleString('es-AR')}</div>`:''}
-      ${cobrado>0?`<div style="font-size:10px;color:var(--ok);margin-top:2px;">Cobrado: $${cobrado.toLocaleString('es-AR')}</div>`:''}
+      ${cobradoKanban>0?`<div style="font-size:10px;color:var(--ok);margin-top:2px;">Cobrado: $${cobradoKanban.toLocaleString('es-AR')}</div>`:''}
       ${presups.length>0?`<div style="font-size:10px;color:var(--text-l);margin-top:4px;">${presups.length} presup.</div>`:''}
     </div>`;
     col.appendChild(card);
@@ -6858,7 +6841,8 @@ window.openMcDetalle = function(id) {
   const init = (c.nombre||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
   document.getElementById('mcd-avatar').textContent = init;
   document.getElementById('mcd-nombre').textContent  = c.nombre || '—';
-  document.getElementById('mcd-rubro').textContent   = c.rubro || '';
+  const mcdRubro = document.getElementById('mcd-rubro');
+  if(mcdRubro) { mcdRubro.textContent = ''; mcdRubro.style.display = 'none'; }
 
   // Estado badge
   const estado = c.estado || 'Potencial';
@@ -6876,13 +6860,18 @@ window.openMcDetalle = function(id) {
   // Contacto
   const telEl   = document.getElementById('mcd-tel');
   const emailEl = document.getElementById('mcd-email');
-  if (c.tel)   { telEl.textContent = '📞 ' + c.tel;   telEl.style.display = 'inline'; } else { telEl.style.display = 'none'; }
-  if (c.email) { emailEl.textContent = '✉ ' + c.email; emailEl.style.display = 'inline'; } else { emailEl.style.display = 'none'; }
+  if (c.tel)       { telEl.textContent = '📞 ' + c.tel;       telEl.style.display = 'inline'; } else { telEl.style.display = 'none'; }
+  if (c.email)     { emailEl.textContent = '✉ ' + c.email;   emailEl.style.display = 'inline'; } else { emailEl.style.display = 'none'; }
+  // DNI y Dirección — mostrar si existen
+  const dniEl = document.getElementById('mcd-dni');
+  const dirEl = document.getElementById('mcd-direccion');
+  if(dniEl)  { dniEl.textContent  = c.dni  ? '🪪 ' + c.dni  : ''; dniEl.style.display  = c.dni  ? 'inline' : 'none'; }
+  if(dirEl)  { dirEl.textContent  = c.direccion ? '📍 ' + c.direccion : ''; dirEl.style.display  = c.direccion ? 'inline' : 'none'; }
 
-  // KPIs — usar totalCobrado real
+  // KPIs — desde presupuestos aprobados del cliente
   const misPresups = _mcPresupuestos.filter(p => p.clienteId === id || p.cliente === c.nombre);
   const cobrado    = parseFloat(c.totalCobrado) || 0;
-  const total      = parseFloat(c.precio) || 0;
+  const total      = misPresups.filter(p=>p.estado==='Aprobado').reduce((s,p)=>s+(parseFloat(p.monto)||0),0);
   const pendiente  = Math.max(0, total - cobrado);
   const fmt        = v => '$' + v.toLocaleString('es-AR');
   document.getElementById('mcd-total').textContent     = total > 0 ? fmt(total) : '—';
@@ -6901,7 +6890,7 @@ window.openMcDetalle = function(id) {
     const dias = Math.floor((hoy - ult) / (1000*60*60*24));
     if (dias >= 7) alertas.push({txt:`⚠ ${dias}d sin contacto`, bg:dias>=14?'var(--err-bg)':'var(--warn-bg)', color:dias>=14?'var(--err)':'var(--warn)'});
   }
-  if (total > 0 && pendiente > 0) {
+  if (pendiente > 0) {
     alertas.push({txt:`💰 Pago pendiente: ${fmt(pendiente)}`, bg:'var(--err-bg)', color:'var(--err)'});
   }
   if (alertas.length > 0) {
@@ -7232,11 +7221,11 @@ window.createMcCliente = async function() {
   if(!currentClientUID) return;
   const nombre=document.getElementById('mcc-nombre').value.trim();
   if(!nombre) return;
-  const data={nombre,rubro:document.getElementById('mcc-rubro').value,precio:document.getElementById('mc-precio').value,estado:document.getElementById('mcc-estado').value||'Potencial',tel:document.getElementById('mcc-tel').value,email:document.getElementById('mcc-email').value,notas:document.getElementById('mcc-notas').value,ultimoContacto:new Date().toISOString(),creadoEn:new Date().toISOString()};
+  const data={nombre,estado:document.getElementById('mcc-estado').value||'Potencial',dni:document.getElementById('mcc-dni').value,direccion:document.getElementById('mcc-direccion').value,tel:document.getElementById('mcc-tel').value,email:document.getElementById('mcc-email').value,notas:document.getElementById('mcc-notas').value,ultimoContacto:new Date().toISOString(),creadoEn:new Date().toISOString()};
   try {
     await addDoc(collection(db,'clientes',currentClientUID,'misClientes'),data);
     const s=document.getElementById('mcc-saved');if(s)s.style.display='block';
-    setTimeout(async()=>{if(s)s.style.display='none';closeModal('newMclienteModal');['mcc-nombre','mcc-rubro','mc-precio','mcc-tel','mcc-email','mcc-notas'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});await loadMcModule();},1500);
+    setTimeout(async()=>{if(s)s.style.display='none';closeModal('newMclienteModal');['mcc-nombre','mcc-dni','mcc-direccion','mcc-tel','mcc-email','mcc-notas'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});await loadMcModule();},1500);
   }catch(e){alert('Error: '+e.message);}
 };
 
@@ -7245,9 +7234,9 @@ window.editMcCliente = function(id, event) {
   const c=_mcClientes.find(x=>x.id===id);
   if(!c) return;
   document.getElementById('mcc-nombre').value=c.nombre||'';
-  document.getElementById('mcc-rubro').value=c.rubro||'';
   document.getElementById('mcc-estado').value=c.estado||'Potencial';
-  document.getElementById('mc-precio').value=c.precio||'';
+  document.getElementById('mcc-dni').value=c.dni||'';
+  document.getElementById('mcc-direccion').value=c.direccion||'';
   document.getElementById('mcc-tel').value=c.tel||'';
   document.getElementById('mcc-email').value=c.email||'';
   document.getElementById('mcc-notas').value=c.notas||'';
@@ -7258,7 +7247,7 @@ window.editMcCliente = function(id, event) {
 
 window.saveMcCliente = async function(id) {
   if(!currentClientUID) return;
-  const data={nombre:document.getElementById('mcc-nombre').value.trim(),rubro:document.getElementById('mcc-rubro').value,precio:document.getElementById('mc-precio').value,estado:document.getElementById('mcc-estado').value||'Potencial',tel:document.getElementById('mcc-tel').value,email:document.getElementById('mcc-email').value,notas:document.getElementById('mcc-notas').value};
+  const data={nombre:document.getElementById('mcc-nombre').value.trim(),estado:document.getElementById('mcc-estado').value||'Potencial',dni:document.getElementById('mcc-dni').value,direccion:document.getElementById('mcc-direccion').value,tel:document.getElementById('mcc-tel').value,email:document.getElementById('mcc-email').value,notas:document.getElementById('mcc-notas').value};
   if(!data.nombre) return;
   try {
     await updateDoc(doc(db,'clientes',currentClientUID,'misClientes',id),data);
@@ -7276,8 +7265,23 @@ window.saveMcCliente = async function(id) {
 
 window.deleteMcCliente = function(id, event) {
   if(event) event.stopPropagation();
-  showConfirm('¿Eliminar este cliente?',async()=>{
-    try{const {deleteDoc}=await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");await deleteDoc(doc(db,'clientes',currentClientUID,'misClientes',id));await loadMcModule();}catch(e){}
+  showConfirm('¿Eliminar este cliente? Se borrarán también sus cobros, historial y notas.',async()=>{
+    try {
+      const {deleteDoc, getDocs: gd, collection: col} = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
+      const base = ['cobros','historial','notas'];
+      for(const sub of base) {
+        const snap = await getDocs(collection(db,'clientes',currentClientUID,'misClientes',id,sub));
+        for(const d of snap.docs) { try{ await deleteDoc(d.ref); }catch(e){} }
+      }
+      await deleteDoc(doc(db,'clientes',currentClientUID,'misClientes',id));
+      // También eliminar presupuestos vinculados a este cliente
+      const pSnap = await getDocs(collection(db,'clientes',currentClientUID,'presupuestos'));
+      for(const d of pSnap.docs) {
+        if(d.data().clienteId === id) { try{ await deleteDoc(d.ref); }catch(e){} }
+      }
+      await loadMcModule();
+      closeMcDetalle();
+    }catch(e){ console.log(e); }
   },'Eliminar cliente');
 };
 
@@ -8894,7 +8898,7 @@ async function exportarExcel(tipo, nombreNegocio, mes) {
     crearHoja('Presupuestos',['Cliente','Descripción','Estado','Moneda','Monto','Fecha'],ps.map(p=>[p.cliente||'',p.descripcion||'',p.estado||'',p.moneda||'ARS',parseFloat(p.monto)||0,p.fecha||'']),4);
   } else if (tipo==='clientes') {
     const cl=window._mcClientes||[];
-    crearHoja('Clientes',['Nombre','Rubro','Estado','Teléfono','Email','Notas'],cl.map(c=>[c.nombre||'',c.rubro||'',c.estado||'',c.tel||'',c.email||'',c.notas||'']),null);
+    crearHoja('Clientes',['Nombre','Estado','DNI/CUIT','Dirección','Teléfono','Email','Notas'],cl.map(c=>[c.nombre||'',c.estado||'',c.dni||'',c.direccion||'',c.tel||'',c.email||'',c.notas||'']),null);
   } else if (tipo==='proveedores') {
     const pv=window._proveedores||[], eg=window._clientEgresos||[], gastos={};
     eg.forEach(e=>{gastos[e.concepto||'']=(gastos[e.concepto||'']||0)+(parseFloat(e.monto)||0);});
@@ -9015,7 +9019,7 @@ async function exportarPDF(tipo, nombreNegocio, mes, fecha) {
 
   } else if (tipo === 'clientes') {
     const cl = window._mcClientes || [];
-    y = tableSection(doc, 'CLIENTES', ['Nombre','Rubro','Estado','Teléfono'], cl.map(c=>[c.nombre||'—',c.rubro||'—',c.estado||'—',c.tel||'—']), y, sage, [1,0,0,0]);
+    y = tableSection(doc, 'CLIENTES', ['Nombre','Estado','DNI/CUIT','Teléfono'], cl.map(c=>[c.nombre||'—',c.estado||'—',c.dni||'—',c.tel||'—']), y, sage, [1,0,0,0]);
 
   } else if (tipo === 'proveedores') {
     const pv = window._proveedores || [];
@@ -9447,7 +9451,7 @@ window.openModal = function(id) {
   if(id === 'newMcReunionModal') {
     // Populate client selector
     const sel = document.getElementById('mcr-cliente-sel');
-    if(sel) sel.innerHTML = _mcClientes.map(c=>`<option value="${c.id}">${c.nombre}${c.rubro?' · '+c.rubro:''}</option>`).join('');
+    if(sel) sel.innerHTML = _mcClientes.map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('');
     document.getElementById('mcr-fecha').value = '';
     document.getElementById('mcr-hora').value = '10:00';
     document.getElementById('mcr-notas').value = '';
