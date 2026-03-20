@@ -6641,79 +6641,60 @@ window.openMcDetalle = function(id) {
   const init = (c.nombre||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
   document.getElementById('mcd-avatar').textContent = init;
   document.getElementById('mcd-nombre').textContent  = c.nombre || '—';
-  const mcdRubro = document.getElementById('mcd-rubro');
-  if(mcdRubro) { mcdRubro.textContent = ''; mcdRubro.style.display = 'none'; }
-
-  // Estado badge
-  const estado = c.estado || 'Potencial';
-  const ecfg   = MC_ESTADO_CFG[estado] || MC_ESTADO_CFG['Potencial'];
-  const badge  = document.getElementById('mcd-estado-badge');
-  badge.textContent = estado;
-  badge.style.background = ecfg.bg; badge.style.color = ecfg.color;
-
-  // Estado buttons highlight
-  document.querySelectorAll('.mc-estado-btn').forEach(b => {
-    b.style.opacity = b.textContent.trim() === estado ? '1' : '0.4';
-    b.style.fontWeight = b.textContent.trim() === estado ? '600' : '400';
-  });
 
   // Contacto
   const telEl   = document.getElementById('mcd-tel');
   const emailEl = document.getElementById('mcd-email');
-  if (c.tel)       { telEl.textContent = '📞 ' + c.tel;       telEl.style.display = 'inline'; } else { telEl.style.display = 'none'; }
-  if (c.email)     { emailEl.textContent = '✉ ' + c.email;   emailEl.style.display = 'inline'; } else { emailEl.style.display = 'none'; }
-  // DNI y Dirección — mostrar si existen
-  const dniEl = document.getElementById('mcd-dni');
-  const dirEl = document.getElementById('mcd-direccion');
-  if(dniEl)  { dniEl.textContent  = c.dni  ? '🪪 DNI: ' + c.dni  : ''; dniEl.style.display  = c.dni  ? 'inline' : 'none'; }
-  if(dirEl)  { dirEl.textContent  = c.direccion ? '📍 ' + c.direccion : ''; dirEl.style.display  = c.direccion ? 'inline' : 'none'; }
+  if(telEl)   { telEl.textContent   = c.tel       ? '📞 ' + c.tel       : ''; telEl.style.display   = c.tel       ? 'inline' : 'none'; }
+  if(emailEl) { emailEl.textContent = c.email     ? '✉ '  + c.email     : ''; emailEl.style.display = c.email     ? 'inline' : 'none'; }
+  const dniEl  = document.getElementById('mcd-dni');
   const cuitEl = document.getElementById('mcd-cuit');
-  if(cuitEl) { cuitEl.textContent = c.cuit ? '🏢 CUIT: ' + c.cuit : ''; cuitEl.style.display = c.cuit ? 'inline' : 'none'; }
+  const dirEl  = document.getElementById('mcd-direccion');
+  if(dniEl)  { dniEl.textContent  = c.dni       ? '🪪 DNI: ' + c.dni       : ''; dniEl.style.display  = c.dni       ? 'inline' : 'none'; }
+  if(cuitEl) { cuitEl.textContent = c.cuit      ? '🏢 CUIT: ' + c.cuit     : ''; cuitEl.style.display = c.cuit      ? 'inline' : 'none'; }
+  if(dirEl)  { dirEl.textContent  = c.direccion ? '📍 ' + c.direccion       : ''; dirEl.style.display  = c.direccion ? 'inline' : 'none'; }
 
-  // KPIs — desde presupuestos aprobados del cliente
+  // Alerta seguimiento
+  const alertEl = document.getElementById('mcd-seguimiento-alert');
+  if(alertEl) {
+    alertEl.parentElement.querySelectorAll('.mcd-alert-extra').forEach(e => e.remove());
+    const alertas = [];
+    if (c.ultimoContacto) {
+      const hoy = new Date(); hoy.setHours(0,0,0,0);
+      const ult = new Date(c.ultimoContacto); ult.setHours(0,0,0,0);
+      const dias = Math.floor((hoy - ult) / (1000*60*60*24));
+      if (dias >= 7) alertas.push({txt:`⚠ ${dias}d sin contacto`, bg:dias>=14?'var(--err-bg)':'var(--warn-bg)', color:dias>=14?'var(--err)':'var(--warn)'});
+    }
+    if(alertas.length > 0) {
+      alertEl.style.display='inline'; alertEl.style.background=alertas[0].bg; alertEl.style.color=alertas[0].color; alertEl.textContent=alertas[0].txt;
+    } else { alertEl.style.display='none'; }
+  }
+
+  // KPIs cuenta corriente
   const misPresups = _mcPresupuestos.filter(p => p.clienteId === id || p.cliente === c.nombre);
   const cobrado    = parseFloat(c.totalCobrado) || 0;
   const total      = misPresups.filter(p=>p.estado==='Aprobado').reduce((s,p)=>s+(parseFloat(p.monto)||0),0);
   const pendiente  = Math.max(0, total - cobrado);
   const fmt        = v => '$' + v.toLocaleString('es-AR');
-  document.getElementById('mcd-total').textContent     = total > 0 ? fmt(total) : '—';
-  document.getElementById('mcd-cobrado').textContent   = fmt(cobrado);
-  document.getElementById('mcd-pendiente').textContent = fmt(pendiente);
-  document.getElementById('mcd-n-presups').textContent = misPresups.length;
-
-  // Alertas combinadas: seguimiento + pago pendiente
-  const alertEl = document.getElementById('mcd-seguimiento-alert');
-  const alertWrap = alertEl.parentElement;
-  alertWrap.querySelectorAll('.mcd-alert-extra').forEach(e => e.remove());
-  const alertas = [];
-  if (c.ultimoContacto) {
-    const hoy = new Date(); hoy.setHours(0,0,0,0);
-    const ult = new Date(c.ultimoContacto); ult.setHours(0,0,0,0);
-    const dias = Math.floor((hoy - ult) / (1000*60*60*24));
-    if (dias >= 7) alertas.push({txt:`⚠ ${dias}d sin contacto`, bg:dias>=14?'var(--err-bg)':'var(--warn-bg)', color:dias>=14?'var(--err)':'var(--warn)'});
-  }
-  if (pendiente > 0) {
-    alertas.push({txt:`💰 Pago pendiente: ${fmt(pendiente)}`, bg:'var(--err-bg)', color:'var(--err)'});
-  }
-  if (alertas.length > 0) {
-    alertEl.style.display='inline'; alertEl.style.background=alertas[0].bg; alertEl.style.color=alertas[0].color; alertEl.textContent=alertas[0].txt;
-    alertas.slice(1).forEach(a => {
-      const sp = document.createElement('span');
-      sp.className='mcd-alert-extra';
-      sp.style.cssText=`font-size:11px;padding:2px 9px;border-radius:20px;background:${a.bg};color:${a.color};margin-left:4px;`;
-      sp.textContent=a.txt; alertWrap.appendChild(sp);
-    });
-  } else { alertEl.style.display='none'; }
+  const setEl = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+  setEl('mcd-total',    total > 0 ? fmt(total) : '—');
+  setEl('mcd-cobrado',  fmt(cobrado));
+  setEl('mcd-pendiente',fmt(pendiente));
 
   // Descripción
   const notasWrap = document.getElementById('mcd-notas-wrap');
-  if (c.notas) { document.getElementById('mcd-notas').textContent = c.notas; notasWrap.style.display = 'block'; }
-  else notasWrap.style.display = 'none';
+  if(notasWrap) {
+    if(c.notas) { setEl('mcd-notas', c.notas); notasWrap.style.display = 'block'; }
+    else notasWrap.style.display = 'none';
+  }
 
   // Quick actions
-  document.getElementById('mcd-quick-presup').onclick = () => openMcPresupModal(id, c.nombre);
-  document.getElementById('mcd-edit-btn').onclick     = () => editMcCliente(id, null);
-  document.getElementById('mcd-new-presup-btn').onclick = () => openMcPresupModal(id, c.nombre);
+  const qPresup = document.getElementById('mcd-quick-presup');
+  const editBtn = document.getElementById('mcd-edit-btn');
+  const newPresupBtn = document.getElementById('mcd-new-presup-btn');
+  if(qPresup) qPresup.onclick = () => openMcPresupModal(id, c.nombre);
+  if(editBtn) editBtn.onclick = () => editMcCliente(id, null);
+  if(newPresupBtn) newPresupBtn.onclick = () => openMcPresupModal(id, c.nombre);
 
   // Ventas (presupuestos aprobados)
   renderMcVentas(misPresups, id);
@@ -6727,7 +6708,8 @@ window.openMcDetalle = function(id) {
   // Historial + notas
   renderMcHistorial(id);
   renderMcDetalleNotas(id);
-  document.getElementById('mcd-nota-btn').onclick = () => guardarNotaMcCliente(id);
+  const notaBtn = document.getElementById('mcd-nota-btn');
+  if(notaBtn) notaBtn.onclick = () => guardarNotaMcCliente(id);
 };
 
 window.closeMcDetalle = function() {
@@ -6736,23 +6718,13 @@ window.closeMcDetalle = function() {
   document.getElementById('mc-lista-view').style.display = 'block';
 };
 
-// --- Cambiar estado desde detalle ---
+// --- Cambiar estado desde detalle --- (ya no se usa en detalle, pero se mantiene por si acaso)
 window.cambiarEstadoMcCliente = async function(btn, nuevoEstado) {
   if (!currentClientUID || !_currentMcClienteId) return;
   try {
     await updateDoc(doc(db,'clientes',currentClientUID,'misClientes',_currentMcClienteId), {estado: nuevoEstado, ultimoContacto: new Date().toISOString()});
     const c = _mcClientes.find(x => x.id === _currentMcClienteId);
     if (c) { c.estado = nuevoEstado; c.ultimoContacto = new Date().toISOString(); }
-    // Update badge
-    const ecfg = MC_ESTADO_CFG[nuevoEstado] || MC_ESTADO_CFG['Potencial'];
-    const badge = document.getElementById('mcd-estado-badge');
-    badge.textContent = nuevoEstado; badge.style.background = ecfg.bg; badge.style.color = ecfg.color;
-    // Update btn highlights
-    document.querySelectorAll('.mc-estado-btn').forEach(b => {
-      b.style.opacity = b.textContent.trim() === nuevoEstado ? '1' : '0.4';
-      b.style.fontWeight = b.textContent.trim() === nuevoEstado ? '600' : '400';
-    });
-    // Add to historial
     await addHistorialEntry(_currentMcClienteId, `Estado cambiado a "${nuevoEstado}"`);
     renderMcHistorial(_currentMcClienteId);
   } catch(e) { alert('Error: ' + e.message); }
@@ -6956,26 +6928,6 @@ async function renderMcDetalleNotas(clienteId) {
     }).join('');
   } catch(e) {}
 }
-
-window.guardarReunionMcCliente = async function(clienteId) {
-  if (!currentClientUID) return;
-  const fecha = document.getElementById('mcd-reunion-fecha').value;
-  const hora  = document.getElementById('mcd-reunion-hora').value;
-  if (!fecha) return;
-  try {
-    await updateDoc(doc(db,'clientes',currentClientUID,'misClientes',clienteId), {proximaReunion:{fecha,hora}, ultimoContacto: new Date().toISOString()});
-    const c = _mcClientes.find(x=>x.id===clienteId);
-    if (c) { c.proximaReunion = {fecha,hora}; c.ultimoContacto = new Date().toISOString(); }
-    const f = new Date(fecha+'T12:00:00').toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'});
-    document.getElementById('mcd-reunion-info').textContent = f + ' a las ' + hora + 'hs';
-    document.getElementById('mcd-reunion-actual').style.display = 'block';
-    const s = document.getElementById('mcd-reunion-saved');
-    s.style.display='block'; setTimeout(()=>{ s.style.display='none'; }, 2000);
-    await addHistorialEntry(clienteId, `Reunión agendada para el ${f} a las ${hora}hs`);
-    renderMcHistorial(clienteId);
-    renderMcModule();
-  } catch(e) { alert('Error: '+e.message); }
-};
 
 window.guardarNotaMcCliente = async function(clienteId) {
   if (!currentClientUID) return;
