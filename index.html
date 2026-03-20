@@ -1204,7 +1204,7 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
       <!-- SUB-NAV secundario Finanzas -->
       <div id="subnav-finanzas" class="mod-subnav" style="display:none;gap:4px;margin-bottom:20px;">
         <button class="subctab active" onclick="showCTab('contabilidad',this)">Mi negocio</button>
-        <button class="subctab" onclick="showCTab('kpis',this)">Indicadores clave</button>
+        <button class="subctab" onclick="showCTab('kpis',this)">Indicadores</button>
         <button class="subctab" onclick="showCTab('calculador',this)">Calculador de costos</button>
       </div>
 
@@ -1496,7 +1496,7 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
       <div id="ct-kpis" style="display:none;">
         <div style="background:var(--topbar);border-radius:13px;padding:22px 24px;margin-bottom:14px;">
           <div style="font-size:9px;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;">MB Strategy</div>
-          <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:#fff;line-height:1.1;">Indicadores clave</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:#fff;line-height:1.1;">Indicadores</div>
         </div>
         <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
           <select id="ck-mes-sel" style="width:auto;padding:8px 14px;font-size:12px;margin-top:0;border-radius:20px;border:.5px solid var(--cream-d);" onchange="filterCkByMes(this.value)">
@@ -1527,7 +1527,7 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
         </div>
 
         <!-- Fila 2: operacionales -->
-        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px;">
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:14px;">
           <div class="kc" style="background:var(--blue-bg);border-color:#B0C8DA;">
             <div class="ml" style="color:var(--blue);">Clientes nuevos</div>
             <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;color:var(--blue);" id="ck-clientes-nuevos">0</div>
@@ -1537,11 +1537,6 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
             <div class="ml" style="color:#7A5020;">Cobros pendientes</div>
             <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;color:var(--warn);" id="ck-cobros-pend">$0</div>
             <div style="font-size:10px;color:#7A5020;margin-top:2px;">aprobado sin cobrar</div>
-          </div>
-          <div class="kc" style="background:#FEF9F0;border-color:#D4A86A;">
-            <div class="ml" style="color:#7A5020;">Tasa de conversión</div>
-            <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;color:var(--warn);" id="ck-conversion">—</div>
-            <div style="font-size:10px;color:#7A5020;margin-top:2px;">enviados → aprobados</div>
           </div>
         </div>
 
@@ -1573,9 +1568,9 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
           </div>
         </div>
 
-        <!-- Gráficos — 2x2 -->
+        <!-- Gráficos — fila 1: evolución anual + mes seleccionado -->
         <div class="g2" style="margin-bottom:12px;">
-          <!-- Barras evolución -->
+          <!-- Barras evolución anual -->
           <div class="card">
             <div class="ct">Evolución anual</div>
             <div style="position:relative;height:160px;"><canvas id="ckChart"></canvas></div>
@@ -1586,14 +1581,26 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
             </div>
           </div>
 
+          <!-- Barras mes seleccionado -->
+          <div class="card">
+            <div class="ct" id="ck-mes-chart-title">Mes seleccionado</div>
+            <div style="position:relative;height:160px;"><canvas id="ckMesChart"></canvas></div>
+            <div id="ck-mes-chart-empty" style="display:none;text-align:center;padding:20px;color:var(--text-l);font-size:12px;">Seleccioná un mes para ver el detalle</div>
+            <div style="display:flex;gap:14px;margin-top:8px;flex-wrap:wrap;">
+              <span style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text-l);"><span style="width:9px;height:9px;border-radius:2px;background:var(--sage);display:inline-block;"></span>Ingresos</span>
+              <span style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text-l);"><span style="width:9px;height:9px;border-radius:2px;background:#F5C4BE;display:inline-block;"></span>Egresos</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gráficos — fila 2: ranking clientes + distribución egresos -->
+        <div class="g2" style="margin-bottom:12px;">
           <!-- Ranking clientes -->
           <div class="card">
             <div class="ct">Ingresos por cliente</div>
             <div id="ck-ranking-clientes"><div style="text-align:center;padding:20px;color:var(--text-l);font-size:13px;">Sin datos registrados.</div></div>
           </div>
-        </div>
 
-        <div class="g2">
           <!-- Donut egresos -->
           <div class="card">
             <div class="ct">Distribución de egresos</div>
@@ -1602,7 +1609,10 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
               <div id="ck-donut-legend" style="flex:1;"></div>
             </div>
           </div>
+        </div>
 
+        <!-- Gráficos — fila 3: funnel -->
+        <div class="g2">
           <!-- Funnel presupuestos -->
           <div class="card">
             <div class="ct">Funnel de presupuestos</div>
@@ -2460,11 +2470,12 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
     <button class="mc2" onclick="closeModal('newClientEgresoModal')" style="position:absolute;top:14px;right:14px;z-index:2;color:#fff;background:rgba(255,255,255,.15);border:none;">×</button>
     <div style="background:var(--topbar);padding:20px 24px 16px;">
       <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">MB Gestión</div>
-      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:#fff;">Egreso sin concepto</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:#fff;">Nuevo egreso</div>
       <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:3px;">Para gastos que no vienen de un proveedor registrado</div>
     </div>
     <div style="padding:20px 24px;">
       <div class="fg"><label class="fl">Detalle</label><input type="text" class="fi" id="cli-eg-concepto" placeholder="Describí brevemente este gasto..."/></div>
+      <div class="fg"><label class="fl">Categoría</label><select class="fi" id="cli-eg-categoria" style="margin-top:0;"><option value="Servicios y herramientas">Servicios y herramientas</option><option value="Publicidad y marketing">Publicidad y marketing</option><option value="Insumos">Insumos</option><option value="Personal">Personal</option><option value="Alimentos">Alimentos</option><option value="Limpieza">Limpieza</option><option value="Viáticos">Viáticos</option><option value="Otros">Otros</option></select></div>
       <div class="fg"><label class="fl">Monto</label><input type="number" class="fi" id="cli-eg-monto" placeholder="0"/></div>
       <div class="fg"><label class="fl">Fecha</label><input type="date" class="fi" id="cli-eg-fecha"/></div>
       <div class="fg"><label class="fl">Mes</label><select class="fi" id="cli-eg-mes" style="margin-top:0;"><option>Enero 2026</option><option>Febrero 2026</option><option selected>Marzo 2026</option><option>Abril 2026</option><option>Mayo 2026</option><option>Junio 2026</option><option>Julio 2026</option><option>Agosto 2026</option><option>Septiembre 2026</option><option>Octubre 2026</option><option>Noviembre 2026</option><option>Diciembre 2026</option></select></div>
@@ -5734,10 +5745,11 @@ window.filterCkByMes = function(mes) {
   const eg  = window._clientEgresos  || [];
   const filtIng = mes === 'todo' ? ing : ing.filter(i => (i.mes||'').includes(mes.split(' ')[0]));
   const filtEg  = mes === 'todo' ? eg  : eg.filter(e => (e.mes||'').includes(mes.split(' ')[0]));
-  const presups = window._clientPresupuestos||[], mcs = window._mcClientes||[];
+  const presups = window._clientPresupuestos||[], mcs = window._mcClientes||_mcClientes||[];
   renderClientContabilidad(filtIng, filtEg);
   renderCkKpis(filtIng, filtEg, presups, mcs);
-  initCkChart(filtIng, filtEg);
+  initCkChart(ing, eg);           // siempre año completo
+  initCkMesChart(filtIng, filtEg, mes);  // mes seleccionado
   initCkDonutChart(filtEg);
   renderCkFunnel(presups);
 };
@@ -6111,6 +6123,51 @@ function initCkChart(ingresos, egresos) {
   });
 }
 
+let ckMesChart=null;
+
+function initCkMesChart(ingresos, egresos, mes) {
+  if(ckMesChart){try{ckMesChart.destroy();}catch(e){} ckMesChart=null;}
+  const canvas = document.getElementById('ckMesChart');
+  const emptyEl = document.getElementById('ck-mes-chart-empty');
+  const titleEl = document.getElementById('ck-mes-chart-title');
+  if(!canvas) return;
+
+  if(mes === 'todo') {
+    if(titleEl) titleEl.textContent = 'Mes seleccionado';
+    if(emptyEl) emptyEl.style.display = 'block';
+    canvas.style.display = 'none';
+    return;
+  }
+
+  if(emptyEl) emptyEl.style.display = 'none';
+  canvas.style.display = 'block';
+  if(titleEl) titleEl.textContent = mes;
+
+  const totalIng = ingresos.reduce((a,i)=>a+(parseFloat(i.monto)||0),0);
+  const totalEg  = egresos.reduce((a,e)=>a+(parseFloat(e.monto)||0),0);
+
+  ckMesChart = new Chart(canvas.getContext('2d'),{
+    type:'bar',
+    data:{
+      labels:['Ingresos','Egresos'],
+      datasets:[{
+        data:[totalIng, totalEg],
+        backgroundColor:['#A1B1A4','#F5C4BE'],
+        borderRadius:6,
+        barThickness:48
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        y:{grid:{color:'#D0CFC9'},ticks:{font:{family:'DM Sans',size:10},color:'#4A5A4E',callback:v=>'$'+v.toLocaleString('es-AR')}},
+        x:{grid:{display:false},ticks:{font:{family:'DM Sans',size:11},color:'#4A5A4E'}}
+      }
+    }
+  });
+}
+
 let ckDonutChart=null;
 
 function initCkDonutChart(egresos) {
@@ -6179,10 +6236,11 @@ function renderCkKpis(ingresos, egresos, presupuestos, mcClientes) {
   const tickProm=aprobados.length>0?Math.round(aprobados.reduce((a,p)=>a+(parseFloat(p.monto)||0),0)/aprobados.length):0;
   setEl('ck-tick','$'+tickProm.toLocaleString('es-AR'));
 
-  // Cobros pendientes (aprobado sin cobrar)
-  const montoAprobado=aprobados.reduce((a,p)=>a+(parseFloat(p.monto)||0),0);
-  const cobradoReal=(mcClientes||[]).reduce((a,c)=>a+(parseFloat(c.totalCobrado)||0),0);
-  const cobrosPend=Math.max(0,montoAprobado-cobradoReal);
+  // Cobros pendientes: cobros con estado='pendiente' del período seleccionado
+  // (ingresos ya viene filtrado por mes desde filterCkByMes, o con todos si es 'todo')
+  const cobrosPend = ingresos
+    .filter(c => c.estado === 'pendiente')
+    .reduce((a,c) => a + (parseFloat(c.monto)||0), 0);
   setEl('ck-cobros-pend','$'+cobrosPend.toLocaleString('es-AR'));
 
   // Tasa conversión
@@ -6224,10 +6282,37 @@ function renderCkKpis(ingresos, egresos, presupuestos, mcClientes) {
 
 function renderCkRankingClientes(ingresos) {
   const el=document.getElementById('ck-ranking-clientes'); if(!el) return;
+  // Usar _mcClientes con totalCobrado si hay datos, sino fallback a ingresos
+  const mcs = window._mcClientes || _mcClientes || [];
+  const conCobros = mcs.filter(c => parseFloat(c.totalCobrado||0) > 0);
+  if(conCobros.length > 0) {
+    const list = conCobros.sort((a,b)=>(parseFloat(b.totalCobrado)||0)-(parseFloat(a.totalCobrado)||0)).slice(0,6);
+    const total = list.reduce((a,c)=>a+(parseFloat(c.totalCobrado)||0),0);
+    const maxMonto = parseFloat(list[0]?.totalCobrado)||1;
+    const colors=['#A1B1A4','#7A8E7D','#B0C0B2','#C8D4CA','#D0CFC9','#E7E5DF'];
+    el.innerHTML=list.map((c,i)=>{
+      const monto=parseFloat(c.totalCobrado)||0;
+      const pct=Math.round((monto/maxMonto)*100);
+      const pctTotal=total>0?Math.round((monto/total)*100):0;
+      return `<div style="margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+          <span style="font-size:12px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60%;">${c.nombre||'Sin nombre'}</span>
+          <span style="font-size:12px;color:var(--text-m);flex-shrink:0;">$${monto.toLocaleString('es-AR')} <span style="color:var(--text-l);font-size:10px;">(${pctTotal}%)</span></span>
+        </div>
+        <div style="height:6px;background:var(--cream-d);border-radius:3px;"><div style="height:100%;width:${pct}%;background:${colors[i]};border-radius:3px;transition:width .5s;"></div></div>
+      </div>`;
+    }).join('')+
+    `<div style="padding-top:8px;display:flex;justify-content:space-between;font-size:11px;border-top:.5px solid var(--cream-d);margin-top:4px;">
+      <span style="color:var(--text-l);">Total ${list.length} clientes</span>
+      <span style="font-weight:500;color:var(--ok);">$${total.toLocaleString('es-AR')}</span>
+    </div>`;
+    return;
+  }
+  // Fallback: usar ingresos con campo cliente
   if(ingresos.length===0){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--text-l);font-size:13px;">Sin ingresos registrados.</div>';return;}
   const clientes={};
   ingresos.forEach(i=>{
-    const nombre=i.cliente||'Sin asignar';
+    const nombre=i.cliente||i.concepto||'Sin asignar';
     clientes[nombre]=(clientes[nombre]||0)+(parseFloat(i.monto)||0);
   });
   const list=Object.entries(clientes).sort((a,b)=>b[1]-a[1]).slice(0,6);
@@ -6288,7 +6373,7 @@ window.createClientEgreso = async function() {
   if(!monto){ alert('Ingresá un monto'); return; }
   const data = { 
     concepto, 
-    categoria: 'Egreso sin concepto',
+    categoria: document.getElementById('cli-eg-categoria')?.value || 'Otros',
     monto: parseFloat(monto)||0, 
     fecha: document.getElementById('cli-eg-fecha')?.value||'',
     mes: document.getElementById('cli-eg-mes').value, 
@@ -6425,6 +6510,7 @@ async function loadMcModule() {
     const csSnap = await getDocs(collection(db,'clientes',currentClientUID,'misClientes'));
     _mcClientes = []; csSnap.forEach(d=>_mcClientes.push({id:d.id,...d.data()}));
     _mcClientes.sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||''));
+    window._mcClientes = _mcClientes;
     // Presupuestos
     const psSnap = await getDocs(collection(db,'clientes',currentClientUID,'presupuestos'));
     _mcPresupuestos = []; psSnap.forEach(d=>_mcPresupuestos.push({id:d.id,...d.data()}));
@@ -9091,12 +9177,17 @@ window.showCTab = function(tab, btn) {
   }
   if(tab==='kpis') setTimeout(async()=>{
     if(!window._clientPresupuestos || window._clientPresupuestos.length===0) await loadClientPresupuestos();
-    const ing=window._clientIngresos||[], eg=window._clientEgresos||[];
-    const presups=window._clientPresupuestos||[], mcs=window._mcClientes||[];
-    initCkChart(ing,eg);
-    initCkDonutChart(eg);
+    if(!window._mcClientes || window._mcClientes.length===0) await loadMcModule();
+    const mes = document.getElementById('ck-mes-sel')?.value || 'todo';
+    const ing = window._clientIngresos||[], eg = window._clientEgresos||[];
+    const filtIng = mes === 'todo' ? ing : ing.filter(i => (i.mes||'').includes(mes.split(' ')[0]));
+    const filtEg  = mes === 'todo' ? eg  : eg.filter(e => (e.mes||'').includes(mes.split(' ')[0]));
+    const presups = window._clientPresupuestos||[], mcs = window._mcClientes||_mcClientes||[];
+    initCkChart(ing, eg);
+    initCkMesChart(filtIng, filtEg, mes);
+    initCkDonutChart(filtEg);
     renderCkFunnel(presups);
-    renderCkKpis(ing,eg,presups,mcs);
+    renderCkKpis(filtIng, filtEg, presups, mcs);
   },200);
   if(tab==='presupuestos') loadClientPresupuestos();
   if(tab==='proveedores') loadProveedores();
