@@ -11,19 +11,29 @@ function getApp() {
   return app;
 }
 
+const ADMIN_EMAIL = 'miicabenitez12@gmail.com';
+
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
-  const { uid, adminSecret } = JSON.parse(event.body || '{}');
-  if (!uid) {
-    return { statusCode: 400, body: JSON.stringify({ error: 'UID requerido' }) };
+
+  const { uid, idToken } = JSON.parse(event.body || '{}');
+
+  if (!uid || !idToken) {
+    return { statusCode: 400, body: JSON.stringify({ error: 'uid e idToken requeridos' }) };
   }
-  if (adminSecret !== process.env.ADMIN_SECRET) {
-    return { statusCode: 403, body: JSON.stringify({ error: 'No autorizado' }) };
-  }
+
   try {
     getApp();
+
+    // Verificar que el token pertenece al admin
+    const decoded = await admin.auth().verifyIdToken(idToken);
+    if (decoded.email !== ADMIN_EMAIL) {
+      return { statusCode: 403, body: JSON.stringify({ error: 'No autorizado' }) };
+    }
+
+    // Generar custom token para el cliente
     const customToken = await admin.auth().createCustomToken(uid);
     return {
       statusCode: 200,
@@ -37,3 +47,4 @@ exports.handler = async (event) => {
     };
   }
 };
+
