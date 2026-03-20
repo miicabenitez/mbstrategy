@@ -6941,6 +6941,10 @@ window.openMcPresupModal = function(clienteId, clienteNombre) {
   openModal('newMcPresupModal');
 };
 
+// ===== PDF UPLOAD — PRESUPUESTOS =====
+let _presupPdfUrl = '';
+let _mcPresupPdfUrl = '';
+
 window.createMcPresup = async function() {
   if (!currentClientUID) return;
   const clienteId     = document.getElementById('mcp-presup-cliente-id').value;
@@ -7157,10 +7161,6 @@ window.deleteMcPendiente = function(id) {
   },'Eliminar pendiente');
 };
 
-
-// ===== PDF UPLOAD — PRESUPUESTOS =====
-let _presupPdfUrl = '';
-let _mcPresupPdfUrl = '';
 
 window.onPresupPDFSelected = function(input) {
   const file = input.files[0];
