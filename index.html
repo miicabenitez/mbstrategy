@@ -1541,7 +1541,7 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
         </div>
 
         <!-- Fila 3: más métricas -->
-        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px;">
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:14px;">
           <div class="kc">
             <div class="ml">Ticket promedio</div>
             <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;" id="ck-tick">$0</div>
@@ -1552,25 +1552,11 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
             <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;" id="ck-margen">0%</div>
             <div style="height:3px;background:var(--cream-d);border-radius:2px;margin-top:6px;"><div id="ck-margen-barra" style="height:100%;width:0%;background:var(--ok);border-radius:2px;transition:width .5s;"></div></div>
           </div>
-          <div class="kc">
-            <div class="ml">Facturación proyectada</div>
-            <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;color:var(--blue);" id="ck-proyectado">$0</div>
-            <div style="font-size:10px;color:var(--text-l);margin-top:2px;">presup. en curso</div>
-          </div>
-        </div>
-
-        <!-- Fila 4: días cobro -->
-        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px;">
-          <div class="kc">
-            <div class="ml">Días prom. de cobro</div>
-            <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;" id="ck-dias-cobro">—</div>
-            <div style="font-size:10px;color:var(--text-l);margin-top:2px;">aprobado → cobrado</div>
-          </div>
         </div>
 
         <!-- Gráficos — fila 1: evolución anual + mes seleccionado -->
         <div class="g2" style="margin-bottom:12px;">
-          <!-- Barras evolución anual -->
+          <!-- Izq: Evolución anual -->
           <div class="card">
             <div class="ct">Evolución anual</div>
             <div style="position:relative;height:160px;"><canvas id="ckChart"></canvas></div>
@@ -1580,40 +1566,38 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
               <span style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text-l);"><span style="width:9px;height:9px;border-radius:50%;background:var(--sage-dark);display:inline-block;"></span>Ganancia</span>
             </div>
           </div>
-
-          <!-- Barras mes seleccionado -->
+          <!-- Der: Mes seleccionado -->
           <div class="card">
             <div class="ct" id="ck-mes-chart-title">Mes seleccionado</div>
-            <div style="position:relative;height:160px;"><canvas id="ckMesChart"></canvas></div>
-            <div id="ck-mes-chart-empty" style="display:none;text-align:center;padding:20px;color:var(--text-l);font-size:12px;">Seleccioná un mes para ver el detalle</div>
-            <div style="display:flex;gap:14px;margin-top:8px;flex-wrap:wrap;">
-              <span style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text-l);"><span style="width:9px;height:9px;border-radius:2px;background:var(--sage);display:inline-block;"></span>Ingresos</span>
-              <span style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text-l);"><span style="width:9px;height:9px;border-radius:2px;background:#F5C4BE;display:inline-block;"></span>Egresos</span>
+            <div id="ck-mes-chart-empty" style="text-align:center;padding:40px 20px;color:var(--text-l);font-size:12px;">Seleccioná un mes para ver el detalle</div>
+            <div id="ck-mes-chart-wrap" style="display:none;">
+              <div style="position:relative;height:160px;"><canvas id="ckMesChart"></canvas></div>
+              <div style="display:flex;gap:14px;margin-top:8px;flex-wrap:wrap;">
+                <span style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text-l);"><span style="width:9px;height:9px;border-radius:2px;background:var(--sage);display:inline-block;"></span>Ingresos</span>
+                <span style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text-l);"><span style="width:9px;height:9px;border-radius:2px;background:#F5C4BE;display:inline-block;"></span>Egresos</span>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Gráficos — fila 2: ranking clientes + distribución egresos -->
+        <!-- Gráficos — fila 2: egresos anuales + egresos del mes -->
         <div class="g2" style="margin-bottom:12px;">
-          <!-- Ranking clientes -->
+          <!-- Izq: Egresos anuales por categoría -->
           <div class="card">
-            <div class="ct">Ingresos por cliente</div>
-            <div id="ck-ranking-clientes"><div style="text-align:center;padding:20px;color:var(--text-l);font-size:13px;">Sin datos registrados.</div></div>
+            <div class="ct">Egresos anuales por categoría</div>
+            <div id="ck-eg-anual-empty" style="display:none;text-align:center;padding:20px;color:var(--text-l);font-size:12px;">Sin egresos registrados.</div>
+            <div style="position:relative;height:180px;"><canvas id="ckEgAnualChart"></canvas></div>
           </div>
-
-          <!-- Donut egresos -->
+          <!-- Der: Egresos del mes por categoría -->
           <div class="card">
-            <div class="ct">Distribución de egresos</div>
-            <div style="display:flex;align-items:center;gap:16px;">
-              <div style="position:relative;height:140px;width:140px;flex-shrink:0;"><canvas id="ckDonutChart"></canvas></div>
-              <div id="ck-donut-legend" style="flex:1;"></div>
-            </div>
+            <div class="ct" id="ck-eg-mes-title">Egresos del mes por categoría</div>
+            <div id="ck-eg-mes-empty" style="text-align:center;padding:40px 20px;color:var(--text-l);font-size:12px;">Seleccioná un mes para ver el detalle</div>
+            <div id="ck-eg-mes-wrap" style="display:none;position:relative;height:180px;"><canvas id="ckEgMesChart"></canvas></div>
           </div>
         </div>
 
         <!-- Gráficos — fila 3: funnel -->
         <div class="g2">
-          <!-- Funnel presupuestos -->
           <div class="card">
             <div class="ct">Funnel de presupuestos</div>
             <div id="ck-funnel" style="padding:4px 0;"></div>
@@ -5743,14 +5727,15 @@ window.filterCcByMes = function(mes) {
 window.filterCkByMes = function(mes) {
   const ing = window._clientIngresos || [];
   const eg  = window._clientEgresos  || [];
-  const filtIng = mes === 'todo' ? ing : ing.filter(i => (i.mes||'').includes(mes.split(' ')[0]));
-  const filtEg  = mes === 'todo' ? eg  : eg.filter(e => (e.mes||'').includes(mes.split(' ')[0]));
+  const filtIng = mes === 'todo' ? ing : ing.filter(i => (i.mes||'').toLowerCase().includes(mes.split(' ')[0].toLowerCase()));
+  const filtEg  = mes === 'todo' ? eg  : eg.filter(e => (e.mes||'').toLowerCase().includes(mes.split(' ')[0].toLowerCase()));
   const presups = window._clientPresupuestos||[], mcs = window._mcClientes||_mcClientes||[];
   renderClientContabilidad(filtIng, filtEg);
   renderCkKpis(filtIng, filtEg, presups, mcs);
-  initCkChart(ing, eg);           // siempre año completo
-  initCkMesChart(filtIng, filtEg, mes);  // mes seleccionado
-  initCkDonutChart(filtEg);
+  initCkChart(ing, eg);                   // siempre año completo
+  initCkMesChart(filtIng, filtEg, mes);   // mes seleccionado
+  initCkEgAnualChart(eg);                 // egresos anuales por cat
+  initCkEgMesChart(filtEg, mes);          // egresos mes por cat
   renderCkFunnel(presups);
 };
 
@@ -6127,42 +6112,110 @@ let ckMesChart=null;
 
 function initCkMesChart(ingresos, egresos, mes) {
   if(ckMesChart){try{ckMesChart.destroy();}catch(e){} ckMesChart=null;}
-  const canvas = document.getElementById('ckMesChart');
-  const emptyEl = document.getElementById('ck-mes-chart-empty');
-  const titleEl = document.getElementById('ck-mes-chart-title');
-  if(!canvas) return;
-
+  const emptyEl  = document.getElementById('ck-mes-chart-empty');
+  const wrapEl   = document.getElementById('ck-mes-chart-wrap');
+  const titleEl  = document.getElementById('ck-mes-chart-title');
   if(mes === 'todo') {
-    if(titleEl) titleEl.textContent = 'Mes seleccionado';
     if(emptyEl) emptyEl.style.display = 'block';
-    canvas.style.display = 'none';
+    if(wrapEl)  wrapEl.style.display  = 'none';
+    if(titleEl) titleEl.textContent   = 'Mes seleccionado';
     return;
   }
-
   if(emptyEl) emptyEl.style.display = 'none';
-  canvas.style.display = 'block';
-  if(titleEl) titleEl.textContent = mes;
-
+  if(wrapEl)  wrapEl.style.display  = 'block';
+  if(titleEl) titleEl.textContent   = mes;
+  const canvas = document.getElementById('ckMesChart');
+  if(!canvas) return;
   const totalIng = ingresos.reduce((a,i)=>a+(parseFloat(i.monto)||0),0);
   const totalEg  = egresos.reduce((a,e)=>a+(parseFloat(e.monto)||0),0);
-
   ckMesChart = new Chart(canvas.getContext('2d'),{
     type:'bar',
     data:{
       labels:['Ingresos','Egresos'],
-      datasets:[{
-        data:[totalIng, totalEg],
-        backgroundColor:['#A1B1A4','#F5C4BE'],
-        borderRadius:6,
-        barThickness:48
-      }]
+      datasets:[{data:[totalIng,totalEg],backgroundColor:['#A1B1A4','#F5C4BE'],borderRadius:6,barThickness:52}]
     },
     options:{
-      responsive:true, maintainAspectRatio:false,
+      responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:false}},
       scales:{
         y:{grid:{color:'#D0CFC9'},ticks:{font:{family:'DM Sans',size:10},color:'#4A5A4E',callback:v=>'$'+v.toLocaleString('es-AR')}},
         x:{grid:{display:false},ticks:{font:{family:'DM Sans',size:11},color:'#4A5A4E'}}
+      }
+    }
+  });
+}
+
+let ckEgAnualChart=null;
+let ckEgMesChart=null;
+
+function initCkEgAnualChart(egresos) {
+  if(ckEgAnualChart){try{ckEgAnualChart.destroy();}catch(e){} ckEgAnualChart=null;}
+  const emptyEl = document.getElementById('ck-eg-anual-empty');
+  const canvas  = document.getElementById('ckEgAnualChart');
+  if(!canvas) return;
+  if(egresos.length===0){
+    if(emptyEl) emptyEl.style.display='block';
+    canvas.style.display='none';
+    return;
+  }
+  if(emptyEl) emptyEl.style.display='none';
+  canvas.style.display='block';
+  const cats={};
+  egresos.forEach(e=>{const c=e.categoria||'Otros'; cats[c]=(cats[c]||0)+(parseFloat(e.monto)||0);});
+  const sorted=Object.entries(cats).sort((a,b)=>b[1]-a[1]);
+  const labels=sorted.map(([k])=>k), data=sorted.map(([,v])=>v);
+  const colors=['#A1B1A4','#C8D4CA','#F5C4BE','#B0C8DA','#F5ECD8','#D5EDDA','#EEE6F5','#D0CFC9'];
+  ckEgAnualChart = new Chart(canvas.getContext('2d'),{
+    type:'bar',
+    data:{labels,datasets:[{data,backgroundColor:colors.slice(0,labels.length),borderRadius:4}]},
+    options:{
+      indexAxis:'y',
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{grid:{color:'#D0CFC9'},ticks:{font:{family:'DM Sans',size:10},color:'#4A5A4E',callback:v=>'$'+v.toLocaleString('es-AR')}},
+        y:{grid:{display:false},ticks:{font:{family:'DM Sans',size:10},color:'#4A5A4E'}}
+      }
+    }
+  });
+}
+
+function initCkEgMesChart(egresos, mes) {
+  if(ckEgMesChart){try{ckEgMesChart.destroy();}catch(e){} ckEgMesChart=null;}
+  const emptyEl = document.getElementById('ck-eg-mes-empty');
+  const wrapEl  = document.getElementById('ck-eg-mes-wrap');
+  const titleEl = document.getElementById('ck-eg-mes-title');
+  if(mes === 'todo') {
+    if(emptyEl) emptyEl.style.display='block';
+    if(wrapEl)  wrapEl.style.display='none';
+    if(titleEl) titleEl.textContent='Egresos del mes por categoría';
+    return;
+  }
+  if(titleEl) titleEl.textContent = 'Egresos · '+mes;
+  if(egresos.length===0){
+    if(emptyEl) emptyEl.style.display='block';
+    if(wrapEl)  wrapEl.style.display='none';
+    return;
+  }
+  if(emptyEl) emptyEl.style.display='none';
+  if(wrapEl)  wrapEl.style.display='block';
+  const canvas = document.getElementById('ckEgMesChart');
+  if(!canvas) return;
+  const cats={};
+  egresos.forEach(e=>{const c=e.categoria||'Otros'; cats[c]=(cats[c]||0)+(parseFloat(e.monto)||0);});
+  const sorted=Object.entries(cats).sort((a,b)=>b[1]-a[1]);
+  const labels=sorted.map(([k])=>k), data=sorted.map(([,v])=>v);
+  const colors=['#A1B1A4','#C8D4CA','#F5C4BE','#B0C8DA','#F5ECD8','#D5EDDA','#EEE6F5','#D0CFC9'];
+  ckEgMesChart = new Chart(canvas.getContext('2d'),{
+    type:'bar',
+    data:{labels,datasets:[{data,backgroundColor:colors.slice(0,labels.length),borderRadius:4}]},
+    options:{
+      indexAxis:'y',
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{grid:{color:'#D0CFC9'},ticks:{font:{family:'DM Sans',size:10},color:'#4A5A4E',callback:v=>'$'+v.toLocaleString('es-AR')}},
+        y:{grid:{display:false},ticks:{font:{family:'DM Sans',size:10},color:'#4A5A4E'}}
       }
     }
   });
@@ -6229,52 +6282,41 @@ function renderCkKpis(ingresos, egresos, presupuestos, mcClientes) {
   setEl('ck-margen',margen+'%');
   setEl('ck-margen-sub',margen+'% margen neto');
   const barEl=document.getElementById('ck-margen-barra');
-  if(barEl){barEl.style.width=Math.min(margen,100)+'%';barEl.style.background=margen>=70?'var(--ok)':margen>=40?'var(--warn)':'var(--err)';}
+  if(barEl){barEl.style.width=Math.min(Math.max(margen,0),100)+'%';barEl.style.background=margen>=70?'var(--ok)':margen>=40?'var(--warn)':'var(--err)';}
+
+  // Sub-label de ingresos: mostrar período activo
+  const mesSel = document.getElementById('ck-mes-sel')?.value || 'todo';
+  setEl('ck-ing-sub', mesSel === 'todo' ? 'año completo' : mesSel);
 
   // Ticket promedio
   const aprobados=presupuestos.filter(p=>p.estado==='Aprobado');
   const tickProm=aprobados.length>0?Math.round(aprobados.reduce((a,p)=>a+(parseFloat(p.monto)||0),0)/aprobados.length):0;
   setEl('ck-tick','$'+tickProm.toLocaleString('es-AR'));
 
-  // Cobros pendientes: cobros con estado='pendiente' del período seleccionado
-  // (ingresos ya viene filtrado por mes desde filterCkByMes, o con todos si es 'todo')
-  const cobrosPend = ingresos
-    .filter(c => c.estado === 'pendiente')
-    .reduce((a,c) => a + (parseFloat(c.monto)||0), 0);
+  // Cobros pendientes: total aprobado − total cobrado real (estado actual, no filtrado por mes)
+  const totalAprobado = presupuestos.filter(p=>p.estado==='Aprobado').reduce((a,p)=>a+(parseFloat(p.monto)||0),0);
+  const totalCobrado  = (mcClientes||[]).reduce((a,c)=>a+(parseFloat(c.totalCobrado)||0),0);
+  const cobrosPend    = Math.max(0, totalAprobado - totalCobrado);
   setEl('ck-cobros-pend','$'+cobrosPend.toLocaleString('es-AR'));
 
-  // Tasa conversión
-  const enviados=presupuestos.filter(p=>['Enviado','Consultado','Aprobado','Denegado'].includes(p.estado)).length;
-  const conv=enviados>0?Math.round((aprobados.length/enviados)*100):null;
-  setEl('ck-conversion',conv!==null?conv+'%':'—');
-
-  // Proyectado
-  const pendMonto=presupuestos.filter(p=>['Pendiente de enviar','Enviado','Consultado'].includes(p.estado)).reduce((a,p)=>a+(parseFloat(p.monto)||0),0);
-  setEl('ck-proyectado','$'+pendMonto.toLocaleString('es-AR'));
-
-  // Días promedio de cobro — entre creadoEn del presup aprobado y cobros del cliente
-  const diasArr=[];
-  aprobados.forEach(p=>{
-    if(!p.creadoEn||!p.clienteId) return;
-    const mc=(mcClientes||[]).find(c=>c.id===p.clienteId);
-    if(!mc||!mc.ultimoContacto) return;
-    const d=Math.round((new Date(mc.ultimoContacto)-new Date(p.creadoEn))/(1000*60*60*24));
-    if(d>=0&&d<365) diasArr.push(d);
-  });
-  const diasProm=diasArr.length>0?Math.round(diasArr.reduce((a,b)=>a+b,0)/diasArr.length):null;
-  const diasEl=document.getElementById('ck-dias-cobro');
-  if(diasEl){
-    diasEl.textContent=diasProm!==null?diasProm+'d':'—';
-    diasEl.style.color=diasProm===null?'var(--text)':diasProm<=14?'var(--ok)':diasProm<=30?'var(--warn)':'var(--err)';
+  // Clientes nuevos: respetar mes del selector
+  const mcsAll = mcClientes||[];
+  let nuevos = 0;
+  if(mesSel === 'todo') {
+    // año en curso
+    const anioActual = new Date().getFullYear();
+    nuevos = mcsAll.filter(c => c.creadoEn && new Date(c.creadoEn).getFullYear() === anioActual).length;
+  } else {
+    // mes específico — comparar mes+año exacto
+    const [mesNombre, anioStr] = mesSel.split(' ');
+    nuevos = mcsAll.filter(c => {
+      if(!c.creadoEn) return false;
+      const d = new Date(c.creadoEn);
+      const mesCliente = d.toLocaleString('es-AR',{month:'long'}).replace(/^\w/,ch=>ch.toUpperCase());
+      return mesCliente.startsWith(mesNombre) && String(d.getFullYear()) === anioStr;
+    }).length;
   }
-
-  // Clientes nuevos
-  const mesActual=new Date().toLocaleString('es-AR',{month:'long'}).toLowerCase();
-  const nuevos=(mcClientes||[]).filter(c=>{
-    if(!c.creadoEn) return false;
-    return new Date(c.creadoEn).toLocaleString('es-AR',{month:'long'}).toLowerCase()===mesActual;
-  }).length;
-  setEl('ck-clientes-nuevos',nuevos);
+  setEl('ck-clientes-nuevos', nuevos);
 
   // Ranking clientes
   renderCkRankingClientes(ingresos);
@@ -9180,12 +9222,13 @@ window.showCTab = function(tab, btn) {
     if(!window._mcClientes || window._mcClientes.length===0) await loadMcModule();
     const mes = document.getElementById('ck-mes-sel')?.value || 'todo';
     const ing = window._clientIngresos||[], eg = window._clientEgresos||[];
-    const filtIng = mes === 'todo' ? ing : ing.filter(i => (i.mes||'').includes(mes.split(' ')[0]));
-    const filtEg  = mes === 'todo' ? eg  : eg.filter(e => (e.mes||'').includes(mes.split(' ')[0]));
+    const filtIng = mes === 'todo' ? ing : ing.filter(i => (i.mes||'').toLowerCase().includes(mes.split(' ')[0].toLowerCase()));
+    const filtEg  = mes === 'todo' ? eg  : eg.filter(e => (e.mes||'').toLowerCase().includes(mes.split(' ')[0].toLowerCase()));
     const presups = window._clientPresupuestos||[], mcs = window._mcClientes||_mcClientes||[];
     initCkChart(ing, eg);
     initCkMesChart(filtIng, filtEg, mes);
-    initCkDonutChart(filtEg);
+    initCkEgAnualChart(eg);
+    initCkEgMesChart(filtEg, mes);
     renderCkFunnel(presups);
     renderCkKpis(filtIng, filtEg, presups, mcs);
   },200);
