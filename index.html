@@ -2454,35 +2454,40 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
 </div>
 
 <div class="mo" id="newClientIngresoModal">
-  <div class="md" style="max-width:420px;">
-    <button class="mc2" onclick="closeModal('newClientIngresoModal')">×</button>
-    <div class="mt">Registrar ingreso</div>
-    <div class="fg">
-      <label class="fl">Producto / Servicio</label>
-      <select class="fi" id="cli-ing-producto" style="margin-top:0;" onchange="aplicarProductoIngreso(this.value)">
-        <option value="">— Seleccionar producto (opcional) —</option>
-      </select>
+  <div class="md" style="max-width:420px;padding:0;overflow:hidden;position:relative;">
+    <button class="mc2" onclick="closeModal('newClientIngresoModal')" style="position:absolute;top:14px;right:14px;z-index:2;color:#fff;background:rgba(255,255,255,.15);border:none;">×</button>
+    <div style="background:var(--topbar);padding:20px 24px 16px;">
+      <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">MB Gestión</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:#fff;">Ingreso sin concepto</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:3px;">Para ingresos que no vienen de una venta registrada</div>
     </div>
-    <div class="fg"><label class="fl">Concepto</label><input type="text" class="fi" id="cli-ing-concepto" placeholder="Ej: Venta pileta, Honorario, Consulta..."/></div>
-    <div class="fg"><label class="fl">Cliente / Proyecto</label><input type="text" class="fi" id="cli-ing-cliente" placeholder="Ej: Casa Rodriguez"/></div>
-    <div class="fg"><label class="fl">Monto</label><input type="number" class="fi" id="cli-ing-monto" placeholder="0"/></div>
-    <div class="fg"><label class="fl">Fecha</label><input type="date" id="cli-ing-fecha" style="margin-top:0;"/></div>
-    <div class="fg"><label class="fl">Mes</label><select class="fi" id="cli-ing-mes" style="margin-top:0;"><option>Enero 2026</option><option>Febrero 2026</option><option selected>Marzo 2026</option><option>Abril 2026</option><option>Mayo 2026</option><option>Junio 2026</option><option>Julio 2026</option><option>Agosto 2026</option><option>Septiembre 2026</option><option>Octubre 2026</option><option>Noviembre 2026</option><option>Diciembre 2026</option></select></div>
-    <div class="br2"><button class="bp" onclick="createClientIngreso()">Guardar</button><button class="bs" onclick="closeModal('newClientIngresoModal')">Cancelar</button></div>
-    <div class="saved-msg" id="cli-ing-saved">✓ Ingreso registrado</div>
+    <div style="padding:20px 24px;">
+      <div class="fg"><label class="fl">Detalle</label><input type="text" class="fi" id="cli-ing-concepto" placeholder="Describí brevemente este ingreso..."/></div>
+      <div class="fg"><label class="fl">Monto</label><input type="number" class="fi" id="cli-ing-monto" placeholder="0"/></div>
+      <div class="fg"><label class="fl">Fecha</label><input type="date" id="cli-ing-fecha" style="margin-top:0;"/></div>
+      <div class="fg"><label class="fl">Mes</label><select class="fi" id="cli-ing-mes" style="margin-top:0;"><option>Enero 2026</option><option>Febrero 2026</option><option selected>Marzo 2026</option><option>Abril 2026</option><option>Mayo 2026</option><option>Junio 2026</option><option>Julio 2026</option><option>Agosto 2026</option><option>Septiembre 2026</option><option>Octubre 2026</option><option>Noviembre 2026</option><option>Diciembre 2026</option></select></div>
+      <div class="br2"><button class="bp" onclick="createClientIngreso()">Guardar</button><button class="bs" onclick="closeModal('newClientIngresoModal')">Cancelar</button></div>
+      <div class="saved-msg" id="cli-ing-saved">✓ Ingreso registrado</div>
+    </div>
   </div>
 </div>
 
 <div class="mo" id="newClientEgresoModal">
-  <div class="md" style="max-width:420px;">
-    <button class="mc2" onclick="closeModal('newClientEgresoModal')">×</button>
-    <div class="mt">Registrar egreso</div>
-    <div class="fg"><label class="fl">Concepto</label><input type="text" class="fi" id="cli-eg-concepto" placeholder="Ej: Materiales, Mano de obra, Alquiler..."/></div>
-    <div class="fg"><label class="fl">Categoría</label><select class="fi" id="cli-eg-cat" style="margin-top:0;"><option>Materiales</option><option>Mano de obra</option><option>Alquiler</option><option>Servicios</option><option>Marketing</option><option>Herramientas</option><option>Otro</option></select></div>
-    <div class="fg"><label class="fl">Monto</label><input type="number" class="fi" id="cli-eg-monto" placeholder="0"/></div>
-    <div class="fg"><label class="fl">Mes</label><select class="fi" id="cli-eg-mes" style="margin-top:0;"><option>Enero 2026</option><option>Febrero 2026</option><option selected>Marzo 2026</option><option>Abril 2026</option><option>Mayo 2026</option><option>Junio 2026</option><option>Julio 2026</option><option>Agosto 2026</option><option>Septiembre 2026</option><option>Octubre 2026</option><option>Noviembre 2026</option><option>Diciembre 2026</option></select></div>
-    <div class="br2"><button class="bp" onclick="createClientEgreso()">Guardar</button><button class="bs" onclick="closeModal('newClientEgresoModal')">Cancelar</button></div>
-    <div class="saved-msg" id="cli-eg-saved">✓ Egreso registrado</div>
+  <div class="md" style="max-width:420px;padding:0;overflow:hidden;position:relative;">
+    <button class="mc2" onclick="closeModal('newClientEgresoModal')" style="position:absolute;top:14px;right:14px;z-index:2;color:#fff;background:rgba(255,255,255,.15);border:none;">×</button>
+    <div style="background:var(--topbar);padding:20px 24px 16px;">
+      <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">MB Gestión</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:#fff;">Egreso sin concepto</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:3px;">Para gastos que no vienen de un proveedor registrado</div>
+    </div>
+    <div style="padding:20px 24px;">
+      <div class="fg"><label class="fl">Detalle</label><input type="text" class="fi" id="cli-eg-concepto" placeholder="Describí brevemente este gasto..."/></div>
+      <div class="fg"><label class="fl">Monto</label><input type="number" class="fi" id="cli-eg-monto" placeholder="0"/></div>
+      <div class="fg"><label class="fl">Fecha</label><input type="date" class="fi" id="cli-eg-fecha"/></div>
+      <div class="fg"><label class="fl">Mes</label><select class="fi" id="cli-eg-mes" style="margin-top:0;"><option>Enero 2026</option><option>Febrero 2026</option><option selected>Marzo 2026</option><option>Abril 2026</option><option>Mayo 2026</option><option>Junio 2026</option><option>Julio 2026</option><option>Agosto 2026</option><option>Septiembre 2026</option><option>Octubre 2026</option><option>Noviembre 2026</option><option>Diciembre 2026</option></select></div>
+      <div class="br2"><button class="bp" onclick="createClientEgreso()">Guardar</button><button class="bs" onclick="closeModal('newClientEgresoModal')">Cancelar</button></div>
+      <div class="saved-msg" id="cli-eg-saved">✓ Egreso registrado</div>
+    </div>
   </div>
 </div>
 
@@ -5912,12 +5917,30 @@ window.showClientContView = function(view, btn) {
 async function loadClientContabilidad() {
   if(!currentClientUID) return;
   try {
-    const [ingSnap, egSnap] = await Promise.all([
+    const [ingSnap, egSnap, cobrosSnap] = await Promise.all([
       getDocs(collection(db,'clientes',currentClientUID,'ingresos')),
-      getDocs(collection(db,'clientes',currentClientUID,'egresos'))
+      getDocs(collection(db,'clientes',currentClientUID,'egresos')),
+      getDocs(collection(db,'clientes',currentClientUID,'cobros'))
     ]);
-    const ingresos = []; ingSnap.forEach(d=>ingresos.push({id:d.id,...d.data()}));
+    const ingresosManuales = []; ingSnap.forEach(d=>ingresosManuales.push({id:d.id,...d.data(),origen:'manual'}));
     const egresos = []; egSnap.forEach(d=>egresos.push({id:d.id,...d.data()}));
+
+    // Cobros de comercial como ingresos
+    const cobrosComoIngresos = [];
+    cobrosSnap.forEach(d=>{
+      const data = d.data();
+      cobrosComoIngresos.push({
+        id:d.id,
+        concepto: data.concepto||'Cobro',
+        monto: parseFloat(data.monto)||0,
+        mes: data.fecha ? new Date(data.fecha+'T12:00:00').toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase()) : '',
+        fecha: data.fecha||'',
+        origen: 'comercial',
+        ...data
+      });
+    });
+
+    const ingresos = [...ingresosManuales, ...cobrosComoIngresos];
     window._clientIngresos = ingresos;
     window._clientEgresos = egresos;
     renderClientContabilidad(ingresos, egresos);
@@ -6205,26 +6228,48 @@ function renderCkRankingClientes(ingresos) {
 
 // Crear ingreso cliente
 window.createClientIngreso = async function() {
-  if(!currentClientUID) return;
-  const data = { concepto:document.getElementById('cli-ing-concepto').value, cliente:document.getElementById('cli-ing-cliente').value, monto:document.getElementById('cli-ing-monto').value, fecha:document.getElementById('cli-ing-fecha').value, mes:document.getElementById('cli-ing-mes').value, creadoEn:new Date().toISOString() };
-  if(!data.concepto||!data.monto) return;
+  if(!currentClientUID) { alert('Error: no hay cliente activo.'); return; }
+  const concepto = document.getElementById('cli-ing-concepto').value.trim();
+  const monto = document.getElementById('cli-ing-monto').value;
+  if(!concepto){ alert('Ingresá un detalle'); return; }
+  if(!monto){ alert('Ingresá un monto'); return; }
+  const data = {
+    concepto,
+    categoria: 'Ingreso sin concepto',
+    monto: parseFloat(monto)||0,
+    fecha: document.getElementById('cli-ing-fecha')?.value||'',
+    mes: document.getElementById('cli-ing-mes').value,
+    origen: 'manual',
+    creadoEn: new Date().toISOString()
+  };
   try {
     await addDoc(collection(db,'clientes',currentClientUID,'ingresos'), data);
-    const s=document.getElementById('cli-ing-saved'); s.style.display='block';
-    setTimeout(async()=>{ s.style.display='none'; closeModal('newClientIngresoModal'); await loadClientContabilidad(); },1500);
+    const s=document.getElementById('cli-ing-saved'); if(s) s.style.display='block';
+    setTimeout(async()=>{ if(s) s.style.display='none'; closeModal('newClientIngresoModal'); await loadClientContabilidad(); },1500);
   } catch(e){ alert('Error: '+e.message); }
 };
 
 // Crear egreso cliente
 window.createClientEgreso = async function() {
-  if(!currentClientUID) return;
-  const data = { concepto:document.getElementById('cli-eg-concepto').value, categoria:document.getElementById('cli-eg-cat').value, monto:document.getElementById('cli-eg-monto').value, mes:document.getElementById('cli-eg-mes').value, creadoEn:new Date().toISOString() };
-  if(!data.concepto||!data.monto) return;
+  if(!currentClientUID) { alert('Error: no hay cliente activo. Intentá recargar.'); return; }
+  const concepto = document.getElementById('cli-eg-concepto').value.trim();
+  const monto = document.getElementById('cli-eg-monto').value;
+  if(!concepto){ alert('Ingresá un concepto'); return; }
+  if(!monto){ alert('Ingresá un monto'); return; }
+  const data = { 
+    concepto, 
+    categoria: 'Egreso sin concepto',
+    monto: parseFloat(monto)||0, 
+    fecha: document.getElementById('cli-eg-fecha')?.value||'',
+    mes: document.getElementById('cli-eg-mes').value, 
+    origen: 'manual',
+    creadoEn: new Date().toISOString() 
+  };
   try {
     await addDoc(collection(db,'clientes',currentClientUID,'egresos'), data);
-    const s=document.getElementById('cli-eg-saved'); s.style.display='block';
-    setTimeout(async()=>{ s.style.display='none'; closeModal('newClientEgresoModal'); await loadClientContabilidad(); },1500);
-  } catch(e){ alert('Error: '+e.message); }
+    const s=document.getElementById('cli-eg-saved'); if(s) s.style.display='block';
+    setTimeout(async()=>{ if(s) s.style.display='none'; closeModal('newClientEgresoModal'); await loadClientContabilidad(); },1500);
+  } catch(e){ alert('Error al guardar: '+e.message); }
 };
 
 // Tareas cliente
@@ -9122,7 +9167,10 @@ window.openModal = function(id) {
       if(sel) sel.innerHTML = '<option value="">Sin cliente específico</option>' + clients.map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('');
     });
   }
-  if(id === 'newClientIngresoModal') { actualizarSelectorProductos(); document.getElementById('cli-ing-producto').value=''; }
+  if(id === 'newClientEgresoModal') {
+    const fechaEl = document.getElementById('cli-eg-fecha');
+    if(fechaEl) fechaEl.value = new Date().toISOString().split('T')[0];
+  }
   if(id === 'newCobroClienteModal') { loadCcBalance(); }
   if(id === 'miCuentaModal') { openModal_miCuentaModal_extra(); }
   if(id === 'newPagoProvModal') { openModal_newPagoProvModal_extra(); }
