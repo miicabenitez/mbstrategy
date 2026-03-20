@@ -11,7 +11,7 @@ function getApp() {
   return app;
 }
 
-const ADMIN_EMAIL = 'miicabenitez12@gmail.com';
+const ADMIN_EMAIL = 'micaela@mbstrategy.com.ar';
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
