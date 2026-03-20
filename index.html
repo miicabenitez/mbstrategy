@@ -3217,6 +3217,14 @@ onAuthStateChanged(auth, async (user) => {
   if (user) {
     currentUser = user;
     try {
+      // Si es impersonation, mostrar UI del cliente directamente
+      if(window._impersonating) {
+        const clienteData = window._impersonating;
+        window._impersonating = null;
+        await showClientUI(clienteData.email||'', clienteData);
+        showConfirm('Estás viendo el sistema como: '+clienteData.nombre+'\n\nPara volver a tu panel admin cerrá sesión y volvé a entrar con tu cuenta.', ()=>{}, 'Acceso como cliente');
+        return;
+      }
       const adminDoc = await getDoc(doc(db, 'admins', user.uid)).catch(() => null);
       if (adminDoc && adminDoc.exists()) {
         await showAdminUI(user.email);
@@ -7400,13 +7408,15 @@ window.accederComoCliente = async function() {
     const json = await res.json();
     if(!json.token){ alert('Error al generar acceso: '+(json.error||'desconocido')); return; }
 
+    // Marcar que es impersonation ANTES del signIn
+    window._impersonating = clienteData;
+
     // Hacer signIn con el custom token
     const { signInWithCustomToken } = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js');
     await signInWithCustomToken(auth, json.token);
 
-    await showClientUI(clienteData.email||'', clienteData);
-    showConfirm('Estás viendo el sistema como: '+clienteData.nombre+'\n\nPara volver a tu panel cerrá sesión y volvé a entrar con tu cuenta de admin.', ()=>{}, 'Acceso como cliente');
   } catch(e) {
+    window._impersonating = null;
     alert('Error: '+e.message);
   }
 };
