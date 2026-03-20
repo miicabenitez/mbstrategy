@@ -6537,13 +6537,10 @@ window.setMcView = function(view) {
 
 // --- Search / filtros ---
 window.filterMcLista = function() {
-  const q     = (document.getElementById('mc-search')?.value || '').toLowerCase();
-  const est   = document.getElementById('mc-filter-estado')?.value || 'todos';
-  const filtered = _mcClientes.filter(c => {
-    const matchQ   = !q || (c.nombre||'').toLowerCase().includes(q);
-    const matchEst = est === 'todos' || (c.estado || 'Potencial') === est;
-    return matchQ && matchEst;
-  });
+  const q = (document.getElementById('mc-search')?.value || '').toLowerCase();
+  const filtered = _mcClientes.filter(c =>
+    !q || (c.nombre||'').toLowerCase().includes(q)
+  );
   renderMcLista(filtered);
 };
 
@@ -8735,7 +8732,7 @@ async function exportarExcel(tipo, nombreNegocio, mes) {
     crearHoja('Presupuestos',['Cliente','Descripción','Estado','Moneda','Monto','Fecha'],ps.map(p=>[p.cliente||'',p.descripcion||'',p.estado||'',p.moneda||'ARS',parseFloat(p.monto)||0,p.fecha||'']),4);
   } else if (tipo==='clientes') {
     const cl=window._mcClientes||[];
-    crearHoja('Clientes',['Nombre','Estado','DNI/CUIT','Dirección','Teléfono','Email','Notas'],cl.map(c=>[c.nombre||'',c.estado||'',c.dni||'',c.direccion||'',c.tel||'',c.email||'',c.notas||'']),null);
+    crearHoja('Clientes',['Nombre','DNI','CUIT','Dirección','Teléfono','Email','Notas'],cl.map(c=>[c.nombre||'',c.dni||'',c.cuit||'',c.direccion||'',c.tel||'',c.email||'',c.notas||'']),null);
   } else if (tipo==='proveedores') {
     const pv=window._proveedores||[], eg=window._clientEgresos||[], gastos={};
     eg.forEach(e=>{gastos[e.concepto||'']=(gastos[e.concepto||'']||0)+(parseFloat(e.monto)||0);});
@@ -8856,7 +8853,7 @@ async function exportarPDF(tipo, nombreNegocio, mes, fecha) {
 
   } else if (tipo === 'clientes') {
     const cl = window._mcClientes || [];
-    y = tableSection(doc, 'CLIENTES', ['Nombre','Estado','DNI/CUIT','Teléfono'], cl.map(c=>[c.nombre||'—',c.estado||'—',c.dni||'—',c.tel||'—']), y, sage, [1,0,0,0]);
+    y = tableSection(doc, 'CLIENTES', ['Nombre','DNI','CUIT','Teléfono','Email'], cl.map(c=>[c.nombre||'—',c.dni||'—',c.cuit||'—',c.tel||'—',c.email||'—']), y, sage, [1,0,0,0,0]);
 
   } else if (tipo === 'proveedores') {
     const pv = window._proveedores || [];
