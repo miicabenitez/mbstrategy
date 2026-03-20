@@ -1185,23 +1185,30 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
       <!-- MÓDULOS PRINCIPALES -->
       <div class="client-tabs" id="mod-bar">
         <button class="ctab active" onclick="showMod('programa',this)">Academia</button>
-        <button class="ctab" onclick="showMod('finanzas',this)">Finanzas</button>
-        <button class="ctab" onclick="showMod('comercial',this)">Comercial</button>
-        <button class="ctab" onclick="showMod('compras',this)">Compras</button>
-        <button class="ctab" onclick="showMod('membresia',this)">Membresía</button>
+        <button class="ctab" onclick="showMod('gestion',this)">MB Gestión</button>
       </div>
 
-      <!-- SUB-NAV por módulo -->
+      <!-- SUB-NAV Academia -->
       <div id="subnav-programa" class="mod-subnav" style="display:flex;gap:4px;margin-bottom:20px;">
         <button class="subctab active" onclick="showCTab('programa',this)">Mi programa MB Strategy</button>
       </div>
 
+      <!-- SUB-NAV MB Gestión -->
+      <div id="subnav-gestion" class="mod-subnav" style="display:none;gap:4px;margin-bottom:8px;">
+        <button class="subctab active" onclick="showGestionSub('contabilidad',this)">Finanzas</button>
+        <button class="subctab" onclick="showGestionSub('mclientes',this)">Comercial</button>
+        <button class="subctab" onclick="showGestionSub('proveedores',this)">Compras</button>
+        <button class="subctab" onclick="showGestionSub('membresia',this)">Membresía</button>
+      </div>
+
+      <!-- SUB-NAV secundario Finanzas -->
       <div id="subnav-finanzas" class="mod-subnav" style="display:none;gap:4px;margin-bottom:20px;">
         <button class="subctab active" onclick="showCTab('contabilidad',this)">Mi negocio</button>
         <button class="subctab" onclick="showCTab('kpis',this)">Indicadores clave</button>
         <button class="subctab" onclick="showCTab('calculador',this)">Calculador de costos</button>
       </div>
 
+      <!-- SUB-NAV secundario Comercial -->
       <div id="subnav-comercial" class="mod-subnav" style="display:none;gap:4px;margin-bottom:20px;">
         <button class="subctab active" onclick="showCTab('mclientes',this)">Mis clientes</button>
         <button class="subctab" onclick="showCTab('productos',this)">Productos</button>
@@ -8879,6 +8886,7 @@ window.backToAdmin = function() {
 // Módulos de navegación
 const MOD_MAP = {
   programa:  { tabs: ['programa'],                                      subnav: 'subnav-programa',  default: 'programa'    },
+  gestion:   { tabs: ['contabilidad','kpis','calculador','mclientes','productos','presupuestos','tareas','proveedores','prod-compra','necesidades','ordenes-compra','historial-compra','membresia'], subnav: 'subnav-gestion', default: 'contabilidad' },
   finanzas:  { tabs: ['contabilidad','kpis','calculador'],              subnav: 'subnav-finanzas',  default: 'contabilidad'},
   comercial: { tabs: ['mclientes','productos','presupuestos','tareas'],  subnav: 'subnav-comercial', default: 'mclientes'   },
   compras:   { tabs: ['proveedores','prod-compra','necesidades','ordenes-compra','historial-compra'], subnav: 'subnav-compras', default: 'proveedores' },
@@ -8886,21 +8894,37 @@ const MOD_MAP = {
 };
 
 window.showMod = function(mod, btn) {
-  // Activar módulo
   document.querySelectorAll('.ctab').forEach(b => b.classList.remove('active'));
   if(btn) btn.classList.add('active');
-  // Mostrar sub-nav del módulo
   document.querySelectorAll('.mod-subnav').forEach(el => el.style.display = 'none');
-  const subnav = document.getElementById('subnav-' + mod);
-  if(subnav) subnav.style.display = 'flex';
-  // Activar primera subpágina del módulo
-  if(subnav) {
-    const firstBtn = subnav.querySelector('.subctab');
-    if(firstBtn) { firstBtn.classList.add('active'); }
+
+  if(mod === 'gestion') {
+    // Mostrar sub-nav de gestión y activar Finanzas por defecto
+    const subnav = document.getElementById('subnav-gestion');
+    if(subnav) { subnav.style.display = 'flex'; const fb = subnav.querySelector('.subctab'); if(fb) fb.classList.add('active'); }
+    const subFinanzas = document.getElementById('subnav-finanzas');
+    if(subFinanzas) subFinanzas.style.display = 'flex';
+    showCTab('contabilidad', null);
+  } else {
+    const subnav = document.getElementById('subnav-' + mod);
+    if(subnav) { subnav.style.display = 'flex'; const firstBtn = subnav.querySelector('.subctab'); if(firstBtn) firstBtn.classList.add('active'); }
+    const defaultTab = MOD_MAP[mod]?.default;
+    if(defaultTab) showCTab(defaultTab, null);
   }
-  // Mostrar el tab por defecto del módulo
-  const defaultTab = MOD_MAP[mod]?.default;
-  if(defaultTab) showCTab(defaultTab, null);
+};
+
+// Cuando se clickea un sub-tab de gestión, mostrar el sub-nav correspondiente
+window.showGestionSub = function(area, btn) {
+  document.querySelectorAll('#subnav-gestion .subctab').forEach(b => b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  // Ocultar sub-navs secundarios
+  ['subnav-finanzas','subnav-comercial','subnav-compras','subnav-membresia'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.style.display = 'none';
+  });
+  const subMap = { contabilidad:'finanzas', kpis:'finanzas', calculador:'finanzas', mclientes:'comercial', productos:'comercial', presupuestos:'comercial', tareas:'comercial', proveedores:'compras', membresia:'membresia' };
+  const subNav = document.getElementById('subnav-' + (subMap[area]||area));
+  if(subNav) { subNav.style.display = 'flex'; const fb = subNav.querySelector('.subctab'); if(fb){ document.querySelectorAll('#subnav-'+subNav.id.replace('subnav-','')+' .subctab').forEach(b=>b.classList.remove('active')); fb.classList.add('active'); } }
+  showCTab(area, null);
 };
 
 window.showCTab = function(tab, btn) {
