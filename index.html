@@ -504,6 +504,7 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
     </div>
     <div class="topbar-right">
       <div class="ub" id="ub">—</div>
+      <button class="btn-out" id="btn-mi-cuenta" onclick="openModal('miCuentaModal')" style="display:none;">Mi cuenta</button>
       <button class="btn-out" onclick="doLogout()">Salir</button>
     </div>
   </div>
@@ -1091,7 +1092,13 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
 
       <!-- DETAIL CLIENTE -->
       <div class="view" id="av-detail">
-        <button class="back-btn" onclick="backToAdmin()">← Volver</button>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+          <button class="back-btn" onclick="backToAdmin()" style="margin-bottom:0;">← Volver</button>
+          <button onclick="accederComoCliente()" style="background:var(--sage-dark);color:#fff;border:none;border-radius:20px;padding:8px 16px;font-size:12px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;display:flex;align-items:center;gap:6px;">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="4.5" r="2.5" stroke="#fff" stroke-width="1.2"/><path d="M1.5 11c0-2.21 2.239-4 5-4s5 1.79 5 4" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/></svg>
+            Acceder como cliente
+          </button>
+        </div>
         <div id="detail-header" style="display:flex;align-items:center;gap:11px;margin-bottom:14px;"></div>
 
         <!-- Resumen financiero del cliente -->
@@ -2596,6 +2603,40 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
 </div>
 
 <!-- Modal editar contenido -->
+<!-- Modal Mi cuenta -->
+<div class="mo" id="miCuentaModal">
+  <div class="md" style="max-width:460px;padding:0;overflow:hidden;position:relative;">
+    <button class="mc2" onclick="closeModal('miCuentaModal')" style="position:absolute;top:14px;right:14px;z-index:2;color:#fff;background:rgba(255,255,255,.15);border:none;">×</button>
+    <div style="background:var(--topbar);padding:20px 24px 16px;">
+      <div style="font-size:9px;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">MB Strategy</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;color:#fff;">Mi cuenta</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:3px;" id="mc-email-display"></div>
+    </div>
+    <div style="padding:20px 24px;max-height:70vh;overflow-y:auto;">
+      <!-- Datos del negocio -->
+      <div style="font-size:11px;font-weight:500;color:var(--text-m);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">Datos del negocio</div>
+      <div class="fg"><label class="fl">Nombre del negocio</label><input type="text" class="fi" id="mc-negocio-nombre" placeholder="Ej: Panadería La Esquina"/></div>
+      <div class="fg"><label class="fl">Rubro</label><input type="text" class="fi" id="mc-negocio-rubro" placeholder="Ej: Gastronomía, Construcción..."/></div>
+      <div class="fg"><label class="fl">Teléfono / WhatsApp</label><input type="text" class="fi" id="mc-negocio-tel" placeholder="+54 9 11 1234-5678"/></div>
+      <div class="fg"><label class="fl">Email de contacto</label><input type="email" class="fi" id="mc-negocio-email" placeholder="contacto@minegocio.com"/></div>
+      <div class="fg"><label class="fl">CUIT (opcional)</label><input type="text" class="fi" id="mc-negocio-cuit" placeholder="20-12345678-9"/></div>
+      <div class="fg"><label class="fl">Dirección (opcional)</label><input type="text" class="fi" id="mc-negocio-dir" placeholder="Calle 123, Ciudad"/></div>
+      <div style="height:.5px;background:var(--cream-d);margin:16px 0;"></div>
+      <!-- Cambio de contraseña -->
+      <div style="font-size:11px;font-weight:500;color:var(--text-m);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">Cambiar contraseña</div>
+      <div class="fg"><label class="fl">Contraseña actual</label><input type="password" class="fi" id="mc-pass-actual" placeholder="Tu contraseña actual"/></div>
+      <div class="fg"><label class="fl">Nueva contraseña</label><input type="password" class="fi" id="mc-pass-nueva" placeholder="Mínimo 6 caracteres"/></div>
+      <div class="fg"><label class="fl">Confirmar nueva contraseña</label><input type="password" class="fi" id="mc-pass-confirm" placeholder="Repetí la nueva contraseña"/></div>
+      <div class="br2">
+        <button class="bp" onclick="guardarMiCuenta()">Guardar cambios</button>
+        <button class="bs" onclick="closeModal('miCuentaModal')">Cancelar</button>
+      </div>
+      <div class="saved-msg" id="mc-saved">✓ Cambios guardados</div>
+      <div id="mc-error" style="display:none;background:var(--err-bg);color:var(--err);border-radius:8px;padding:10px;font-size:12px;margin-top:8px;"></div>
+    </div>
+  </div>
+</div>
+
 <div class="mo" id="editContentModal">
   <div class="md" style="max-width:420px;">
     <button class="mc2" onclick="closeModal('editContentModal')">×</button>
@@ -3215,6 +3256,8 @@ async function getClientByEmail(email) {
 }
 
 window.showAdminUI = async function(email) {
+  const btnMiCuenta = document.getElementById('btn-mi-cuenta');
+  if(btnMiCuenta) btnMiCuenta.style.display = 'none';
   document.getElementById('lp').style.display = 'none';
   document.getElementById('app').classList.add('visible');
   document.getElementById('aArea').style.display = 'block';
@@ -3225,6 +3268,8 @@ window.showAdminUI = async function(email) {
 };
 
 window.showClientUI = async function(email, clientData) {
+  const btnMiCuenta = document.getElementById('btn-mi-cuenta');
+  if(btnMiCuenta) btnMiCuenta.style.display = 'block';
   document.getElementById('lp').style.display = 'none';
   document.getElementById('app').classList.add('visible');
   document.getElementById('aArea').style.display = 'none';
@@ -7276,7 +7321,95 @@ window.deleteProducto = function(id) {
   },'Eliminar producto');
 };
 
-// ===== MÓDULO COMPRAS =====
+// ===== MI CUENTA =====
+window.openModal_miCuentaModal_extra = async function() {
+  if(!currentClientUID) return;
+  try {
+    const d = await getDoc(doc(db,'clientes',currentClientUID));
+    if(d.exists()) {
+      const data = d.data();
+      document.getElementById('mc-negocio-nombre').value = data.negocioNombre||data.nombre||'';
+      document.getElementById('mc-negocio-rubro').value = data.negocioRubro||data.rubro||'';
+      document.getElementById('mc-negocio-tel').value = data.negocioTel||'';
+      document.getElementById('mc-negocio-email').value = data.negocioEmail||'';
+      document.getElementById('mc-negocio-cuit').value = data.negocioCuit||'';
+      document.getElementById('mc-negocio-dir').value = data.negocioDir||'';
+    }
+    const emailEl = document.getElementById('mc-email-display');
+    if(emailEl) emailEl.textContent = currentUser?.email||'';
+    ['mc-pass-actual','mc-pass-nueva','mc-pass-confirm'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+    const errEl=document.getElementById('mc-error');if(errEl)errEl.style.display='none';
+  } catch(e){ console.log(e); }
+};
+
+window.guardarMiCuenta = async function() {
+  if(!currentClientUID) return;
+  const data = {
+    negocioNombre: document.getElementById('mc-negocio-nombre').value.trim(),
+    negocioRubro:  document.getElementById('mc-negocio-rubro').value.trim(),
+    negocioTel:    document.getElementById('mc-negocio-tel').value.trim(),
+    negocioEmail:  document.getElementById('mc-negocio-email').value.trim(),
+    negocioCuit:   document.getElementById('mc-negocio-cuit').value.trim(),
+    negocioDir:    document.getElementById('mc-negocio-dir').value.trim(),
+  };
+  const errEl = document.getElementById('mc-error');
+  const showErr = (msg) => { errEl.textContent=msg; errEl.style.display='block'; };
+
+  try {
+    await updateDoc(doc(db,'clientes',currentClientUID), data);
+
+    // Cambio de contraseña si se completó
+    const actual = document.getElementById('mc-pass-actual').value;
+    const nueva = document.getElementById('mc-pass-nueva').value;
+    const confirm = document.getElementById('mc-pass-confirm').value;
+    if(actual || nueva || confirm) {
+      if(!actual){ showErr('Ingresá tu contraseña actual'); return; }
+      if(nueva.length < 6){ showErr('La nueva contraseña debe tener al menos 6 caracteres'); return; }
+      if(nueva !== confirm){ showErr('Las contraseñas no coinciden'); return; }
+      const { EmailAuthProvider, reauthenticateWithCredential, updatePassword } = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js');
+      const credential = EmailAuthProvider.credential(currentUser.email, actual);
+      await reauthenticateWithCredential(currentUser, credential);
+      await updatePassword(currentUser, nueva);
+    }
+
+    const s = document.getElementById('mc-saved');
+    if(s){ s.style.display='block'; setTimeout(()=>{ s.style.display='none'; closeModal('miCuentaModal'); }, 1500); }
+  } catch(e) {
+    if(e.code==='auth/wrong-password'||e.code==='auth/invalid-credential') showErr('Contraseña actual incorrecta');
+    else showErr('Error: '+e.message);
+  }
+};
+
+// ===== IMPERSONATION =====
+window.accederComoCliente = async function() {
+  if(!currentClientId) return;
+  try {
+    const clienteDoc = await getDoc(doc(db,'clientes',currentClientId));
+    if(!clienteDoc.exists()) return;
+    const clienteData = {id:clienteDoc.id,...clienteDoc.data()};
+
+    // Llamar a la Netlify Function
+    const res = await fetch('/.netlify/functions/impersonate', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ uid: currentClientId, adminSecret: 'MBStrategy2026Admin!' })
+    });
+    const json = await res.json();
+    if(!json.token){ alert('Error al generar acceso: '+(json.error||'desconocido')); return; }
+
+    // Hacer signIn con el custom token
+    const { signInWithCustomToken } = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js');
+    await signInWithCustomToken(auth, json.token);
+
+    // Mostrar UI del cliente
+    await showClientUI(clienteData.email||'', clienteData);
+    showConfirm('Estás viendo el sistema como: '+clienteData.nombre+'\n\nPara volver a tu panel cerrá sesión y volvé a entrar con tu cuenta de admin.', ()=>{}, 'Acceso como cliente');
+  } catch(e) {
+    alert('Error: '+e.message);
+  }
+};
+
+// ===== FIN IMPERSONATION =====
 let _prodCompra = [], _necesidades = [], _ordenesCompra = [];
 const CAT_COLORS = {
   'Librería y papelería':['#EDF0EA','#3A6A42'],
@@ -8931,6 +9064,7 @@ window.openModal = function(id) {
   }
   if(id === 'newClientIngresoModal') { actualizarSelectorProductos(); document.getElementById('cli-ing-producto').value=''; }
   if(id === 'newCobroClienteModal') { loadCcBalance(); }
+  if(id === 'miCuentaModal') { openModal_miCuentaModal_extra(); }
   if(id === 'newPagoProvModal') { openModal_newPagoProvModal_extra(); }
   if(id === 'newFacturaModal') {
     // Populate OC selector with OC of this proveedor
