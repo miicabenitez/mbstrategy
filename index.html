@@ -7388,11 +7388,14 @@ window.accederComoCliente = async function() {
     if(!clienteDoc.exists()) return;
     const clienteData = {id:clienteDoc.id,...clienteDoc.data()};
 
-    // Llamar a la Netlify Function
+    // Obtener token del admin logueado
+    const idToken = await currentUser.getIdToken(true);
+
+    // Llamar a la Netlify Function con el token de Firebase
     const res = await fetch('/.netlify/functions/impersonate', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ uid: currentClientId, adminSecret: 'MBStrategy2026Admin!' })
+      body: JSON.stringify({ uid: currentClientId, idToken })
     });
     const json = await res.json();
     if(!json.token){ alert('Error al generar acceso: '+(json.error||'desconocido')); return; }
@@ -7401,7 +7404,6 @@ window.accederComoCliente = async function() {
     const { signInWithCustomToken } = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js');
     await signInWithCustomToken(auth, json.token);
 
-    // Mostrar UI del cliente
     await showClientUI(clienteData.email||'', clienteData);
     showConfirm('Estás viendo el sistema como: '+clienteData.nombre+'\n\nPara volver a tu panel cerrá sesión y volvé a entrar con tu cuenta de admin.', ()=>{}, 'Acceso como cliente');
   } catch(e) {
