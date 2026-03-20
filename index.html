@@ -1274,17 +1274,6 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
           <div id="c-semanas-track" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;"></div>
         </div>
 
-        <!-- Celebración -->
-        <div id="c-celebracion" style="display:none;background:var(--ok-bg);border:.5px solid var(--ok);border-radius:13px;padding:14px 18px;margin-bottom:14px;align-items:center;gap:12px;">
-          <div style="width:36px;height:36px;border-radius:50%;background:var(--ok);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8l4 4 8-8" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
-          <div>
-            <div style="font-size:14px;font-weight:500;color:var(--ok);">¡Completaste todos los ítems!</div>
-            <div style="font-size:12px;color:var(--ok);opacity:.75;margin-top:2px;">Tu coach y/o equipo lo va a ver en la próxima reunión.</div>
-          </div>
-        </div>
-
         <!-- Próxima reunión — bloque separado -->
         <div id="c-proxreunion" style="background:var(--white);border:.5px solid var(--cream-d);border-radius:13px;padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;">
           <div style="width:40px;height:40px;border-radius:10px;background:var(--sage-xl);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
@@ -1321,6 +1310,17 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
         <div style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;" id="c-content-label">Contenido disponible</div>
         <div id="c-content-list">
           <div style="text-align:center;padding:24px;color:var(--text-l);font-size:13px;">Cargando tu contenido...</div>
+        </div>
+
+        <!-- Celebración — aparece al final cuando se completan todos los ítems -->
+        <div id="c-celebracion" style="display:none;background:var(--ok-bg);border:.5px solid var(--ok);border-radius:13px;padding:14px 18px;margin-bottom:14px;align-items:center;gap:12px;">
+          <div style="width:36px;height:36px;border-radius:50%;background:var(--ok);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8l4 4 8-8" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:500;color:var(--ok);">¡Completaste todos los ítems!</div>
+            <div style="font-size:12px;color:var(--ok);opacity:.75;margin-top:2px;">Tu coach y/o equipo lo va a ver en la próxima reunión.</div>
+          </div>
         </div>
 
         <!-- Semanas bloqueadas -->
@@ -5839,8 +5839,10 @@ function updateSemanasTrack(clientId, semActual, totalItems, progData) {
   const cel = document.getElementById('c-celebracion');
   if(cel) cel.style.display = allDone ? 'flex' : 'none';
 
-  // Actualizar % progreso en banner en tiempo real
-  const pct = totalItems > 0 ? Math.round((completados/totalItems)*100) : 0;
+  // Progreso basado en semanas completadas (semActual - 1 = semanas anteriores ya hechas)
+  // Si todos los ítems de la semana actual están completos, cuenta esa semana también
+  const semanasCompletadas = allDone ? semActual : semActual - 1;
+  const pct = Math.round((semanasCompletadas / totalSems) * 100);
   const progLabel = document.getElementById('c-progreso-label');
   if(progLabel) progLabel.textContent = pct+'%';
   const progBar = document.getElementById('c-progreso-barra');
