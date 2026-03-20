@@ -3480,7 +3480,7 @@ window.showClientUI = async function(email, clientData) {
         const wrap = document.getElementById('negocio-logo-wrap');
         if(wrap) wrap.innerHTML = `<img src="${clientData.logoNegocio}" style="width:100%;height:100%;object-fit:cover;"/>`;
         const hint = document.getElementById('negocio-logo-hint');
-        if(hint) hint.textContent = 'Logo cargado ✓';
+        if(hint) hint.textContent = '';
       }
       const negNombre = document.getElementById('negocio-nombre-display');
       if(negNombre) negNombre.textContent = clientData.nombre || 'Mi negocio';
@@ -4941,7 +4941,7 @@ window.uploadNegocioLogo = function(input) {
     const wrap = document.getElementById('negocio-logo-wrap');
     if(wrap) wrap.innerHTML = `<img src="${base64}" style="width:100%;height:100%;object-fit:cover;"/>`;
     const hint = document.getElementById('negocio-logo-hint');
-    if(hint) hint.textContent = 'Logo cargado ✓';
+    if(hint) hint.textContent = '';
     try { await updateDoc(doc(db,'clientes',currentClientId), {logoNegocio: base64}); } catch(e) { console.log(e); }
   };
   reader.readAsDataURL(file);
@@ -9288,6 +9288,12 @@ window.openModal = function(id) {
   if(id === 'newClientEgresoModal') {
     const fechaEl = document.getElementById('cli-eg-fecha');
     if(fechaEl) fechaEl.value = new Date().toISOString().split('T')[0];
+    window._editingEgresoid = null;
+  }
+  if(id === 'newClientIngresoModal') {
+    const fechaEl = document.getElementById('cli-ing-fecha');
+    if(fechaEl) fechaEl.value = new Date().toISOString().split('T')[0];
+    window._editingIngresoid = null;
   }
   if(id === 'newCobroClienteModal') { loadCcBalance(); }
   if(id === 'miCuentaModal') { openModal_miCuentaModal_extra(); }
