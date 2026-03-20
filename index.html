@@ -1678,21 +1678,16 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
           </div>
 
           <!-- KPIs -->
-          <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:18px;">
+          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:18px;">
             <div class="mc accent">
               <div class="ml" style="color:rgba(255,255,255,.6);">Clientes</div>
               <div class="mv" style="color:#fff;" id="mc-kpi-total">0</div>
               <div class="ms" style="color:rgba(255,255,255,.5);">en tu sistema</div>
             </div>
             <div class="mc">
-              <div class="ml">Total aprobado</div>
-              <div class="mv" id="mc-kpi-total-cobrar">$0</div>
-              <div class="ms">monto real</div>
-            </div>
-            <div class="mc">
               <div class="ml">Cobrado</div>
               <div class="mv" style="color:var(--ok);" id="mc-kpi-cobrado">$0</div>
-              <div class="ms">presupuestos aprobados</div>
+              <div class="ms">total recibido</div>
             </div>
             <div class="mc">
               <div class="ml">Pendiente</div>
@@ -1701,109 +1696,12 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
             </div>
           </div>
 
-          <!-- Pipeline / Kanban -->
-          <div class="card" style="margin-bottom:14px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-              <div class="ct" style="margin:0;">Pipeline de clientes</div>
-              <div style="display:flex;gap:4px;">
-                <button id="mc-view-list-btn" onclick="setMcView('list')" style="font-size:11px;padding:4px 10px;border-radius:8px;border:.5px solid var(--topbar);background:var(--topbar);color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;">Lista</button>
-                <button id="mc-view-kanban-btn" onclick="setMcView('kanban')" style="font-size:11px;padding:4px 10px;border-radius:8px;border:.5px solid var(--cream-d);background:var(--cream);color:var(--text-m);cursor:pointer;font-family:'DM Sans',sans-serif;">Pipeline</button>
-              </div>
-            </div>
-
-            <!-- Buscador + Filtro estado -->
-            <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
-              <input type="text" id="mc-search" class="fi" placeholder="🔍 Buscar cliente..." style="flex:1;min-width:140px;padding:8px 12px;" oninput="filterMcLista()"/>
-              <select id="mc-filter-estado" class="fi" style="width:auto;flex-shrink:0;padding:8px 10px;margin-top:0;" onchange="filterMcLista()">
-                <option value="todos">Todos los estados</option>
-                <option value="Potencial">Nuevo contacto</option>
-                <option value="Activo">Activo</option>
-                <option value="En pausa">En pausa</option>
-                <option value="Cerrado">Cerrado</option>
-              </select>
-            </div>
-
-            <!-- Vista LISTA -->
-            <div id="mc-view-list">
-              <div id="mc-lista"><div style="text-align:center;padding:20px;color:var(--text-l);font-size:13px;">Sin clientes. ¡Agregá el primero!</div></div>
-            </div>
-
-            <!-- Vista KANBAN / Pipeline -->
-            <div id="mc-view-kanban" style="display:none;">
-              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
-                <div style="background:var(--cream);border-radius:10px;padding:10px;">
-                  <div style="font-size:10px;font-weight:500;color:var(--blue);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;display:flex;align-items:center;gap:5px;"><span style="width:7px;height:7px;border-radius:50%;background:var(--blue);display:inline-block;"></span>Nuevos</div>
-                  <div id="mc-col-prospecto"></div>
-                </div>
-                <div style="background:var(--cream);border-radius:10px;padding:10px;">
-                  <div style="font-size:10px;font-weight:500;color:var(--ok);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;display:flex;align-items:center;gap:5px;"><span style="width:7px;height:7px;border-radius:50%;background:var(--ok);display:inline-block;"></span>Activos</div>
-                  <div id="mc-col-activo"></div>
-                </div>
-                <div style="background:var(--cream);border-radius:10px;padding:10px;">
-                  <div style="font-size:10px;font-weight:500;color:var(--warn);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;display:flex;align-items:center;gap:5px;"><span style="width:7px;height:7px;border-radius:50%;background:var(--warn);display:inline-block;"></span>En pausa</div>
-                  <div id="mc-col-pausa"></div>
-                </div>
-                <div style="background:var(--cream);border-radius:10px;padding:10px;">
-                  <div style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;display:flex;align-items:center;gap:5px;"><span style="width:7px;height:7px;border-radius:50%;background:var(--cream-m);display:inline-block;"></span>Cerrados</div>
-                  <div id="mc-col-cerrado"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Grid 2 col -->
-          <div class="g2" style="align-items:stretch;">
-            <!-- Columna izquierda: pendientes -->
-            <div style="display:flex;flex-direction:column;">
-              <div class="card" style="flex:1;">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px;">
-                  <div style="display:flex;align-items:center;gap:8px;">
-                    <div class="ct" style="margin:0;">Pendientes</div>
-                    <div id="mc-pend-badge" style="display:none;background:var(--err);color:var(--white);font-size:10px;font-weight:500;padding:1px 7px;border-radius:20px;"></div>
-                  </div>
-                  <button class="bp" onclick="openModal('newMcPendienteModal')">+ Agregar</button>
-                </div>
-                <div id="mc-pendientes-list" style="max-height:220px;overflow-y:auto;"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin pendientes. ¡Todo al día! ✓</div></div>
-              </div>
-            </div>
-
-            <!-- Columna derecha: reuniones -->
-            <div style="display:flex;flex-direction:column;">
-              <div class="card" style="flex:1;">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px;">
-                  <div class="ct" style="margin:0;">Próximas reuniones</div>
-                  <button class="bp" onclick="openModal('newMcReunionModal')">+ Agregar</button>
-                </div>
-                <div id="mc-reuniones" style="max-height:220px;overflow-y:auto;"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin reuniones agendadas.</div></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Presupuestos globales -->
+          <!-- Lista de clientes -->
           <div class="card">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-              <div>
-                <div style="font-size:13px;font-weight:500;color:var(--text);">Presupuestos</div>
-                <div style="font-size:11px;color:var(--text-l);margin-top:1px;" id="mc-ps-monto-sub">—</div>
-              </div>
-              <button class="bp" onclick="openModal('newMcPresupModal')">+ Nuevo</button>
+            <div style="display:flex;gap:8px;margin-bottom:14px;">
+              <input type="text" id="mc-search" class="fi" placeholder="🔍 Buscar cliente..." style="flex:1;padding:8px 12px;" oninput="filterMcLista()"/>
             </div>
-            <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-bottom:14px;">
-              <div style="background:var(--white);border:1.5px solid var(--topbar);border-radius:11px;padding:12px 8px;text-align:center;cursor:pointer;" onclick="filterMcPresup('todos')"><div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;color:var(--text);line-height:1;" id="mc-ps-tot">0</div><div style="font-size:9px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-top:4px;">Total</div></div>
-              <div style="background:#FCEFD8;border:.5px solid var(--cream-d);border-radius:11px;padding:12px 8px;text-align:center;cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='#B08A42'" onmouseout="this.style.borderColor='var(--cream-d)'" onclick="filterMcPresup('Pendiente de enviar')"><div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;color:var(--warn);line-height:1;" id="mc-ps-penv">0</div><div style="font-size:9px;font-weight:500;color:var(--warn);text-transform:uppercase;letter-spacing:.5px;margin-top:4px;">Por enviar</div><div style="height:3px;background:var(--warn-bg);border-radius:2px;margin-top:6px;"><div class="mc-bar-penv" style="height:100%;width:0%;background:var(--warn);border-radius:2px;transition:width .5s;"></div></div></div>
-              <div style="background:#FFF0C0;border:.5px solid var(--cream-d);border-radius:11px;padding:12px 8px;text-align:center;cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='#8A6A3A'" onmouseout="this.style.borderColor='var(--cream-d)'" onclick="filterMcPresup('Consultado')"><div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;color:#8A6A3A;line-height:1;" id="mc-ps-cons">0</div><div style="font-size:9px;font-weight:500;color:#8A6A3A;text-transform:uppercase;letter-spacing:.5px;margin-top:4px;">Consultados</div><div style="height:3px;background:#FFF3CD;border-radius:2px;margin-top:6px;"><div class="mc-bar-cons" style="height:100%;width:0%;background:#8A6A3A;border-radius:2px;transition:width .5s;"></div></div></div>
-              <div style="background:#D5EDDA;border:.5px solid var(--cream-d);border-radius:11px;padding:12px 8px;text-align:center;cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='var(--ok)'" onmouseout="this.style.borderColor='var(--cream-d)'" onclick="filterMcPresup('Aprobado')"><div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;color:var(--ok);line-height:1;" id="mc-ps-apr">0</div><div style="font-size:9px;font-weight:500;color:var(--ok);text-transform:uppercase;letter-spacing:.5px;margin-top:4px;">Aprobados</div><div style="height:3px;background:#C8DEC9;border-radius:2px;margin-top:6px;"><div class="mc-bar-apr" style="height:100%;width:0%;background:var(--ok);border-radius:2px;transition:width .5s;"></div></div></div>
-              <div style="background:#F0D8D5;border:.5px solid var(--cream-d);border-radius:11px;padding:12px 8px;text-align:center;cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='var(--err)'" onmouseout="this.style.borderColor='var(--cream-d)'" onclick="filterMcPresup('Denegado')"><div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;color:var(--err);line-height:1;" id="mc-ps-den">0</div><div style="font-size:9px;font-weight:500;color:var(--err);text-transform:uppercase;letter-spacing:.5px;margin-top:4px;">Denegados</div><div style="height:3px;background:#F5DCDA;border-radius:2px;margin-top:6px;"><div class="mc-bar-den" style="height:100%;width:0%;background:var(--err);border-radius:2px;transition:width .5s;"></div></div></div>
-            </div>
-            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
-              <button class="presup-fil active" onclick="filterMcPresup('todos',this)">Todos</button>
-              <button class="presup-fil" data-estado="Pendiente de enviar" onclick="filterMcPresup('Pendiente de enviar',this)">Por enviar</button>
-              <button class="presup-fil" data-estado="Enviado" onclick="filterMcPresup('Enviado',this)">Enviados</button>
-              <button class="presup-fil" data-estado="Consultado" onclick="filterMcPresup('Consultado',this)">Consultados</button>
-              <button class="presup-fil" data-estado="Aprobado" onclick="filterMcPresup('Aprobado',this)">Aprobados</button>
-              <button class="presup-fil" data-estado="Denegado" onclick="filterMcPresup('Denegado',this)">Denegados</button>
-            </div>
-            <div id="mc-presupuestos"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin presupuestos.</div></div>
+            <div id="mc-lista"><div style="text-align:center;padding:20px;color:var(--text-l);font-size:13px;">Sin clientes. ¡Agregá el primero!</div></div>
           </div>
 
         </div><!-- /mc-lista-view -->
@@ -1820,110 +1718,79 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
               <div style="flex:1;">
                 <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
                   <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;" id="mcd-nombre">—</div>
-                  <span id="mcd-estado-badge" style="font-size:10px;font-weight:500;padding:2px 10px;border-radius:20px;"></span>
                 </div>
-                <div style="font-size:12px;color:var(--text-l);margin-top:2px;" id="mcd-rubro">—</div>
-                <div style="display:flex;gap:10px;margin-top:6px;flex-wrap:wrap;">
+                <div style="display:flex;gap:10px;margin-top:5px;flex-wrap:wrap;">
                   <span id="mcd-tel" style="font-size:11px;color:var(--text-m);display:none;"></span>
                   <span id="mcd-email" style="font-size:11px;color:var(--text-m);display:none;"></span>
                   <span id="mcd-dni" style="font-size:11px;color:var(--text-m);display:none;"></span>
+                  <span id="mcd-cuit" style="font-size:11px;color:var(--text-m);display:none;"></span>
                   <span id="mcd-direccion" style="font-size:11px;color:var(--text-m);display:none;"></span>
                   <span id="mcd-seguimiento-alert" style="font-size:11px;padding:2px 9px;border-radius:20px;display:none;"></span>
                 </div>
               </div>
-              <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;">
-                <!-- Quick actions -->
+              <div style="display:flex;gap:6px;flex-shrink:0;">
                 <button id="mcd-quick-presup" onclick="" style="background:var(--sage-xl);border:.5px solid var(--sage-light);border-radius:9px;padding:6px 11px;font-size:11px;color:var(--topbar);cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;">+ Presupuesto</button>
-                <button id="mcd-quick-cobro" onclick="" style="background:var(--ok-bg);border:.5px solid var(--ok);border-radius:9px;padding:6px 11px;font-size:11px;color:var(--ok);cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;">$ Cobro</button>
                 <button id="mcd-edit-btn" onclick="" style="background:var(--cream);border:.5px solid var(--cream-d);border-radius:9px;padding:6px 11px;font-size:11px;color:var(--text-m);cursor:pointer;font-family:'DM Sans',sans-serif;">✏️</button>
               </div>
             </div>
-
-            <!-- Estado selector rápido -->
-            <div style="margin-top:12px;display:flex;gap:5px;flex-wrap:wrap;">
-              <div style="font-size:10px;color:var(--text-l);margin-right:4px;align-self:center;">Estado:</div>
-              <button onclick="cambiarEstadoMcCliente(this,'Potencial')" class="mc-estado-btn" style="font-size:10px;padding:3px 10px;border-radius:20px;border:.5px solid var(--blue-bg);background:var(--blue-bg);color:var(--blue);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;">Potencial</button>
-              <button onclick="cambiarEstadoMcCliente(this,'Activo')" class="mc-estado-btn" style="font-size:10px;padding:3px 10px;border-radius:20px;border:.5px solid var(--ok-bg);background:var(--ok-bg);color:var(--ok);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;">Activo</button>
-              <button onclick="cambiarEstadoMcCliente(this,'En pausa')" class="mc-estado-btn" style="font-size:10px;padding:3px 10px;border-radius:20px;border:.5px solid var(--warn-bg);background:var(--warn-bg);color:var(--warn);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;">En pausa</button>
-              <button onclick="cambiarEstadoMcCliente(this,'Cerrado')" class="mc-estado-btn" style="font-size:10px;padding:3px 10px;border-radius:20px;border:.5px solid var(--cream-d);background:var(--cream);color:var(--text-l);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;">Cerrado</button>
-            </div>
-
             <div id="mcd-notas-wrap" style="margin-top:12px;padding-top:12px;border-top:.5px solid var(--cream-d);display:none;">
               <div style="font-size:11px;color:var(--text-l);margin-bottom:4px;">Descripción</div>
               <div style="font-size:13px;color:var(--text-m);line-height:1.5;" id="mcd-notas"></div>
             </div>
           </div>
 
-          <!-- KPIs financieros del cliente -->
-          <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px;">
-            <div style="background:var(--sage-xl);border:.5px solid var(--sage-light);border-radius:12px;padding:14px;">
-              <div style="font-size:9px;color:var(--topbar);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;">Presupuestado aprobado</div>
-              <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:500;color:var(--topbar);" id="mcd-total">—</div>
-              <div style="font-size:10px;color:var(--topbar);opacity:.7;margin-top:2px;">monto acordado</div>
-            </div>
-            <div style="background:var(--ok-bg);border-radius:12px;padding:14px;">
-              <div style="font-size:9px;color:var(--ok);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;">Cobrado</div>
-              <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:500;color:var(--ok);" id="mcd-cobrado">$0</div>
-              <div style="font-size:10px;color:var(--ok);margin-top:2px;">pagos recibidos</div>
-            </div>
-            <div style="background:var(--warn-bg);border-radius:12px;padding:14px;">
-              <div style="font-size:9px;color:var(--warn);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;">Pendiente</div>
-              <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:500;color:var(--warn);" id="mcd-pendiente">$0</div>
-              <div style="font-size:10px;color:var(--warn);margin-top:2px;">por cobrar</div>
-            </div>
-            <div style="background:var(--white);border:.5px solid var(--cream-d);border-radius:12px;padding:14px;">
-              <div style="font-size:9px;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;">Presupuestos</div>
-              <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:500;" id="mcd-n-presups">0</div>
-              <div style="font-size:10px;color:var(--text-l);margin-top:2px;">en total</div>
+          <!-- Cuenta Corriente — KPIs -->
+          <div style="background:var(--topbar);border-radius:13px;padding:18px 20px;margin-bottom:14px;">
+            <div style="font-size:9px;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:2px;margin-bottom:12px;">Cuenta corriente</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+              <div>
+                <div style="font-size:9px;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Total vendido</div>
+                <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:500;color:#fff;" id="mcd-total">—</div>
+              </div>
+              <div>
+                <div style="font-size:9px;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Cobrado</div>
+                <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:500;color:#A8D5A2;" id="mcd-cobrado">$0</div>
+              </div>
+              <div>
+                <div style="font-size:9px;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Pendiente</div>
+                <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:500;color:#F5C06A;" id="mcd-pendiente">$0</div>
+              </div>
             </div>
           </div>
 
           <div class="g2">
-            <!-- Columna izquierda: presupuestos + cobros -->
+            <!-- Columna izquierda: Ventas + Cobros -->
             <div>
+              <!-- Ventas (presupuestos aprobados) -->
               <div class="card" style="margin-bottom:12px;">
+                <div class="ct">Ventas</div>
+                <div id="mcd-ventas"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin ventas aún. Aprobá un presupuesto.</div></div>
+              </div>
+
+              <!-- Cobros recibidos -->
+              <div class="card" style="margin-bottom:12px;">
+                <div class="ct">Cobros recibidos</div>
+                <div id="mcd-cobros-list"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin cobros registrados.</div></div>
+              </div>
+
+              <!-- Presupuestos -->
+              <div class="card">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px;">
                   <div class="ct" style="margin:0;">Presupuestos</div>
                   <button class="bp" id="mcd-new-presup-btn" onclick="">+ Nuevo</button>
                 </div>
                 <div id="mcd-presupuestos"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin presupuestos para este cliente.</div></div>
               </div>
-
-              <!-- Cobros por cliente -->
-              <div class="card">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px;">
-                  <div class="ct" style="margin:0;">Cobros recibidos</div>
-                  <button class="bp" id="mcd-new-cobro-btn" onclick="">+ Registrar</button>
-                </div>
-                <div id="mcd-cobros-list"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin cobros registrados.</div></div>
-              </div>
             </div>
 
-            <!-- Columna derecha: reunión + historial + notas -->
+            <!-- Columna derecha: Historial + Notas -->
             <div>
               <div class="card" style="margin-bottom:12px;">
-                <div class="ct">Próxima reunión</div>
-                <div id="mcd-reunion-actual" style="display:none;background:var(--sage-xl);border-radius:10px;padding:12px;margin-bottom:12px;">
-                  <div style="font-size:10px;color:var(--topbar);font-weight:500;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">Agendada</div>
-                  <div style="font-size:14px;font-weight:500;" id="mcd-reunion-info">—</div>
-                </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
-                  <div><label class="fl" style="margin-bottom:4px;">Fecha</label><input type="date" id="mcd-reunion-fecha" style="margin-top:0;width:100%;"/></div>
-                  <div><label class="fl" style="margin-bottom:4px;">Hora</label><input type="time" id="mcd-reunion-hora" value="10:00" style="margin-top:0;width:100%;"/></div>
-                </div>
-                <button class="bp" style="width:100%;" id="mcd-reunion-btn" onclick="">Guardar reunión</button>
-                <div class="saved-msg" id="mcd-reunion-saved">✓ Reunión guardada</div>
-              </div>
-
-              <!-- Historial de actividad -->
-              <div class="card" style="margin-bottom:12px;">
                 <div class="ct">Historial de actividad</div>
-                <div id="mcd-historial" style="max-height:200px;overflow-y:auto;">
+                <div id="mcd-historial" style="max-height:240px;overflow-y:auto;">
                   <div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin actividad registrada aún.</div>
                 </div>
               </div>
-
-              <!-- Notas internas del cliente -->
               <div class="card">
                 <div class="ct">Notas internas</div>
                 <div id="mcd-notas-list" style="max-height:140px;overflow-y:auto;margin-bottom:10px;"></div>
@@ -2498,8 +2365,10 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
     <button class="mc2" onclick="closeModal('newMclienteModal')">×</button>
     <div class="mt">Nuevo cliente</div>
     <div class="fg"><label class="fl">Nombre</label><input type="text" class="fi" id="mcc-nombre" placeholder="Ej: Familia Rodríguez"/></div>
-    <div class="fg"><label class="fl">Estado</label><select class="fi" id="mcc-estado" style="margin-top:0;"><option value="Potencial">Nuevo contacto</option><option value="Activo">Activo</option><option value="En pausa">En pausa</option><option value="Cerrado">Cerrado</option></select></div>
-    <div class="fg"><label class="fl">DNI / CUIT</label><input type="text" class="fi" id="mcc-dni" placeholder="20-12345678-9"/></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="fg"><label class="fl">DNI</label><input type="text" class="fi" id="mcc-dni" placeholder="12345678"/></div>
+      <div class="fg"><label class="fl">CUIT</label><input type="text" class="fi" id="mcc-cuit" placeholder="20-12345678-9"/></div>
+    </div>
     <div class="fg"><label class="fl">Dirección</label><input type="text" class="fi" id="mcc-direccion" placeholder="Calle 123, Ciudad"/></div>
     <div class="fg"><label class="fl">Teléfono</label><input type="tel" class="fi" id="mcc-tel" placeholder="+54 11..."/></div>
     <div class="fg"><label class="fl">Email</label><input type="email" class="fi" id="mcc-email" placeholder="cliente@email.com"/></div>
@@ -2515,6 +2384,7 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
     <button class="mc2" onclick="closeModal('newMcCobroModal')">×</button>
     <div class="mt">Registrar cobro</div>
     <input type="hidden" id="mcc-cobro-cliente-id"/>
+    <input type="hidden" id="mcc-cobro-presup-id"/>
     <div class="fg"><label class="fl">Concepto</label><input type="text" class="fi" id="mcc-cobro-concepto" placeholder="Ej: 1er pago, seña, cuota 2..."/></div>
     <div class="fg"><label class="fl">Forma de pago</label><select class="fi" id="mcc-cobro-forma" style="margin-top:0;"><option value="Transferencia">Transferencia</option><option value="Efectivo">Efectivo</option><option value="Tarjeta">Tarjeta</option><option value="QR">QR</option></select></div>
     <div class="fg"><label class="fl">Monto</label><input type="number" class="fi" id="mcc-cobro-monto" placeholder="0"/></div>
@@ -6567,85 +6437,15 @@ function renderMcModule() {
   const setEl=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
 
   // KPIs financieros
-  // Total aprobado = suma de presupuestos aprobados
   const totalAprobado = _mcPresupuestos.filter(p=>p.estado==='Aprobado').reduce((s,p)=>s+(parseFloat(p.monto)||0),0);
-  // Cobrado = suma de totalCobrado real de cada cliente
   const cobrado = _mcClientes.reduce((s,c)=>s+(parseFloat(c.totalCobrado)||0),0);
   const pendiente = Math.max(0, totalAprobado - cobrado);
   setEl('mc-kpi-total', _mcClientes.length);
-  setEl('mc-kpi-total-cobrar', '$'+totalAprobado.toLocaleString('es-AR'));
   setEl('mc-kpi-cobrado', '$'+cobrado.toLocaleString('es-AR'));
   setEl('mc-kpi-pendiente', '$'+pendiente.toLocaleString('es-AR'));
 
-  // Lista de clientes (con search/filtro aplicado)
+  // Lista de clientes
   filterMcLista();
-
-  // Kanban si está activo
-  if (_mcView === 'kanban') renderMcKanban();
-
-  // KPIs presupuestos
-  const tot = _mcPresupuestos.length;
-  setEl('mc-ps-tot', tot);
-  setEl('mc-ps-penv', _mcPresupuestos.filter(p=>p.estado==='Pendiente de enviar').length);
-  setEl('mc-ps-cons', _mcPresupuestos.filter(p=>p.estado==='Consultado').length);
-  setEl('mc-ps-apr',  _mcPresupuestos.filter(p=>p.estado==='Aprobado').length);
-  setEl('mc-ps-den',  _mcPresupuestos.filter(p=>p.estado==='Denegado').length);
-  // Barras de progreso
-  const setPct = (cls, n) => { document.querySelectorAll('.'+cls).forEach(el => el.style.width = (tot>0?Math.round((n/tot)*100):0)+'%'); };
-  setPct('mc-bar-penv', _mcPresupuestos.filter(p=>p.estado==='Pendiente de enviar').length);
-  setPct('mc-bar-cons', _mcPresupuestos.filter(p=>p.estado==='Consultado').length);
-  setPct('mc-bar-apr',  _mcPresupuestos.filter(p=>p.estado==='Aprobado').length);
-  setPct('mc-bar-den',  _mcPresupuestos.filter(p=>p.estado==='Denegado').length);
-  // Subtítulo con monto aprobado
-  const montoApr = _mcPresupuestos.filter(p=>p.estado==='Aprobado').reduce((s,p)=>s+(parseFloat(p.monto)||0),0);
-  setEl('mc-ps-monto-sub', montoApr > 0 ? '$'+montoApr.toLocaleString('es-AR')+' aprobados' : tot+' presupuestos en total');
-  renderMcPresupuestos(_mcPresupuestos);
-
-  // Fix 3: Reuniones — solo futuras (fecha >= hoy)
-  const today = new Date().toISOString().split('T')[0];
-  const reunClientes = _mcClientes
-    .filter(c => c.proximaReunion?.fecha && c.proximaReunion.fecha >= today)
-    .map(c => ({ nombre: c.nombre, hora: c.proximaReunion.hora, fecha: c.proximaReunion.fecha, clienteId: c.id, externo: false }));
-
-  // Cargar reuniones externas si no están cacheadas
-  if (!window._mcReunionesExternas) window._mcReunionesExternas = [];
-  const todasReuniones = [...reunClientes, ...window._mcReunionesExternas]
-    .sort((a,b) => new Date(a.fecha) - new Date(b.fecha));
-
-  const calEl = document.getElementById('mc-reuniones');
-  if(calEl) {
-    if(todasReuniones.length === 0) {
-      calEl.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin reuniones agendadas.</div>';
-    } else {
-      calEl.innerHTML = todasReuniones.map(r => {
-        const esHoy = r.fecha === today;
-        const fechaD = new Date(r.fecha+'T12:00:00').toLocaleDateString('es-AR',{weekday:'short',day:'numeric',month:'short'});
-        const clickAttr = !r.externo ? `onclick="openMcDetalle('${r.clienteId}')" style="cursor:pointer;"` : '';
-        const badge = r.externo
-          ? `<span style="font-size:9px;font-weight:500;padding:1px 7px;border-radius:20px;background:var(--blue-bg);color:var(--blue);">Externo</span>`
-          : `<span class="badge ${esHoy?'bg':'ba'}">${esHoy?'Hoy':'Próxima'}</span>`;
-        return `<div class="row" ${clickAttr}>
-          <div style="display:flex;align-items:center;gap:10px;flex:1;">
-            <div style="width:40px;height:40px;background:${esHoy?'var(--topbar)':'var(--cream)'};border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;">
-              <div style="font-size:9px;color:${esHoy?'rgba(255,255,255,.7)':'var(--text-l)'};text-transform:uppercase;">${fechaD.split(' ')[0]}</div>
-              <div style="font-size:16px;font-weight:500;color:${esHoy?'var(--white)':'var(--text)'};">${new Date(r.fecha+'T12:00:00').getDate()}</div>
-            </div>
-            <div>
-              <div class="rn">${r.nombre}</div>
-              <div class="rs">${r.hora}hs${r.rubro?' · '+r.rubro:''}${r.contexto?' · '+r.contexto:''}</div>
-            </div>
-          </div>
-          ${badge}
-        </div>`;
-      }).join('');
-    }
-  }
-
-  // Cargar reuniones externas en background
-  loadMcReunionesExternas();
-
-  // Pendientes
-  renderMcPendientes();
 }
 
 function renderMcPresupuestos(list) {
@@ -6865,8 +6665,10 @@ window.openMcDetalle = function(id) {
   // DNI y Dirección — mostrar si existen
   const dniEl = document.getElementById('mcd-dni');
   const dirEl = document.getElementById('mcd-direccion');
-  if(dniEl)  { dniEl.textContent  = c.dni  ? '🪪 ' + c.dni  : ''; dniEl.style.display  = c.dni  ? 'inline' : 'none'; }
+  if(dniEl)  { dniEl.textContent  = c.dni  ? '🪪 DNI: ' + c.dni  : ''; dniEl.style.display  = c.dni  ? 'inline' : 'none'; }
   if(dirEl)  { dirEl.textContent  = c.direccion ? '📍 ' + c.direccion : ''; dirEl.style.display  = c.direccion ? 'inline' : 'none'; }
+  const cuitEl = document.getElementById('mcd-cuit');
+  if(cuitEl) { cuitEl.textContent = c.cuit ? '🏢 CUIT: ' + c.cuit : ''; cuitEl.style.display = c.cuit ? 'inline' : 'none'; }
 
   // KPIs — desde presupuestos aprobados del cliente
   const misPresups = _mcPresupuestos.filter(p => p.clienteId === id || p.cliente === c.nombre);
@@ -6910,31 +6712,17 @@ window.openMcDetalle = function(id) {
 
   // Quick actions
   document.getElementById('mcd-quick-presup').onclick = () => openMcPresupModal(id, c.nombre);
-  document.getElementById('mcd-quick-cobro').onclick  = () => openMcCobroModal(id);
   document.getElementById('mcd-edit-btn').onclick     = () => editMcCliente(id, null);
   document.getElementById('mcd-new-presup-btn').onclick = () => openMcPresupModal(id, c.nombre);
-  document.getElementById('mcd-new-cobro-btn').onclick  = () => openMcCobroModal(id);
+
+  // Ventas (presupuestos aprobados)
+  renderMcVentas(misPresups, id);
 
   // Presupuestos
   renderMcDetallePresupuestos(misPresups, id, c.nombre);
 
   // Cobros
   loadMcCobrosList(id);
-
-  // Reunión
-  const reunActual = document.getElementById('mcd-reunion-actual');
-  if (c.proximaReunion?.fecha) {
-    const f = new Date(c.proximaReunion.fecha + 'T12:00:00').toLocaleDateString('es-AR', {weekday:'long', day:'numeric', month:'long'});
-    document.getElementById('mcd-reunion-info').textContent  = f + ' a las ' + c.proximaReunion.hora + 'hs';
-    reunActual.style.display = 'block';
-    document.getElementById('mcd-reunion-fecha').value = c.proximaReunion.fecha;
-    document.getElementById('mcd-reunion-hora').value  = c.proximaReunion.hora || '10:00';
-  } else {
-    reunActual.style.display = 'none';
-    document.getElementById('mcd-reunion-fecha').value = '';
-    document.getElementById('mcd-reunion-hora').value  = '10:00';
-  }
-  document.getElementById('mcd-reunion-btn').onclick = () => guardarReunionMcCliente(id);
 
   // Historial + notas
   renderMcHistorial(id);
@@ -7001,42 +6789,70 @@ async function renderMcHistorial(clienteId) {
 }
 
 // --- Cobros por cliente ---
-window.openMcCobroModal = function(clienteId) {
-  document.getElementById('mcc-cobro-cliente-id').value = clienteId || '';
-  document.getElementById('mcc-cobro-concepto').value   = '';
-  document.getElementById('mcc-cobro-monto').value      = '';
-  document.getElementById('mcc-cobro-notas').value      = '';
-  document.getElementById('mcc-cobro-fecha').value      = new Date().toISOString().split('T')[0];
+window.openMcCobroModal = function(clienteId, presupId, concepto, monto) {
+  document.getElementById('mcc-cobro-cliente-id').value  = clienteId || '';
+  document.getElementById('mcc-cobro-presup-id').value   = presupId  || '';
+  document.getElementById('mcc-cobro-concepto').value    = concepto  || '';
+  document.getElementById('mcc-cobro-monto').value       = monto     || '';
+  document.getElementById('mcc-cobro-notas').value       = '';
+  document.getElementById('mcc-cobro-fecha').value       = new Date().toISOString().split('T')[0];
   openModal('newMcCobroModal');
 };
 
 window.createMcCobro = async function() {
   if (!currentClientUID) return;
-  const clienteId = document.getElementById('mcc-cobro-cliente-id').value;
-  const monto     = document.getElementById('mcc-cobro-monto').value;
+  const clienteId  = document.getElementById('mcc-cobro-cliente-id').value;
+  const monto      = document.getElementById('mcc-cobro-monto').value;
   if (!monto) { alert('Ingresá el monto'); return; }
+  const fecha      = document.getElementById('mcc-cobro-fecha').value;
+  const concepto   = document.getElementById('mcc-cobro-concepto').value;
+  const formaPago  = document.getElementById('mcc-cobro-forma').value;
+  const moneda     = document.getElementById('mcc-cobro-moneda').value;
   const data = {
-    concepto : document.getElementById('mcc-cobro-concepto').value,
-    formaPago: document.getElementById('mcc-cobro-forma').value,
-    monto, moneda: document.getElementById('mcc-cobro-moneda').value,
-    fecha    : document.getElementById('mcc-cobro-fecha').value,
+    concepto, formaPago,
+    monto, moneda, fecha,
     notas    : document.getElementById('mcc-cobro-notas').value,
     creadoEn : new Date().toISOString()
   };
   try {
+    // 1. Guardar cobro en subcolección del cliente
     await addDoc(collection(db,'clientes',currentClientUID,'misClientes',clienteId,'cobros'), data);
-    // Actualizar totalCobrado en el doc del cliente
+
+    // 2. Actualizar totalCobrado en el doc del cliente
     const cSnap = await getDoc(doc(db,'clientes',currentClientUID,'misClientes',clienteId));
     const totalCobradoActual = parseFloat(cSnap.data()?.totalCobrado||0);
+    const nuevoTotal = totalCobradoActual + (parseFloat(monto)||0);
     await updateDoc(doc(db,'clientes',currentClientUID,'misClientes',clienteId), {
-      totalCobrado: totalCobradoActual + (parseFloat(monto)||0),
+      totalCobrado: nuevoTotal,
       ultimoContacto: new Date().toISOString()
     });
-    // Actualizar cache local
+
+    // 3. Actualizar cache local
     const cLocal = _mcClientes.find(x=>x.id===clienteId);
-    if (cLocal) { cLocal.totalCobrado = totalCobradoActual + (parseFloat(monto)||0); cLocal.ultimoContacto = new Date().toISOString(); }
-    // Historial
-    await addHistorialEntry(clienteId, `Cobro registrado: $${parseFloat(monto).toLocaleString('es-AR')} ${data.moneda} · ${data.formaPago}`);
+    const clienteNombre = cLocal?.nombre || '';
+    if (cLocal) { cLocal.totalCobrado = nuevoTotal; cLocal.ultimoContacto = new Date().toISOString(); }
+
+    // 4. DISPARAR INGRESO en contabilidad automáticamente
+    const mesIngreso = fecha
+      ? new Date(fecha+'T12:00:00').toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,ch=>ch.toUpperCase())
+      : new Date().toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,ch=>ch.toUpperCase());
+    await addDoc(collection(db,'clientes',currentClientUID,'ingresos'), {
+      concepto : concepto || `Cobro de ${clienteNombre}`,
+      categoria: 'Cobro de cliente',
+      monto    : parseFloat(monto)||0,
+      fecha, mes: mesIngreso,
+      origen   : 'comercial',
+      clienteId,
+      cliente  : clienteNombre,
+      creadoEn : new Date().toISOString()
+    });
+
+    // 5. Recargar ingresos en contabilidad para que aparezca solo
+    await loadClientContabilidad();
+
+    // 6. Historial
+    await addHistorialEntry(clienteId, `Cobro registrado: $${parseFloat(monto).toLocaleString('es-AR')} ${moneda} · ${formaPago}`);
+
     const s = document.getElementById('mcc-cobro-saved');
     if(s) s.style.display='block';
     setTimeout(async () => {
@@ -7045,12 +6861,14 @@ window.createMcCobro = async function() {
       if (_currentMcClienteId === clienteId) {
         await loadMcCobrosList(clienteId);
         renderMcHistorial(clienteId);
-        // Actualizar KPI cobrado
         await loadMcModule();
         openMcDetalle(clienteId);
       } else {
         await loadMcModule();
       }
+    }, 1500);
+  } catch(e) { alert('Error: ' + e.message); }
+};
     }, 1500);
   } catch(e) { alert('Error: ' + e.message); }
 };
@@ -7219,27 +7037,51 @@ window.createMcPresup = async function() {
 
 window.createMcCliente = async function() {
   if(!currentClientUID) return;
-  const nombre=document.getElementById('mcc-nombre').value.trim();
-  if(!nombre) return;
-  const data={nombre,estado:document.getElementById('mcc-estado').value||'Potencial',dni:document.getElementById('mcc-dni').value,direccion:document.getElementById('mcc-direccion').value,tel:document.getElementById('mcc-tel').value,email:document.getElementById('mcc-email').value,notas:document.getElementById('mcc-notas').value,ultimoContacto:new Date().toISOString(),creadoEn:new Date().toISOString()};
+  const nombre = document.getElementById('mcc-nombre').value.trim();
+  if(!nombre) { alert('Ingresá el nombre del cliente'); return; }
+  const dni  = document.getElementById('mcc-dni').value.trim();
+  const cuit = document.getElementById('mcc-cuit').value.trim();
+  // Validación: no duplicar DNI ni CUIT
+  if(dni) {
+    const existeDni = _mcClientes.find(c => c.dni && c.dni.replace(/\D/g,'') === dni.replace(/\D/g,''));
+    if(existeDni) { alert(`Ya existe un cliente con ese DNI: ${existeDni.nombre}`); return; }
+  }
+  if(cuit) {
+    const existeCuit = _mcClientes.find(c => c.cuit && c.cuit.replace(/\D/g,'') === cuit.replace(/\D/g,''));
+    if(existeCuit) { alert(`Ya existe un cliente con ese CUIT: ${existeCuit.nombre}`); return; }
+  }
+  const data = {
+    nombre, dni, cuit,
+    direccion: document.getElementById('mcc-direccion').value,
+    tel: document.getElementById('mcc-tel').value,
+    email: document.getElementById('mcc-email').value,
+    notas: document.getElementById('mcc-notas').value,
+    ultimoContacto: new Date().toISOString(),
+    creadoEn: new Date().toISOString()
+  };
   try {
-    await addDoc(collection(db,'clientes',currentClientUID,'misClientes'),data);
-    const s=document.getElementById('mcc-saved');if(s)s.style.display='block';
-    setTimeout(async()=>{if(s)s.style.display='none';closeModal('newMclienteModal');['mcc-nombre','mcc-dni','mcc-direccion','mcc-tel','mcc-email','mcc-notas'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});await loadMcModule();},1500);
-  }catch(e){alert('Error: '+e.message);}
+    await addDoc(collection(db,'clientes',currentClientUID,'misClientes'), data);
+    const s = document.getElementById('mcc-saved'); if(s) s.style.display='block';
+    setTimeout(async()=>{
+      if(s) s.style.display='none';
+      closeModal('newMclienteModal');
+      ['mcc-nombre','mcc-dni','mcc-cuit','mcc-direccion','mcc-tel','mcc-email','mcc-notas'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+      await loadMcModule();
+    }, 1500);
+  } catch(e) { alert('Error: '+e.message); }
 };
 
 window.editMcCliente = function(id, event) {
   if(event) event.stopPropagation();
   const c=_mcClientes.find(x=>x.id===id);
   if(!c) return;
-  document.getElementById('mcc-nombre').value=c.nombre||'';
-  document.getElementById('mcc-estado').value=c.estado||'Potencial';
-  document.getElementById('mcc-dni').value=c.dni||'';
-  document.getElementById('mcc-direccion').value=c.direccion||'';
-  document.getElementById('mcc-tel').value=c.tel||'';
-  document.getElementById('mcc-email').value=c.email||'';
-  document.getElementById('mcc-notas').value=c.notas||'';
+  document.getElementById('mcc-nombre').value = c.nombre||'';
+  document.getElementById('mcc-dni').value = c.dni||'';
+  document.getElementById('mcc-cuit').value = c.cuit||'';
+  document.getElementById('mcc-direccion').value = c.direccion||'';
+  document.getElementById('mcc-tel').value = c.tel||'';
+  document.getElementById('mcc-email').value = c.email||'';
+  document.getElementById('mcc-notas').value = c.notas||'';
   const btn=document.querySelector('#newMclienteModal .bp');
   if(btn){btn.textContent='Guardar cambios';btn.onclick=()=>saveMcCliente(id);}
   openModal('newMclienteModal');
@@ -7247,7 +7089,15 @@ window.editMcCliente = function(id, event) {
 
 window.saveMcCliente = async function(id) {
   if(!currentClientUID) return;
-  const data={nombre:document.getElementById('mcc-nombre').value.trim(),estado:document.getElementById('mcc-estado').value||'Potencial',dni:document.getElementById('mcc-dni').value,direccion:document.getElementById('mcc-direccion').value,tel:document.getElementById('mcc-tel').value,email:document.getElementById('mcc-email').value,notas:document.getElementById('mcc-notas').value};
+  const data = {
+    nombre: document.getElementById('mcc-nombre').value.trim(),
+    dni: document.getElementById('mcc-dni').value,
+    cuit: document.getElementById('mcc-cuit').value,
+    direccion: document.getElementById('mcc-direccion').value,
+    tel: document.getElementById('mcc-tel').value,
+    email: document.getElementById('mcc-email').value,
+    notas: document.getElementById('mcc-notas').value
+  };
   if(!data.nombre) return;
   try {
     await updateDoc(doc(db,'clientes',currentClientUID,'misClientes',id),data);
@@ -7285,12 +7135,50 @@ window.deleteMcCliente = function(id, event) {
   },'Eliminar cliente');
 };
 
+// ===== VENTAS — presupuestos aprobados =====
+function renderMcVentas(presups, clienteId) {
+  const el = document.getElementById('mcd-ventas');
+  if(!el) return;
+  const aprobados = presups.filter(p => p.estado === 'Aprobado');
+  if(aprobados.length === 0) {
+    el.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin ventas aún. Aprobá un presupuesto.</div>';
+    return;
+  }
+  el.innerHTML = aprobados.map(p => {
+    const monto = parseFloat(p.monto)||0;
+    const fecha = p.fecha ? new Date(p.fecha+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'}) : '—';
+    return `<div style="background:var(--cream);border-radius:10px;padding:13px 14px;margin-bottom:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px;">
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:500;color:var(--text);">${p.descripcion||'Venta'}</div>
+          <div style="font-size:11px;color:var(--text-l);margin-top:2px;">${fecha} ${p.moneda&&p.moneda!=='ARS'?'· '+p.moneda:''}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:500;color:var(--topbar);">$${monto.toLocaleString('es-AR')}</div>
+          <span style="font-size:9px;font-weight:500;padding:1px 8px;border-radius:20px;background:var(--ok-bg);color:var(--ok);">Aprobado</span>
+        </div>
+      </div>
+      <button onclick="openMcCobroModal('${clienteId}','${p.id}','${(p.descripcion||'Venta').replace(/'/g,"\\'")}',${monto})"
+        style="width:100%;padding:7px;background:var(--ok-bg);border:.5px solid var(--ok);border-radius:8px;font-size:12px;font-weight:500;color:var(--ok);cursor:pointer;font-family:'DM Sans',sans-serif;">
+        $ Registrar cobro
+      </button>
+    </div>`;
+  }).join('');
+}
+
 window.updateMcPresupEstado = async function(id, estado) {
   if(!currentClientUID) return;
   try {
     await updateDoc(doc(db,'clientes',currentClientUID,'presupuestos',id),{estado});
+    // Si se aprueba → registrar en historial
+    if(estado === 'Aprobado') {
+      const p = _mcPresupuestos.find(x=>x.id===id);
+      if(p?.clienteId) {
+        await addHistorialEntry(p.clienteId, `Presupuesto aprobado: ${p.descripcion||'sin descripción'} · $${parseFloat(p.monto||0).toLocaleString('es-AR')}`);
+      }
+    }
     await loadMcModule();
-    if (_currentMcClienteId) openMcDetalle(_currentMcClienteId);
+    if(_currentMcClienteId) openMcDetalle(_currentMcClienteId);
   } catch(e){ console.log(e); }
 };
 
