@@ -1351,22 +1351,17 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
           <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:#fff;line-height:1.1;">Mi negocio</div>
         </div>
 
-        <!-- Logo del negocio -->
+        <!-- Logo del negocio — solo visualización, edición en Mi cuenta -->
         <div class="card" style="margin-bottom:16px;">
           <div style="display:flex;align-items:center;gap:14px;">
-            <div style="position:relative;flex-shrink:0;">
+            <div style="flex-shrink:0;">
               <div id="negocio-logo-wrap" style="width:60px;height:60px;border-radius:14px;background:var(--sage-xl);border:.5px solid var(--sage-light);display:flex;align-items:center;justify-content:center;overflow:hidden;">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="15" rx="2" stroke="var(--sage-dark)" stroke-width="1.5"/><path d="M8 6V5a2 2 0 014 0v1M12 6v15" stroke="var(--sage-dark)" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="13" r="1.5" fill="var(--sage-dark)"/><circle cx="16" cy="13" r="1.5" fill="var(--sage-dark)"/></svg>
               </div>
-              <!-- Botón editar pequeño sobre el logo -->
-              <label id="negocio-logo-edit-btn" style="position:absolute;bottom:-4px;right:-4px;width:20px;height:20px;border-radius:50%;background:var(--sage-dark);display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid var(--white);">
-                <svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M1 9l2-2 5-5-1-1-5 5-1 2z" stroke="#fff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                <input type="file" accept="image/*" id="negocio-logo-input" style="display:none;" onchange="uploadNegocioLogo(this)"/>
-              </label>
             </div>
             <div style="flex:1;">
               <div style="font-size:14px;font-weight:500;" id="negocio-nombre-display">Mi negocio</div>
-              <div style="font-size:11px;color:var(--text-l);margin-top:2px;" id="negocio-logo-hint">Tocá el ícono para subir tu logo</div>
+              <div style="font-size:11px;color:var(--text-l);margin-top:2px;" id="negocio-logo-hint"></div>
             </div>
           </div>
         </div>
@@ -2627,6 +2622,20 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
     <div style="padding:20px 24px;max-height:70vh;overflow-y:auto;">
       <!-- Datos del negocio -->
       <div style="font-size:11px;font-weight:500;color:var(--text-m);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">Datos del negocio</div>
+      <!-- Logo -->
+      <div class="fg">
+        <label class="fl">Logo del negocio</label>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div id="mc-logo-wrap" style="width:56px;height:56px;border-radius:12px;background:var(--sage-xl);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="15" rx="2" stroke="var(--sage-dark)" stroke-width="1.5"/></svg>
+          </div>
+          <label style="background:var(--sage-xl);color:var(--sage-dark);border:none;border-radius:20px;padding:8px 16px;font-size:12px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;">
+            Subir logo
+            <input type="file" accept="image/*" id="mc-logo-input" style="display:none;" onchange="uploadMcLogo(this)"/>
+          </label>
+          <span style="font-size:11px;color:var(--text-l);" id="mc-logo-hint">JPG, PNG · máx 200KB</span>
+        </div>
+      </div>
       <div class="fg"><label class="fl">Nombre del negocio</label><input type="text" class="fi" id="mc-negocio-nombre" placeholder="Ej: Panadería La Esquina"/></div>
       <div class="fg"><label class="fl">Rubro</label><input type="text" class="fi" id="mc-negocio-rubro" placeholder="Ej: Gastronomía, Construcción..."/></div>
       <div class="fg"><label class="fl">Teléfono / WhatsApp</label><input type="text" class="fi" id="mc-negocio-tel" placeholder="+54 9 11 1234-5678"/></div>
@@ -6003,7 +6012,21 @@ function renderClientIngresosList(ingresos) {
   if(!el) return;
   if(ingresos.length===0){el.innerHTML='<div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin ingresos registrados.</div>';return;}
   const total = ingresos.reduce((a,i)=>a+(parseFloat(i.monto)||0),0);
-  el.innerHTML = ingresos.map(i=>`<div class="row"><div><div class="rn">${i.concepto}${i.cliente?' — '+i.cliente:''}</div><div class="rs">${i.mes||i.fecha||''}</div></div><span style="color:var(--ok);font-weight:500;">$${parseFloat(i.monto).toLocaleString('es-AR')}</span></div>`).join('') +
+  el.innerHTML = ingresos.map(i=>{
+    const origen = i.origen==='comercial' ? `<span style="background:#E6EEF5;color:#2A4A6A;font-size:9px;padding:2px 7px;border-radius:20px;margin-left:6px;">Comercial</span>` : `<span style="background:var(--cream);color:var(--text-l);font-size:9px;padding:2px 7px;border-radius:20px;margin-left:6px;">Manual</span>`;
+    const editBtn = i.origen!=='comercial' ? `<button onclick="editClientIngreso('${i.id}')" style="background:none;border:.5px solid var(--cream-d);border-radius:7px;padding:3px 8px;font-size:11px;color:var(--text-l);cursor:pointer;">✏️</button>
+      <button onclick="deleteClientIngreso('${i.id}')" style="background:none;border:.5px solid var(--cream-d);border-radius:7px;padding:3px 8px;font-size:11px;color:var(--err);cursor:pointer;">×</button>` : '';
+    return `<div class="row" style="gap:8px;">
+      <div style="flex:1;min-width:0;">
+        <div class="rn" style="display:flex;align-items:center;flex-wrap:wrap;">${i.concepto||'—'}${origen}</div>
+        <div class="rs">${i.mes||i.fecha||''}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+        <span style="color:var(--ok);font-weight:500;">$${(parseFloat(i.monto)||0).toLocaleString('es-AR')}</span>
+        ${editBtn}
+      </div>
+    </div>`;
+  }).join('') +
     `<div style="padding-top:8px;display:flex;justify-content:space-between;font-size:12px;border-top:.5px solid var(--cream-d);margin-top:4px;"><span style="color:var(--text-l);">Total</span><span style="font-weight:500;color:var(--ok);">$${total.toLocaleString('es-AR')}</span></div>`;
 }
 
@@ -6012,7 +6035,21 @@ function renderClientEgresosList(egresos) {
   if(!el) return;
   if(egresos.length===0){el.innerHTML='<div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin egresos registrados.</div>';return;}
   const total = egresos.reduce((a,e)=>a+(parseFloat(e.monto)||0),0);
-  el.innerHTML = egresos.map(e=>`<div class="row"><div><div class="rn">${e.concepto}</div><div class="rs">${e.categoria||''} · ${e.mes||''}</div></div><span style="color:var(--err);font-weight:500;">-$${parseFloat(e.monto).toLocaleString('es-AR')}</span></div>`).join('') +
+  el.innerHTML = egresos.map(e=>{
+    const origen = e.proveedorId ? `<span style="background:#EDF0EA;color:#3A6A42;font-size:9px;padding:2px 7px;border-radius:20px;margin-left:6px;">Proveedor</span>` : `<span style="background:var(--cream);color:var(--text-l);font-size:9px;padding:2px 7px;border-radius:20px;margin-left:6px;">Manual</span>`;
+    const editBtn = !e.proveedorId ? `<button onclick="editClientEgreso('${e.id}')" style="background:none;border:.5px solid var(--cream-d);border-radius:7px;padding:3px 8px;font-size:11px;color:var(--text-l);cursor:pointer;">✏️</button>
+      <button onclick="deleteClientEgreso('${e.id}')" style="background:none;border:.5px solid var(--cream-d);border-radius:7px;padding:3px 8px;font-size:11px;color:var(--err);cursor:pointer;">×</button>` : '';
+    return `<div class="row" style="gap:8px;">
+      <div style="flex:1;min-width:0;">
+        <div class="rn" style="display:flex;align-items:center;flex-wrap:wrap;">${e.concepto||'—'}${origen}</div>
+        <div class="rs">${e.mes||e.fecha||''}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+        <span style="color:var(--err);font-weight:500;">-$${(parseFloat(e.monto)||0).toLocaleString('es-AR')}</span>
+        ${editBtn}
+      </div>
+    </div>`;
+  }).join('') +
     `<div style="padding-top:8px;display:flex;justify-content:space-between;font-size:12px;border-top:.5px solid var(--cream-d);margin-top:4px;"><span style="color:var(--text-l);">Total</span><span style="font-weight:500;color:var(--err);">-$${total.toLocaleString('es-AR')}</span></div>`;
 }
 
@@ -6243,7 +6280,12 @@ window.createClientIngreso = async function() {
     creadoEn: new Date().toISOString()
   };
   try {
-    await addDoc(collection(db,'clientes',currentClientUID,'ingresos'), data);
+    if(window._editingIngresoid) {
+      await updateDoc(doc(db,'clientes',currentClientUID,'ingresos',window._editingIngresoid), data);
+      window._editingIngresoid = null;
+    } else {
+      await addDoc(collection(db,'clientes',currentClientUID,'ingresos'), data);
+    }
     const s=document.getElementById('cli-ing-saved'); if(s) s.style.display='block';
     setTimeout(async()=>{ if(s) s.style.display='none'; closeModal('newClientIngresoModal'); await loadClientContabilidad(); },1500);
   } catch(e){ alert('Error: '+e.message); }
@@ -6266,13 +6308,60 @@ window.createClientEgreso = async function() {
     creadoEn: new Date().toISOString() 
   };
   try {
-    await addDoc(collection(db,'clientes',currentClientUID,'egresos'), data);
+    if(window._editingEgresoid) {
+      await updateDoc(doc(db,'clientes',currentClientUID,'egresos',window._editingEgresoid), data);
+      window._editingEgresoid = null;
+    } else {
+      await addDoc(collection(db,'clientes',currentClientUID,'egresos'), data);
+    }
     const s=document.getElementById('cli-eg-saved'); if(s) s.style.display='block';
     setTimeout(async()=>{ if(s) s.style.display='none'; closeModal('newClientEgresoModal'); await loadClientContabilidad(); },1500);
   } catch(e){ alert('Error al guardar: '+e.message); }
 };
 
-// Tareas cliente
+// Editar/eliminar ingreso manual
+window.editClientIngreso = function(id) {
+  const ing = (window._clientIngresos||[]).find(i=>i.id===id);
+  if(!ing||ing.origen==='comercial') return;
+  document.getElementById('cli-ing-concepto').value = ing.concepto||'';
+  document.getElementById('cli-ing-monto').value = ing.monto||'';
+  document.getElementById('cli-ing-fecha').value = ing.fecha||'';
+  document.getElementById('cli-ing-mes').value = ing.mes||'Marzo 2026';
+  window._editingIngresoid = id;
+  openModal('newClientIngresoModal');
+};
+
+window.deleteClientIngreso = async function(id) {
+  showConfirm('¿Eliminar este ingreso?', async()=>{
+    try{
+      const {deleteDoc:dd}=await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
+      await dd(doc(db,'clientes',currentClientUID,'ingresos',id));
+      await loadClientContabilidad();
+    }catch(e){ alert('Error: '+e.message); }
+  },'Eliminar ingreso');
+};
+
+// Editar/eliminar egreso manual
+window.editClientEgreso = function(id) {
+  const eg = (window._clientEgresos||[]).find(e=>e.id===id);
+  if(!eg||eg.proveedorId) return;
+  document.getElementById('cli-eg-concepto').value = eg.concepto||'';
+  document.getElementById('cli-eg-monto').value = eg.monto||'';
+  document.getElementById('cli-eg-fecha').value = eg.fecha||'';
+  document.getElementById('cli-eg-mes').value = eg.mes||'Marzo 2026';
+  window._editingEgresoid = id;
+  openModal('newClientEgresoModal');
+};
+
+window.deleteClientEgreso = async function(id) {
+  showConfirm('¿Eliminar este egreso?', async()=>{
+    try{
+      const {deleteDoc:dd}=await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
+      await dd(doc(db,'clientes',currentClientUID,'egresos',id));
+      await loadClientContabilidad();
+    }catch(e){ alert('Error: '+e.message); }
+  },'Eliminar egreso');
+};
 async function loadClientTareas() {
   if(!currentClientUID) return;
   try {
@@ -7406,9 +7495,38 @@ window.openModal_miCuentaModal_extra = async function() {
     }
     const emailEl = document.getElementById('mc-email-display');
     if(emailEl) emailEl.textContent = currentUser?.email||'';
+    // Show current logo
+    if(d.exists() && d.data().logoNegocio) {
+      const mcWrap = document.getElementById('mc-logo-wrap');
+      if(mcWrap) mcWrap.innerHTML = `<img src="${d.data().logoNegocio}" style="width:100%;height:100%;object-fit:cover;"/>`;
+      const mcHint = document.getElementById('mc-logo-hint');
+      if(mcHint) mcHint.textContent = 'Logo cargado ✓';
+    }
     ['mc-pass-actual','mc-pass-nueva','mc-pass-confirm'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
     const errEl=document.getElementById('mc-error');if(errEl)errEl.style.display='none';
   } catch(e){ console.log(e); }
+};
+
+window.uploadMcLogo = function(input) {
+  const file = input.files[0];
+  if(!file) return;
+  if(file.size > 200*1024){ alert('Máximo 200KB'); return; }
+  const reader = new FileReader();
+  reader.onload = async e => {
+    const base64 = e.target.result;
+    const wrap = document.getElementById('mc-logo-wrap');
+    if(wrap) wrap.innerHTML = `<img src="${base64}" style="width:100%;height:100%;object-fit:cover;"/>`;
+    const hint = document.getElementById('mc-logo-hint');
+    if(hint) hint.textContent = 'Logo cargado ✓';
+    // Guardar en Firestore
+    try {
+      await updateDoc(doc(db,'clientes',currentClientUID),{logoNegocio:base64});
+      // Actualizar también en Finanzas
+      const wrap2 = document.getElementById('negocio-logo-wrap');
+      if(wrap2) wrap2.innerHTML = `<img src="${base64}" style="width:100%;height:100%;object-fit:cover;"/>`;
+    } catch(e){ console.log(e); }
+  };
+  reader.readAsDataURL(file);
 };
 
 window.guardarMiCuenta = async function() {
