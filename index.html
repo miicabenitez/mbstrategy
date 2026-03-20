@@ -6293,8 +6293,21 @@ function renderCkKpis(ingresos, egresos, presupuestos, mcClientes) {
   const tickProm=aprobados.length>0?Math.round(aprobados.reduce((a,p)=>a+(parseFloat(p.monto)||0),0)/aprobados.length):0;
   setEl('ck-tick','$'+tickProm.toLocaleString('es-AR'));
 
-  // Cobros pendientes: total aprobado − total cobrado real (estado actual, no filtrado por mes)
-  const totalAprobado = presupuestos.filter(p=>p.estado==='Aprobado').reduce((a,p)=>a+(parseFloat(p.monto)||0),0);
+  // Cobros pendientes: presupuestos aprobados creados hasta el mes seleccionado − total cobrado
+  // En "todo el año" muestra el pendiente total actual
+  // En un mes específico muestra solo los aprobados que ya existían ese mes
+  const MESES_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  let aprobadosHastaMes = presupuestos.filter(p => p.estado === 'Aprobado');
+  if(mesSel !== 'todo') {
+    const [mesNombreSel, anioSel] = mesSel.split(' ');
+    const mesIdx = MESES_ES.findIndex(m => m === mesNombreSel);
+    const limiteMs = new Date(parseInt(anioSel), mesIdx + 1, 0, 23, 59, 59).getTime(); // último día del mes
+    aprobadosHastaMes = aprobadosHastaMes.filter(p => {
+      if(!p.creadoEn) return true; // si no tiene fecha lo incluimos
+      return new Date(p.creadoEn).getTime() <= limiteMs;
+    });
+  }
+  const totalAprobado = aprobadosHastaMes.reduce((a,p)=>a+(parseFloat(p.monto)||0),0);
   const totalCobrado  = (mcClientes||[]).reduce((a,c)=>a+(parseFloat(c.totalCobrado)||0),0);
   const cobrosPend    = Math.max(0, totalAprobado - totalCobrado);
   setEl('ck-cobros-pend','$'+cobrosPend.toLocaleString('es-AR'));
