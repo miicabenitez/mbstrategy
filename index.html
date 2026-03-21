@@ -2406,33 +2406,48 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
 
 <!-- Modal nuevo presupuesto (mis clientes del cliente) -->
 <div class="mo" id="newMcPresupModal">
-  <div class="md">
+  <div class="md" style="max-width:560px;">
     <button class="mc2" onclick="closeModal('newMcPresupModal')">×</button>
     <div class="mt">Nuevo presupuesto</div>
     <input type="hidden" id="mcp-presup-cliente-id"/>
+    <!-- Número y fecha en fila -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="fg"><label class="fl">Número</label><input type="text" class="fi" id="mcp-presup-numero" readonly style="background:var(--cream);color:var(--text-m);cursor:default;" placeholder="Auto-generado"/></div>
+      <div class="fg"><label class="fl">Fecha</label><input type="date" id="mcp-presup-fecha" style="margin-top:0;"/></div>
+    </div>
+    <!-- Cliente (fijo) -->
     <div class="fg">
       <label class="fl">Cliente</label>
       <div id="mcp-presup-cliente-display" style="padding:10px 13px;background:var(--sage-xl);border-radius:9px;font-size:13px;color:var(--topbar);font-weight:500;border:.5px solid var(--sage-light);"></div>
     </div>
     <div class="fg"><label class="fl">Descripción del trabajo</label><input type="text" class="fi" id="mcp-presup-desc" placeholder="Ej: Pileta 8x4, Remodelación baño..."/></div>
-    <div class="fg"><label class="fl">Archivo del presupuesto (PDF)</label>
-      <div style="border:.5px solid var(--cream-d);border-radius:9px;padding:12px;background:var(--cream);cursor:pointer;" onclick="document.getElementById('mcp-pdf-file').click()">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="1" width="14" height="18" rx="2" stroke="var(--sage-dark)" stroke-width="1.3"/><path d="M3 14h14M7 5h6M7 8h4" stroke="var(--sage-dark)" stroke-width="1.2" stroke-linecap="round"/></svg>
-          <div id="mcp-pdf-nombre" style="font-size:12px;font-weight:500;color:var(--text);">Seleccionar archivo PDF</div>
+
+    <!-- Items -->
+    <div class="fg">
+      <label class="fl">Ítems</label>
+      <div id="mcp-items-list" style="margin-bottom:8px;"></div>
+      <!-- Agregar ítem -->
+      <div style="background:var(--cream);border-radius:9px;padding:10px;border:.5px solid var(--cream-d);">
+        <div style="display:grid;grid-template-columns:1fr 70px 100px;gap:6px;margin-bottom:6px;">
+          <select class="fi" id="mcp-item-prod" style="margin-top:0;" onchange="onMcPresupProdSelect()">
+            <option value="">— Producto del catálogo —</option>
+          </select>
+          <input type="number" class="fi" id="mcp-item-cant" placeholder="Cant." min="1" value="1" style="margin-top:0;"/>
+          <input type="number" class="fi" id="mcp-item-precio" placeholder="Precio" style="margin-top:0;"/>
         </div>
+        <input type="text" class="fi" id="mcp-item-desc" placeholder="Descripción personalizada (opcional)" style="margin-bottom:6px;"/>
+        <button onclick="addMcPresupItem()" style="font-size:11px;padding:5px 14px;background:var(--topbar);color:#fff;border:none;border-radius:20px;cursor:pointer;font-family:'DM Sans',sans-serif;">+ Agregar ítem</button>
       </div>
-      <input type="file" id="mcp-pdf-file" accept=".pdf" style="display:none;" onchange="onMcPresupPDFSelected(this)"/>
-      <div id="mcp-pdf-progress" style="display:none;margin-top:8px;">
-        <div style="height:4px;background:var(--cream-d);border-radius:4px;"><div id="mcp-pdf-bar" style="height:100%;width:0%;background:var(--sage-dark);border-radius:4px;transition:width .3s;"></div></div>
-        <div id="mcp-pdf-status" style="font-size:10px;color:var(--text-l);margin-top:4px;">Procesando...</div>
+      <!-- Total -->
+      <div style="display:flex;justify-content:flex-end;margin-top:8px;gap:8px;align-items:center;">
+        <select class="fi" id="mcp-presup-moneda" style="width:80px;margin-top:0;"><option>ARS</option><option>USD</option></select>
+        <div style="background:var(--sage-xl);border-radius:9px;padding:8px 16px;font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:500;color:var(--topbar);">Total: $<span id="mcp-total-display">0</span></div>
       </div>
     </div>
-    <div class="fg"><label class="fl">Monto</label><input type="number" class="fi" id="mcp-presup-monto" placeholder="0"/></div>
-    <div class="fg"><label class="fl">Moneda</label><select class="fi" id="mcp-presup-moneda" style="margin-top:0;"><option>ARS</option><option>USD</option></select></div>
+
+    <div class="fg"><label class="fl">Validez</label><input type="date" id="mcp-presup-validez" style="margin-top:0;"/></div>
     <div class="fg"><label class="fl">Estado</label><select class="fi" id="mcp-presup-estado" style="margin-top:0;"><option>Pendiente de enviar</option><option>Enviado</option><option>Consultado</option><option>Aprobado</option><option>Denegado</option></select></div>
-    <div class="fg"><label class="fl">Fecha</label><input type="date" id="mcp-presup-fecha" style="margin-top:0;"/></div>
-    <div class="fg"><label class="fl">Notas</label><textarea class="na" id="mcp-presup-notas" style="min-height:50px;" placeholder="Observaciones..."></textarea></div>
+    <div class="fg"><label class="fl">Condiciones / Notas</label><textarea class="na" id="mcp-presup-notas" style="min-height:50px;" placeholder="Ej: Seña 50% para confirmar..."></textarea></div>
     <div class="br2"><button class="bp" onclick="createMcPresup()">Guardar</button><button class="bs" onclick="closeModal('newMcPresupModal')">Cancelar</button></div>
     <div class="saved-msg" id="mcp-presup-saved">✓ Presupuesto guardado</div>
   </div>
@@ -2489,6 +2504,7 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
           <span style="font-size:11px;color:var(--text-l);" id="mc-logo-hint">JPG, PNG · máx 200KB</span>
         </div>
       </div>
+      <div class="fg"><label class="fl">Nombre y apellido</label><input type="text" class="fi" id="mc-titular-nombre" placeholder="Ej: Micaela Benítez"/></div>
       <div class="fg"><label class="fl">Nombre del negocio</label><input type="text" class="fi" id="mc-negocio-nombre" placeholder="Ej: Panadería La Esquina"/></div>
       <div class="fg"><label class="fl">Rubro</label><input type="text" class="fi" id="mc-negocio-rubro" placeholder="Ej: Gastronomía, Construcción..."/></div>
       <div class="fg"><label class="fl">Teléfono / WhatsApp</label><input type="text" class="fi" id="mc-negocio-tel" placeholder="+54 9 11 1234-5678"/></div>
@@ -2965,24 +2981,34 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
     <button class="mc2" onclick="closeModal('editPresupModal')">×</button>
     <div class="mt">Editar presupuesto</div>
     <input type="hidden" id="ep-id"/>
-    <div class="fg"><label class="fl">Cliente / Potencial</label><input type="text" class="fi" id="ep-cliente" placeholder="Ej: Timotea — Deco Home"/></div>
-    <div class="fg"><label class="fl">Descripcion del trabajo</label><input type="text" class="fi" id="ep-desc" placeholder="Ej: Sistematizacion 30D..."/></div>
-    <div class="fg"><label class="fl">Link del presupuesto (Google Drive)</label><input type="url" class="fi" id="ep-link" placeholder="https://drive.google.com/..."/></div>
+    <input type="hidden" id="ep-clienteId"/>
+    <input type="hidden" id="ep-origen"/> <!-- 'admin' o 'cliente' -->
+    <div class="fg"><label class="fl">Cliente</label><input type="text" class="fi" id="ep-cliente" placeholder="Ej: Familia Rodríguez"/></div>
+    <div class="fg"><label class="fl">Descripción del trabajo</label><input type="text" class="fi" id="ep-desc" placeholder="Ej: Pileta 8x4, Remodelación baño..."/></div>
+    <div class="fg"><label class="fl">Archivo PDF (opcional — reemplaza el actual)</label>
+      <div style="border:.5px solid var(--cream-d);border-radius:9px;padding:10px;background:var(--cream);cursor:pointer;" onclick="document.getElementById('ep-pdf-file').click()">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><rect x="3" y="1" width="14" height="18" rx="2" stroke="var(--sage-dark)" stroke-width="1.3"/><path d="M3 14h14M7 5h6M7 8h4" stroke="var(--sage-dark)" stroke-width="1.2" stroke-linecap="round"/></svg>
+          <div id="ep-pdf-nombre" style="font-size:12px;color:var(--text);">Seleccionar PDF nuevo</div>
+        </div>
+      </div>
+      <input type="file" id="ep-pdf-file" accept=".pdf" style="display:none;" onchange="onEditPresupPDFSelected(this)"/>
+      <div id="ep-pdf-progress" style="display:none;margin-top:6px;">
+        <div style="height:3px;background:var(--cream-d);border-radius:4px;"><div id="ep-pdf-bar" style="height:100%;width:0%;background:var(--sage-dark);border-radius:4px;transition:width .3s;"></div></div>
+        <div id="ep-pdf-status" style="font-size:10px;color:var(--text-l);margin-top:3px;">Procesando...</div>
+      </div>
+    </div>
     <div class="fg"><label class="fl">Monto</label><input type="number" class="fi" id="ep-monto" placeholder="0"/></div>
     <div class="fg"><label class="fl">Moneda</label>
-      <select class="fi" id="ep-moneda" style="margin-top:0;"><option>USD</option><option>ARS</option></select>
+      <select class="fi" id="ep-moneda" style="margin-top:0;"><option>ARS</option><option>USD</option></select>
     </div>
     <div class="fg"><label class="fl">Estado</label>
       <select class="fi" id="ep-estado" style="margin-top:0;">
-        <option>Pendiente de enviar</option>
-        <option>Enviado</option>
-        <option>Consultado</option>
-        <option>Aprobado</option>
-        <option>Denegado</option>
+        <option>Pendiente de enviar</option><option>Enviado</option><option>Consultado</option><option>Aprobado</option><option>Denegado</option>
       </select>
     </div>
     <div class="fg"><label class="fl">Fecha</label><input type="date" id="ep-fecha" style="margin-top:0;"/></div>
-    <div class="fg"><label class="fl">Notas</label><textarea class="na" id="ep-notas" style="min-height:60px;" placeholder="Observaciones, seguimiento..."></textarea></div>
+    <div class="fg"><label class="fl">Notas</label><textarea class="na" id="ep-notas" style="min-height:60px;" placeholder="Observaciones..."></textarea></div>
     <div class="br2">
       <button class="bp" onclick="saveEditPresup()">Guardar cambios</button>
       <button class="bs" onclick="closeModal('editPresupModal')">Cancelar</button>
@@ -5356,35 +5382,101 @@ window.editPresup = function(id) {
   const p = _allPresupuestos.find(x => x.id === id);
   if (!p) return;
   document.getElementById('ep-id').value = id;
+  document.getElementById('ep-origen').value = 'admin';
+  document.getElementById('ep-clienteId').value = p.clienteId || '';
   document.getElementById('ep-cliente').value = p.cliente || '';
   document.getElementById('ep-desc').value = p.descripcion && !p.descripcion.startsWith('http') ? p.descripcion : '';
-  document.getElementById('ep-link').value = p.link || (p.descripcion?.startsWith('http') ? p.descripcion : '');
   document.getElementById('ep-monto').value = p.monto || '';
-  document.getElementById('ep-moneda').value = p.moneda || 'USD';
+  document.getElementById('ep-moneda').value = p.moneda || 'ARS';
   document.getElementById('ep-estado').value = p.estado || 'Pendiente de enviar';
   document.getElementById('ep-fecha').value = p.fecha || '';
   document.getElementById('ep-notas').value = p.notas || '';
+  document.getElementById('ep-pdf-nombre').textContent = p.link ? 'PDF ya cargado — subí uno nuevo para reemplazar' : 'Seleccionar PDF nuevo';
+  document.getElementById('ep-pdf-progress').style.display = 'none';
+  window._editPresupPdfUrl = null;
   openModal('editPresupModal');
+};
+
+window.editClientPresup = function(id) {
+  const allPresups = window._clientPresupuestos || [];
+  const mcPresups  = _mcPresupuestos || [];
+  const p = allPresups.find(x=>x.id===id) || mcPresups.find(x=>x.id===id);
+  if (!p || !currentClientUID) return;
+  document.getElementById('ep-id').value = id;
+  document.getElementById('ep-origen').value = 'cliente';
+  document.getElementById('ep-clienteId').value = p.clienteId || '';
+  document.getElementById('ep-cliente').value = p.cliente || '';
+  document.getElementById('ep-desc').value = p.descripcion || '';
+  document.getElementById('ep-monto').value = p.monto || '';
+  document.getElementById('ep-moneda').value = p.moneda || 'ARS';
+  document.getElementById('ep-estado').value = p.estado || 'Pendiente de enviar';
+  document.getElementById('ep-fecha').value = p.fecha || '';
+  document.getElementById('ep-notas').value = p.notas || '';
+  document.getElementById('ep-pdf-nombre').textContent = p.link ? 'PDF ya cargado — subí uno nuevo para reemplazar' : 'Seleccionar PDF nuevo';
+  document.getElementById('ep-pdf-progress').style.display = 'none';
+  window._editPresupPdfUrl = null;
+  openModal('editPresupModal');
+};
+
+window.onEditPresupPDFSelected = function(input) {
+  const file = input.files[0];
+  if(!file) return;
+  if(file.type !== 'application/pdf') { alert('Solo PDF'); return; }
+  if(file.size > 500*1024) { alert('Máximo 500KB'); return; }
+  document.getElementById('ep-pdf-nombre').textContent = file.name;
+  document.getElementById('ep-pdf-progress').style.display = 'block';
+  document.getElementById('ep-pdf-bar').style.width = '30%';
+  document.getElementById('ep-pdf-status').textContent = 'Procesando...';
+  const reader = new FileReader();
+  reader.onload = e => {
+    window._editPresupPdfUrl = e.target.result;
+    document.getElementById('ep-pdf-bar').style.width = '100%';
+    document.getElementById('ep-pdf-status').textContent = '✓ Listo';
+    document.getElementById('ep-pdf-status').style.color = 'var(--ok)';
+  };
+  reader.readAsDataURL(file);
 };
 
 window.saveEditPresup = async function() {
   const id = document.getElementById('ep-id').value;
+  const origen = document.getElementById('ep-origen').value;
   if (!id) return;
+  const estadoNuevo = document.getElementById('ep-estado').value;
+
+  // Mantener el PDF existente si no se subió uno nuevo
+  const allPresups = origen === 'cliente' ? (window._clientPresupuestos||[]).concat(_mcPresupuestos||[]) : _allPresupuestos;
+  const pOld = allPresups.find(x=>x.id===id);
+  const linkFinal = window._editPresupPdfUrl || pOld?.link || '';
+
   const data = {
     cliente: document.getElementById('ep-cliente').value,
     descripcion: document.getElementById('ep-desc').value,
-    link: document.getElementById('ep-link').value,
+    link: linkFinal,
     monto: document.getElementById('ep-monto').value,
     moneda: document.getElementById('ep-moneda').value,
-    estado: document.getElementById('ep-estado').value,
+    estado: estadoNuevo,
     fecha: document.getElementById('ep-fecha').value,
     notas: document.getElementById('ep-notas').value,
   };
   try {
-    await updateDoc(doc(db,'presupuestos',id), data);
+    if(origen === 'cliente' && currentClientUID) {
+      await updateDoc(doc(db,'clientes',currentClientUID,'presupuestos',id), data);
+      // Historial si cambió a Aprobado o Denegado
+      const clienteId = document.getElementById('ep-clienteId').value;
+      if(clienteId && estadoNuevo !== pOld?.estado) {
+        if(estadoNuevo === 'Aprobado') await addHistorialEntry(clienteId, `Presupuesto aprobado: ${data.descripcion||''} · $${parseFloat(data.monto||0).toLocaleString('es-AR')}`);
+        else if(estadoNuevo === 'Denegado') await addHistorialEntry(clienteId, `Presupuesto denegado: ${data.descripcion||''}`);
+      }
+      await loadClientPresupuestos();
+      await loadMcModule();
+      if(_currentMcClienteId) openMcDetalle(_currentMcClienteId);
+    } else {
+      await updateDoc(doc(db,'presupuestos',id), data);
+      await loadPresupuestosGlobal();
+    }
     const s = document.getElementById('ep-saved');
     s.style.display = 'block';
-    setTimeout(async()=>{s.style.display='none';closeModal('editPresupModal');await loadPresupuestosGlobal();},1500);
+    setTimeout(()=>{ s.style.display='none'; closeModal('editPresupModal'); window._editPresupPdfUrl = null; }, 1500);
   } catch(e) { alert('Error: '+e.message); }
 };
 
@@ -6891,8 +6983,10 @@ function renderMcDetallePresupuestos(list, clienteId, clienteNombre) {
           ${m > 0 ? `<div style="font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:500;margin-top:4px;">$${m.toLocaleString('es-AR')} ${p.moneda||'ARS'}</div>` : ''}
         </div>
       </div>
-      ${p.link ? `<a href="${p.link}" target="_blank" style="display:inline-block;margin-top:8px;font-size:11px;color:var(--topbar);text-decoration:none;">Ver presupuesto →</a>` : ''}
+      ${p.link ? `<button onclick="verPresupuestoPDF('${p.id}')" style="display:inline-block;margin-top:8px;font-size:11px;color:var(--topbar);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;padding:0;">Ver PDF →</button>` : ''}
+      <button onclick="exportarPresupuestoPDF('${p.id}')" style="display:inline-block;margin-top:8px;margin-left:10px;font-size:11px;color:var(--sage-dark);background:var(--sage-xl);border:.5px solid var(--sage-light);border-radius:20px;padding:3px 10px;cursor:pointer;font-family:'DM Sans',sans-serif;">↓ Exportar PDF</button>
       <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
+        <button onclick="editClientPresup('${p.id}')" style="font-size:10px;padding:3px 9px;border-radius:20px;border:.5px solid var(--sage-light);background:var(--sage-xl);color:var(--sage-dark);cursor:pointer;font-family:'DM Sans',sans-serif;">✏️ Editar</button>
         ${['Pendiente de enviar','Enviado','Consultado','Aprobado','Denegado'].map(s => s !== p.estado ? `<button onclick="updateMcPresupEstado('${p.id}','${s}')" style="font-size:10px;padding:3px 9px;border-radius:20px;border:.5px solid var(--cream-d);background:var(--white);color:var(--text-m);cursor:pointer;font-family:'DM Sans',sans-serif;">${s}</button>` : '').join('')}
         <button onclick="deleteMcPresup('${p.id}')" style="font-size:10px;padding:3px 9px;border-radius:20px;border:.5px solid var(--cream-d);background:var(--white);color:var(--err);cursor:pointer;font-family:'DM Sans',sans-serif;">× Eliminar</button>
       </div>
@@ -6933,50 +7027,121 @@ window.guardarNotaMcCliente = async function(clienteId) {
   } catch(e) { alert('Error: '+e.message); }
 };
 
+
+// ===== PRESUPUESTO — ITEMS =====
+let _mcPresupItems = [];
+
+function renderMcPresupItems() {
+  const el = document.getElementById('mcp-items-list');
+  if(!el) return;
+  if(_mcPresupItems.length === 0) { el.innerHTML = ''; const td=document.getElementById('mcp-total-display'); if(td) td.textContent='0'; return; }
+  const header = `<div style="display:grid;grid-template-columns:1fr 55px 90px 90px 24px;gap:5px;padding:4px 0;border-bottom:1.5px solid var(--sage-light);margin-bottom:2px;">
+    <div style="font-size:9px;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Descripción</div>
+    <div style="font-size:9px;color:var(--text-l);text-align:center;text-transform:uppercase;letter-spacing:.5px;">Cant.</div>
+    <div style="font-size:9px;color:var(--text-l);text-align:right;text-transform:uppercase;letter-spacing:.5px;">P. unit.</div>
+    <div style="font-size:9px;color:var(--text-l);text-align:right;text-transform:uppercase;letter-spacing:.5px;">Total</div>
+    <div></div></div>`;
+  el.innerHTML = header + _mcPresupItems.map((it, i) => `
+    <div style="display:grid;grid-template-columns:1fr 55px 90px 90px 24px;gap:5px;align-items:center;padding:5px 0;border-bottom:.5px solid var(--cream-d);">
+      <div style="font-size:12px;color:var(--text);">${it.desc}</div>
+      <div style="font-size:12px;color:var(--text-m);text-align:center;">${it.cant}</div>
+      <div style="font-size:12px;color:var(--text-m);text-align:right;">$${parseFloat(it.precio).toLocaleString('es-AR')}</div>
+      <div style="font-size:12px;font-weight:500;color:var(--topbar);text-align:right;">$${(it.cant*it.precio).toLocaleString('es-AR')}</div>
+      <button onclick="removeMcPresupItem(${i})" style="background:none;border:none;color:var(--err);cursor:pointer;font-size:14px;padding:0;line-height:1;">×</button>
+    </div>`).join('');
+  const total = _mcPresupItems.reduce((s,it)=>s+(it.cant*it.precio),0);
+  const td = document.getElementById('mcp-total-display'); if(td) td.textContent = total.toLocaleString('es-AR');
+}
+
+window.onMcPresupProdSelect = function() {
+  const sel = document.getElementById('mcp-item-prod');
+  const prod = (_productos||[]).find(p=>p.id===sel.value);
+  if(!prod) return;
+  const descEl = document.getElementById('mcp-item-desc');
+  const precioEl = document.getElementById('mcp-item-precio');
+  if(descEl && !descEl.value) descEl.value = prod.nombre;
+  if(precioEl) precioEl.value = prod.precio||'';
+};
+
+window.addMcPresupItem = function() {
+  const cant   = parseFloat(document.getElementById('mcp-item-cant').value)||1;
+  const precio = parseFloat(document.getElementById('mcp-item-precio').value)||0;
+  const sel    = document.getElementById('mcp-item-prod');
+  const prod   = (_productos||[]).find(p=>p.id===sel?.value);
+  const descInput = document.getElementById('mcp-item-desc').value.trim();
+  const desc = descInput || prod?.nombre || 'Ítem';
+  if(!precio) { alert('Ingresá el precio del ítem'); return; }
+  _mcPresupItems.push({desc, cant, precio, productoId: sel?.value||''});
+  renderMcPresupItems();
+  document.getElementById('mcp-item-cant').value = '1';
+  document.getElementById('mcp-item-precio').value = '';
+  document.getElementById('mcp-item-desc').value = '';
+  if(sel) sel.value = '';
+};
+
+window.removeMcPresupItem = function(i) {
+  _mcPresupItems.splice(i,1);
+  renderMcPresupItems();
+};
+
+function formatPresupNumero(n) {
+  return '0001-' + String(n).padStart(8,'0');
+}
+
 window.openMcPresupModal = function(clienteId, clienteNombre) {
   document.getElementById('mcp-presup-cliente-id').value = clienteId||'';
   const display = document.getElementById('mcp-presup-cliente-display');
   if(display) display.textContent = clienteNombre || _mcClientes.find(c=>c.id===clienteId)?.nombre || '—';
-  ['mcp-presup-desc','mcp-presup-monto','mcp-presup-notas'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  document.getElementById('mcp-presup-fecha').value = new Date().toISOString().split('T')[0];
+  const total = (_mcPresupuestos||[]).length + 1;
+  const numEl = document.getElementById('mcp-presup-numero');
+  if(numEl) numEl.value = formatPresupNumero(total);
+  const hoy = new Date().toISOString().split('T')[0];
+  document.getElementById('mcp-presup-fecha').value = hoy;
+  const validez = new Date(); validez.setDate(validez.getDate()+30);
+  document.getElementById('mcp-presup-validez').value = validez.toISOString().split('T')[0];
+  ['mcp-presup-desc','mcp-presup-notas'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  _mcPresupItems = [];
+  renderMcPresupItems();
+  const sel = document.getElementById('mcp-item-prod');
+  if(sel) sel.innerHTML = '<option value="">— Producto del catálogo —</option>' +
+    (_productos||[]).filter(p=>p.activo!==false).map(p=>`<option value="${p.id}">${p.nombre} · $${parseFloat(p.precio||0).toLocaleString('es-AR')}</option>`).join('');
+  _mcPresupPdfUrl = '';
   openModal('newMcPresupModal');
 };
 
-// ===== PDF UPLOAD — PRESUPUESTOS =====
-let _presupPdfUrl = '';
-let _mcPresupPdfUrl = '';
-
 window.createMcPresup = async function() {
-  if (!currentClientUID) return;
+  if(!currentClientUID) return;
   const clienteId     = document.getElementById('mcp-presup-cliente-id').value;
-  const clienteNombre = document.getElementById('mcp-presup-cliente-display')?.textContent || '';
+  const clienteNombre = document.getElementById('mcp-presup-cliente-display')?.textContent||'';
   const desc = document.getElementById('mcp-presup-desc').value.trim();
-  if (!clienteNombre || clienteNombre === '—') { alert('Error: cliente no definido'); return; }
+  if(!clienteNombre||clienteNombre==='—'){alert('Error: cliente no definido');return;}
+  if(_mcPresupItems.length===0){alert('Agregá al menos un ítem al presupuesto');return;}
+  const total = _mcPresupItems.reduce((s,it)=>s+(it.cant*it.precio),0);
   const data = {
-    cliente:clienteNombre, clienteId, descripcion:desc,
-    link: _mcPresupPdfUrl || '',
-    monto:document.getElementById('mcp-presup-monto').value,
+    cliente:clienteNombre, clienteId,
+    descripcion:desc,
+    numero:document.getElementById('mcp-presup-numero').value,
+    items:[..._mcPresupItems],
+    monto:total,
     moneda:document.getElementById('mcp-presup-moneda').value,
     estado:document.getElementById('mcp-presup-estado').value,
     fecha:document.getElementById('mcp-presup-fecha').value,
+    validez:document.getElementById('mcp-presup-validez').value,
     notas:document.getElementById('mcp-presup-notas').value,
     creadoEn:new Date().toISOString()
   };
   try {
-    await addDoc(collection(db,'clientes',currentClientUID,'presupuestos'), data);
-    _mcPresupPdfUrl = '';
-    if(document.getElementById('mcp-pdf-nombre')) document.getElementById('mcp-pdf-nombre').textContent = 'Seleccionar archivo PDF';
-    if(document.getElementById('mcp-pdf-progress')) document.getElementById('mcp-pdf-progress').style.display = 'none';
-    await addHistorialEntry(clienteId, `Presupuesto creado: ${desc||'sin descripción'}`);
-    const s = document.getElementById('mcp-presup-saved');
-    if(s) s.style.display='block';
+    await addDoc(collection(db,'clientes',currentClientUID,'presupuestos'),data);
+    await addHistorialEntry(clienteId,`Presupuesto ${data.numero} creado: ${desc||'sin descripción'} · $${total.toLocaleString('es-AR')}`);
+    const s=document.getElementById('mcp-presup-saved');if(s)s.style.display='block';
     setTimeout(async()=>{
-      if(s) s.style.display='none';
+      if(s)s.style.display='none';
       closeModal('newMcPresupModal');
+      _mcPresupItems=[];
       await loadMcModule();
-      if (_currentMcClienteId) openMcDetalle(_currentMcClienteId);
-    }, 1500);
-  } catch(e) { alert('Error: '+e.message); }
+      if(_currentMcClienteId) openMcDetalle(_currentMcClienteId);
+    },1500);
+  }catch(e){alert('Error: '+e.message);}
 };
 
 window.createMcCliente = async function() {
@@ -7239,6 +7404,151 @@ window.goToClientFromPresup = function(clienteId) {
   }, 300);
 };
 
+window.exportarPresupuestoPDF = async function(presupId) {
+  const allP = [...(_mcPresupuestos||[]), ...(window._clientPresupuestos||[])];
+  const p = allP.find(x=>x.id===presupId);
+  if(!p) { alert('Presupuesto no encontrado'); return; }
+
+  // Cargar datos del negocio
+  let negocio = {};
+  try {
+    const d = await getDoc(doc(db,'clientes',currentClientUID));
+    if(d.exists()) negocio = d.data();
+  } catch(e){}
+
+  if(!window.jspdf) {
+    await new Promise((res,rej)=>{
+      const s=document.createElement('script');
+      s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+      s.onload=res; s.onerror=rej; document.head.appendChild(s);
+    });
+  }
+  const {jsPDF} = window.jspdf;
+  const doc = new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const W=210, mg=20;
+  const sage=[161,177,164], sageDark=[90,122,94], cream=[245,248,245];
+  const textD=[42,58,44], textL=[138,154,140];
+
+  // HEADER — fondo sage
+  doc.setFillColor(...sage);
+  doc.rect(0,0,W,48,'F');
+
+  // Logo si existe
+  if(negocio.logoNegocio) {
+    try { doc.addImage(negocio.logoNegocio,'PNG',mg,8,22,22); } catch(e){}
+  }
+  const logoX = negocio.logoNegocio ? mg+26 : mg;
+
+  // Nombre negocio / titular
+  const emisorNombre = negocio.negocioNombre || negocio.titularNombre || negocio.nombre || '';
+  doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(255,255,255);
+  doc.text(emisorNombre, logoX, 17);
+  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(255,255,255);
+  doc.setGState(doc.GState({opacity:.65}));
+  const contactLine = [negocio.negocioEmail, negocio.negocioTel, negocio.negocioCuit ? 'CUIT '+negocio.negocioCuit : ''].filter(Boolean).join('  ·  ');
+  if(contactLine) doc.text(contactLine, logoX, 24);
+  doc.setGState(doc.GState({opacity:1}));
+
+  // Título PRESUPUESTO + número + fecha — derecha
+  doc.setFont('helvetica','normal'); doc.setFontSize(22); doc.setTextColor(255,255,255);
+  doc.text('Presupuesto', W-mg, 18, {align:'right'});
+  doc.setFontSize(10); doc.setGState(doc.GState({opacity:.75}));
+  const numero = p.numero || '0001-00000001';
+  doc.text('N° '+numero, W-mg, 26, {align:'right'});
+  const fechaFmt = p.fecha ? new Date(p.fecha+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'}) : '';
+  if(fechaFmt) doc.text(fechaFmt, W-mg, 33, {align:'right'});
+  doc.setGState(doc.GState({opacity:1}));
+
+  let y = 56;
+
+  // CLIENTE
+  doc.setFillColor(...cream);
+  doc.rect(mg, y, W-2*mg, 20, 'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...textL);
+  doc.text('CLIENTE', mg+4, y+6);
+  doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(...textD);
+  doc.text(p.cliente||'', mg+4, y+13);
+  // datos del cliente
+  const cli = (_mcClientes||[]).find(c=>c.id===p.clienteId);
+  if(cli) {
+    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...textL);
+    const cliLine = [cli.email, cli.tel, cli.cuit?'CUIT '+cli.cuit:''].filter(Boolean).join('  ·  ');
+    if(cliLine) doc.text(cliLine, mg+4, y+19);
+  }
+  y += 26;
+
+  // DESCRIPCIÓN
+  if(p.descripcion) {
+    doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...textL);
+    doc.text('DESCRIPCIÓN', mg, y+5);
+    doc.setFont('helvetica','normal'); doc.setFontSize(11); doc.setTextColor(...textD);
+    doc.text(p.descripcion, mg, y+12);
+    y += 18;
+  }
+
+  // TABLA de items
+  const items = p.items||[];
+  if(items.length > 0) {
+    y += 4;
+    // Header tabla
+    doc.setFillColor(...sage);
+    doc.rect(mg, y, W-2*mg, 8, 'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(255,255,255);
+    doc.text('PRODUCTO / SERVICIO', mg+3, y+5.5);
+    doc.text('CANT.', W-mg-72, y+5.5, {align:'right'});
+    doc.text('PRECIO UNIT.', W-mg-36, y+5.5, {align:'right'});
+    doc.text('TOTAL', W-mg, y+5.5, {align:'right'});
+    y += 10;
+
+    items.forEach((it, idx) => {
+      if(idx%2===1){ doc.setFillColor(248,250,248); doc.rect(mg,y-1,W-2*mg,9,'F'); }
+      doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(...textD);
+      doc.text(it.desc||'', mg+3, y+5.5);
+      doc.setTextColor(...textL);
+      doc.text(String(it.cant), W-mg-72, y+5.5, {align:'right'});
+      doc.text('$'+parseFloat(it.precio).toLocaleString('es-AR'), W-mg-36, y+5.5, {align:'right'});
+      doc.setFont('helvetica','bold'); doc.setTextColor(...textD);
+      doc.text('$'+(it.cant*it.precio).toLocaleString('es-AR'), W-mg, y+5.5, {align:'right'});
+      y += 9;
+    });
+
+    // Línea separadora total
+    doc.setDrawColor(...sage); doc.setLineWidth(0.5);
+    doc.line(mg, y+2, W-mg, y+2);
+    y += 6;
+    doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(...textL);
+    doc.text('Total', mg+3, y+5.5);
+    const totalMonto = items.reduce((s,it)=>s+(it.cant*it.precio),0);
+    doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.setTextColor(...textD);
+    doc.text('$'+totalMonto.toLocaleString('es-AR'), W-mg, y+6, {align:'right'});
+    y += 14;
+  }
+
+  // CONDICIONES
+  if(p.notas || p.validez) {
+    y += 4;
+    doc.setFillColor(...cream);
+    doc.rect(mg, y, W-2*mg, p.validez ? 20 : 14, 'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...textL);
+    doc.text('CONDICIONES', mg+4, y+6);
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...textD);
+    if(p.notas) doc.text(p.notas, mg+4, y+12, {maxWidth: W-2*mg-8});
+    if(p.validez) {
+      const vFmt = new Date(p.validez+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'});
+      doc.setTextColor(...textL); doc.setFontSize(8);
+      doc.text('Válido hasta el '+vFmt, mg+4, y+(p.notas?18:12));
+    }
+  }
+
+  // FOOTER
+  doc.setFillColor(...cream);
+  doc.rect(0, 287, W, 10, 'F');
+  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...textL);
+  doc.text('MB Gestión  ·  sistema.mbstrategy.com.ar', W/2, 292.5, {align:'center'});
+
+  doc.save(`Presupuesto_${numero}_${(p.cliente||'').replace(/\s+/g,'-')}.pdf`);
+};
+
 window.verPresupuestoPDF = function(presupId) {
   const p = (window._clientPresupuestos||[]).find(x=>x.id===presupId);
   if(!p?.link) return;
@@ -7308,6 +7618,7 @@ function renderClientPresup(list) {
           ${p.link?`<button onclick="verPresupuestoPDF('${p.id}')" style="font-size:11px;color:var(--topbar);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;padding:0;">Ver PDF →</button>`:''}
         </div>
         <div style="display:flex;gap:4px;margin-top:7px;flex-wrap:wrap;">
+          <button onclick="editClientPresup('${p.id}')" style="font-size:10px;padding:2px 8px;border-radius:20px;border:.5px solid var(--sage-light);background:var(--sage-xl);color:var(--sage-dark);cursor:pointer;font-family:'DM Sans',sans-serif;">✏️ Editar</button>
           ${['Pendiente de enviar','Enviado','Consultado','Aprobado','Denegado'].map(s=>s!==p.estado?`<button onclick="updateClientPresupEstado('${p.id}','${s}')" style="font-size:10px;padding:2px 8px;border-radius:20px;border:.5px solid var(--cream-d);background:var(--white);color:var(--text-m);cursor:pointer;font-family:'DM Sans',sans-serif;">${s}</button>`:'').join('')}
           <button onclick="deleteClientPresup('${p.id}')" style="font-size:10px;padding:2px 8px;border-radius:20px;border:.5px solid var(--cream-d);background:var(--white);color:var(--err);cursor:pointer;font-family:'DM Sans',sans-serif;">× Eliminar</button>
         </div>
@@ -7551,6 +7862,7 @@ window.openModal_miCuentaModal_extra = async function() {
     const d = await getDoc(doc(db,'clientes',currentClientUID));
     if(d.exists()) {
       const data = d.data();
+      document.getElementById('mc-titular-nombre').value = data.titularNombre||data.nombre||'';
       document.getElementById('mc-negocio-nombre').value = data.negocioNombre||data.nombre||'';
       document.getElementById('mc-negocio-rubro').value = data.negocioRubro||data.rubro||'';
       document.getElementById('mc-negocio-tel').value = data.negocioTel||'';
@@ -7597,6 +7909,7 @@ window.uploadMcLogo = function(input) {
 window.guardarMiCuenta = async function() {
   if(!currentClientUID) return;
   const data = {
+    titularNombre: document.getElementById('mc-titular-nombre').value.trim(),
     negocioNombre: document.getElementById('mc-negocio-nombre').value.trim(),
     negocioRubro:  document.getElementById('mc-negocio-rubro').value.trim(),
     negocioTel:    document.getElementById('mc-negocio-tel').value.trim(),
