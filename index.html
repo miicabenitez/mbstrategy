@@ -7651,19 +7651,63 @@ window.exportarPresupuestoPDF = async function(presupId) {
   openModal('presupPreviewModal');
 };
 
-window.imprimirPresupuesto = function() {
+window.imprimirPresupuesto = async function() {
   const content = document.getElementById('presup-print-doc');
   if(!content) return;
-  const w = window.open('','_blank','width=800,height=900');
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8">
-    <style>
-      *{box-sizing:border-box;margin:0;padding:0;}
-      body{font-family:'DM Sans',Arial,sans-serif;background:#EDECE8;padding:20px;}
-      @media print{body{background:#fff;padding:0;} @page{margin:0;}}
-    </style></head><body>`);
-  w.document.write(content.outerHTML);
-  w.document.write(`<script>window.onload=function(){window.print();setTimeout(()=>window.close(),500);}<\/script></body></html>`);
-  w.document.close();
+  const btn = document.querySelector('#presupPreviewModal button[onclick="imprimirPresupuesto()"]');
+  const originalText = btn ? btn.textContent : '';
+  if(btn) { btn.textContent = 'Generando...'; btn.disabled = true; }
+  try {
+    // Cargar librerías si no están
+    if(!window.html2canvas) {
+      await new Promise((res,rej)=>{
+        const s=document.createElement('script');
+        s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        s.onload=res; s.onerror=rej; document.head.appendChild(s);
+      });
+    }
+    if(!window.jspdf) {
+      await new Promise((res,rej)=>{
+        const s=document.createElement('script');
+        s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+        s.onload=res; s.onerror=rej; document.head.appendChild(s);
+      });
+    }
+    const canvas = await window.html2canvas(content, {
+      scale: 2, useCORS: true, backgroundColor: '#fff', logging: false
+    });
+    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+    const pageW = 210, pageH = 297;
+    const margin = 10;
+    const usableW = pageW - margin*2;
+    const imgH = (canvas.height * usableW) / canvas.width;
+    let yPos = margin;
+    let remaining = imgH;
+    let firstPage = true;
+    while(remaining > 0) {
+      if(!firstPage) pdf.addPage();
+      const sliceH = Math.min(remaining, pageH - margin*2);
+      pdf.addImage(imgData, 'JPEG', margin, yPos, usableW, imgH, '', 'FAST', 0);
+      remaining -= sliceH;
+      yPos = -(imgH - sliceH) - margin;
+      firstPage = false;
+    }
+    const p = window._presupPrintId ? [...(_mcPresupuestos||[]),(window._clientPresupuestos||[])].flat().find(x=>x.id===window._presupPrintId) : null;
+    const filename = `Presupuesto_${p?.numero||'0001'}_${(p?.cliente||'cliente').replace(/\s+/g,'_')}.pdf`;
+    pdf.save(filename);
+  } catch(e) {
+    console.error('PDF error:', e);
+    // Fallback al diálogo de impresión
+    const w = window.open('','_blank','width=800,height=900');
+    w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:'DM Sans',Arial,sans-serif;background:#fff;}@media print{@page{margin:10mm;}}</style></head><body>`);
+    w.document.write(content.outerHTML);
+    w.document.write(`<script>window.onload=function(){window.print();setTimeout(()=>window.close(),500);}<\/script></body></html>`);
+    w.document.close();
+  } finally {
+    if(btn) { btn.textContent = originalText; btn.disabled = false; }
+  }
 };
 
 window.verPresupuestoPDF = function(presupId) {
