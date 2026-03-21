@@ -7740,36 +7740,26 @@ window.imprimirPresupuesto = async function() {
       });
     }
     const canvas = await window.html2canvas(content, {
-      scale: 2, useCORS: true, backgroundColor: '#fff', logging: false
+      scale: 1.5, useCORS: true, backgroundColor: '#fff', logging: false
     });
-    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+    const imgData = canvas.toDataURL('image/jpeg', 0.92);
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
     const pageW = 210, pageH = 297;
-    const margin = 10;
+    const margin = 8;
     const usableW = pageW - margin*2;
     const usableH = pageH - margin*2;
     const imgH = (canvas.height * usableW) / canvas.width;
     if(imgH <= usableH) {
-      // Entra en una sola página
+      // Entra en una sola página — centrar verticalmente
       pdf.addImage(imgData, 'JPEG', margin, margin, usableW, imgH, '', 'FAST');
     } else {
-      // Múltiples páginas — recortar imagen por página
-      const ratio = canvas.width / usableW;
-      const pageCanvasH = usableH * ratio;
-      let srcY = 0;
-      while(srcY < canvas.height) {
-        if(srcY > 0) pdf.addPage();
-        const sliceH = Math.min(pageCanvasH, canvas.height - srcY);
-        const sliceCanvas = document.createElement('canvas');
-        sliceCanvas.width = canvas.width;
-        sliceCanvas.height = sliceH;
-        sliceCanvas.getContext('2d').drawImage(canvas, 0, srcY, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
-        const sliceData = sliceCanvas.toDataURL('image/jpeg', 0.95);
-        const sliceImgH = (sliceH / ratio);
-        pdf.addImage(sliceData, 'JPEG', margin, margin, usableW, sliceImgH, '', 'FAST');
-        srcY += pageCanvasH;
-      }
+      // Escalar para que entre en una página
+      const scale = usableH / imgH;
+      const scaledW = usableW * scale;
+      const scaledH = imgH * scale;
+      const offsetX = margin + (usableW - scaledW) / 2;
+      pdf.addImage(imgData, 'JPEG', offsetX, margin, scaledW, scaledH, '', 'FAST');
     }
     const p = window._presupPrintId ? [...(_mcPresupuestos||[]),(window._clientPresupuestos||[])].flat().find(x=>x.id===window._presupPrintId) : null;
     const filename = `Presupuesto_${p?.numero||'0001'}_${(p?.cliente||'cliente').replace(/\s+/g,'_')}.pdf`;
