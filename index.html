@@ -7235,7 +7235,26 @@ window.formatPresupNumero = formatPresupNumero;
 window._cpItems = _cpItems;
 window.renderCpItems = renderCpItems;
 
-window.openMcPresupModal = function(clienteId, clienteNombre) {
+// Helper: obtiene productos siempre, desde memoria o desde Firestore
+async function obtenerProductos() {
+  if(_productos && _productos.length) return _productos;
+  if(window._productosData && window._productosData.length) return window._productosData;
+  // Fetch directo desde Firestore
+  try {
+    const uid = currentClientUID || window.currentClientUID;
+    if(!uid) return [];
+    const snap = await getDocs(collection(db,'clientes',uid,'productos'));
+    const prods = [];
+    snap.forEach(d => prods.push({id:d.id,...d.data()}));
+    prods.sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||''));
+    window._productosData = prods;
+    _productos = prods;
+    return prods;
+  } catch(e){ return []; }
+}
+window.obtenerProductos = obtenerProductos;
+
+window.openMcPresupModal = async function(clienteId, clienteNombre) {
   document.getElementById('mcp-presup-cliente-id').value = clienteId||'';
   const display = document.getElementById('mcp-presup-cliente-display');
   if(display) display.textContent = clienteNombre || _mcClientes.find(c=>c.id===clienteId)?.nombre || '—';
@@ -7249,7 +7268,7 @@ window.openMcPresupModal = function(clienteId, clienteNombre) {
   ['mcp-presup-desc','mcp-presup-notas'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   _mcPresupItems = [];
   renderMcPresupItems();
-  const allProds = _productos.length ? _productos : (window._productosData||[]);
+  const allProds = await obtenerProductos();
   const sel = document.getElementById('mcp-item-prod');
   if(sel) sel.innerHTML = '<option value="">— Producto del catálogo —</option>' +
     allProds.filter(p=>p.activo!==false).map(p=>`<option value="${p.id}" data-precio="${p.precio||0}" data-nombre="${p.nombre||''}">${p.nombre} · $${parseFloat(p.precio||0).toLocaleString('es-AR')}</option>`).join('');
@@ -9855,8 +9874,14 @@ window.openModal = function(id) {
     ['cp-desc','cp-notas','cp-prospecto-nombre'].forEach(fid=>{const el=document.getElementById(fid);if(el)el.value='';});
     window._cpItems = []; if(window.renderCpItems) window.renderCpItems();
     const prodSel = document.getElementById('cp-item-prod');
-    if(prodSel) { const allP = (_productos&&_productos.length)?_productos:(window._productosData||[]); prodSel.innerHTML = '<option value="">— Producto del catálogo —</option>' +
-      allP.filter(p=>p.activo!==false).map(p=>`<option value="${p.id}" data-precio="${p.precio||0}" data-nombre="${p.nombre||''}">${p.nombre} · $${parseFloat(p.precio||0).toLocaleString('es-AR')}</option>`).join(''); }
+    if(prodSel && window.obtenerProductos) {
+      window.obtenerProductos().then(function(allP){
+        prodSel.innerHTML = '<option value="">— Producto del catálogo —</option>' +
+          allP.filter(function(p){return p.activo!==false;}).map(function(p){
+            return '<option value="'+p.id+'" data-precio="'+(p.precio||0)+'" data-nombre="'+(p.nombre||'')+'">'+p.nombre+' · $'+parseFloat(p.precio||0).toLocaleString('es-AR')+'</option>';
+          }).join('');
+      });
+    }
   }
   if(id === 'newMclienteModal') {
     // Limpiar todos los campos y resetear el botón
