@@ -7666,7 +7666,17 @@ window.exportarPresupuestoPDF = async function(presupId) {
 
   const html = `
     <div id="presup-print-doc" style="background:#fff;max-width:660px;margin:0 auto;border:0.5px solid #C8D4CA;font-family:'DM Sans',sans-serif;">
-      <div style="background:#A1B1A4;padding:24px 30px;display:flex;justify-content:space-between;align-items:center;">
+      <style>
+        @media(max-width:500px){
+          #presup-print-doc .presup-header{flex-direction:column;gap:12px;padding:16px !important;}
+          #presup-print-doc .presup-header-right{text-align:left;}
+          #presup-print-doc .presup-header-right div:first-child{font-size:20px !important;}
+          #presup-print-doc table{font-size:10px;}
+          #presup-print-doc table th,#presup-print-doc table td{padding:5px 4px !important;}
+          #presup-print-doc .presup-cliente-grid{grid-template-columns:1fr !important;}
+        }
+      </style>
+      <div class="presup-header" style="background:#A1B1A4;padding:24px 30px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
         <div style="display:flex;align-items:center;gap:14px;">
           ${logoHTML}
           <div>
@@ -7674,7 +7684,7 @@ window.exportarPresupuestoPDF = async function(presupId) {
             ${emisorContacto ? `<div style="font-size:10px;color:rgba(255,255,255,.55);margin-top:5px;line-height:1.7;">${emisorContacto}</div>` : ''}
           </div>
         </div>
-        <div style="text-align:right;">
+        <div class="presup-header-right" style="text-align:right;">
           <div style="font-family:'Georgia',serif;font-size:28px;font-weight:300;color:#fff;letter-spacing:1px;">Presupuesto</div>
           <div style="font-size:12px;color:rgba(255,255,255,.65);margin-top:4px;font-weight:500;">N° ${numero}</div>
           ${fechaFmt ? `<div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:3px;">${fechaFmt}</div>` : ''}
@@ -7683,7 +7693,7 @@ window.exportarPresupuestoPDF = async function(presupId) {
 
       <div style="padding:16px 24px;border-bottom:0.5px solid #D8E0D8;">
         <div style="font-size:8px;font-weight:600;color:#A1B1A4;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;">Cliente</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 24px;">
+        <div class="presup-cliente-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:0 24px;">
           <div style="display:flex;gap:8px;font-size:11px;padding:4px 0;border-bottom:0.5px solid #EEF2EE;"><span style="color:#A1B1A4;min-width:60px;">Nombre:</span><span style="color:#3A4A3C;font-weight:500;">${p.cliente||''}</span></div>
           ${cli.tel ? `<div style="display:flex;gap:8px;font-size:11px;padding:4px 0;border-bottom:0.5px solid #EEF2EE;"><span style="color:#A1B1A4;min-width:60px;">Teléfono:</span><span style="color:#3A4A3C;font-weight:500;">${cli.tel}</span></div>` : '<div></div>'}
           ${cli.cuit ? `<div style="display:flex;gap:8px;font-size:11px;padding:4px 0;"><span style="color:#A1B1A4;min-width:60px;">CUIT:</span><span style="color:#3A4A3C;font-weight:500;">${cli.cuit}</span></div>` : '<div></div>'}
@@ -7738,17 +7748,28 @@ window.imprimirPresupuesto = async function() {
     const pageW = 210, pageH = 297;
     const margin = 10;
     const usableW = pageW - margin*2;
+    const usableH = pageH - margin*2;
     const imgH = (canvas.height * usableW) / canvas.width;
-    let yPos = margin;
-    let remaining = imgH;
-    let firstPage = true;
-    while(remaining > 0) {
-      if(!firstPage) pdf.addPage();
-      const sliceH = Math.min(remaining, pageH - margin*2);
-      pdf.addImage(imgData, 'JPEG', margin, yPos, usableW, imgH, '', 'FAST', 0);
-      remaining -= sliceH;
-      yPos = -(imgH - sliceH) - margin;
-      firstPage = false;
+    if(imgH <= usableH) {
+      // Entra en una sola página
+      pdf.addImage(imgData, 'JPEG', margin, margin, usableW, imgH, '', 'FAST');
+    } else {
+      // Múltiples páginas — recortar imagen por página
+      const ratio = canvas.width / usableW;
+      const pageCanvasH = usableH * ratio;
+      let srcY = 0;
+      while(srcY < canvas.height) {
+        if(srcY > 0) pdf.addPage();
+        const sliceH = Math.min(pageCanvasH, canvas.height - srcY);
+        const sliceCanvas = document.createElement('canvas');
+        sliceCanvas.width = canvas.width;
+        sliceCanvas.height = sliceH;
+        sliceCanvas.getContext('2d').drawImage(canvas, 0, srcY, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
+        const sliceData = sliceCanvas.toDataURL('image/jpeg', 0.95);
+        const sliceImgH = (sliceH / ratio);
+        pdf.addImage(sliceData, 'JPEG', margin, margin, usableW, sliceImgH, '', 'FAST');
+        srcY += pageCanvasH;
+      }
     }
     const p = window._presupPrintId ? [...(_mcPresupuestos||[]),(window._clientPresupuestos||[])].flat().find(x=>x.id===window._presupPrintId) : null;
     const filename = `Presupuesto_${p?.numero||'0001'}_${(p?.cliente||'cliente').replace(/\s+/g,'_')}.pdf`;
