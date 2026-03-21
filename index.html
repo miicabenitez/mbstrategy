@@ -2334,8 +2334,15 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
   <div class="md" style="max-width:560px;">
     <button class="mc2" onclick="closeModal('newClientPresupModal')">×</button>
     <div class="mt">Nuevo presupuesto</div>
-    <div class="fg"><label class="fl">Cliente</label>
-      <select class="fi" id="cp-cliente-sel" style="margin-top:0;"><option value="">— Seleccioná un cliente —</option></select>
+    <div class="fg">
+      <label class="fl">Cliente</label>
+      <select class="fi" id="cp-cliente-sel" style="margin-top:0;" onchange="onCpClienteChange()">
+        <option value="">— Prospecto / Sin cliente —</option>
+      </select>
+    </div>
+    <div class="fg" id="cp-prospecto-wrap" style="display:none;">
+      <label class="fl">Nombre del prospecto</label>
+      <input type="text" class="fi" id="cp-prospecto-nombre" placeholder="Ej: Juan García, Empresa Rosario..."/>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
       <div class="fg"><label class="fl">Número</label><input type="text" class="fi" id="cp-numero" readonly style="background:var(--cream);color:var(--text-m);cursor:default;" placeholder="Auto-generado"/></div>
@@ -2422,6 +2429,32 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
 </div>
 
 <!-- Modal previsualización presupuesto -->
+<!-- Modal convertir prospecto en cliente -->
+<div class="mo" id="convertirProspectoModal">
+  <div class="md" style="max-width:440px;">
+    <button class="mc2" onclick="closeModal('convertirProspectoModal')">×</button>
+    <div class="mt">Convertir en cliente</div>
+    <div style="background:var(--ok-bg);border-radius:9px;padding:10px 14px;margin-bottom:16px;font-size:13px;color:var(--ok);">
+      ✓ Presupuesto aprobado — registrá los datos del cliente para activar la cuenta corriente.
+    </div>
+    <input type="hidden" id="conv-presup-id"/>
+    <div class="fg"><label class="fl">Nombre</label><input type="text" class="fi" id="conv-nombre" placeholder="Nombre completo"/></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="fg"><label class="fl">DNI</label><input type="text" class="fi" id="conv-dni" placeholder="12345678"/></div>
+      <div class="fg"><label class="fl">CUIT</label><input type="text" class="fi" id="conv-cuit" placeholder="20-12345678-9"/></div>
+    </div>
+    <div class="fg"><label class="fl">Teléfono</label><input type="tel" class="fi" id="conv-tel" placeholder="+54 11..."/></div>
+    <div class="fg"><label class="fl">Email</label><input type="email" class="fi" id="conv-email" placeholder="cliente@email.com"/></div>
+    <div class="fg"><label class="fl">Dirección (opcional)</label><input type="text" class="fi" id="conv-dir" placeholder="Calle 123, Ciudad"/></div>
+    <div class="br2">
+      <button class="bp" onclick="confirmarConversionCliente()">Crear cliente</button>
+      <button class="bs" onclick="closeModal('convertirProspectoModal')">Ahora no</button>
+    </div>
+    <div class="saved-msg" id="conv-saved">✓ Cliente creado</div>
+    <div id="conv-error" style="display:none;background:var(--err-bg);color:var(--err);font-size:12px;padding:9px 12px;border-radius:7px;margin-top:8px;"></div>
+  </div>
+</div>
+
 <div class="mo" id="presupPreviewModal">
   <div class="md" style="max-width:720px;padding:0;overflow:hidden;">
     <div style="background:var(--topbar);padding:14px 20px;display:flex;justify-content:space-between;align-items:center;">
@@ -7477,20 +7510,48 @@ window.updateClientPresupEstado = async function(id, estado) {
   if(!currentClientUID) return;
   try {
     await updateDoc(doc(db,'clientes',currentClientUID,'presupuestos',id),{estado});
-    const p = (window._clientPresupuestos||[]).find(x=>x.id===id)
-           || (_mcPresupuestos||[]).find(x=>x.id===id);
+    const allP = [...(window._clientPresupuestos||[]), ...(_mcPresupuestos||[])];
+    const p = allP.find(x=>x.id===id);
     if(p?.clienteId) {
-      if(estado === 'Aprobado') {
-        await addHistorialEntry(p.clienteId,
-          `Presupuesto aprobado: ${p.descripcion||'sin descripción'} · $${parseFloat(p.monto||0).toLocaleString('es-AR')}`);
-      } else if(estado === 'Denegado') {
-        await addHistorialEntry(p.clienteId,
-          `Presupuesto denegado: ${p.descripcion||'sin descripción'} · $${parseFloat(p.monto||0).toLocaleString('es-AR')}`);
-      }
+      if(estado === 'Aprobado') await addHistorialEntry(p.clienteId, `Presupuesto aprobado: ${p.descripcion||''} · $${getPresupMonto(p).toLocaleString('es-AR')}`);
+      else if(estado === 'Denegado') await addHistorialEntry(p.clienteId, `Presupuesto denegado: ${p.descripcion||''}`);
     }
     await loadClientPresupuestos();
     await loadMcModule();
-    // Si estamos en detalle de un cliente, refrescar
+    // Si aprobado y es prospecto (sin clienteId) → abrir conversión
+    if(estado === 'Aprobado' && !p?.clienteId) {
+      document.getElementById('conv-presup-id').value = id;
+      document.getElementById('conv-nombre').value = p?.cliente||'';
+      ['conv-dni','conv-cuit','conv-tel','conv-email','conv-dir'].forEach(fid=>{const el=document.getElementById(fid);if(el)el.value='';});
+      const errEl=document.getElementById('conv-error');if(errEl)errEl.style.display='none';
+      openModal('convertirProspectoModal');
+    } else if(_currentMcClienteId) {
+      openMcDetalle(_currentMcClienteId);
+    }
+  } catch(e){ console.log(e); }
+};
+
+// También disparar conversión desde updateMcPresupEstado (dentro del cliente)
+window.updateMcPresupEstado = async function(id, estado) {
+  if(!currentClientUID) return;
+  try {
+    await updateDoc(doc(db,'clientes',currentClientUID,'presupuestos',id),{estado});
+    const p = _mcPresupuestos.find(x=>x.id===id);
+    if(estado === 'Aprobado') {
+      if(p?.clienteId) {
+        await addHistorialEntry(p.clienteId, `Presupuesto aprobado: ${p.descripcion||''} · $${getPresupMonto(p).toLocaleString('es-AR')}`);
+      } else {
+        // Prospecto aprobado desde detalle
+        document.getElementById('conv-presup-id').value = id;
+        document.getElementById('conv-nombre').value = p?.cliente||'';
+        ['conv-dni','conv-cuit','conv-tel','conv-email','conv-dir'].forEach(fid=>{const el=document.getElementById(fid);if(el)el.value='';});
+        const errEl=document.getElementById('conv-error');if(errEl)errEl.style.display='none';
+        await loadMcModule();
+        openModal('convertirProspectoModal');
+        return;
+      }
+    }
+    await loadMcModule();
     if(_currentMcClienteId) openMcDetalle(_currentMcClienteId);
   } catch(e){ console.log(e); }
 };
@@ -7669,6 +7730,7 @@ function renderClientPresup(list) {
         </div>
         <div style="display:flex;align-items:center;gap:8px;margin-top:5px;flex-wrap:wrap;">
           <span style="font-size:10px;font-weight:500;padding:2px 9px;border-radius:20px;background:${bc.bg};color:${bc.color};">${p.estado}</span>
+          ${p.prospecto&&!p.clienteId ? `<span style="font-size:10px;font-weight:500;padding:2px 9px;border-radius:20px;background:#EEF2FF;color:#5A5ABF;margin-left:4px;">Prospecto</span>` : ''}
           ${fecha?`<span style="font-size:11px;color:var(--text-l);">${fecha}</span>`:''}
           ${alerta}
           ${p.link?`<button onclick="verPresupuestoPDF('${p.id}')" style="font-size:11px;color:var(--topbar);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;padding:0;">Ver PDF →</button>`:''}
@@ -7748,16 +7810,70 @@ window.addCpItem = function() {
 
 window.removeCpItem = function(i) { _cpItems.splice(i,1); renderCpItems(); };
 
+window.onCpClienteChange = function() {
+  const sel = document.getElementById('cp-cliente-sel');
+  const wrap = document.getElementById('cp-prospecto-wrap');
+  if(!wrap) return;
+  // Mostrar campo de nombre libre si elige "Prospecto"
+  wrap.style.display = (!sel?.value) ? 'block' : 'none';
+};
+
+window.confirmarConversionCliente = async function() {
+  if(!currentClientUID) return;
+  const nombre = document.getElementById('conv-nombre').value.trim();
+  const errEl = document.getElementById('conv-error');
+  const showErr = msg => { if(errEl){errEl.textContent=msg;errEl.style.display='block';} };
+  if(errEl) errEl.style.display='none';
+  if(!nombre) { showErr('Ingresá el nombre del cliente'); return; }
+  const presupId = document.getElementById('conv-presup-id').value;
+  try {
+    // 1. Crear cliente
+    const clienteData = {
+      nombre,
+      dni:       document.getElementById('conv-dni').value.trim(),
+      cuit:      document.getElementById('conv-cuit').value.trim(),
+      tel:       document.getElementById('conv-tel').value.trim(),
+      email:     document.getElementById('conv-email').value.trim(),
+      direccion: document.getElementById('conv-dir').value.trim(),
+      totalCobrado: 0,
+      ultimoContacto: new Date().toISOString(),
+      creadoEn: new Date().toISOString()
+    };
+    const ref = await addDoc(collection(db,'clientes',currentClientUID,'misClientes'), clienteData);
+    const clienteId = ref.id;
+    // 2. Vincular presupuesto al nuevo cliente
+    if(presupId) {
+      await updateDoc(doc(db,'clientes',currentClientUID,'presupuestos',presupId), {
+        clienteId, cliente: nombre, prospecto: false
+      });
+      await addHistorialEntry(clienteId, `Cliente creado desde presupuesto aprobado`);
+    }
+    const s = document.getElementById('conv-saved'); if(s) s.style.display='block';
+    setTimeout(async()=>{
+      if(s) s.style.display='none';
+      closeModal('convertirProspectoModal');
+      await loadMcModule();
+      // Navegar al cliente recién creado
+      showCTab('mclientes', document.querySelector('#subnav-comercial .subctab'));
+      setTimeout(()=>openMcDetalle(clienteId), 400);
+    }, 1500);
+  } catch(e) { showErr('Error: '+e.message); }
+};
+
 window.createClientPresup = async function() {
   if(!currentClientUID) return;
   const sel = document.getElementById('cp-cliente-sel');
-  const clienteId = sel?.value;
-  const clienteNombre = sel?.options[sel.selectedIndex]?.text;
-  if(!clienteId) { alert('Seleccioná un cliente'); return; }
+  const clienteId = sel?.value || null;
+  const clienteNombre = clienteId
+    ? (sel?.options[sel.selectedIndex]?.text || '')
+    : (document.getElementById('cp-prospecto-nombre')?.value.trim() || '');
+  if(!clienteNombre) { alert('Ingresá el nombre del prospecto o seleccioná un cliente'); return; }
   if(_cpItems.length === 0) { alert('Agregá al menos un ítem al presupuesto'); return; }
   const total = _cpItems.reduce((s,it)=>s+(it.cant*it.precio),0);
   const data = {
-    cliente: clienteNombre, clienteId,
+    cliente: clienteNombre,
+    clienteId: clienteId || null,
+    prospecto: !clienteId,
     numero: document.getElementById('cp-numero').value,
     descripcion: document.getElementById('cp-desc').value,
     items: [..._cpItems],
@@ -7771,12 +7887,13 @@ window.createClientPresup = async function() {
   };
   try {
     await addDoc(collection(db,'clientes',currentClientUID,'presupuestos'), data);
+    if(clienteId) await addHistorialEntry(clienteId, `Presupuesto creado: ${data.descripcion||''} · $${total.toLocaleString('es-AR')}`);
     _presupPdfUrl = '';
     const s=document.getElementById('cp-saved'); if(s) s.style.display='block';
     setTimeout(async()=>{
       if(s) s.style.display='none';
       closeModal('newClientPresupModal');
-      _cpItems = [];
+      window._cpItems = [];
       await loadClientPresupuestos();
       await loadMcModule();
     }, 1500);
@@ -7866,6 +7983,7 @@ function renderProductosModule() {
   const footer=document.getElementById('prod-footer-guardar');
   if(footer)footer.style.display='flex';
 }
+window.renderProductosModule = renderProductosModule;
 
 function actualizarSelectorProductos() {
   const sel = document.getElementById('cli-ing-producto');
@@ -7874,6 +7992,7 @@ function actualizarSelectorProductos() {
   sel.innerHTML = '<option value="">— Seleccionar producto (opcional) —</option>' +
     activos.map(p=>`<option value="${p.id}" data-precio="${p.precio||0}" data-nombre="${p.nombre||''}">${p.nombre}${p.precio?' — $'+parseFloat(p.precio).toLocaleString('es-AR'):''}</option>`).join('');
 }
+window.actualizarSelectorProductos = actualizarSelectorProductos;
 
 window.aplicarProductoIngreso = function(productoId) {
   if(!productoId) return;
@@ -7918,7 +8037,7 @@ window.guardarPrecios = async function() {
 };
 
 window.createProducto = async function() {
-  if(!currentClientUID) return;
+  if(!currentClientUID) { alert('Error: no hay sesión activa. Recargá la página.'); return; }
   const id = document.getElementById('prod-edit-id').value;
   const nombre = document.getElementById('prod-nombre').value.trim();
   if(!nombre){alert('Ingresá un nombre');return;}
@@ -7944,10 +8063,10 @@ window.createProducto = async function() {
       document.getElementById('prod-edit-id').value='';
       document.getElementById('prod-modal-titulo').textContent='Agregar al catálogo';
       const btn=document.getElementById('prod-modal-btn');
-      if(btn){btn.textContent='Guardar';btn.onclick=createProducto;}
-      await loadProductos();
+      if(btn){btn.textContent='Guardar';btn.onclick=window.createProducto;}
+      await window.loadProductos();
     },1500);
-  }catch(e){alert('Error: '+e.message);}
+  }catch(e){ alert('Error al guardar producto: '+e.message); console.error(e); }
 };
 
 window.editProducto = function(id) {
@@ -9795,7 +9914,7 @@ window.openModal = function(id) {
     document.getElementById('cp-validez').value = validez.toISOString().split('T')[0];
     const numEl = document.getElementById('cp-numero');
     if(numEl) numEl.value = window.formatPresupNumero(((window._mcPresupuestos)||[]).length + 1);
-    ['cp-desc','cp-notas'].forEach(fid=>{const el=document.getElementById(fid);if(el)el.value='';});
+    ['cp-desc','cp-notas','cp-prospecto-nombre'].forEach(fid=>{const el=document.getElementById(fid);if(el)el.value='';});
     window._cpItems = []; if(window.renderCpItems) window.renderCpItems();
     const prodSel = document.getElementById('cp-item-prod');
     if(prodSel) prodSel.innerHTML = '<option value="">— Producto del catálogo —</option>' +
