@@ -7920,7 +7920,10 @@ async function loadProductos() {
     _productos.sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||''));
     renderProductosModule();
     actualizarSelectorProductos();
-  } catch(e){ console.log('loadProductos error:',e); }
+  } catch(e){
+    console.error('loadProductos error:', e);
+    // No limpiar _productos si falla — mantener lo que había
+  }
 }
 window.loadProductos = loadProductos;
 
@@ -8009,99 +8012,6 @@ window.aplicarProductoIngreso = function(productoId) {
   if(montoEl) montoEl.focus();
 };
 
-window.toggleActivoProducto = async function(id, nuevoEstado) {
-  const uid = currentClientUID || window.currentClientUID;
-  if(!uid) return;
-  try {
-    await updateDoc(doc(db,'clientes',uid,'productos',id),{activo:nuevoEstado,updatedAt:new Date().toISOString()});
-    const p=_productos.find(x=>x.id===id);
-    if(p){p.activo=nuevoEstado;p.updatedAt=new Date().toISOString();}
-    renderProductosModule(); actualizarSelectorProductos();
-  }catch(e){ console.error('toggleActivo error:',e); }
-};
-
-window.marcarCambioPrecio = function() {
-  const footer=document.getElementById('prod-footer-guardar');
-  if(footer) footer.style.display='flex';
-};
-
-window.guardarPrecios = async function() {
-  const uid = currentClientUID || window.currentClientUID;
-  if(!uid) return;
-  const inputs = document.querySelectorAll('.prod-precio-input');
-  const ahora = new Date().toISOString();
-  try {
-    for(const input of inputs) {
-      const id=input.dataset.id, val=parseFloat(input.value)||0;
-      const p=_productos.find(x=>x.id===id);
-      if(p && val !== parseFloat(p.precio)) {
-        await updateDoc(doc(db,'clientes',uid,'productos',id),{precio:val,updatedAt:ahora});
-        p.precio=val; p.updatedAt=ahora;
-      }
-    }
-    renderProductosModule(); actualizarSelectorProductos();
-  }catch(e){alert('Error: '+e.message);}
-};
-
-window.createProducto = async function() {
-  const uid = currentClientUID || window.currentClientUID;
-  if(!uid) { alert('Error: sesión no iniciada. Recargá la página.'); return; }
-  const id     = document.getElementById('prod-edit-id').value;
-  const nombre = document.getElementById('prod-nombre').value.trim();
-  if(!nombre){ alert('Ingresá un nombre'); return; }
-  const data = {
-    nombre,
-    precio:      parseFloat(document.getElementById('prod-precio').value)||0,
-    descripcion: document.getElementById('prod-desc').value,
-    activo: true,
-    updatedAt: new Date().toISOString(),
-    creadoEn:  new Date().toISOString()
-  };
-  try {
-    if(id) {
-      await updateDoc(doc(db,'clientes',uid,'productos',id), data);
-    } else {
-      await addDoc(collection(db,'clientes',uid,'productos'), data);
-    }
-    const s = document.getElementById('prod-saved');
-    if(s) s.style.display='block';
-    setTimeout(async()=>{
-      if(s) s.style.display='none';
-      closeModal('newProductoModal');
-      ['prod-nombre','prod-precio','prod-desc'].forEach(fid=>{const el=document.getElementById(fid);if(el)el.value='';});
-      document.getElementById('prod-edit-id').value='';
-      document.getElementById('prod-modal-titulo').textContent='Agregar al catálogo';
-      const btn=document.getElementById('prod-modal-btn');
-      if(btn){btn.textContent='Guardar';btn.onclick=window.createProducto;}
-      await loadProductos();
-    }, 1500);
-  } catch(e){ alert('Error al guardar: '+e.message); console.error(e); }
-};
-
-window.editProducto = function(id) {
-  const p = _productos.find(x=>x.id===id);
-  if(!p) return;
-  document.getElementById('prod-edit-id').value=id;
-  document.getElementById('prod-nombre').value=p.nombre||'';
-  document.getElementById('prod-precio').value=p.precio||'';
-  document.getElementById('prod-desc').value=p.descripcion||'';
-  document.getElementById('prod-modal-titulo').textContent='Editar ítem';
-  const btn=document.getElementById('prod-modal-btn');
-  if(btn){btn.textContent='Guardar cambios';btn.onclick=window.createProducto;}
-  openModal('newProductoModal');
-};
-
-window.deleteProducto = function(id) {
-  showConfirm('¿Eliminar este producto?', async()=>{
-    const uid = currentClientUID || window.currentClientUID;
-    if(!uid) return;
-    try {
-      const {deleteDoc} = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
-      await deleteDoc(doc(db,'clientes',uid,'productos',id));
-      await loadProductos();
-    } catch(e){ console.error('deleteProducto error:', e); }
-  },'Eliminar producto');
-};
 
 // ===== MI CUENTA =====
 window.openModal_miCuentaModal_extra = async function() {
@@ -10078,6 +9988,176 @@ async function loadMcReunionesExternas() {
     window._mcReunionesExternas.sort((a,b) => new Date(a.fecha) - new Date(b.fecha));
   } catch(e) { console.log(e); }
 }
+
+// ===== PRODUCTOS: funciones autónomas en plain block =====
+// Estas funciones usan dynamic import y son independientes del módulo.
+// Garantizan que productos siempre carga y renderiza correctamente.
+
+async function loadProductos() {
+  const uid = window.currentClientUID;
+  if(!uid) return;
+  try {
+    const fsi = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
+    const fdb = window.db || fsi.getFirestore();
+    const snap = await fsi.getDocs(fsi.collection(fdb,'clientes',uid,'productos'));
+    const prods = [];
+    snap.forEach(d => prods.push({id:d.id,...d.data()}));
+    prods.sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||''));
+    // Guardar en window para que todos los módulos puedan acceder
+    window._productosData = prods;
+    // Renderizar lista
+    const lista = document.getElementById('prod-lista');
+    if(lista) {
+      if(prods.length===0){
+        lista.innerHTML='<div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Sin ítems. ¡Agregá el primero!</div>';
+      } else {
+        lista.innerHTML = prods.map(function(p){
+          const pr = parseFloat(p.precio)||0;
+          const inact = p.activo===false;
+          return '<div style="display:grid;grid-template-columns:1fr 120px 110px 50px 60px;gap:10px;align-items:center;padding:13px 0;border-bottom:.5px solid var(--cream-d);'+(inact?'opacity:.4;':'')+'">'
+            +'<div><div style="font-size:13px;font-weight:500;color:var(--text);'+(inact?'text-decoration:line-through;':'')+'">'+p.nombre+'</div>'
+            +(p.descripcion?'<div style="font-size:11px;color:var(--text-l);margin-top:1px;">'+p.descripcion+'</div>':'')
+            +'</div>'
+            +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:17px;color:var(--ok);font-weight:500;text-align:right;">$'+pr.toLocaleString('es-AR')+'</div>'
+            +'<input type="number" value="'+pr+'" data-id="'+p.id+'" class="prod-precio-input" style="width:100%;padding:6px 10px;border:.5px solid var(--cream-d);border-radius:8px;font-size:12px;color:var(--text);font-family:\'DM Sans\',sans-serif;text-align:right;" onchange="marcarCambioPrecio()"/>'
+            +'<div style="display:flex;justify-content:center;"><div onclick="toggleActivoProducto(\''+p.id+'\','+inact+')" style="width:36px;height:20px;border-radius:10px;background:'+(inact?'var(--cream-d)':'var(--topbar)')+';position:relative;cursor:pointer;flex-shrink:0;"><div style="position:absolute;width:14px;height:14px;border-radius:50%;background:#fff;top:3px;'+(inact?'left:3px':'left:19px')+';"></div></div></div>'
+            +'<div style="display:flex;gap:4px;justify-content:flex-end;">'
+            +'<button onclick="editProducto(\''+p.id+'\')" style="background:none;border:.5px solid var(--cream-d);border-radius:7px;padding:4px 8px;font-size:11px;color:var(--text-l);cursor:pointer;font-family:\'DM Sans\',sans-serif;">✏️</button>'
+            +'<button onclick="deleteProducto(\''+p.id+'\')" style="background:none;border:.5px solid var(--cream-d);border-radius:7px;padding:4px 8px;font-size:11px;color:var(--err);cursor:pointer;font-family:\'DM Sans\',sans-serif;">×</button>'
+            +'</div></div>';
+        }).join('');
+      }
+    }
+    // KPIs
+    const activos = prods.filter(function(p){return p.activo!==false;}).length;
+    const kpi = document.getElementById('prod-kpi-activos');
+    if(kpi) kpi.textContent = activos;
+    const kpiSub = document.getElementById('prod-kpi-activos-sub');
+    if(kpiSub) kpiSub.textContent = 'de '+prods.length+' en el catálogo';
+    // Última actualización
+    const ultFecha = prods.reduce(function(a,p){return p.updatedAt&&p.updatedAt>a?p.updatedAt:a;},'');
+    const setEl = function(id,v){var el=document.getElementById(id);if(el)el.textContent=v;};
+    if(ultFecha) {
+      const meses = Math.round((Date.now()-new Date(ultFecha))/(1000*60*60*24*30));
+      setEl('prod-kpi-meses', meses===0?'<1':String(meses));
+      setEl('prod-kpi-meses-sub', meses===0?'actualizado este mes':'meses sin cambios');
+    } else { setEl('prod-kpi-meses','—'); setEl('prod-kpi-meses-sub','sin registros'); }
+    // Footer
+    const footer = document.getElementById('prod-footer-guardar');
+    if(footer) footer.style.display = prods.length > 0 ? 'flex' : 'none';
+    // Actualizar selector de productos en presupuestos
+    var sel = document.getElementById('mcp-item-prod');
+    if(sel) sel.innerHTML = '<option value="">— Producto del catálogo —</option>' +
+      prods.filter(function(p){return p.activo!==false;}).map(function(p){
+        return '<option value="'+p.id+'">'+p.nombre+' · $'+parseFloat(p.precio||0).toLocaleString('es-AR')+'</option>';
+      }).join('');
+    var sel2 = document.getElementById('cp-item-prod');
+    if(sel2) sel2.innerHTML = sel ? sel.innerHTML : '';
+  } catch(e){ console.error('loadProductos error:', e); }
+}
+
+async function createProducto() {
+  const uid = window.currentClientUID;
+  if(!uid) { alert('Error: sesión no iniciada. Recargá la página.'); return; }
+  const id     = document.getElementById('prod-edit-id').value;
+  const nombre = document.getElementById('prod-nombre').value.trim();
+  if(!nombre){ alert('Ingresá un nombre'); return; }
+  const data = {
+    nombre,
+    precio:      parseFloat(document.getElementById('prod-precio').value)||0,
+    descripcion: document.getElementById('prod-desc').value,
+    activo: true,
+    updatedAt: new Date().toISOString(),
+    creadoEn:  new Date().toISOString()
+  };
+  try {
+    const fsi = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
+    const fdb = window.db || fsi.getFirestore();
+    if(id) {
+      await fsi.updateDoc(fsi.doc(fdb,'clientes',uid,'productos',id), data);
+    } else {
+      await fsi.addDoc(fsi.collection(fdb,'clientes',uid,'productos'), data);
+    }
+    const s = document.getElementById('prod-saved');
+    if(s) s.style.display='block';
+    await loadProductos();
+    setTimeout(function(){
+      if(s) s.style.display='none';
+      closeModal('newProductoModal');
+      ['prod-nombre','prod-precio','prod-desc'].forEach(function(fid){var el=document.getElementById(fid);if(el)el.value='';});
+      document.getElementById('prod-edit-id').value='';
+      document.getElementById('prod-modal-titulo').textContent='Agregar al catálogo';
+      var btn=document.getElementById('prod-modal-btn');
+      if(btn){btn.textContent='Guardar';}
+    }, 1500);
+  } catch(e){ alert('Error al guardar: '+e.message); }
+}
+
+// editProducto y deleteProducto usan window._productosData (seteado por loadProductos plain)
+window.editProducto = function(id) {
+  var prods = window._productosData || [];
+  var p = prods.find(function(x){return x.id===id;});
+  if(!p) return;
+  document.getElementById('prod-edit-id').value = id;
+  document.getElementById('prod-nombre').value = p.nombre||'';
+  document.getElementById('prod-precio').value = p.precio||'';
+  document.getElementById('prod-desc').value = p.descripcion||'';
+  document.getElementById('prod-modal-titulo').textContent = 'Editar ítem';
+  var btn = document.getElementById('prod-modal-btn');
+  if(btn){ btn.textContent='Guardar cambios'; btn.onclick=createProducto; }
+  openModal('newProductoModal');
+};
+
+window.deleteProducto = function(id) {
+  showConfirm('¿Eliminar este producto?', async function(){
+    var uid = window.currentClientUID;
+    if(!uid) return;
+    try {
+      var fsi = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
+      var fdb = window.db || fsi.getFirestore();
+      await fsi.deleteDoc(fsi.doc(fdb,'clientes',uid,'productos',id));
+      await loadProductos();
+    } catch(e){ alert('Error: '+e.message); }
+  }, 'Eliminar producto');
+};
+
+window.toggleActivoProducto = async function(id, nuevoEstado) {
+  var uid = window.currentClientUID;
+  if(!uid) return;
+  try {
+    var fsi = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
+    var fdb = window.db || fsi.getFirestore();
+    await fsi.updateDoc(fsi.doc(fdb,'clientes',uid,'productos',id),{activo:nuevoEstado,updatedAt:new Date().toISOString()});
+    await loadProductos();
+  } catch(e){ console.error(e); }
+};
+
+window.guardarPrecios = async function() {
+  var uid = window.currentClientUID;
+  if(!uid) return;
+  var inputs = document.querySelectorAll('.prod-precio-input');
+  var ahora = new Date().toISOString();
+  try {
+    var fsi = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
+    var fdb = window.db || fsi.getFirestore();
+    var prods = window._productosData || [];
+    for(var i=0;i<inputs.length;i++){
+      var input = inputs[i];
+      var pid = input.dataset.id;
+      var val = parseFloat(input.value)||0;
+      var p = prods.find(function(x){return x.id===pid;});
+      if(p && val !== parseFloat(p.precio)) {
+        await fsi.updateDoc(fsi.doc(fdb,'clientes',uid,'productos',pid),{precio:val,updatedAt:ahora});
+      }
+    }
+    await loadProductos();
+  } catch(e){ alert('Error: '+e.message); }
+};
+
+window.marcarCambioPrecio = function() {
+  var footer = document.getElementById('prod-footer-guardar');
+  if(footer) footer.style.display='flex';
+};
 
 </script>
 </body>
