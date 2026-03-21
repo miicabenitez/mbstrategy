@@ -416,17 +416,48 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
   .sg{grid-template-columns:1fr 1fr;}
   .tasks-board{grid-template-columns:1fr;}
   .nav-tabs{display:none;}
-  .content{padding:14px;}
+  .content{padding:12px;}
   .mc .mv{font-size:20px;}
-  .md{padding:20px 16px;margin:10px;}
+  .md{padding:18px 14px;margin:8px;width:calc(100% - 16px);max-width:100%;max-height:92vh;border-radius:14px;}
   .mobile-menu{display:block !important;}
   .topbar-brand{font-size:13px;}
   .dash-banner-stats{flex-wrap:wrap;gap:12px;}
   .dash-banner-stat{min-width:80px;}
+  .mod-subnav{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:6px;scrollbar-width:none;}
+  .mod-subnav::-webkit-scrollbar{display:none;}
+  .subctab{white-space:nowrap;flex-shrink:0;}
+  .client-tabs{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .client-tabs::-webkit-scrollbar{display:none;}
+  .ctab{white-space:nowrap;flex-shrink:0;padding:10px 14px;}
+  /* Tabla de ítems en presupuesto */
+  #cp-items-list, #mcp-items-list{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  /* Modal presupuesto — fila de item en 2 líneas */
+  #cp-items-list > div[style*="grid-template-columns:1fr 64px"],
+  #mcp-items-list > div[style*="grid-template-columns:1fr 55px"]{display:flex;flex-wrap:wrap;gap:4px;}
+  /* Grids internos de modales */
+  .md [style*="grid-template-columns:1fr 1fr"]{display:block !important;}
+  .md [style*="grid-template-columns:1fr 70px"]{display:flex;flex-wrap:wrap;gap:6px;}
+  .md [style*="grid-template-columns:1fr 64px"]{display:flex;flex-wrap:wrap;gap:6px;}
+  /* KPI cards */
+  .md [style*="grid-template-columns:repeat"]{grid-template-columns:1fr 1fr !important;}
+  /* Botones de acción en cards */
+  [style*="display:flex"][style*="gap:4px"]{flex-wrap:wrap;}
+  /* Banner topbar */
+  .topbar{padding:0 12px;}
+  .topbar-right{gap:4px;}
 }
 @media(max-width:480px){
   .mg{grid-template-columns:1fr 1fr;}
   .presup-card .presup-actions{flex-wrap:wrap;}
+  .content{padding:10px;}
+  .md{margin:4px;width:calc(100% - 8px);padding:16px 12px;border-radius:12px;}
+  /* Selector de producto en modal presupuesto — 1 columna */
+  .md [style*="grid-template-columns:1fr 64px 100px"],
+  .md [style*="grid-template-columns:1fr 70px 100px"]{display:flex !important;flex-direction:column !important;gap:6px !important;}
+  .md [style*="grid-template-columns:1fr 64px 100px"] select,
+  .md [style*="grid-template-columns:1fr 70px 100px"] select,
+  .md [style*="grid-template-columns:1fr 64px 100px"] input,
+  .md [style*="grid-template-columns:1fr 70px 100px"] input{width:100% !important;box-sizing:border-box;}
 }
 .mobile-menu{display:none;background:none;border:none;cursor:pointer;padding:4px;color:var(--text-m);}
 .mobile-nav{display:none;position:fixed;inset:0;background:rgba(44,40,38,.5);z-index:200;}
@@ -7702,7 +7733,7 @@ window.imprimirPresupuesto = async function() {
     console.error('PDF error:', e);
     // Fallback al diálogo de impresión
     const w = window.open('','_blank','width=800,height=900');
-    w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:'DM Sans',Arial,sans-serif;background:#fff;}@media print{@page{margin:10mm;}}</style></head><body>`);
+    w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:'DM Sans',Arial,sans-serif;background:#fff;padding:10px;}@media print{body{padding:0;}@page{margin:8mm;size:A4;}}#presup-print-doc{max-width:100% !important;}@media(max-width:600px){#presup-print-doc [style*="font-size:28px"]{font-size:18px !important;}#presup-print-doc [style*="padding:24px 30px"]{padding:14px !important;}table th,table td{padding:5px 4px !important;font-size:10px !important;}}</style></head><body>`);
     w.document.write(content.outerHTML);
     w.document.write(`<script>window.onload=function(){window.print();setTimeout(()=>window.close(),500);}<\/script></body></html>`);
     w.document.close();
