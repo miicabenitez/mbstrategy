@@ -7805,7 +7805,7 @@ window.addCpItem = function() {
   const nombre = (opt && opt.dataset && opt.dataset.nombre) ? opt.dataset.nombre : '';
   const desc   = document.getElementById('cp-item-desc').value.trim() || nombre || 'Ítem';
   window._cpItems.push({desc:desc, cant:cant, precio:precio, productoId: sel ? sel.value : ''});
-  renderCpItems();
+  if(window.renderCpItems) window.renderCpItems();
   document.getElementById('cp-item-cant').value = '1';
   document.getElementById('cp-item-precio').value = '';
   document.getElementById('cp-item-desc').value = '';
@@ -7815,7 +7815,7 @@ window.addCpItem = function() {
 window.removeCpItem = function(i) {
   if(!window._cpItems) return;
   window._cpItems.splice(i,1);
-  renderCpItems();
+  if(window.renderCpItems) window.renderCpItems();
 };
 
 // onCpItemProdSelect moved to plain block
