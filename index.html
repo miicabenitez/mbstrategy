@@ -7925,6 +7925,23 @@ async function loadProductos() {
 }
 window.loadProductos = loadProductos;
 
+// Bridge: plain block populates this, module syncs _productos array from it
+window._syncProductosModule = function(prods) {
+  _productos = prods;
+  actualizarSelectorProductos();
+  // Also update KPIs and última actualización using real data
+  const setEl = (id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  const ultFecha = prods.reduce((a,p)=>p.updatedAt&&p.updatedAt>a?p.updatedAt:a,'');
+  if(ultFecha) {
+    const meses = Math.round((Date.now()-new Date(ultFecha))/(1000*60*60*24*30));
+    setEl('prod-kpi-meses', meses===0?'<1':String(meses));
+    setEl('prod-kpi-meses-sub', meses===0?'actualizado este mes':'meses sin cambios');
+  } else {
+    setEl('prod-kpi-meses','—');
+    setEl('prod-kpi-meses-sub','meses sin cambios');
+  }
+};
+
 function renderProductosModule() {
   const setEl = (id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
   const total = _productos.length;
@@ -8011,12 +8028,14 @@ window.aplicarProductoIngreso = function(productoId) {
 };
 
 window.toggleActivoProducto = async function(id, nuevoEstado) {
-  if(!currentClientUID) return;
+  const uid = currentClientUID || window.currentClientUID;
+  if(!uid) return;
   try {
-    await updateDoc(doc(db,'clientes',currentClientUID,'productos',id),{activo:nuevoEstado,updatedAt:new Date().toISOString()});
-    const p=_productos.find(x=>x.id===id); if(p){p.activo=nuevoEstado;p.updatedAt=new Date().toISOString();}
+    await updateDoc(doc(db,'clientes',uid,'productos',id),{activo:nuevoEstado,updatedAt:new Date().toISOString()});
+    const p=_productos.find(x=>x.id===id);
+    if(p){p.activo=nuevoEstado;p.updatedAt=new Date().toISOString();}
     renderProductosModule(); actualizarSelectorProductos();
-  }catch(e){}
+  }catch(e){ console.error('toggleActivo error:',e); }
 };
 
 window.marcarCambioPrecio = function() {
@@ -8025,7 +8044,8 @@ window.marcarCambioPrecio = function() {
 };
 
 window.guardarPrecios = async function() {
-  if(!currentClientUID) return;
+  const uid = currentClientUID || window.currentClientUID;
+  if(!uid) return;
   const inputs = document.querySelectorAll('.prod-precio-input');
   const ahora = new Date().toISOString();
   try {
@@ -8033,13 +8053,14 @@ window.guardarPrecios = async function() {
       const id=input.dataset.id, val=parseFloat(input.value)||0;
       const p=_productos.find(x=>x.id===id);
       if(p && val !== parseFloat(p.precio)) {
-        await updateDoc(doc(db,'clientes',currentClientUID,'productos',id),{precio:val,updatedAt:ahora});
+        await updateDoc(doc(db,'clientes',uid,'productos',id),{precio:val,updatedAt:ahora});
         p.precio=val; p.updatedAt=ahora;
       }
     }
     renderProductosModule(); actualizarSelectorProductos();
   }catch(e){alert('Error: '+e.message);}
 };
+
 
 window.createProducto = async function() {
   const uid = window.currentClientUID;
@@ -8079,7 +8100,8 @@ window.createProducto = async function() {
 };
 
 window.editProducto = function(id) {
-  const p=_productos.find(x=>x.id===id); if(!p) return;
+  const p = _productos.find(x=>x.id===id) || (window._productosData||[]).find(x=>x.id===id);
+  if(!p) return;
   document.getElementById('prod-edit-id').value=id;
   document.getElementById('prod-nombre').value=p.nombre||'';
   document.getElementById('prod-precio').value=p.precio||'';
@@ -8092,7 +8114,13 @@ window.editProducto = function(id) {
 
 window.deleteProducto = function(id) {
   showConfirm('¿Eliminar este producto?', async()=>{
-    try{const {deleteDoc}=await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");await deleteDoc(doc(db,'clientes',currentClientUID,'productos',id));await loadProductos();}catch(e){}
+    const uid = currentClientUID || window.currentClientUID;
+    if(!uid) return;
+    try {
+      const {deleteDoc} = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
+      await deleteDoc(doc(db,'clientes',uid,'productos',id));
+      await loadProductos();
+    } catch(e){ console.error(e); }
   },'Eliminar producto');
 };
 
@@ -10111,6 +10139,9 @@ async function loadProductos() {
     if(kpiSub) kpiSub.textContent = 'de '+prods.length+' en el catálogo';
     const footer = document.getElementById('prod-footer-guardar');
     if(footer) footer.style.display = prods.length > 0 ? 'flex' : 'none';
+    // Sync module _productos so edit/delete/toggle/guardarPrecios work
+    window._productosData = prods;
+    if(window._syncProductosModule) window._syncProductosModule(prods);
   } catch(e){ console.error('loadProductos plain error:', e); }
 }
 
