@@ -1218,8 +1218,10 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
       <!-- SUB-NAV secundario Comercial -->
       <div id="subnav-comercial" class="mod-subnav" style="display:none;gap:4px;margin-bottom:20px;">
         <button class="subctab active" onclick="showCTab('mclientes',this)">Mis clientes</button>
-        <button class="subctab" onclick="showCTab('productos',this)">Productos</button>
         <button class="subctab" onclick="showCTab('presupuestos',this)">Presupuestos</button>
+        <button class="subctab" onclick="showCTab('productos',this)">Productos</button>
+        <button class="subctab" onclick="showCTab('tareas',this)">Plan de acción</button>
+      </div>
         <button class="subctab" onclick="showCTab('tareas',this)">Plan de acción</button>
       </div>
 
@@ -6788,24 +6790,38 @@ window.openMcDetalle = function(id) {
     } else { alertEl.style.display='none'; }
   }
 
-  // KPIs cuenta corriente
+  // KPIs cuenta corriente — recalcular desde cobros reales
   const setEl = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
   const misPresups = _mcPresupuestos.filter(p => p.clienteId === id || p.cliente === c.nombre);
-  const cobrado    = parseFloat(c.totalCobrado) || 0;
-  const total      = misPresups.filter(p=>p.estado==='Aprobado').reduce((s,p)=>s+getPresupMonto(p),0);
-  const saldo      = total - cobrado;
-  const fmt        = v => '$' + Math.abs(v).toLocaleString('es-AR');
-  setEl('mcd-total',    total > 0 ? fmt(total) : '—');
-  setEl('mcd-cobrado',  fmt(cobrado));
-  // Pendiente: negativo = saldo a favor
-  const pendEl = document.getElementById('mcd-pendiente');
-  if(pendEl) {
-    if(saldo < 0) {
-      pendEl.textContent = 'Saldo a favor: ' + fmt(saldo);
-      pendEl.style.color = '#5A7A5E';
-    } else {
-      pendEl.textContent = fmt(saldo);
-      pendEl.style.color = '#B08A42';
+  const total = misPresups.filter(p=>p.estado==='Aprobado').reduce((s,p)=>s+getPresupMonto(p),0);
+  const fmt = v => '$' + Math.abs(v).toLocaleString('es-AR');
+  setEl('mcd-total', total > 0 ? fmt(total) : '—');
+  // Calcular cobrado real desde subcolección
+  try {
+    const cobrosSnap = await getDocs(collection(db,'clientes',currentClientUID,'misClientes',id,'cobros'));
+    let cobradoReal = 0;
+    cobrosSnap.forEach(d => cobradoReal += parseFloat(d.data().monto||0));
+    // Sincronizar si está desincronizado
+    if(Math.abs(cobradoReal - (parseFloat(c.totalCobrado)||0)) > 0.01) {
+      await updateDoc(doc(db,'clientes',currentClientUID,'misClientes',id),{totalCobrado:cobradoReal});
+      if(_mcClientes.find(x=>x.id===id)) _mcClientes.find(x=>x.id===id).totalCobrado = cobradoReal;
+    }
+    const saldo = total - cobradoReal;
+    setEl('mcd-cobrado', fmt(cobradoReal));
+    const pendEl = document.getElementById('mcd-pendiente');
+    if(pendEl) {
+      if(saldo < 0) { pendEl.textContent = 'Saldo a favor: '+fmt(saldo); pendEl.style.color='#5A7A5E'; }
+      else { pendEl.textContent = fmt(saldo); pendEl.style.color='#B08A42'; }
+    }
+  } catch(e) {
+    // Fallback a totalCobrado guardado
+    const cobrado = parseFloat(c.totalCobrado)||0;
+    const saldo = total - cobrado;
+    setEl('mcd-cobrado', fmt(cobrado));
+    const pendEl = document.getElementById('mcd-pendiente');
+    if(pendEl) {
+      if(saldo < 0) { pendEl.textContent = 'Saldo a favor: '+fmt(saldo); pendEl.style.color='#5A7A5E'; }
+      else { pendEl.textContent = fmt(saldo); pendEl.style.color='#B08A42'; }
     }
   }
 
@@ -7785,6 +7801,7 @@ async function loadProductos() {
     actualizarSelectorProductos();
   } catch(e){ console.log(e); }
 }
+window.loadProductos = loadProductos;
 
 function renderProductosModule() {
   const setEl = (id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
