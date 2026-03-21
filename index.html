@@ -1182,7 +1182,14 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
     <!-- CLIENT AREA -->
     <div id="cArea" style="display:none;">
 
-      <!-- MÓDULOS PRINCIPALES -->
+      <!-- Banner de error global -->
+      <div id="app-error-banner" style="display:none;background:#F5E8E8;border:.5px solid #E8C8C8;border-radius:10px;padding:12px 18px;margin-bottom:14px;display:none;align-items:center;justify-content:space-between;gap:12px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:8px;height:8px;border-radius:50%;background:#C4786A;flex-shrink:0;"></div>
+          <span style="font-size:13px;color:#7A3A3A;" id="app-error-msg">Hubo un problema al cargar. Recargá la página.</span>
+        </div>
+        <button onclick="window.location.reload()" style="font-size:12px;font-weight:500;padding:5px 14px;background:#fff;border:.5px solid #E8C8C8;border-radius:20px;color:#7A3A3A;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;">Recargar</button>
+      </div>
       <div class="client-tabs" id="mod-bar">
         <button class="ctab active" onclick="showMod('programa',this)">Academia</button>
         <button class="ctab" onclick="showMod('gestion',this)">MB Gestión</button>
@@ -3379,7 +3386,10 @@ window.showClientUI = async function(email, clientData) {
         try { await loadOrdenesCompra(); } catch(e){ console.log('ordenesCompra:', e); }
         await updateMiniMetrics();
         await loadNotasReunion();
-      } catch(e) { console.log('Error carga datos cliente:', e); }
+      } catch(e) {
+        console.log('Error carga datos cliente:', e);
+        showAppError('Hubo un problema al cargar tus datos. Recargá la página — tu información está a salvo.');
+      }
       checkMembresiaBadge(semanasCompletadas, total);
       if(clientData.logoNegocio) {
         const wrap = document.getElementById('negocio-logo-wrap');
@@ -6549,7 +6559,7 @@ async function loadMcModule() {
     _mcPresupuestos = []; psSnap.forEach(d=>_mcPresupuestos.push({id:d.id,...d.data()}));
     _mcPresupuestos.sort((a,b)=>new Date(b.creadoEn||0)-new Date(a.creadoEn||0));
     renderMcModule();
-  } catch(e){ console.log('loadMcModule error:', e); }
+  } catch(e){ console.log('loadMcModule error:', e); showAppError('No se pudieron cargar los clientes. Recargá la página.'); }
 }
 
 function renderMcModule() {
@@ -6779,6 +6789,7 @@ window.openMcDetalle = function(id) {
   }
 
   // KPIs cuenta corriente
+  const setEl = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
   const misPresups = _mcPresupuestos.filter(p => p.clienteId === id || p.cliente === c.nombre);
   const cobrado    = parseFloat(c.totalCobrado) || 0;
   const total      = misPresups.filter(p=>p.estado==='Aprobado').reduce((s,p)=>s+getPresupMonto(p),0);
@@ -9468,6 +9479,21 @@ window.toggleCheck = async function(contentId, itemIdx) {
 
 <script>
 let currentAdminTab = 'dash';
+
+window.showAppError = function(msg) {
+  const banner = document.getElementById('app-error-banner');
+  const msgEl  = document.getElementById('app-error-msg');
+  if(!banner) return;
+  if(msg) msgEl.textContent = msg;
+  banner.style.display = 'flex';
+  // Auto-ocultar después de 10s si el usuario no recarga
+  setTimeout(()=>{ if(banner) banner.style.display='none'; }, 10000);
+};
+
+window.hideAppError = function() {
+  const banner = document.getElementById('app-error-banner');
+  if(banner) banner.style.display = 'none';
+};
 
 
 
