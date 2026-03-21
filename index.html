@@ -6596,6 +6596,7 @@ async function loadMcModule() {
     const psSnap = await getDocs(collection(db,'clientes',currentClientUID,'presupuestos'));
     _mcPresupuestos = []; psSnap.forEach(d=>_mcPresupuestos.push({id:d.id,...d.data()}));
     _mcPresupuestos.sort((a,b)=>new Date(b.creadoEn||0)-new Date(a.creadoEn||0));
+    window._mcPresupuestos = _mcPresupuestos;
     renderMcModule();
   } catch(e){ console.log('loadMcModule error:', e); showAppError('No se pudieron cargar los clientes. Recargá la página.'); }
 }
@@ -7184,26 +7185,7 @@ function renderMcPresupItems() {
   const td = document.getElementById('mcp-total-display'); if(td) td.textContent = total.toLocaleString('es-AR');
 }
 
-window.onMcPresupProdSelect = function() {
-  const sel = document.getElementById('mcp-item-prod');
-  if(!sel || !sel.value) return;
-  const opt = sel.options[sel.selectedIndex];
-  const precio = opt?.dataset?.precio || '';
-  const nombre = opt?.dataset?.nombre || '';
-  const descEl = document.getElementById('mcp-item-desc');
-  const precioEl = document.getElementById('mcp-item-precio');
-  if(precio || nombre) {
-    if(descEl && !descEl.value) descEl.value = nombre;
-    if(precioEl) precioEl.value = precio;
-    return;
-  }
-  // fallback array search
-  const allProds = (_productos&&_productos.length) ? _productos : (window._productosData||[]);
-  const prod = allProds.find(p=>p.id===sel.value);
-  if(!prod) return;
-  if(descEl && !descEl.value) descEl.value = prod.nombre;
-  if(precioEl) precioEl.value = prod.precio||'';
-};
+// onMcPresupProdSelect moved to plain block
 
 window.addMcPresupItem = function() {
   const cant   = parseFloat(document.getElementById('mcp-item-cant').value)||1;
@@ -7712,6 +7694,8 @@ async function loadClientPresupuestos() {
     snap.forEach(d => list.push({id:d.id,...d.data()}));
     list.sort((a,b)=>new Date(b.creadoEn||0)-new Date(a.creadoEn||0));
     window._clientPresupuestos = list;
+    window._mcPresupuestos = list;
+    _mcPresupuestos = list;
     const setEl=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
     setEl('cp-tot',  `(${list.length})`);
     setEl('cp-penv', `(${list.filter(p=>p.estado==='Pendiente de enviar').length})`);
@@ -7782,74 +7766,72 @@ function getPresupMonto(p) {
 let _cpItems = [];
 
 function renderCpItems() {
+  const items = window._cpItems || [];
   const el = document.getElementById('cp-items-list');
+  const td = document.getElementById('cp-total-display');
   if(!el) return;
-  if((window._cpItems||_cpItems).length === 0) { el.innerHTML=''; const td=document.getElementById('cp-total-display'); if(td) td.textContent='0'; return; }
-  const header = `<div style="display:grid;grid-template-columns:1fr 55px 90px 90px 24px;gap:5px;padding:4px 0;border-bottom:1.5px solid var(--sage-light);margin-bottom:2px;">
-    <div style="font-size:9px;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Descripción</div>
-    <div style="font-size:9px;color:var(--text-l);text-align:center;text-transform:uppercase;letter-spacing:.5px;">Cant.</div>
-    <div style="font-size:9px;color:var(--text-l);text-align:right;text-transform:uppercase;letter-spacing:.5px;">P. unit.</div>
-    <div style="font-size:9px;color:var(--text-l);text-align:right;text-transform:uppercase;letter-spacing:.5px;">Total</div>
-    <div></div></div>`;
-  el.innerHTML = header + (window._cpItems||_cpItems).map((it,i)=>`
-    <div style="display:grid;grid-template-columns:1fr 55px 90px 90px 24px;gap:5px;align-items:center;padding:5px 0;border-bottom:.5px solid var(--cream-d);">
-      <div style="font-size:12px;color:var(--text);">${it.desc}</div>
-      <div style="font-size:12px;color:var(--text-m);text-align:center;">${it.cant}</div>
-      <div style="font-size:12px;color:var(--text-m);text-align:right;">$${parseFloat(it.precio).toLocaleString('es-AR')}</div>
-      <div style="font-size:12px;font-weight:500;color:var(--topbar);text-align:right;">$${(it.cant*it.precio).toLocaleString('es-AR')}</div>
-      <button onclick="removeCpItem(${i})" style="background:none;border:none;color:var(--err);cursor:pointer;font-size:14px;padding:0;line-height:1;">×</button>
-    </div>`).join('');
-  const total = (window._cpItems||_cpItems).reduce((s,it)=>s+(it.cant*it.precio),0);
-  const td = document.getElementById('cp-total-display'); if(td) td.textContent = total.toLocaleString('es-AR');
-}
-
-window.onCpItemProdSelect = function() {
-  const sel = document.getElementById('cp-item-prod');
-  if(!sel || !sel.value) return;
-  const opt = sel.options[sel.selectedIndex];
-  const precio = opt?.dataset?.precio || '';
-  const nombre = opt?.dataset?.nombre || '';
-  if(!precio && !nombre) {
-    // fallback: search in arrays
-    const allProds = (_productos&&_productos.length) ? _productos : (window._productosData||[]);
-    const prod = allProds.find(function(p){return p.id===sel.value;});
-    if(!prod) return;
-    const d = document.getElementById('cp-item-desc');
-    const pr = document.getElementById('cp-item-precio');
-    if(d && !d.value) d.value = prod.nombre;
-    if(pr) pr.value = prod.precio||'';
+  if(items.length === 0) {
+    el.innerHTML = '';
+    if(td) td.textContent = '0';
     return;
   }
-  const d = document.getElementById('cp-item-desc');
-  const pr = document.getElementById('cp-item-precio');
-  if(d && !d.value) d.value = nombre;
-  if(pr) pr.value = precio;
-};
+  const header = '<div style="display:grid;grid-template-columns:1fr 55px 90px 90px 24px;gap:5px;padding:4px 0;border-bottom:1.5px solid var(--sage-light);margin-bottom:2px;">'
+    +'<div style="font-size:9px;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Descripción</div>'
+    +'<div style="font-size:9px;color:var(--text-l);text-align:center;text-transform:uppercase;letter-spacing:.5px;">Cant.</div>'
+    +'<div style="font-size:9px;color:var(--text-l);text-align:right;text-transform:uppercase;letter-spacing:.5px;">P. unit.</div>'
+    +'<div style="font-size:9px;color:var(--text-l);text-align:right;text-transform:uppercase;letter-spacing:.5px;">Total</div>'
+    +'<div></div></div>';
+  el.innerHTML = header + items.map(function(it,i){
+    return '<div style="display:grid;grid-template-columns:1fr 55px 90px 90px 24px;gap:5px;align-items:center;padding:5px 0;border-bottom:.5px solid var(--cream-d);">'
+      +'<div style="font-size:12px;color:var(--text);">'+it.desc+'</div>'
+      +'<div style="font-size:12px;color:var(--text-m);text-align:center;">'+it.cant+'</div>'
+      +'<div style="font-size:12px;color:var(--text-m);text-align:right;">$'+parseFloat(it.precio).toLocaleString('es-AR')+'</div>'
+      +'<div style="font-size:12px;font-weight:500;color:var(--topbar);text-align:right;">$'+(it.cant*it.precio).toLocaleString('es-AR')+'</div>'
+      +'<button onclick="removeCpItem('+i+')" style="background:none;border:none;color:var(--err);cursor:pointer;font-size:14px;padding:0;line-height:1;">×</button>'
+      +'</div>';
+  }).join('');
+  const total = items.reduce(function(s,it){return s+(it.cant*it.precio);},0);
+  if(td) td.textContent = total.toLocaleString('es-AR');
+}
+window.renderCpItems = renderCpItems;
 
 window.addCpItem = function() {
+  if(!window._cpItems) window._cpItems = [];
   const cant   = parseFloat(document.getElementById('cp-item-cant').value)||1;
   const precio = parseFloat(document.getElementById('cp-item-precio').value)||0;
   if(!precio){ alert('Ingresá el precio del ítem'); return; }
-  const sel  = document.getElementById('cp-item-prod');
-  const allProds = _productos.length ? _productos : (window._productosData||[]);
-  const prod = allProds.find(p=>p.id===sel?.value);
-  const desc = document.getElementById('cp-item-desc').value.trim() || prod?.nombre || 'Ítem';
-  window._cpItems.push({desc, cant, precio, productoId: sel?.value||''});
-  window.renderCpItems();
+  const sel    = document.getElementById('cp-item-prod');
+  const opt    = sel && sel.selectedIndex >= 0 ? sel.options[sel.selectedIndex] : null;
+  const nombre = (opt && opt.dataset && opt.dataset.nombre) ? opt.dataset.nombre : '';
+  const desc   = document.getElementById('cp-item-desc').value.trim() || nombre || 'Ítem';
+  window._cpItems.push({desc:desc, cant:cant, precio:precio, productoId: sel ? sel.value : ''});
+  renderCpItems();
   document.getElementById('cp-item-cant').value = '1';
   document.getElementById('cp-item-precio').value = '';
   document.getElementById('cp-item-desc').value = '';
   if(sel) sel.value = '';
 };
 
-window.removeCpItem = function(i) { window._cpItems.splice(i,1); window.renderCpItems(); };
+window.removeCpItem = function(i) {
+  if(!window._cpItems) return;
+  window._cpItems.splice(i,1);
+  renderCpItems();
+};
+
+// onCpItemProdSelect moved to plain block
 
 window.onCpClienteChange = function() {
   const sel = document.getElementById('cp-cliente-sel');
   const wrap = document.getElementById('cp-prospecto-wrap');
   if(!wrap) return;
-  // Mostrar campo de nombre libre si elige "Prospecto"
-  wrap.style.display = (!sel?.value) ? 'block' : 'none';
+  // Mostrar campo nombre libre si es prospecto (sin cliente seleccionado)
+  const esProspecto = !sel?.value;
+  wrap.style.display = esProspecto ? 'block' : 'none';
+  // Si es cliente existente, limpiar el campo nombre de prospecto
+  if(!esProspecto) {
+    const nombreEl = document.getElementById('cp-prospecto-nombre');
+    if(nombreEl) nombreEl.value = '';
+  }
 };
 
 window.confirmarConversionCliente = async function() {
@@ -7902,15 +7884,16 @@ window.createClientPresup = async function() {
     ? (sel?.options[sel.selectedIndex]?.text || '')
     : (document.getElementById('cp-prospecto-nombre')?.value.trim() || '');
   if(!clienteNombre) { alert('Ingresá el nombre del prospecto o seleccioná un cliente'); return; }
-  if(_cpItems.length === 0) { alert('Agregá al menos un ítem al presupuesto'); return; }
-  const total = _cpItems.reduce((s,it)=>s+(it.cant*it.precio),0);
+  const _items = window._cpItems || _cpItems || [];
+  if(_items.length === 0) { alert('Agregá al menos un ítem al presupuesto'); return; }
+  const total = _items.reduce((s,it)=>s+(it.cant*it.precio),0);
   const data = {
     cliente: clienteNombre,
     clienteId: clienteId || null,
     prospecto: !clienteId,
     numero: document.getElementById('cp-numero').value,
     descripcion: document.getElementById('cp-desc').value,
-    items: [..._cpItems],
+    items: [..._items],
     monto: total,
     moneda: document.getElementById('cp-moneda').value,
     estado: document.getElementById('cp-estado').value,
@@ -9571,6 +9554,31 @@ window.toggleCheck = async function(contentId, itemIdx) {
 </script>
 
 <script>
+
+function onMcPresupProdSelect() {
+  var sel = document.getElementById('mcp-item-prod');
+  if(!sel || !sel.value) return;
+  var opt = sel.options[sel.selectedIndex];
+  var precio = (opt && opt.dataset && opt.dataset.precio) ? opt.dataset.precio : '';
+  var nombre = (opt && opt.dataset && opt.dataset.nombre) ? opt.dataset.nombre : '';
+  var descEl = document.getElementById('mcp-item-desc');
+  var precioEl = document.getElementById('mcp-item-precio');
+  if(descEl && !descEl.value) descEl.value = nombre;
+  if(precioEl) precioEl.value = precio;
+}
+
+function onCpItemProdSelect() {
+  var sel = document.getElementById('cp-item-prod');
+  if(!sel || !sel.value) return;
+  var opt = sel.options[sel.selectedIndex];
+  var precio = (opt && opt.dataset && opt.dataset.precio) ? opt.dataset.precio : '';
+  var nombre = (opt && opt.dataset && opt.dataset.nombre) ? opt.dataset.nombre : '';
+  var d = document.getElementById('cp-item-desc');
+  var pr = document.getElementById('cp-item-precio');
+  if(d && !d.value) d.value = nombre;
+  if(pr) pr.value = precio;
+}
+
 let currentAdminTab = 'dash';
 
 window.showAppError = function(msg) {
@@ -9862,16 +9870,20 @@ window.openModal = function(id) {
     const sel = document.getElementById('cp-cliente-sel');
     if(sel) {
       const mcs = window._mcClientes || _mcClientes || [];
-      sel.innerHTML = '<option value="">— Seleccioná un cliente —</option>' +
+      sel.innerHTML = '<option value="">— Prospecto / Sin cliente —</option>' +
         mcs.map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('');
+      sel.value = '';
     }
+    // Mostrar campo nombre por defecto (flujo prospecto es el normal)
+    const prospectoWrap = document.getElementById('cp-prospecto-wrap');
+    if(prospectoWrap) prospectoWrap.style.display = 'block';
     const hoy = new Date().toISOString().split('T')[0];
     document.getElementById('cp-fecha').value = hoy;
     const validez = new Date(); validez.setDate(validez.getDate()+30);
     document.getElementById('cp-validez').value = validez.toISOString().split('T')[0];
     const numEl = document.getElementById('cp-numero');
     if(numEl) numEl.value = window.formatPresupNumero(((window._mcPresupuestos)||[]).length + 1);
-    ['cp-desc','cp-notas','cp-prospecto-nombre'].forEach(fid=>{const el=document.getElementById(fid);if(el)el.value='';});
+    ['cp-desc','cp-notas','cp-prospecto-nombre'].forEach(fid=>{const el=document.getElementById(fid);if(el)el.value='';}); 
     window._cpItems = []; if(window.renderCpItems) window.renderCpItems();
     const prodSel = document.getElementById('cp-item-prod');
     if(prodSel) {
