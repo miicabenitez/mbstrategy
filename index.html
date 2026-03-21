@@ -9874,13 +9874,38 @@ window.openModal = function(id) {
     ['cp-desc','cp-notas','cp-prospecto-nombre'].forEach(fid=>{const el=document.getElementById(fid);if(el)el.value='';});
     window._cpItems = []; if(window.renderCpItems) window.renderCpItems();
     const prodSel = document.getElementById('cp-item-prod');
-    if(prodSel && window.obtenerProductos) {
-      window.obtenerProductos().then(function(allP){
+    if(prodSel) {
+      // Usar datos en memoria si existen, sino hacer fetch directo
+      var cachedProds = (window._productosData && window._productosData.length) ? window._productosData : null;
+      if(cachedProds) {
         prodSel.innerHTML = '<option value="">— Producto del catálogo —</option>' +
-          allP.filter(function(p){return p.activo!==false;}).map(function(p){
+          cachedProds.filter(function(p){return p.activo!==false;}).map(function(p){
             return '<option value="'+p.id+'" data-precio="'+(p.precio||0)+'" data-nombre="'+(p.nombre||'')+'">'+p.nombre+' · $'+parseFloat(p.precio||0).toLocaleString('es-AR')+'</option>';
           }).join('');
-      });
+      } else if(window.obtenerProductos) {
+        window.obtenerProductos().then(function(allP){
+          prodSel.innerHTML = '<option value="">— Producto del catálogo —</option>' +
+            allP.filter(function(p){return p.activo!==false;}).map(function(p){
+              return '<option value="'+p.id+'" data-precio="'+(p.precio||0)+'" data-nombre="'+(p.nombre||'')+'">'+p.nombre+' · $'+parseFloat(p.precio||0).toLocaleString('es-AR')+'</option>';
+            }).join('');
+        });
+      } else {
+        // Fallback: fetch directo con las funciones expuestas de firebase
+        var uid = window.currentClientUID;
+        if(uid && window._getDocs && window._collection && window._db) {
+          window._getDocs(window._collection(window._db,'clientes',uid,'productos')).then(function(snap){
+            var prods = [];
+            snap.forEach(function(d){prods.push({id:d.id,...d.data()});});
+            prods = prods.filter(function(p){return p.activo!==false;});
+            prods.sort(function(a,b){return (a.nombre||'').localeCompare(b.nombre||'');});
+            window._productosData = prods;
+            prodSel.innerHTML = '<option value="">— Producto del catálogo —</option>' +
+              prods.map(function(p){
+                return '<option value="'+p.id+'" data-precio="'+(p.precio||0)+'" data-nombre="'+(p.nombre||'')+'">'+p.nombre+' · $'+parseFloat(p.precio||0).toLocaleString('es-AR')+'</option>';
+              }).join('');
+          });
+        }
+      }
     }
   }
   if(id === 'newMclienteModal') {
