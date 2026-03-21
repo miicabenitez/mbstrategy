@@ -2404,8 +2404,23 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
   </div>
 </div>
 
-<!-- Modal nuevo presupuesto (mis clientes del cliente) -->
-<div class="mo" id="newMcPresupModal">
+<!-- Modal previsualización presupuesto -->
+<div class="mo" id="presupPreviewModal">
+  <div class="md" style="max-width:720px;padding:0;overflow:hidden;">
+    <div style="background:var(--topbar);padding:14px 20px;display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:13px;font-weight:500;color:#fff;">Vista previa del presupuesto</div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button onclick="imprimirPresupuesto()" style="background:rgba(255,255,255,.2);color:#fff;border:none;border-radius:20px;padding:6px 14px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">↓ Guardar PDF</button>
+        <button onclick="closeModal('presupPreviewModal')" style="background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:50%;width:28px;height:28px;font-size:16px;cursor:pointer;">×</button>
+      </div>
+    </div>
+    <div style="padding:20px;max-height:80vh;overflow-y:auto;background:#EDECE8;">
+      <div id="presup-preview-content"></div>
+    </div>
+  </div>
+</div>
+
+
   <div class="md" style="max-width:560px;">
     <button class="mc2" onclick="closeModal('newMcPresupModal')">×</button>
     <div class="mt">Nuevo presupuesto</div>
@@ -7409,144 +7424,97 @@ window.exportarPresupuestoPDF = async function(presupId) {
   const p = allP.find(x=>x.id===presupId);
   if(!p) { alert('Presupuesto no encontrado'); return; }
 
-  // Cargar datos del negocio
   let negocio = {};
   try {
     const d = await getDoc(doc(db,'clientes',currentClientUID));
     if(d.exists()) negocio = d.data();
   } catch(e){}
 
-  if(!window.jspdf) {
-    await new Promise((res,rej)=>{
-      const s=document.createElement('script');
-      s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
-      s.onload=res; s.onerror=rej; document.head.appendChild(s);
-    });
-  }
-  const {jsPDF} = window.jspdf;
-  const doc = new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-  const W=210, mg=20;
-  const sage=[161,177,164], sageDark=[90,122,94], cream=[245,248,245];
-  const textD=[42,58,44], textL=[138,154,140];
-
-  // HEADER — fondo sage
-  doc.setFillColor(...sage);
-  doc.rect(0,0,W,48,'F');
-
-  // Logo si existe
-  if(negocio.logoNegocio) {
-    try { doc.addImage(negocio.logoNegocio,'PNG',mg,8,22,22); } catch(e){}
-  }
-  const logoX = negocio.logoNegocio ? mg+26 : mg;
-
-  // Nombre negocio / titular
-  const emisorNombre = negocio.negocioNombre || negocio.titularNombre || negocio.nombre || '';
-  doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(255,255,255);
-  doc.text(emisorNombre, logoX, 17);
-  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(255,255,255);
-  doc.setGState(doc.GState({opacity:.65}));
-  const contactLine = [negocio.negocioEmail, negocio.negocioTel, negocio.negocioCuit ? 'CUIT '+negocio.negocioCuit : ''].filter(Boolean).join('  ·  ');
-  if(contactLine) doc.text(contactLine, logoX, 24);
-  doc.setGState(doc.GState({opacity:1}));
-
-  // Título PRESUPUESTO + número + fecha — derecha
-  doc.setFont('helvetica','normal'); doc.setFontSize(22); doc.setTextColor(255,255,255);
-  doc.text('Presupuesto', W-mg, 18, {align:'right'});
-  doc.setFontSize(10); doc.setGState(doc.GState({opacity:.75}));
-  const numero = p.numero || '0001-00000001';
-  doc.text('N° '+numero, W-mg, 26, {align:'right'});
-  const fechaFmt = p.fecha ? new Date(p.fecha+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'}) : '';
-  if(fechaFmt) doc.text(fechaFmt, W-mg, 33, {align:'right'});
-  doc.setGState(doc.GState({opacity:1}));
-
-  let y = 56;
-
-  // CLIENTE
-  doc.setFillColor(...cream);
-  doc.rect(mg, y, W-2*mg, 20, 'F');
-  doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...textL);
-  doc.text('CLIENTE', mg+4, y+6);
-  doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(...textD);
-  doc.text(p.cliente||'', mg+4, y+13);
-  // datos del cliente
-  const cli = (_mcClientes||[]).find(c=>c.id===p.clienteId);
-  if(cli) {
-    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...textL);
-    const cliLine = [cli.email, cli.tel, cli.cuit?'CUIT '+cli.cuit:''].filter(Boolean).join('  ·  ');
-    if(cliLine) doc.text(cliLine, mg+4, y+19);
-  }
-  y += 26;
-
-  // DESCRIPCIÓN
-  if(p.descripcion) {
-    doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...textL);
-    doc.text('DESCRIPCIÓN', mg, y+5);
-    doc.setFont('helvetica','normal'); doc.setFontSize(11); doc.setTextColor(...textD);
-    doc.text(p.descripcion, mg, y+12);
-    y += 18;
-  }
-
-  // TABLA de items
+  const cli = (_mcClientes||[]).find(c=>c.id===p.clienteId)||{};
   const items = p.items||[];
-  if(items.length > 0) {
-    y += 4;
-    // Header tabla
-    doc.setFillColor(...sage);
-    doc.rect(mg, y, W-2*mg, 8, 'F');
-    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(255,255,255);
-    doc.text('PRODUCTO / SERVICIO', mg+3, y+5.5);
-    doc.text('CANT.', W-mg-72, y+5.5, {align:'right'});
-    doc.text('PRECIO UNIT.', W-mg-36, y+5.5, {align:'right'});
-    doc.text('TOTAL', W-mg, y+5.5, {align:'right'});
-    y += 10;
+  const total = items.reduce((s,it)=>s+(parseFloat(it.cant||0)*parseFloat(it.precio||0)),0) || parseFloat(p.monto||0);
+  const numero = p.numero || '0001-00000001';
+  const emisorNombre = negocio.negocioNombre || negocio.titularNombre || negocio.nombre || '';
+  const emisorContacto = [negocio.negocioEmail, negocio.negocioTel, negocio.negocioCuit ? 'CUIT ' + negocio.negocioCuit : ''].filter(Boolean).join('  ·  ');
+  const cliContacto = [cli.email, cli.tel, (cli.cuit||p.clienteCuit) ? 'CUIT '+(cli.cuit||p.clienteCuit) : ''].filter(Boolean).join('  ·  ');
+  const fechaFmt = p.fecha ? new Date(p.fecha+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'}) : '';
+  const validezFmt = p.validez ? new Date(p.validez+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'}) : '';
+  const logoHTML = negocio.logoNegocio
+    ? `<img src="${negocio.logoNegocio}" style="width:62px;height:62px;object-fit:contain;border-radius:10px;background:rgba(255,255,255,.18);"/>`
+    : `<div style="width:62px;height:62px;background:rgba(255,255,255,.18);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:10px;color:rgba(255,255,255,.7);">LOGO</div>`;
 
-    items.forEach((it, idx) => {
-      if(idx%2===1){ doc.setFillColor(248,250,248); doc.rect(mg,y-1,W-2*mg,9,'F'); }
-      doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(...textD);
-      doc.text(it.desc||'', mg+3, y+5.5);
-      doc.setTextColor(...textL);
-      doc.text(String(it.cant), W-mg-72, y+5.5, {align:'right'});
-      doc.text('$'+parseFloat(it.precio).toLocaleString('es-AR'), W-mg-36, y+5.5, {align:'right'});
-      doc.setFont('helvetica','bold'); doc.setTextColor(...textD);
-      doc.text('$'+(it.cant*it.precio).toLocaleString('es-AR'), W-mg, y+5.5, {align:'right'});
-      y += 9;
-    });
+  const itemsHTML = items.length > 0 ? `
+    <table style="width:100%;border-collapse:collapse;margin:14px 0 12px;">
+      <thead><tr>
+        <th style="font-size:9px;color:#A1B1A4;font-weight:500;text-transform:uppercase;letter-spacing:.8px;padding:6px 8px;border-bottom:1.5px solid #A1B1A4;text-align:left;width:44%;">Producto / Servicio</th>
+        <th style="font-size:9px;color:#A1B1A4;font-weight:500;text-transform:uppercase;letter-spacing:.8px;padding:6px 8px;border-bottom:1.5px solid #A1B1A4;text-align:right;width:12%;">Cant.</th>
+        <th style="font-size:9px;color:#A1B1A4;font-weight:500;text-transform:uppercase;letter-spacing:.8px;padding:6px 8px;border-bottom:1.5px solid #A1B1A4;text-align:right;width:22%;">Precio unit.</th>
+        <th style="font-size:9px;color:#A1B1A4;font-weight:500;text-transform:uppercase;letter-spacing:.8px;padding:6px 8px;border-bottom:1.5px solid #A1B1A4;text-align:right;width:22%;">Total</th>
+      </tr></thead>
+      <tbody>
+        ${items.map(it=>`<tr><td style="font-size:12px;color:#333;padding:9px 8px;border-bottom:0.5px solid #EEF2EE;">${it.desc}</td><td style="font-size:12px;color:#333;padding:9px 8px;border-bottom:0.5px solid #EEF2EE;text-align:right;">${it.cant}</td><td style="font-size:12px;color:#333;padding:9px 8px;border-bottom:0.5px solid #EEF2EE;text-align:right;">$${parseFloat(it.precio).toLocaleString('es-AR')}</td><td style="font-size:12px;color:#333;padding:9px 8px;border-bottom:0.5px solid #EEF2EE;text-align:right;">$${(it.cant*it.precio).toLocaleString('es-AR')}</td></tr>`).join('')}
+        <tr><td colspan="3" style="font-size:11px;color:#8A9A8C;padding:10px 8px;border-top:1.5px solid #A1B1A4;">Total</td>
+            <td style="font-family:'Georgia',serif;font-size:20px;font-weight:500;color:#3A4A3C;padding:10px 8px;border-top:1.5px solid #A1B1A4;text-align:right;">$${total.toLocaleString('es-AR')} <span style="font-size:11px;color:#A1B1A4;">${p.moneda||'ARS'}</span></td>
+        </tr>
+      </tbody>
+    </table>` : `<div style="padding:12px 0;font-size:13px;color:#3A4A3C;">Monto total: <strong>$${total.toLocaleString('es-AR')}</strong></div>`;
 
-    // Línea separadora total
-    doc.setDrawColor(...sage); doc.setLineWidth(0.5);
-    doc.line(mg, y+2, W-mg, y+2);
-    y += 6;
-    doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(...textL);
-    doc.text('Total', mg+3, y+5.5);
-    const totalMonto = items.reduce((s,it)=>s+(it.cant*it.precio),0);
-    doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.setTextColor(...textD);
-    doc.text('$'+totalMonto.toLocaleString('es-AR'), W-mg, y+6, {align:'right'});
-    y += 14;
-  }
+  const html = `
+    <div id="presup-print-doc" style="background:#fff;max-width:660px;margin:0 auto;border:0.5px solid #C8D4CA;font-family:'DM Sans',sans-serif;">
+      <div style="background:#A1B1A4;padding:24px 30px;display:flex;justify-content:space-between;align-items:center;">
+        <div style="display:flex;align-items:center;gap:14px;">
+          ${logoHTML}
+          <div>
+            <div style="font-size:14px;font-weight:500;color:#fff;">${emisorNombre}</div>
+            ${emisorContacto ? `<div style="font-size:10px;color:rgba(255,255,255,.55);margin-top:5px;line-height:1.7;">${emisorContacto}</div>` : ''}
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-family:'Georgia',serif;font-size:28px;font-weight:300;color:#fff;letter-spacing:1px;">Presupuesto</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.65);margin-top:4px;font-weight:500;">N° ${numero}</div>
+          ${fechaFmt ? `<div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:3px;">${fechaFmt}</div>` : ''}
+        </div>
+      </div>
 
-  // CONDICIONES
-  if(p.notas || p.validez) {
-    y += 4;
-    doc.setFillColor(...cream);
-    doc.rect(mg, y, W-2*mg, p.validez ? 20 : 14, 'F');
-    doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...textL);
-    doc.text('CONDICIONES', mg+4, y+6);
-    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...textD);
-    if(p.notas) doc.text(p.notas, mg+4, y+12, {maxWidth: W-2*mg-8});
-    if(p.validez) {
-      const vFmt = new Date(p.validez+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'});
-      doc.setTextColor(...textL); doc.setFontSize(8);
-      doc.text('Válido hasta el '+vFmt, mg+4, y+(p.notas?18:12));
-    }
-  }
+      <div style="padding:16px 24px;border-bottom:0.5px solid #D8E0D8;">
+        <div style="font-size:8px;font-weight:600;color:#A1B1A4;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;">Cliente</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 24px;">
+          <div style="display:flex;gap:8px;font-size:11px;padding:4px 0;border-bottom:0.5px solid #EEF2EE;"><span style="color:#A1B1A4;min-width:60px;">Nombre:</span><span style="color:#3A4A3C;font-weight:500;">${p.cliente||''}</span></div>
+          ${cli.tel ? `<div style="display:flex;gap:8px;font-size:11px;padding:4px 0;border-bottom:0.5px solid #EEF2EE;"><span style="color:#A1B1A4;min-width:60px;">Teléfono:</span><span style="color:#3A4A3C;font-weight:500;">${cli.tel}</span></div>` : '<div></div>'}
+          ${cli.cuit ? `<div style="display:flex;gap:8px;font-size:11px;padding:4px 0;"><span style="color:#A1B1A4;min-width:60px;">CUIT:</span><span style="color:#3A4A3C;font-weight:500;">${cli.cuit}</span></div>` : '<div></div>'}
+          ${cli.email ? `<div style="display:flex;gap:8px;font-size:11px;padding:4px 0;"><span style="color:#A1B1A4;min-width:60px;">Email:</span><span style="color:#3A4A3C;font-weight:500;">${cli.email}</span></div>` : '<div></div>'}
+        </div>
+      </div>
 
-  // FOOTER
-  doc.setFillColor(...cream);
-  doc.rect(0, 287, W, 10, 'F');
-  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...textL);
-  doc.text('MB Gestión  ·  sistema.mbstrategy.com.ar', W/2, 292.5, {align:'center'});
+      ${p.descripcion ? `<div style="padding:14px 24px;border-bottom:0.5px solid #D8E0D8;"><div style="font-size:8px;font-weight:600;color:#A1B1A4;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:5px;">Descripción</div><div style="font-size:13px;color:#3A4A3C;line-height:1.5;">${p.descripcion}</div></div>` : ''}
 
-  doc.save(`Presupuesto_${numero}_${(p.cliente||'').replace(/\s+/g,'-')}.pdf`);
+      <div style="padding:0 24px;">${itemsHTML}</div>
+
+      ${(p.notas||validezFmt) ? `<div style="padding:0 24px 16px;"><div style="background:#F5F8F5;border-radius:7px;padding:12px 14px;font-size:11px;color:#6A7A6C;line-height:1.7;">${p.notas||''}${validezFmt ? `<span style="color:#A1B1A4;display:block;margin-top:3px;">Válido hasta el ${validezFmt}</span>` : ''}</div></div>` : ''}
+
+      <div style="padding:10px 24px;text-align:center;border-top:0.5px solid #D8E0D8;background:#F5F8F5;">
+        <span style="font-size:9px;color:#C4D0C4;">MB Gestión · sistema.mbstrategy.com.ar</span>
+      </div>
+    </div>`;
+
+  document.getElementById('presup-preview-content').innerHTML = html;
+  window._presupPrintId = presupId;
+  openModal('presupPreviewModal');
+};
+
+window.imprimirPresupuesto = function() {
+  const content = document.getElementById('presup-print-doc');
+  if(!content) return;
+  const w = window.open('','_blank','width=800,height=900');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8">
+    <style>
+      *{box-sizing:border-box;margin:0;padding:0;}
+      body{font-family:'DM Sans',Arial,sans-serif;background:#EDECE8;padding:20px;}
+      @media print{body{background:#fff;padding:0;} @page{margin:0;}}
+    </style></head><body>`);
+  w.document.write(content.outerHTML);
+  w.document.write(`<script>window.onload=function(){window.print();setTimeout(()=>window.close(),500);}<\/script></body></html>`);
+  w.document.close();
 };
 
 window.verPresupuestoPDF = function(presupId) {
