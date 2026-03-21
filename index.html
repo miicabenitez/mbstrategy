@@ -7912,15 +7912,16 @@ let provDonutChart = null;
 let _productos = [];
 
 async function loadProductos() {
-  if(!currentClientUID) return;
+  const uid = currentClientUID || window.currentClientUID;
+  if(!uid) return;
   try {
-    const snap = await getDocs(collection(db,'clientes',currentClientUID,'productos'));
+    const snap = await getDocs(collection(db,'clientes',uid,'productos'));
     _productos = [];
     snap.forEach(d => _productos.push({id:d.id,...d.data()}));
     _productos.sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||''));
     renderProductosModule();
     actualizarSelectorProductos();
-  } catch(e){ console.log(e); }
+  } catch(e){ console.log('loadProductos error:',e); }
 }
 window.loadProductos = loadProductos;
 
@@ -10099,6 +10100,7 @@ async function createProducto() {
       const btn=document.getElementById('prod-modal-btn');
       if(btn){btn.textContent='Guardar';}
       if(window.loadProductos) await window.loadProductos();
+      if(window.renderProductosModule) window.renderProductosModule();
     }, 1500);
   } catch(e){ alert('Error: '+e.message); console.error(e); }
 }
