@@ -2371,6 +2371,7 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
     <div class="fg"><label class="fl">Condiciones / Notas</label><textarea class="na" id="cp-notas" style="min-height:50px;" placeholder="Ej: Seña 50% para confirmar..."></textarea></div>
     <div class="br2"><button class="bp" onclick="createClientPresup()">Guardar</button><button class="bs" onclick="closeModal('newClientPresupModal')">Cancelar</button></div>
     <div class="saved-msg" id="cp-saved">✓ Presupuesto guardado</div>
+    <div id="cp-error" style="display:none;background:var(--err-bg,#fdecea);color:var(--err,#b00020);font-size:12px;padding:9px 12px;border-radius:7px;margin-top:8px;"></div>
   </div>
 </div>
 
@@ -7160,6 +7161,8 @@ window.guardarNotaMcCliente = async function(clienteId) {
 
 // ===== PRESUPUESTO — ITEMS =====
 let _mcPresupItems = [];
+let _presupPdfUrl = '';
+let _mcPresupPdfUrl = '';
 
 function renderMcPresupItems() {
   const el = document.getElementById('mcp-items-list');
@@ -7797,7 +7800,7 @@ window.addCpItem = function() {
   if(!window._cpItems) window._cpItems = [];
   const cant   = parseFloat(document.getElementById('cp-item-cant').value)||1;
   const precio = parseFloat(document.getElementById('cp-item-precio').value)||0;
-  if(!precio){ alert('Ingresá el precio del ítem'); return; }
+  if(!precio){ const e=document.getElementById('cp-error'); if(e){e.textContent='Ingresá el precio del ítem';e.style.display='block';setTimeout(()=>e.style.display='none',3000);} return; }
   const sel    = document.getElementById('cp-item-prod');
   const opt    = sel && sel.selectedIndex >= 0 ? sel.options[sel.selectedIndex] : null;
   const nombre = (opt && opt.dataset && opt.dataset.nombre) ? opt.dataset.nombre : '';
@@ -7889,14 +7892,17 @@ window.confirmarConversionCliente = async function() {
 
 window.createClientPresup = async function() {
   if(!currentClientUID) return;
+  const errEl = document.getElementById('cp-error');
+  const showErr = msg => { if(errEl){ errEl.textContent=msg; errEl.style.display='block'; setTimeout(()=>errEl.style.display='none', 4000); } };
+  if(errEl) errEl.style.display='none';
   const sel = document.getElementById('cp-cliente-sel');
   const clienteId = sel?.value || null;
   const clienteNombre = clienteId
     ? (sel?.options[sel.selectedIndex]?.text || '')
     : (document.getElementById('cp-prospecto-nombre')?.value.trim() || '');
-  if(!clienteNombre) { alert('Ingresá el nombre del prospecto o seleccioná un cliente'); return; }
+  if(!clienteNombre) { showErr('Ingresá el nombre del prospecto o seleccioná un cliente'); return; }
   const _items = window._cpItems || _cpItems || [];
-  if(_items.length === 0) { alert('Agregá al menos un ítem al presupuesto'); return; }
+  if(_items.length === 0) { showErr('Agregá al menos un ítem al presupuesto'); return; }
   const total = _items.reduce((s,it)=>s+(it.cant*it.precio),0);
   const data = {
     cliente: clienteNombre,
@@ -7916,7 +7922,6 @@ window.createClientPresup = async function() {
   try {
     await addDoc(collection(db,'clientes',currentClientUID,'presupuestos'), data);
     if(clienteId) await addHistorialEntry(clienteId, `Presupuesto creado: ${data.descripcion||''} · $${total.toLocaleString('es-AR')}`);
-    _presupPdfUrl = '';
     const s=document.getElementById('cp-saved'); if(s) s.style.display='block';
     setTimeout(async()=>{
       if(s) s.style.display='none';
@@ -7925,7 +7930,7 @@ window.createClientPresup = async function() {
       await loadClientPresupuestos();
       await loadMcModule();
     }, 1500);
-  } catch(e){ alert('Error al guardar: '+e.message); }
+  } catch(e){ showErr('Error al guardar: '+e.message); }
 };
 
 // ===== MÓDULO PROVEEDORES =====
