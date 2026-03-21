@@ -2536,7 +2536,7 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
       <div class="fg"><label class="fl">Precio</label><input type="number" class="fi" id="prod-precio" placeholder="0"/></div>
       <div class="fg"><label class="fl">Descripción (opcional)</label><textarea class="na" id="prod-desc" style="min-height:60px;" placeholder="Una línea que describa este ítem..."></textarea></div>
       <div class="br2">
-        <button class="bp" id="prod-modal-btn" onclick="window.createProducto()">Guardar</button>
+        <button class="bp" id="prod-modal-btn" onclick="createProducto()">Guardar</button>
         <button class="bs" onclick="closeModal('newProductoModal')">Cancelar</button>
       </div>
       <div class="saved-msg" id="prod-saved">✓ Guardado</div>
@@ -10069,6 +10069,19 @@ async function loadMcReunionesExternas() {
     });
     window._mcReunionesExternas.sort((a,b) => new Date(a.fecha) - new Date(b.fecha));
   } catch(e) { console.log(e); }
+}
+
+// Wrapper de emergencia — disponible inmediatamente, antes que el módulo cargue
+function createProducto() {
+  if(window.createProducto) {
+    window.createProducto();
+  } else {
+    // Módulo aún no cargó — reintentar en 500ms
+    setTimeout(function() {
+      if(window.createProducto) window.createProducto();
+      else alert('El sistema aún está cargando. Intentá de nuevo en un momento.');
+    }, 500);
+  }
 }
 </script>
 </body>
