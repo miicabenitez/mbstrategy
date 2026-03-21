@@ -3137,8 +3137,7 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, addDoc, collection, getDocs, query, where, orderBy, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
-// Expose firestore functions globally for cross-block access
-window._fb = { doc, getDoc, setDoc, addDoc, collection, getDocs, query, where, orderBy, updateDoc };
+// Expose firestore db globally for cross-block access
 
 const cfg = {apiKey:"AIzaSyCZr_VAn5fumCzkrfxb1oK9-W2_cADnGTI",authDomain:"mb-strategy.firebaseapp.com",projectId:"mb-strategy",storageBucket:"mb-strategy.firebasestorage.app",messagingSenderId:"1055393429525",appId:"1:1055393429525:web:0f40fa5869ef5aa8bb761c"};
 const app = initializeApp(cfg);
@@ -7925,23 +7924,6 @@ async function loadProductos() {
 }
 window.loadProductos = loadProductos;
 
-// Bridge: plain block populates this, module syncs _productos array from it
-window._syncProductosModule = function(prods) {
-  _productos = prods;
-  actualizarSelectorProductos();
-  // Also update KPIs and última actualización using real data
-  const setEl = (id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
-  const ultFecha = prods.reduce((a,p)=>p.updatedAt&&p.updatedAt>a?p.updatedAt:a,'');
-  if(ultFecha) {
-    const meses = Math.round((Date.now()-new Date(ultFecha))/(1000*60*60*24*30));
-    setEl('prod-kpi-meses', meses===0?'<1':String(meses));
-    setEl('prod-kpi-meses-sub', meses===0?'actualizado este mes':'meses sin cambios');
-  } else {
-    setEl('prod-kpi-meses','—');
-    setEl('prod-kpi-meses-sub','meses sin cambios');
-  }
-};
-
 function renderProductosModule() {
   const setEl = (id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
   const total = _productos.length;
@@ -8061,12 +8043,9 @@ window.guardarPrecios = async function() {
   }catch(e){alert('Error: '+e.message);}
 };
 
-
 window.createProducto = async function() {
-  const uid = window.currentClientUID;
-  const fb  = window._fb;
-  const fdb = window.db;
-  if(!uid || !fb || !fdb) { alert('Error: sesión no iniciada. Recargá la página.'); return; }
+  const uid = currentClientUID || window.currentClientUID;
+  if(!uid) { alert('Error: sesión no iniciada. Recargá la página.'); return; }
   const id     = document.getElementById('prod-edit-id').value;
   const nombre = document.getElementById('prod-nombre').value.trim();
   if(!nombre){ alert('Ingresá un nombre'); return; }
@@ -8080,27 +8059,27 @@ window.createProducto = async function() {
   };
   try {
     if(id) {
-      await fb.updateDoc(fb.doc(fdb,'clientes',uid,'productos',id), data);
+      await updateDoc(doc(db,'clientes',uid,'productos',id), data);
     } else {
-      await fb.addDoc(fb.collection(fdb,'clientes',uid,'productos'), data);
+      await addDoc(collection(db,'clientes',uid,'productos'), data);
     }
     const s = document.getElementById('prod-saved');
     if(s) s.style.display='block';
     setTimeout(async()=>{
       if(s) s.style.display='none';
-      window.closeModal('newProductoModal');
+      closeModal('newProductoModal');
       ['prod-nombre','prod-precio','prod-desc'].forEach(fid=>{const el=document.getElementById(fid);if(el)el.value='';});
       document.getElementById('prod-edit-id').value='';
       document.getElementById('prod-modal-titulo').textContent='Agregar al catálogo';
       const btn=document.getElementById('prod-modal-btn');
       if(btn){btn.textContent='Guardar';btn.onclick=window.createProducto;}
-      await window.loadProductos();
+      await loadProductos();
     }, 1500);
   } catch(e){ alert('Error al guardar: '+e.message); console.error(e); }
 };
 
 window.editProducto = function(id) {
-  const p = _productos.find(x=>x.id===id) || (window._productosData||[]).find(x=>x.id===id);
+  const p = _productos.find(x=>x.id===id);
   if(!p) return;
   document.getElementById('prod-edit-id').value=id;
   document.getElementById('prod-nombre').value=p.nombre||'';
@@ -8120,7 +8099,7 @@ window.deleteProducto = function(id) {
       const {deleteDoc} = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
       await deleteDoc(doc(db,'clientes',uid,'productos',id));
       await loadProductos();
-    } catch(e){ console.error(e); }
+    } catch(e){ console.error('deleteProducto error:', e); }
   },'Eliminar producto');
 };
 
@@ -10100,84 +10079,6 @@ async function loadMcReunionesExternas() {
   } catch(e) { console.log(e); }
 }
 
-async function loadProductos() {
-  const uid = window.currentClientUID;
-  if(!uid) return;
-  try {
-    const fsi = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
-    const fdb = window.db || fsi.getFirestore();
-    const snap = await fsi.getDocs(fsi.collection(fdb,'clientes',uid,'productos'));
-    const prods = [];
-    snap.forEach(d => prods.push({id:d.id,...d.data()}));
-    prods.sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||''));
-    window._productosData = prods;
-    const lista = document.getElementById('prod-lista');
-    if(lista) {
-      if(prods.length===0){
-        lista.innerHTML='<div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Sin ítems. ¡Agregá el primero!</div>';
-      } else {
-        lista.innerHTML = prods.map(function(p){
-          const pr = parseFloat(p.precio)||0;
-          const inact = p.activo===false;
-          return '<div style="display:grid;grid-template-columns:1fr 120px 110px 50px 60px;gap:10px;align-items:center;padding:13px 0;border-bottom:.5px solid var(--cream-d);'+(inact?'opacity:.4;':'')+'">'
-            +'<div><div style="font-size:13px;font-weight:500;color:var(--text);'+(inact?'text-decoration:line-through;':'')+'">'+p.nombre+'</div>'
-            +(p.descripcion?'<div style="font-size:11px;color:var(--text-l);margin-top:1px;">'+p.descripcion+'</div>':'')
-            +'</div>'
-            +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:17px;color:var(--ok);font-weight:500;text-align:right;">$'+pr.toLocaleString('es-AR')+'</div>'
-            +'<input type="number" value="'+pr+'" data-id="'+p.id+'" class="prod-precio-input" style="width:100%;padding:6px 10px;border:.5px solid var(--cream-d);border-radius:8px;font-size:12px;color:var(--text);font-family:\'DM Sans\',sans-serif;text-align:right;" onchange="marcarCambioPrecio()"/>'
-            +'<div style="display:flex;justify-content:center;"><div onclick="toggleActivoProducto(\''+p.id+'\','+inact+')" style="width:36px;height:20px;border-radius:10px;background:'+(inact?'var(--cream-d)':'var(--topbar)')+';position:relative;cursor:pointer;flex-shrink:0;"><div style="position:absolute;width:14px;height:14px;border-radius:50%;background:#fff;top:3px;'+(inact?'left:3px':'left:19px')+';"></div></div></div>'
-            +'<div style="display:flex;gap:4px;justify-content:flex-end;">'
-            +'<button onclick="editProducto(\''+p.id+'\')" style="background:none;border:.5px solid var(--cream-d);border-radius:7px;padding:4px 8px;font-size:11px;color:var(--text-l);cursor:pointer;font-family:\'DM Sans\',sans-serif;">✏️</button>'
-            +'<button onclick="deleteProducto(\''+p.id+'\')" style="background:none;border:.5px solid var(--cream-d);border-radius:7px;padding:4px 8px;font-size:11px;color:var(--err);cursor:pointer;font-family:\'DM Sans\',sans-serif;">×</button>'
-            +'</div></div>';
-        }).join('');
-      }
-    }
-    const kpi = document.getElementById('prod-kpi-activos');
-    if(kpi) kpi.textContent = prods.filter(function(p){return p.activo!==false;}).length;
-    const kpiSub = document.getElementById('prod-kpi-activos-sub');
-    if(kpiSub) kpiSub.textContent = 'de '+prods.length+' en el catálogo';
-    const footer = document.getElementById('prod-footer-guardar');
-    if(footer) footer.style.display = prods.length > 0 ? 'flex' : 'none';
-    // Sync module _productos so edit/delete/toggle/guardarPrecios work
-    window._productosData = prods;
-    if(window._syncProductosModule) window._syncProductosModule(prods);
-  } catch(e){ console.error('loadProductos plain error:', e); }
-}
-
-async function createProducto() {
-  const uid = window.currentClientUID;
-  if(!uid) { alert('Error: sesión no iniciada. Recargá la página.'); return; }
-  const id     = document.getElementById('prod-edit-id').value;
-  const nombre = document.getElementById('prod-nombre').value.trim();
-  if(!nombre){ alert('Ingresá un nombre'); return; }
-  const data = {
-    nombre,
-    precio:      parseFloat(document.getElementById('prod-precio').value)||0,
-    descripcion: document.getElementById('prod-desc').value,
-    activo: true,
-    updatedAt: new Date().toISOString(),
-    creadoEn:  new Date().toISOString()
-  };
-  try {
-    const fsi = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
-    const fdb = window.db || fsi.getFirestore();
-    if(id) {
-      await fsi.updateDoc(fsi.doc(fdb,'clientes',uid,'productos',id), data);
-    } else {
-      await fsi.addDoc(fsi.collection(fdb,'clientes',uid,'productos'), data);
-    }
-    const s = document.getElementById('prod-saved'); if(s) s.style.display='block';
-    // Recargar y renderizar inmediatamente
-    await loadProductos();
-    setTimeout(function(){
-      if(s) s.style.display='none';
-      closeModal('newProductoModal');
-      ['prod-nombre','prod-precio','prod-desc'].forEach(function(fid){const el=document.getElementById(fid);if(el)el.value='';});
-      document.getElementById('prod-edit-id').value='';
-    }, 1500);
-  } catch(e){ alert('Error: '+e.message); console.error(e); }
-}
 </script>
 </body>
 </html>
