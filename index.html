@@ -10071,17 +10071,36 @@ async function loadMcReunionesExternas() {
   } catch(e) { console.log(e); }
 }
 
-// Wrapper de emergencia — disponible inmediatamente, antes que el módulo cargue
-function createProducto() {
-  if(window.createProducto) {
-    window.createProducto();
-  } else {
-    // Módulo aún no cargó — reintentar en 500ms
-    setTimeout(function() {
-      if(window.createProducto) window.createProducto();
-      else alert('El sistema aún está cargando. Intentá de nuevo en un momento.');
-    }, 500);
-  }
+async function createProducto() {
+  const uid = window.currentClientUID;
+  if(!uid) { alert('Error: sesión no iniciada. Recargá la página.'); return; }
+  const id     = document.getElementById('prod-edit-id').value;
+  const nombre = document.getElementById('prod-nombre').value.trim();
+  if(!nombre){ alert('Ingresá un nombre'); return; }
+  const precio      = parseFloat(document.getElementById('prod-precio').value)||0;
+  const descripcion = document.getElementById('prod-desc').value;
+  const data = { nombre, precio, descripcion, activo:true, updatedAt:new Date().toISOString(), creadoEn:new Date().toISOString() };
+  try {
+    const { getFirestore, doc, addDoc, updateDoc, collection } = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
+    const { initializeApp, getApps } = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js');
+    const fdb = window.db || getFirestore(getApps()[0]);
+    if(id) {
+      await updateDoc(doc(fdb,'clientes',uid,'productos',id), data);
+    } else {
+      await addDoc(collection(fdb,'clientes',uid,'productos'), data);
+    }
+    const s = document.getElementById('prod-saved'); if(s) s.style.display='block';
+    setTimeout(async function(){
+      if(s) s.style.display='none';
+      closeModal('newProductoModal');
+      ['prod-nombre','prod-precio','prod-desc'].forEach(function(fid){const el=document.getElementById(fid);if(el)el.value='';});
+      document.getElementById('prod-edit-id').value='';
+      document.getElementById('prod-modal-titulo').textContent='Agregar al catálogo';
+      const btn=document.getElementById('prod-modal-btn');
+      if(btn){btn.textContent='Guardar';}
+      if(window.loadProductos) await window.loadProductos();
+    }, 1500);
+  } catch(e){ alert('Error: '+e.message); console.error(e); }
 }
 </script>
 </body>
