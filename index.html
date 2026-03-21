@@ -9899,7 +9899,7 @@ window.openModal = function(id) {
     const prodSel = document.getElementById('cp-item-prod');
     if(prodSel) {
       var cachedProds = (window._productosData && window._productosData.length) ? window._productosData : null;
-      var mkOpt = function(p){ return '<option value="'+p.id+'" data-precio="'+(p.precio||0)+'" data-nombre="'+(p.nombre||'")>'+p.nombre+'</option>'; };
+      var mkOpt = function(p){ return '<option value="'+p.id+'" data-precio="'+(p.precio||0)+'" data-nombre="'+(p.nombre||'')+'">'+p.nombre+'</option>'; };
       if(cachedProds) {
         prodSel.innerHTML = '<option value="">— Producto del catálogo —</option>' +
           cachedProds.filter(function(p){return p.activo!==false;}).map(mkOpt).join('');
@@ -10138,7 +10138,7 @@ async function loadProductos() {
     var sel = document.getElementById('mcp-item-prod');
     if(sel) sel.innerHTML = '<option value="">— Producto del catálogo —</option>' +
       prods.filter(function(p){return p.activo!==false;}).map(function(p){
-        return '<option value="'+p.id+'" data-precio="'+(p.precio||0)+'" data-nombre="'+(p.nombre||'")>'+p.nombre+'</option>';
+        return '<option value="'+p.id+'" data-precio="'+(p.precio||0)+'" data-nombre="'+(p.nombre||'')+'">'+p.nombre+'</option>';
       }).join('');
     var sel2 = document.getElementById('cp-item-prod');
     if(sel2) sel2.innerHTML = sel ? sel.innerHTML : '';
