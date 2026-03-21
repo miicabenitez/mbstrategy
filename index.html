@@ -10072,35 +10072,78 @@ async function loadMcReunionesExternas() {
   } catch(e) { console.log(e); }
 }
 
+async function loadProductos() {
+  const uid = window.currentClientUID;
+  if(!uid) return;
+  try {
+    const fsi = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
+    const fdb = window.db || fsi.getFirestore();
+    const snap = await fsi.getDocs(fsi.collection(fdb,'clientes',uid,'productos'));
+    const prods = [];
+    snap.forEach(d => prods.push({id:d.id,...d.data()}));
+    prods.sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||''));
+    window._productosData = prods;
+    const lista = document.getElementById('prod-lista');
+    if(lista) {
+      if(prods.length===0){
+        lista.innerHTML='<div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Sin ítems. ¡Agregá el primero!</div>';
+      } else {
+        lista.innerHTML = prods.map(function(p){
+          const pr = parseFloat(p.precio)||0;
+          const inact = p.activo===false;
+          return '<div style="display:grid;grid-template-columns:1fr 120px 110px 50px 60px;gap:10px;align-items:center;padding:13px 0;border-bottom:.5px solid var(--cream-d);'+(inact?'opacity:.4;':'')+'">'
+            +'<div><div style="font-size:13px;font-weight:500;color:var(--text);'+(inact?'text-decoration:line-through;':'')+'">'+p.nombre+'</div>'
+            +(p.descripcion?'<div style="font-size:11px;color:var(--text-l);margin-top:1px;">'+p.descripcion+'</div>':'')
+            +'</div>'
+            +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:17px;color:var(--ok);font-weight:500;text-align:right;">$'+pr.toLocaleString('es-AR')+'</div>'
+            +'<input type="number" value="'+pr+'" data-id="'+p.id+'" class="prod-precio-input" style="width:100%;padding:6px 10px;border:.5px solid var(--cream-d);border-radius:8px;font-size:12px;color:var(--text);font-family:\'DM Sans\',sans-serif;text-align:right;" onchange="marcarCambioPrecio()"/>'
+            +'<div style="display:flex;justify-content:center;"><div onclick="toggleActivoProducto(\''+p.id+'\','+inact+')" style="width:36px;height:20px;border-radius:10px;background:'+(inact?'var(--cream-d)':'var(--topbar)')+';position:relative;cursor:pointer;flex-shrink:0;"><div style="position:absolute;width:14px;height:14px;border-radius:50%;background:#fff;top:3px;'+(inact?'left:3px':'left:19px')+';"></div></div></div>'
+            +'<div style="display:flex;gap:4px;justify-content:flex-end;">'
+            +'<button onclick="editProducto(\''+p.id+'\')" style="background:none;border:.5px solid var(--cream-d);border-radius:7px;padding:4px 8px;font-size:11px;color:var(--text-l);cursor:pointer;font-family:\'DM Sans\',sans-serif;">✏️</button>'
+            +'<button onclick="deleteProducto(\''+p.id+'\')" style="background:none;border:.5px solid var(--cream-d);border-radius:7px;padding:4px 8px;font-size:11px;color:var(--err);cursor:pointer;font-family:\'DM Sans\',sans-serif;">×</button>'
+            +'</div></div>';
+        }).join('');
+      }
+    }
+    const kpi = document.getElementById('prod-kpi-activos');
+    if(kpi) kpi.textContent = prods.filter(function(p){return p.activo!==false;}).length;
+    const kpiSub = document.getElementById('prod-kpi-activos-sub');
+    if(kpiSub) kpiSub.textContent = 'de '+prods.length+' en el catálogo';
+    const footer = document.getElementById('prod-footer-guardar');
+    if(footer) footer.style.display = prods.length > 0 ? 'flex' : 'none';
+  } catch(e){ console.error('loadProductos plain error:', e); }
+}
+
 async function createProducto() {
   const uid = window.currentClientUID;
   if(!uid) { alert('Error: sesión no iniciada. Recargá la página.'); return; }
   const id     = document.getElementById('prod-edit-id').value;
   const nombre = document.getElementById('prod-nombre').value.trim();
   if(!nombre){ alert('Ingresá un nombre'); return; }
-  const precio      = parseFloat(document.getElementById('prod-precio').value)||0;
-  const descripcion = document.getElementById('prod-desc').value;
-  const data = { nombre, precio, descripcion, activo:true, updatedAt:new Date().toISOString(), creadoEn:new Date().toISOString() };
+  const data = {
+    nombre,
+    precio:      parseFloat(document.getElementById('prod-precio').value)||0,
+    descripcion: document.getElementById('prod-desc').value,
+    activo: true,
+    updatedAt: new Date().toISOString(),
+    creadoEn:  new Date().toISOString()
+  };
   try {
-    const { getFirestore, doc, addDoc, updateDoc, collection } = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
-    const { initializeApp, getApps } = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js');
-    const fdb = window.db || getFirestore(getApps()[0]);
+    const fsi = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
+    const fdb = window.db || fsi.getFirestore();
     if(id) {
-      await updateDoc(doc(fdb,'clientes',uid,'productos',id), data);
+      await fsi.updateDoc(fsi.doc(fdb,'clientes',uid,'productos',id), data);
     } else {
-      await addDoc(collection(fdb,'clientes',uid,'productos'), data);
+      await fsi.addDoc(fsi.collection(fdb,'clientes',uid,'productos'), data);
     }
     const s = document.getElementById('prod-saved'); if(s) s.style.display='block';
-    setTimeout(async function(){
+    // Recargar y renderizar inmediatamente
+    await loadProductos();
+    setTimeout(function(){
       if(s) s.style.display='none';
       closeModal('newProductoModal');
       ['prod-nombre','prod-precio','prod-desc'].forEach(function(fid){const el=document.getElementById(fid);if(el)el.value='';});
       document.getElementById('prod-edit-id').value='';
-      document.getElementById('prod-modal-titulo').textContent='Agregar al catálogo';
-      const btn=document.getElementById('prod-modal-btn');
-      if(btn){btn.textContent='Guardar';}
-      if(window.loadProductos) await window.loadProductos();
-      if(window.renderProductosModule) window.renderProductosModule();
     }, 1500);
   } catch(e){ alert('Error: '+e.message); console.error(e); }
 }
