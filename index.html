@@ -2536,7 +2536,7 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
       <div class="fg"><label class="fl">Precio</label><input type="number" class="fi" id="prod-precio" placeholder="0"/></div>
       <div class="fg"><label class="fl">Descripción (opcional)</label><textarea class="na" id="prod-desc" style="min-height:60px;" placeholder="Una línea que describa este ítem..."></textarea></div>
       <div class="br2">
-        <button class="bp" id="prod-modal-btn" onclick="createProducto()">Guardar</button>
+        <button class="bp" id="prod-modal-btn" onclick="window.createProducto()">Guardar</button>
         <button class="bs" onclick="closeModal('newProductoModal')">Cancelar</button>
       </div>
       <div class="saved-msg" id="prod-saved">✓ Guardado</div>
@@ -3137,11 +3137,14 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, addDoc, collection, getDocs, query, where, orderBy, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+// Expose firestore functions globally for cross-block access
+window._fb = { doc, getDoc, setDoc, addDoc, collection, getDocs, query, where, orderBy, updateDoc };
 
 const cfg = {apiKey:"AIzaSyCZr_VAn5fumCzkrfxb1oK9-W2_cADnGTI",authDomain:"mb-strategy.firebaseapp.com",projectId:"mb-strategy",storageBucket:"mb-strategy.firebasestorage.app",messagingSenderId:"1055393429525",appId:"1:1055393429525:web:0f40fa5869ef5aa8bb761c"};
 const app = initializeApp(cfg);
 const auth = getAuth(app);
 const db = getFirestore(app);
+window.db = db;
 
 window._db = db;
 window._auth = auth;
@@ -3307,6 +3310,7 @@ window.showClientUI = async function(email, clientData) {
     if(clientData) {
       currentClientId = clientData.id;
       currentClientUID = clientData.id;
+  window.currentClientUID = currentClientUID;
       currentClientData = clientData;
 
       // Avatar + nombre
@@ -8037,36 +8041,40 @@ window.guardarPrecios = async function() {
 };
 
 window.createProducto = async function() {
-  if(!currentClientUID) { alert('Error: no hay sesión activa. Recargá la página.'); return; }
-  const id = document.getElementById('prod-edit-id').value;
+  const uid = window.currentClientUID;
+  const fb  = window._fb;
+  const fdb = window.db;
+  if(!uid || !fb || !fdb) { alert('Error: sesión no iniciada. Recargá la página.'); return; }
+  const id     = document.getElementById('prod-edit-id').value;
   const nombre = document.getElementById('prod-nombre').value.trim();
-  if(!nombre){alert('Ingresá un nombre');return;}
+  if(!nombre){ alert('Ingresá un nombre'); return; }
   const data = {
     nombre,
-    precio: parseFloat(document.getElementById('prod-precio').value)||0,
+    precio:      parseFloat(document.getElementById('prod-precio').value)||0,
     descripcion: document.getElementById('prod-desc').value,
     activo: true,
     updatedAt: new Date().toISOString(),
-    creadoEn: new Date().toISOString()
+    creadoEn:  new Date().toISOString()
   };
   try {
     if(id) {
-      await updateDoc(doc(db,'clientes',currentClientUID,'productos',id), {...data});
+      await fb.updateDoc(fb.doc(fdb,'clientes',uid,'productos',id), data);
     } else {
-      await addDoc(collection(db,'clientes',currentClientUID,'productos'), data);
+      await fb.addDoc(fb.collection(fdb,'clientes',uid,'productos'), data);
     }
-    const s=document.getElementById('prod-saved');if(s)s.style.display='block';
+    const s = document.getElementById('prod-saved');
+    if(s) s.style.display='block';
     setTimeout(async()=>{
-      if(s)s.style.display='none';
-      closeModal('newProductoModal');
+      if(s) s.style.display='none';
+      window.closeModal('newProductoModal');
       ['prod-nombre','prod-precio','prod-desc'].forEach(fid=>{const el=document.getElementById(fid);if(el)el.value='';});
       document.getElementById('prod-edit-id').value='';
       document.getElementById('prod-modal-titulo').textContent='Agregar al catálogo';
       const btn=document.getElementById('prod-modal-btn');
       if(btn){btn.textContent='Guardar';btn.onclick=window.createProducto;}
       await window.loadProductos();
-    },1500);
-  }catch(e){ alert('Error al guardar producto: '+e.message); console.error(e); }
+    }, 1500);
+  } catch(e){ alert('Error al guardar: '+e.message); console.error(e); }
 };
 
 window.editProducto = function(id) {
@@ -8077,7 +8085,7 @@ window.editProducto = function(id) {
   document.getElementById('prod-desc').value=p.descripcion||'';
   document.getElementById('prod-modal-titulo').textContent='Editar ítem';
   const btn=document.getElementById('prod-modal-btn');
-  if(btn){btn.textContent='Guardar cambios';btn.onclick=createProducto;}
+  if(btn){btn.textContent='Guardar cambios';btn.onclick=window.createProducto;}
   openModal('newProductoModal');
 };
 
