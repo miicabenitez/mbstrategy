@@ -7253,7 +7253,8 @@ window.openMcPresupModal = async function(clienteId, clienteNombre) {
   const allProds = await obtenerProductos();
   const sel = document.getElementById('mcp-item-prod');
   if(sel) sel.innerHTML = '<option value="">— Producto del catálogo —</option>' +
-    allProds.filter(p=>p.activo!==false).map(p=>`<option value="${p.id}" data-precio="${p.precio||0}" data-nombre="${p.nombre||''}">${p.nombre}</option>`).join('');
+    allProds.filter(p=>p.activo!==false).map(p=>`<option value="${p.id}" data-precio="${p.precio||0}" data-nombre="${p.nombre||''}">${p.nombre}</option>`).join('') +
+    '<option value="__nuevo__" style="color:#5A7A4E;font-weight:500;">＋ Agregar nuevo producto</option>';
   _mcPresupPdfUrl = '';
   openModal('newMcPresupModal');
 };
@@ -9624,6 +9625,11 @@ window.toggleCheck = async function(contentId, itemIdx) {
 function onMcPresupProdSelect() {
   var sel = document.getElementById('mcp-item-prod');
   if(!sel || !sel.value) return;
+  if(sel.value === '__nuevo__') {
+    sel.value = '';
+    window.open(window.location.href + '#productos', '_blank');
+    return;
+  }
   var opt = sel.options[sel.selectedIndex];
   var precio = (opt && opt.dataset && opt.dataset.precio) ? opt.dataset.precio : '';
   var nombre = (opt && opt.dataset && opt.dataset.nombre) ? opt.dataset.nombre : '';
@@ -9636,6 +9642,11 @@ function onMcPresupProdSelect() {
 function onCpItemProdSelect() {
   var sel = document.getElementById('cp-item-prod');
   if(!sel || !sel.value) return;
+  if(sel.value === '__nuevo__') {
+    sel.value = '';
+    window.open(window.location.href + '#productos', '_blank');
+    return;
+  }
   var opt = sel.options[sel.selectedIndex];
   var precio = (opt && opt.dataset && opt.dataset.precio) ? opt.dataset.precio : '';
   var nombre = (opt && opt.dataset && opt.dataset.nombre) ? opt.dataset.nombre : '';
@@ -9955,13 +9966,14 @@ window.openModal = function(id) {
     if(prodSel) {
       var cachedProds = (window._productosData && window._productosData.length) ? window._productosData : null;
       var mkOpt = function(p){ return '<option value="'+p.id+'" data-precio="'+(p.precio||0)+'" data-nombre="'+(p.nombre||'')+'">'+p.nombre+'</option>'; };
+      var nuevoOpt = '<option value="__nuevo__" style="color:#5A7A4E;font-weight:500;">＋ Agregar nuevo producto</option>';
       if(cachedProds) {
         prodSel.innerHTML = '<option value="">— Producto del catálogo —</option>' +
-          cachedProds.filter(function(p){return p.activo!==false;}).map(mkOpt).join('');
+          cachedProds.filter(function(p){return p.activo!==false;}).map(mkOpt).join('') + nuevoOpt;
       } else if(window.obtenerProductos) {
         window.obtenerProductos().then(function(allP){
           prodSel.innerHTML = '<option value="">— Producto del catálogo —</option>' +
-            allP.filter(function(p){return p.activo!==false;}).map(mkOpt).join('');
+            allP.filter(function(p){return p.activo!==false;}).map(mkOpt).join('') + nuevoOpt;
         });
       } else {
         var uid = window.currentClientUID;
@@ -9972,7 +9984,7 @@ window.openModal = function(id) {
             prods = prods.filter(function(p){return p.activo!==false;});
             prods.sort(function(a,b){return (a.nombre||'').localeCompare(b.nombre||'');});
             window._productosData = prods;
-            prodSel.innerHTML = '<option value="">— Producto del catálogo —</option>' + prods.map(mkOpt).join('');
+            prodSel.innerHTML = '<option value="">— Producto del catálogo —</option>' + prods.map(mkOpt).join('') + nuevoOpt;
           });
         }
       }
@@ -10191,10 +10203,11 @@ async function loadProductos() {
     setEl('prod-kpi-rentable-monto', topProd ? '$'+rentabilidad[topId].toLocaleString('es-AR')+' generados' : 'Registrá ingresos para ver');
     // Actualizar selector de productos en presupuestos
     var sel = document.getElementById('mcp-item-prod');
+    var nuevoOpt = '<option value="__nuevo__" style="color:#5A7A4E;font-weight:500;">＋ Agregar nuevo producto</option>';
     if(sel) sel.innerHTML = '<option value="">— Producto del catálogo —</option>' +
       prods.filter(function(p){return p.activo!==false;}).map(function(p){
         return '<option value="'+p.id+'" data-precio="'+(p.precio||0)+'" data-nombre="'+(p.nombre||'')+'">'+p.nombre+'</option>';
-      }).join('');
+      }).join('') + nuevoOpt;
     var sel2 = document.getElementById('cp-item-prod');
     if(sel2) sel2.innerHTML = sel ? sel.innerHTML : '';
   } catch(e){ console.error('loadProductos error:', e); }
