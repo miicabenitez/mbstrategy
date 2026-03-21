@@ -9831,8 +9831,8 @@ window.openModal = function(id) {
     ['cp-desc','cp-notas','cp-prospecto-nombre'].forEach(fid=>{const el=document.getElementById(fid);if(el)el.value='';});
     window._cpItems = []; if(window.renderCpItems) window.renderCpItems();
     const prodSel = document.getElementById('cp-item-prod');
-    if(prodSel) prodSel.innerHTML = '<option value="">— Producto del catálogo —</option>' +
-      (_productos||[]).filter(p=>p.activo!==false).map(p=>`<option value="${p.id}">${p.nombre} · $${parseFloat(p.precio||0).toLocaleString('es-AR')}</option>`).join('');
+    if(prodSel) { const allP = (_productos&&_productos.length)?_productos:(window._productosData||[]); prodSel.innerHTML = '<option value="">— Producto del catálogo —</option>' +
+      allP.filter(p=>p.activo!==false).map(p=>`<option value="${p.id}">${p.nombre} · $${parseFloat(p.precio||0).toLocaleString('es-AR')}</option>`).join(''); }
   }
   if(id === 'newMclienteModal') {
     // Limpiar todos los campos y resetear el botón
