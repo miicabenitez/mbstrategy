@@ -2390,6 +2390,18 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
           <input type="number" class="fi" id="cp-item-precio" placeholder="Precio" style="margin-top:0;"/>
         </div>
         <input type="text" class="fi" id="cp-item-desc" placeholder="Descripción personalizada (opcional)" style="margin-bottom:6px;"/>
+        <!-- Mini-form nuevo producto inline -->
+        <div id="cp-nuevo-prod-wrap" style="display:none;background:var(--sage-xl);border:.5px solid var(--sage-light);border-radius:9px;padding:10px;margin-bottom:6px;">
+          <div style="font-size:11px;font-weight:500;color:var(--topbar);margin-bottom:8px;">Nuevo producto</div>
+          <div style="display:grid;grid-template-columns:1fr 120px;gap:6px;margin-bottom:6px;">
+            <input type="text" class="fi" id="cp-np-nombre" placeholder="Nombre del producto" style="margin:0;font-size:13px;"/>
+            <input type="number" class="fi" id="cp-np-precio" placeholder="Precio" style="margin:0;font-size:13px;"/>
+          </div>
+          <div style="display:flex;gap:6px;">
+            <button onclick="guardarNuevoProdCp()" style="font-size:11px;padding:5px 14px;background:var(--topbar);color:#fff;border:none;border-radius:20px;cursor:pointer;font-family:'DM Sans',sans-serif;">Guardar y agregar</button>
+            <button onclick="cancelarNuevoProdCp()" style="font-size:11px;padding:5px 12px;background:none;border:.5px solid var(--sage-light);border-radius:20px;cursor:pointer;color:var(--text-m);font-family:'DM Sans',sans-serif;">Cancelar</button>
+          </div>
+        </div>
         <button onclick="addCpItem()" style="font-size:11px;padding:5px 14px;background:var(--topbar);color:#fff;border:none;border-radius:20px;cursor:pointer;font-family:'DM Sans',sans-serif;">+ Agregar ítem</button>
       </div>
       <div style="display:flex;justify-content:flex-end;margin-top:8px;gap:8px;align-items:center;">
@@ -2533,6 +2545,18 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
           <input type="number" class="fi" id="mcp-item-precio" placeholder="Precio" style="margin-top:0;"/>
         </div>
         <input type="text" class="fi" id="mcp-item-desc" placeholder="Descripción personalizada (opcional)" style="margin-bottom:6px;"/>
+        <!-- Mini-form nuevo producto inline -->
+        <div id="mcp-nuevo-prod-wrap" style="display:none;background:var(--sage-xl);border:.5px solid var(--sage-light);border-radius:9px;padding:10px;margin-bottom:6px;">
+          <div style="font-size:11px;font-weight:500;color:var(--topbar);margin-bottom:8px;">Nuevo producto</div>
+          <div style="display:grid;grid-template-columns:1fr 120px;gap:6px;margin-bottom:6px;">
+            <input type="text" class="fi" id="mcp-np-nombre" placeholder="Nombre del producto" style="margin:0;font-size:13px;"/>
+            <input type="number" class="fi" id="mcp-np-precio" placeholder="Precio" style="margin:0;font-size:13px;"/>
+          </div>
+          <div style="display:flex;gap:6px;">
+            <button onclick="guardarNuevoProdMcp()" style="font-size:11px;padding:5px 14px;background:var(--topbar);color:#fff;border:none;border-radius:20px;cursor:pointer;font-family:'DM Sans',sans-serif;">Guardar y agregar</button>
+            <button onclick="cancelarNuevoProdMcp()" style="font-size:11px;padding:5px 12px;background:none;border:.5px solid var(--sage-light);border-radius:20px;cursor:pointer;color:var(--text-m);font-family:'DM Sans',sans-serif;">Cancelar</button>
+          </div>
+        </div>
         <button onclick="addMcPresupItem()" style="font-size:11px;padding:5px 14px;background:var(--topbar);color:#fff;border:none;border-radius:20px;cursor:pointer;font-family:'DM Sans',sans-serif;">+ Agregar ítem</button>
       </div>
       <!-- Total -->
@@ -9658,7 +9682,8 @@ function onMcPresupProdSelect() {
   if(!sel || !sel.value) return;
   if(sel.value === '__nuevo__') {
     sel.value = '';
-    window.open(window.location.href + '#productos', '_blank');
+    var wrap = document.getElementById('mcp-nuevo-prod-wrap');
+    if(wrap) { wrap.style.display = 'block'; document.getElementById('mcp-np-nombre').focus(); }
     return;
   }
   var opt = sel.options[sel.selectedIndex];
@@ -9675,7 +9700,8 @@ function onCpItemProdSelect() {
   if(!sel || !sel.value) return;
   if(sel.value === '__nuevo__') {
     sel.value = '';
-    window.open(window.location.href + '#productos', '_blank');
+    var wrap = document.getElementById('cp-nuevo-prod-wrap');
+    if(wrap) { wrap.style.display = 'block'; document.getElementById('cp-np-nombre').focus(); }
     return;
   }
   var opt = sel.options[sel.selectedIndex];
@@ -10091,6 +10117,65 @@ window.closeModal = function(id) { document.getElementById(id).classList.remove(
 // ===== REUNIONES RÁPIDAS (mc-lista) =====
 
 let _mcrTipo = 'cliente';
+
+// ===== NUEVO PRODUCTO INLINE (desde modal presupuesto) =====
+function _agregarNuevoProdInline(prefix, selId, descId, precioId, wrapId, npNombreId, npPrecioId) {
+  var nombre = document.getElementById(npNombreId).value.trim();
+  var precio = parseFloat(document.getElementById(npPrecioId).value) || 0;
+  if(!nombre) { alert('Ingresá un nombre para el producto'); return; }
+  var uid = window.currentClientUID;
+  if(!uid) { alert('Sesión no iniciada'); return; }
+  var btn = document.querySelector('#'+wrapId+' button');
+  if(btn) { btn.textContent = 'Guardando...'; btn.disabled = true; }
+  var data = { nombre: nombre, precio: precio, activo: true, creadoEn: new Date().toISOString(), updatedAt: new Date().toISOString() };
+  window._getDocs(window._collection(window._db,'clientes',uid,'productos')).then(function() {
+    var colRef = window._collection(window._db,'clientes',uid,'productos');
+    return window._addDoc(colRef, data);
+  }).then(function(ref) {
+    var newId = ref.id;
+    // Agregar al cache de productos
+    if(!window._productosData) window._productosData = [];
+    var newProd = Object.assign({id: newId}, data);
+    window._productosData.push(newProd);
+    window._productosData.sort(function(a,b){return (a.nombre||'').localeCompare(b.nombre||'');});
+    // Agregar la opción al select y seleccionarla
+    var sel = document.getElementById(selId);
+    var nuevoOpt = '<option value="__nuevo__" style="color:#5A7A4E;font-weight:500;">＋ Agregar nuevo producto</option>';
+    if(sel) {
+      var opt = document.createElement('option');
+      opt.value = newId; opt.dataset.precio = precio; opt.dataset.nombre = nombre; opt.textContent = nombre;
+      sel.insertBefore(opt, sel.lastElementChild); // antes del __nuevo__
+      sel.value = newId;
+    }
+    // Autocompletar campos
+    var descEl = document.getElementById(descId); if(descEl && !descEl.value) descEl.value = nombre;
+    var precioEl = document.getElementById(precioId); if(precioEl) precioEl.value = precio;
+    // Ocultar mini-form y limpiar
+    var wrap = document.getElementById(wrapId);
+    if(wrap) wrap.style.display = 'none';
+    document.getElementById(npNombreId).value = '';
+    document.getElementById(npPrecioId).value = '';
+    if(btn) { btn.textContent = 'Guardar y agregar'; btn.disabled = false; }
+  }).catch(function(e) {
+    alert('Error al guardar: ' + (e.message||e));
+    if(btn) { btn.textContent = 'Guardar y agregar'; btn.disabled = false; }
+  });
+}
+
+window.guardarNuevoProdCp = function() {
+  _agregarNuevoProdInline('cp','cp-item-prod','cp-item-desc','cp-item-precio','cp-nuevo-prod-wrap','cp-np-nombre','cp-np-precio');
+};
+window.cancelarNuevoProdCp = function() {
+  var w = document.getElementById('cp-nuevo-prod-wrap'); if(w) w.style.display='none';
+  document.getElementById('cp-np-nombre').value=''; document.getElementById('cp-np-precio').value='';
+};
+window.guardarNuevoProdMcp = function() {
+  _agregarNuevoProdInline('mcp','mcp-item-prod','mcp-item-desc','mcp-item-precio','mcp-nuevo-prod-wrap','mcp-np-nombre','mcp-np-precio');
+};
+window.cancelarNuevoProdMcp = function() {
+  var w = document.getElementById('mcp-nuevo-prod-wrap'); if(w) w.style.display='none';
+  document.getElementById('mcp-np-nombre').value=''; document.getElementById('mcp-np-precio').value='';
+};
 
 window.toggleMcReunionTipo = function(tipo) {
   _mcrTipo = tipo;
