@@ -6732,14 +6732,14 @@ function renderMcLista(clientes) {
     const cobradoReal = parseFloat(c.totalCobrado)||0;
     const presapsAprobados = _mcPresupuestos.filter(p=>(p.clienteId===c.id||p.cliente===c.nombre)&&p.estado==='Aprobado').reduce((s,p)=>s+getPresupMonto(p),0);
     const saldo = presapsAprobados - cobradoReal;
-    const saldoColor = saldo > 0 ? 'var(--err)' : saldo < 0 ? 'var(--ok)' : cobradoReal > 0 ? 'var(--ok)' : 'var(--text-l)';
+    const saldoColor = saldo > 0 ? 'var(--err)' : 'var(--ok)';
     const saldoTxt = saldo > 0
       ? `Pendiente $${saldo.toLocaleString('es-AR')}`
       : saldo < 0
         ? `Saldo a favor $${Math.abs(saldo).toLocaleString('es-AR')}`
         : cobradoReal > 0
           ? `Cobrado ✓`
-          : 'Sin movimientos';
+          : '';
     return `<div onclick="openMcDetalle('${c.id}')"
       style="background:var(--white);border:.5px solid var(--cream-d);border-radius:14px;padding:18px;cursor:pointer;transition:all .15s;position:relative;"
       onmouseover="this.style.borderColor='var(--sage)';this.style.boxShadow='0 2px 10px rgba(0,0,0,.06)'"
@@ -6754,9 +6754,9 @@ function renderMcLista(clientes) {
       <!-- Nombre -->
       <div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:3px;padding-right:56px;line-height:1.3;">${c.nombre}</div>
       <!-- Tel o DNI -->
-      <div style="font-size:12px;color:var(--text-l);margin-bottom:8px;">${c.tel||c.dni||''}</div>
-      <!-- Saldo -->
-      <div style="font-size:12px;font-weight:500;color:${saldoColor};">${saldoTxt}</div>
+      <div style="font-size:12px;color:var(--text-l);${saldoTxt?'margin-bottom:8px;':''}">${c.tel||c.dni||''}</div>
+      <!-- Saldo — solo si hay algo que mostrar -->
+      ${saldoTxt ? `<div style="font-size:12px;font-weight:500;color:${saldoColor};">${saldoTxt}</div>` : ''}
     </div>`;
   }).join('');
 }
@@ -7426,22 +7426,6 @@ function renderMcVentas(presups, clienteId) {
   }).join('');
 }
 
-window.updateMcPresupEstado = async function(id, estado) {
-  if(!currentClientUID) return;
-  try {
-    await updateDoc(doc(db,'clientes',currentClientUID,'presupuestos',id),{estado});
-    // Si se aprueba → registrar en historial
-    if(estado === 'Aprobado') {
-      const p = _mcPresupuestos.find(x=>x.id===id);
-      if(p?.clienteId) {
-        await addHistorialEntry(p.clienteId, `Presupuesto aprobado: ${p.descripcion||'sin descripción'} · $${parseFloat(p.monto||0).toLocaleString('es-AR')}`);
-      }
-    }
-    await loadMcModule();
-    if(_currentMcClienteId) openMcDetalle(_currentMcClienteId);
-  } catch(e){ console.log(e); }
-};
-
 window.deleteMcPresup = function(id) {
   showConfirm('¿Eliminar este presupuesto?',async()=>{
     try {
@@ -7567,18 +7551,6 @@ window.updateMcPresupEstado = async function(id, estado) {
     await loadMcModule();
     if(_currentMcClienteId) openMcDetalle(_currentMcClienteId);
   } catch(e){ console.log(e); }
-};
-
-window.goToClientFromPresup = function(clienteId) {
-  if(!clienteId) return;
-  // Navegar a Mis Clientes y abrir el detalle
-  showCTab('mclientes', null);
-  // Esperar a que cargue y abrir detalle
-  setTimeout(()=>{
-    if(_mcClientes.find(c=>c.id===clienteId)) {
-      openMcDetalle(clienteId);
-    }
-  }, 300);
 };
 
 window.exportarPresupuestoPDF = async function(presupId) {
