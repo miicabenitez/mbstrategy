@@ -7214,7 +7214,6 @@ function formatPresupNumero(n) {
   return '0001-' + String(n).padStart(8,'0');
 }
 window.formatPresupNumero = formatPresupNumero;
-window._cpItems = _cpItems;
 window.renderCpItems = renderCpItems;
 
 // Helper: obtiene productos siempre, desde memoria o desde Firestore
@@ -7253,7 +7252,7 @@ window.openMcPresupModal = async function(clienteId, clienteNombre) {
   const allProds = await obtenerProductos();
   const sel = document.getElementById('mcp-item-prod');
   if(sel) sel.innerHTML = '<option value="">— Producto del catálogo —</option>' +
-    allProds.filter(p=>p.activo!==false).map(p=>`<option value="${p.id}" data-precio="${p.precio||0}" data-nombre="${p.nombre||''}">${p.nombre} · $${parseFloat(p.precio||0).toLocaleString('es-AR')}</option>`).join('');
+    allProds.filter(p=>p.activo!==false).map(p=>`<option value="${p.id}" data-precio="${p.precio||0}" data-nombre="${p.nombre||''}">${p.nombre}</option>`).join('');
   _mcPresupPdfUrl = '';
   openModal('newMcPresupModal');
 };
@@ -7775,19 +7774,20 @@ function renderCpItems() {
     if(td) td.textContent = '0';
     return;
   }
-  const header = '<div style="display:grid;grid-template-columns:1fr 55px 90px 90px 24px;gap:5px;padding:4px 0;border-bottom:1.5px solid var(--sage-light);margin-bottom:2px;">'
+  const header = '<div style="display:grid;grid-template-columns:1fr 64px 90px 90px 24px;gap:5px;padding:4px 0;border-bottom:1.5px solid var(--sage-light);margin-bottom:2px;">'
     +'<div style="font-size:9px;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Descripción</div>'
     +'<div style="font-size:9px;color:var(--text-l);text-align:center;text-transform:uppercase;letter-spacing:.5px;">Cant.</div>'
     +'<div style="font-size:9px;color:var(--text-l);text-align:right;text-transform:uppercase;letter-spacing:.5px;">P. unit.</div>'
     +'<div style="font-size:9px;color:var(--text-l);text-align:right;text-transform:uppercase;letter-spacing:.5px;">Total</div>'
     +'<div></div></div>';
   el.innerHTML = header + items.map(function(it,i){
-    return '<div style="display:grid;grid-template-columns:1fr 55px 90px 90px 24px;gap:5px;align-items:center;padding:5px 0;border-bottom:.5px solid var(--cream-d);">'
+    const rowTotal = (it.cant * it.precio).toLocaleString('es-AR');
+    return '<div style="display:grid;grid-template-columns:1fr 64px 90px 90px 24px;gap:5px;align-items:center;padding:5px 0;border-bottom:.5px solid var(--cream-d);">'
       +'<div style="font-size:12px;color:var(--text);">'+it.desc+'</div>'
-      +'<div style="font-size:12px;color:var(--text-m);text-align:center;">'+it.cant+'</div>'
+      +'<input type="number" min="1" value="'+it.cant+'" oninput="window.updateCpItemCant('+i+',this.value)" style="font-size:12px;padding:2px 5px;border:.5px solid var(--cream-d);border-radius:5px;background:var(--cream);text-align:center;width:100%;box-sizing:border-box;">'
       +'<div style="font-size:12px;color:var(--text-m);text-align:right;">$'+parseFloat(it.precio).toLocaleString('es-AR')+'</div>'
-      +'<div style="font-size:12px;font-weight:500;color:var(--topbar);text-align:right;">$'+(it.cant*it.precio).toLocaleString('es-AR')+'</div>'
-      +'<button onclick="removeCpItem('+i+')" style="background:none;border:none;color:var(--err);cursor:pointer;font-size:14px;padding:0;line-height:1;">×</button>'
+      +'<div id="cp-row-total-'+i+'" style="font-size:12px;font-weight:500;color:var(--topbar);text-align:right;">$'+rowTotal+'</div>'
+      +'<button onclick="window.removeCpItem('+i+')" style="background:none;border:none;color:var(--err);cursor:pointer;font-size:14px;padding:0;line-height:1;">×</button>'
       +'</div>';
   }).join('');
   const total = items.reduce(function(s,it){return s+(it.cant*it.precio);},0);
@@ -7816,6 +7816,19 @@ window.removeCpItem = function(i) {
   if(!window._cpItems) return;
   window._cpItems.splice(i,1);
   if(window.renderCpItems) window.renderCpItems();
+};
+
+window.updateCpItemCant = function(i, val) {
+  if(!window._cpItems) return;
+  const cant = parseFloat(val) || 1;
+  window._cpItems[i].cant = cant;
+  const rowEl = document.getElementById('cp-row-total-'+i);
+  if(rowEl) rowEl.textContent = '$'+(cant * window._cpItems[i].precio).toLocaleString('es-AR');
+  const td = document.getElementById('cp-total-display');
+  if(td) {
+    const total = window._cpItems.reduce(function(s,it){return s+(it.cant*it.precio);},0);
+    td.textContent = total.toLocaleString('es-AR');
+  }
 };
 
 // onCpItemProdSelect moved to plain block
@@ -9887,22 +9900,17 @@ window.openModal = function(id) {
     window._cpItems = []; if(window.renderCpItems) window.renderCpItems();
     const prodSel = document.getElementById('cp-item-prod');
     if(prodSel) {
-      // Usar datos en memoria si existen, sino hacer fetch directo
       var cachedProds = (window._productosData && window._productosData.length) ? window._productosData : null;
+      var mkOpt = function(p){ return '<option value="'+p.id+'" data-precio="'+(p.precio||0)+'" data-nombre="'+(p.nombre||'")>'+p.nombre+'</option>'; };
       if(cachedProds) {
         prodSel.innerHTML = '<option value="">— Producto del catálogo —</option>' +
-          cachedProds.filter(function(p){return p.activo!==false;}).map(function(p){
-            return '<option value="'+p.id+'" data-precio="'+(p.precio||0)+'" data-nombre="'+(p.nombre||'')+'">'+p.nombre+' · $'+parseFloat(p.precio||0).toLocaleString('es-AR')+'</option>';
-          }).join('');
+          cachedProds.filter(function(p){return p.activo!==false;}).map(mkOpt).join('');
       } else if(window.obtenerProductos) {
         window.obtenerProductos().then(function(allP){
           prodSel.innerHTML = '<option value="">— Producto del catálogo —</option>' +
-            allP.filter(function(p){return p.activo!==false;}).map(function(p){
-              return '<option value="'+p.id+'" data-precio="'+(p.precio||0)+'" data-nombre="'+(p.nombre||'')+'">'+p.nombre+' · $'+parseFloat(p.precio||0).toLocaleString('es-AR')+'</option>';
-            }).join('');
+            allP.filter(function(p){return p.activo!==false;}).map(mkOpt).join('');
         });
       } else {
-        // Fallback: fetch directo con las funciones expuestas de firebase
         var uid = window.currentClientUID;
         if(uid && window._getDocs && window._collection && window._db) {
           window._getDocs(window._collection(window._db,'clientes',uid,'productos')).then(function(snap){
@@ -9911,10 +9919,7 @@ window.openModal = function(id) {
             prods = prods.filter(function(p){return p.activo!==false;});
             prods.sort(function(a,b){return (a.nombre||'').localeCompare(b.nombre||'');});
             window._productosData = prods;
-            prodSel.innerHTML = '<option value="">— Producto del catálogo —</option>' +
-              prods.map(function(p){
-                return '<option value="'+p.id+'" data-precio="'+(p.precio||0)+'" data-nombre="'+(p.nombre||'')+'">'+p.nombre+' · $'+parseFloat(p.precio||0).toLocaleString('es-AR')+'</option>';
-              }).join('');
+            prodSel.innerHTML = '<option value="">— Producto del catálogo —</option>' + prods.map(mkOpt).join('');
           });
         }
       }
@@ -10135,7 +10140,7 @@ async function loadProductos() {
     var sel = document.getElementById('mcp-item-prod');
     if(sel) sel.innerHTML = '<option value="">— Producto del catálogo —</option>' +
       prods.filter(function(p){return p.activo!==false;}).map(function(p){
-        return '<option value="'+p.id+'" data-precio="'+(p.precio||0)+'" data-nombre="'+(p.nombre||'')+'">'+p.nombre+' · $'+parseFloat(p.precio||0).toLocaleString('es-AR')+'</option>';
+        return '<option value="'+p.id+'" data-precio="'+(p.precio||0)+'" data-nombre="'+(p.nombre||'")>'+p.nombre+'</option>';
       }).join('');
     var sel2 = document.getElementById('cp-item-prod');
     if(sel2) sel2.innerHTML = sel ? sel.innerHTML : '';
