@@ -2322,31 +2322,39 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
 </div>
 
 <div class="mo" id="newClientPresupModal">
-  <div class="md">
+  <div class="md" style="max-width:560px;">
     <button class="mc2" onclick="closeModal('newClientPresupModal')">×</button>
     <div class="mt">Nuevo presupuesto</div>
     <div class="fg"><label class="fl">Cliente</label>
       <select class="fi" id="cp-cliente-sel" style="margin-top:0;"><option value="">— Seleccioná un cliente —</option></select>
     </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="fg"><label class="fl">Número</label><input type="text" class="fi" id="cp-numero" readonly style="background:var(--cream);color:var(--text-m);cursor:default;" placeholder="Auto-generado"/></div>
+      <div class="fg"><label class="fl">Fecha</label><input type="date" id="cp-fecha" style="margin-top:0;"/></div>
+    </div>
     <div class="fg"><label class="fl">Descripción del trabajo</label><input type="text" class="fi" id="cp-desc" placeholder="Ej: Pileta 8x4, Remodelación baño..."/></div>
-    <div class="fg"><label class="fl">Archivo del presupuesto (PDF)</label>
-      <div style="border:.5px solid var(--cream-d);border-radius:9px;padding:12px;background:var(--cream);cursor:pointer;" onclick="document.getElementById('cp-pdf-file').click()">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="1" width="14" height="18" rx="2" stroke="var(--sage-dark)" stroke-width="1.3"/><path d="M3 14h14M7 5h6M7 8h4" stroke="var(--sage-dark)" stroke-width="1.2" stroke-linecap="round"/></svg>
-          <div id="cp-pdf-nombre" style="font-size:12px;font-weight:500;color:var(--text);">Seleccionar archivo PDF</div>
+    <div class="fg">
+      <label class="fl">Ítems</label>
+      <div id="cp-items-list" style="margin-bottom:8px;"></div>
+      <div style="background:var(--cream);border-radius:9px;padding:10px;border:.5px solid var(--cream-d);">
+        <div style="display:grid;grid-template-columns:1fr 70px 100px;gap:6px;margin-bottom:6px;">
+          <select class="fi" id="cp-item-prod" style="margin-top:0;" onchange="onCpItemProdSelect()">
+            <option value="">— Producto del catálogo —</option>
+          </select>
+          <input type="number" class="fi" id="cp-item-cant" placeholder="Cant." min="1" value="1" style="margin-top:0;"/>
+          <input type="number" class="fi" id="cp-item-precio" placeholder="Precio" style="margin-top:0;"/>
         </div>
+        <input type="text" class="fi" id="cp-item-desc" placeholder="Descripción personalizada (opcional)" style="margin-bottom:6px;"/>
+        <button onclick="addCpItem()" style="font-size:11px;padding:5px 14px;background:var(--topbar);color:#fff;border:none;border-radius:20px;cursor:pointer;font-family:'DM Sans',sans-serif;">+ Agregar ítem</button>
       </div>
-      <input type="file" id="cp-pdf-file" accept=".pdf" style="display:none;" onchange="onPresupPDFSelected(this)"/>
-      <div id="cp-pdf-progress" style="display:none;margin-top:8px;">
-        <div style="height:4px;background:var(--cream-d);border-radius:4px;"><div id="cp-pdf-bar" style="height:100%;width:0%;background:var(--sage-dark);border-radius:4px;transition:width .3s;"></div></div>
-        <div id="cp-pdf-status" style="font-size:10px;color:var(--text-l);margin-top:4px;">Procesando...</div>
+      <div style="display:flex;justify-content:flex-end;margin-top:8px;gap:8px;align-items:center;">
+        <select class="fi" id="cp-moneda" style="width:80px;margin-top:0;"><option>ARS</option><option>USD</option></select>
+        <div style="background:var(--sage-xl);border-radius:9px;padding:8px 16px;font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:500;color:var(--topbar);">Total: $<span id="cp-total-display">0</span></div>
       </div>
     </div>
-    <div class="fg"><label class="fl">Monto</label><input type="number" class="fi" id="cp-monto" placeholder="0"/></div>
-    <div class="fg"><label class="fl">Moneda</label><select class="fi" id="cp-moneda" style="margin-top:0;"><option>ARS</option><option>USD</option></select></div>
+    <div class="fg"><label class="fl">Validez</label><input type="date" id="cp-validez" style="margin-top:0;"/></div>
     <div class="fg"><label class="fl">Estado</label><select class="fi" id="cp-estado" style="margin-top:0;"><option>Pendiente de enviar</option><option>Enviado</option><option>Consultado</option><option>Aprobado</option><option>Denegado</option></select></div>
-    <div class="fg"><label class="fl">Fecha</label><input type="date" id="cp-fecha" style="margin-top:0;"/></div>
-    <div class="fg"><label class="fl">Notas</label><textarea class="na" id="cp-notas" style="min-height:50px;" placeholder="Observaciones..."></textarea></div>
+    <div class="fg"><label class="fl">Condiciones / Notas</label><textarea class="na" id="cp-notas" style="min-height:50px;" placeholder="Ej: Seña 50% para confirmar..."></textarea></div>
     <div class="br2"><button class="bp" onclick="createClientPresup()">Guardar</button><button class="bs" onclick="closeModal('newClientPresupModal')">Cancelar</button></div>
     <div class="saved-msg" id="cp-saved">✓ Presupuesto guardado</div>
   </div>
@@ -2421,8 +2429,9 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
 </div>
 
 
+<!-- Modal nuevo presupuesto (desde cliente) -->
+<div class="mo" id="newMcPresupModal">
   <div class="md" style="max-width:560px;">
-    <button class="mc2" onclick="closeModal('newMcPresupModal')">×</button>
     <div class="mt">Nuevo presupuesto</div>
     <input type="hidden" id="mcp-presup-cliente-id"/>
     <!-- Número y fecha en fila -->
@@ -4682,7 +4691,7 @@ async function loadPresupuestos(clientId) {
     snap.forEach(d => {
       const p = d.data();
       const bc = p.estado==='Aprobado'?'bg':p.estado==='Rechazado'?'br':'ba';
-      html += `<div class="row"><div><div class="rn">${p.cliente}</div><div class="rs">${p.descripcion}</div></div><div style="text-align:right;"><div style="font-weight:500;">$${parseFloat(p.monto).toLocaleString('es-AR')}</div><span class="badge ${bc}">${p.estado}</span></div></div>`;
+      html += `<div class="row"><div><div class="rn">${p.cliente}</div><div class="rs">${p.descripcion}</div></div><div style="text-align:right;"><div style="font-weight:500;">$${getPresupMonto(p).toLocaleString('es-AR')}</div><span class="badge ${bc}">${p.estado}</span></div></div>`;
     });
     document.getElementById('presup-list').innerHTML = html || '<div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin presupuestos cargados.</div>';
   } catch(e) {}
@@ -5317,7 +5326,7 @@ async function loadPresupuestosGlobal() {
     const consultados = _allPresupuestos.filter(p=>p.estado==='Consultado').length;
     const aprobados = _allPresupuestos.filter(p=>p.estado==='Aprobado').length;
     const denegados = _allPresupuestos.filter(p=>p.estado==='Denegado').length;
-    const montoAprobado = _allPresupuestos.filter(p=>p.estado==='Aprobado').reduce((a,p)=>a+(parseFloat(p.monto)||0),0);
+    const montoAprobado = _allPresupuestos.filter(p=>p.estado==='Aprobado').reduce((a,p)=>a+getPresupMonto(p),0);
 
     const setEl = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
     setEl('ps-tot', total);
@@ -5350,7 +5359,7 @@ function renderPresupuestos(list) {
   };
   el.innerHTML = list.map(p => {
     const fecha = p.fecha ? new Date(p.fecha+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'short'}) : '—';
-    const monto = parseFloat(p.monto)||0;
+    const monto = getPresupMonto(p);
     const c = colorMap[p.estado] || {bg:'var(--cream-d)',color:'var(--text-m)',border:'var(--cream-d)'};
     // Detectar link en campo link o en descripcion (incluso si está mezclado con texto)
     const extractUrl = s => { if (!s) return null; const m = s.match(/(https?:\/\/[^\s]+)/); return m ? m[1] : null; };
@@ -6226,7 +6235,7 @@ function renderCkFunnel(presupuestos) {
     {label:'Enviados',   n:presupuestos.filter(p=>['Enviado','Consultado','Aprobado'].includes(p.estado)).length, bg:'#E6EEF5', color:'#2A4A6A'},
     {label:'Consultados',n:presupuestos.filter(p=>['Consultado','Aprobado'].includes(p.estado)).length, bg:'#FFF0C0', color:'#5A4010'},
     {label:'Aprobados',  n:presupuestos.filter(p=>p.estado==='Aprobado').length, bg:'#D5EDDA', color:'#1A5A22'},
-    {label:'Cobrados',   n:presupuestos.filter(p=>p.estado==='Aprobado' && parseFloat(p.monto)>0).length, bg:'#A1B1A4', color:'#fff'},
+    {label:'Cobrados',   n:presupuestos.filter(p=>p.estado==='Aprobado' && getPresupMonto(p)>0).length, bg:'#A1B1A4', color:'#fff'},
   ];
   const max=steps[0].n||1;
   el.innerHTML=steps.map((s,i)=>{
@@ -6260,7 +6269,7 @@ function renderCkKpis(ingresos, egresos, presupuestos, mcClientes) {
 
   // Ticket promedio
   const aprobados=presupuestos.filter(p=>p.estado==='Aprobado');
-  const tickProm=aprobados.length>0?Math.round(aprobados.reduce((a,p)=>a+(parseFloat(p.monto)||0),0)/aprobados.length):0;
+  const tickProm=aprobados.length>0?Math.round(aprobados.reduce((a,p)=>a+getPresupMonto(p),0)/aprobados.length):0;
   setEl('ck-tick','$'+tickProm.toLocaleString('es-AR'));
 
   // Cobros pendientes: presupuestos aprobados creados hasta el mes seleccionado − total cobrado
@@ -6277,7 +6286,7 @@ function renderCkKpis(ingresos, egresos, presupuestos, mcClientes) {
       return new Date(p.creadoEn).getTime() <= limiteMs;
     });
   }
-  const totalAprobado = aprobadosHastaMes.reduce((a,p)=>a+(parseFloat(p.monto)||0),0);
+  const totalAprobado = aprobadosHastaMes.reduce((a,p)=>a+getPresupMonto(p),0);
   const totalCobrado  = (mcClientes||[]).reduce((a,c)=>a+(parseFloat(c.totalCobrado)||0),0);
   const cobrosPend    = Math.max(0, totalAprobado - totalCobrado);
   setEl('ck-cobros-pend','$'+cobrosPend.toLocaleString('es-AR'));
@@ -6546,7 +6555,7 @@ function renderMcModule() {
   const setEl=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
 
   // KPIs financieros
-  const totalAprobado = _mcPresupuestos.filter(p=>p.estado==='Aprobado').reduce((s,p)=>s+(parseFloat(p.monto)||0),0);
+  const totalAprobado = _mcPresupuestos.filter(p=>p.estado==='Aprobado').reduce((s,p)=>s+getPresupMonto(p),0);
   const cobrado = _mcClientes.reduce((s,c)=>s+(parseFloat(c.totalCobrado)||0),0);
   const pendiente = Math.max(0, totalAprobado - cobrado);
   setEl('mc-kpi-total', _mcClientes.length);
@@ -6564,7 +6573,7 @@ function renderMcPresupuestos(list) {
   const colorMap={'Pendiente de enviar':{bg:'#F5ECD8',color:'#8A6A3A'},'Enviado':{bg:'#E6EEF5',color:'#4A6A8A'},'Consultado':{bg:'#FFF3CD',color:'#856404'},'Aprobado':{bg:'#EAF0E6',color:'#5A7A4E'},'Denegado':{bg:'#F5E8E8',color:'#8A4A4A'}};
   el.innerHTML=list.map(p=>{
     const c=colorMap[p.estado]||{bg:'var(--cream)',color:'var(--text-l)'};
-    const m=parseFloat(p.monto)||0;
+    const m=getPresupMonto(p);
     return `<div class="presup-card">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
         <div style="flex:1;">
@@ -6672,7 +6681,7 @@ function renderMcLista(clientes) {
     const col  = colors[i % colors.length];
     const init = (c.nombre||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     const cobradoReal = parseFloat(c.totalCobrado)||0;
-    const presapsAprobados = _mcPresupuestos.filter(p=>(p.clienteId===c.id||p.cliente===c.nombre)&&p.estado==='Aprobado').reduce((s,p)=>s+(parseFloat(p.monto)||0),0);
+    const presapsAprobados = _mcPresupuestos.filter(p=>(p.clienteId===c.id||p.cliente===c.nombre)&&p.estado==='Aprobado').reduce((s,p)=>s+getPresupMonto(p),0);
     const saldo = presapsAprobados - cobradoReal;
     const saldoColor = saldo > 0 ? 'var(--err)' : cobradoReal > 0 ? 'var(--ok)' : 'var(--text-l)';
     const saldoTxt = saldo > 0
@@ -6771,7 +6780,7 @@ window.openMcDetalle = function(id) {
   // KPIs cuenta corriente
   const misPresups = _mcPresupuestos.filter(p => p.clienteId === id || p.cliente === c.nombre);
   const cobrado    = parseFloat(c.totalCobrado) || 0;
-  const total      = misPresups.filter(p=>p.estado==='Aprobado').reduce((s,p)=>s+(parseFloat(p.monto)||0),0);
+  const total      = misPresups.filter(p=>p.estado==='Aprobado').reduce((s,p)=>s+getPresupMonto(p),0);
   const pendiente  = Math.max(0, total - cobrado);
   const fmt        = v => '$' + v.toLocaleString('es-AR');
   const setEl = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
@@ -6977,7 +6986,7 @@ function renderMcDetallePresupuestos(list, clienteId, clienteNombre) {
   const colorMap = {'Pendiente de enviar':{bg:'#F5ECD8',color:'#8A6A3A'},'Enviado':{bg:'#E6EEF5',color:'#4A6A8A'},'Consultado':{bg:'#FFF3CD',color:'#856404'},'Aprobado':{bg:'#EAF0E6',color:'#5A7A4E'},'Denegado':{bg:'#F5E8E8',color:'#8A4A4A'}};
   el.innerHTML = list.map(p => {
     const c = colorMap[p.estado] || {bg:'var(--cream)',color:'var(--text-l)'};
-    const m = parseFloat(p.monto) || 0;
+    const m = getPresupMonto(p);
     // Alert si fue enviado hace más de 7 días sin respuesta
     let alertHtml = '';
     if (p.estado === 'Enviado' && p.fecha) {
@@ -7271,7 +7280,7 @@ function renderMcVentas(presups, clienteId) {
     return;
   }
   el.innerHTML = aprobados.map(p => {
-    const monto = parseFloat(p.monto)||0;
+    const monto = getPresupMonto(p);
     const fecha = p.fecha ? new Date(p.fecha+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'}) : '—';
     return `<div style="background:var(--cream);border-radius:10px;padding:13px 14px;margin-bottom:8px;">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px;">
@@ -7604,22 +7613,80 @@ window.filterClientPresup = function(estado, btn) {
   renderClientPresup(filtered);
 };
 
+// Helper: calcular monto real desde items o fallback a p.monto
+function getPresupMonto(p) {
+  if(p.items && p.items.length > 0) return p.items.reduce((s,it)=>s+(parseFloat(it.cant||0)*parseFloat(it.precio||0)),0);
+  return parseFloat(p.monto)||0;
+}
+
+// Items para newClientPresupModal
+let _cpItems = [];
+
+function renderCpItems() {
+  const el = document.getElementById('cp-items-list');
+  if(!el) return;
+  if(_cpItems.length === 0) { el.innerHTML=''; const td=document.getElementById('cp-total-display'); if(td) td.textContent='0'; return; }
+  const header = `<div style="display:grid;grid-template-columns:1fr 55px 90px 90px 24px;gap:5px;padding:4px 0;border-bottom:1.5px solid var(--sage-light);margin-bottom:2px;">
+    <div style="font-size:9px;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Descripción</div>
+    <div style="font-size:9px;color:var(--text-l);text-align:center;text-transform:uppercase;letter-spacing:.5px;">Cant.</div>
+    <div style="font-size:9px;color:var(--text-l);text-align:right;text-transform:uppercase;letter-spacing:.5px;">P. unit.</div>
+    <div style="font-size:9px;color:var(--text-l);text-align:right;text-transform:uppercase;letter-spacing:.5px;">Total</div>
+    <div></div></div>`;
+  el.innerHTML = header + _cpItems.map((it,i)=>`
+    <div style="display:grid;grid-template-columns:1fr 55px 90px 90px 24px;gap:5px;align-items:center;padding:5px 0;border-bottom:.5px solid var(--cream-d);">
+      <div style="font-size:12px;color:var(--text);">${it.desc}</div>
+      <div style="font-size:12px;color:var(--text-m);text-align:center;">${it.cant}</div>
+      <div style="font-size:12px;color:var(--text-m);text-align:right;">$${parseFloat(it.precio).toLocaleString('es-AR')}</div>
+      <div style="font-size:12px;font-weight:500;color:var(--topbar);text-align:right;">$${(it.cant*it.precio).toLocaleString('es-AR')}</div>
+      <button onclick="removeCpItem(${i})" style="background:none;border:none;color:var(--err);cursor:pointer;font-size:14px;padding:0;line-height:1;">×</button>
+    </div>`).join('');
+  const total = _cpItems.reduce((s,it)=>s+(it.cant*it.precio),0);
+  const td = document.getElementById('cp-total-display'); if(td) td.textContent = total.toLocaleString('es-AR');
+}
+
+window.onCpItemProdSelect = function() {
+  const sel = document.getElementById('cp-item-prod');
+  const prod = (_productos||[]).find(p=>p.id===sel.value);
+  if(!prod) return;
+  const d = document.getElementById('cp-item-desc'); if(d&&!d.value) d.value = prod.nombre;
+  const pr = document.getElementById('cp-item-precio'); if(pr) pr.value = prod.precio||'';
+};
+
+window.addCpItem = function() {
+  const cant   = parseFloat(document.getElementById('cp-item-cant').value)||1;
+  const precio = parseFloat(document.getElementById('cp-item-precio').value)||0;
+  if(!precio){ alert('Ingresá el precio del ítem'); return; }
+  const sel  = document.getElementById('cp-item-prod');
+  const prod = (_productos||[]).find(p=>p.id===sel?.value);
+  const desc = document.getElementById('cp-item-desc').value.trim() || prod?.nombre || 'Ítem';
+  _cpItems.push({desc, cant, precio, productoId: sel?.value||''});
+  renderCpItems();
+  document.getElementById('cp-item-cant').value = '1';
+  document.getElementById('cp-item-precio').value = '';
+  document.getElementById('cp-item-desc').value = '';
+  if(sel) sel.value = '';
+};
+
+window.removeCpItem = function(i) { _cpItems.splice(i,1); renderCpItems(); };
+
 window.createClientPresup = async function() {
   if(!currentClientUID) return;
   const sel = document.getElementById('cp-cliente-sel');
   const clienteId = sel?.value;
   const clienteNombre = sel?.options[sel.selectedIndex]?.text;
   if(!clienteId) { alert('Seleccioná un cliente'); return; }
-  const mcCliente = (_mcClientes||[]).find(c=>c.id===clienteId);
+  if(_cpItems.length === 0) { alert('Agregá al menos un ítem al presupuesto'); return; }
+  const total = _cpItems.reduce((s,it)=>s+(it.cant*it.precio),0);
   const data = {
-    cliente: clienteNombre,
-    clienteId,
+    cliente: clienteNombre, clienteId,
+    numero: document.getElementById('cp-numero').value,
     descripcion: document.getElementById('cp-desc').value,
-    link: _presupPdfUrl || '',
-    monto: document.getElementById('cp-monto').value,
+    items: [..._cpItems],
+    monto: total,
     moneda: document.getElementById('cp-moneda').value,
     estado: document.getElementById('cp-estado').value,
     fecha: document.getElementById('cp-fecha').value,
+    validez: document.getElementById('cp-validez').value,
     notas: document.getElementById('cp-notas').value,
     creadoEn: new Date().toISOString()
   };
@@ -7630,9 +7697,7 @@ window.createClientPresup = async function() {
     setTimeout(async()=>{
       if(s) s.style.display='none';
       closeModal('newClientPresupModal');
-      ['cp-desc','cp-monto','cp-notas'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-      document.getElementById('cp-pdf-nombre').textContent = 'Seleccionar archivo PDF';
-      document.getElementById('cp-pdf-progress').style.display = 'none';
+      _cpItems = [];
       await loadClientPresupuestos();
       await loadMcModule();
     }, 1500);
@@ -8616,7 +8681,7 @@ window.abrirCuentaCorriente = async function(provId) {
 function renderCuentaCorriente() {
   const setEl=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
   const totalComprado = _ccFacturas.reduce((a,f)=>a+(parseFloat(f.monto)||0),0);
-  const totalPagado = _ccPagos.reduce((a,p)=>a+(parseFloat(p.monto)||0),0);
+  const totalPagado = _ccPagos.reduce((a,p)=>a+getPresupMonto(p),0);
   const saldo = Math.max(0, totalComprado - totalPagado);
 
   setEl('cc-kpi-comprado','$'+totalComprado.toLocaleString('es-AR'));
@@ -8740,7 +8805,7 @@ window.savePagoProveedor = async function() {
     });
     // Actualizar estado factura si aplica
     if(facturaId&&factura){
-      const totalPagadoFac=(_ccPagos.filter(p=>p.facturaId===facturaId).reduce((a,p)=>a+(parseFloat(p.monto)||0),0))+monto;
+      const totalPagadoFac=(_ccPagos.filter(p=>p.facturaId===facturaId).reduce((a,p)=>a+getPresupMonto(p),0))+monto;
       const estadoFac=totalPagadoFac>=parseFloat(factura.monto)?'pagada':'parcial';
       await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',_ccProvId,'facturas',facturaId),{estado:estadoFac});
     }
@@ -9629,12 +9694,17 @@ window.openModal = function(id) {
       sel.innerHTML = '<option value="">— Seleccioná un cliente —</option>' +
         mcs.map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('');
     }
-    document.getElementById('cp-fecha').value = new Date().toISOString().split('T')[0];
-    ['cp-desc','cp-monto','cp-notas'].forEach(fid=>{const el=document.getElementById(fid);if(el)el.value='';});
-    _presupPdfUrl = '';
-    const pdfNom = document.getElementById('cp-pdf-nombre'); if(pdfNom) pdfNom.textContent='Seleccionar archivo PDF';
-    const pdfProg = document.getElementById('cp-pdf-progress'); if(pdfProg) pdfProg.style.display='none';
-    const pdfFile = document.getElementById('cp-pdf-file'); if(pdfFile) pdfFile.value='';
+    const hoy = new Date().toISOString().split('T')[0];
+    document.getElementById('cp-fecha').value = hoy;
+    const validez = new Date(); validez.setDate(validez.getDate()+30);
+    document.getElementById('cp-validez').value = validez.toISOString().split('T')[0];
+    const numEl = document.getElementById('cp-numero');
+    if(numEl) numEl.value = formatPresupNumero((_mcPresupuestos||[]).length + 1);
+    ['cp-desc','cp-notas'].forEach(fid=>{const el=document.getElementById(fid);if(el)el.value='';});
+    _cpItems = []; renderCpItems();
+    const prodSel = document.getElementById('cp-item-prod');
+    if(prodSel) prodSel.innerHTML = '<option value="">— Producto del catálogo —</option>' +
+      (_productos||[]).filter(p=>p.activo!==false).map(p=>`<option value="${p.id}">${p.nombre} · $${parseFloat(p.precio||0).toLocaleString('es-AR')}</option>`).join('');
   }
   if(id === 'newMclienteModal') {
     // Limpiar todos los campos y resetear el botón
