@@ -2432,6 +2432,7 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
 <!-- Modal nuevo presupuesto (desde cliente) -->
 <div class="mo" id="newMcPresupModal">
   <div class="md" style="max-width:560px;">
+    <button class="mc2" onclick="closeModal('newMcPresupModal')">×</button>
     <div class="mt">Nuevo presupuesto</div>
     <input type="hidden" id="mcp-presup-cliente-id"/>
     <!-- Número y fecha en fila -->
@@ -7111,6 +7112,9 @@ window.removeMcPresupItem = function(i) {
 function formatPresupNumero(n) {
   return '0001-' + String(n).padStart(8,'0');
 }
+window.formatPresupNumero = formatPresupNumero;
+window._cpItems = _cpItems;
+window.renderCpItems = renderCpItems;
 
 window.openMcPresupModal = function(clienteId, clienteNombre) {
   document.getElementById('mcp-presup-cliente-id').value = clienteId||'';
@@ -7281,6 +7285,11 @@ function renderMcVentas(presups, clienteId) {
   }
   el.innerHTML = aprobados.map(p => {
     const monto = getPresupMonto(p);
+    const cobradoCliente = parseFloat((_mcClientes.find(c=>c.id===p.clienteId||c.nombre===p.cliente))?.totalCobrado||0);
+    // Saldo pendiente = monto presupuesto − lo ya cobrado del cliente
+    // Usamos el pendiente por presupuesto si hay múltiples, sino el total
+    const pendiente = Math.max(0, monto - cobradoCliente);
+    const montoSugerido = pendiente > 0 ? pendiente : monto;
     const fecha = p.fecha ? new Date(p.fecha+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'}) : '—';
     return `<div style="background:var(--cream);border-radius:10px;padding:13px 14px;margin-bottom:8px;">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px;">
@@ -7293,9 +7302,9 @@ function renderMcVentas(presups, clienteId) {
           <span style="font-size:9px;font-weight:500;padding:1px 8px;border-radius:20px;background:var(--ok-bg);color:var(--ok);">Aprobado</span>
         </div>
       </div>
-      <button onclick="openMcCobroModal('${clienteId}','${p.id}','${(p.descripcion||'Venta').replace(/'/g,"\\'")}',${monto})"
+      <button onclick="openMcCobroModal('${clienteId}','${p.id}','${(p.descripcion||'Venta').replace(/'/g,"\\'")}',${montoSugerido})"
         style="width:100%;padding:7px;background:var(--ok-bg);border:.5px solid var(--ok);border-radius:8px;font-size:12px;font-weight:500;color:var(--ok);cursor:pointer;font-family:'DM Sans',sans-serif;">
-        $ Registrar cobro
+        $ Registrar cobro${pendiente < monto && pendiente > 0 ? ' — Saldo: $'+pendiente.toLocaleString('es-AR') : ''}
       </button>
     </div>`;
   }).join('');
@@ -9699,9 +9708,9 @@ window.openModal = function(id) {
     const validez = new Date(); validez.setDate(validez.getDate()+30);
     document.getElementById('cp-validez').value = validez.toISOString().split('T')[0];
     const numEl = document.getElementById('cp-numero');
-    if(numEl) numEl.value = formatPresupNumero((_mcPresupuestos||[]).length + 1);
+    if(numEl) numEl.value = window.formatPresupNumero(((window._mcPresupuestos)||[]).length + 1);
     ['cp-desc','cp-notas'].forEach(fid=>{const el=document.getElementById(fid);if(el)el.value='';});
-    _cpItems = []; renderCpItems();
+    window._cpItems = []; if(window.renderCpItems) window.renderCpItems();
     const prodSel = document.getElementById('cp-item-prod');
     if(prodSel) prodSel.innerHTML = '<option value="">— Producto del catálogo —</option>' +
       (_productos||[]).filter(p=>p.activo!==false).map(p=>`<option value="${p.id}">${p.nombre} · $${parseFloat(p.precio||0).toLocaleString('es-AR')}</option>`).join('');
