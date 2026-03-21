@@ -7736,6 +7736,7 @@ function renderClientPresup(list) {
           ${fecha?`<span style="font-size:11px;color:var(--text-l);">${fecha}</span>`:''}
           ${alerta}
           ${p.link?`<button onclick="verPresupuestoPDF('${p.id}')" style="font-size:11px;color:var(--topbar);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;padding:0;">Ver PDF →</button>`:''}
+          <button onclick="exportarPresupuestoPDF('${p.id}')" style="font-size:10px;padding:2px 9px;border-radius:20px;border:.5px solid var(--sage-light);background:var(--sage-xl);color:var(--sage-dark);cursor:pointer;font-family:'DM Sans',sans-serif;">↓ Ver / PDF</button>
         </div>
         <div style="display:flex;gap:4px;margin-top:7px;flex-wrap:wrap;">
           <button onclick="editClientPresup('${p.id}')" style="font-size:10px;padding:2px 8px;border-radius:20px;border:.5px solid var(--sage-light);background:var(--sage-xl);color:var(--sage-dark);cursor:pointer;font-family:'DM Sans',sans-serif;">✏️ Editar</button>
@@ -7929,6 +7930,11 @@ window.createClientPresup = async function() {
       window._cpItems = [];
       await loadClientPresupuestos();
       await loadMcModule();
+      // Abrir preview del presupuesto recién guardado
+      const snap2 = await getDocs(collection(db,'clientes',currentClientUID,'presupuestos'));
+      const todos = []; snap2.forEach(d=>todos.push({id:d.id,...d.data()}));
+      todos.sort((a,b)=>new Date(b.creadoEn||0)-new Date(a.creadoEn||0));
+      if(todos[0]) exportarPresupuestoPDF(todos[0].id);
     }, 1500);
   } catch(e){ showErr('Error al guardar: '+e.message); }
 };
