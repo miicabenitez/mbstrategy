@@ -10039,12 +10039,24 @@ async function loadProductos() {
     const setEl = function(id,v){var el=document.getElementById(id);if(el)el.textContent=v;};
     if(ultFecha) {
       const meses = Math.round((Date.now()-new Date(ultFecha))/(1000*60*60*24*30));
-      setEl('prod-kpi-meses', meses===0?'<1':String(meses));
+      setEl('prod-kpi-meses', meses===0?'0':String(meses));
       setEl('prod-kpi-meses-sub', meses===0?'actualizado este mes':'meses sin cambios');
     } else { setEl('prod-kpi-meses','—'); setEl('prod-kpi-meses-sub','sin registros'); }
     // Footer
     const footer = document.getElementById('prod-footer-guardar');
     if(footer) footer.style.display = prods.length > 0 ? 'flex' : 'none';
+    // Ítem más rentable — cruzar con ingresos del módulo
+    const ingresos = window._clientIngresos||[];
+    const rentabilidad = {};
+    ingresos.forEach(function(ing){
+      if(!ing.concepto) return;
+      var p = prods.find(function(x){return x.nombre===ing.concepto;});
+      if(p) rentabilidad[p.id]=(rentabilidad[p.id]||0)+(parseFloat(ing.monto)||0);
+    });
+    const topId = Object.keys(rentabilidad).sort(function(a,b){return rentabilidad[b]-rentabilidad[a];})[0];
+    const topProd = topId ? prods.find(function(x){return x.id===topId;}) : null;
+    setEl('prod-kpi-rentable', topProd ? topProd.nombre : '—');
+    setEl('prod-kpi-rentable-monto', topProd ? '$'+rentabilidad[topId].toLocaleString('es-AR')+' generados' : 'Registrá ingresos para ver');
     // Actualizar selector de productos en presupuestos
     var sel = document.getElementById('mcp-item-prod');
     if(sel) sel.innerHTML = '<option value="">— Producto del catálogo —</option>' +
