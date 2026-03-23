@@ -3377,6 +3377,7 @@ window.showAdminUI = async function(email) {
   document.getElementById('aNav').style.display = 'flex';
   document.getElementById('ub').textContent = 'Admin';
   await loadAdminData();
+  if(window.embiShow) window.embiShow(false);
 };
 
 window.showClientUI = async function(email, clientData) {
@@ -3573,6 +3574,7 @@ window.showClientUI = async function(email, clientData) {
       const negNombre = document.getElementById('negocio-nombre-display');
       if(negNombre) negNombre.textContent = clientData.nombre || 'Mi negocio';
     }
+    if(window.embiShow) window.embiShow(true);
 };
 
 async function loadAdminData() {
@@ -10846,10 +10848,7 @@ function embiShow(show){
   if(fab)fab.style.display=show?'block':'none';
   if(!show&&embiOpen)embiToggle();
 }
-var _origSCUI=window.showClientUI;
-window.showClientUI=async function(email,clientData){await _origSCUI(email,clientData);embiShow(true);};
-var _origSAUI=window.showAdminUI;
-window.showAdminUI=async function(email){await _origSAUI(email);embiShow(false);};
+window.embiShow=embiShow;
 </script>
 
 </body>
