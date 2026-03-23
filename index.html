@@ -484,7 +484,7 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
 /* Mobile — full screen below topbar */
 @media(max-width:480px){
   .embi-panel{top:54px;left:0;right:0;bottom:0;width:100%;border-radius:0;border:none;max-height:none;}
-  .embi-fab{bottom:20px;right:16px;}
+  .embi-fab{bottom:76px;right:16px;}
 }
 .embi-header{background:var(--topbar);padding:13px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;}
 .embi-avatar{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
@@ -2768,9 +2768,6 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
       <div class="fg"><label class="fl">Nombre</label><input type="text" class="fi" id="pc-nombre" placeholder="Ej: Papel A4, Cemento, Detergente..."/></div>
       <div class="fg"><label class="fl">Categoría</label>
         <select class="fi" id="pc-cat" style="margin-top:0;">
-          <option>Librería y papelería</option><option>Materiales</option><option>Limpieza e higiene</option>
-          <option>Tecnología y software</option><option>Herramientas y equipos</option><option>Reparaciones</option>
-          <option>Marketing y publicidad</option><option>Logística y transporte</option><option>Mano de obra</option><option>Otro</option>
         </select>
       </div>
       <div class="fg"><label class="fl">Unidad de medida</label>
@@ -2803,9 +2800,6 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
       <div class="fg"><label class="fl">Categoría</label>
         <select class="fi" id="nc-cat" style="margin-top:0;" onchange="cargarProductosPorCat()">
           <option value="">Seleccionar categoría...</option>
-          <option>Librería y papelería</option><option>Materiales</option><option>Limpieza e higiene</option>
-          <option>Tecnología y software</option><option>Herramientas y equipos</option><option>Reparaciones</option>
-          <option>Marketing y publicidad</option><option>Logística y transporte</option><option>Mano de obra</option><option>Otro</option>
         </select>
       </div>
       <div class="fg"><label class="fl">Estado</label>
@@ -9213,7 +9207,7 @@ window.savePagoProveedor = async function() {
 };
 
 // ===== CATEGORÍAS DE PROVEEDORES =====
-const CATS_DEFAULT = ['Materiales','Mano de obra','Servicios profesionales','Alquiler','Herramientas y equipos','Marketing y publicidad','Logística y transporte','Reparaciones','Tecnología y software','Limpieza e higiene'];
+const CATS_DEFAULT = ['Librería y papelería','Materiales','Mano de obra','Servicios profesionales','Alquiler','Herramientas y equipos','Marketing y publicidad','Logística y transporte','Reparaciones','Tecnología y software','Limpieza e higiene','Otro'];
 let _catsProv = [];
 
 async function loadCatsProveedor() {
@@ -9228,10 +9222,26 @@ async function loadCatsProveedor() {
 }
 
 function renderCatSelect(valorActual) {
+  const opts = _catsProv.map(c => `<option value="${c}">${c}</option>`).join('');
+  // Proveedor
   const sel = document.getElementById('nprov-cat');
-  if(!sel) return;
-  const current = valorActual || sel.value || _catsProv[0];
-  sel.innerHTML = _catsProv.map(c => `<option value="${c}" ${c===current?'selected':''}>${c}</option>`).join('');
+  if(sel) {
+    const current = valorActual || sel.value || _catsProv[0];
+    sel.innerHTML = _catsProv.map(c => `<option value="${c}" ${c===current?'selected':''}>${c}</option>`).join('');
+  }
+  // Necesidad de compra
+  const ncSel = document.getElementById('nc-cat');
+  if(ncSel) {
+    const ncCurrent = ncSel.value;
+    ncSel.innerHTML = '<option value="">Seleccionar categoría...</option>' + opts;
+    if(ncCurrent) ncSel.value = ncCurrent;
+  }
+  // Productos de compra
+  const pcSel = document.getElementById('pc-cat');
+  if(pcSel) {
+    const pcCurrent = valorActual || pcSel.value || _catsProv[0];
+    pcSel.innerHTML = _catsProv.map(c => `<option value="${c}" ${c===pcCurrent?'selected':''}>${c}</option>`).join('');
+  }
 }
 
 window.mostrarNuevaCat = function() {
