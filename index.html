@@ -3685,7 +3685,7 @@ window.showClientUI = async function(email, clientData) {
         if(hint) hint.textContent = '';
       }
       const negNombre = document.getElementById('negocio-nombre-display');
-      if(negNombre) negNombre.textContent = clientData.nombre || 'Mi negocio';
+      if(negNombre) negNombre.textContent = clientData.negocioNombre || clientData.nombre || 'Mi negocio';
     }
     if(window.embiShow) window.embiShow(true);
 };
@@ -9106,10 +9106,21 @@ window.generarPDFNecesidad = async function(ncId) {
 
   // Obtener datos del negocio del cliente
   let negocioNombre = 'Mi negocio';
+  let negData = {};
   try {
     const negDoc = await getDoc(doc(db,'clientes',currentClientUID));
-    if(negDoc.exists()) negocioNombre = negDoc.data().nombre || negocioNombre;
+    if(negDoc.exists()) {
+      negData = negDoc.data();
+      negocioNombre = negData.negocioNombre || negData.nombre || negocioNombre;
+    }
   } catch(e){}
+
+  const negRubro  = negData.negocioRubro || '';
+  const negTel    = negData.negocioTel   || '';
+  const negEmail  = negData.negocioEmail  || '';
+  const negCuit   = negData.negocioCuit   || '';
+  const negLogo   = negData.logoNegocio   || null;
+  const contactoLineasNC = [negRubro, negTel, negEmail, negCuit ? 'CUIT '+negCuit : ''].filter(Boolean);
 
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
@@ -9117,7 +9128,6 @@ window.generarPDFNecesidad = async function(ncId) {
   const contentW = W - margin*2;
   let y = 0;
 
-  // Colores
   const SAGE_DARK = [122, 142, 125];
   const SAGE      = [161, 177, 164];
   const SAGE_XL   = [237, 240, 234];
@@ -9127,30 +9137,39 @@ window.generarPDFNecesidad = async function(ncId) {
   const TEXT_L    = [154, 172, 160];
   const WHITE_C   = [255, 255, 255];
 
-  const setFill = (c) => pdf.setFillColor(...c);
-  const setDraw = (c) => pdf.setDrawColor(...c);
+  const setFill  = (c) => pdf.setFillColor(...c);
+  const setDraw  = (c) => pdf.setDrawColor(...c);
   const setTextC = (c) => pdf.setTextColor(...c);
 
-  // ── HEADER BANNER ────────────────────────────────────────────
-  setFill(SAGE_DARK); pdf.rect(0, 0, W, 28, 'F');
-  setFill(SAGE); pdf.rect(0, 28, W, 18, 'F');
+  // ── HEADER — mismo estilo presupuesto ──────────────────────
+  const headerHNC = 34 + Math.max(0, (contactoLineasNC.length - 2)) * 4;
+  setFill(SAGE_DARK); pdf.rect(0, 0, W, headerHNC, 'F');
+
+  let logoXNC = margin;
+  if(negLogo) {
+    try { pdf.addImage(negLogo,'PNG',margin,6,18,18,undefined,'FAST'); logoXNC=margin+22; } catch(e){}
+  }
 
   setTextC(WHITE_C);
-  pdf.setFontSize(7); pdf.setFont('helvetica','bold');
-  pdf.text('MB STRATEGY', margin, 10);
-  pdf.setFontSize(7); pdf.setFont('helvetica','normal');
-  pdf.text('SOLICITUD DE PRESUPUESTO', W - margin, 10, {align:'right'});
+  pdf.setFontSize(14); pdf.setFont('helvetica','bold');
+  pdf.text(negocioNombre, logoXNC, 14);
 
-  pdf.setFontSize(18); pdf.setFont('helvetica','bold');
-  pdf.text(negocioNombre, margin, 22);
+  pdf.setFontSize(8); pdf.setFont('helvetica','normal');
+  setTextC([220,230,222]);
+  contactoLineasNC.forEach((l,i)=>pdf.text(l, logoXNC, 20+i*4));
 
-  pdf.setFontSize(12); pdf.setFont('helvetica','normal');
-  pdf.text('Solicitud de Presupuesto', margin, 37);
+  setTextC(WHITE_C);
+  pdf.setFontSize(16); pdf.setFont('helvetica','bold');
+  pdf.text('Solicitud de Cotización', W-margin, 14, {align:'right'});
+  setTextC([220,230,222]);
+  pdf.setFontSize(9); pdf.setFont('helvetica','normal');
+  const fechaNC = new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'long',year:'numeric'});
+  pdf.text(fechaNC, W-margin, 22, {align:'right'});
 
-  y = 52;
+  y = headerHNC + 10;
 
   // ── DATOS DE LA SOLICITUD ────────────────────────────────────
-  const fecha = new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'long',year:'numeric'});
+  const fecha = fechaNC;
   setFill(CREAM); setDraw(CREAM_D);
   pdf.setLineWidth(0.3);
   pdf.roundedRect(margin, y, contentW, 18, 3, 3, 'FD');
@@ -9174,7 +9193,6 @@ window.generarPDFNecesidad = async function(ncId) {
   pdf.text('DETALLE DE PRODUCTOS SOLICITADOS', margin, y);
   y += 5;
 
-  // Header tabla
   setFill(SAGE_DARK);
   pdf.rect(margin, y, contentW, 8, 'F');
   setTextC(WHITE_C); pdf.setFontSize(8); pdf.setFont('helvetica','bold');
@@ -9186,51 +9204,80 @@ window.generarPDFNecesidad = async function(ncId) {
   pdf.text('Total', cols[4], y+5.5);
   y += 8;
 
-  // Filas
   const items = nc.items || [];
+  const yTablaStart = y;
+
+  // Posiciones fijas en A4 (297mm)
+  const TOTAL_Y   = 204; // fila TOTAL siempre aquí
+  const INSTRUC_Y = 215; // instrucciones
+  const FIRMA_Y   = 248; // líneas de firma
+  const FOOTER_Y  = 280; // footer
+
+  // Calcular cuántas filas caben entre yTablaStart y TOTAL_Y
+  const ROW_H = 9;
+  const totalSlots = Math.max(items.length, Math.floor((TOTAL_Y - yTablaStart) / ROW_H));
+
+  // Filas reales
   items.forEach((item, i) => {
     const bg = i%2===0 ? CREAM : WHITE_C;
     setFill(bg); setDraw(CREAM_D); pdf.setLineWidth(0.2);
-    pdf.rect(margin, y, contentW, 9, 'FD');
+    pdf.rect(margin, y, contentW, ROW_H, 'FD');
     setTextC(TEXT); pdf.setFontSize(9); pdf.setFont('helvetica','bold');
-    pdf.text(item.nombre||'—', cols[0], y+6);
-    pdf.setFont('helvetica','normal');
-    setTextC(TEXT);
+    pdf.text((item.nombre||'—').substring(0,42), cols[0], y+6);
+    pdf.setFont('helvetica','normal'); setTextC(TEXT);
     pdf.text(String(item.cantidad||''), cols[1]+8, y+6, {align:'right'});
     pdf.text(item.unidad||'', cols[2]+3, y+6);
-    // Precio y total vacíos con línea para completar
     setTextC(TEXT_L);
     pdf.text('____________', cols[3], y+6);
     pdf.text('____________', cols[4], y+6);
-    y += 9;
+    y += ROW_H;
   });
 
-  // Fila total
-  setFill(SAGE_XL); setDraw(CREAM_D);
-  pdf.rect(margin, y, contentW, 9, 'FD');
+  // Filas vacías para completar hasta TOTAL_Y
+  const filasVacias = Math.max(0, totalSlots - items.length);
+  for(let i=0; i<filasVacias; i++){
+    const bg = (items.length+i)%2===0 ? CREAM : WHITE_C;
+    setFill(bg); setDraw(CREAM_D); pdf.setLineWidth(0.2);
+    pdf.rect(margin, y, contentW, ROW_H, 'FD');
+    setTextC(TEXT_L); pdf.setFontSize(9);
+    pdf.text('____________', cols[3], y+6);
+    pdf.text('____________', cols[4], y+6);
+    y += ROW_H;
+  }
+
+  // Fila TOTAL — siempre en TOTAL_Y
+  setFill(SAGE_XL); setDraw(CREAM_D); pdf.setLineWidth(0.2);
+  pdf.rect(margin, TOTAL_Y, contentW, ROW_H, 'FD');
   setTextC(TEXT); pdf.setFontSize(9); pdf.setFont('helvetica','bold');
-  pdf.text('TOTAL', cols[3]-20, y+6);
+  pdf.text('TOTAL', cols[3]-20, TOTAL_Y+6);
   setTextC(TEXT_L); pdf.setFont('helvetica','normal');
-  pdf.text('____________', cols[4], y+6);
-  y += 18;
+  pdf.text('____________', cols[4], TOTAL_Y+6);
 
-  // ── NOTA PARA EL PROVEEDOR ────────────────────────────────────
+  // ── INSTRUCCIONES — fijas ─────────────────────────────────────
   setFill(CREAM); setDraw(CREAM_D); pdf.setLineWidth(0.3);
-  pdf.roundedRect(margin, y, contentW, 22, 3, 3, 'FD');
+  pdf.roundedRect(margin, INSTRUC_Y, contentW, 22, 3, 3, 'FD');
   setTextC(TEXT_L); pdf.setFontSize(7); pdf.setFont('helvetica','bold');
-  pdf.text('INSTRUCCIONES', margin+4, y+6);
+  pdf.text('INSTRUCCIONES', margin+4, INSTRUC_Y+6);
   setTextC(TEXT); pdf.setFontSize(9); pdf.setFont('helvetica','normal');
-  pdf.text('Por favor completar precios unitarios y total por ítem.', margin+4, y+12);
-  pdf.text('Enviar cotización a: ________________________________   Fecha límite: _______________', margin+4, y+19);
-  y += 30;
+  pdf.text('Por favor completar precios unitarios y total por ítem.', margin+4, INSTRUC_Y+12);
+  pdf.text('Enviar cotización a: ________________________________   Fecha límite: _______________', margin+4, INSTRUC_Y+19);
 
-  // ── PIE ──────────────────────────────────────────────────────
-  setFill(SAGE_DARK); pdf.rect(0, 280, W, 17, 'F');
+  // ── FIRMAS — fijas ────────────────────────────────────────────
+  setDraw(CREAM_D); pdf.setLineWidth(0.3);
+  pdf.line(margin, FIRMA_Y, margin+65, FIRMA_Y);
+  pdf.line(margin+100, FIRMA_Y, margin+165, FIRMA_Y);
+  setTextC(TEXT_L); pdf.setFontSize(8); pdf.setFont('helvetica','normal');
+  pdf.text('Firma autorizada', margin, FIRMA_Y+5);
+  pdf.text('Recibí conforme', margin+100, FIRMA_Y+5);
+
+  // ── PIE — fijo ────────────────────────────────────────────────
+  setFill(SAGE_DARK); pdf.rect(0, FOOTER_Y, W, 17, 'F');
   setTextC(WHITE_C); pdf.setFontSize(7); pdf.setFont('helvetica','normal');
-  pdf.text(negocioNombre+' · Solicitud generada el '+fecha, margin, 290);
-  pdf.text('MB Strategy', W-margin, 290, {align:'right'});
+  pdf.text('Generado por MB Strategy · sistema.mbstrategy.com.ar', W/2, FOOTER_Y+9, {align:'center'});
 
-  pdf.save(`Solicitud_Presupuesto_${(nc.categoria||'NC').replace(/\s+/g,'_')}_${new Date().toISOString().split('T')[0]}.pdf`);
+  pdf.save(`Solicitud_Cotizacion_${(nc.categoria||'NC').replace(/\s+/g,'_')}_${new Date().toISOString().split('T')[0]}.pdf`);
+};
+
 };
 
 // ─ Órdenes de Compra ─
@@ -9323,10 +9370,23 @@ window.generarPDFOrdenCompra = async function() {
   }
 
   let negocioNombre = 'Mi negocio';
+  let negocioData = {};
   try {
     const negDoc = await getDoc(doc(db,'clientes',currentClientUID));
-    if(negDoc.exists()) negocioNombre = negDoc.data().nombre || negocioNombre;
+    if(negDoc.exists()) {
+      negocioData = negDoc.data();
+      negocioNombre = negocioData.negocioNombre || negocioData.nombre || negocioNombre;
+    }
   } catch(e){}
+
+  const negocioRubro   = negocioData.negocioRubro || '';
+  const negocioTel     = negocioData.negocioTel   || '';
+  const negocioEmail   = negocioData.negocioEmail  || '';
+  const negocioCuit    = negocioData.negocioCuit   || '';
+  const negocioDir     = negocioData.negocioDir    || '';
+  const logoBase64     = negocioData.logoNegocio   || null;
+
+  const contactoLineas = [negocioRubro, negocioTel, negocioEmail, negocioCuit ? 'CUIT '+negocioCuit : '', negocioDir].filter(Boolean);
 
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
@@ -9336,28 +9396,47 @@ window.generarPDFOrdenCompra = async function() {
   const SAGE_DARK=[122,142,125], SAGE=[161,177,164], SAGE_XL=[237,240,234];
   const CREAM=[245,246,243], CREAM_D=[208,207,201];
   const TEXT=[44,44,44], TEXT_L=[154,172,160], WHITE_C=[255,255,255];
-  const ERR=[180,60,60], OK=[80,140,80];
 
   const setFill=c=>pdf.setFillColor(...c);
   const setDraw=c=>pdf.setDrawColor(...c);
   const setTC=c=>pdf.setTextColor(...c);
 
-  // ── HEADER ──
-  setFill(SAGE_DARK); pdf.rect(0,0,W,28,'F');
-  setFill(SAGE); pdf.rect(0,28,W,18,'F');
-  setTC(WHITE_C);
-  pdf.setFontSize(7); pdf.setFont('helvetica','bold');
-  pdf.text('MB STRATEGY', margin, 10);
-  pdf.setFont('helvetica','normal');
-  pdf.text('ORDEN DE COMPRA', W-margin, 10, {align:'right'});
-  pdf.setFontSize(18); pdf.setFont('helvetica','bold');
-  pdf.text(negocioNombre, margin, 22);
-  pdf.setFontSize(13); pdf.setFont('helvetica','normal');
-  pdf.text(`Orden de Compra — OC-${String(oc.numero||0).padStart(3,'0')}`, margin, 37);
-  y=52;
+  // ── HEADER — mismo estilo que presupuesto ──
+  const headerH = 34 + Math.max(0, (contactoLineas.length - 2)) * 4;
+  setFill(SAGE_DARK); pdf.rect(0, 0, W, headerH, 'F');
 
-  // ── META ──
-  const fecha = new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'long',year:'numeric'});
+  // Logo si existe
+  let logoX = margin;
+  if(logoBase64) {
+    try {
+      pdf.addImage(logoBase64, 'PNG', margin, 6, 18, 18, undefined, 'FAST');
+      logoX = margin + 22;
+    } catch(e){}
+  }
+
+  // Nombre del negocio
+  setTC(WHITE_C);
+  pdf.setFontSize(14); pdf.setFont('helvetica','bold');
+  pdf.text(negocioNombre, logoX, 14);
+
+  // Datos de contacto (izquierda, bajo nombre)
+  pdf.setFontSize(8); pdf.setFont('helvetica','normal');
+  setTC([220, 230, 222]);
+  contactoLineas.forEach((l, i) => pdf.text(l, logoX, 20 + i*4));
+
+  // Derecha: tipo de doc + número
+  setTC(WHITE_C);
+  pdf.setFontSize(18); pdf.setFont('helvetica','bold');
+  pdf.text('Orden de Compra', W-margin, 14, {align:'right'});
+  pdf.setFontSize(10); pdf.setFont('helvetica','normal');
+  setTC([220, 230, 222]);
+  pdf.text(`OC-${String(oc.numero||0).padStart(3,'0')}`, W-margin, 21, {align:'right'});
+  pdf.text(oc.fecha || new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'long',year:'numeric'}), W-margin, 27, {align:'right'});
+
+  y = headerH + 10;
+
+  // ── META: Proveedor ──
+  const fechaOC = oc.fecha || new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'long',year:'numeric'});
   setFill(CREAM); setDraw(CREAM_D); pdf.setLineWidth(0.3);
   pdf.roundedRect(margin,y,contentW,20,3,3,'FD');
   setTC(TEXT_L); pdf.setFontSize(7); pdf.setFont('helvetica','bold');
@@ -9367,7 +9446,7 @@ window.generarPDFOrdenCompra = async function() {
   setTC(TEXT); pdf.setFontSize(11); pdf.setFont('helvetica','bold');
   pdf.text(oc.proveedor||'—', margin+4, y+14);
   pdf.setFont('helvetica','normal'); pdf.setFontSize(10);
-  pdf.text(oc.fecha||fecha, margin+100, y+14);
+  pdf.text(fechaOC, margin+100, y+14);
   pdf.setFont('helvetica','bold');
   pdf.text(`OC-${String(oc.numero||0).padStart(3,'0')}`, margin+145, y+14);
   y+=28;
