@@ -10589,7 +10589,7 @@ window.showCTab = function(tab, btn) {
   if(tab==='prod-compra') loadProductosCompra();
   if(tab==='necesidades') loadNecesidades();
   if(tab==='ordenes-compra') loadOrdenesCompra();
-  if(tab==='historial-compra') { await loadOrdenesCompra(); renderHistorialCompra(); }
+  if(tab==='historial-compra') { loadOrdenesCompra().then(()=>renderHistorialCompra()); }
   if(tab==='productos') loadProductos();
   if(tab==='mclientes') loadMcModule();
   if(tab==='clientes') {
