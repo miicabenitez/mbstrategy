@@ -10785,7 +10785,7 @@ async function embiCallAPI(userMsg){
   embiHistory.push({role:'user',content:userMsg});
   if(embiHistory.length>10)embiHistory=embiHistory.slice(-10);
   try{
-    var resp=await fetch('https://api.anthropic.com/v1/messages',{
+    var resp=await fetch('/.netlify/functions/embi',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:500,system:EMBI_SYSTEM,messages:embiHistory})
