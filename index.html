@@ -2038,6 +2038,7 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
 
       <!-- PROVEEDORES -->
       <div id="ct-proveedores" style="display:none;">
+      <div id="prov-lista-view">
 
           <div style="background:var(--topbar);border-radius:13px;padding:22px 24px;margin-bottom:16px;">
             <div style="font-size:9px;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;">MB Strategy</div>
@@ -2073,7 +2074,10 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
         <div class="g2">
           <div>
             <div class="card">
-              <div class="ct">Mis proveedores</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                <div class="ct" style="margin-bottom:0;">Mis proveedores</div>
+              </div>
+              <input type="text" id="prov-search" class="fi" placeholder="Buscar proveedor..." style="border-radius:20px;margin-bottom:10px;" oninput="filtrarProveedores(this.value)"/>
               <div id="prov-lista"><div style="text-align:center;padding:20px;color:var(--text-l);font-size:13px;">Sin proveedores. ¡Agregá el primero!</div></div>
             </div>
           </div>
@@ -2092,7 +2096,83 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
           </div>
         </div>
 
-      </div>
+      </div><!-- /prov-lista-view -->
+
+      <!-- CC PROVEEDOR FULLSCREEN -->
+      <div id="prov-cc-view" style="display:none;">
+        <!-- Header -->
+        <div style="background:var(--topbar);border-radius:13px;padding:20px 24px;margin-bottom:16px;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
+            <div>
+              <button onclick="cerrarCCView()" style="background:rgba(255,255,255,.15);border:none;color:rgba(255,255,255,.7);font-size:12px;padding:5px 12px;border-radius:20px;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:8px;">← Volver a proveedores</button>
+              <div style="font-size:9px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:2px;margin-bottom:4px;">Cuenta corriente</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:#fff;line-height:1.1;" id="cc-prov-nombre-full">Proveedor</div>
+              <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:3px;" id="cc-prov-cat-full"></div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:9px;color:rgba(255,255,255,.5);margin-bottom:3px;">Saldo pendiente</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:300;color:#fff;" id="cc-prov-saldo-full">$0</div>
+              <div id="cc-saldo-badge-full" style="margin-top:4px;"></div>
+            </div>
+          </div>
+          <!-- KPIs inline -->
+          <div style="display:flex;gap:24px;margin-top:16px;padding-top:14px;border-top:.5px solid rgba(255,255,255,.12);flex-wrap:wrap;">
+            <div>
+              <div style="font-size:9px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.8px;">Total comprado</div>
+              <div style="font-size:18px;font-weight:500;color:#fff;margin-top:2px;" id="cc-kpi-comprado-full">$0</div>
+            </div>
+            <div style="width:.5px;background:rgba(255,255,255,.15);"></div>
+            <div>
+              <div style="font-size:9px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.8px;">Total pagado</div>
+              <div style="font-size:18px;font-weight:500;color:#a8d8a0;margin-top:2px;" id="cc-kpi-pagado-full">$0</div>
+            </div>
+            <div style="width:.5px;background:rgba(255,255,255,.15);"></div>
+            <div>
+              <div style="font-size:9px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.8px;">Pendiente</div>
+              <div style="font-size:18px;font-weight:500;color:#f0857a;margin-top:2px;" id="cc-kpi-pendiente-full">$0</div>
+            </div>
+            <div style="width:.5px;background:rgba(255,255,255,.15);"></div>
+            <div>
+              <div style="font-size:9px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.8px;">OC activas</div>
+              <div style="font-size:18px;font-weight:500;color:#fff;margin-top:2px;" id="cc-kpi-ocs-full">0</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Acciones + Movimientos -->
+        <div style="display:grid;grid-template-columns:1fr 340px;gap:14px;align-items:start;">
+
+          <!-- Movimientos -->
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+              <div style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:1px;">Movimientos</div>
+              <div style="display:flex;gap:8px;">
+                <button class="bs" style="font-size:11px;" onclick="openModal('newFacturaModal')">+ Factura</button>
+                <button class="bp" style="font-size:11px;" onclick="openModal('newPagoProvModal')">+ Registrar pago</button>
+              </div>
+            </div>
+            <div id="cc-movimientos-full"><div style="text-align:center;padding:40px;color:var(--text-l);font-size:13px;">Sin movimientos.</div></div>
+            <div style="margin-top:14px;padding-top:12px;border-top:.5px solid var(--cream-d);display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:11px;color:var(--text-l);">Saldo actual</span>
+              <span style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;" id="cc-saldo-final-full">$0</span>
+            </div>
+          </div>
+
+          <!-- Panel derecho: OCs del proveedor -->
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div class="card">
+              <div style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Órdenes de compra</div>
+              <div id="cc-ocs-lista-full"><div style="text-align:center;padding:20px;color:var(--text-l);font-size:12px;">Sin órdenes.</div></div>
+            </div>
+            <div class="card">
+              <div style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Datos del proveedor</div>
+              <div id="cc-prov-datos-full" style="font-size:12px;color:var(--text-m);line-height:1.8;"></div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /prov-cc-view -->
+
+
 
       <!-- PRODUCTOS DE COMPRA -->
       <div id="ct-prod-compra" style="display:none;">
@@ -9606,7 +9686,44 @@ window.abrirCuentaCorriente = async function(provId) {
   if(!prov) return;
   _ccProvId = provId;
 
-  document.getElementById('cc-prov-nombre').textContent = prov.nombre;
+  // Mostrar vista fullscreen, ocultar lista
+  document.getElementById('prov-lista-view') && (document.getElementById('prov-lista-view').style.display='none');
+  document.getElementById('prov-cc-view').style.display='block';
+
+  // Datos del proveedor en header
+  const setEl=(id,v)=>{const el=document.getElementById(id);if(el)el.innerHTML=v;};
+  setEl('cc-prov-nombre-full', prov.nombre);
+  setEl('cc-prov-cat-full', [prov.categoria, prov.tel].filter(Boolean).join(' · '));
+  setEl('cc-prov-datos-full', [
+    prov.tel ? `<div><span style="color:var(--text-l);">Tel:</span> ${prov.tel}</div>` : '',
+    prov.categoria ? `<div><span style="color:var(--text-l);">Categoría:</span> ${prov.categoria}</div>` : '',
+    prov.notas ? `<div><span style="color:var(--text-l);">Notas:</span> ${prov.notas}</div>` : '',
+  ].filter(Boolean).join('') || '<span style="color:var(--text-l);">Sin datos adicionales.</span>');
+
+  // OC del proveedor
+  const ocsDeEsteProv = _ordenesCompra.filter(o=>o.proveedorId===provId);
+  setEl('cc-kpi-ocs-full', ocsDeEsteProv.length);
+  const elOcs = document.getElementById('cc-ocs-lista-full');
+  if(elOcs){
+    if(ocsDeEsteProv.length===0){
+      elOcs.innerHTML='<div style="text-align:center;padding:16px;color:var(--text-l);font-size:12px;">Sin órdenes de compra.</div>';
+    } else {
+      elOcs.innerHTML = ocsDeEsteProv.map(o=>{
+        const ep=o.estadoPago||'pendiente';
+        const bc={pagada:{bg:'var(--ok-bg)',tc:'var(--ok)',lbl:'Pagada'},pendiente:{bg:'var(--err-bg)',tc:'var(--err)',lbl:'Pendiente'},parcial:{bg:'var(--warn-bg)',tc:'var(--warn)',lbl:'Parcial'}}[ep]||{bg:'var(--err-bg)',tc:'var(--err)',lbl:'Pendiente'};
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:.5px solid var(--cream-d);cursor:pointer;" onclick="abrirDetalleOC('${o.id}')">
+          <div>
+            <div style="font-size:12px;font-weight:500;color:var(--text);">OC-${String(o.numero||0).padStart(3,'0')}</div>
+            <div style="font-size:10px;color:var(--text-l);">${o.fecha||'—'} · ${(o.items||[]).length} ítems</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:13px;font-weight:500;color:var(--text);">$${(parseFloat(o.total)||0).toLocaleString('es-AR')}</div>
+            <span style="background:${bc.bg};color:${bc.tc};font-size:9px;font-weight:500;padding:2px 8px;border-radius:20px;">${bc.lbl}</span>
+          </div>
+        </div>`;
+      }).join('');
+    }
+  }
 
   // Cargar facturas y pagos
   try {
@@ -9621,8 +9738,14 @@ window.abrirCuentaCorriente = async function(provId) {
     pagSnap.forEach(d=>_ccPagos.push({id:d.id,...d.data()}));
     _ccPagos.sort((a,b)=>(a.fecha||'')>(b.fecha||'')?-1:1);
     renderCuentaCorriente();
-    openModal('cuentaCorrienteModal');
   }catch(e){console.log(e);}
+};
+
+window.cerrarCCView = function() {
+  document.getElementById('prov-cc-view').style.display='none';
+  const lv = document.getElementById('prov-lista-view');
+  if(lv) lv.style.display='block';
+  else renderProveedoresModule();
 };
 
 function renderCuentaCorriente() {
@@ -9631,58 +9754,71 @@ function renderCuentaCorriente() {
   const totalPagado = _ccPagos.reduce((a,p)=>a+(parseFloat(p.monto)||0),0);
   const saldo = Math.max(0, totalComprado - totalPagado);
 
+  // KPIs fullscreen
+  setEl('cc-kpi-comprado-full','$'+totalComprado.toLocaleString('es-AR'));
+  setEl('cc-kpi-pagado-full','$'+totalPagado.toLocaleString('es-AR'));
+  setEl('cc-kpi-pendiente-full','$'+saldo.toLocaleString('es-AR'));
+  setEl('cc-prov-saldo-full','$'+saldo.toLocaleString('es-AR'));
+  setEl('cc-saldo-final-full', saldo>0 ? '-$'+saldo.toLocaleString('es-AR') : 'Al día');
+
+  // También mantener los del modal por compatibilidad
   setEl('cc-kpi-comprado','$'+totalComprado.toLocaleString('es-AR'));
   setEl('cc-kpi-pagado','$'+totalPagado.toLocaleString('es-AR'));
   setEl('cc-kpi-pendiente','$'+saldo.toLocaleString('es-AR'));
   setEl('cc-prov-saldo','$'+saldo.toLocaleString('es-AR'));
-  setEl('cc-saldo-final',saldo>0?'-$'+saldo.toLocaleString('es-AR'):'Al día');
+  setEl('cc-saldo-final', saldo>0?'-$'+saldo.toLocaleString('es-AR'):'Al día');
 
-  const saldoEl=document.getElementById('cc-saldo-final');
-  if(saldoEl) saldoEl.style.color=saldo>0?'var(--err)':'var(--ok)';
+  const saldoFullEl = document.getElementById('cc-saldo-final-full');
+  if(saldoFullEl) saldoFullEl.style.color = saldo>0 ? 'var(--err)' : 'var(--ok)';
+
+  const saldoBadge = document.getElementById('cc-saldo-badge-full');
+  if(saldoBadge) saldoBadge.innerHTML = saldo>0
+    ? `<span style="background:rgba(240,133,122,.2);color:#f0857a;font-size:10px;font-weight:500;padding:3px 10px;border-radius:20px;">Con deuda</span>`
+    : `<span style="background:rgba(168,216,160,.2);color:#a8d8a0;font-size:10px;font-weight:500;padding:3px 10px;border-radius:20px;">Al día</span>`;
 
   // Actualizar saldo en tarjeta proveedor
   const prov=_proveedores.find(p=>p.id===_ccProvId);
-  if(prov) { prov._saldo=saldo; renderProveedoresModule(); }
+  if(prov) { prov._saldo=saldo; }
 
-  // Construir movimientos mezclando facturas y pagos
+  // Movimientos mezclando facturas y pagos
   const movs = [
     ..._ccFacturas.map(f=>({...f,tipo:'factura'})),
     ..._ccPagos.map(p=>({...p,tipo:'pago'}))
   ].sort((a,b)=>(a.fecha||'')>(b.fecha||'')?-1:1);
 
-  const el=document.getElementById('cc-movimientos');
+  const el = document.getElementById('cc-movimientos-full') || document.getElementById('cc-movimientos');
   if(!el) return;
-  if(movs.length===0){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--text-l);font-size:13px;">Sin movimientos.</div>';return;}
+  if(movs.length===0){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-l);font-size:13px;">Sin movimientos registrados.</div>';return;}
 
   el.innerHTML=movs.map(m=>{
     if(m.tipo==='factura'){
       const estadoFac = m.estado||'pendiente';
       const badgeCfg={pendiente:{bg:'var(--err-bg)',tc:'var(--err)',label:'Pendiente'},pagada:{bg:'var(--ok-bg)',tc:'var(--ok)',label:'Pagada'},parcial:{bg:'var(--warn-bg)',tc:'var(--warn)',label:'Pago parcial'}};
       const bc=badgeCfg[estadoFac]||badgeCfg.pendiente;
-      return `<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:.5px solid var(--cream-d);">
-        <div style="width:36px;height:36px;background:#E6EEF5;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      return `<div style="display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:.5px solid var(--cream-d);">
+        <div style="width:40px;height:40px;background:#E6EEF5;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="1" width="12" height="14" rx="2" stroke="#2A4A6A" stroke-width="1.2"/><path d="M5 5h6M5 8h6M5 11h4" stroke="#2A4A6A" stroke-width="1.2" stroke-linecap="round"/></svg>
         </div>
         <div style="flex:1;min-width:0;">
           <div style="font-size:13px;font-weight:500;color:var(--text);">Factura ${m.numero||''}</div>
-          <div style="font-size:11px;color:var(--text-l);">${m.fecha||''}${m.desc?' · '+m.desc:''}</div>
+          <div style="font-size:11px;color:var(--text-l);margin-top:2px;">${m.fecha||''}${m.desc?' · '+m.desc:''}</div>
         </div>
         <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
-          <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--err);font-weight:500;">-$${(parseFloat(m.monto)||0).toLocaleString('es-AR')}</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:19px;color:var(--err);font-weight:500;">-$${(parseFloat(m.monto)||0).toLocaleString('es-AR')}</div>
           <span style="background:${bc.bg};color:${bc.tc};font-size:9px;font-weight:500;padding:2px 8px;border-radius:20px;">${bc.label}</span>
         </div>
       </div>`;
     } else {
-      return `<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:.5px solid var(--cream-d);">
-        <div style="width:36px;height:36px;background:var(--ok-bg);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      return `<div style="display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:.5px solid var(--cream-d);">
+        <div style="width:40px;height:40px;background:var(--ok-bg);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-6" stroke="var(--ok)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
         <div style="flex:1;min-width:0;">
           <div style="font-size:13px;font-weight:500;color:var(--text);">Pago registrado</div>
-          <div style="font-size:11px;color:var(--text-l);">${m.fecha||''}${m.concepto?' · '+m.concepto:''}${m.facturaNum?' · Fac: '+m.facturaNum:''}</div>
+          <div style="font-size:11px;color:var(--text-l);margin-top:2px;">${m.fecha||''}${m.concepto?' · '+m.concepto:''}${m.facturaNum?' · Fac: '+m.facturaNum:''}</div>
         </div>
         <div style="text-align:right;">
-          <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--ok);font-weight:500;">+$${(parseFloat(m.monto)||0).toLocaleString('es-AR')}</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:19px;color:var(--ok);font-weight:500;">+$${(parseFloat(m.monto)||0).toLocaleString('es-AR')}</div>
           <span style="background:var(--ok-bg);color:var(--ok);font-size:9px;font-weight:500;padding:2px 8px;border-radius:20px;">Pago</span>
         </div>
       </div>`;
@@ -9958,58 +10094,35 @@ window.loadProveedores = loadProveedores;
 function renderProveedoresModule() {
   const egresos = window._clientEgresos || [];
   const setEl = (id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+
+  // Solo egresos vinculados a proveedores registrados
+  const egresosConProv = egresos.filter(e=>e.proveedorId && _proveedores.find(p=>p.id===e.proveedorId));
   const gastosPorProv = {};
-  egresos.forEach(e=>{
-    if(e.proveedorId) {
-      const prov = _proveedores.find(p=>p.id===e.proveedorId);
-      const k = prov ? prov.nombre : (e.concepto||'Sin nombre');
-      gastosPorProv[k]=(gastosPorProv[k]||0)+(parseFloat(e.monto)||0);
-    } else {
-      const k = e.concepto||'Sin nombre';
-      gastosPorProv[k]=(gastosPorProv[k]||0)+(parseFloat(e.monto)||0);
+  egresosConProv.forEach(e=>{
+    const prov = _proveedores.find(p=>p.id===e.proveedorId);
+    const k = prov ? prov.nombre : e.concepto||'—';
+    gastosPorProv[k]=(gastosPorProv[k]||0)+(parseFloat(e.monto)||0);
+  });
+
+  // También sumar lo de OC por proveedor
+  (window._ordenesCompra||[]).forEach(o=>{
+    if(o.proveedor && o.total){
+      gastosPorProv[o.proveedor]=(gastosPorProv[o.proveedor]||0)+(parseFloat(o.total)||0);
     }
   });
-  const totalGastado = egresos.reduce((a,e)=>a+(parseFloat(e.monto)||0),0);
+
+  const totalGastado = egresosConProv.reduce((a,e)=>a+(parseFloat(e.monto)||0),0);
   const prom = _proveedores.length>0 ? Math.round(totalGastado/_proveedores.length) : 0;
   setEl('prov-kpi-total', _proveedores.length);
   setEl('prov-kpi-gastado', '$'+totalGastado.toLocaleString('es-AR'));
   setEl('prov-kpi-prom', '$'+prom.toLocaleString('es-AR'));
-  const lista = document.getElementById('prov-lista');
-  if(lista) {
-    if(_proveedores.length===0) {
-      lista.innerHTML='<div style="text-align:center;padding:20px;color:var(--text-l);font-size:13px;">Sin proveedores. ¡Agregá el primero!</div>';
-    } else {
-      const colors=[['#EDF0EA','#7A8E7D'],['#E6EEF5','#4A6A8A'],['#F5ECD8','#8A6A3A'],['#EEE6F5','#6A4A8A']];
-      lista.innerHTML = _proveedores.map((p,i)=>{
-        const col=colors[i%colors.length];
-        const init=(p.nombre||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-        const saldo=p._saldo||0;
-        const saldoHtml=saldo>0
-          ?`<span style="background:var(--err-bg);color:var(--err);font-size:9px;font-weight:500;padding:2px 8px;border-radius:20px;">$${saldo.toLocaleString('es-AR')} pendiente</span>`
-          :`<span style="background:var(--ok-bg);color:var(--ok);font-size:9px;font-weight:500;padding:2px 8px;border-radius:20px;">Al día</span>`;
-        return `<div style="padding:12px 0;border-bottom:.5px solid var(--cream-d);">
-          <div style="display:flex;align-items:center;gap:10px;">
-            <div style="width:38px;height:38px;border-radius:10px;background:${col[0]};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:${col[1]};flex-shrink:0;">${init}</div>
-            <div style="flex:1;min-width:0;">
-              <div style="font-size:13px;font-weight:500;color:var(--text);">${p.nombre}</div>
-              <div style="font-size:11px;color:var(--text-l);margin-top:1px;">${p.categoria||''}${p.tel?' · '+p.tel:''}</div>
-              <div style="margin-top:4px;">${saldoHtml}</div>
-            </div>
-            <div style="display:flex;gap:4px;flex-shrink:0;align-items:center;">
-              <button onclick="abrirCuentaCorriente('${p.id}')" style="background:var(--sage-xl);border:none;color:var(--sage-dark);cursor:pointer;font-size:11px;padding:5px 12px;border-radius:20px;font-family:'DM Sans',sans-serif;font-weight:500;">CC</button>
-              <button onclick="editProveedor('${p.id}')" style="background:none;border:.5px solid var(--cream-d);border-radius:8px;padding:4px 8px;font-size:11px;color:var(--text-l);cursor:pointer;font-family:'DM Sans',sans-serif;">✏️</button>
-              <button onclick="deleteProveedor('${p.id}')" style="background:none;border:.5px solid var(--cream-d);border-radius:8px;padding:4px 8px;font-size:11px;color:var(--err);cursor:pointer;font-family:'DM Sans',sans-serif;">×</button>
-            </div>
-          </div>
-          ${p.notas?`<div style="font-size:11px;color:var(--text-l);margin-top:6px;margin-left:48px;font-style:italic;">${p.notas}</div>`:''}
-        </div>`;
-      }).join('');
-    }
-  }
+
+  renderListaProveedores('');
+
   const ranking = document.getElementById('prov-ranking');
   if(ranking) {
     const list = Object.entries(gastosPorProv).sort((a,b)=>b[1]-a[1]).slice(0,6);
-    if(list.length===0) { ranking.innerHTML='<div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin egresos registrados.</div>'; }
+    if(list.length===0) { ranking.innerHTML='<div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin gastos registrados para proveedores.</div>'; }
     else {
       const max=list[0][1]||1;
       const colors=['#A1B1A4','#7A8E7D','#B0C0B2','#C8D4CA','#D0CFC9','#E7E5DF'];
@@ -10023,9 +10136,54 @@ function renderProveedoresModule() {
         </div>`).join('');
     }
   }
-  initProvDonutChart(egresos);
+  initProvDonutChart(egresosConProv);
   if(window.renderCatPanel) window.renderCatPanel();
 }
+
+function renderListaProveedores(filtro) {
+  const lista = document.getElementById('prov-lista');
+  if(!lista) return;
+  const q = (filtro||'').toLowerCase().trim();
+  const provsFiltrados = q
+    ? _proveedores.filter(p=>(p.nombre||'').toLowerCase().includes(q)||(p.categoria||'').toLowerCase().includes(q))
+    : _proveedores;
+
+  if(_proveedores.length===0) {
+    lista.innerHTML='<div style="text-align:center;padding:20px;color:var(--text-l);font-size:13px;">Sin proveedores. ¡Agregá el primero!</div>';
+    return;
+  }
+  if(provsFiltrados.length===0) {
+    lista.innerHTML=`<div style="text-align:center;padding:20px;color:var(--text-l);font-size:13px;">Sin resultados para "${filtro}"</div>`;
+    return;
+  }
+  const colors=[['#EDF0EA','#7A8E7D'],['#E6EEF5','#4A6A8A'],['#F5ECD8','#8A6A3A'],['#EEE6F5','#6A4A8A']];
+  lista.innerHTML = provsFiltrados.map((p,i)=>{
+    const col=colors[i%colors.length];
+    const init=(p.nombre||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const saldo=p._saldo||0;
+    const saldoHtml=saldo>0
+      ?`<span style="background:var(--err-bg);color:var(--err);font-size:9px;font-weight:500;padding:2px 8px;border-radius:20px;">$${saldo.toLocaleString('es-AR')} pendiente</span>`
+      :`<span style="background:var(--ok-bg);color:var(--ok);font-size:9px;font-weight:500;padding:2px 8px;border-radius:20px;">Al día</span>`;
+    return `<div style="padding:12px 0;border-bottom:.5px solid var(--cream-d);">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:38px;height:38px;border-radius:10px;background:${col[0]};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:${col[1]};flex-shrink:0;">${init}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:500;color:var(--text);">${p.nombre}</div>
+          <div style="font-size:11px;color:var(--text-l);margin-top:1px;">${p.categoria||''}${p.tel?' · '+p.tel:''}</div>
+          <div style="margin-top:4px;">${saldoHtml}</div>
+        </div>
+        <div style="display:flex;gap:4px;flex-shrink:0;align-items:center;">
+          <button onclick="abrirCuentaCorriente('${p.id}')" style="background:var(--sage-xl);border:none;color:var(--sage-dark);cursor:pointer;font-size:11px;padding:5px 12px;border-radius:20px;font-family:'DM Sans',sans-serif;font-weight:500;">CC</button>
+          <button onclick="editProveedor('${p.id}')" style="background:none;border:.5px solid var(--cream-d);border-radius:8px;padding:4px 8px;font-size:11px;color:var(--text-l);cursor:pointer;font-family:'DM Sans',sans-serif;">✏️</button>
+          <button onclick="deleteProveedor('${p.id}')" style="background:none;border:.5px solid var(--cream-d);border-radius:8px;padding:4px 8px;font-size:11px;color:var(--err);cursor:pointer;font-family:'DM Sans',sans-serif;">×</button>
+        </div>
+      </div>
+      ${p.notas?`<div style="font-size:11px;color:var(--text-l);margin-top:6px;margin-left:48px;font-style:italic;">${p.notas}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+window.filtrarProveedores = function(q) { renderListaProveedores(q); };
 
 function initProvDonutChart(egresos) {
   if(provDonutChart){try{provDonutChart.destroy();}catch(e){} provDonutChart=null;}
