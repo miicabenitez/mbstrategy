@@ -3014,6 +3014,26 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
 </div>
 
 <!-- Modal detalle OC -->
+<!-- Modal ver cotización existente -->
+<div class="mo" id="verCotModal">
+  <div class="md" style="max-width:480px;padding:0;overflow:hidden;position:relative;">
+    <button class="mc2" onclick="closeModal('verCotModal')" style="position:absolute;top:14px;right:14px;z-index:2;color:#fff;background:rgba(255,255,255,.15);border:none;">×</button>
+    <div style="background:var(--topbar);padding:20px 24px 16px;">
+      <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">MB Strategy · Cotización</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;color:#fff;" id="vcot-titulo">Alimentos</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.65);margin-top:3px;" id="vcot-sub"></div>
+    </div>
+    <div style="padding:20px 24px;">
+      <div style="font-size:9px;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Órdenes de compra generadas</div>
+      <div id="vcot-ocs"></div>
+      <div style="margin-top:16px;display:flex;gap:8px;">
+        <button class="bs" style="flex:1;" onclick="closeModal('verCotModal')">Cerrar</button>
+        <button class="bp" style="flex:1;" id="vcot-btn-recotizar" onclick="">Recotizar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="mo" id="ocDetalleModal">
   <div class="md" style="max-width:520px;padding:0;overflow:hidden;position:relative;">
     <button class="mc2" onclick="closeModal('ocDetalleModal')" style="position:absolute;top:14px;right:14px;z-index:2;color:#fff;background:rgba(255,255,255,.15);border:none;">×</button>
@@ -8604,16 +8624,47 @@ function renderNecesidades() {
           </div>
           <div style="font-size:11px;color:var(--text-l);">${(n.items||[]).length} productos · ${n.periodicidad||''}</div>
         </div>
-        <div style="display:flex;gap:6px;flex-shrink:0;">
+        <div style="display:flex;gap:6px;flex-shrink:0;align-items:center;">
           <button onclick="generarPDFNecesidad('${n.id}')" style="background:none;border:.5px solid var(--cream-d);border-radius:20px;padding:6px 12px;font-size:11px;color:var(--text-m);cursor:pointer;font-family:'DM Sans',sans-serif;">PDF</button>
-          <button onclick="deleteNecesidad('${n.id}')" style="background:none;border:.5px solid var(--cream-d);border-radius:20px;padding:6px 10px;font-size:11px;color:var(--err);cursor:pointer;font-family:'DM Sans',sans-serif;">×</button>
-          <button onclick="abrirCotizacion('${n.id}')" class="bp" style="font-size:11px;padding:6px 12px;">${(n.cotizaciones&&n.cotizaciones.length>0)?'Ver cotización':'Cotizar'}</button>
+          ${(n.cotizaciones&&n.cotizaciones.length>0)
+            ? `<button onclick="verOCsDeNecesidad('${n.id}')" class="bp" style="font-size:11px;padding:6px 12px;">Ver OC</button>`
+            : `<button onclick="abrirCotizacion('${n.id}')" class="bp" style="font-size:11px;padding:6px 12px;">Cotizar</button>`
+          }
+          <button onclick="deleteNecesidad('${n.id}')" style="background:none;border:.5px solid var(--cream-d);border-radius:20px;padding:6px 10px;font-size:11px;color:var(--err);cursor:pointer;font-family:'DM Sans',sans-serif;" title="Eliminar">×</button>
         </div>
       </div>
       ${prods?`<div style="background:var(--cream);border-radius:8px;padding:8px 12px;font-size:11px;color:var(--text-m);">${prods}</div>`:''}
     </div>`;
   }).join('');
 }
+
+window.verOCsDeNecesidad = function(ncId) {
+  // Buscar las OCs que corresponden a esta necesidad
+  const ocs = _ordenesCompra.filter(o=>o.ncId===ncId);
+  if(ocs.length===0){
+    // Si aún no cargaron, cargar y reintentar
+    loadOrdenesCompra().then(()=>{
+      const ocs2=_ordenesCompra.filter(o=>o.ncId===ncId);
+      if(ocs2.length>0) abrirDetalleOC(ocs2[0].id);
+      else alert('No se encontraron órdenes de compra para esta necesidad.');
+    });
+    return;
+  }
+  if(ocs.length===1){
+    abrirDetalleOC(ocs[0].id);
+  } else {
+    // Varias OCs: mostrar selector rápido
+    const lista = ocs.map(o=>`<div onclick="closeModal('ocSelectorModal');abrirDetalleOC('${o.id}')" style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--cream);border-radius:10px;cursor:pointer;margin-bottom:8px;" onmouseenter="this.style.background='var(--sage-xl)'" onmouseleave="this.style.background='var(--cream)'">
+      <div><div style="font-size:13px;font-weight:500;color:var(--text);">OC-${String(o.numero||0).padStart(3,'0')} · ${o.proveedor||'—'}</div><div style="font-size:11px;color:var(--text-l);">${(o.items||[]).length} ítems</div></div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--text);">$${(parseFloat(o.total)||0).toLocaleString('es-AR')}</div>
+    </div>`).join('');
+    // Modal simple inline
+    let sel=document.getElementById('ocSelectorModal');
+    if(!sel){sel=document.createElement('div');sel.id='ocSelectorModal';sel.className='mo';document.body.appendChild(sel);}
+    sel.innerHTML=`<div class="md" style="max-width:440px;"><button class="mc2" onclick="closeModal('ocSelectorModal')">×</button><div class="mt">Órdenes de esta necesidad</div>${lista}</div>`;
+    openModal('ocSelectorModal');
+  }
+};
 
 window.cargarProductosPorCat = function() {
   const searchEl = document.getElementById('nc-prod-search');
@@ -8686,6 +8737,51 @@ window.deleteNecesidad = function(id) {
 };
 
 let _cotNcId = null, _cotProvSeleccionados = [], _cotPrecios = {}, _seleccionFila = {};
+
+window.verCotizacionExistente = function(ncId) {
+  const nc = _necesidades.find(n=>n.id===ncId);
+  if(!nc) return;
+  const ocsNC = _ordenesCompra.filter(o=>o.ncId===ncId);
+
+  document.getElementById('vcot-titulo').textContent = nc.categoria||'—';
+  document.getElementById('vcot-sub').textContent = `${(nc.items||[]).length} productos · ${nc.periodicidad||''} · ${nc.estado}`;
+
+  const el = document.getElementById('vcot-ocs');
+  if(ocsNC.length===0){
+    // Usar cotizaciones guardadas en la NC si no hay OCs cargadas aún
+    const cots = nc.cotizaciones||[];
+    el.innerHTML = cots.length===0
+      ? '<div style="font-size:12px;color:var(--text-l);padding:10px;">Sin órdenes generadas.</div>'
+      : cots.map(c=>`<div style="display:flex;justify-content:space-between;align-items:center;background:var(--sage-xl);border-radius:10px;padding:12px;margin-bottom:8px;">
+          <div style="font-size:13px;font-weight:500;color:var(--text);">${c.proveedor}</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:500;color:var(--text);">$${(parseFloat(c.total)||0).toLocaleString('es-AR')}</div>
+        </div>`).join('');
+  } else {
+    el.innerHTML = ocsNC.map(o=>{
+      const estadoPago=o.estadoPago||'pendiente';
+      const bc={pagada:{bg:'var(--ok-bg)',tc:'var(--ok)',label:'Pagada'},pendiente:{bg:'var(--err-bg)',tc:'var(--err)',label:'Pendiente'},parcial:{bg:'var(--warn-bg)',tc:'var(--warn)',label:'Pago parcial'}}[estadoPago]||{bg:'var(--err-bg)',tc:'var(--err)',label:'Pendiente'};
+      return `<div style="background:var(--sage-xl);border-radius:10px;padding:12px;margin-bottom:8px;cursor:pointer;" onclick="closeModal('verCotModal');setTimeout(()=>abrirDetalleOC('${o.id}'),150)">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-size:12px;font-weight:500;color:var(--text);">OC-${String(o.numero||0).padStart(3,'0')} · ${o.proveedor}</div>
+            <div style="font-size:11px;color:var(--text-l);margin-top:2px;">${(o.items||[]).length} ítem${(o.items||[]).length!==1?'s':''} · ${o.fecha||''}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:500;color:var(--text);">$${(parseFloat(o.total)||0).toLocaleString('es-AR')}</div>
+            <span style="background:${bc.bg};color:${bc.tc};font-size:9px;font-weight:500;padding:2px 8px;border-radius:20px;">${bc.label}</span>
+          </div>
+        </div>
+        <div style="font-size:10px;color:var(--sage-dark);margin-top:6px;">Tocá para ver detalle →</div>
+      </div>`;
+    }).join('');
+  }
+
+  // Botón recotizar
+  const btn = document.getElementById('vcot-btn-recotizar');
+  if(btn) btn.onclick = ()=>{ closeModal('verCotModal'); setTimeout(()=>abrirCotizacion(ncId),150); };
+
+  openModal('verCotModal');
+};
 
 window.abrirCotizacion = function(ncId) {
   const nc = _necesidades.find(n=>n.id===ncId);
@@ -9163,13 +9259,12 @@ function renderOrdenesCompra() {
     const estadoPago=o.estadoPago||'pendiente';
     const badgeCfg={pagada:{bg:'var(--ok-bg)',tc:'var(--ok)',label:'Pagada'},pendiente:{bg:'var(--err-bg)',tc:'var(--err)',label:'Pendiente pago'},parcial:{bg:'var(--warn-bg)',tc:'var(--warn)',label:'Pago parcial'}};
     const bc=badgeCfg[estadoPago]||badgeCfg.pendiente;
-    return `<div onclick="abrirDetalleOC('${o.id}')" style="display:grid;grid-template-columns:70px 1fr 100px 100px 110px 40px;gap:10px;align-items:center;padding:12px 0;border-bottom:.5px solid var(--cream-d);cursor:pointer;transition:background .15s;border-radius:4px;" onmouseenter="this.style.background='var(--cream)'" onmouseleave="this.style.background=''">
+    return `<div onclick="abrirDetalleOC('${o.id}')" style="display:grid;grid-template-columns:58px 1fr auto auto auto;gap:12px;align-items:center;padding:12px 0;border-bottom:.5px solid var(--cream-d);cursor:pointer;border-radius:4px;" onmouseenter="this.style.background='var(--cream)'" onmouseleave="this.style.background=''">
       <div style="width:42px;height:42px;background:var(--sage-xl);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;color:var(--sage-dark);">OC-${String(o.numero||0).padStart(3,'0')}</div>
-      <div><div style="font-size:13px;font-weight:500;color:var(--text);">${o.proveedor||'—'}</div><div style="font-size:11px;color:var(--text-l);">${(o.items||[]).length} ítems</div></div>
-      <div style="font-size:12px;color:var(--text-m);">${o.fecha||'—'}</div>
-      <div style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:500;color:var(--text);text-align:right;">$${(parseFloat(o.total)||0).toLocaleString('es-AR')}</div>
-      <span style="background:${bc.bg};color:${bc.tc};font-size:9px;font-weight:500;padding:3px 8px;border-radius:20px;text-align:center;">${bc.label}</span>
-      <button onclick="event.stopPropagation();abrirDetalleOC('${o.id}')" style="background:none;border:.5px solid var(--cream-d);border-radius:8px;padding:5px 8px;cursor:pointer;font-size:11px;color:var(--text-m);" title="Ver PDF">PDF</button>
+      <div><div style="font-size:13px;font-weight:500;color:var(--text);">${o.proveedor||'—'}</div><div style="font-size:11px;color:var(--text-l);">${(o.items||[]).length} ítem${(o.items||[]).length!==1?'s':''} · ${o.fecha||'—'}</div></div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:500;color:var(--text);text-align:right;white-space:nowrap;">$${(parseFloat(o.total)||0).toLocaleString('es-AR')}</div>
+      <span style="background:${bc.bg};color:${bc.tc};font-size:9px;font-weight:500;padding:4px 10px;border-radius:20px;white-space:nowrap;">${bc.label}</span>
+      <button onclick="event.stopPropagation();_ocDetalleActual=_ordenesCompra.find(x=>x.id==='${o.id}');generarPDFOrdenCompra()" style="background:none;border:.5px solid var(--cream-d);border-radius:8px;padding:5px 10px;cursor:pointer;font-size:11px;color:var(--text-m);font-family:'DM Sans',sans-serif;white-space:nowrap;">↓ PDF</button>
     </div>`;
   }).join('');
 }
@@ -9312,20 +9407,17 @@ window.generarPDFOrdenCompra = async function() {
   pdf.text('$'+(parseFloat(oc.total)||0).toLocaleString('es-AR'), W-margin-4, y+9, {align:'right'});
   y+=20;
 
-  // ── ESTADO ──
-  const estadoColor = oc.estadoPago==='pagada' ? OK : ERR;
-  setTC(estadoColor); pdf.setFontSize(9); pdf.setFont('helvetica','bold');
-  const estadoLabels={pagada:'✓ Pagada',pendiente:'⚑ Pago pendiente',parcial:'◑ Pago parcial'};
-  pdf.text(estadoLabels[oc.estadoPago]||'Pendiente', margin, y);
-  y+=14;
+  // ── NOTAS / espacio libre (si hay espacio) ──
+  // (reservado para uso futuro)
 
-  // ── FIRMA ──
+  // ── FIRMA — fija en la parte baja del A4 ──
+  const firmaY = 245;
   setDraw(CREAM_D); pdf.setLineWidth(0.3);
-  pdf.line(margin, y, margin+60, y);
-  pdf.line(margin+90, y, margin+150, y);
+  pdf.line(margin, firmaY, margin+65, firmaY);
+  pdf.line(margin+100, firmaY, margin+165, firmaY);
   setTC(TEXT_L); pdf.setFontSize(8); pdf.setFont('helvetica','normal');
-  pdf.text('Firma autorizada', margin, y+5);
-  pdf.text('Recibí conforme', margin+90, y+5);
+  pdf.text('Firma autorizada', margin, firmaY+5);
+  pdf.text('Recibí conforme', margin+100, firmaY+5);
 
   // ── FOOTER ──
   setFill(SAGE_DARK); pdf.rect(0, 285, W, 12, 'F');
