@@ -1111,12 +1111,21 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
           <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;margin-bottom:4px;">Panel Embi</div>
           <div style="font-size:12px;opacity:.65;">Reportes de fallas y sugerencias detectados por Embi o enviados por tus clientas.</div>
         </div>
-        <!-- KPIs -->
+        <!-- KPIs reportes -->
         <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:18px;">
           <div class="mc accent"><div class="ml" style="color:rgba(255,255,255,.6);">Total reportes</div><div class="mv" style="color:#fff;" id="embi-kpi-total">0</div><div class="ms" style="color:rgba(255,255,255,.5);">recibidos</div></div>
           <div class="mc"><div class="ml">Fallas pendientes</div><div class="mv" style="color:var(--err);" id="embi-kpi-fallas">0</div><div class="ms">sin resolver</div></div>
           <div class="mc"><div class="ml">Sugerencias</div><div class="mv" style="color:var(--blue);" id="embi-kpi-sugerencias">0</div><div class="ms">acumuladas</div></div>
         </div>
+
+        <!-- KPIs acciones Embi -->
+        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:18px;">
+          <div class="mc"><div class="ml">Acciones ejecutadas</div><div class="mv" style="color:var(--ok);" id="embi-kpi-acciones-ok">0</div><div class="ms">exitosas</div></div>
+          <div class="mc"><div class="ml">Errores de acción</div><div class="mv" style="color:var(--err);" id="embi-kpi-acciones-err">0</div><div class="ms">fallidas</div></div>
+          <div class="mc"><div class="ml">Tasa de éxito</div><div class="mv" id="embi-kpi-tasa">—</div><div class="ms">efectividad</div></div>
+          <div class="mc"><div class="ml">Tipo más usado</div><div class="mv" style="font-size:14px;padding-top:4px;" id="embi-kpi-tipo-top">—</div><div class="ms">de acción</div></div>
+        </div>
+
         <!-- Filtros -->
         <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
           <button onclick="embiAdminFilter('todos',this)" style="font-size:12px;padding:6px 16px;border-radius:20px;border:.5px solid var(--cream-d);background:var(--topbar);color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;" id="efbtn-todos">Todos</button>
@@ -10857,10 +10866,32 @@ var _embiReports = [], _embiFilter = 'todos';
 
 window.loadEmbiReports = async function() {
   try {
-    const snap = await getDocs(collection(db,'embiReports'));
+    const [repSnap, acSnap] = await Promise.all([
+      getDocs(collection(db,'embiReports')),
+      getDocs(collection(db,'embiAcciones'))
+    ]);
     _embiReports = [];
-    snap.forEach(d => _embiReports.push({id:d.id,...d.data()}));
+    repSnap.forEach(d => _embiReports.push({id:d.id,...d.data()}));
     _embiReports.sort((a,b)=>(b.creadoEn||'').localeCompare(a.creadoEn||''));
+
+    // Métricas de acciones
+    const acciones=[];
+    acSnap.forEach(d=>acciones.push(d.data()));
+    const ok=acciones.filter(a=>a.estado==='ok').length;
+    const err=acciones.filter(a=>a.estado!=='ok').length;
+    const tasa=acciones.length>0?Math.round((ok/acciones.length)*100):null;
+    // Tipo más usado
+    const tipos={};
+    acciones.filter(a=>a.estado==='ok').forEach(a=>{tipos[a.tipo]=(tipos[a.tipo]||0)+1;});
+    const topTipo=Object.entries(tipos).sort((a,b)=>b[1]-a[1])[0];
+    const tipoLabels={INGRESO:'Ingresos',EGRESO:'Egresos',CLIENTE:'Clientes',COBRO:'Cobros',OC_RECIBIDA:'OC recibidas'};
+
+    const setEl=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+    setEl('embi-kpi-acciones-ok', ok);
+    setEl('embi-kpi-acciones-err', err);
+    setEl('embi-kpi-tasa', tasa!==null ? tasa+'%' : '—');
+    setEl('embi-kpi-tipo-top', topTipo ? tipoLabels[topTipo[0]]||topTipo[0] : '—');
+
     renderEmbiReports();
   } catch(e){ console.log('loadEmbiReports error:',e); }
 };
@@ -11837,19 +11868,70 @@ async function embiSend(){
   var resp=await embiCallAPI(val);
   embiRemoveTyping();
 
-  // Detectar y ejecutar acciones
-  var actionMatch=resp.match(/\[ACCION_EJECUTAR:([^:]+):([^\]]+)\]/);
+  // Detectar y ejecutar acciones — regex robusta que maneja JSON con arrays
+  var actionMatch=resp.match(/\[ACCION_EJECUTAR:([A-Z_]+):([\s\S]*?)\](?:\s*$|\n|$)/m);
+  if(!actionMatch){
+    // fallback: buscar desde el tag hasta el final
+    var tagIdx=resp.indexOf('[ACCION_EJECUTAR:');
+    if(tagIdx!==-1){
+      var afterTag=resp.slice(tagIdx+17);
+      var colonIdx=afterTag.indexOf(':');
+      if(colonIdx!==-1){
+        var tipo2=afterTag.slice(0,colonIdx);
+        var jsonStr=afterTag.slice(colonIdx+1);
+        // cerrar en el último }
+        var lastBrace=jsonStr.lastIndexOf('}');
+        if(lastBrace!==-1)jsonStr=jsonStr.slice(0,lastBrace+1);
+        try{
+          var datos2=JSON.parse(jsonStr);
+          actionMatch={1:tipo2,2:jsonStr};
+          actionMatch[0]=resp;
+        }catch(e){}
+      }
+    }
+  }
   if(actionMatch){
     var tipo=actionMatch[1], datosStr=actionMatch[2];
-    var textoLimpio=resp.replace(/\[ACCION_EJECUTAR:[^\]]+\]/,'').trim();
-    embiAddMsg('bot',textoLimpio||'Ejecutando...');
+    var textoLimpio=resp.replace(/\[ACCION_EJECUTAR:[\s\S]*?\][\s]*/,'').trim();
+    embiAddMsg('bot',textoLimpio||'Procesando...');
+    var datos={};
+    try{ datos=JSON.parse(datosStr); }catch(e){
+      embiAddMsg('bot','Hubo un problema al procesar los datos. Intentá de nuevo con el mismo pedido.');
+      embiLogAccion(tipo,'error_parse',datosStr);
+      return;
+    }
+    // Validar datos mínimos
+    var valid=true;
+    if((tipo==='INGRESO'||tipo==='EGRESO'||tipo==='COBRO')&&!(parseFloat(datos.monto)>0)){
+      embiAddMsg('bot','Faltó el monto. ¿Cuánto fue?');valid=false;
+    }
+    if(tipo==='CLIENTE'&&!datos.nombre){
+      embiAddMsg('bot','Faltó el nombre del cliente. ¿Cómo se llama?');valid=false;
+    }
+    if(!valid){embiLogAccion(tipo,'error_validacion',datos);return;}
     try{
-      var datos=JSON.parse(datosStr);
       await embiEjecutarAccion(tipo,datos);
-    }catch(e){embiAddMsg('bot','No pude ejecutar la acción. Intentá de nuevo.');}
+      embiLogAccion(tipo,'ok',datos);
+    }catch(e){
+      embiAddMsg('bot','Error al ejecutar: '+e.message);
+      embiLogAccion(tipo,'error_ejecucion',{error:e.message,...datos});
+    }
     return;
   }
   embiAddMsg('bot',resp);
+}
+
+async function embiLogAccion(tipo,estado,datos){
+  try{
+    if(!currentClientUID)return;
+    await addDoc(collection(db,'embiAcciones'),{
+      tipo,estado,
+      datos:typeof datos==='object'?JSON.stringify(datos):datos,
+      clienteId:currentClientUID,
+      cliente:window.currentClientData?.nombre||'',
+      fecha:new Date().toISOString()
+    });
+  }catch(e){}
 }
 
 async function embiEjecutarAccion(tipo,datos){
@@ -11958,7 +12040,10 @@ function embiIniciarReconocimiento(){
     if(b){b.classList.remove('recording');b.innerHTML='<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="4.5" y="1" width="5" height="8" rx="2.5" stroke="#7a8e7d" stroke-width="1.3"/><path d="M2 7.5a5 5 0 0010 0" stroke="#7a8e7d" stroke-width="1.3" stroke-linecap="round"/><line x1="7" y1="12.5" x2="7" y2="11" stroke="#7a8e7d" stroke-width="1.3" stroke-linecap="round"/></svg>';}
   }
 
+  var gotResult=false;
+
   embiRecognition.onresult=function(e){
+    gotResult=true;
     var transcript=e.results[0][0].transcript.trim();
     resetMicUI();
     if(!transcript){embiAddMsg('bot','No escuché nada. Intentá de nuevo.');return;}
@@ -11967,6 +12052,7 @@ function embiIniciarReconocimiento(){
   };
 
   embiRecognition.onerror=function(e){
+    gotResult=true;
     resetMicUI();
     if(e.error==='aborted'||e.error==='no-speech') return;
     if(e.error==='not-allowed'){
@@ -11974,7 +12060,12 @@ function embiIniciarReconocimiento(){
     }
   };
 
-  embiRecognition.onend=function(){ resetMicUI(); };
+  embiRecognition.onend=function(){
+    resetMicUI();
+    if(!gotResult){
+      embiAddMsg('bot','No te escuché. Hablá cerca del micrófono y soltá el botón cuando termines.');
+    }
+  };
 
   try{embiRecognition.start();}catch(e){resetMicUI();}
 }
