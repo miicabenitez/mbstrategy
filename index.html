@@ -3161,9 +3161,11 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
           <span style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:500;color:var(--text);" id="oc-det-total-footer">$0</span>
         </div>
       </div>
-      <!-- Actions -->
-      <div style="display:flex;gap:10px;">
-        <button class="bp" style="flex:1;" onclick="generarPDFOrdenCompra()">↓ Emitir PDF</button>
+        <!-- Recepción -->
+        <div id="oc-det-btn-recepcion" style="margin-bottom:10px;"></div>
+        <!-- Actions -->
+        <div style="display:flex;gap:10px;">
+          <button class="bp" style="flex:1;" onclick="generarPDFOrdenCompra()">↓ Emitir PDF</button>
         <button class="bs" onclick="closeModal('ocDetalleModal')">Cerrar</button>
       </div>
     </div>
@@ -9147,7 +9149,7 @@ window.confirmarOC = async function() {
       await addDoc(collection(db,'clientes',currentClientUID,'ordenesCompra'),{
         numero:oc.numero, proveedor:oc.prov.nombre, proveedorId:oc.prov.id,
         items:oc.items, total:oc.total, fecha:hoy,
-        ncId:_cotNcId, estadoPago:'pendiente', creadoEn:new Date().toISOString()
+        ncId:_cotNcId, estadoPago:'pendiente', estadoRecepcion:'emitida', creadoEn:new Date().toISOString()
       });
     }
     // Marcar NC como cotizada
@@ -9382,13 +9384,20 @@ function renderOrdenesCompra() {
   if(_ordenesCompra.length===0){el.innerHTML='<div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Sin órdenes de compra.</div>';return;}
   el.innerHTML=_ordenesCompra.map(o=>{
     const estadoPago=o.estadoPago||'pendiente';
+    const estadoRec=o.estadoRecepcion||'emitida';
     const badgeCfg={pagada:{bg:'var(--ok-bg)',tc:'var(--ok)',label:'Pagada'},pendiente:{bg:'var(--err-bg)',tc:'var(--err)',label:'Pendiente pago'},parcial:{bg:'var(--warn-bg)',tc:'var(--warn)',label:'Pago parcial'}};
+    const recCfg={emitida:{bg:'#E6EEF5',tc:'#2A4A6A',label:'Emitida'},recibida:{bg:'var(--ok-bg)',tc:'var(--ok)',label:'✓ Recibida'},parcial:{bg:'var(--warn-bg)',tc:'var(--warn)',label:'Parcial'}};
     const bc=badgeCfg[estadoPago]||badgeCfg.pendiente;
-    return `<div onclick="abrirDetalleOC('${o.id}')" style="display:grid;grid-template-columns:58px 1fr auto auto auto;gap:12px;align-items:center;padding:12px 0;border-bottom:.5px solid var(--cream-d);cursor:pointer;border-radius:4px;" onmouseenter="this.style.background='var(--cream)'" onmouseleave="this.style.background=''">
+    const rc=recCfg[estadoRec]||recCfg.emitida;
+    const btnRecibir = estadoRec==='emitida'
+      ? `<button onclick="event.stopPropagation();marcarOCRecibida('${o.id}')" style="background:var(--sage-xl);border:.5px solid var(--sage-light);border-radius:20px;padding:5px 12px;cursor:pointer;font-size:11px;color:var(--sage-dark);font-family:'DM Sans',sans-serif;font-weight:500;white-space:nowrap;">✓ Recibida</button>`
+      : `<span style="background:${rc.bg};color:${rc.tc};font-size:9px;font-weight:500;padding:4px 10px;border-radius:20px;white-space:nowrap;">${rc.label}</span>`;
+    return `<div onclick="abrirDetalleOC('${o.id}')" style="display:grid;grid-template-columns:58px 1fr auto auto auto auto;gap:10px;align-items:center;padding:12px 0;border-bottom:.5px solid var(--cream-d);cursor:pointer;border-radius:4px;" onmouseenter="this.style.background='var(--cream)'" onmouseleave="this.style.background=''">
       <div style="width:42px;height:42px;background:var(--sage-xl);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;color:var(--sage-dark);">OC-${String(o.numero||0).padStart(3,'0')}</div>
       <div><div style="font-size:13px;font-weight:500;color:var(--text);">${o.proveedor||'—'}</div><div style="font-size:11px;color:var(--text-l);">${(o.items||[]).length} ítem${(o.items||[]).length!==1?'s':''} · ${o.fecha||'—'}</div></div>
       <div style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:500;color:var(--text);text-align:right;white-space:nowrap;">$${(parseFloat(o.total)||0).toLocaleString('es-AR')}</div>
       <span style="background:${bc.bg};color:${bc.tc};font-size:9px;font-weight:500;padding:4px 10px;border-radius:20px;white-space:nowrap;">${bc.label}</span>
+      ${btnRecibir}
       <button onclick="event.stopPropagation();_ocDetalleActual=_ordenesCompra.find(x=>x.id==='${o.id}');generarPDFOrdenCompra()" style="background:none;border:.5px solid var(--cream-d);border-radius:8px;padding:5px 10px;cursor:pointer;font-size:11px;color:var(--text-m);font-family:'DM Sans',sans-serif;white-space:nowrap;">↓ PDF</button>
     </div>`;
   }).join('');
@@ -9404,12 +9413,19 @@ window.abrirDetalleOC = function(ocId) {
 
   const setEl=(id,v)=>{const el=document.getElementById(id);if(el)el.innerHTML=v;};
   const estadoPago=oc.estadoPago||'pendiente';
+  const estadoRec=oc.estadoRecepcion||'emitida';
   const badgeCfg={
     pagada:{bg:'var(--ok-bg)',tc:'var(--ok)',label:'Pagada'},
     pendiente:{bg:'var(--err-bg)',tc:'var(--err)',label:'Pendiente pago'},
     parcial:{bg:'var(--warn-bg)',tc:'var(--warn)',label:'Pago parcial'}
   };
+  const recCfg={
+    emitida:{bg:'#E6EEF5',tc:'#2A4A6A',label:'Emitida'},
+    recibida:{bg:'var(--ok-bg)',tc:'var(--ok)',label:'Recibida'},
+    parcial:{bg:'var(--warn-bg)',tc:'var(--warn)',label:'Recepción parcial'}
+  };
   const bc=badgeCfg[estadoPago]||badgeCfg.pendiente;
+  const rc=recCfg[estadoRec]||recCfg.emitida;
 
   setEl('oc-det-numero', `OC-${String(oc.numero||0).padStart(3,'0')}`);
   setEl('oc-det-proveedor', oc.proveedor||'—');
@@ -9419,6 +9435,16 @@ window.abrirDetalleOC = function(ocId) {
   setEl('oc-det-items-count', `${(oc.items||[]).length} ítem${(oc.items||[]).length!==1?'s':''}`);
   setEl('oc-det-estado-txt', `<span style="color:${bc.tc};">${bc.label}</span>`);
   setEl('oc-det-estado-badge', `<span style="background:rgba(255,255,255,.2);color:#fff;font-size:9px;font-weight:500;padding:3px 9px;border-radius:20px;">${bc.label}</span>`);
+
+  // Botón recepción
+  const btnRec = document.getElementById('oc-det-btn-recepcion');
+  if(btnRec){
+    if(estadoRec==='emitida'){
+      btnRec.innerHTML=`<button onclick="marcarOCRecibida('${oc.id}')" style="background:var(--sage-dark);color:#fff;border:none;border-radius:20px;padding:7px 16px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;">✓ Marcar como recibida</button>`;
+    } else {
+      btnRec.innerHTML=`<span style="background:${rc.bg};color:${rc.tc};font-size:10px;font-weight:500;padding:4px 12px;border-radius:20px;">${rc.label}</span>`;
+    }
+  }
 
   const items=oc.items||[];
   setEl('oc-det-items-list', items.length===0
@@ -9434,7 +9460,53 @@ window.abrirDetalleOC = function(ocId) {
   openModal('ocDetalleModal');
 };
 
-window.generarPDFOrdenCompra = async function() {
+window.marcarOCRecibida = async function(ocId) {
+  if(!currentClientUID) return;
+  showConfirm('¿Confirmar que recibiste esta mercadería/servicio? Se registrará como deuda en la cuenta corriente del proveedor.', async()=>{\
+    try {
+      const oc = _ordenesCompra.find(o=>o.id===ocId);
+      if(!oc) return;
+      const hoy = new Date().toISOString().split('T')[0];
+
+      // 1. Actualizar estado de recepción en la OC
+      await updateDoc(doc(db,'clientes',currentClientUID,'ordenesCompra',ocId),{
+        estadoRecepcion:'recibida',
+        fechaRecepcion: hoy
+      });
+
+      // 2. Crear entrada de deuda en CC del proveedor (como "factura" de OC)
+      if(oc.proveedorId) {
+        // Verificar que no exista ya una entrada para esta OC
+        const facRef = collection(db,'clientes',currentClientUID,'proveedores',oc.proveedorId,'facturas');
+        const existing = await getDocs(facRef);
+        const yaExiste = [];
+        existing.forEach(d=>{ if(d.data().ocId===ocId) yaExiste.push(d.id); });
+
+        if(yaExiste.length===0) {
+          await addDoc(facRef,{
+            numero: `OC-${String(oc.numero||0).padStart(3,'0')}`,
+            monto: parseFloat(oc.total)||0,
+            fecha: hoy,
+            ocId: ocId,
+            desc: `Recepción OC-${String(oc.numero||0).padStart(3,'0')}`,
+            estado: 'pendiente',
+            creadoEn: new Date().toISOString(),
+            esOC: true
+          });
+        }
+      }
+
+      await loadOrdenesCompra();
+      const ocActualizada = _ordenesCompra.find(o=>o.id===ocId);
+      if(ocActualizada) { _ocDetalleActual=ocActualizada; abrirDetalleOC(ocId); }
+
+      // 3. Si la CC del proveedor está abierta, refrescar
+      if(_ccProvId && oc.proveedorId===_ccProvId) {
+        await abrirCuentaCorriente(_ccProvId);
+      }
+    }catch(e){alert('Error: '+e.message);}
+  },'Marcar como recibida');
+};
   const oc = _ocDetalleActual;
   if(!oc) return;
 
@@ -9710,11 +9782,14 @@ window.abrirCuentaCorriente = async function(provId) {
     } else {
       elOcs.innerHTML = ocsDeEsteProv.map(o=>{
         const ep=o.estadoPago||'pendiente';
+        const er=o.estadoRecepcion||'emitida';
         const bc={pagada:{bg:'var(--ok-bg)',tc:'var(--ok)',lbl:'Pagada'},pendiente:{bg:'var(--err-bg)',tc:'var(--err)',lbl:'Pendiente'},parcial:{bg:'var(--warn-bg)',tc:'var(--warn)',lbl:'Parcial'}}[ep]||{bg:'var(--err-bg)',tc:'var(--err)',lbl:'Pendiente'};
-        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:.5px solid var(--cream-d);cursor:pointer;" onclick="abrirDetalleOC('${o.id}')">
+        const rc={emitida:{bg:'#E6EEF5',tc:'#2A4A6A',lbl:'Emitida'},recibida:{bg:'var(--ok-bg)',tc:'var(--ok)',lbl:'Recibida'},parcial:{bg:'var(--warn-bg)',tc:'var(--warn)',lbl:'Parcial'}}[er]||{bg:'#E6EEF5',tc:'#2A4A6A',lbl:'Emitida'};
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:.5px solid var(--cream-d);cursor:pointer;" onclick="abrirDetalleOC('${o.id}')">
           <div>
             <div style="font-size:12px;font-weight:500;color:var(--text);">OC-${String(o.numero||0).padStart(3,'0')}</div>
-            <div style="font-size:10px;color:var(--text-l);">${o.fecha||'—'} · ${(o.items||[]).length} ítems</div>
+            <div style="font-size:10px;color:var(--text-l);margin-top:2px;">${o.fecha||'—'} · ${(o.items||[]).length} ítems</div>
+            <span style="background:${rc.bg};color:${rc.tc};font-size:9px;font-weight:500;padding:2px 8px;border-radius:20px;margin-top:4px;display:inline-block;">${rc.lbl}</span>
           </div>
           <div style="text-align:right;">
             <div style="font-size:13px;font-weight:500;color:var(--text);">$${(parseFloat(o.total)||0).toLocaleString('es-AR')}</div>
@@ -9750,7 +9825,17 @@ window.cerrarCCView = function() {
 
 function renderCuentaCorriente() {
   const setEl=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
-  const totalComprado = _ccFacturas.reduce((a,f)=>a+(parseFloat(f.monto)||0),0);
+
+  // OC recibidas de este proveedor = deuda generada
+  const ocsRecibidas = (_ordenesCompra||[]).filter(o=>
+    o.proveedorId===_ccProvId && (o.estadoRecepcion==='recibida'||o.estadoRecepcion==='parcial')
+  );
+  const totalDeOCs = ocsRecibidas.reduce((a,o)=>a+(parseFloat(o.totalRecibido||o.total)||0),0);
+
+  // Facturas (si las cargaron, tienen prioridad sobre OC para el total comprado)
+  const totalFacturas = _ccFacturas.reduce((a,f)=>a+(parseFloat(f.monto)||0),0);
+  const totalComprado = totalFacturas > 0 ? totalFacturas : totalDeOCs;
+
   const totalPagado = _ccPagos.reduce((a,p)=>a+(parseFloat(p.monto)||0),0);
   const saldo = Math.max(0, totalComprado - totalPagado);
 
@@ -9780,18 +9865,43 @@ function renderCuentaCorriente() {
   const prov=_proveedores.find(p=>p.id===_ccProvId);
   if(prov) { prov._saldo=saldo; }
 
-  // Movimientos mezclando facturas y pagos
-  const movs = [
-    ..._ccFacturas.map(f=>({...f,tipo:'factura'})),
-    ..._ccPagos.map(p=>({...p,tipo:'pago'}))
-  ].sort((a,b)=>(a.fecha||'')>(b.fecha||'')?-1:1);
+  // Movimientos: facturas + pagos + OC recibidas sin factura
+  const movsFacturas = _ccFacturas.map(f=>({...f,tipo:'factura'}));
+  const movsPagos = _ccPagos.map(p=>({...p,tipo:'pago'}));
+
+  // OC recibidas que no tienen factura asociada
+  const ocIdsConFactura = new Set(_ccFacturas.map(f=>f.ocId).filter(Boolean));
+  const ocsMovs = ocsRecibidas
+    .filter(o=>!ocIdsConFactura.has(o.id))
+    .map(o=>({
+      tipo:'oc_recibida', id:o.id, fecha:o.fechaRecepcion||o.fecha,
+      monto:o.totalRecibido||o.total, nombre:o.proveedor,
+      numero:`OC-${String(o.numero||0).padStart(3,'0')}`, ocId:o.id
+    }));
+
+  const movs = [...movsFacturas, ...movsPagos, ...ocsMovs]
+    .sort((a,b)=>(a.fecha||'')>(b.fecha||'')?-1:1);
 
   const el = document.getElementById('cc-movimientos-full') || document.getElementById('cc-movimientos');
   if(!el) return;
   if(movs.length===0){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-l);font-size:13px;">Sin movimientos registrados.</div>';return;}
 
   el.innerHTML=movs.map(m=>{
-    if(m.tipo==='factura'){
+    if(m.tipo==='oc_recibida'){
+      return `<div style="display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:.5px solid var(--cream-d);cursor:pointer;" onclick="abrirDetalleOC('${m.ocId}')">
+        <div style="width:40px;height:40px;background:var(--sage-xl);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="12" rx="2" stroke="var(--sage-dark)" stroke-width="1.2"/><path d="M4 7h8M4 10h5" stroke="var(--sage-dark)" stroke-width="1.2" stroke-linecap="round"/></svg>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:500;color:var(--text);">${m.numero} — Mercadería recibida</div>
+          <div style="font-size:11px;color:var(--text-l);margin-top:2px;">${m.fecha||'—'} · Sin factura aún</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:19px;color:var(--err);font-weight:500;">-$${(parseFloat(m.monto)||0).toLocaleString('es-AR')}</div>
+          <span style="background:var(--warn-bg);color:var(--warn);font-size:9px;font-weight:500;padding:2px 8px;border-radius:20px;">Pend. factura</span>
+        </div>
+      </div>`;
+    } else if(m.tipo==='factura'){
       const estadoFac = m.estado||'pendiente';
       const badgeCfg={pendiente:{bg:'var(--err-bg)',tc:'var(--err)',label:'Pendiente'},pagada:{bg:'var(--ok-bg)',tc:'var(--ok)',label:'Pagada'},parcial:{bg:'var(--warn-bg)',tc:'var(--warn)',label:'Pago parcial'}};
       const bc=badgeCfg[estadoFac]||badgeCfg.pendiente;
@@ -11584,13 +11694,13 @@ COMERCIAL:
 - PDF: botón "↓ Ver / PDF". Usa datos de Mi cuenta — completar primero.
 
 COMPRAS (circuito):
-1. Productos de compra: catálogo de insumos (separado de Comercial).
-2. Proveedores: con categoría obligatoria (filtra en cotización). Saldo automático.
-3. Necesidades: qué comprar, cantidad, urgencia (Urgente/Próxima/Programada).
-4. Cotización: elegís proveedores misma categoría, cargás precios, sistema detecta mejor por ítem y genera OCs automáticas.
-5. OC: estado (Pendiente/Parcial/Pagada) se actualiza solo al pagar desde Cuenta Corriente. El pago NO se registra desde la OC, sino desde la CC del proveedor.
-6. Cuenta corriente: cargás facturas recibidas y registrás pagos. Al pagar: actualiza saldo proveedor + marca factura + actualiza OC + crea egreso en Finanzas automáticamente.
-7. Historial: buscás producto y ves compras históricas con evolución de precios.
+1. Productos de compra: catálogo de insumos con categoría (separado de Comercial). Filtra automáticamente en la cotización.
+2. Proveedores: directorio con categoría obligatoria. Acceso a Cuenta Corriente fullscreen desde el botón CC. Buscador y filtro por categoría.
+3. Necesidades: qué comprar, qué cantidad, urgencia (Urgente/Próxima/Programada) y periodicidad. Buscador de productos integrado al modal.
+4. Cotización: elegís proveedores de la misma categoría, cargás precios por ítem. El sistema sugiere el más barato pero podés elegir otro proveedor por ítem (resaltado en ámbar). Genera OCs automáticas al confirmar.
+5. Órdenes de compra: se visualizan, se puede ver el detalle y emitir PDF. Al confirmar cotización se abre automáticamente el detalle de la OC generada.
+6. Cuenta Corriente (pantalla completa): se accede desde el botón CC de cada proveedor. Muestra KPIs, movimientos (facturas y pagos), OC del proveedor y datos de contacto. Desde acá se registran pagos y cargan facturas. El pago crea un egreso automático en Finanzas.
+7. Historial: muestra todos los productos comprados agrupados por nombre con evolución de precios. Se alimenta automáticamente con las OC confirmadas. Buscador en tiempo real.
 
 MEMBRESÍA: Plan activo (30D o 60D), fechas y estado. Para renovar contactar a Micaela.
 
