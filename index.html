@@ -517,6 +517,9 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
 .embi-input:focus{border-color:var(--topbar);background:#fff;}
 .embi-send{width:33px;height:33px;border-radius:50%;background:var(--topbar);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s;}
 .embi-send:hover{background:var(--topbar2);}
+.embi-mic{width:33px;height:33px;border-radius:50%;background:var(--sage-xl);border:.5px solid var(--sage-light);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;user-select:none;-webkit-user-select:none;}
+.embi-mic.recording{background:#fde8e8;border-color:#e24b4a;animation:embi-pulse .8s ease-in-out infinite;}
+@keyframes embi-pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
 </style>
 </head>
 <body>
@@ -11647,7 +11650,11 @@ window.marcarCambioPrecio = function() {
   <div class="embi-msgs" id="embiMsgs"></div>
   <div class="embi-qa" id="embiQA"></div>
   <div class="embi-input-wrap">
-    <input class="embi-input" id="embiInput" placeholder="Escribí tu consulta..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();embiSend();}"/>
+    <input class="embi-input" id="embiInput" placeholder="Escribí o hablá..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();embiSend();}"/>
+    <button class="embi-mic" id="embiMicBtn" title="Mantené presionado para hablar"
+      onmousedown="embiMicStart()" onmouseup="embiMicStop()" ontouchstart="event.preventDefault();embiMicStart()" ontouchend="event.preventDefault();embiMicStop()">
+      <svg id="embiMicIcon" width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="4.5" y="1" width="5" height="8" rx="2.5" stroke="#7a8e7d" stroke-width="1.3"/><path d="M2 7.5a5 5 0 0010 0" stroke="#7a8e7d" stroke-width="1.3" stroke-linecap="round"/><line x1="7" y1="12.5" x2="7" y2="11" stroke="#7a8e7d" stroke-width="1.3" stroke-linecap="round"/></svg>
+    </button>
     <button class="embi-send" onclick="embiSend()">
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M12 7H2M8.5 3.5L12 7l-3.5 3.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
@@ -11670,9 +11677,93 @@ var EMBI_CONTEXT={
   membresia:['¿Cómo renuevo?','¿Qué pasa si vence?'],
   programa:['¿Cómo marco contenido como completado?','¿Cómo se calcula mi progreso?'],
 };
-var EMBI_SYSTEM=`Sos Embi, el asistente virtual de MB Strategy, un sistema de gestión SaaS para dueñas de pequeños negocios. Tu trabajo es ayudarlas a usar el sistema correctamente.
+function embiGetFinancialContext(){
+  try {
+    var egresos = window._clientEgresos||[];
+    var ingresos = window._clientIngresos||[];
+    var hoy = new Date();
+    var mes = hoy.getMonth(), anio = hoy.getFullYear();
+    var mesAnt = mes===0?11:mes-1, anioAnt = mes===0?anio-1:anio;
+    var ingMes=0,egrMes=0,ingAnt=0,egrAnt=0;
+    ingresos.forEach(i=>{var d=new Date(i.fecha||i.creadoEn);if(d.getMonth()===mes&&d.getFullYear()===anio)ingMes+=(parseFloat(i.monto)||0);if(d.getMonth()===mesAnt&&d.getFullYear()===anioAnt)ingAnt+=(parseFloat(i.monto)||0);});
+    egresos.forEach(e=>{var d=new Date(e.fecha||e.creadoEn);if(d.getMonth()===mes&&d.getFullYear()===anio)egrMes+=(parseFloat(e.monto)||0);if(d.getMonth()===mesAnt&&d.getFullYear()===anioAnt)egrAnt+=(parseFloat(e.monto)||0);});
+    var ganancia=ingMes-egrMes, margen=ingMes>0?Math.round((ganancia/ingMes)*100):0;
+    // Cobros pendientes
+    var cobros = window._clientCobros||[];
+    var cobPend = cobros.filter(c=>!c.pagado).reduce((a,c)=>a+(parseFloat(c.monto)||0),0);
+    // Clientes
+    var clientes = window._mcClientes||[];
+    // OC activas
+    var ocs = window._ordenesCompra||[];
+    var ocsPend = ocs.filter(o=>o.estadoPago!=='pagada');
+    // Proveedores con deuda
+    var provs = window._proveedores||[];
+    // Categorías egresos este mes
+    var catEgr={};
+    egresos.forEach(e=>{var d=new Date(e.fecha||e.creadoEn);if(d.getMonth()===mes&&d.getFullYear()===anio){var c=e.categoria||'Sin categoría';catEgr[c]=(catEgr[c]||0)+(parseFloat(e.monto)||0);}});
+    var catEgrAnt={};
+    egresos.forEach(e=>{var d=new Date(e.fecha||e.creadoEn);if(d.getMonth()===mesAnt&&d.getFullYear()===anioAnt){var c=e.categoria||'Sin categoría';catEgrAnt[c]=(catEgrAnt[c]||0)+(parseFloat(e.monto)||0);}});
+    var catDetalle=Object.entries(catEgr).sort((a,b)=>b[1]-a[1]).map(([c,m])=>{var ant=catEgrAnt[c]||0;var dif=ant>0?Math.round(((m-ant)/ant)*100):null;return c+': $'+Math.round(m).toLocaleString('es-AR')+(dif!==null?' ('+(dif>0?'+':'')+dif+'% vs mes ant.)':'');}).join(', ');
+    // Calculos
+    var calcs = window.calcData ? Object.values(window.calcData) : [];
 
-PERSONALIDAD: Hablás de vos. Sos experta pero accesible. Respuestas cortas y directas. Nunca inventás funcionalidades que no existen.
+    return `\n\nDATA FINANCIERA ACTUAL (${hoy.toLocaleDateString('es-AR',{month:'long',year:'numeric'})}):\n- Ingresos mes: $${Math.round(ingMes).toLocaleString('es-AR')} (mes ant: $${Math.round(ingAnt).toLocaleString('es-AR')})\n- Egresos mes: $${Math.round(egrMes).toLocaleString('es-AR')} (mes ant: $${Math.round(egrAnt).toLocaleString('es-AR')})\n- Ganancia neta: $${Math.round(ganancia).toLocaleString('es-AR')} | Margen: ${margen}%\n- Cobros pendientes: $${Math.round(cobPend).toLocaleString('es-AR')}\n- Clientes activos: ${clientes.length}\n- OC pendientes de pago: ${ocsPend.length} por $${ocsPend.reduce((a,o)=>a+(parseFloat(o.total)||0),0).toLocaleString('es-AR')}\n- Proveedores: ${provs.length} (${provs.map(p=>p.nombre+(p._saldo>0?' debe $'+Math.round(p._saldo).toLocaleString('es-AR'):' al día')).join(', ')||'ninguno'})\n- Egresos por categoría: ${catDetalle||'sin datos'}\n- Cálculos guardados: ${calcs.map(c=>c.nombre+' ($'+Math.round((c.costs||[]).reduce((a,x)=>a+x.m,0)*(1+(c.margen||30)/100)).toLocaleString('es-AR')+')').join(', ')||'ninguno'}`;
+  } catch(e){ return ''; }
+}
+
+var EMBI_SYSTEM_BASE=`Sos Embi, asistente de gestión de MB Strategy. Ayudás a profesionales independientes y dueños de negocios a tener visibilidad financiera y tomar decisiones con datos reales.
+
+PERSONALIDAD: Hablás de vos. Tono profesional y directo, como una buena asesora de negocios. Respuestas cortas y concretas. Nunca dramatizás ni alarmás — informás con el dato y dejás decidir al usuario. Nunca inventás funcionalidades ni datos que no existen en el sistema.
+
+CAPACIDADES FASE 2 — podés ejecutar estas acciones:
+
+FINANZAS (leer):
+- Consultar saldo, ingresos, egresos, margen del mes actual y comparativa con mes anterior
+- Consultar cobros pendientes totales y por cliente
+- Consultar evolución por categoría de egreso
+
+FINANZAS (escribir — siempre con confirmación):
+- Registrar ingreso: necesitás monto + concepto + fecha (hoy si no dice)
+- Registrar egreso: necesitás monto + concepto + categoría
+
+COMERCIAL (leer):
+- Listar clientes con cobros pendientes
+- Ver estado de presupuestos
+
+COMERCIAL (escribir — siempre con confirmación):
+- Crear cliente: necesitás nombre (único obligatorio)
+- Registrar cobro: necesitás monto + cliente + fecha
+
+CALCULADOR (calcular sin guardar):
+- Calcular precio sugerido dado costos + margen: respondés instantáneamente sin guardar
+
+CALCULADOR (escribir — siempre con confirmación):
+- Crear nuevo cálculo guiado: pedís nombre + costos uno a uno + margen, luego confirmación
+- Agregar costo a cálculo existente
+
+COMPRAS (leer):
+- Consultar OC activas con estado y monto
+- Consultar saldo de proveedor en CC
+
+COMPRAS (escribir — siempre con confirmación):
+- Marcar OC como recibida (genera deuda en CC automáticamente)
+
+PROTOCOLO DE ACCIONES:
+1. Detectás la intención de acción
+2. Si faltan datos obligatorios, los pedís (uno a la vez, brevemente)
+3. Mostrás resumen con [ACCION_RESUMEN] antes de ejecutar
+4. Esperás confirmación explícita ("sí", "confirmar", "dale")
+5. Solo al recibir confirmación, devolvés [ACCION_EJECUTAR:TIPO:DATOS_JSON]
+6. Después de ejecutar, das el dato contextual relevante (ej: "Egreso registrado. Egresos del mes: $X, un Y% más que el mes pasado.")
+
+NUNCA ejecutés sin confirmación. NUNCA inventés datos. NUNCA respondas en más de 4 párrafos.
+
+REPORTES: Si algo no funciona: [REPORT:falla:MODULO:DESCRIPCION]. Si piden algo inexistente: [REPORT:sugerencia:MODULO:DESCRIPCION]`;
+
+function embiGetSystem(){
+  return EMBI_SYSTEM_BASE + embiGetFinancialContext();
+}
+var EMBI_SYSTEM = EMBI_SYSTEM_BASE;
 
 PRESENTACIÓN: "Soy Embi, tu asistente en MB Strategy. Estoy acá para ayudarte a operar el sistema y resolver dudas al instante. ¿En qué te puedo ayudar?"
 
@@ -11749,7 +11840,7 @@ async function embiCallAPI(userMsg){
     var resp=await fetch('/.netlify/functions/embi',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:500,system:EMBI_SYSTEM,messages:embiHistory})
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:700,system:embiGetSystem(),messages:embiHistory})
     });
     var data=await resp.json();
     var text=(data.content&&data.content[0]&&data.content[0].text)?data.content[0].text:'Lo siento, no pude procesar tu consulta. Intentá de nuevo.';
@@ -11780,7 +11871,94 @@ async function embiSend(){
   embiShowTyping();
   var resp=await embiCallAPI(val);
   embiRemoveTyping();
+
+  // Detectar y ejecutar acciones
+  var actionMatch=resp.match(/\[ACCION_EJECUTAR:([^:]+):([^\]]+)\]/);
+  if(actionMatch){
+    var tipo=actionMatch[1], datosStr=actionMatch[2];
+    var textoLimpio=resp.replace(/\[ACCION_EJECUTAR:[^\]]+\]/,'').trim();
+    embiAddMsg('bot',textoLimpio||'Ejecutando...');
+    try{
+      var datos=JSON.parse(datosStr);
+      await embiEjecutarAccion(tipo,datos);
+    }catch(e){embiAddMsg('bot','No pude ejecutar la acción. Intentá de nuevo.');}
+    return;
+  }
   embiAddMsg('bot',resp);
+}
+
+async function embiEjecutarAccion(tipo,datos){
+  if(!currentClientUID){embiAddMsg('bot','No hay sesión activa.');return;}
+  try{
+    var hoy=new Date().toISOString().split('T')[0];
+    if(tipo==='INGRESO'){
+      await window.createClientIngreso&&window.createClientIngreso(datos.monto,datos.concepto,datos.fecha||hoy,datos.categoria||'Ingreso');
+      // fallback directo
+      if(!window.createClientIngreso){
+        const {addDoc,collection}=await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
+        await addDoc(collection(db,'clientes',currentClientUID,'ingresos'),{monto:parseFloat(datos.monto),concepto:datos.concepto,fecha:datos.fecha||hoy,categoria:datos.categoria||'Ingreso',creadoEn:new Date().toISOString()});
+        if(window.loadClientFinanzas)await window.loadClientFinanzas();
+      }
+      embiAddMsg('bot','✓ Ingreso registrado.');
+    } else if(tipo==='EGRESO'){
+      const {addDoc,collection}=await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
+      await addDoc(collection(db,'clientes',currentClientUID,'egresos'),{monto:parseFloat(datos.monto),concepto:datos.concepto,fecha:datos.fecha||hoy,categoria:datos.categoria||'Egreso',creadoEn:new Date().toISOString()});
+      if(window.loadClientFinanzas)await window.loadClientFinanzas();
+      embiAddMsg('bot','✓ Egreso registrado.');
+    } else if(tipo==='CLIENTE'){
+      const {addDoc,collection}=await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
+      await addDoc(collection(db,'clientes',currentClientUID,'mcClientes'),{nombre:datos.nombre,tel:datos.tel||'',email:datos.email||'',creadoEn:new Date().toISOString()});
+      if(window.loadMcModule)await window.loadMcModule();
+      embiAddMsg('bot','✓ Cliente '+datos.nombre+' creado.');
+    } else if(tipo==='COBRO'){
+      const {addDoc,collection}=await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
+      await addDoc(collection(db,'clientes',currentClientUID,'cobros'),{monto:parseFloat(datos.monto),clienteNombre:datos.cliente||'',fecha:datos.fecha||hoy,pagado:true,concepto:datos.concepto||'Cobro',creadoEn:new Date().toISOString()});
+      if(window.loadClientFinanzas)await window.loadClientFinanzas();
+      embiAddMsg('bot','✓ Cobro de $'+parseFloat(datos.monto).toLocaleString('es-AR')+' registrado.');
+    } else if(tipo==='OC_RECIBIDA'){
+      if(window.marcarOCRecibida)window.marcarOCRecibida(datos.ocId);
+      embiAddMsg('bot','✓ OC marcada como recibida. La deuda se acreditó en la CC del proveedor.');
+    } else {
+      embiAddMsg('bot','Acción no reconocida: '+tipo);
+    }
+  }catch(e){embiAddMsg('bot','Error al ejecutar: '+e.message);}
+}
+
+// ── Micrófono push-to-talk ──
+var embiRecognition=null, embiRecording=false;
+
+function embiMicStart(){
+  if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){
+    embiAddMsg('bot','Tu navegador no soporta reconocimiento de voz. Usá Chrome o Edge.');return;
+  }
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  embiRecognition=new SR();
+  embiRecognition.lang='es-AR';
+  embiRecognition.interimResults=false;
+  embiRecognition.maxAlternatives=1;
+  embiRecording=true;
+  var btn=document.getElementById('embiMicBtn');
+  if(btn){btn.classList.add('recording');btn.innerHTML='<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="3" y="3" width="8" height="8" rx="2" fill="#e24b4a"/></svg>';}
+  embiRecognition.onresult=function(e){
+    var transcript=e.results[0][0].transcript;
+    var conf=e.results[0][0].confidence;
+    if(conf<0.5){embiAddMsg('bot','No te entendí bien. ¿Podés repetirlo?');return;}
+    var input=document.getElementById('embiInput');
+    if(input){input.value=transcript;embiSend();}
+  };
+  embiRecognition.onerror=function(e){
+    if(e.error!=='aborted')embiAddMsg('bot','No pude escucharte. Intentá de nuevo.');
+    embiMicStop();
+  };
+  embiRecognition.onend=embiMicStop;
+  try{embiRecognition.start();}catch(e){}
+}
+
+function embiMicStop(){
+  embiRecording=false;
+  var btn=document.getElementById('embiMicBtn');
+  if(btn){btn.classList.remove('recording');btn.innerHTML='<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="4.5" y="1" width="5" height="8" rx="2.5" stroke="#7a8e7d" stroke-width="1.3"/><path d="M2 7.5a5 5 0 0010 0" stroke="#7a8e7d" stroke-width="1.3" stroke-linecap="round"/><line x1="7" y1="12.5" x2="7" y2="11" stroke="#7a8e7d" stroke-width="1.3" stroke-linecap="round"/></svg>';}
+  if(embiRecognition){try{embiRecognition.stop();}catch(e){}embiRecognition=null;}
 }
 function embiToggle(){
   embiOpen=!embiOpen;
