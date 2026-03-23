@@ -9262,19 +9262,22 @@ window.savePagoProveedor = async function() {
 
 // ===== CATEGORÍAS DE PROVEEDORES =====
 const CATS_DEFAULT = ['Librería y papelería','Materiales','Mano de obra','Servicios profesionales','Alquiler','Herramientas y equipos','Marketing y publicidad','Logística y transporte','Reparaciones','Tecnología y software','Limpieza e higiene','Otro'];
-let _catsProv = [];
+let _catsProv = [...CATS_DEFAULT];
+window._catsProv = _catsProv;
 
 async function loadCatsProveedor() {
-  if(!currentClientUID) { _catsProv = [...CATS_DEFAULT]; return; }
+  if(!currentClientUID) { _catsProv = [...CATS_DEFAULT]; window._catsProv = _catsProv; renderCatSelect(); if(window.renderCatPanel) window.renderCatPanel(); return; }
   try {
     const snap = await getDocs(collection(db,'clientes',currentClientUID,'categoriasProveedor'));
     const custom = [];
     snap.forEach(d => custom.push(d.data().nombre));
     _catsProv = [...CATS_DEFAULT, ...custom.filter(c => !CATS_DEFAULT.includes(c))];
   } catch(e) { _catsProv = [...CATS_DEFAULT]; }
+  window._catsProv = _catsProv;
   renderCatSelect();
   if(window.renderCatPanel) window.renderCatPanel();
 }
+window.loadCatsProveedor = loadCatsProveedor;
 
 function renderCatSelect(valorActual) {
   const opts = _catsProv.map(c => `<option value="${c}">${c}</option>`).join('');
@@ -9298,6 +9301,7 @@ function renderCatSelect(valorActual) {
     pcSel.innerHTML = _catsProv.map(c => `<option value="${c}" ${c===pcCurrent?'selected':''}>${c}</option>`).join('');
   }
 }
+window.renderCatSelect = renderCatSelect;
 
 // ── Panel de categorías en Proveedores ──
 window.mostrarFormNuevaCat = function() {
@@ -9344,6 +9348,7 @@ window.deleteCatCustom = async function(nombre) {
         }
       }
       _catsProv = _catsProv.filter(c=>c!==nombre);
+      window._catsProv = _catsProv;
       renderCatSelect();
       renderCatPanel();
     } catch(e){ alert('Error: '+e.message); }
@@ -10470,9 +10475,9 @@ window.openModal = function(id) {
     const fechaEl=document.getElementById('fac-fecha');
     if(fechaEl&&!fechaEl.value) fechaEl.value=new Date().toISOString().split('T')[0];
   }
-  if(id === 'newProveedorModal') { (_catsProv.length>0 ? Promise.resolve() : loadCatsProveedor()).then(()=>renderCatSelect()); document.getElementById('nueva-cat-form').style.display='none'; }
-  if(id === 'newNecesidadModal') { (_catsProv.length>0 ? Promise.resolve() : loadCatsProveedor()).then(()=>renderCatSelect()); }
-  if(id === 'newProdCompraModal') { (_catsProv.length>0 ? Promise.resolve() : loadCatsProveedor()).then(()=>renderCatSelect()); }
+  if(id === 'newProveedorModal') { renderCatSelect(); loadCatsProveedor(); document.getElementById('nueva-cat-form').style.display='none'; }
+  if(id === 'newNecesidadModal') { renderCatSelect(); loadCatsProveedor(); }
+  if(id === 'newProdCompraModal') { renderCatSelect(); loadCatsProveedor(); }
   if(id === 'newMcReunionModal') {
     // Populate client selector
     const sel = document.getElementById('mcr-cliente-sel');
