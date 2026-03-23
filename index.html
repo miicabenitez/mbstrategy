@@ -9335,8 +9335,9 @@ window.deleteCatCustom = async function(nombre) {
 
 function renderCatPanel() {
   const el = document.getElementById('prov-cats-lista'); if(!el) return;
-  if(_catsProv.length===0) { el.innerHTML='<div style="font-size:12px;color:var(--text-l);">Sin categorías cargadas.</div>'; return; }
-  el.innerHTML = _catsProv.map(c => {
+  const lista = _catsProv.length > 0 ? _catsProv : CATS_DEFAULT;
+  if(lista.length===0) { el.innerHTML='<div style="font-size:12px;color:var(--text-l);">Sin categorías cargadas.</div>'; return; }
+  el.innerHTML = lista.map(c => {
     const isDefault = CATS_DEFAULT.includes(c);
     return `<div style="display:inline-flex;align-items:center;gap:5px;background:${isDefault?'var(--cream)':'var(--sage-xl)'};border:.5px solid ${isDefault?'var(--cream-d)':'var(--sage-light)'};border-radius:20px;padding:5px 12px;font-size:12px;color:${isDefault?'var(--text-m)':'var(--topbar)'};">
       ${c}
