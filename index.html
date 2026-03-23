@@ -2091,6 +2091,27 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
           </div>
         </div>
 
+        <!-- Gestión de categorías -->
+        <div class="card" style="margin-top:16px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div class="ct" style="margin:0;">Categorías de compras</div>
+            <button onclick="mostrarFormNuevaCat()" style="font-size:12px;padding:6px 14px;background:var(--sage-xl);border:.5px solid var(--sage-light);border-radius:20px;color:var(--topbar);cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;">+ Nueva categoría</button>
+          </div>
+          <div style="font-size:11px;color:var(--text-l);margin-bottom:10px;">Las categorías conectan Proveedores, Productos y Necesidades. Las predeterminadas no se pueden eliminar.</div>
+          <!-- Formulario nueva categoría -->
+          <div id="prov-nueva-cat-form" style="display:none;background:var(--cream);border-radius:9px;padding:12px;margin-bottom:12px;">
+            <div style="font-size:11px;font-weight:500;color:var(--text-m);margin-bottom:8px;">Nueva categoría</div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input type="text" id="prov-nueva-cat-input" class="fi" placeholder="Ej: Transporte, Seguros, Eventos..." style="margin-top:0;flex:1;"/>
+              <button onclick="guardarCatDesdePanel()" style="flex-shrink:0;padding:8px 16px;background:var(--topbar);border:none;border-radius:9px;font-size:12px;color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;">Agregar</button>
+              <button onclick="document.getElementById('prov-nueva-cat-form').style.display='none'" style="flex-shrink:0;padding:8px 12px;background:none;border:.5px solid var(--cream-d);border-radius:9px;font-size:12px;color:var(--text-l);cursor:pointer;font-family:'DM Sans',sans-serif;">×</button>
+            </div>
+            <div id="prov-nueva-cat-saved" style="font-size:11px;color:var(--ok);margin-top:6px;display:none;">✓ Categoría agregada</div>
+          </div>
+          <!-- Lista de categorías -->
+          <div id="prov-cats-lista" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+        </div>
+
       </div>
 
       <!-- PRODUCTOS DE COMPRA -->
@@ -9235,6 +9256,7 @@ async function loadCatsProveedor() {
     _catsProv = [...CATS_DEFAULT, ...custom.filter(c => !CATS_DEFAULT.includes(c))];
   } catch(e) { _catsProv = [...CATS_DEFAULT]; }
   renderCatSelect();
+  if(window.renderCatPanel) window.renderCatPanel();
 }
 
 function renderCatSelect(valorActual) {
@@ -9259,6 +9281,70 @@ function renderCatSelect(valorActual) {
     pcSel.innerHTML = _catsProv.map(c => `<option value="${c}" ${c===pcCurrent?'selected':''}>${c}</option>`).join('');
   }
 }
+
+// ── Panel de categorías en Proveedores ──
+window.mostrarFormNuevaCat = function() {
+  const form = document.getElementById('prov-nueva-cat-form');
+  if(form) {
+    form.style.display = 'block';
+    const inp = document.getElementById('prov-nueva-cat-input');
+    if(inp) { inp.value=''; inp.focus(); }
+  }
+};
+
+window.guardarCatDesdePanel = async function() {
+  const inp = document.getElementById('prov-nueva-cat-input');
+  const nombre = inp ? inp.value.trim() : '';
+  if(!nombre) return;
+  if(_catsProv.includes(nombre)) {
+    const saved = document.getElementById('prov-nueva-cat-saved');
+    if(saved) { saved.textContent='Ya existe esa categoría'; saved.style.color='var(--warn)'; saved.style.display='block'; setTimeout(()=>saved.style.display='none',2000); }
+    return;
+  }
+  try {
+    if(currentClientUID) {
+      await addDoc(collection(db,'clientes',currentClientUID,'categoriasProveedor'),{nombre,creadoEn:new Date().toISOString()});
+    }
+    _catsProv.push(nombre);
+    renderCatSelect(nombre);
+    renderCatPanel();
+    const saved = document.getElementById('prov-nueva-cat-saved');
+    if(saved) { saved.textContent='✓ Categoría agregada'; saved.style.color='var(--ok)'; saved.style.display='block'; setTimeout(()=>{saved.style.display='none'; document.getElementById('prov-nueva-cat-form').style.display='none';},1500); }
+    if(inp) inp.value='';
+  } catch(e){ alert('Error: '+e.message); }
+};
+
+window.deleteCatCustom = async function(nombre) {
+  if(CATS_DEFAULT.includes(nombre)) return; // No se pueden borrar las predeterminadas
+  showConfirm(`¿Eliminar la categoría "${nombre}"?\n\nLos proveedores y productos con esta categoría no se modifican.`, async()=>{
+    try {
+      // Buscar y eliminar de Firestore
+      const snap = await getDocs(collection(db,'clientes',currentClientUID,'categoriasProveedor'));
+      for(const d of snap.docs) {
+        if(d.data().nombre === nombre) {
+          const {deleteDoc:dd} = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
+          await dd(doc(db,'clientes',currentClientUID,'categoriasProveedor',d.id));
+        }
+      }
+      _catsProv = _catsProv.filter(c=>c!==nombre);
+      renderCatSelect();
+      renderCatPanel();
+    } catch(e){ alert('Error: '+e.message); }
+  },'Eliminar categoría');
+};
+
+function renderCatPanel() {
+  const el = document.getElementById('prov-cats-lista'); if(!el) return;
+  if(_catsProv.length===0) { el.innerHTML='<div style="font-size:12px;color:var(--text-l);">Sin categorías cargadas.</div>'; return; }
+  el.innerHTML = _catsProv.map(c => {
+    const isDefault = CATS_DEFAULT.includes(c);
+    return `<div style="display:inline-flex;align-items:center;gap:5px;background:${isDefault?'var(--cream)':'var(--sage-xl)'};border:.5px solid ${isDefault?'var(--cream-d)':'var(--sage-light)'};border-radius:20px;padding:5px 12px;font-size:12px;color:${isDefault?'var(--text-m)':'var(--topbar)'};">
+      ${c}
+      ${!isDefault ? `<button onclick="deleteCatCustom('${c}')" style="background:none;border:none;cursor:pointer;color:var(--err);font-size:14px;line-height:1;padding:0 0 0 4px;">×</button>` : ''}
+    </div>`;
+  }).join('');
+}
+window.renderCatPanel = renderCatPanel;
 
 window.mostrarNuevaCat = function() {
   const form = document.getElementById('nueva-cat-form');
@@ -10109,7 +10195,7 @@ window.showCTab = function(tab, btn) {
     renderCkKpis(filtIng, filtEg, presups, mcs);
   },200);
   if(tab==='presupuestos') loadClientPresupuestos();
-  if(tab==='proveedores') loadProveedores();
+  if(tab==='proveedores') { loadProveedores(); loadCatsProveedor(); }
   if(tab==='prod-compra') loadProductosCompra();
   if(tab==='necesidades') loadNecesidades();
   if(tab==='ordenes-compra') loadOrdenesCompra();
