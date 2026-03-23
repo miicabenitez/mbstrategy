@@ -11856,37 +11856,67 @@ async function embiEjecutarAccion(tipo,datos){
   if(!currentClientUID){embiAddMsg('bot','No hay sesión activa.');return;}
   try{
     var hoy=new Date().toISOString().split('T')[0];
+    var d=new Date();
+    var mesTxt=d.toLocaleDateString('es-AR',{month:'long',year:'numeric'});
+    mesTxt=mesTxt.charAt(0).toUpperCase()+mesTxt.slice(1);
+
     if(tipo==='INGRESO'){
-      await window.createClientIngreso&&window.createClientIngreso(datos.monto,datos.concepto,datos.fecha||hoy,datos.categoria||'Ingreso');
-      // fallback directo
-      if(!window.createClientIngreso){
-        const {addDoc,collection}=await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
-        await addDoc(collection(db,'clientes',currentClientUID,'ingresos'),{monto:parseFloat(datos.monto),concepto:datos.concepto,fecha:datos.fecha||hoy,categoria:datos.categoria||'Ingreso',creadoEn:new Date().toISOString()});
-        if(window.loadClientFinanzas)await window.loadClientFinanzas();
-      }
-      embiAddMsg('bot','✓ Ingreso registrado.');
+      await addDoc(collection(db,'clientes',currentClientUID,'ingresos'),{
+        concepto:datos.concepto||'Ingreso',
+        categoria:datos.categoria||'Ingreso',
+        monto:parseFloat(datos.monto)||0,
+        fecha:datos.fecha||hoy,
+        mes:mesTxt,
+        origen:'embi',
+        creadoEn:new Date().toISOString()
+      });
+      if(window.loadClientContabilidad)await window.loadClientContabilidad();
+      embiAddMsg('bot','Ingreso de $'+parseFloat(datos.monto).toLocaleString('es-AR')+' registrado en Finanzas.');
+
     } else if(tipo==='EGRESO'){
-      const {addDoc,collection}=await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
-      await addDoc(collection(db,'clientes',currentClientUID,'egresos'),{monto:parseFloat(datos.monto),concepto:datos.concepto,fecha:datos.fecha||hoy,categoria:datos.categoria||'Egreso',creadoEn:new Date().toISOString()});
-      if(window.loadClientFinanzas)await window.loadClientFinanzas();
-      embiAddMsg('bot','✓ Egreso registrado.');
+      await addDoc(collection(db,'clientes',currentClientUID,'egresos'),{
+        concepto:datos.concepto||'Egreso',
+        categoria:datos.categoria||'Otros',
+        monto:parseFloat(datos.monto)||0,
+        fecha:datos.fecha||hoy,
+        mes:mesTxt,
+        origen:'embi',
+        creadoEn:new Date().toISOString()
+      });
+      if(window.loadClientContabilidad)await window.loadClientContabilidad();
+      embiAddMsg('bot','Egreso de $'+parseFloat(datos.monto).toLocaleString('es-AR')+' registrado en Finanzas.');
+
     } else if(tipo==='CLIENTE'){
-      const {addDoc,collection}=await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
-      await addDoc(collection(db,'clientes',currentClientUID,'mcClientes'),{nombre:datos.nombre,tel:datos.tel||'',email:datos.email||'',creadoEn:new Date().toISOString()});
+      await addDoc(collection(db,'clientes',currentClientUID,'mcClientes'),{
+        nombre:datos.nombre,
+        tel:datos.tel||'',
+        email:datos.email||'',
+        creadoEn:new Date().toISOString()
+      });
       if(window.loadMcModule)await window.loadMcModule();
-      embiAddMsg('bot','✓ Cliente '+datos.nombre+' creado.');
+      embiAddMsg('bot','Cliente '+datos.nombre+' creado en Comercial.');
+
     } else if(tipo==='COBRO'){
-      const {addDoc,collection}=await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
-      await addDoc(collection(db,'clientes',currentClientUID,'cobros'),{monto:parseFloat(datos.monto),clienteNombre:datos.cliente||'',fecha:datos.fecha||hoy,pagado:true,concepto:datos.concepto||'Cobro',creadoEn:new Date().toISOString()});
-      if(window.loadClientFinanzas)await window.loadClientFinanzas();
-      embiAddMsg('bot','✓ Cobro de $'+parseFloat(datos.monto).toLocaleString('es-AR')+' registrado.');
+      await addDoc(collection(db,'clientes',currentClientUID,'cobros'),{
+        monto:parseFloat(datos.monto)||0,
+        clienteNombre:datos.cliente||'',
+        fecha:datos.fecha||hoy,
+        pagado:true,
+        concepto:datos.concepto||'Cobro',
+        origen:'embi',
+        creadoEn:new Date().toISOString()
+      });
+      if(window.loadClientContabilidad)await window.loadClientContabilidad();
+      embiAddMsg('bot','Cobro de $'+parseFloat(datos.monto).toLocaleString('es-AR')+' registrado.');
+
     } else if(tipo==='OC_RECIBIDA'){
       if(window.marcarOCRecibida)window.marcarOCRecibida(datos.ocId);
-      embiAddMsg('bot','✓ OC marcada como recibida. La deuda se acreditó en la CC del proveedor.');
+      else embiAddMsg('bot','No pude encontrar esa OC.');
+
     } else {
       embiAddMsg('bot','Acción no reconocida: '+tipo);
     }
-  }catch(e){embiAddMsg('bot','Error al ejecutar: '+e.message);}
+  }catch(e){embiAddMsg('bot','Error al ejecutar: '+e.message+'. Verificá que estés logueada.');}
 }
 
 // ── Micrófono push-to-talk ──
@@ -11896,34 +11926,46 @@ function embiMicStart(){
   if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){
     embiAddMsg('bot','Tu navegador no soporta reconocimiento de voz. Usá Chrome o Edge.');return;
   }
+  if(embiRecording) return;
   var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   embiRecognition=new SR();
   embiRecognition.lang='es-AR';
   embiRecognition.interimResults=false;
   embiRecognition.maxAlternatives=1;
   embiRecording=true;
+
   var btn=document.getElementById('embiMicBtn');
   if(btn){btn.classList.add('recording');btn.innerHTML='<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="3" y="3" width="8" height="8" rx="2" fill="#e24b4a"/></svg>';}
+
+  function resetMicUI(){
+    embiRecording=false;
+    var b=document.getElementById('embiMicBtn');
+    if(b){b.classList.remove('recording');b.innerHTML='<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="4.5" y="1" width="5" height="8" rx="2.5" stroke="#7a8e7d" stroke-width="1.3"/><path d="M2 7.5a5 5 0 0010 0" stroke="#7a8e7d" stroke-width="1.3" stroke-linecap="round"/><line x1="7" y1="12.5" x2="7" y2="11" stroke="#7a8e7d" stroke-width="1.3" stroke-linecap="round"/></svg>';}
+  }
+
   embiRecognition.onresult=function(e){
-    var transcript=e.results[0][0].transcript;
+    var transcript=e.results[0][0].transcript.trim();
     var conf=e.results[0][0].confidence;
-    if(conf<0.5){embiAddMsg('bot','No te entendí bien. ¿Podés repetirlo?');return;}
+    resetMicUI();
+    if(conf>0&&conf<0.4){embiAddMsg('bot','No te entendí bien. ¿Podés repetirlo?');return;}
     var input=document.getElementById('embiInput');
-    if(input){input.value=transcript;embiSend();}
+    if(input&&transcript){input.value=transcript;embiSend();}
   };
+
   embiRecognition.onerror=function(e){
-    if(e.error!=='aborted')embiAddMsg('bot','No pude escucharte. Intentá de nuevo.');
-    embiMicStop();
+    resetMicUI();
+    if(e.error==='aborted'||e.error==='no-speech') return;
+    embiAddMsg('bot','No pude escucharte ('+e.error+'). Asegurate de dar permiso al micrófono.');
   };
-  embiRecognition.onend=embiMicStop;
-  try{embiRecognition.start();}catch(e){}
+
+  embiRecognition.onend=function(){ resetMicUI(); };
+
+  try{embiRecognition.start();}catch(e){resetMicUI();}
 }
 
 function embiMicStop(){
-  embiRecording=false;
-  var btn=document.getElementById('embiMicBtn');
-  if(btn){btn.classList.remove('recording');btn.innerHTML='<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="4.5" y="1" width="5" height="8" rx="2.5" stroke="#7a8e7d" stroke-width="1.3"/><path d="M2 7.5a5 5 0 0010 0" stroke="#7a8e7d" stroke-width="1.3" stroke-linecap="round"/><line x1="7" y1="12.5" x2="7" y2="11" stroke="#7a8e7d" stroke-width="1.3" stroke-linecap="round"/></svg>';}
-  if(embiRecognition){try{embiRecognition.stop();}catch(e){}embiRecognition=null;}
+  if(!embiRecording||!embiRecognition) return;
+  try{embiRecognition.stop();}catch(e){}
 }
 function embiToggle(){
   embiOpen=!embiOpen;
