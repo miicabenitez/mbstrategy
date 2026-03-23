@@ -2400,9 +2400,10 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
     </div>
     <div style="padding:20px 24px;">
       <div class="fg"><label class="fl">Detalle</label><input type="text" class="fi" id="cli-ing-concepto" placeholder="Describí brevemente este ingreso..."/></div>
+      <div class="fg"><label class="fl">Categoría</label><select class="fi" id="cli-ing-categoria" style="margin-top:0;"><option>Cobro de cliente</option><option>Otro ingreso</option><option>Transferencia recibida</option><option>Venta puntual</option><option>Reembolso</option></select></div>
       <div class="fg"><label class="fl">Monto</label><input type="number" class="fi" id="cli-ing-monto" placeholder="0"/></div>
       <div class="fg"><label class="fl">Fecha</label><input type="date" id="cli-ing-fecha" style="margin-top:0;"/></div>
-      <div class="fg"><label class="fl">Mes</label><select class="fi" id="cli-ing-mes" style="margin-top:0;"><option>Enero 2026</option><option>Febrero 2026</option><option selected>Marzo 2026</option><option>Abril 2026</option><option>Mayo 2026</option><option>Junio 2026</option><option>Julio 2026</option><option>Agosto 2026</option><option>Septiembre 2026</option><option>Octubre 2026</option><option>Noviembre 2026</option><option>Diciembre 2026</option></select></div>
+      <div class="fg"><label class="fl">Mes</label><select class="fi" id="cli-ing-mes" style="margin-top:0;"></select></div>
       <div class="br2"><button class="bp" onclick="createClientIngreso()">Guardar</button><button class="bs" onclick="closeModal('newClientIngresoModal')">Cancelar</button></div>
       <div class="saved-msg" id="cli-ing-saved">✓ Ingreso registrado</div>
     </div>
@@ -2422,7 +2423,7 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
       <div class="fg"><label class="fl">Categoría</label><select class="fi" id="cli-eg-categoria" style="margin-top:0;"><option value="Servicios y herramientas">Servicios y herramientas</option><option value="Publicidad y marketing">Publicidad y marketing</option><option value="Insumos">Insumos</option><option value="Personal">Personal</option><option value="Alimentos">Alimentos</option><option value="Limpieza">Limpieza</option><option value="Viáticos">Viáticos</option><option value="Otros">Otros</option></select></div>
       <div class="fg"><label class="fl">Monto</label><input type="number" class="fi" id="cli-eg-monto" placeholder="0"/></div>
       <div class="fg"><label class="fl">Fecha</label><input type="date" class="fi" id="cli-eg-fecha"/></div>
-      <div class="fg"><label class="fl">Mes</label><select class="fi" id="cli-eg-mes" style="margin-top:0;"><option>Enero 2026</option><option>Febrero 2026</option><option selected>Marzo 2026</option><option>Abril 2026</option><option>Mayo 2026</option><option>Junio 2026</option><option>Julio 2026</option><option>Agosto 2026</option><option>Septiembre 2026</option><option>Octubre 2026</option><option>Noviembre 2026</option><option>Diciembre 2026</option></select></div>
+      <div class="fg"><label class="fl">Mes</label><select class="fi" id="cli-eg-mes" style="margin-top:0;"></select></div>
       <div class="br2"><button class="bp" onclick="createClientEgreso()">Guardar</button><button class="bs" onclick="closeModal('newClientEgresoModal')">Cancelar</button></div>
       <div class="saved-msg" id="cli-eg-saved">✓ Egreso registrado</div>
     </div>
@@ -4630,24 +4631,28 @@ window.createCobroCliente = async function() {
   const nuevoTotal = yaCobrado + monto;
   const estado = nuevoTotal >= precioTotal ? 'Cobrado' : 'Parcial';
   const saldoPendiente = Math.max(0, precioTotal - nuevoTotal);
+  const clienteNombre = currentClientData?.nombre || '';
+  const conceptoFinal = concepto || `Pago $${monto.toLocaleString('es-AR')}`;
+  const mesStr = fecha ? new Date(fecha+'T12:00:00').toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase()) : '';
 
   try {
     await addDoc(collection(db,'clientes',currentClientId,'cobros'), {
-      concepto: concepto || `Pago $${monto.toLocaleString('es-AR')}`,
+      concepto: conceptoFinal,
       monto, estado, fecha,
       saldoPendiente,
       totalAcumulado: nuevoTotal
     });
 
     // También registrar en colección global de cobros
-    const clienteNombre = currentClientData?.nombre || '';
     await addDoc(collection(db,'cobros'), {
       clienteId: currentClientId,
       cliente: clienteNombre,
-      concepto: concepto || `Pago $${monto.toLocaleString('es-AR')}`,
+      concepto: conceptoFinal,
       monto, estado: estado.toLowerCase(), fecha,
       creadoEn: new Date().toISOString()
     });
+    // NOTA: loadClientContabilidad ya convierte los cobros en ingresos automáticamente
+    // No es necesario escribir en 'ingresos' para evitar doble conteo
 
     const s = document.getElementById('ccc-saved');
     s.textContent = saldoPendiente > 0
@@ -6266,6 +6271,7 @@ function initCkChart(ingresos, egresos) {
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#D0CFC9'},ticks:{font:{family:'DM Sans',size:10},color:'#4A5A4E',callback:v=>'$'+v.toLocaleString('es-AR')}},x:{grid:{display:false},ticks:{font:{family:'DM Sans',size:10},color:'#4A5A4E'}}}}
   });
 }
+window.initClientCashflow = initClientCashflow;
 
 let ckMesChart=null;
 
@@ -6559,7 +6565,7 @@ window.createClientIngreso = async function() {
   if(!monto){ alert('Ingresá un monto'); return; }
   const data = {
     concepto,
-    categoria: 'Ingreso sin concepto',
+    categoria: document.getElementById('cli-ing-categoria')?.value || 'Otro ingreso',
     monto: parseFloat(monto)||0,
     fecha: document.getElementById('cli-ing-fecha')?.value||'',
     mes: document.getElementById('cli-ing-mes').value,
@@ -8372,6 +8378,8 @@ const CAT_COLORS = {
   'Marketing y publicidad':['#E1F5EE','#0F6E56'],
   'Logística y transporte':['#E6EEF5','#185FA5'],
   'Mano de obra':['#F5F6F3','#4A5A4E'],
+  'Servicios profesionales':['#F0EEF8','#4A2A8A'],
+  'Alquiler':['#FDF8F0','#8A6A0A'],
   'Otro':['#F5F6F3','#4A5A4E'],
 };
 
@@ -8386,6 +8394,7 @@ async function loadProductosCompra() {
     renderProductosCompra(_prodCompra);
   } catch(e){ console.log(e); }
 }
+window.loadProductosCompra = loadProductosCompra;
 
 function renderProductosCompra(lista) {
   const setEl = (id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
@@ -8469,6 +8478,7 @@ async function loadNecesidades() {
     renderNecesidades();
   }catch(e){console.log(e);}
 }
+window.loadNecesidades = loadNecesidades;
 
 function renderNecesidades() {
   const setEl=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
@@ -8729,6 +8739,10 @@ window.cotPaso3 = function() {
   });
 
   const ocsAEmitir = Object.values(ocPorProv).filter(x=>x.items.length>0);
+  if(ocsAEmitir.length===0){
+    alert('Ingresá al menos un precio para poder generar las órdenes de compra.');
+    return;
+  }
   window._ocsAEmitir = ocsAEmitir;
 
   let ocNum=nextNum;
@@ -8768,6 +8782,7 @@ window.confirmarOC = async function() {
   if(!currentClientUID||!_cotNcId) return;
   const nc = _necesidades.find(n=>n.id===_cotNcId);
   const ocsAEmitir = window._ocsAEmitir||[];
+  if(ocsAEmitir.length===0){ alert('No hay ítems con precio para emitir.'); return; }
   const hoy = new Date().toISOString().split('T')[0];
   try {
     for(const oc of ocsAEmitir) {
@@ -8946,6 +8961,7 @@ async function loadOrdenesCompra() {
     renderOrdenesCompra();
   }catch(e){console.log(e);}
 }
+window.loadOrdenesCompra = loadOrdenesCompra;
 
 function renderOrdenesCompra() {
   const setEl=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
@@ -9041,7 +9057,7 @@ window.abrirCuentaCorriente = async function(provId) {
 function renderCuentaCorriente() {
   const setEl=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
   const totalComprado = _ccFacturas.reduce((a,f)=>a+(parseFloat(f.monto)||0),0);
-  const totalPagado = _ccPagos.reduce((a,p)=>a+getPresupMonto(p),0);
+  const totalPagado = _ccPagos.reduce((a,p)=>a+(parseFloat(p.monto)||0),0);
   const saldo = Math.max(0, totalComprado - totalPagado);
 
   setEl('cc-kpi-comprado','$'+totalComprado.toLocaleString('es-AR'));
@@ -9165,7 +9181,7 @@ window.savePagoProveedor = async function() {
     });
     // Actualizar estado factura si aplica
     if(facturaId&&factura){
-      const totalPagadoFac=(_ccPagos.filter(p=>p.facturaId===facturaId).reduce((a,p)=>a+getPresupMonto(p),0))+monto;
+      const totalPagadoFac=(_ccPagos.filter(p=>p.facturaId===facturaId).reduce((a,p)=>a+(parseFloat(p.monto)||0),0))+monto;
       const estadoFac=totalPagadoFac>=parseFloat(factura.monto)?'pagada':'parcial';
       await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',_ccProvId,'facturas',facturaId),{estado:estadoFac});
     }
@@ -9182,7 +9198,7 @@ window.savePagoProveedor = async function() {
     try {
       const ocSnap = await getDocs(collection(db,'clientes',currentClientUID,'ordenesCompra'));
       const pagSnap = await getDocs(collection(db,'clientes',currentClientUID,'proveedores',_ccProvId,'pagos'));
-      const totalPagado = pagSnap.docs.reduce((a,d)=>a+(parseFloat(d.data().monto)||0),0) + monto;
+      const totalPagado = pagSnap.docs.reduce((a,d)=>a+(parseFloat(d.data().monto)||0),0);
       for(const ocDoc of ocSnap.docs) {
         const oc = {id:ocDoc.id,...ocDoc.data()};
         if(oc.proveedorId !== _ccProvId) continue;
@@ -9294,6 +9310,7 @@ async function loadProveedores() {
     renderProveedoresModule();
   } catch(e){ console.log(e); }
 }
+window.loadProveedores = loadProveedores;
 
 function renderProveedoresModule() {
   const egresos = window._clientEgresos || [];
@@ -9998,6 +10015,23 @@ window.embiDeleteReport = function(id) {
   },'Eliminar reporte');
 };
 
+// ── Meses dinámicos ──
+function poblarMeses(selId) {
+  const sel = document.getElementById(selId); if(!sel) return;
+  const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const hoy = new Date();
+  const mesActual = hoy.getMonth();
+  const anioActual = hoy.getFullYear();
+  // Año actual + siguiente
+  const opciones = [];
+  for(let a = anioActual - 1; a <= anioActual + 1; a++) {
+    meses.forEach((m, i) => opciones.push({label:`${m} ${a}`, anio:a, mes:i}));
+  }
+  const mesHoyLabel = `${meses[mesActual]} ${anioActual}`;
+  sel.innerHTML = opciones.map(o => `<option value="${o.label}" ${o.label===mesHoyLabel?'selected':''}>${o.label}</option>`).join('');
+}
+window.poblarMeses = poblarMeses;
+
 window.backToAdmin = function() {
   document.querySelectorAll('[id^="av-"]').forEach(el => el.classList.remove('active'));
   const el = document.getElementById('av-' + currentAdminTab);
@@ -10305,11 +10339,13 @@ window.openModal = function(id) {
     });
   }
   if(id === 'newClientEgresoModal') {
+    poblarMeses('cli-eg-mes');
     const fechaEl = document.getElementById('cli-eg-fecha');
     if(fechaEl) fechaEl.value = new Date().toISOString().split('T')[0];
     window._editingEgresoid = null;
   }
   if(id === 'newClientIngresoModal') {
+    poblarMeses('cli-ing-mes');
     const fechaEl = document.getElementById('cli-ing-fecha');
     if(fechaEl) fechaEl.value = new Date().toISOString().split('T')[0];
     window._editingIngresoid = null;
@@ -10328,6 +10364,8 @@ window.openModal = function(id) {
     if(fechaEl&&!fechaEl.value) fechaEl.value=new Date().toISOString().split('T')[0];
   }
   if(id === 'newProveedorModal') { loadCatsProveedor(); document.getElementById('nueva-cat-form').style.display='none'; }
+  if(id === 'newNecesidadModal') { loadCatsProveedor(); }
+  if(id === 'newProdCompraModal') { loadCatsProveedor(); }
   if(id === 'newMcReunionModal') {
     // Populate client selector
     const sel = document.getElementById('mcr-cliente-sel');
