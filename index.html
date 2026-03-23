@@ -11924,9 +11924,24 @@ var embiRecognition=null, embiRecording=false;
 
 function embiMicStart(){
   if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){
-    embiAddMsg('bot','Tu navegador no soporta reconocimiento de voz. Usá Chrome o Edge.');return;
+    embiAddMsg('bot','Tu navegador no soporta reconocimiento de voz. Usá Chrome o Edge en Android, o Safari en iPhone.');return;
   }
   if(embiRecording) return;
+
+  // Pedir permiso explícitamente para que el navegador muestre el cartel
+  navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
+    stream.getTracks().forEach(t=>t.stop()); // liberar el stream, solo necesitábamos el permiso
+    embiIniciarReconocimiento();
+  }).catch(function(err){
+    if(err.name==='NotAllowedError'||err.name==='PermissionDeniedError'){
+      embiAddMsg('bot','Permiso de micrófono denegado. Para activarlo: en el navegador tocá el candado 🔒 en la barra de dirección → Permisos → Micrófono → Permitir.');
+    } else {
+      embiAddMsg('bot','No se pudo acceder al micrófono. Verificá que tu dispositivo tenga uno disponible.');
+    }
+  });
+}
+
+function embiIniciarReconocimiento(){
   var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   embiRecognition=new SR();
   embiRecognition.lang='es-AR';
@@ -11945,9 +11960,8 @@ function embiMicStart(){
 
   embiRecognition.onresult=function(e){
     var transcript=e.results[0][0].transcript.trim();
-    var conf=e.results[0][0].confidence;
     resetMicUI();
-    if(conf>0&&conf<0.4){embiAddMsg('bot','No te entendí bien. ¿Podés repetirlo?');return;}
+    if(!transcript){embiAddMsg('bot','No escuché nada. Intentá de nuevo.');return;}
     var input=document.getElementById('embiInput');
     if(input&&transcript){input.value=transcript;embiSend();}
   };
@@ -11955,17 +11969,14 @@ function embiMicStart(){
   embiRecognition.onerror=function(e){
     resetMicUI();
     if(e.error==='aborted'||e.error==='no-speech') return;
-    embiAddMsg('bot','No pude escucharte ('+e.error+'). Asegurate de dar permiso al micrófono.');
+    if(e.error==='not-allowed'){
+      embiAddMsg('bot','Permiso de micrófono denegado. Tocá el candado 🔒 en la barra de tu navegador → Permisos → Micrófono → Permitir, y volvé a intentarlo.');
+    }
   };
 
   embiRecognition.onend=function(){ resetMicUI(); };
 
   try{embiRecognition.start();}catch(e){resetMicUI();}
-}
-
-function embiMicStop(){
-  if(!embiRecording||!embiRecognition) return;
-  try{embiRecognition.stop();}catch(e){}
 }
 function embiToggle(){
   embiOpen=!embiOpen;
