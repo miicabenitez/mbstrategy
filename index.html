@@ -1341,6 +1341,7 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
         <button class="subctab" onclick="showCTab('necesidades',this)">Necesidades</button>
         <button class="subctab" onclick="showCTab('ordenes-compra',this)">Órdenes de compra</button>
         <button class="subctab" onclick="showCTab('historial-compra',this)">Historial</button>
+        <button class="subctab" onclick="showCTab('categorias-compra',this)">Categorías</button>
       </div>
 
       <div id="subnav-membresia" class="mod-subnav" style="display:none;gap:4px;margin-bottom:20px;"></div>
@@ -2091,27 +2092,6 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
           </div>
         </div>
 
-        <!-- Gestión de categorías -->
-        <div class="card" style="margin-top:16px;">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-            <div class="ct" style="margin:0;">Categorías de compras</div>
-            <button onclick="mostrarFormNuevaCat()" style="font-size:12px;padding:6px 14px;background:var(--sage-xl);border:.5px solid var(--sage-light);border-radius:20px;color:var(--topbar);cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;">+ Nueva categoría</button>
-          </div>
-          <div style="font-size:11px;color:var(--text-l);margin-bottom:10px;">Las categorías conectan Proveedores, Productos y Necesidades. Las predeterminadas no se pueden eliminar.</div>
-          <!-- Formulario nueva categoría -->
-          <div id="prov-nueva-cat-form" style="display:none;background:var(--cream);border-radius:9px;padding:12px;margin-bottom:12px;">
-            <div style="font-size:11px;font-weight:500;color:var(--text-m);margin-bottom:8px;">Nueva categoría</div>
-            <div style="display:flex;gap:8px;align-items:center;">
-              <input type="text" id="prov-nueva-cat-input" class="fi" placeholder="Ej: Transporte, Seguros, Eventos..." style="margin-top:0;flex:1;"/>
-              <button onclick="guardarCatDesdePanel()" style="flex-shrink:0;padding:8px 16px;background:var(--topbar);border:none;border-radius:9px;font-size:12px;color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;">Agregar</button>
-              <button onclick="document.getElementById('prov-nueva-cat-form').style.display='none'" style="flex-shrink:0;padding:8px 12px;background:none;border:.5px solid var(--cream-d);border-radius:9px;font-size:12px;color:var(--text-l);cursor:pointer;font-family:'DM Sans',sans-serif;">×</button>
-            </div>
-            <div id="prov-nueva-cat-saved" style="font-size:11px;color:var(--ok);margin-top:6px;display:none;">✓ Categoría agregada</div>
-          </div>
-          <!-- Lista de categorías -->
-          <div id="prov-cats-lista" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
-        </div>
-
       </div>
 
       <!-- PRODUCTOS DE COMPRA -->
@@ -2190,6 +2170,43 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
           <input type="text" id="hc-search" class="fi" placeholder="Buscar producto..." style="border-radius:20px;" oninput="buscarHistorialCompra(this.value)"/>
         </div>
         <div id="hc-resultado"><div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Buscá un producto para ver su historial de compras.</div></div>
+      </div>
+
+      <!-- CATEGORÍAS DE COMPRAS -->
+      <div id="ct-categorias-compra" style="display:none;">
+        <div style="background:var(--topbar);border-radius:13px;padding:22px 24px;margin-bottom:16px;">
+          <div style="font-size:9px;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;">MB Strategy</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:#fff;">Categorías de compras</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.6);margin-top:4px;">Conectan Proveedores, Productos y Necesidades. Las predeterminadas no se pueden eliminar.</div>
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
+          <button onclick="mostrarFormNuevaCat()" class="bp">+ Nueva categoría</button>
+        </div>
+
+        <!-- Formulario nueva categoría -->
+        <div id="prov-nueva-cat-form" style="display:none;margin-bottom:16px;">
+          <div class="card">
+            <div style="font-size:12px;font-weight:500;color:var(--text-m);margin-bottom:10px;">Nueva categoría</div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input type="text" id="prov-nueva-cat-input" class="fi" placeholder="Ej: Transporte, Seguros, Eventos..." style="margin-top:0;flex:1;" onkeydown="if(event.key==='Enter') guardarCatDesdePanel()"/>
+              <button onclick="guardarCatDesdePanel()" class="bp" style="flex-shrink:0;">Agregar</button>
+              <button onclick="document.getElementById('prov-nueva-cat-form').style.display='none'" class="bs" style="flex-shrink:0;">Cancelar</button>
+            </div>
+            <div id="prov-nueva-cat-saved" style="font-size:11px;color:var(--ok);margin-top:8px;display:none;">✓ Categoría agregada</div>
+          </div>
+        </div>
+
+        <!-- Lista de categorías -->
+        <div class="card">
+          <div style="margin-bottom:8px;">
+            <div style="display:grid;grid-template-columns:1fr 80px;gap:10px;padding-bottom:8px;border-bottom:.5px solid var(--cream-d);">
+              <span style="font-size:9px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;">Categoría</span>
+              <span style="font-size:9px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;text-align:center;">Tipo</span>
+            </div>
+          </div>
+          <div id="prov-cats-lista"></div>
+        </div>
       </div>
 
       <!-- MEMBRESIA -->
@@ -9336,12 +9353,13 @@ window.deleteCatCustom = async function(nombre) {
 function renderCatPanel() {
   const el = document.getElementById('prov-cats-lista'); if(!el) return;
   const lista = _catsProv.length > 0 ? _catsProv : CATS_DEFAULT;
-  if(lista.length===0) { el.innerHTML='<div style="font-size:12px;color:var(--text-l);">Sin categorías cargadas.</div>'; return; }
+  if(lista.length===0) { el.innerHTML='<div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Sin categorías.</div>'; return; }
   el.innerHTML = lista.map(c => {
     const isDefault = CATS_DEFAULT.includes(c);
-    return `<div style="display:inline-flex;align-items:center;gap:5px;background:${isDefault?'var(--cream)':'var(--sage-xl)'};border:.5px solid ${isDefault?'var(--cream-d)':'var(--sage-light)'};border-radius:20px;padding:5px 12px;font-size:12px;color:${isDefault?'var(--text-m)':'var(--topbar)'};">
-      ${c}
-      ${!isDefault ? `<button onclick="deleteCatCustom('${c}')" style="background:none;border:none;cursor:pointer;color:var(--err);font-size:14px;line-height:1;padding:0 0 0 4px;">×</button>` : ''}
+    return `<div style="display:grid;grid-template-columns:1fr 80px 40px;gap:10px;align-items:center;padding:11px 0;border-bottom:.5px solid var(--cream-d);">
+      <div style="font-size:13px;color:var(--text);font-weight:${isDefault?'400':'500'};">${c}</div>
+      <span style="text-align:center;background:${isDefault?'var(--cream)':'var(--sage-xl)'};color:${isDefault?'var(--text-l)':'var(--topbar)'};font-size:9px;font-weight:500;padding:3px 10px;border-radius:20px;border:.5px solid ${isDefault?'var(--cream-d)':'var(--sage-light)'};">${isDefault?'Base':'Custom'}</span>
+      <div style="text-align:right;">${!isDefault ? `<button onclick="deleteCatCustom('${c}')" style="background:none;border:.5px solid var(--cream-d);border-radius:7px;padding:3px 8px;font-size:11px;color:var(--err);cursor:pointer;">×</button>` : ''}</div>
     </div>`;
   }).join('');
 }
@@ -10132,7 +10150,7 @@ const MOD_MAP = {
   gestion:   { tabs: ['contabilidad','kpis','calculador','mclientes','productos','presupuestos','tareas','proveedores','prod-compra','necesidades','ordenes-compra','historial-compra','membresia'], subnav: 'subnav-gestion', default: 'contabilidad' },
   finanzas:  { tabs: ['contabilidad','kpis','calculador'],              subnav: 'subnav-finanzas',  default: 'contabilidad'},
   comercial: { tabs: ['mclientes','productos','presupuestos','tareas'],  subnav: 'subnav-comercial', default: 'mclientes'   },
-  compras:   { tabs: ['proveedores','prod-compra','necesidades','ordenes-compra','historial-compra'], subnav: 'subnav-compras', default: 'proveedores' },
+  compras:   { tabs: ['proveedores','prod-compra','necesidades','ordenes-compra','historial-compra','categorias-compra'], subnav: 'subnav-compras', default: 'proveedores' },
   membresia: { tabs: ['membresia'],                                     subnav: 'subnav-membresia', default: 'membresia'   },
 };
 
@@ -10198,6 +10216,7 @@ window.showCTab = function(tab, btn) {
   },200);
   if(tab==='presupuestos') loadClientPresupuestos();
   if(tab==='proveedores') { loadProveedores(); loadCatsProveedor().then(()=>{ if(window.renderCatPanel) window.renderCatPanel(); }); }
+  if(tab==='categorias-compra') { loadCatsProveedor().then(()=>{ if(window.renderCatPanel) window.renderCatPanel(); }); }
   if(tab==='prod-compra') loadProductosCompra();
   if(tab==='necesidades') loadNecesidades();
   if(tab==='ordenes-compra') loadOrdenesCompra();
@@ -10451,9 +10470,9 @@ window.openModal = function(id) {
     const fechaEl=document.getElementById('fac-fecha');
     if(fechaEl&&!fechaEl.value) fechaEl.value=new Date().toISOString().split('T')[0];
   }
-  if(id === 'newProveedorModal') { loadCatsProveedor(); document.getElementById('nueva-cat-form').style.display='none'; }
-  if(id === 'newNecesidadModal') { loadCatsProveedor(); }
-  if(id === 'newProdCompraModal') { loadCatsProveedor(); }
+  if(id === 'newProveedorModal') { (_catsProv.length>0 ? Promise.resolve() : loadCatsProveedor()).then(()=>renderCatSelect()); document.getElementById('nueva-cat-form').style.display='none'; }
+  if(id === 'newNecesidadModal') { (_catsProv.length>0 ? Promise.resolve() : loadCatsProveedor()).then(()=>renderCatSelect()); }
+  if(id === 'newProdCompraModal') { (_catsProv.length>0 ? Promise.resolve() : loadCatsProveedor()).then(()=>renderCatSelect()); }
   if(id === 'newMcReunionModal') {
     // Populate client selector
     const sel = document.getElementById('mcr-cliente-sel');
