@@ -2163,13 +2163,15 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
       <!-- HISTORIAL DE COMPRAS -->
       <div id="ct-historial-compra" style="display:none;">
         <div style="background:var(--topbar);border-radius:13px;padding:22px 24px;margin-bottom:14px;">
-          <div style="font-size:9px;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;">MB Strategy</div>
+          <div style="font-size:9px;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;">MB Strategy · Compras</div>
           <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:#fff;">Historial de compras</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.55);margin-top:4px;">Todos los productos comprados a través de órdenes de compra</div>
         </div>
-        <div style="margin-bottom:14px;">
-          <input type="text" id="hc-search" class="fi" placeholder="Buscar producto..." style="border-radius:20px;" oninput="buscarHistorialCompra(this.value)"/>
+        <div style="margin-bottom:14px;position:relative;">
+          <input type="text" id="hc-search" class="fi" placeholder="Filtrar por nombre de producto..." style="border-radius:20px;padding-left:36px;" oninput="buscarHistorialCompra(this.value)"/>
+          <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none;" width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="var(--text-l)" stroke-width="1.5"/><path d="M11 11l3 3" stroke="var(--text-l)" stroke-width="1.5" stroke-linecap="round"/></svg>
         </div>
-        <div id="hc-resultado"><div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Buscá un producto para ver su historial de compras.</div></div>
+        <div id="hc-resultado"><div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Cargando historial...</div></div>
       </div>
 
       <!-- CATEGORÍAS DE COMPRAS -->
@@ -2855,6 +2857,7 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
       </div>
       <div class="fg">
         <label class="fl">Productos</label>
+        <input type="text" id="nc-prod-search" class="fi" placeholder="Buscar producto..." style="margin-bottom:6px;border-radius:20px;" oninput="filtrarProdsNecesidad(this.value)"/>
         <div id="nc-productos-lista" style="border:.5px solid var(--cream-d);border-radius:9px;padding:10px;min-height:60px;max-height:200px;overflow-y:auto;background:var(--cream);">
           <div style="font-size:12px;color:var(--text-l);">Seleccioná una categoría primero</div>
         </div>
@@ -3006,6 +3009,63 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
         <button class="bs" onclick="closeModal('newPagoProvModal')">Cancelar</button>
       </div>
       <div class="saved-msg" id="pago-prov-saved">✓ Pago registrado</div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal detalle OC -->
+<div class="mo" id="ocDetalleModal">
+  <div class="md" style="max-width:520px;padding:0;overflow:hidden;position:relative;">
+    <button class="mc2" onclick="closeModal('ocDetalleModal')" style="position:absolute;top:14px;right:14px;z-index:2;color:#fff;background:rgba(255,255,255,.15);border:none;">×</button>
+    <div style="background:var(--topbar);padding:20px 24px 16px;">
+      <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">MB Strategy · Compras</div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+        <div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:#fff;" id="oc-det-numero">OC-001</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.65);margin-top:3px;" id="oc-det-proveedor">Proveedor</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:24px;color:#fff;font-weight:500;" id="oc-det-total">$0</div>
+          <div id="oc-det-estado-badge" style="margin-top:4px;"></div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:20px 24px;">
+      <!-- Meta -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px;">
+        <div style="background:var(--cream);border-radius:8px;padding:10px;">
+          <div style="font-size:9px;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Fecha</div>
+          <div style="font-size:13px;font-weight:500;color:var(--text);" id="oc-det-fecha">—</div>
+        </div>
+        <div style="background:var(--cream);border-radius:8px;padding:10px;">
+          <div style="font-size:9px;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Ítems</div>
+          <div style="font-size:13px;font-weight:500;color:var(--text);" id="oc-det-items-count">—</div>
+        </div>
+        <div style="background:var(--cream);border-radius:8px;padding:10px;">
+          <div style="font-size:9px;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Estado pago</div>
+          <div style="font-size:13px;font-weight:500;" id="oc-det-estado-txt">—</div>
+        </div>
+      </div>
+      <!-- Items table -->
+      <div style="font-size:9px;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Detalle de ítems</div>
+      <div style="border:.5px solid var(--cream-d);border-radius:10px;overflow:hidden;margin-bottom:18px;">
+        <div style="display:grid;grid-template-columns:1fr 60px 70px 80px;gap:0;background:var(--sage-xl);padding:8px 12px;">
+          <span style="font-size:9px;font-weight:500;color:var(--text-l);text-transform:uppercase;">Producto</span>
+          <span style="font-size:9px;font-weight:500;color:var(--text-l);text-transform:uppercase;text-align:center;">Cant.</span>
+          <span style="font-size:9px;font-weight:500;color:var(--text-l);text-transform:uppercase;text-align:right;">P. Unit.</span>
+          <span style="font-size:9px;font-weight:500;color:var(--text-l);text-transform:uppercase;text-align:right;">Total</span>
+        </div>
+        <div id="oc-det-items-list"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-top:.5px solid var(--cream-d);background:var(--cream);">
+          <span style="font-size:11px;font-weight:500;color:var(--text-l);">TOTAL</span>
+          <span style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:500;color:var(--text);" id="oc-det-total-footer">$0</span>
+        </div>
+      </div>
+      <!-- Actions -->
+      <div style="display:flex;gap:10px;">
+        <button class="bp" style="flex:1;" onclick="generarPDFOrdenCompra()">↓ Emitir PDF</button>
+        <button class="bs" onclick="closeModal('ocDetalleModal')">Cerrar</button>
+      </div>
     </div>
   </div>
 </div>
@@ -8556,16 +8616,40 @@ function renderNecesidades() {
 }
 
 window.cargarProductosPorCat = function() {
-  const cat = document.getElementById('nc-cat').value;
+  const searchEl = document.getElementById('nc-prod-search');
+  if(searchEl) searchEl.value = '';
+  filtrarProdsNecesidad('');
+};
+
+window.filtrarProdsNecesidad = function(q) {
+  const cat = document.getElementById('nc-cat')?.value;
   const lista = document.getElementById('nc-productos-lista');
   if(!lista) return;
-  const prods = _prodCompra.filter(p=>p.categoria===cat);
-  if(prods.length===0){lista.innerHTML=`<div style="font-size:12px;color:var(--text-l);padding:8px;">No hay productos en esta categoría. <button onclick="abrirProdDesdeNC()" style="background:none;border:none;color:var(--sage-dark);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;text-decoration:underline;">+ Agregar producto</button></div>`;return;}
-  lista.innerHTML = prods.map(p=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:.5px solid var(--cream-d);">
-    <input type="checkbox" id="ncp-${p.id}" value="${p.id}" style="accent-color:var(--sage-dark);" onchange="toggleProdNC('${p.id}','${p.nombre}','${p.unidad}')"/>
+  if(!cat){lista.innerHTML='<div style="font-size:12px;color:var(--text-l);padding:8px;">Seleccioná una categoría primero</div>';return;}
+  const filtro=(q||'').toLowerCase().trim();
+  let prods = _prodCompra.filter(p=>p.categoria===cat);
+  if(filtro) prods = prods.filter(p=>(p.nombre||'').toLowerCase().includes(filtro));
+  if(_prodCompra.filter(p=>p.categoria===cat).length===0){
+    lista.innerHTML=`<div style="font-size:12px;color:var(--text-l);padding:8px;">No hay productos en esta categoría. <button onclick="abrirProdDesdeNC()" style="background:none;border:none;color:var(--sage-dark);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;text-decoration:underline;">+ Agregar producto</button></div>`;
+    return;
+  }
+  if(prods.length===0){
+    lista.innerHTML=`<div style="font-size:12px;color:var(--text-l);padding:8px;">Sin resultados para "${q}"</div>`;
+    return;
+  }
+  // Mantener estados de checkboxes ya marcados
+  const checkedIds = _prodCompra.filter(p=>{const cb=document.getElementById('ncp-'+p.id);return cb&&cb.checked;}).map(p=>p.id);
+  const cantidades = {};
+  _prodCompra.forEach(p=>{const q=document.getElementById('ncq-'+p.id);if(q&&q.value)cantidades[p.id]=q.value;});
+  lista.innerHTML = prods.map(p=>{
+    const checked=checkedIds.includes(p.id);
+    const cant=cantidades[p.id]||'';
+    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:.5px solid var(--cream-d);">
+    <input type="checkbox" id="ncp-${p.id}" value="${p.id}" style="accent-color:var(--sage-dark);" ${checked?'checked':''} onchange="toggleProdNC('${p.id}','${p.nombre}','${p.unidad}')"/>
     <label for="ncp-${p.id}" style="flex:1;font-size:12px;color:var(--text);cursor:pointer;">${p.nombre} <span style="color:var(--text-l);">(${p.unidad})</span></label>
-    <input type="number" id="ncq-${p.id}" placeholder="Cant." min="1" style="width:60px;padding:4px 6px;border:.5px solid var(--cream-d);border-radius:7px;font-size:12px;" disabled/>
-  </div>`).join('');
+    <input type="number" id="ncq-${p.id}" placeholder="Cant." min="1" value="${cant}" style="width:60px;padding:4px 6px;border:.5px solid var(--cream-d);border-radius:7px;font-size:12px;" ${checked?'':'disabled'}/>
+  </div>`;
+  }).join('');
 };
 
 window.toggleProdNC = function(id, nombre, unidad) {
@@ -8901,7 +8985,12 @@ window.confirmarOC = async function() {
       closeModal('cotizacionModal');
       await loadNecesidades();
       await loadOrdenesCompra();
-    },2000);
+      // Abrir detalle de la primera OC emitida
+      if(ocsAEmitir.length>0){
+        const primera = _ordenesCompra.find(o=>o.numero===ocsAEmitir[0].numero);
+        if(primera) setTimeout(()=>abrirDetalleOC(primera.id), 200);
+      }
+    },1500);
   }catch(e){alert('Error: '+e.message);}
 };
 
@@ -9074,56 +9163,271 @@ function renderOrdenesCompra() {
     const estadoPago=o.estadoPago||'pendiente';
     const badgeCfg={pagada:{bg:'var(--ok-bg)',tc:'var(--ok)',label:'Pagada'},pendiente:{bg:'var(--err-bg)',tc:'var(--err)',label:'Pendiente pago'},parcial:{bg:'var(--warn-bg)',tc:'var(--warn)',label:'Pago parcial'}};
     const bc=badgeCfg[estadoPago]||badgeCfg.pendiente;
-    return `<div style="display:grid;grid-template-columns:70px 1fr 100px 100px 60px;gap:10px;align-items:center;padding:12px 0;border-bottom:.5px solid var(--cream-d);">
+    return `<div onclick="abrirDetalleOC('${o.id}')" style="display:grid;grid-template-columns:70px 1fr 100px 100px 110px 40px;gap:10px;align-items:center;padding:12px 0;border-bottom:.5px solid var(--cream-d);cursor:pointer;transition:background .15s;border-radius:4px;" onmouseenter="this.style.background='var(--cream)'" onmouseleave="this.style.background=''">
       <div style="width:42px;height:42px;background:var(--sage-xl);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;color:var(--sage-dark);">OC-${String(o.numero||0).padStart(3,'0')}</div>
       <div><div style="font-size:13px;font-weight:500;color:var(--text);">${o.proveedor||'—'}</div><div style="font-size:11px;color:var(--text-l);">${(o.items||[]).length} ítems</div></div>
       <div style="font-size:12px;color:var(--text-m);">${o.fecha||'—'}</div>
       <div style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:500;color:var(--text);text-align:right;">$${(parseFloat(o.total)||0).toLocaleString('es-AR')}</div>
       <span style="background:${bc.bg};color:${bc.tc};font-size:9px;font-weight:500;padding:3px 8px;border-radius:20px;text-align:center;">${bc.label}</span>
+      <button onclick="event.stopPropagation();abrirDetalleOC('${o.id}')" style="background:none;border:.5px solid var(--cream-d);border-radius:8px;padding:5px 8px;cursor:pointer;font-size:11px;color:var(--text-m);" title="Ver PDF">PDF</button>
     </div>`;
   }).join('');
 }
 
-// ─ Historial ─
-function renderHistorialCompra() {
-  const el=document.getElementById('hc-resultado');
-  if(el&&!document.getElementById('hc-search')?.value) el.innerHTML='<div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Buscá un producto para ver su historial de compras.</div>';
-}
 
-window.buscarHistorialCompra = function(q) {
+let _ocDetalleActual = null;
+
+window.abrirDetalleOC = function(ocId) {
+  const oc = _ordenesCompra.find(o=>o.id===ocId);
+  if(!oc) return;
+  _ocDetalleActual = oc;
+
+  const setEl=(id,v)=>{const el=document.getElementById(id);if(el)el.innerHTML=v;};
+  const estadoPago=oc.estadoPago||'pendiente';
+  const badgeCfg={
+    pagada:{bg:'var(--ok-bg)',tc:'var(--ok)',label:'Pagada'},
+    pendiente:{bg:'var(--err-bg)',tc:'var(--err)',label:'Pendiente pago'},
+    parcial:{bg:'var(--warn-bg)',tc:'var(--warn)',label:'Pago parcial'}
+  };
+  const bc=badgeCfg[estadoPago]||badgeCfg.pendiente;
+
+  setEl('oc-det-numero', `OC-${String(oc.numero||0).padStart(3,'0')}`);
+  setEl('oc-det-proveedor', oc.proveedor||'—');
+  setEl('oc-det-total', `$${(parseFloat(oc.total)||0).toLocaleString('es-AR')}`);
+  setEl('oc-det-total-footer', `$${(parseFloat(oc.total)||0).toLocaleString('es-AR')}`);
+  setEl('oc-det-fecha', oc.fecha||'—');
+  setEl('oc-det-items-count', `${(oc.items||[]).length} ítem${(oc.items||[]).length!==1?'s':''}`);
+  setEl('oc-det-estado-txt', `<span style="color:${bc.tc};">${bc.label}</span>`);
+  setEl('oc-det-estado-badge', `<span style="background:rgba(255,255,255,.2);color:#fff;font-size:9px;font-weight:500;padding:3px 9px;border-radius:20px;">${bc.label}</span>`);
+
+  const items=oc.items||[];
+  setEl('oc-det-items-list', items.length===0
+    ? '<div style="padding:14px;text-align:center;color:var(--text-l);font-size:12px;">Sin ítems.</div>'
+    : items.map(it=>`
+      <div style="display:grid;grid-template-columns:1fr 60px 70px 80px;gap:0;padding:10px 12px;border-bottom:.5px solid var(--cream-d);">
+        <div><div style="font-size:12px;font-weight:500;color:var(--text);">${it.nombre||'—'}</div><div style="font-size:10px;color:var(--text-l);">${it.unidad||''}</div></div>
+        <div style="font-size:12px;color:var(--text-m);text-align:center;align-self:center;">${it.cantidad||0}</div>
+        <div style="font-size:12px;color:var(--text-m);text-align:right;align-self:center;">$${(parseFloat(it.precioUnit)||0).toLocaleString('es-AR')}</div>
+        <div style="font-size:13px;font-weight:500;color:var(--text);text-align:right;align-self:center;">$${(parseFloat(it.total)||0).toLocaleString('es-AR')}</div>
+      </div>`).join(''));
+
+  openModal('ocDetalleModal');
+};
+
+window.generarPDFOrdenCompra = async function() {
+  const oc = _ocDetalleActual;
+  if(!oc) return;
+
+  if(!window.jspdf) {
+    await new Promise((res,rej)=>{
+      const s=document.createElement('script');
+      s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+      s.onload=res; s.onerror=rej;
+      document.head.appendChild(s);
+    });
+  }
+
+  let negocioNombre = 'Mi negocio';
+  try {
+    const negDoc = await getDoc(doc(db,'clientes',currentClientUID));
+    if(negDoc.exists()) negocioNombre = negDoc.data().nombre || negocioNombre;
+  } catch(e){}
+
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+  const W=210, margin=20, contentW=W-margin*2;
+  let y=0;
+
+  const SAGE_DARK=[122,142,125], SAGE=[161,177,164], SAGE_XL=[237,240,234];
+  const CREAM=[245,246,243], CREAM_D=[208,207,201];
+  const TEXT=[44,44,44], TEXT_L=[154,172,160], WHITE_C=[255,255,255];
+  const ERR=[180,60,60], OK=[80,140,80];
+
+  const setFill=c=>pdf.setFillColor(...c);
+  const setDraw=c=>pdf.setDrawColor(...c);
+  const setTC=c=>pdf.setTextColor(...c);
+
+  // ── HEADER ──
+  setFill(SAGE_DARK); pdf.rect(0,0,W,28,'F');
+  setFill(SAGE); pdf.rect(0,28,W,18,'F');
+  setTC(WHITE_C);
+  pdf.setFontSize(7); pdf.setFont('helvetica','bold');
+  pdf.text('MB STRATEGY', margin, 10);
+  pdf.setFont('helvetica','normal');
+  pdf.text('ORDEN DE COMPRA', W-margin, 10, {align:'right'});
+  pdf.setFontSize(18); pdf.setFont('helvetica','bold');
+  pdf.text(negocioNombre, margin, 22);
+  pdf.setFontSize(13); pdf.setFont('helvetica','normal');
+  pdf.text(`Orden de Compra — OC-${String(oc.numero||0).padStart(3,'0')}`, margin, 37);
+  y=52;
+
+  // ── META ──
+  const fecha = new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'long',year:'numeric'});
+  setFill(CREAM); setDraw(CREAM_D); pdf.setLineWidth(0.3);
+  pdf.roundedRect(margin,y,contentW,20,3,3,'FD');
+  setTC(TEXT_L); pdf.setFontSize(7); pdf.setFont('helvetica','bold');
+  pdf.text('PROVEEDOR', margin+4, y+6);
+  pdf.text('FECHA', margin+100, y+6);
+  pdf.text('N° OC', margin+145, y+6);
+  setTC(TEXT); pdf.setFontSize(11); pdf.setFont('helvetica','bold');
+  pdf.text(oc.proveedor||'—', margin+4, y+14);
+  pdf.setFont('helvetica','normal'); pdf.setFontSize(10);
+  pdf.text(oc.fecha||fecha, margin+100, y+14);
+  pdf.setFont('helvetica','bold');
+  pdf.text(`OC-${String(oc.numero||0).padStart(3,'0')}`, margin+145, y+14);
+  y+=28;
+
+  // ── TABLA ITEMS ──
+  setTC(TEXT_L); pdf.setFontSize(7); pdf.setFont('helvetica','bold');
+  pdf.text('DETALLE DE ÍTEMS', margin, y); y+=5;
+
+  setFill(SAGE_DARK); pdf.rect(margin,y,contentW,8,'F');
+  setTC(WHITE_C); pdf.setFontSize(8); pdf.setFont('helvetica','bold');
+  pdf.text('Producto', margin+3, y+5.5);
+  pdf.text('Unidad', margin+95, y+5.5);
+  pdf.text('Cant.', margin+120, y+5.5);
+  pdf.text('P. Unit.', margin+138, y+5.5);
+  pdf.text('Total', W-margin-3, y+5.5, {align:'right'});
+  y+=8;
+
+  const items=oc.items||[];
+  items.forEach((item,idx)=>{
+    if(y>265){pdf.addPage();y=20;}
+    const bg = idx%2===0 ? CREAM : WHITE_C;
+    setFill(bg); pdf.rect(margin,y,contentW,8,'F');
+    setTC(TEXT); pdf.setFontSize(9); pdf.setFont('helvetica','normal');
+    pdf.text((item.nombre||'—').substring(0,38), margin+3, y+5.5);
+    pdf.text(item.unidad||'', margin+95, y+5.5);
+    pdf.text(String(item.cantidad||0), margin+120, y+5.5);
+    pdf.text('$'+( parseFloat(item.precioUnit)||0).toLocaleString('es-AR'), margin+138, y+5.5);
+    pdf.text('$'+(parseFloat(item.total)||0).toLocaleString('es-AR'), W-margin-3, y+5.5, {align:'right'});
+    y+=8;
+  });
+
+  // ── TOTAL ──
+  setFill(SAGE_XL); pdf.rect(margin,y,contentW,12,'F');
+  setTC(SAGE_DARK); pdf.setFontSize(7); pdf.setFont('helvetica','bold');
+  pdf.text('TOTAL ORDEN DE COMPRA', margin+4, y+5);
+  pdf.setFontSize(13);
+  pdf.text('$'+(parseFloat(oc.total)||0).toLocaleString('es-AR'), W-margin-4, y+9, {align:'right'});
+  y+=20;
+
+  // ── ESTADO ──
+  const estadoColor = oc.estadoPago==='pagada' ? OK : ERR;
+  setTC(estadoColor); pdf.setFontSize(9); pdf.setFont('helvetica','bold');
+  const estadoLabels={pagada:'✓ Pagada',pendiente:'⚑ Pago pendiente',parcial:'◑ Pago parcial'};
+  pdf.text(estadoLabels[oc.estadoPago]||'Pendiente', margin, y);
+  y+=14;
+
+  // ── FIRMA ──
+  setDraw(CREAM_D); pdf.setLineWidth(0.3);
+  pdf.line(margin, y, margin+60, y);
+  pdf.line(margin+90, y, margin+150, y);
+  setTC(TEXT_L); pdf.setFontSize(8); pdf.setFont('helvetica','normal');
+  pdf.text('Firma autorizada', margin, y+5);
+  pdf.text('Recibí conforme', margin+90, y+5);
+
+  // ── FOOTER ──
+  setFill(SAGE_DARK); pdf.rect(0, 285, W, 12, 'F');
+  setTC(WHITE_C); pdf.setFontSize(7); pdf.setFont('helvetica','normal');
+  pdf.text('Generado por MB Strategy · sistema.mbstrategy.com.ar', W/2, 292, {align:'center'});
+
+  pdf.save(`OC-${String(oc.numero||0).padStart(3,'0')}-${(oc.proveedor||'proveedor').replace(/\s+/g,'-')}.pdf`);
+};
+
+// ─ Historial ─
+function renderHistorialCompra(q) {
   const el=document.getElementById('hc-resultado');if(!el)return;
-  if(!q){el.innerHTML='<div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Buscá un producto para ver su historial de compras.</div>';return;}
-  const qs=q.toLowerCase();
-  const lineas=[];
+  const input=document.getElementById('hc-search');
+  const filtro=(q!==undefined?q:(input?.value||'')).toLowerCase().trim();
+
+  if(_ordenesCompra.length===0){
+    el.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-l);font-size:13px;"><div style="font-size:32px;margin-bottom:10px;">📦</div><div style="font-weight:500;color:var(--text);margin-bottom:6px;">Sin historial aún</div><div>El historial se completa automáticamente cuando confirmás una cotización y se generan órdenes de compra.</div></div>';
+    return;
+  }
+
+  // Agrupar todas las líneas por nombre de producto
+  const porProducto={};
   _ordenesCompra.forEach(o=>{
     (o.items||[]).forEach(i=>{
-      if((i.nombre||'').toLowerCase().includes(qs)) lineas.push({...i,proveedor:o.proveedor,fecha:o.fecha,ocNum:o.numero});
+      const key=(i.nombre||'').trim();
+      if(!key) return;
+      if(filtro&&!key.toLowerCase().includes(filtro)) return;
+      if(!porProducto[key]) porProducto[key]=[];
+      porProducto[key].push({...i,proveedor:o.proveedor,fecha:o.fecha,ocNum:o.numero});
     });
   });
-  if(lineas.length===0){el.innerHTML='<div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Sin compras registradas para ese producto.</div>';return;}
-  const precios=lineas.map(l=>parseFloat(l.precioUnit)||0).filter(p=>p>0);
-  const min=Math.min(...precios),max=Math.max(...precios);
-  const variacion=min>0?Math.round(((max-min)/min)*100):0;
-  const alertHtml=variacion>0?`<div style="background:var(--warn-bg);border-radius:8px;padding:10px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;"><span style="font-size:12px;font-weight:500;color:var(--warn);">${lineas[0].nombre} — evolución de precio</span><span style="background:var(--warn-bg);color:var(--warn);font-size:9px;font-weight:500;padding:3px 9px;border-radius:20px;border:.5px solid var(--warn);">+${variacion}% variación</span></div>`:'';
-  el.innerHTML=`<div class="card">${alertHtml}
-    <div style="display:grid;grid-template-columns:1fr 90px 90px 80px;gap:8px;padding-bottom:8px;border-bottom:.5px solid var(--cream-d);margin-bottom:4px;">
-      <span style="font-size:9px;font-weight:500;color:var(--text-l);text-transform:uppercase;">OC / Fecha</span>
-      <span style="font-size:9px;font-weight:500;color:var(--text-l);text-transform:uppercase;">Proveedor</span>
-      <span style="font-size:9px;font-weight:500;color:var(--text-l);text-transform:uppercase;text-align:right;">P. unitario</span>
-      <span style="font-size:9px;font-weight:500;color:var(--text-l);text-transform:uppercase;text-align:right;">Total</span>
+
+  const productos=Object.keys(porProducto).sort();
+  if(productos.length===0){
+    el.innerHTML=`<div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">${filtro?`Sin resultados para "<b style="color:var(--text);">${filtro}</b>"`:' Sin compras registradas.'}</div>`;
+    return;
+  }
+
+  // KPI strip
+  const totalOCs=_ordenesCompra.length;
+  const totalProductos=Object.keys((() => {
+    const all={};
+    _ordenesCompra.forEach(o=>(o.items||[]).forEach(i=>{ if(i.nombre) all[i.nombre.trim()]=1; }));
+    return all;
+  })()).length;
+  const totalGastado=_ordenesCompra.reduce((a,o)=>a+(parseFloat(o.total)||0),0);
+
+  const kpiHtml=filtro?'':`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;">
+    <div style="background:var(--cream);border-radius:10px;padding:12px;text-align:center;">
+      <div style="font-size:9px;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Órdenes emitidas</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--text);">${totalOCs}</div>
     </div>
-    ${lineas.map(l=>`<div style="display:grid;grid-template-columns:1fr 90px 90px 80px;gap:8px;padding:12px 0;border-bottom:.5px solid var(--cream-d);">
-      <div><div style="font-size:12px;font-weight:500;color:var(--text);">OC-${String(l.ocNum||0).padStart(3,'0')}</div><div style="font-size:10px;color:var(--text-l);">${l.fecha||'—'}</div></div>
-      <div style="font-size:12px;color:var(--text-m);align-self:center;">${l.proveedor||'—'}</div>
-      <div style="font-size:13px;font-weight:500;color:${parseFloat(l.precioUnit)==max&&variacion>0?'var(--err)':'var(--text)'};text-align:right;align-self:center;">$${(parseFloat(l.precioUnit)||0).toLocaleString('es-AR')}</div>
-      <div style="font-size:13px;font-weight:500;color:var(--text);text-align:right;align-self:center;">$${(parseFloat(l.total)||0).toLocaleString('es-AR')}</div>
-    </div>`).join('')}
-    <div style="margin-top:10px;padding-top:10px;border-top:.5px solid var(--cream-d);display:flex;justify-content:space-between;">
-      <span style="font-size:11px;color:var(--text-l);">${lineas.length} compra${lineas.length>1?'s':''} registrada${lineas.length>1?'s':''}</span>
-      <span style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:500;color:var(--text);">$${lineas.reduce((a,l)=>a+(parseFloat(l.total)||0),0).toLocaleString('es-AR')} total</span>
+    <div style="background:var(--cream);border-radius:10px;padding:12px;text-align:center;">
+      <div style="font-size:9px;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Productos distintos</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--text);">${totalProductos}</div>
+    </div>
+    <div style="background:var(--cream);border-radius:10px;padding:12px;text-align:center;">
+      <div style="font-size:9px;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Total comprado</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--text);">$${totalGastado.toLocaleString('es-AR')}</div>
     </div>
   </div>`;
-};
+
+  el.innerHTML = kpiHtml + productos.map(nombre=>{
+    const lineas=porProducto[nombre].sort((a,b)=>(a.fecha||'')>(b.fecha||'')?-1:1);
+    const precios=lineas.map(l=>parseFloat(l.precioUnit)||0).filter(p=>p>0);
+    const min=Math.min(...precios),max=Math.max(...precios);
+    const variacion=precios.length>1&&min>0?Math.round(((max-min)/min)*100):0;
+    const ultimoPrecio=precios[0]||0;
+    return `<div class="card" style="margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+        <div>
+          <div style="font-size:14px;font-weight:500;color:var(--text);">${nombre}</div>
+          <div style="font-size:11px;color:var(--text-l);margin-top:2px;">${lineas.length} compra${lineas.length!==1?'s':''} · Último precio: <b style="color:var(--text);">$${ultimoPrecio.toLocaleString('es-AR')}</b></div>
+        </div>
+        ${variacion>0
+          ?`<span style="background:var(--warn-bg);color:var(--warn);font-size:9px;font-weight:500;padding:3px 10px;border-radius:20px;border:.5px solid var(--warn);">+${variacion}% variación</span>`
+          :`<span style="background:var(--ok-bg);color:var(--ok);font-size:9px;font-weight:500;padding:3px 10px;border-radius:20px;">Precio estable</span>`}
+      </div>
+      <div style="display:grid;grid-template-columns:70px 1fr 80px 80px 70px;gap:6px;padding:6px 0;border-bottom:.5px solid var(--cream-d);margin-bottom:4px;">
+        <span style="font-size:9px;font-weight:500;color:var(--text-l);text-transform:uppercase;">OC</span>
+        <span style="font-size:9px;font-weight:500;color:var(--text-l);text-transform:uppercase;">Proveedor</span>
+        <span style="font-size:9px;font-weight:500;color:var(--text-l);text-transform:uppercase;">Fecha</span>
+        <span style="font-size:9px;font-weight:500;color:var(--text-l);text-transform:uppercase;text-align:right;">P. Unit.</span>
+        <span style="font-size:9px;font-weight:500;color:var(--text-l);text-transform:uppercase;text-align:right;">Total</span>
+      </div>
+      ${lineas.map(l=>{
+        const esMax=parseFloat(l.precioUnit)===max&&variacion>0;
+        const esMin=parseFloat(l.precioUnit)===min&&variacion>0;
+        return `<div style="display:grid;grid-template-columns:70px 1fr 80px 80px 70px;gap:6px;padding:8px 0;border-bottom:.5px solid var(--cream-d);align-items:center;">
+          <div style="font-size:11px;font-weight:500;color:var(--text);">OC-${String(l.ocNum||0).padStart(3,'0')}</div>
+          <div style="font-size:12px;color:var(--text-m);">${l.proveedor||'—'}</div>
+          <div style="font-size:11px;color:var(--text-l);">${l.fecha||'—'}</div>
+          <div style="font-size:13px;font-weight:500;color:${esMax?'var(--err)':esMin?'var(--ok)':'var(--text)'};text-align:right;">$${(parseFloat(l.precioUnit)||0).toLocaleString('es-AR')}</div>
+          <div style="font-size:12px;color:var(--text-m);text-align:right;">$${(parseFloat(l.total)||0).toLocaleString('es-AR')}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).join('');
+}
+
+window.buscarHistorialCompra = function(q) { renderHistorialCompra(q); };
+
 
 // ===== CUENTA CORRIENTE PROVEEDOR =====
 let _ccProvId = null, _ccFacturas = [], _ccPagos = [];
@@ -10285,7 +10589,7 @@ window.showCTab = function(tab, btn) {
   if(tab==='prod-compra') loadProductosCompra();
   if(tab==='necesidades') loadNecesidades();
   if(tab==='ordenes-compra') loadOrdenesCompra();
-  if(tab==='historial-compra') renderHistorialCompra();
+  if(tab==='historial-compra') { await loadOrdenesCompra(); renderHistorialCompra(); }
   if(tab==='productos') loadProductos();
   if(tab==='mclientes') loadMcModule();
   if(tab==='clientes') {
@@ -10536,7 +10840,7 @@ window.openModal = function(id) {
     if(fechaEl&&!fechaEl.value) fechaEl.value=new Date().toISOString().split('T')[0];
   }
   if(id === 'newProveedorModal') { renderCatSelect(); loadCatsProveedor(); document.getElementById('nueva-cat-form').style.display='none'; }
-  if(id === 'newNecesidadModal') { renderCatSelect(); loadCatsProveedor(); }
+  if(id === 'newNecesidadModal') { renderCatSelect(); loadCatsProveedor(); const s=document.getElementById('nc-prod-search');if(s)s.value=''; }
   if(id === 'newProdCompraModal') { renderCatSelect(); loadCatsProveedor(); }
   if(id === 'newMcReunionModal') {
     // Populate client selector
