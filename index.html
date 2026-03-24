@@ -517,6 +517,9 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
 .embi-input:focus{border-color:var(--topbar);background:#fff;}
 .embi-send{width:33px;height:33px;border-radius:50%;background:var(--topbar);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s;}
 .embi-send:hover{background:var(--topbar2);}
+.embi-mic{width:33px;height:33px;border-radius:50%;background:var(--sage-xl);border:.5px solid var(--sage-light);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;user-select:none;-webkit-user-select:none;}
+.embi-mic.recording{background:#fde8e8;border-color:#e24b4a;animation:embi-pulse .8s ease-in-out infinite;}
+@keyframes embi-pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
 </style>
 </head>
 <body>
@@ -11649,7 +11652,11 @@ window.marcarCambioPrecio = function() {
   <div class="embi-msgs" id="embiMsgs"></div>
   <div class="embi-qa" id="embiQA"></div>
   <div class="embi-input-wrap">
-    <input class="embi-input" id="embiInput" placeholder="Escribí tu consulta..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();embiSend();}"/>
+    <input class="embi-input" id="embiInput" placeholder="Escribí o hablá..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();embiSend();}"/>
+    <button class="embi-mic" id="embiMicBtn" title="Mantené presionado para hablar"
+      onmousedown="embiMicStart()" onmouseup="embiMicStop()" ontouchstart="event.preventDefault();embiMicStart()" ontouchend="event.preventDefault();embiMicStop()">
+      <svg id="embiMicIcon" width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="4.5" y="1" width="5" height="8" rx="2.5" stroke="#7a8e7d" stroke-width="1.3"/><path d="M2 7.5a5 5 0 0010 0" stroke="#7a8e7d" stroke-width="1.3" stroke-linecap="round"/><line x1="7" y1="12.5" x2="7" y2="11" stroke="#7a8e7d" stroke-width="1.3" stroke-linecap="round"/></svg>
+    </button>
     <button class="embi-send" onclick="embiSend()">
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M12 7H2M8.5 3.5L12 7l-3.5 3.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
@@ -11672,47 +11679,54 @@ var EMBI_CONTEXT={
   membresia:['¿Cómo renuevo?','¿Qué pasa si vence?'],
   programa:['¿Cómo marco contenido como completado?','¿Cómo se calcula mi progreso?'],
 };
-var EMBI_SYSTEM=`Sos Embi, el asistente virtual de MB Strategy, un sistema de gestión SaaS para dueñas de pequeños negocios. Tu trabajo es ayudarlas a usar el sistema correctamente.
+function embiGetFinancialContext(){
+  try{
+    var egresos=window._clientEgresos||[];
+    var ingresos=window._clientIngresos||[];
+    var hoy=new Date();
+    var mes=hoy.getMonth(),anio=hoy.getFullYear();
+    var mesAnt=mes===0?11:mes-1,anioAnt=mes===0?anio-1:anio;
+    var ingMes=0,egrMes=0,ingAnt=0,egrAnt=0;
+    ingresos.forEach(i=>{var d=new Date(i.fecha||i.creadoEn);if(d.getMonth()===mes&&d.getFullYear()===anio)ingMes+=(parseFloat(i.monto)||0);if(d.getMonth()===mesAnt&&d.getFullYear()===anioAnt)ingAnt+=(parseFloat(i.monto)||0);});
+    egresos.forEach(e=>{var d=new Date(e.fecha||e.creadoEn);if(d.getMonth()===mes&&d.getFullYear()===anio)egrMes+=(parseFloat(e.monto)||0);if(d.getMonth()===mesAnt&&d.getFullYear()===anioAnt)egrAnt+=(parseFloat(e.monto)||0);});
+    var ganancia=ingMes-egrMes,margen=ingMes>0?Math.round((ganancia/ingMes)*100):0;
+    var cobros=window._clientCobros||[];
+    var cobPend=cobros.filter(c=>!c.pagado).reduce((a,c)=>a+(parseFloat(c.monto)||0),0);
+    var clientes=window._mcClientes||[];
+    var ocs=window._ordenesCompra||[];
+    var ocsPend=ocs.filter(o=>o.estadoPago!=='pagada');
+    var catEgr={};
+    egresos.forEach(e=>{var d=new Date(e.fecha||e.creadoEn);if(d.getMonth()===mes&&d.getFullYear()===anio){var c=e.categoria||'Sin categoría';catEgr[c]=(catEgr[c]||0)+(parseFloat(e.monto)||0);}});
+    var catDetalle=Object.entries(catEgr).sort((a,b)=>b[1]-a[1]).map(([c,m])=>c+': $'+Math.round(m).toLocaleString('es-AR')).join(', ');
+    return '\n\nDATA FINANCIERA ('+hoy.toLocaleDateString('es-AR',{month:'long',year:'numeric'})+'):\n- Ingresos mes: $'+Math.round(ingMes).toLocaleString('es-AR')+'\n- Egresos mes: $'+Math.round(egrMes).toLocaleString('es-AR')+'\n- Ganancia: $'+Math.round(ganancia).toLocaleString('es-AR')+' | Margen: '+margen+'%\n- Cobros pendientes: $'+Math.round(cobPend).toLocaleString('es-AR')+'\n- Clientes: '+clientes.length+'\n- OC pendientes: '+ocsPend.length+'\n- Egresos por categoría: '+(catDetalle||'sin datos');
+  }catch(e){return '';}
+}
 
-PERSONALIDAD: Hablás de vos. Sos experta pero accesible. Respuestas cortas y directas. Nunca inventás funcionalidades que no existen.
+var EMBI_SYSTEM_BASE=`Sos Embi, asistente de gestión de MB Strategy. Ayudás a dueños de negocios a tener visibilidad financiera y tomar decisiones con datos reales.
 
-PRESENTACIÓN: "Soy Embi, tu asistente en MB Strategy. Estoy acá para ayudarte a operar el sistema y resolver dudas al instante. ¿En qué te puedo ayudar?"
+PERSONALIDAD: Hablás de vos. Tono profesional y directo. Respuestas cortas y concretas. Nunca inventás funcionalidades ni datos que no existen.
+
+CAPACIDADES — podés ejecutar estas acciones con confirmación previa:
+- INGRESO: registrar ingreso (monto + concepto + fecha)
+- EGRESO: registrar egreso (monto + concepto + categoría)
+- CLIENTE: crear cliente (nombre)
+- COBRO: registrar cobro (monto + cliente + fecha)
+- OC_RECIBIDA: marcar OC como recibida
+
+PROTOCOLO: 1) Detectás intención 2) Pedís datos faltantes 3) Mostrás resumen 4) Esperás confirmación ("sí", "dale") 5) Devolvés [ACCION_EJECUTAR:TIPO:JSON] 6) Nunca ejecutés sin confirmación.
 
 MÓDULOS:
+FINANZAS: KPIs automáticos (ingresos, egresos, resultado, cobros pendientes). Calculador de costos con margen.
+COMERCIAL: Clientes, presupuestos (estados: Por enviar→Enviado→Consultado→Aprobado), PDF con datos de Mi cuenta.
+COMPRAS: Productos→Proveedores→Necesidades→Cotización→OC→CC. Pago en CC genera egreso automático en Finanzas.
+MEMBRESÍA: Plan activo y fechas. Para renovar contactar a Micaela.
 
-ACADEMIA: Programa dividido en semanas con videos, materiales y checklists. Click en el círculo para marcar completado. Progreso automático por semanas completas.
+REPORTES: Si algo no funciona: [REPORT:falla:MODULO:DESCRIPCION]. Si piden algo inexistente: [REPORT:sugerencia:MODULO:DESCRIPCION]
 
-MI CUENTA: Nombre del negocio, CUIT, teléfono, email y logo. Completarlo antes de hacer presupuestos porque aparece en los PDF.
+NUNCA: inventés funcionalidades, respondas en más de 4 párrafos.`;
 
-FINANZAS:
-- Mi negocio: 4 KPIs del mes automáticos (ingresos, egresos, resultado, cobros pendientes).
-- Los cobros de Comercial y pagos de Compras aparecen automáticamente. No cargarlos dos veces.
-- Calculador: costos fijos + variables + margen → precio mínimo y recomendado.
-
-COMERCIAL:
-- Clientes: solo el nombre es obligatorio. Se crea también al aprobar presupuesto de prospecto.
-- Presupuestos: para clientes o prospectos (sin que existan). Número automático. Ítems del catálogo con precio autocompleto. Inline "＋ Agregar nuevo producto" si no está en catálogo.
-- Estados: Por enviar → Enviado → Consultado → Aprobado. Al aprobar prospecto pregunta si convertir en cliente.
-- PDF: botón "↓ Ver / PDF". Usa datos de Mi cuenta — completar primero.
-
-COMPRAS (circuito):
-1. Productos de compra: catálogo de insumos con categoría (separado de Comercial). Filtra automáticamente en la cotización.
-2. Proveedores: directorio con categoría obligatoria. Acceso a Cuenta Corriente fullscreen desde el botón CC. Buscador y filtro por categoría.
-3. Necesidades: qué comprar, qué cantidad, urgencia (Urgente/Próxima/Programada) y periodicidad. Buscador de productos integrado al modal.
-4. Cotización: elegís proveedores de la misma categoría, cargás precios por ítem. El sistema sugiere el más barato pero podés elegir otro proveedor por ítem (resaltado en ámbar). Genera OCs automáticas al confirmar.
-5. Órdenes de compra: se visualizan, se puede ver el detalle y emitir PDF. Al confirmar cotización se abre automáticamente el detalle de la OC generada.
-6. Cuenta Corriente (pantalla completa): se accede desde el botón CC de cada proveedor. Muestra KPIs, movimientos (facturas y pagos), OC del proveedor y datos de contacto. Desde acá se registran pagos y cargan facturas. El pago crea un egreso automático en Finanzas.
-7. Historial: muestra todos los productos comprados agrupados por nombre con evolución de precios. Se alimenta automáticamente con las OC confirmadas. Buscador en tiempo real.
-
-MEMBRESÍA: Plan activo (30D o 60D), fechas y estado. Para renovar contactar a Micaela.
-
-REPORTES:
-- Si describe algo que no funciona: respondé normalmente y agregá al final exactamente: [REPORT:falla:MODULO:DESCRIPCION]
-- Si pide algo que no existe: decí que no está disponible y agregá: [REPORT:sugerencia:MODULO:DESCRIPCION]
-- Reemplazá MODULO con el módulo real y DESCRIPCION con una descripción breve.
-
-NUNCA: inventés funcionalidades, respondas en más de 4 párrafos, uses listas largas cuando una respuesta directa alcanza.`;
-
+function embiGetSystem(){return EMBI_SYSTEM_BASE+embiGetFinancialContext();}
+var EMBI_SYSTEM=EMBI_SYSTEM_BASE;
 function embiGetContext(){
   var active=document.querySelector('[id^="ct-"][style*="block"]');
   if(active){var t=active.id.replace('ct-','');return EMBI_CONTEXT[t]||EMBI_CONTEXT.default;}
@@ -11751,7 +11765,7 @@ async function embiCallAPI(userMsg){
     var resp=await fetch('/.netlify/functions/embi',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:500,system:EMBI_SYSTEM,messages:embiHistory})
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:700,system:embiGetSystem(),messages:embiHistory})
     });
     var data=await resp.json();
     var text=(data.content&&data.content[0]&&data.content[0].text)?data.content[0].text:'Lo siento, no pude procesar tu consulta. Intentá de nuevo.';
@@ -11774,6 +11788,47 @@ async function embiSaveReport(tipo,modulo,descripcion,userMsg){
     });
   }catch(e){console.log('Embi report save error:',e);}
 }
+async function embiLogAccion(tipo,estado,datos){
+  try{
+    if(!currentClientUID)return;
+    await addDoc(collection(db,'embiAcciones'),{
+      tipo,estado,
+      datos:typeof datos==='object'?JSON.stringify(datos):datos,
+      clienteId:currentClientUID,
+      cliente:window.currentClientData?.nombre||'',
+      fecha:new Date().toISOString()
+    });
+  }catch(e){}
+}
+async function embiEjecutarAccion(tipo,datos){
+  if(!currentClientUID){embiAddMsg('bot','No hay sesión activa.');return;}
+  try{
+    var hoy=new Date().toISOString().split('T')[0];
+    var d=new Date();
+    var mesTxt=d.toLocaleDateString('es-AR',{month:'long',year:'numeric'});
+    mesTxt=mesTxt.charAt(0).toUpperCase()+mesTxt.slice(1);
+    if(tipo==='INGRESO'){
+      await addDoc(collection(db,'clientes',currentClientUID,'ingresos'),{concepto:datos.concepto||'Ingreso',categoria:datos.categoria||'Ingreso',monto:parseFloat(datos.monto)||0,fecha:datos.fecha||hoy,mes:mesTxt,origen:'embi',creadoEn:new Date().toISOString()});
+      if(window.loadClientContabilidad)await window.loadClientContabilidad();
+      embiAddMsg('bot','Ingreso de $'+parseFloat(datos.monto).toLocaleString('es-AR')+' registrado en Finanzas.');
+    }else if(tipo==='EGRESO'){
+      await addDoc(collection(db,'clientes',currentClientUID,'egresos'),{concepto:datos.concepto||'Egreso',categoria:datos.categoria||'Otros',monto:parseFloat(datos.monto)||0,fecha:datos.fecha||hoy,mes:mesTxt,origen:'embi',creadoEn:new Date().toISOString()});
+      if(window.loadClientContabilidad)await window.loadClientContabilidad();
+      embiAddMsg('bot','Egreso de $'+parseFloat(datos.monto).toLocaleString('es-AR')+' registrado en Finanzas.');
+    }else if(tipo==='CLIENTE'){
+      await addDoc(collection(db,'clientes',currentClientUID,'mcClientes'),{nombre:datos.nombre,tel:datos.tel||'',email:datos.email||'',creadoEn:new Date().toISOString()});
+      if(window.loadMcModule)await window.loadMcModule();
+      embiAddMsg('bot','Cliente '+datos.nombre+' creado en Comercial.');
+    }else if(tipo==='COBRO'){
+      await addDoc(collection(db,'clientes',currentClientUID,'cobros'),{monto:parseFloat(datos.monto)||0,clienteNombre:datos.cliente||'',fecha:datos.fecha||hoy,pagado:true,concepto:datos.concepto||'Cobro',origen:'embi',creadoEn:new Date().toISOString()});
+      if(window.loadClientContabilidad)await window.loadClientContabilidad();
+      embiAddMsg('bot','Cobro de $'+parseFloat(datos.monto).toLocaleString('es-AR')+' registrado.');
+    }else if(tipo==='OC_RECIBIDA'){
+      if(window.marcarOCRecibida)window.marcarOCRecibida(datos.ocId);
+      else embiAddMsg('bot','No pude encontrar esa OC.');
+    }else{embiAddMsg('bot','Acción no reconocida: '+tipo);}
+  }catch(e){embiAddMsg('bot','Error al ejecutar: '+e.message);}
+}
 async function embiSend(){
   var input=document.getElementById('embiInput');
   var val=(input.value||'').trim();if(!val)return;
@@ -11782,8 +11837,83 @@ async function embiSend(){
   embiShowTyping();
   var resp=await embiCallAPI(val);
   embiRemoveTyping();
+  // Detectar acciones
+  var actionMatch=resp.match(/\[ACCION_EJECUTAR:([A-Z_]+):([\s\S]*?)\](?:\s*$|\n|$)/m);
+  if(!actionMatch){
+    var tagIdx=resp.indexOf('[ACCION_EJECUTAR:');
+    if(tagIdx!==-1){
+      var afterTag=resp.slice(tagIdx+17);
+      var colonIdx=afterTag.indexOf(':');
+      if(colonIdx!==-1){
+        var tipo2=afterTag.slice(0,colonIdx);
+        var jsonStr=afterTag.slice(colonIdx+1);
+        var lastBrace=jsonStr.lastIndexOf('}');
+        if(lastBrace!==-1)jsonStr=jsonStr.slice(0,lastBrace+1);
+        try{var datos2=JSON.parse(jsonStr);actionMatch={1:tipo2,2:jsonStr};}catch(e){}
+      }
+    }
+  }
+  if(actionMatch){
+    var tipo=actionMatch[1],datosStr=actionMatch[2];
+    var textoLimpio=resp.replace(/\[ACCION_EJECUTAR:[\s\S]*?\][\s]*/,'').trim();
+    embiAddMsg('bot',textoLimpio||'Procesando...');
+    var datos={};
+    try{datos=JSON.parse(datosStr);}catch(e){embiAddMsg('bot','Hubo un problema al procesar los datos. Intentá de nuevo.');embiLogAccion(tipo,'error_parse',datosStr);return;}
+    var valid=true;
+    if((tipo==='INGRESO'||tipo==='EGRESO'||tipo==='COBRO')&&!(parseFloat(datos.monto)>0)){embiAddMsg('bot','Faltó el monto. ¿Cuánto fue?');valid=false;}
+    if(tipo==='CLIENTE'&&!datos.nombre){embiAddMsg('bot','Faltó el nombre del cliente.');valid=false;}
+    if(!valid){embiLogAccion(tipo,'error_validacion',datos);return;}
+    try{await embiEjecutarAccion(tipo,datos);embiLogAccion(tipo,'ok',datos);}
+    catch(e){embiAddMsg('bot','Error: '+e.message);embiLogAccion(tipo,'error_ejecucion',{error:e.message});}
+    return;
+  }
   embiAddMsg('bot',resp);
 }
+// ── Micrófono push-to-talk ──
+var embiRecognition=null,embiRecording=false;
+function embiMicStart(){
+  if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){embiAddMsg('bot','Tu navegador no soporta reconocimiento de voz. Usá Chrome o Edge.');return;}
+  if(embiRecording)return;
+  navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
+    stream.getTracks().forEach(t=>t.stop());
+    embiIniciarReconocimiento();
+  }).catch(function(err){
+    if(err.name==='NotAllowedError'||err.name==='PermissionDeniedError'){embiAddMsg('bot','Permiso de micrófono denegado. Tocá el candado 🔒 en la barra del navegador → Permisos → Micrófono → Permitir.');}
+    else{embiAddMsg('bot','No se pudo acceder al micrófono.');}
+  });
+}
+function embiIniciarReconocimiento(){
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  embiRecognition=new SR();
+  embiRecognition.lang='es-AR';
+  embiRecognition.interimResults=false;
+  embiRecognition.maxAlternatives=1;
+  embiRecording=true;
+  var gotResult=false;
+  var btn=document.getElementById('embiMicBtn');
+  if(btn){btn.classList.add('recording');btn.innerHTML='<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="3" y="3" width="8" height="8" rx="2" fill="#e24b4a"/></svg>';}
+  function resetMicUI(){
+    embiRecording=false;
+    var b=document.getElementById('embiMicBtn');
+    if(b){b.classList.remove('recording');b.innerHTML='<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="4.5" y="1" width="5" height="8" rx="2.5" stroke="#7a8e7d" stroke-width="1.3"/><path d="M2 7.5a5 5 0 0010 0" stroke="#7a8e7d" stroke-width="1.3" stroke-linecap="round"/><line x1="7" y1="12.5" x2="7" y2="11" stroke="#7a8e7d" stroke-width="1.3" stroke-linecap="round"/></svg>';}
+  }
+  embiRecognition.onresult=function(e){
+    gotResult=true;
+    var transcript=e.results[0][0].transcript.trim();
+    resetMicUI();
+    if(!transcript){embiAddMsg('bot','No escuché nada. Intentá de nuevo.');return;}
+    var input=document.getElementById('embiInput');
+    if(input&&transcript){input.value=transcript;embiSend();}
+  };
+  embiRecognition.onerror=function(e){
+    gotResult=true;resetMicUI();
+    if(e.error==='aborted'||e.error==='no-speech')return;
+    if(e.error==='not-allowed'){embiAddMsg('bot','Permiso de micrófono denegado. Tocá el candado 🔒 → Permisos → Micrófono → Permitir.');}
+  };
+  embiRecognition.onend=function(){resetMicUI();if(!gotResult){embiAddMsg('bot','No te escuché. Hablá cerca del micrófono y soltá el botón cuando termines.');}};
+  try{embiRecognition.start();}catch(e){resetMicUI();}
+}
+function embiMicStop(){if(!embiRecording||!embiRecognition)return;try{embiRecognition.stop();}catch(e){}}
 function embiToggle(){
   embiOpen=!embiOpen;
   var panel=document.getElementById('embiPanel');
