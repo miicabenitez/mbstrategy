@@ -3864,9 +3864,9 @@ window.showClientUI = async function(email, clientData) {
     }
 
     // ── CONTROL DE ACCESO POR PRODUCTO ──────────────────────────────
-    const productos = clientData.productos || {};
-    const tieneAcademia = productos.academia === true;
-    const embiTipo = productos.embi || 'explicativo'; // 'explicativo' | 'operativo'
+    const productos = clientData.productos || { academia: true, sistema: true, embi: 'explicativo' };
+    const tieneAcademia = productos.academia !== false; // si no está definido, muestra academia
+    const embiTipo = productos.embi || 'explicativo';
 
     // Tab Academia — visible solo si tiene academia habilitada
     const modBar = document.getElementById('mod-bar');
