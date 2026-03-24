@@ -10199,9 +10199,15 @@ window.guardarNuevaCat = async function() {
 async function loadProveedores() {
   if(!currentClientUID) return;
   try {
-    const snap = await getDocs(collection(db,'clientes',currentClientUID,'proveedores'));
-    _proveedores = []; snap.forEach(d=>_proveedores.push({id:d.id,...d.data()}));
+    const [provSnap, ocSnap] = await Promise.all([
+      getDocs(collection(db,'clientes',currentClientUID,'proveedores')),
+      getDocs(collection(db,'clientes',currentClientUID,'ordenesCompra'))
+    ]);
+    _proveedores = []; provSnap.forEach(d=>_proveedores.push({id:d.id,...d.data()}));
     _proveedores.sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||''));
+    // Cargar OC para tener datos de gasto por proveedor
+    window._ordenesCompra = window._ordenesCompra || [];
+    ocSnap.forEach(d=>{ if(!window._ordenesCompra.find(o=>o.id===d.id)) window._ordenesCompra.push({id:d.id,...d.data()}); });
     // Calcular saldo real de cada proveedor desde subcollecciones
     await Promise.all(_proveedores.map(async p => {
       try {
