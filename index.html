@@ -517,9 +517,6 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
 .embi-input:focus{border-color:var(--topbar);background:#fff;}
 .embi-send{width:33px;height:33px;border-radius:50%;background:var(--topbar);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s;}
 .embi-send:hover{background:var(--topbar2);}
-.embi-mic{width:33px;height:33px;border-radius:50%;background:var(--sage-xl);border:.5px solid var(--sage-light);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;user-select:none;-webkit-user-select:none;}
-.embi-mic.recording{background:#fde8e8;border-color:#e24b4a;animation:embi-pulse .8s ease-in-out infinite;}
-@keyframes embi-pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
 </style>
 </head>
 <body>
@@ -1111,21 +1108,12 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
           <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;margin-bottom:4px;">Panel Embi</div>
           <div style="font-size:12px;opacity:.65;">Reportes de fallas y sugerencias detectados por Embi o enviados por tus clientas.</div>
         </div>
-        <!-- KPIs reportes -->
+        <!-- KPIs -->
         <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:18px;">
           <div class="mc accent"><div class="ml" style="color:rgba(255,255,255,.6);">Total reportes</div><div class="mv" style="color:#fff;" id="embi-kpi-total">0</div><div class="ms" style="color:rgba(255,255,255,.5);">recibidos</div></div>
           <div class="mc"><div class="ml">Fallas pendientes</div><div class="mv" style="color:var(--err);" id="embi-kpi-fallas">0</div><div class="ms">sin resolver</div></div>
           <div class="mc"><div class="ml">Sugerencias</div><div class="mv" style="color:var(--blue);" id="embi-kpi-sugerencias">0</div><div class="ms">acumuladas</div></div>
         </div>
-
-        <!-- KPIs acciones Embi -->
-        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:18px;">
-          <div class="mc"><div class="ml">Acciones ejecutadas</div><div class="mv" style="color:var(--ok);" id="embi-kpi-acciones-ok">0</div><div class="ms">exitosas</div></div>
-          <div class="mc"><div class="ml">Errores de acción</div><div class="mv" style="color:var(--err);" id="embi-kpi-acciones-err">0</div><div class="ms">fallidas</div></div>
-          <div class="mc"><div class="ml">Tasa de éxito</div><div class="mv" id="embi-kpi-tasa">—</div><div class="ms">efectividad</div></div>
-          <div class="mc"><div class="ml">Tipo más usado</div><div class="mv" style="font-size:14px;padding-top:4px;" id="embi-kpi-tipo-top">—</div><div class="ms">de acción</div></div>
-        </div>
-
         <!-- Filtros -->
         <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
           <button onclick="embiAdminFilter('todos',this)" style="font-size:12px;padding:6px 16px;border-radius:20px;border:.5px solid var(--cream-d);background:var(--topbar);color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;" id="efbtn-todos">Todos</button>
@@ -9519,8 +9507,6 @@ window.marcarOCRecibida = async function(ocId) {
     }catch(e){alert('Error: '+e.message);}
   },'Marcar como recibida');
 };
-
-window.generarPDFOrdenCompra = async function() {
   const oc = _ocDetalleActual;
   if(!oc) return;
 
@@ -10866,32 +10852,10 @@ var _embiReports = [], _embiFilter = 'todos';
 
 window.loadEmbiReports = async function() {
   try {
-    const [repSnap, acSnap] = await Promise.all([
-      getDocs(collection(db,'embiReports')),
-      getDocs(collection(db,'embiAcciones'))
-    ]);
+    const snap = await getDocs(collection(db,'embiReports'));
     _embiReports = [];
-    repSnap.forEach(d => _embiReports.push({id:d.id,...d.data()}));
+    snap.forEach(d => _embiReports.push({id:d.id,...d.data()}));
     _embiReports.sort((a,b)=>(b.creadoEn||'').localeCompare(a.creadoEn||''));
-
-    // Métricas de acciones
-    const acciones=[];
-    acSnap.forEach(d=>acciones.push(d.data()));
-    const ok=acciones.filter(a=>a.estado==='ok').length;
-    const err=acciones.filter(a=>a.estado!=='ok').length;
-    const tasa=acciones.length>0?Math.round((ok/acciones.length)*100):null;
-    // Tipo más usado
-    const tipos={};
-    acciones.filter(a=>a.estado==='ok').forEach(a=>{tipos[a.tipo]=(tipos[a.tipo]||0)+1;});
-    const topTipo=Object.entries(tipos).sort((a,b)=>b[1]-a[1])[0];
-    const tipoLabels={INGRESO:'Ingresos',EGRESO:'Egresos',CLIENTE:'Clientes',COBRO:'Cobros',OC_RECIBIDA:'OC recibidas'};
-
-    const setEl=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
-    setEl('embi-kpi-acciones-ok', ok);
-    setEl('embi-kpi-acciones-err', err);
-    setEl('embi-kpi-tasa', tasa!==null ? tasa+'%' : '—');
-    setEl('embi-kpi-tipo-top', topTipo ? tipoLabels[topTipo[0]]||topTipo[0] : '—');
-
     renderEmbiReports();
   } catch(e){ console.log('loadEmbiReports error:',e); }
 };
@@ -11683,11 +11647,7 @@ window.marcarCambioPrecio = function() {
   <div class="embi-msgs" id="embiMsgs"></div>
   <div class="embi-qa" id="embiQA"></div>
   <div class="embi-input-wrap">
-    <input class="embi-input" id="embiInput" placeholder="Escribí o hablá..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();embiSend();}"/>
-    <button class="embi-mic" id="embiMicBtn" title="Mantené presionado para hablar"
-      onmousedown="embiMicStart()" onmouseup="embiMicStop()" ontouchstart="event.preventDefault();embiMicStart()" ontouchend="event.preventDefault();embiMicStop()">
-      <svg id="embiMicIcon" width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="4.5" y="1" width="5" height="8" rx="2.5" stroke="#7a8e7d" stroke-width="1.3"/><path d="M2 7.5a5 5 0 0010 0" stroke="#7a8e7d" stroke-width="1.3" stroke-linecap="round"/><line x1="7" y1="12.5" x2="7" y2="11" stroke="#7a8e7d" stroke-width="1.3" stroke-linecap="round"/></svg>
-    </button>
+    <input class="embi-input" id="embiInput" placeholder="Escribí tu consulta..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();embiSend();}"/>
     <button class="embi-send" onclick="embiSend()">
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M12 7H2M8.5 3.5L12 7l-3.5 3.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
@@ -11710,93 +11670,46 @@ var EMBI_CONTEXT={
   membresia:['¿Cómo renuevo?','¿Qué pasa si vence?'],
   programa:['¿Cómo marco contenido como completado?','¿Cómo se calcula mi progreso?'],
 };
-function embiGetFinancialContext(){
-  try {
-    var egresos = window._clientEgresos||[];
-    var ingresos = window._clientIngresos||[];
-    var hoy = new Date();
-    var mes = hoy.getMonth(), anio = hoy.getFullYear();
-    var mesAnt = mes===0?11:mes-1, anioAnt = mes===0?anio-1:anio;
-    var ingMes=0,egrMes=0,ingAnt=0,egrAnt=0;
-    ingresos.forEach(i=>{var d=new Date(i.fecha||i.creadoEn);if(d.getMonth()===mes&&d.getFullYear()===anio)ingMes+=(parseFloat(i.monto)||0);if(d.getMonth()===mesAnt&&d.getFullYear()===anioAnt)ingAnt+=(parseFloat(i.monto)||0);});
-    egresos.forEach(e=>{var d=new Date(e.fecha||e.creadoEn);if(d.getMonth()===mes&&d.getFullYear()===anio)egrMes+=(parseFloat(e.monto)||0);if(d.getMonth()===mesAnt&&d.getFullYear()===anioAnt)egrAnt+=(parseFloat(e.monto)||0);});
-    var ganancia=ingMes-egrMes, margen=ingMes>0?Math.round((ganancia/ingMes)*100):0;
-    // Cobros pendientes
-    var cobros = window._clientCobros||[];
-    var cobPend = cobros.filter(c=>!c.pagado).reduce((a,c)=>a+(parseFloat(c.monto)||0),0);
-    // Clientes
-    var clientes = window._mcClientes||[];
-    // OC activas
-    var ocs = window._ordenesCompra||[];
-    var ocsPend = ocs.filter(o=>o.estadoPago!=='pagada');
-    // Proveedores con deuda
-    var provs = window._proveedores||[];
-    // Categorías egresos este mes
-    var catEgr={};
-    egresos.forEach(e=>{var d=new Date(e.fecha||e.creadoEn);if(d.getMonth()===mes&&d.getFullYear()===anio){var c=e.categoria||'Sin categoría';catEgr[c]=(catEgr[c]||0)+(parseFloat(e.monto)||0);}});
-    var catEgrAnt={};
-    egresos.forEach(e=>{var d=new Date(e.fecha||e.creadoEn);if(d.getMonth()===mesAnt&&d.getFullYear()===anioAnt){var c=e.categoria||'Sin categoría';catEgrAnt[c]=(catEgrAnt[c]||0)+(parseFloat(e.monto)||0);}});
-    var catDetalle=Object.entries(catEgr).sort((a,b)=>b[1]-a[1]).map(([c,m])=>{var ant=catEgrAnt[c]||0;var dif=ant>0?Math.round(((m-ant)/ant)*100):null;return c+': $'+Math.round(m).toLocaleString('es-AR')+(dif!==null?' ('+(dif>0?'+':'')+dif+'% vs mes ant.)':'');}).join(', ');
-    // Calculos
-    var calcs = window.calcData ? Object.values(window.calcData) : [];
+var EMBI_SYSTEM=`Sos Embi, el asistente virtual de MB Strategy, un sistema de gestión SaaS para dueñas de pequeños negocios. Tu trabajo es ayudarlas a usar el sistema correctamente.
 
-    return `\n\nDATA FINANCIERA ACTUAL (${hoy.toLocaleDateString('es-AR',{month:'long',year:'numeric'})}):\n- Ingresos mes: $${Math.round(ingMes).toLocaleString('es-AR')} (mes ant: $${Math.round(ingAnt).toLocaleString('es-AR')})\n- Egresos mes: $${Math.round(egrMes).toLocaleString('es-AR')} (mes ant: $${Math.round(egrAnt).toLocaleString('es-AR')})\n- Ganancia neta: $${Math.round(ganancia).toLocaleString('es-AR')} | Margen: ${margen}%\n- Cobros pendientes: $${Math.round(cobPend).toLocaleString('es-AR')}\n- Clientes activos: ${clientes.length}\n- OC pendientes de pago: ${ocsPend.length} por $${ocsPend.reduce((a,o)=>a+(parseFloat(o.total)||0),0).toLocaleString('es-AR')}\n- Proveedores: ${provs.length} (${provs.map(p=>p.nombre+(p._saldo>0?' debe $'+Math.round(p._saldo).toLocaleString('es-AR'):' al día')).join(', ')||'ninguno'})\n- Egresos por categoría: ${catDetalle||'sin datos'}\n- Cálculos guardados: ${calcs.map(c=>c.nombre+' ($'+Math.round((c.costs||[]).reduce((a,x)=>a+x.m,0)*(1+(c.margen||30)/100)).toLocaleString('es-AR')+')').join(', ')||'ninguno'}`;
-  } catch(e){ return ''; }
-}
+PERSONALIDAD: Hablás de vos. Sos experta pero accesible. Respuestas cortas y directas. Nunca inventás funcionalidades que no existen.
 
-var EMBI_SYSTEM_BASE=`Sos Embi, asistente de gestión de MB Strategy. Ayudás a profesionales independientes y dueños de negocios a tener visibilidad financiera y tomar decisiones con datos reales.
+PRESENTACIÓN: "Soy Embi, tu asistente en MB Strategy. Estoy acá para ayudarte a operar el sistema y resolver dudas al instante. ¿En qué te puedo ayudar?"
 
-PERSONALIDAD: Hablás de vos. Tono profesional y directo, como una buena asesora de negocios. Respuestas cortas y concretas. Nunca dramatizás ni alarmás — informás con el dato y dejás decidir al usuario. Nunca inventás funcionalidades ni datos que no existen en el sistema.
+MÓDULOS:
 
-CAPACIDADES FASE 2 — podés ejecutar estas acciones:
+ACADEMIA: Programa dividido en semanas con videos, materiales y checklists. Click en el círculo para marcar completado. Progreso automático por semanas completas.
 
-FINANZAS (leer):
-- Consultar saldo, ingresos, egresos, margen del mes actual y comparativa con mes anterior
-- Consultar cobros pendientes totales y por cliente
-- Consultar evolución por categoría de egreso
+MI CUENTA: Nombre del negocio, CUIT, teléfono, email y logo. Completarlo antes de hacer presupuestos porque aparece en los PDF.
 
-FINANZAS (escribir — siempre con confirmación):
-- Registrar ingreso: necesitás monto + concepto + fecha (hoy si no dice)
-- Registrar egreso: necesitás monto + concepto + categoría
+FINANZAS:
+- Mi negocio: 4 KPIs del mes automáticos (ingresos, egresos, resultado, cobros pendientes).
+- Los cobros de Comercial y pagos de Compras aparecen automáticamente. No cargarlos dos veces.
+- Calculador: costos fijos + variables + margen → precio mínimo y recomendado.
 
-COMERCIAL (leer):
-- Listar clientes con cobros pendientes
-- Ver estado de presupuestos
+COMERCIAL:
+- Clientes: solo el nombre es obligatorio. Se crea también al aprobar presupuesto de prospecto.
+- Presupuestos: para clientes o prospectos (sin que existan). Número automático. Ítems del catálogo con precio autocompleto. Inline "＋ Agregar nuevo producto" si no está en catálogo.
+- Estados: Por enviar → Enviado → Consultado → Aprobado. Al aprobar prospecto pregunta si convertir en cliente.
+- PDF: botón "↓ Ver / PDF". Usa datos de Mi cuenta — completar primero.
 
-COMERCIAL (escribir — siempre con confirmación):
-- Crear cliente: necesitás nombre (único obligatorio)
-- Registrar cobro: necesitás monto + cliente + fecha
+COMPRAS (circuito):
+1. Productos de compra: catálogo de insumos con categoría (separado de Comercial). Filtra automáticamente en la cotización.
+2. Proveedores: directorio con categoría obligatoria. Acceso a Cuenta Corriente fullscreen desde el botón CC. Buscador y filtro por categoría.
+3. Necesidades: qué comprar, qué cantidad, urgencia (Urgente/Próxima/Programada) y periodicidad. Buscador de productos integrado al modal.
+4. Cotización: elegís proveedores de la misma categoría, cargás precios por ítem. El sistema sugiere el más barato pero podés elegir otro proveedor por ítem (resaltado en ámbar). Genera OCs automáticas al confirmar.
+5. Órdenes de compra: se visualizan, se puede ver el detalle y emitir PDF. Al confirmar cotización se abre automáticamente el detalle de la OC generada.
+6. Cuenta Corriente (pantalla completa): se accede desde el botón CC de cada proveedor. Muestra KPIs, movimientos (facturas y pagos), OC del proveedor y datos de contacto. Desde acá se registran pagos y cargan facturas. El pago crea un egreso automático en Finanzas.
+7. Historial: muestra todos los productos comprados agrupados por nombre con evolución de precios. Se alimenta automáticamente con las OC confirmadas. Buscador en tiempo real.
 
-CALCULADOR (calcular sin guardar):
-- Calcular precio sugerido dado costos + margen: respondés instantáneamente sin guardar
+MEMBRESÍA: Plan activo (30D o 60D), fechas y estado. Para renovar contactar a Micaela.
 
-CALCULADOR (escribir — siempre con confirmación):
-- Crear nuevo cálculo guiado: pedís nombre + costos uno a uno + margen, luego confirmación
-- Agregar costo a cálculo existente
+REPORTES:
+- Si describe algo que no funciona: respondé normalmente y agregá al final exactamente: [REPORT:falla:MODULO:DESCRIPCION]
+- Si pide algo que no existe: decí que no está disponible y agregá: [REPORT:sugerencia:MODULO:DESCRIPCION]
+- Reemplazá MODULO con el módulo real y DESCRIPCION con una descripción breve.
 
-COMPRAS (leer):
-- Consultar OC activas con estado y monto
-- Consultar saldo de proveedor en CC
-
-COMPRAS (escribir — siempre con confirmación):
-- Marcar OC como recibida (genera deuda en CC automáticamente)
-
-PROTOCOLO DE ACCIONES:
-1. Detectás la intención de acción
-2. Si faltan datos obligatorios, los pedís (uno a la vez, brevemente)
-3. Mostrás resumen con [ACCION_RESUMEN] antes de ejecutar
-4. Esperás confirmación explícita ("sí", "confirmar", "dale")
-5. Solo al recibir confirmación, devolvés [ACCION_EJECUTAR:TIPO:DATOS_JSON]
-6. Después de ejecutar, das el dato contextual relevante (ej: "Egreso registrado. Egresos del mes: $X, un Y% más que el mes pasado.")
-
-NUNCA ejecutés sin confirmación. NUNCA inventés datos. NUNCA respondas en más de 4 párrafos.
-
-REPORTES: Si algo no funciona: [REPORT:falla:MODULO:DESCRIPCION]. Si piden algo inexistente: [REPORT:sugerencia:MODULO:DESCRIPCION]`;
-
-function embiGetSystem(){
-  return EMBI_SYSTEM_BASE + embiGetFinancialContext();
-}
-var EMBI_SYSTEM = EMBI_SYSTEM_BASE;
+NUNCA: inventés funcionalidades, respondas en más de 4 párrafos, uses listas largas cuando una respuesta directa alcanza.`;
 
 function embiGetContext(){
   var active=document.querySelector('[id^="ct-"][style*="block"]');
@@ -11836,7 +11749,7 @@ async function embiCallAPI(userMsg){
     var resp=await fetch('/.netlify/functions/embi',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:700,system:embiGetSystem(),messages:embiHistory})
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:500,system:EMBI_SYSTEM,messages:embiHistory})
     });
     var data=await resp.json();
     var text=(data.content&&data.content[0]&&data.content[0].text)?data.content[0].text:'Lo siento, no pude procesar tu consulta. Intentá de nuevo.';
@@ -11867,207 +11780,7 @@ async function embiSend(){
   embiShowTyping();
   var resp=await embiCallAPI(val);
   embiRemoveTyping();
-
-  // Detectar y ejecutar acciones — regex robusta que maneja JSON con arrays
-  var actionMatch=resp.match(/\[ACCION_EJECUTAR:([A-Z_]+):([\s\S]*?)\](?:\s*$|\n|$)/m);
-  if(!actionMatch){
-    // fallback: buscar desde el tag hasta el final
-    var tagIdx=resp.indexOf('[ACCION_EJECUTAR:');
-    if(tagIdx!==-1){
-      var afterTag=resp.slice(tagIdx+17);
-      var colonIdx=afterTag.indexOf(':');
-      if(colonIdx!==-1){
-        var tipo2=afterTag.slice(0,colonIdx);
-        var jsonStr=afterTag.slice(colonIdx+1);
-        // cerrar en el último }
-        var lastBrace=jsonStr.lastIndexOf('}');
-        if(lastBrace!==-1)jsonStr=jsonStr.slice(0,lastBrace+1);
-        try{
-          var datos2=JSON.parse(jsonStr);
-          actionMatch={1:tipo2,2:jsonStr};
-          actionMatch[0]=resp;
-        }catch(e){}
-      }
-    }
-  }
-  if(actionMatch){
-    var tipo=actionMatch[1], datosStr=actionMatch[2];
-    var textoLimpio=resp.replace(/\[ACCION_EJECUTAR:[\s\S]*?\][\s]*/,'').trim();
-    embiAddMsg('bot',textoLimpio||'Procesando...');
-    var datos={};
-    try{ datos=JSON.parse(datosStr); }catch(e){
-      embiAddMsg('bot','Hubo un problema al procesar los datos. Intentá de nuevo con el mismo pedido.');
-      embiLogAccion(tipo,'error_parse',datosStr);
-      return;
-    }
-    // Validar datos mínimos
-    var valid=true;
-    if((tipo==='INGRESO'||tipo==='EGRESO'||tipo==='COBRO')&&!(parseFloat(datos.monto)>0)){
-      embiAddMsg('bot','Faltó el monto. ¿Cuánto fue?');valid=false;
-    }
-    if(tipo==='CLIENTE'&&!datos.nombre){
-      embiAddMsg('bot','Faltó el nombre del cliente. ¿Cómo se llama?');valid=false;
-    }
-    if(!valid){embiLogAccion(tipo,'error_validacion',datos);return;}
-    try{
-      await embiEjecutarAccion(tipo,datos);
-      embiLogAccion(tipo,'ok',datos);
-    }catch(e){
-      embiAddMsg('bot','Error al ejecutar: '+e.message);
-      embiLogAccion(tipo,'error_ejecucion',{error:e.message,...datos});
-    }
-    return;
-  }
   embiAddMsg('bot',resp);
-}
-
-async function embiLogAccion(tipo,estado,datos){
-  try{
-    if(!currentClientUID)return;
-    await addDoc(collection(db,'embiAcciones'),{
-      tipo,estado,
-      datos:typeof datos==='object'?JSON.stringify(datos):datos,
-      clienteId:currentClientUID,
-      cliente:window.currentClientData?.nombre||'',
-      fecha:new Date().toISOString()
-    });
-  }catch(e){}
-}
-
-async function embiEjecutarAccion(tipo,datos){
-  if(!currentClientUID){embiAddMsg('bot','No hay sesión activa.');return;}
-  try{
-    var hoy=new Date().toISOString().split('T')[0];
-    var d=new Date();
-    var mesTxt=d.toLocaleDateString('es-AR',{month:'long',year:'numeric'});
-    mesTxt=mesTxt.charAt(0).toUpperCase()+mesTxt.slice(1);
-
-    if(tipo==='INGRESO'){
-      await addDoc(collection(db,'clientes',currentClientUID,'ingresos'),{
-        concepto:datos.concepto||'Ingreso',
-        categoria:datos.categoria||'Ingreso',
-        monto:parseFloat(datos.monto)||0,
-        fecha:datos.fecha||hoy,
-        mes:mesTxt,
-        origen:'embi',
-        creadoEn:new Date().toISOString()
-      });
-      if(window.loadClientContabilidad)await window.loadClientContabilidad();
-      embiAddMsg('bot','Ingreso de $'+parseFloat(datos.monto).toLocaleString('es-AR')+' registrado en Finanzas.');
-
-    } else if(tipo==='EGRESO'){
-      await addDoc(collection(db,'clientes',currentClientUID,'egresos'),{
-        concepto:datos.concepto||'Egreso',
-        categoria:datos.categoria||'Otros',
-        monto:parseFloat(datos.monto)||0,
-        fecha:datos.fecha||hoy,
-        mes:mesTxt,
-        origen:'embi',
-        creadoEn:new Date().toISOString()
-      });
-      if(window.loadClientContabilidad)await window.loadClientContabilidad();
-      embiAddMsg('bot','Egreso de $'+parseFloat(datos.monto).toLocaleString('es-AR')+' registrado en Finanzas.');
-
-    } else if(tipo==='CLIENTE'){
-      await addDoc(collection(db,'clientes',currentClientUID,'mcClientes'),{
-        nombre:datos.nombre,
-        tel:datos.tel||'',
-        email:datos.email||'',
-        creadoEn:new Date().toISOString()
-      });
-      if(window.loadMcModule)await window.loadMcModule();
-      embiAddMsg('bot','Cliente '+datos.nombre+' creado en Comercial.');
-
-    } else if(tipo==='COBRO'){
-      await addDoc(collection(db,'clientes',currentClientUID,'cobros'),{
-        monto:parseFloat(datos.monto)||0,
-        clienteNombre:datos.cliente||'',
-        fecha:datos.fecha||hoy,
-        pagado:true,
-        concepto:datos.concepto||'Cobro',
-        origen:'embi',
-        creadoEn:new Date().toISOString()
-      });
-      if(window.loadClientContabilidad)await window.loadClientContabilidad();
-      embiAddMsg('bot','Cobro de $'+parseFloat(datos.monto).toLocaleString('es-AR')+' registrado.');
-
-    } else if(tipo==='OC_RECIBIDA'){
-      if(window.marcarOCRecibida)window.marcarOCRecibida(datos.ocId);
-      else embiAddMsg('bot','No pude encontrar esa OC.');
-
-    } else {
-      embiAddMsg('bot','Acción no reconocida: '+tipo);
-    }
-  }catch(e){embiAddMsg('bot','Error al ejecutar: '+e.message+'. Verificá que estés logueada.');}
-}
-
-// ── Micrófono push-to-talk ──
-var embiRecognition=null, embiRecording=false;
-
-function embiMicStart(){
-  if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){
-    embiAddMsg('bot','Tu navegador no soporta reconocimiento de voz. Usá Chrome o Edge en Android, o Safari en iPhone.');return;
-  }
-  if(embiRecording) return;
-
-  // Pedir permiso explícitamente para que el navegador muestre el cartel
-  navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
-    stream.getTracks().forEach(t=>t.stop()); // liberar el stream, solo necesitábamos el permiso
-    embiIniciarReconocimiento();
-  }).catch(function(err){
-    if(err.name==='NotAllowedError'||err.name==='PermissionDeniedError'){
-      embiAddMsg('bot','Permiso de micrófono denegado. Para activarlo: en el navegador tocá el candado 🔒 en la barra de dirección → Permisos → Micrófono → Permitir.');
-    } else {
-      embiAddMsg('bot','No se pudo acceder al micrófono. Verificá que tu dispositivo tenga uno disponible.');
-    }
-  });
-}
-
-function embiIniciarReconocimiento(){
-  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  embiRecognition=new SR();
-  embiRecognition.lang='es-AR';
-  embiRecognition.interimResults=false;
-  embiRecognition.maxAlternatives=1;
-  embiRecording=true;
-
-  var btn=document.getElementById('embiMicBtn');
-  if(btn){btn.classList.add('recording');btn.innerHTML='<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="3" y="3" width="8" height="8" rx="2" fill="#e24b4a"/></svg>';}
-
-  function resetMicUI(){
-    embiRecording=false;
-    var b=document.getElementById('embiMicBtn');
-    if(b){b.classList.remove('recording');b.innerHTML='<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="4.5" y="1" width="5" height="8" rx="2.5" stroke="#7a8e7d" stroke-width="1.3"/><path d="M2 7.5a5 5 0 0010 0" stroke="#7a8e7d" stroke-width="1.3" stroke-linecap="round"/><line x1="7" y1="12.5" x2="7" y2="11" stroke="#7a8e7d" stroke-width="1.3" stroke-linecap="round"/></svg>';}
-  }
-
-  var gotResult=false;
-
-  embiRecognition.onresult=function(e){
-    gotResult=true;
-    var transcript=e.results[0][0].transcript.trim();
-    resetMicUI();
-    if(!transcript){embiAddMsg('bot','No escuché nada. Intentá de nuevo.');return;}
-    var input=document.getElementById('embiInput');
-    if(input&&transcript){input.value=transcript;embiSend();}
-  };
-
-  embiRecognition.onerror=function(e){
-    gotResult=true;
-    resetMicUI();
-    if(e.error==='aborted'||e.error==='no-speech') return;
-    if(e.error==='not-allowed'){
-      embiAddMsg('bot','Permiso de micrófono denegado. Tocá el candado 🔒 en la barra de tu navegador → Permisos → Micrófono → Permitir, y volvé a intentarlo.');
-    }
-  };
-
-  embiRecognition.onend=function(){
-    resetMicUI();
-    if(!gotResult){
-      embiAddMsg('bot','No te escuché. Hablá cerca del micrófono y soltá el botón cuando termines.');
-    }
-  };
-
-  try{embiRecognition.start();}catch(e){resetMicUI();}
 }
 function embiToggle(){
   embiOpen=!embiOpen;
