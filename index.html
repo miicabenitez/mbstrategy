@@ -3467,15 +3467,15 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
 </div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, addDoc, collection, getDocs, query, where, orderBy, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, addDoc, collection, getDocs, query, where, orderBy, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 // Expose firestore db globally for cross-block access
 
 const cfg = {apiKey:"AIzaSyCZr_VAn5fumCzkrfxb1oK9-W2_cADnGTI",authDomain:"mb-strategy.firebaseapp.com",projectId:"mb-strategy",storageBucket:"mb-strategy.firebasestorage.app",messagingSenderId:"1055393429525",appId:"1:1055393429525:web:0f40fa5869ef5aa8bb761c"};
 const app = initializeApp(cfg);
 const auth = getAuth(app);
-const db = getFirestore(app, '(default)');
+const db = getFirestore(app);
 window.db = db;
 
 window._db = db;
@@ -4386,7 +4386,7 @@ window.deleteContent = async function(contentId) {
   if (!currentClientId) return;
   showConfirm('¿Eliminar este contenido? Esta acción no se puede deshacer.', async () => {
     try {
-      const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
+      const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
       await deleteDoc(doc(db,'clientes',currentClientId,'contenido',contentId));
       await loadContentAdmin(currentClientId);
     } catch(e) { console.log('Error al eliminar:', e); }
@@ -4455,7 +4455,7 @@ window.deleteCliente = function(id, nombre, event) {
     `¿Eliminar a ${nombre}? Se borrarán también sus notas, contenido y cobros vinculados. Esta acción no se puede deshacer.`,
     async () => {
       try {
-        const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
+        const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
         await deleteDoc(doc(db,'clientes',id));
         await loadAdminData();
       } catch(e) { alert('Error: '+e.message); }
@@ -4527,7 +4527,7 @@ window.deleteTask = function(el) {
     const taskId = el.dataset.id;
     if (taskId) {
       try {
-        const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
+        const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
         await deleteDoc(doc(db,'tareas',taskId));
       } catch(e) {}
     }
@@ -4627,7 +4627,7 @@ window.saveEditCobro = async function() {
 window.deleteCobro = function(id) {
   showConfirm('¿Eliminar este ingreso?', async () => {
     try {
-      const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
+      const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
       await deleteDoc(doc(db,'cobros',id));
       await loadAdminData();
     } catch(e) { console.log(e); }
@@ -4683,7 +4683,7 @@ window.saveEditGasto = async function() {
 window.deleteGasto = function(id) {
   showConfirm('¿Eliminar este egreso?', async () => {
     try {
-      const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
+      const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
       await deleteDoc(doc(db,'gastos',id));
       await loadGastos();
     } catch(e) { console.log(e); }
@@ -5254,7 +5254,7 @@ window.deleteCalc = function(id) {
   const nombre = calcData[id]?.nombre || 'este cálculo';
   showConfirm(`¿Eliminar "${nombre}"?`, async () => {
     try {
-      const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
+      const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
       await deleteDoc(doc(db,'clientes',currentClientId,'calculos',id));
       delete calcData[id];
       renderCalcList();
@@ -5667,7 +5667,7 @@ window.saveEditPendiente = async function() {
 window.deletePendiente = function(id) {
   showConfirm('¿Eliminar este pendiente?', async () => {
     try {
-      const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
+      const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
       await deleteDoc(doc(db,'pendientes',id));
       await loadPendientes();
     } catch(e) { console.log(e); }
@@ -5902,7 +5902,7 @@ window.updatePresupEstado = async function(id, nuevoEstado) {
 window.deletePresup = async function(id) {
   showConfirm('¿Eliminar este presupuesto?', async () => {
     try {
-      const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
+      const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
       await deleteDoc(doc(db,'presupuestos',id));
       await loadPresupuestosGlobal();
     } catch(e) { console.log(e); }
@@ -6830,7 +6830,7 @@ window.editClientIngreso = function(id) {
 window.deleteClientIngreso = async function(id) {
   showConfirm('¿Eliminar este ingreso?', async()=>{
     try{
-      const {deleteDoc:dd}=await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
+      const {deleteDoc:dd}=await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
       await dd(doc(db,'clientes',currentClientUID,'ingresos',id));
       await loadClientContabilidad();
     }catch(e){ alert('Error: '+e.message); }
@@ -6852,7 +6852,7 @@ window.editClientEgreso = function(id) {
 window.deleteClientEgreso = async function(id) {
   showConfirm('¿Eliminar este egreso?', async()=>{
     try{
-      const {deleteDoc:dd}=await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
+      const {deleteDoc:dd}=await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
       await dd(doc(db,'clientes',currentClientUID,'egresos',id));
       await loadClientContabilidad();
     }catch(e){ alert('Error: '+e.message); }
@@ -6914,7 +6914,7 @@ window.moveClientTask = async function(el) {
 window.deleteClientTask = function(el) {
   showConfirm('¿Eliminar esta tarea?', async()=>{
     const id=el.dataset.id;
-    if(id && currentClientUID) { try{ const {deleteDoc}=await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js"); await deleteDoc(doc(db,'clientes',currentClientUID,'tareas',id)); }catch(e){} }
+    if(id && currentClientUID) { try{ const {deleteDoc}=await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"); await deleteDoc(doc(db,'clientes',currentClientUID,'tareas',id)); }catch(e){} }
     el.remove();
   },'Eliminar tarea');
 };
@@ -7400,7 +7400,7 @@ async function loadMcCobrosList(clienteId) {
 window.eliminarCobro = function(clienteId, cobroId, monto) {
   showConfirm('¿Eliminar este cobro? Se descontará del total cobrado del cliente.', async () => {
     try {
-      const {deleteDoc: dd} = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
+      const {deleteDoc: dd} = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
       // 1. Eliminar el cobro
       await dd(doc(db,'clientes',currentClientUID,'misClientes',clienteId,'cobros',cobroId));
       // 2. Descontar de totalCobrado
@@ -7723,7 +7723,7 @@ window.deleteMcCliente = function(id, event) {
   if(event) event.stopPropagation();
   showConfirm('¿Eliminar este cliente? Se borrarán también sus cobros, historial y notas.',async()=>{
     try {
-      const {deleteDoc, getDocs: gd, collection: col} = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
+      const {deleteDoc, getDocs: gd, collection: col} = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
       const base = ['cobros','historial','notas'];
       for(const sub of base) {
         const snap = await getDocs(collection(db,'clientes',currentClientUID,'misClientes',id,sub));
@@ -7780,7 +7780,7 @@ function renderMcVentas(presups, clienteId) {
 window.deleteMcPresup = function(id) {
   showConfirm('¿Eliminar este presupuesto?',async()=>{
     try {
-      const {deleteDoc}=await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
+      const {deleteDoc}=await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
       await deleteDoc(doc(db,'clientes',currentClientUID,'presupuestos',id));
       await loadMcModule();
       if (_currentMcClienteId) openMcDetalle(_currentMcClienteId);
@@ -7807,7 +7807,7 @@ window.completarMcPendiente = async function(id) {
 
 window.deleteMcPendiente = function(id) {
   showConfirm('¿Eliminar pendiente?',async()=>{
-    try{const {deleteDoc}=await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");await deleteDoc(doc(db,'clientes',currentClientUID,'mcPendientes',id));await loadMcModule();}catch(e){}
+    try{const {deleteDoc}=await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");await deleteDoc(doc(db,'clientes',currentClientUID,'mcPendientes',id));await loadMcModule();}catch(e){}
   },'Eliminar pendiente');
 };
 
@@ -8078,7 +8078,7 @@ window.goToClientFromPresup = function(clienteId) {
 
 window.deleteClientPresup = function(id) {
   showConfirm('¿Eliminar este presupuesto?', async()=>{
-    try { const {deleteDoc}=await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js"); await deleteDoc(doc(db,'clientes',currentClientUID,'presupuestos',id)); await loadClientPresupuestos(); }catch(e){}
+    try { const {deleteDoc}=await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"); await deleteDoc(doc(db,'clientes',currentClientUID,'presupuestos',id)); await loadClientPresupuestos(); }catch(e){}
   },'Eliminar presupuesto');
 };
 
@@ -8522,7 +8522,7 @@ window.guardarMiCuenta = async function() {
       if(!actual){ showErr('Ingresá tu contraseña actual'); return; }
       if(nueva.length < 6){ showErr('La nueva contraseña debe tener al menos 6 caracteres'); return; }
       if(nueva !== confirm){ showErr('Las contraseñas no coinciden'); return; }
-      const { EmailAuthProvider, reauthenticateWithCredential, updatePassword } = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js');
+      const { EmailAuthProvider, reauthenticateWithCredential, updatePassword } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js');
       const credential = EmailAuthProvider.credential(currentUser.email, actual);
       await reauthenticateWithCredential(currentUser, credential);
       await updatePassword(currentUser, nueva);
@@ -8560,7 +8560,7 @@ window.accederComoCliente = async function() {
     window._impersonating = clienteData;
 
     // Hacer signIn con el custom token
-    const { signInWithCustomToken } = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js');
+    const { signInWithCustomToken } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js');
     await signInWithCustomToken(auth, json.token);
 
   } catch(e) {
@@ -8666,7 +8666,7 @@ window.editProdCompra = function(id) {
 
 window.deleteProdCompra = function(id) {
   showConfirm('¿Eliminar este producto?', async()=>{
-    try{const {deleteDoc}=await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");await deleteDoc(doc(db,'clientes',currentClientUID,'prodCompra',id));await loadProductosCompra();}catch(e){}
+    try{const {deleteDoc}=await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");await deleteDoc(doc(db,'clientes',currentClientUID,'prodCompra',id));await loadProductosCompra();}catch(e){}
   },'Eliminar producto');
 };
 
@@ -8814,7 +8814,7 @@ window.saveNecesidad = async function() {
 window.deleteNecesidad = function(id) {
   showConfirm('¿Eliminar esta necesidad de compra?', async()=>{
     try{
-      const {deleteDoc:dd}=await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
+      const {deleteDoc:dd}=await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
       await dd(doc(db,'clientes',currentClientUID,'necesidades',id));
       await loadNecesidades();
     }catch(e){alert('Error: '+e.message);}
@@ -10127,7 +10127,7 @@ window.deleteCatCustom = async function(nombre) {
       const snap = await getDocs(collection(db,'clientes',currentClientUID,'categoriasProveedor'));
       for(const d of snap.docs) {
         if(d.data().nombre === nombre) {
-          const {deleteDoc:dd} = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
+          const {deleteDoc:dd} = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
           await dd(doc(db,'clientes',currentClientUID,'categoriasProveedor',d.id));
         }
       }
@@ -10359,7 +10359,7 @@ window.saveProveedor = async function(id) {
 
 window.deleteProveedor = function(id) {
   showConfirm('¿Eliminar este proveedor?',async()=>{
-    try{const {deleteDoc}=await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");await deleteDoc(doc(db,'clientes',currentClientUID,'proveedores',id));await loadProveedores();}catch(e){}
+    try{const {deleteDoc}=await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");await deleteDoc(doc(db,'clientes',currentClientUID,'proveedores',id));await loadProveedores();}catch(e){}
   },'Eliminar proveedor');
 };
 
@@ -10924,7 +10924,7 @@ window.embiUpdateEstado = async function(id, estado) {
 window.embiDeleteReport = function(id) {
   showConfirm('¿Eliminar este reporte?', async()=>{
     try {
-      const {deleteDoc:dd}=await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
+      const {deleteDoc:dd}=await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
       await dd(doc(db,'embiReports',id));
       _embiReports = _embiReports.filter(r=>r.id!==id);
       renderEmbiReports();
@@ -11447,7 +11447,7 @@ async function loadProductos() {
   const uid = window.currentClientUID;
   if(!uid) return;
   try {
-    const fsi = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
+    const fsi = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
     const fdb = window.db || fsi.getFirestore();
     const snap = await fsi.getDocs(fsi.collection(fdb,'clientes',uid,'productos'));
     const prods = [];
@@ -11534,7 +11534,7 @@ async function createProducto() {
     creadoEn:  new Date().toISOString()
   };
   try {
-    const fsi = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
+    const fsi = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
     const fdb = window.db || fsi.getFirestore();
     if(id) {
       await fsi.updateDoc(fsi.doc(fdb,'clientes',uid,'productos',id), data);
@@ -11576,7 +11576,7 @@ window.deleteProducto = function(id) {
     var uid = window.currentClientUID;
     if(!uid) return;
     try {
-      var fsi = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
+      var fsi = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
       var fdb = window.db || fsi.getFirestore();
       await fsi.deleteDoc(fsi.doc(fdb,'clientes',uid,'productos',id));
       await loadProductos();
@@ -11588,7 +11588,7 @@ window.toggleActivoProducto = async function(id, nuevoEstado) {
   var uid = window.currentClientUID;
   if(!uid) return;
   try {
-    var fsi = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
+    var fsi = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
     var fdb = window.db || fsi.getFirestore();
     await fsi.updateDoc(fsi.doc(fdb,'clientes',uid,'productos',id),{activo:nuevoEstado,updatedAt:new Date().toISOString()});
     await loadProductos();
@@ -11601,7 +11601,7 @@ window.guardarPrecios = async function() {
   var inputs = document.querySelectorAll('.prod-precio-input');
   var ahora = new Date().toISOString();
   try {
-    var fsi = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
+    var fsi = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
     var fdb = window.db || fsi.getFirestore();
     var prods = window._productosData || [];
     for(var i=0;i<inputs.length;i++){
