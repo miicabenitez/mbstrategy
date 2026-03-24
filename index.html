@@ -3474,11 +3474,11 @@ import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com
 // Expose firestore db globally for cross-block access
 
 const cfg = {apiKey:"AIzaSyCZr_VAn5fumCzkrfxb1oK9-W2_cADnGTI",authDomain:"mb-strategy.firebaseapp.com",projectId:"mb-strategy",storageBucket:"mb-strategy.firebasestorage.app",messagingSenderId:"1055393429525",appId:"1:1055393429525:web:0f40fa5869ef5aa8bb761c"};
+// Deshabilitar App Check antes de inicializar — evita error 400 en Firestore
+self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
 const app = initializeApp(cfg);
 const auth = getAuth(app);
 const db = getFirestore(app);
-// Deshabilitar App Check — no está configurado y causa errores 400 en Firestore
-self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
 window.db = db;
 
 window._db = db;
