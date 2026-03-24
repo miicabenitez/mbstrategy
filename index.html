@@ -8931,7 +8931,7 @@ window.toggleProvCot = function(id, el) {
 };
 
 window.cotPaso2 = function() {
-  if(_cotProvSeleccionados.length===0){alert('Seleccioná al menos un proveedor');return;}
+  if(_cotProvSeleccionados.length===0){showConfirm('Seleccioná al menos un proveedor para continuar.', ()=>{}, 'Sin proveedores seleccionados');return;}
   const nc = _necesidades.find(n=>n.id===_cotNcId);
   if(!nc) return;
   const provs = _proveedores.filter(p=>_cotProvSeleccionados.includes(p.id));
@@ -9776,6 +9776,15 @@ window.abrirCuentaCorriente = async function(provId) {
   if(!prov) return;
   _ccProvId = provId;
 
+  // Asegurar que _ordenesCompra esté cargado
+  if(!window._ordenesCompra || window._ordenesCompra.length===0) {
+    try {
+      const ocSnap = await getDocs(collection(db,'clientes',currentClientUID,'ordenesCompra'));
+      window._ordenesCompra = [];
+      ocSnap.forEach(d=>window._ordenesCompra.push({id:d.id,...d.data()}));
+    } catch(e){ window._ordenesCompra = []; }
+  }
+
   // Mostrar vista fullscreen, ocultar lista
   document.getElementById('prov-lista-view') && (document.getElementById('prov-lista-view').style.display='none');
   document.getElementById('prov-cc-view').style.display='block';
@@ -9988,7 +9997,7 @@ window.openModal_newPagoProvModal_extra = function() {
   const prov = _proveedores.find(p=>p.id===_ccProvId);
   if(sub&&prov) sub.textContent = prov.nombre+' · Saldo: $'+((prov._saldo||0).toLocaleString('es-AR'));
   if(sel){
-    const pendientes = _ccFacturas.filter(f=>f.estado!=='pagada');
+    const pendientes = _ccFacturas.filter(f=>f.estado!=='pagada' && !f.esOC && !((f.numero||'').startsWith('OC-')));
     sel.innerHTML = '<option value="">Sin factura específica</option>'+
       pendientes.map(f=>`<option value="${f.id}" data-monto="${f.monto}">${f.numero} — $${(parseFloat(f.monto)||0).toLocaleString('es-AR')} — ${f.fecha}</option>`).join('');
   }
@@ -10245,7 +10254,7 @@ function renderProveedoresModule() {
     }
   });
 
-  const totalGastado = egresosConProv.reduce((a,e)=>a+(parseFloat(e.monto)||0),0);
+  const totalGastado = Object.values(gastosPorProv).reduce((a,v)=>a+v,0);
   const prom = _proveedores.length>0 ? Math.round(totalGastado/_proveedores.length) : 0;
   setEl('prov-kpi-total', _proveedores.length);
   setEl('prov-kpi-gastado', '$'+totalGastado.toLocaleString('es-AR'));
