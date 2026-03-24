@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>MB Academia</title>
+<meta name="application-name" content="MB Academia">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="MB Academia">
+<meta name="description" content="Academia MB Strategy">
+<meta name="theme-color" content="#A1B1A4">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='40' fill='%23A1B1A4'/%3E%3Ccircle cx='96' cy='96' r='72' stroke='white' stroke-width='3' fill='none'/%3E%3Ctext x='96' y='88' text-anchor='middle' font-family='Georgia,serif' font-size='42' font-weight='500' fill='white'%3EMB%3C/text%3E%3Ctext x='96' y='114' text-anchor='middle' font-family='Arial,sans-serif' font-size='16' letter-spacing='4' fill='white'%3EACADEMIA%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--sage:#A1B1A4;--sage-dark:#7A8E7D;--sage-light:#C8D4CA;--sage-xl:#E7F0E8;--cream:#E7E5DF;--cream-d:#D0CFC9;--text:#2C2C2C;--text-m:#3E4E42;--text-l:#4A5A4E;--white:#F5F6F3;--ok:#5A8A62;--ok-bg:#E7F0E8;--warn:#B08A42;--warn-bg:#F5EDDF;--err:#C4786A;--err-bg:#F5ECEC;--topbar:#A1B1A4;--topbar2:#8A9E8D;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);font-size:14px;}
+.loading{position:fixed;inset:0;background:var(--topbar);display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity .4s;}
+.loading-inner{display:flex;flex-direction:column;align-items:center;gap:12px;}
+.loading-circle{width:54px;height:54px;border-radius:50%;border:1.5px solid rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;animation:pulse 1.5s ease-in-out infinite;}
+.loading-text{font-family:'Cormorant Garamond',serif;font-size:17px;letter-spacing:4px;color:rgba(255,255,255,.8);}
+@keyframes pulse{0%,100%{opacity:.6;}50%{opacity:1;}}
+
+/* LOGIN */
+#lp{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;}
+.lcard{background:var(--white);border-radius:20px;padding:32px 28px;width:100%;max-width:380px;border:.5px solid var(--cream-d);}
+.llogo{text-align:center;margin-bottom:28px;}
+.llogo-circle{width:56px;height:56px;border-radius:50%;border:1.5px solid var(--sage);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;}
+.llogo-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:var(--text);}
+.llogo-sub{font-size:11px;color:var(--text-l);letter-spacing:2px;text-transform:uppercase;margin-top:2px;}
+.lfield{margin-bottom:14px;}
+.lfield label{display:block;font-size:11px;color:var(--text-l);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;}
+.lfield input{width:100%;border:.5px solid var(--cream-d);border-radius:10px;padding:11px 14px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);background:var(--white);outline:none;}
+.lfield input:focus{border-color:var(--sage);}
+.lbtn{width:100%;background:var(--topbar);color:#fff;border:none;border-radius:10px;padding:13px;font-size:14px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;margin-top:6px;}
+.lbtn:hover{background:var(--topbar2);}
+.lerr{color:var(--err);font-size:12px;text-align:center;margin-top:10px;display:none;}
+
+/* APP */
+#app{display:none;}
+.topbar{background:var(--topbar);padding:0 20px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.topbar-brand{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:400;color:#fff;letter-spacing:1px;}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+.ub{font-size:12px;color:rgba(255,255,255,.75);}
+.btn-out{background:rgba(255,255,255,.15);border:none;color:#fff;padding:6px 14px;border-radius:20px;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;}
+.btn-out:hover{background:rgba(255,255,255,.25);}
+.content{max-width:680px;margin:0 auto;padding:20px 16px 80px;}
+
+/* Cards */
+.card{background:var(--white);border:.5px solid var(--cream-d);border-radius:14px;padding:14px 16px;margin-bottom:12px;}
+.ct{font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;}
+
+/* Semanas */
+.sc{background:var(--white);border:.5px solid var(--cream-d);border-radius:11px;padding:10px 12px;text-align:center;}
+.sc.active{border-color:var(--topbar);background:var(--sage-xl);}
+.sc.done{border-color:var(--ok);background:var(--ok-bg);}
+.sn{font-size:10px;color:var(--text-l);margin-bottom:3px;}
+.st{font-size:11px;font-weight:500;color:var(--text);margin-bottom:4px;}
+.ss{font-size:10px;}
+
+/* Saved msg */
+.saved-msg{display:none;font-size:12px;color:var(--ok);margin-top:8px;text-align:center;}
+.na{width:100%;border:.5px solid var(--cream-d);border-radius:10px;padding:10px 12px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);background:var(--white);outline:none;resize:vertical;min-height:80px;}
+.na:focus{border-color:var(--sage);}
+.bp{background:var(--topbar);color:#fff;border:none;border-radius:20px;padding:8px 18px;font-size:12px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;}
+.bp:hover{background:var(--topbar2);}
+.badge{display:inline-block;font-size:9px;font-weight:500;padding:2px 8px;border-radius:20px;}
+.bgr{background:var(--sage-xl);color:var(--sage-dark);}
+.bg{background:var(--ok-bg);color:var(--ok);}
+.chk{width:18px;height:18px;border-radius:5px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;background:var(--white);border:.5px solid var(--cream-d);}
+.chk.done{background:var(--ok);border-color:var(--ok);}
+</style>
+</head>
+<body>
+
+<div class="loading" id="loading">
+  <div class="loading-inner">
+    <div class="loading-circle">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="rgba(255,255,255,.5)" stroke-width="1.3"/><path d="M8 12l3 3 5-5" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="loading-text">MB ACADEMIA</div>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div id="lp">
+  <div class="lcard">
+    <div class="llogo">
+      <div class="llogo-circle">
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><circle cx="13" cy="13" r="11" stroke="var(--sage)" stroke-width="1.2"/><path d="M8 13l4 4 6-7" stroke="var(--sage-dark)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="llogo-title">MB Academia</div>
+      <div class="llogo-sub">Tu programa de aprendizaje</div>
+    </div>
+    <div class="lfield">
+      <label>Email</label>
+      <input type="email" id="li-email" placeholder="tu@email.com" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <div class="lfield">
+      <label>Contraseña</label>
+      <input type="password" id="li-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <button class="lbtn" onclick="doLogin()">Ingresar</button>
+    <div class="lerr" id="lerr">Email o contraseña incorrectos.</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-brand">MB Academia</div>
+    <div class="topbar-right">
+      <div class="ub" id="ub">—</div>
+      <button class="btn-out" onclick="doLogout()">Salir</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- Banner bienvenida -->
+    <div style="background:var(--topbar);border-radius:16px;padding:28px 24px;margin-bottom:14px;overflow:hidden;">
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
+        <div id="c-avatar" style="width:54px;height:54px;border-radius:14px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:500;color:#fff;flex-shrink:0;">M</div>
+        <div>
+          <div style="font-size:11px;color:rgba(255,255,255,.5);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;">MB Strategy</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;color:#fff;line-height:1.05;" id="c-titulo">Bienvenido/a,<br>—</div>
+        </div>
+      </div>
+      <div style="height:1px;background:rgba(255,255,255,.15);margin-bottom:18px;"></div>
+      <div style="display:flex;gap:24px;flex-wrap:wrap;">
+        <div>
+          <div style="font-size:9px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Programa</div>
+          <div style="font-size:14px;font-weight:500;color:#fff;" id="c-programa-label">—</div>
+        </div>
+        <div style="width:1px;background:rgba(255,255,255,.15);"></div>
+        <div>
+          <div style="font-size:9px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Semana</div>
+          <div style="font-size:14px;font-weight:500;color:#fff;" id="c-semana-label">—</div>
+        </div>
+        <div style="width:1px;background:rgba(255,255,255,.15);"></div>
+        <div>
+          <div style="font-size:9px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Progreso</div>
+          <div style="font-size:14px;font-weight:500;color:#fff;" id="c-progreso-label">—</div>
+        </div>
+        <div style="width:1px;background:rgba(255,255,255,.15);"></div>
+        <div>
+          <div style="font-size:9px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Próxima reunión</div>
+          <div style="font-size:14px;font-weight:500;color:#fff;" id="c-reunion-banner">—</div>
+          <div id="c-reunion-meet"></div>
+        </div>
+      </div>
+      <div style="height:3px;background:rgba(255,255,255,.15);border-radius:2px;margin-top:16px;">
+        <div id="c-progreso-barra" style="height:100%;width:0%;background:rgba(255,255,255,.6);border-radius:2px;transition:width .6s;"></div>
+      </div>
+    </div>
+
+    <!-- Recorrido de semanas -->
+    <div class="card" style="margin-bottom:14px;">
+      <div class="ct">Tu recorrido</div>
+      <div id="c-semanas-track" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;"></div>
+    </div>
+
+    <!-- Próxima reunión -->
+    <div style="background:var(--white);border:.5px solid var(--cream-d);border-radius:13px;padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;">
+      <div style="width:40px;height:40px;border-radius:10px;background:var(--sage-xl);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="3" width="14" height="13" rx="2" stroke="var(--topbar)" stroke-width="1.3"/><path d="M6 1v4M12 1v4M2 7h14" stroke="var(--topbar)" stroke-width="1.3" stroke-linecap="round"/></svg>
+      </div>
+      <div style="flex:1;">
+        <div style="font-size:11px;color:var(--topbar);font-weight:500;text-transform:uppercase;letter-spacing:.5px;">Próxima reunión con tu coach</div>
+        <div id="c-reunion-info" style="font-size:13px;color:var(--text-l);margin-top:3px;">Aquí vas a ver tu próxima reunión agendada.</div>
+        <div id="c-reunion-meet-card" style="margin-top:8px;"></div>
+      </div>
+      <div id="c-reunion-dias" style="font-size:11px;padding:4px 10px;border-radius:20px;background:var(--sage-xl);color:var(--topbar);flex-shrink:0;display:none;"></div>
+    </div>
+
+    <!-- Nota para la reunión -->
+    <div class="card" style="margin-bottom:14px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+        <div style="width:30px;height:30px;border-radius:8px;background:var(--warn-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2h10v8H2zM5 11h4M7 11v-1" stroke="var(--warn)" stroke-width="1.2" stroke-linecap="round"/></svg>
+        </div>
+        <div>
+          <div class="ct" style="margin:0;">Nota para la próxima reunión</div>
+          <div style="font-size:11px;color:var(--text-l);margin-top:1px;">Dejá preguntas o comentarios para Micaela y/o equipo</div>
+        </div>
+      </div>
+      <div id="c-notas-reunion-list" style="margin-bottom:10px;max-height:140px;overflow-y:auto;"></div>
+      <textarea id="c-nota-reunion-input" class="na" placeholder="Ej: Tengo dudas sobre cómo armar el tablero de métricas..."></textarea>
+      <div style="margin-top:8px;">
+        <button class="bp" style="font-size:12px;" onclick="saveNotaReunion()">Enviar nota</button>
+      </div>
+      <div class="saved-msg" id="c-nota-reunion-saved">✓ Nota enviada</div>
+    </div>
+
+    <!-- Contenido disponible -->
+    <div style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Contenido disponible</div>
+    <div id="c-content-list">
+      <div style="text-align:center;padding:24px;color:var(--text-l);font-size:13px;">Cargando tu contenido...</div>
+    </div>
+
+    <!-- Celebración -->
+    <div id="c-celebracion" style="display:none;background:var(--ok-bg);border:.5px solid var(--ok);border-radius:13px;padding:14px 18px;margin-bottom:14px;align-items:center;gap:12px;">
+      <div style="width:36px;height:36px;border-radius:50%;background:var(--ok);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8l4 4 8-8" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div>
+        <div style="font-size:14px;font-weight:500;color:var(--ok);">¡Completaste todos los ítems!</div>
+        <div style="font-size:12px;color:var(--ok);opacity:.75;margin-top:2px;">Tu coach lo va a ver en la próxima reunión.</div>
+      </div>
+    </div>
+
+    <div id="c-locked-semanas" style="margin-top:16px;"></div>
+
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, addDoc, collection, getDocs, query, orderBy, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+const cfg = {apiKey:"AIzaSyCZr_VAn5fumCzkrfxb1oK9-W2_cADnGTI",authDomain:"mb-strategy.firebaseapp.com",projectId:"mb-strategy",storageBucket:"mb-strategy.firebasestorage.app",messagingSenderId:"1055393429525",appId:"1:1055393429525:web:0f40fa5869ef5aa8bb761c"};
+const app = initializeApp(cfg);
+const auth = getAuth(app);
+const db = getFirestore(app);
+window.db = db;
+window.auth = auth;
+
+let currentClientUID = null;
+let currentClientData = null;
+window._clientContenido = [];
+
+function hideLoding() {
+  const l = document.getElementById('loading');
+  if(l){ l.style.opacity='0'; setTimeout(()=>l.style.display='none',400); }
+}
+
+onAuthStateChanged(auth, async user => {
+  if(user) {
+    // Buscar cliente por email
+    const q = query(collection(db,'clientes'));
+    const snap = await getDocs(q);
+    let clientData = null;
+    snap.forEach(d => { if((d.data().email||'').toLowerCase() === user.email.toLowerCase()) clientData = {id:d.id,...d.data()}; });
+    if(clientData) {
+      currentClientUID = clientData.id;
+      window.currentClientUID = currentClientUID;
+      currentClientData = clientData;
+      window.currentClientData = clientData;
+      showApp(clientData);
+    } else {
+      // Usuario no encontrado como cliente
+      hideLoding();
+      document.getElementById('lp').style.display='flex';
+      document.getElementById('lerr').textContent = 'No tenés acceso a la Academia. Contactá a Micaela.';
+      document.getElementById('lerr').style.display='block';
+      await signOut(auth);
+    }
+  } else {
+    hideLoding();
+    document.getElementById('lp').style.display='flex';
+  }
+});
+
+async function showApp(clientData) {
+  document.getElementById('lp').style.display='none';
+  document.getElementById('app').style.display='block';
+  hideLoding();
+
+  const name = clientData.nombre.split(' ')[0];
+  document.getElementById('ub').textContent = name;
+
+  const av = document.getElementById('c-avatar');
+  if(av) av.textContent = name.charAt(0).toUpperCase();
+
+  const genero = clientData.genero || 'F';
+  const saludo = genero === 'M' ? 'Bienvenido,' : genero === 'N' ? '¡Hola,' : 'Bienvenida,';
+  document.getElementById('c-titulo').innerHTML = saludo + '<br>' + name;
+
+  const prog = clientData.programa || '30D';
+  const sem = clientData.semanaActual || 1;
+  const total = prog.includes('90') ? 12 : 4;
+
+  document.getElementById('c-programa-label').textContent = prog.includes('90') ? '90 días' : '30 días';
+  document.getElementById('c-semana-label').textContent = sem + ' de ' + total;
+
+  // Progreso
+  let semanasCompletadas = 0;
+  for(let s = 1; s < sem; s++) {
+    const progKey = `prog_${clientData.id}_sem${s}`;
+    const progData = JSON.parse(localStorage.getItem(progKey)||'{}');
+    const vals = Object.values(progData);
+    if(vals.length > 0 && vals.every(v => v === 2)) semanasCompletadas++;
+  }
+  if(semanasCompletadas === 0 && sem > 1) semanasCompletadas = sem - 1;
+  const pct = Math.round((semanasCompletadas / total) * 100);
+  document.getElementById('c-progreso-label').textContent = pct + '%';
+  setTimeout(() => { const b = document.getElementById('c-progreso-barra'); if(b) b.style.width = pct+'%'; }, 200);
+
+  // Próxima reunión
+  if(clientData.proximaReunion?.fecha) {
+    const f = new Date(clientData.proximaReunion.fecha + 'T12:00:00');
+    const fechaStr = f.toLocaleDateString('es-AR', {weekday:'short', day:'numeric', month:'short'});
+    const horaStr = clientData.proximaReunion.hora ? ' · ' + clientData.proximaReunion.hora + 'hs' : '';
+    document.getElementById('c-reunion-banner').textContent = fechaStr + horaStr;
+    document.getElementById('c-reunion-info').textContent = fechaStr + (horaStr ? ' a las ' + clientData.proximaReunion.hora + 'hs' : '');
+    document.getElementById('c-reunion-info').style.color = 'var(--text-m)';
+    document.getElementById('c-reunion-info').style.fontWeight = '500';
+
+    // Días restantes
+    const hoy = new Date(); hoy.setHours(0,0,0,0);
+    const reunion = new Date(clientData.proximaReunion.fecha + 'T00:00:00');
+    const dias = Math.round((reunion - hoy) / (1000*60*60*24));
+    const diasEl = document.getElementById('c-reunion-dias');
+    if(diasEl) {
+      diasEl.style.display = 'block';
+      diasEl.textContent = dias === 0 ? 'Hoy' : dias === 1 ? 'Mañana' : 'En ' + dias + ' días';
+    }
+
+    // Link de reunion
+    if(clientData.proximaReunion.link) {
+      document.getElementById('c-reunion-meet-card').innerHTML = `<a href="${clientData.proximaReunion.link}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--topbar);text-decoration:none;font-weight:500;margin-top:4px;">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="8" height="9" rx="1.5" stroke="var(--topbar)" stroke-width="1.2"/><path d="M9 5l3-2v7l-3-2" stroke="var(--topbar)" stroke-width="1.2" stroke-linejoin="round"/></svg>
+        Unirse a la reunión
+      </a>`;
+    }
+  }
+
+  // Semanas track
+  renderSemanasCliente(clientData);
+
+  // Cargar contenido
+  await loadClientContent(clientData.id, sem);
+
+  // Cargar notas de reunión
+  await loadNotasReunion();
+}
+
+function renderSemanasCliente(data) {
+  const prog = data.programa || '30D';
+  const total = prog === '90D' ? 12 : 4;
+  const sem = data.semanaActual || 1;
+  const semNames30 = {1:'Visibilidad financiera',2:'Control de proyectos',3:'Operacion y roles',4:'Cierre y autonomia'};
+  const semNames90 = {1:'Diagnostico',2:'Prioridades',3:'Estructura operativa',4:'Sistema de trabajo',5:'Implementacion I',6:'Implementacion II',7:'Control economico',8:'Indicadores',9:'Roles y equipo',10:'Rutinas de control',11:'Seguimiento',12:'Cierre y autonomia'};
+  const semNames = prog === '90D' ? semNames90 : semNames30;
+  const gridCols = total <= 4 ? 'repeat(4,minmax(0,1fr))' : 'repeat(4,minmax(0,1fr))';
+  const track = document.getElementById('c-semanas-track');
+  if(!track) return;
+  track.style.gridTemplateColumns = gridCols;
+  let html = '';
+  for(let i = 1; i <= total; i++) {
+    let cls = i < sem ? 'done' : i === sem ? 'active' : '';
+    let status = i < sem ? '<span style="color:var(--ok);">✓</span>' : i === sem ? '<span style="color:var(--topbar);">En curso</span>' : '<span style="color:var(--text-l);">Bloqueada</span>';
+    html += `<div class="sc ${cls}"><div class="sn">Sem. ${i}</div><div class="st">${semNames[i]||'Semana '+i}</div><div class="ss">${status}</div></div>`;
+  }
+  track.innerHTML = html;
+}
+
+async function loadClientContent(clientId, semActual) {
+  try {
+    const snap = await getDocs(collection(db,'clientes',clientId,'contenido'));
+    const docs = [];
+    snap.forEach(d => docs.push({id:d.id,...d.data()}));
+    docs.sort((a,b) => a.semana !== b.semana ? a.semana - b.semana : (a.creadoEn||"")<(b.creadoEn||"") ? -1 : 1);
+    window._clientContenido = docs;
+
+    const disponibles = docs.filter(c => parseInt(c.semana) <= semActual);
+    const bloqueados = docs.filter(c => parseInt(c.semana) > semActual);
+
+    const progKey = `prog_${clientId}_sem${semActual}`;
+    const progData = JSON.parse(localStorage.getItem(progKey)||'{}');
+
+    const tipoConfig = {
+      texto:     {icon:'<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 4h12M4 8h8M4 12h10M4 16h6" stroke="var(--topbar)" stroke-width="1.5" stroke-linecap="round"/></svg>', badge:'Texto'},
+      link:      {icon:'<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><polygon points="7,5 17,10 7,15" fill="var(--topbar)"/></svg>', badge:'Video'},
+      pdf:       {icon:'<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="4" y="2" width="12" height="16" rx="2" stroke="var(--topbar)" stroke-width="1.3"/><path d="M7 7h6M7 10h6M7 13h4" stroke="var(--topbar)" stroke-width="1.2" stroke-linecap="round"/></svg>', badge:'PDF'},
+      checklist: {icon:'<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10l4 4 8-8" stroke="var(--topbar)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>', badge:'Checklist'},
+    };
+
+    let html = '';
+    if(disponibles.length === 0) {
+      html = '<div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Tu mentora está preparando el contenido. ¡Ya llega!</div>';
+    } else {
+      html = disponibles.map(c => {
+        const cfg = tipoConfig[c.tipo] || tipoConfig.texto;
+        const estado = progData[c.id] || 0;
+        const estadoConfig = [
+          {label:'', bg:'var(--cream-d)', icon:'', color:'var(--text-l)'},
+          {label:'En curso', bg:'var(--warn)', icon:'<svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M2 4h4" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>', color:'var(--warn)'},
+          {label:'Completado', bg:'var(--ok)', icon:'<svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1 4l2 2 4-4" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>', color:'var(--ok)'},
+        ][estado];
+
+        let body = '';
+        if(c.tipo === 'link' || c.tipo === 'pdf') {
+          const url = c.url || c.descripcion || '';
+          const isPDF = c.tipo === 'pdf';
+          const isBase64 = url.startsWith('data:application/pdf');
+          const linkAttr = isBase64 ? `href="javascript:void(0)" onclick="abrirPDFBase64('${c.id}')"` : `href="${url}" target="_blank"`;
+          body = `<div style="padding:12px 16px;border-top:.5px solid var(--cream-d);">
+            <a ${linkAttr} style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#fff;text-decoration:none;font-weight:500;background:var(--sage-dark);padding:8px 16px;border-radius:20px;cursor:pointer;">
+              ${isPDF ? '<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="0.5" width="11" height="12" rx="1.5" stroke="#fff" stroke-width="1.2"/><path d="M3.5 6.5h6M3.5 9h4" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/></svg> Ver PDF' : '<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 11L11 2M11 2H5M11 2v6" stroke="#fff" stroke-width="1.3" stroke-linecap="round"/></svg> Ver video'}
+            </a>
+          </div>`;
+        } else if(c.tipo === 'checklist' && c.items && c.items.length > 0) {
+          const done = c.items.filter(i=>i.hecho).length;
+          const total2 = c.items.length;
+          const pct2 = Math.round((done/total2)*100);
+          body = `<div style="padding:12px 16px;border-top:.5px solid var(--cream-d);">
+            <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:12px;">
+              ${c.items.map((item,i)=>`<div style="display:flex;align-items:center;gap:10px;">
+                <div class="chk ${item.hecho?'done':''}" onclick="toggleCheck('${c.id}',${i})" style="width:18px;height:18px;border-radius:5px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;${item.hecho?'background:var(--ok);':'background:var(--white);border:.5px solid var(--cream-d);'}">
+                  ${item.hecho?'<svg width="10" height="8" viewBox="0 0 10 8"><path d="M1 4l3 3 5-6" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>':''}
+                </div>
+                <span style="font-size:13px;${item.hecho?'text-decoration:line-through;color:var(--text-l);':'color:var(--text);'}">${item.texto}</span>
+              </div>`).join('')}
+            </div>
+            <div style="height:5px;background:var(--cream-d);border-radius:3px;overflow:hidden;">
+              <div style="height:100%;width:${pct2}%;background:var(--ok);border-radius:3px;transition:width .5s;"></div>
+            </div>
+            <div style="font-size:11px;color:var(--text-l);margin-top:4px;">${done} de ${total2} completados</div>
+          </div>`;
+        } else {
+          body = c.descripcion ? `<div style="padding:12px 16px;border-top:.5px solid var(--cream-d);font-size:13px;color:var(--text-m);line-height:1.5;">${c.descripcion}</div>` : '';
+        }
+
+        return `<div style="background:var(--white);border:.5px solid ${estado===2?'var(--topbar)':'var(--cream-d)'};border-radius:14px;overflow:hidden;margin-bottom:10px;" id="content-card-${c.id}">
+          <div style="padding:16px 18px;display:flex;align-items:center;gap:14px;">
+            <div style="width:52px;height:52px;border-radius:14px;background:${estado===2?'var(--topbar)':'var(--sage-xl)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              ${estado===2 ? '<svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M4 11l5 5 9-9" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>' : cfg.icon}
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px;">
+                <div style="font-size:14px;font-weight:500;color:var(--text);">${c.titulo}</div>
+                <span class="badge bgr">${cfg.badge}</span>
+                <span class="badge bgr">Sem. ${c.semana}</span>
+              </div>
+              ${c.tipo==='texto' && c.descripcion ? `<div style="font-size:12px;color:var(--text-l);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c.descripcion.slice(0,60)}${c.descripcion.length>60?'...':''}</div>` : ''}
+            </div>
+            <div onclick="cycleProgress('${c.id}','${progKey}')" style="width:28px;height:28px;border-radius:50%;background:${estadoConfig.bg};display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;border:.5px solid ${estado===0?'var(--cream-d)':'transparent'};">
+              ${estadoConfig.icon}
+            </div>
+          </div>
+          ${body}
+        </div>`;
+      }).join('');
+    }
+    document.getElementById('c-content-list').innerHTML = html;
+
+    // Verificar si completó todo
+    const todosCompletados = disponibles.length > 0 && disponibles.every(c => (progData[c.id]||0) === 2);
+    const celDiv = document.getElementById('c-celebracion');
+    if(celDiv) celDiv.style.display = todosCompletados ? 'flex' : 'none';
+
+    // Contenido bloqueado
+    if(bloqueados.length > 0) {
+      const lockedEl = document.getElementById('c-locked-semanas');
+      if(lockedEl) {
+        const semsBlockedNums = [...new Set(bloqueados.map(c=>c.semana))].sort((a,b)=>a-b);
+        lockedEl.innerHTML = semsBlockedNums.map(s=>`
+          <div style="background:var(--white);border:.5px dashed var(--cream-d);border-radius:14px;padding:14px 18px;margin-bottom:10px;display:flex;align-items:center;gap:12px;opacity:.6;">
+            <div style="width:40px;height:40px;border-radius:12px;background:var(--cream);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="4" y="8" width="10" height="8" rx="2" stroke="var(--text-l)" stroke-width="1.2"/><path d="M6 8V6a3 3 0 016 0v2" stroke="var(--text-l)" stroke-width="1.2"/></svg>
+            </div>
+            <div>
+              <div style="font-size:13px;font-weight:500;color:var(--text-l);">Semana ${s} — bloqueada</div>
+              <div style="font-size:11px;color:var(--text-l);margin-top:2px;">Disponible cuando avances en el programa</div>
+            </div>
+          </div>`).join('');
+      }
+    }
+  } catch(e) { console.log(e); }
+}
+
+async function loadNotasReunion() {
+  if(!currentClientUID) return;
+  try {
+    const snap = await getDocs(collection(db,'clientes',currentClientUID,'notasReunion'));
+    const notas = []; snap.forEach(d=>notas.push({id:d.id,...d.data()}));
+    notas.sort((a,b)=>new Date(b.fecha)-new Date(a.fecha));
+    const el = document.getElementById('c-notas-reunion-list'); if(!el) return;
+    if(notas.length===0){el.innerHTML='';return;}
+    el.innerHTML = notas.slice(0,3).map(n=>{
+      const fecha = new Date(n.fecha).toLocaleDateString('es-AR',{day:'numeric',month:'short'});
+      return `<div style="background:var(--cream);border-radius:8px;padding:9px 12px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+        <div style="font-size:12px;color:var(--text-m);line-height:1.4;flex:1;">${n.texto}</div>
+        <div style="font-size:10px;color:var(--text-l);flex-shrink:0;margin-top:2px;">${fecha}</div>
+      </div>`;
+    }).join('');
+  } catch(e) {}
+}
+
+window.saveNotaReunion = async function() {
+  if(!currentClientUID) return;
+  const texto = document.getElementById('c-nota-reunion-input').value.trim();
+  if(!texto) return;
+  try {
+    await addDoc(collection(db,'clientes',currentClientUID,'notasReunion'), {texto, fecha:new Date().toISOString(), leida:false});
+    document.getElementById('c-nota-reunion-input').value = '';
+    const s = document.getElementById('c-nota-reunion-saved'); s.style.display='block';
+    setTimeout(()=>s.style.display='none', 2500);
+    await loadNotasReunion();
+  } catch(e) { console.log(e); }
+};
+
+window.cycleProgress = function(contentId, progKey) {
+  const progData = JSON.parse(localStorage.getItem(progKey)||'{}');
+  const current = progData[contentId] || 0;
+  progData[contentId] = (current + 1) % 3;
+  localStorage.setItem(progKey, JSON.stringify(progData));
+  loadClientContent(currentClientUID, currentClientData?.semanaActual||1);
+};
+
+window.toggleCheck = async function(contentId, itemIdx) {
+  if(!currentClientUID) return;
+  try {
+    const ref = doc(db,'clientes',currentClientUID,'contenido',contentId);
+    const snap = await getDoc(ref);
+    if(!snap.exists()) return;
+    const items = snap.data().items || [];
+    items[itemIdx].hecho = !items[itemIdx].hecho;
+    await updateDoc(ref, {items});
+    const sem = currentClientData?.semanaActual || 1;
+    const progKey = `prog_${currentClientUID}_sem${sem}`;
+    const progData = JSON.parse(localStorage.getItem(progKey)||'{}');
+    const done = items.filter(i=>i.hecho).length;
+    const total = items.length;
+    progData[contentId] = done===total&&total>0 ? 2 : done>0 ? 1 : 0;
+    localStorage.setItem(progKey, JSON.stringify(progData));
+    await loadClientContent(currentClientUID, sem);
+  } catch(e) { console.log(e); }
+};
+
+window.abrirPDFBase64 = async function(contentId) {
+  try {
+    let base64 = null;
+    const cached = (window._clientContenido||[]).find(c => c.id === contentId);
+    if(cached) { base64 = cached.descripcion; }
+    else {
+      const snap = await getDocs(collection(db,'clientes',currentClientUID,'contenido'));
+      snap.forEach(d => { if(d.id === contentId) base64 = d.data().descripcion; });
+    }
+    if(!base64 || !base64.startsWith('data:application/pdf')) { alert('No se encontró el archivo PDF.'); return; }
+    const byteStr = atob(base64.split(',')[1]);
+    const ab = new ArrayBuffer(byteStr.length);
+    const ia = new Uint8Array(ab);
+    for(let i=0;i<byteStr.length;i++) ia[i]=byteStr.charCodeAt(i);
+    const blob = new Blob([ab],{type:'application/pdf'});
+    window.open(URL.createObjectURL(blob),'_blank');
+  } catch(e){ alert('No se pudo abrir el PDF: '+e.message); }
+};
+
+window.doLogin = async function() {
+  const email = document.getElementById('li-email').value.trim();
+  const pass = document.getElementById('li-pass').value;
+  const err = document.getElementById('lerr');
+  err.style.display='none';
+  if(!email||!pass) { err.textContent='Completá email y contraseña.'; err.style.display='block'; return; }
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch(e) { err.textContent='Email o contraseña incorrectos.'; err.style.display='block'; }
+};
+
+window.doLogout = async function() {
+  await signOut(auth);
+  document.getElementById('app').style.display='none';
+  document.getElementById('lp').style.display='flex';
+  currentClientUID = null;
+  currentClientData = null;
+};
+</script>
+
+</body>
+</html>
