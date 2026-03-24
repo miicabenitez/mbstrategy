@@ -585,7 +585,6 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
         <button class="nt" onclick="showATab('tareas',this)">Plan de acción</button>
         <button class="nt" onclick="showATab('kpis',this)">KPIs MB</button>
         <button class="nt" onclick="showATab('embi',this)">Embi ✦</button>
-        <button class="nt" onclick="showATab('auditoria',this)">Auditoría</button>
       </div>
     </div>
     <div class="topbar-right">
@@ -1112,21 +1111,12 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
           <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;margin-bottom:4px;">Panel Embi</div>
           <div style="font-size:12px;opacity:.65;">Reportes de fallas y sugerencias detectados por Embi o enviados por tus clientas.</div>
         </div>
-        <!-- KPIs reportes -->
+        <!-- KPIs -->
         <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:18px;">
           <div class="mc accent"><div class="ml" style="color:rgba(255,255,255,.6);">Total reportes</div><div class="mv" style="color:#fff;" id="embi-kpi-total">0</div><div class="ms" style="color:rgba(255,255,255,.5);">recibidos</div></div>
           <div class="mc"><div class="ml">Fallas pendientes</div><div class="mv" style="color:var(--err);" id="embi-kpi-fallas">0</div><div class="ms">sin resolver</div></div>
           <div class="mc"><div class="ml">Sugerencias</div><div class="mv" style="color:var(--blue);" id="embi-kpi-sugerencias">0</div><div class="ms">acumuladas</div></div>
         </div>
-
-        <!-- KPIs acciones Embi -->
-        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:18px;">
-          <div class="mc"><div class="ml">Acciones ejecutadas</div><div class="mv" style="color:var(--ok);" id="embi-kpi-acciones-ok">0</div><div class="ms">exitosas</div></div>
-          <div class="mc"><div class="ml">Errores de acción</div><div class="mv" style="color:var(--err);" id="embi-kpi-acciones-err">0</div><div class="ms">fallidas</div></div>
-          <div class="mc"><div class="ml">Tasa de éxito</div><div class="mv" id="embi-kpi-tasa">—</div><div class="ms">efectividad</div></div>
-          <div class="mc"><div class="ml">Tipo más usado</div><div class="mv" style="font-size:14px;padding-top:4px;" id="embi-kpi-tipo-top">—</div><div class="ms">de acción</div></div>
-        </div>
-
         <!-- Filtros -->
         <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
           <button onclick="embiAdminFilter('todos',this)" style="font-size:12px;padding:6px 16px;border-radius:20px;border:.5px solid var(--cream-d);background:var(--topbar);color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;" id="efbtn-todos">Todos</button>
@@ -1212,45 +1202,6 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
             <div class="ct">Distribucion financiera</div>
             <div style="position:relative;height:180px;"><canvas id="mbDonut"></canvas></div>
           </div>
-        </div>
-      </div>
-
-      <!-- AUDITORÍA -->
-      <div class="view" id="av-auditoria">
-        <div style="background:var(--topbar);border-radius:16px;padding:22px 24px;margin-bottom:14px;color:var(--white);position:relative;overflow:hidden;">
-          <div style="font-size:10px;opacity:.6;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;">MB Strategy — Seguridad</div>
-          <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;margin-bottom:4px;">Auditoría</div>
-          <div style="font-size:12px;opacity:.65;">Historial de elementos eliminados. No se puede borrar este registro.</div>
-        </div>
-
-        <!-- KPIs -->
-        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:16px;">
-          <div class="mc accent"><div class="ml" style="color:rgba(255,255,255,.6);">Total eliminados</div><div class="mv" style="color:#fff;" id="aud-kpi-total">0</div><div class="ms" style="color:rgba(255,255,255,.5);">registros</div></div>
-          <div class="mc"><div class="ml">Este mes</div><div class="mv" id="aud-kpi-mes">0</div><div class="ms">eliminaciones</div></div>
-          <div class="mc"><div class="ml">Módulo más activo</div><div class="mv" style="font-size:14px;padding-top:4px;" id="aud-kpi-modulo">—</div><div class="ms">en eliminaciones</div></div>
-        </div>
-
-        <!-- Filtros -->
-        <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center;">
-          <input type="text" id="aud-search" class="fi" placeholder="Buscar por módulo o usuario..." style="border-radius:20px;max-width:280px;" oninput="filtrarAuditoria(this.value)"/>
-          <select id="aud-modulo-sel" class="fi" style="max-width:180px;margin-top:0;" onchange="filtrarAuditoria(document.getElementById('aud-search').value)">
-            <option value="">Todos los módulos</option>
-            <option value="finanzas-ingresos">Finanzas — Ingresos</option>
-            <option value="finanzas-egresos">Finanzas — Egresos</option>
-            <option value="comercial-clientes">Comercial — Clientes</option>
-            <option value="comercial-presupuestos">Comercial — Presupuestos</option>
-            <option value="comercial-cobros">Comercial — Cobros</option>
-            <option value="compras-necesidades">Compras — Necesidades</option>
-            <option value="compras-categorias">Compras — Categorías</option>
-            <option value="calculador">Calculador</option>
-            <option value="admin-clientes">Admin — Clientes</option>
-          </select>
-          <button onclick="loadAuditoria()" style="background:none;border:none;font-size:12px;color:var(--text-l);cursor:pointer;font-family:'DM Sans',sans-serif;">↺ Actualizar</button>
-        </div>
-
-        <!-- Lista -->
-        <div class="card">
-          <div id="aud-lista"><div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Cargando auditoría...</div></div>
         </div>
       </div>
 
@@ -2385,23 +2336,6 @@ input[type=date],input[type=time],select{background:var(--cream);border:.5px sol
     <div class="fg"><label class="fl">Precio acordado (USD)</label><input type="number" class="fi" id="ecl-precio" placeholder="1200"/></div>
     <div class="fg"><label class="fl">Email</label><input type="email" class="fi" id="ecl-email" placeholder="cliente@email.com"/></div>
     <div class="fg"><label class="fl">Notas</label><textarea class="na" id="ecl-notas" style="min-height:60px;" placeholder="Contexto, dolores, situación actual..."></textarea></div>
-
-    <div class="fg">
-      <label class="fl">Productos habilitados</label>
-      <div style="background:var(--cream);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:10px;">
-        <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer;">
-          <input type="checkbox" id="ecl-prod-academia" style="accent-color:var(--sage-dark);width:16px;height:16px;"/>
-          Academia
-        </label>
-        <div style="display:flex;align-items:center;gap:10px;">
-          <label style="font-size:13px;min-width:80px;">Embi:</label>
-          <select class="fi" id="ecl-prod-embi" style="margin-top:0;flex:1;">
-            <option value="explicativo">Explicativo — orienta y explica</option>
-            <option value="operativo">Operativo — ejecuta acciones reales</option>
-          </select>
-        </div>
-      </div>
-    </div>
     <div class="br2">
       <button class="bp" onclick="saveEditCliente()">Guardar cambios</button>
       <button class="bs" onclick="closeModal('editClienteModal')">Cancelar</button>
@@ -3557,30 +3491,6 @@ window._where = where;
 window._orderBy = orderBy;
 window._updateDoc = updateDoc;
 
-// ── SOFT DELETE — nunca borra, siempre archiva ──────────────────────
-window.softDelete = async function(docRef, modulo) {
-  const uid = window.currentClientUID || 'admin';
-  const nombre = window.currentClientData?.nombre || uid;
-  await updateDoc(docRef, {
-    _eliminado: true,
-    _eliminadoEn: new Date().toISOString(),
-    _eliminadoPor: nombre,
-    _eliminadoUID: uid,
-    _eliminadoModulo: modulo || 'desconocido'
-  });
-  try {
-    await addDoc(collection(db,'auditoria'),{
-      ref: docRef.path,
-      accion: 'eliminado',
-      modulo: modulo || 'desconocido',
-      eliminadoPor: nombre,
-      eliminadoUID: uid,
-      fecha: new Date().toISOString(),
-      clienteId: window.currentClientUID || 'admin'
-    });
-  } catch(e) { console.log('auditoria error:', e); }
-};
-
 let currentUser = null;
 let currentClientId = null;
 let currentClientData = null;
@@ -3862,31 +3772,6 @@ window.showClientUI = async function(email, clientData) {
       const negNombre = document.getElementById('negocio-nombre-display');
       if(negNombre) negNombre.textContent = clientData.negocioNombre || clientData.nombre || 'Mi negocio';
     }
-
-    // ── CONTROL DE ACCESO POR PRODUCTO ──────────────────────────────
-    const productos = clientData.productos || { academia: true, sistema: true, embi: 'explicativo' };
-    const tieneAcademia = productos.academia !== false; // si no está definido, muestra academia
-    const embiTipo = productos.embi || 'explicativo';
-
-    // Tab Academia — visible solo si tiene academia habilitada
-    const modBar = document.getElementById('mod-bar');
-    if(modBar) {
-      const tabsBtn = modBar.querySelectorAll('.ctab');
-      tabsBtn.forEach(btn => {
-        if(btn.textContent.trim() === 'Academia') {
-          btn.style.display = tieneAcademia ? '' : 'none';
-        }
-      });
-      // Si no tiene academia, activar MB Gestión por defecto
-      if(!tieneAcademia) {
-        const gestionBtn = Array.from(tabsBtn).find(b=>b.textContent.trim()==='MB Gestión');
-        if(gestionBtn) { showMod('gestion', gestionBtn); }
-      }
-    }
-
-    // Embi — guardar modo en variable global para que embiSend lo respete
-    window._embiModo = embiTipo;
-
     if(window.embiShow) window.embiShow(true);
 };
 
@@ -4502,7 +4387,7 @@ window.deleteContent = async function(contentId) {
   showConfirm('¿Eliminar este contenido? Esta acción no se puede deshacer.', async () => {
     try {
       const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
-      await softDelete(doc(db,'clientes',currentClientId,'contenido',contentId),'academia');
+      await deleteDoc(doc(db,'clientes',currentClientId,'contenido',contentId));
       await loadContentAdmin(currentClientId);
     } catch(e) { console.log('Error al eliminar:', e); }
   }, 'Eliminar contenido');
@@ -4540,12 +4425,6 @@ window.editCliente = async function(id, event) {
     document.getElementById('ecl-precio').value = c.precio||'';
     document.getElementById('ecl-email').value = c.email||'';
     document.getElementById('ecl-notas').value = c.notas||'';
-    // Productos
-    const prod = c.productos || {};
-    const acadCb = document.getElementById('ecl-prod-academia');
-    const embiSel = document.getElementById('ecl-prod-embi');
-    if(acadCb) acadCb.checked = prod.academia === true;
-    if(embiSel) embiSel.value = prod.embi || 'explicativo';
     openModal('editClienteModal');
   } catch(e) { alert('Error al cargar cliente'); }
 };
@@ -4561,11 +4440,6 @@ window.saveEditCliente = async function() {
     precio: document.getElementById('ecl-precio').value,
     email: document.getElementById('ecl-email').value,
     notas: document.getElementById('ecl-notas').value,
-    productos: {
-      academia: document.getElementById('ecl-prod-academia')?.checked || false,
-      sistema: true, // siempre tiene sistema
-      embi: document.getElementById('ecl-prod-embi')?.value || 'explicativo'
-    }
   };
   try {
     await updateDoc(doc(db,'clientes',id), data);
@@ -4582,7 +4456,7 @@ window.deleteCliente = function(id, nombre, event) {
     async () => {
       try {
         const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
-        await softDelete(doc(db,'clientes',id),'admin-clientes');
+        await deleteDoc(doc(db,'clientes',id));
         await loadAdminData();
       } catch(e) { alert('Error: '+e.message); }
     },
@@ -4654,7 +4528,7 @@ window.deleteTask = function(el) {
     if (taskId) {
       try {
         const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
-        await softDelete(doc(db,'tareas',taskId),'comercial-tareas');
+        await deleteDoc(doc(db,'tareas',taskId));
       } catch(e) {}
     }
     el.remove();
@@ -4754,7 +4628,7 @@ window.deleteCobro = function(id) {
   showConfirm('¿Eliminar este ingreso?', async () => {
     try {
       const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
-      await softDelete(doc(db,'cobros',id),'comercial-cobros');
+      await deleteDoc(doc(db,'cobros',id));
       await loadAdminData();
     } catch(e) { console.log(e); }
   }, 'Eliminar ingreso');
@@ -4810,7 +4684,7 @@ window.deleteGasto = function(id) {
   showConfirm('¿Eliminar este egreso?', async () => {
     try {
       const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
-      await softDelete(doc(db,'gastos',id),'finanzas-gastos');
+      await deleteDoc(doc(db,'gastos',id));
       await loadGastos();
     } catch(e) { console.log(e); }
   }, 'Eliminar egreso');
@@ -5381,7 +5255,7 @@ window.deleteCalc = function(id) {
   showConfirm(`¿Eliminar "${nombre}"?`, async () => {
     try {
       const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
-      await softDelete(doc(db,'clientes',currentClientId,'calculos',id),'calculador');
+      await deleteDoc(doc(db,'clientes',currentClientId,'calculos',id));
       delete calcData[id];
       renderCalcList();
     } catch(e) { console.log(e); }
@@ -5794,7 +5668,7 @@ window.deletePendiente = function(id) {
   showConfirm('¿Eliminar este pendiente?', async () => {
     try {
       const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
-      await softDelete(doc(db,'pendientes',id),'comercial-pendientes');
+      await deleteDoc(doc(db,'pendientes',id));
       await loadPendientes();
     } catch(e) { console.log(e); }
   }, 'Eliminar pendiente');
@@ -6029,7 +5903,7 @@ window.deletePresup = async function(id) {
   showConfirm('¿Eliminar este presupuesto?', async () => {
     try {
       const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
-      await softDelete(doc(db,'presupuestos',id),'comercial-presupuestos');
+      await deleteDoc(doc(db,'presupuestos',id));
       await loadPresupuestosGlobal();
     } catch(e) { console.log(e); }
   }, 'Eliminar presupuesto');
@@ -6957,7 +6831,7 @@ window.deleteClientIngreso = async function(id) {
   showConfirm('¿Eliminar este ingreso?', async()=>{
     try{
       const {deleteDoc:dd}=await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
-      await softDelete(doc(db,'clientes',currentClientUID,'ingresos',id),'finanzas-ingresos');
+      await dd(doc(db,'clientes',currentClientUID,'ingresos',id));
       await loadClientContabilidad();
     }catch(e){ alert('Error: '+e.message); }
   },'Eliminar ingreso');
@@ -6979,7 +6853,7 @@ window.deleteClientEgreso = async function(id) {
   showConfirm('¿Eliminar este egreso?', async()=>{
     try{
       const {deleteDoc:dd}=await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
-      await softDelete(doc(db,'clientes',currentClientUID,'egresos',id),'finanzas-egresos');
+      await dd(doc(db,'clientes',currentClientUID,'egresos',id));
       await loadClientContabilidad();
     }catch(e){ alert('Error: '+e.message); }
   },'Eliminar egreso');
@@ -7528,7 +7402,7 @@ window.eliminarCobro = function(clienteId, cobroId, monto) {
     try {
       const {deleteDoc: dd} = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
       // 1. Eliminar el cobro
-      await softDelete(doc(db,'clientes',currentClientUID,'misClientes',clienteId,'cobros',cobroId),'comercial-cobros');
+      await dd(doc(db,'clientes',currentClientUID,'misClientes',clienteId,'cobros',cobroId));
       // 2. Descontar de totalCobrado
       const cSnap = await getDoc(doc(db,'clientes',currentClientUID,'misClientes',clienteId));
       const actual = parseFloat(cSnap.data()?.totalCobrado||0);
@@ -7853,13 +7727,13 @@ window.deleteMcCliente = function(id, event) {
       const base = ['cobros','historial','notas'];
       for(const sub of base) {
         const snap = await getDocs(collection(db,'clientes',currentClientUID,'misClientes',id,sub));
-        for(const d of snap.docs) { try{ await softDelete(d.ref,'comercial-clientes-sub'); }catch(e){} }
+        for(const d of snap.docs) { try{ await deleteDoc(d.ref); }catch(e){} }
       }
-      await softDelete(doc(db,'clientes',currentClientUID,'misClientes',id),'comercial-clientes');
+      await deleteDoc(doc(db,'clientes',currentClientUID,'misClientes',id));
       // También eliminar presupuestos vinculados a este cliente
       const pSnap = await getDocs(collection(db,'clientes',currentClientUID,'presupuestos'));
       for(const d of pSnap.docs) {
-        if(d.data().clienteId === id) { try{ await softDelete(d.ref,'comercial-presupuestos-cliente'); }catch(e){} }
+        if(d.data().clienteId === id) { try{ await deleteDoc(d.ref); }catch(e){} }
       }
       await loadMcModule();
       closeMcDetalle();
@@ -7907,7 +7781,7 @@ window.deleteMcPresup = function(id) {
   showConfirm('¿Eliminar este presupuesto?',async()=>{
     try {
       const {deleteDoc}=await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
-      await softDelete(doc(db,'clientes',currentClientUID,'presupuestos',id),'comercial-presupuestos');
+      await deleteDoc(doc(db,'clientes',currentClientUID,'presupuestos',id));
       await loadMcModule();
       if (_currentMcClienteId) openMcDetalle(_currentMcClienteId);
     } catch(e) {}
@@ -8204,7 +8078,7 @@ window.goToClientFromPresup = function(clienteId) {
 
 window.deleteClientPresup = function(id) {
   showConfirm('¿Eliminar este presupuesto?', async()=>{
-    try { const {deleteDoc}=await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js"); await softDelete(doc(db,'clientes',currentClientUID,'presupuestos',id),'comercial-presupuestos'); await loadClientPresupuestos(); }catch(e){}
+    try { const {deleteDoc}=await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js"); await deleteDoc(doc(db,'clientes',currentClientUID,'presupuestos',id)); await loadClientPresupuestos(); }catch(e){}
   },'Eliminar presupuesto');
 };
 
@@ -8941,7 +8815,7 @@ window.deleteNecesidad = function(id) {
   showConfirm('¿Eliminar esta necesidad de compra?', async()=>{
     try{
       const {deleteDoc:dd}=await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
-      await softDelete(doc(db,'clientes',currentClientUID,'necesidades',id),'compras-necesidades');
+      await dd(doc(db,'clientes',currentClientUID,'necesidades',id));
       await loadNecesidades();
     }catch(e){alert('Error: '+e.message);}
   },'Eliminar necesidad');
@@ -10254,7 +10128,7 @@ window.deleteCatCustom = async function(nombre) {
       for(const d of snap.docs) {
         if(d.data().nombre === nombre) {
           const {deleteDoc:dd} = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
-          await softDelete(doc(db,'clientes',currentClientUID,'categoriasProveedor',d.id),'compras-categorias');
+          await dd(doc(db,'clientes',currentClientUID,'categoriasProveedor',d.id));
         }
       }
       _catsProv = _catsProv.filter(c=>c!==nombre);
@@ -10976,132 +10850,17 @@ window.showATab = function(tab, btn) {
   if (tab === 'kpis') setTimeout(() => { if(window._mbChartFn) window._mbChartFn(); initMbChart(); }, 100);
   if (tab === 'cobros') setTimeout(() => { initCashflowCharts(); }, 100);
   if (tab === 'embi') setTimeout(() => { loadEmbiReports(); }, 100);
-  if (tab === 'auditoria') setTimeout(() => { loadAuditoria(); }, 100);
 };
 
 // ── EMBI ADMIN PANEL ──
 var _embiReports = [], _embiFilter = 'todos';
 
-// ── AUDITORÍA ────────────────────────────────────────────────────────
-let _auditoriaData = [];
-
-window.loadAuditoria = async function() {
-  const el = document.getElementById('aud-lista');
-  if(el) el.innerHTML = '<div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Cargando...</div>';
-  try {
-    const snap = await getDocs(collection(db,'auditoria'));
-    _auditoriaData = [];
-    snap.forEach(d => _auditoriaData.push({id:d.id,...d.data()}));
-    _auditoriaData.sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
-
-    // KPIs
-    const setEl=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
-    const mesActual = new Date().toISOString().slice(0,7);
-    const estesMes = _auditoriaData.filter(a=>a.fecha&&a.fecha.startsWith(mesActual));
-    const modulos = {};
-    _auditoriaData.forEach(a=>{const m=a.modulo||'?';modulos[m]=(modulos[m]||0)+1;});
-    const topMod = Object.entries(modulos).sort((a,b)=>b[1]-a[1])[0];
-    setEl('aud-kpi-total', _auditoriaData.length);
-    setEl('aud-kpi-mes', estesMes.length);
-    setEl('aud-kpi-modulo', topMod ? topMod[0].split('-').pop() : '—');
-
-    renderAuditoria(_auditoriaData);
-  } catch(e) { if(el) el.innerHTML='<div style="text-align:center;padding:28px;color:var(--err);font-size:13px;">Error cargando auditoría.</div>'; }
-};
-
-window.filtrarAuditoria = function(q) {
-  const modSel = document.getElementById('aud-modulo-sel')?.value || '';
-  let lista = _auditoriaData;
-  if(modSel) lista = lista.filter(a=>a.modulo===modSel);
-  if(q) {
-    const qs = q.toLowerCase();
-    lista = lista.filter(a=>(a.modulo||'').toLowerCase().includes(qs)||(a.eliminadoPor||'').toLowerCase().includes(qs)||(a.ref||'').toLowerCase().includes(qs));
-  }
-  renderAuditoria(lista);
-};
-
-window.restaurarRegistro = async function(audId, refPath) {
-  showConfirm('¿Restaurar este registro? Se marcará como activo nuevamente.', async()=>{
-    try {
-      const parts = refPath.split('/');
-      const docRef = doc(db, ...parts);
-      await updateDoc(docRef, {
-        _eliminado: false,
-        _restauradoEn: new Date().toISOString(),
-        _restauradoPor: window.currentAdminEmail || 'admin'
-      });
-      await addDoc(collection(db,'auditoria'),{
-        ref: refPath,
-        accion: 'restaurado',
-        modulo: 'admin-auditoria',
-        eliminadoPor: window.currentAdminEmail || 'admin',
-        fecha: new Date().toISOString(),
-        clienteId: 'admin'
-      });
-      await loadAuditoria();
-    } catch(e){ alert('Error al restaurar: '+e.message); }
-  }, 'Restaurar registro');
-};
-
-function renderAuditoria(lista) {
-  const el = document.getElementById('aud-lista'); if(!el) return;
-  if(lista.length===0){
-    el.innerHTML='<div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Sin registros eliminados.</div>';
-    return;
-  }
-  const moduloLabels = {
-    'finanzas-ingresos':'Finanzas · Ingreso','finanzas-egresos':'Finanzas · Egreso',
-    'comercial-clientes':'Comercial · Cliente','comercial-presupuestos':'Comercial · Presupuesto',
-    'comercial-cobros':'Comercial · Cobro','comercial-tareas':'Comercial · Tarea',
-    'compras-necesidades':'Compras · Necesidad','compras-categorias':'Compras · Categoría',
-    'calculador':'Calculador','admin-clientes':'Admin · Cliente','admin-embi':'Admin · Embi',
-    'academia':'Academia','comercial-productos':'Comercial · Producto'
-  };
-  el.innerHTML = lista.map(a => {
-    const fecha = a.fecha ? new Date(a.fecha).toLocaleDateString('es-AR',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
-    const modLabel = moduloLabels[a.modulo]||a.modulo||'—';
-    const esRestaurado = a.accion==='restaurado';
-    return `<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:.5px solid var(--cream-d);">
-      <div style="width:8px;height:8px;border-radius:50%;background:${esRestaurado?'var(--ok)':'var(--err)'};flex-shrink:0;margin-top:2px;"></div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:12px;font-weight:500;color:var(--text);">${modLabel}</div>
-        <div style="font-size:11px;color:var(--text-l);margin-top:2px;">Por: ${a.eliminadoPor||'—'} · ${fecha}</div>
-        <div style="font-size:10px;color:var(--text-l);margin-top:1px;font-family:monospace;opacity:.6;">${a.ref||'—'}</div>
-      </div>
-      <span style="background:${esRestaurado?'var(--ok-bg)':'var(--err-bg)'};color:${esRestaurado?'var(--ok)':'var(--err)'};font-size:9px;font-weight:500;padding:2px 8px;border-radius:20px;flex-shrink:0;">${esRestaurado?'Restaurado':'Eliminado'}</span>
-      ${!esRestaurado&&a.ref?`<button onclick="restaurarRegistro('${a.id}','${a.ref}')" style="background:var(--sage-xl);border:.5px solid var(--sage-light);border-radius:20px;padding:4px 12px;font-size:11px;color:var(--sage-dark);cursor:pointer;font-family:'DM Sans',sans-serif;flex-shrink:0;">Restaurar</button>`:''}
-    </div>`;
-  }).join('');
-}
-
 window.loadEmbiReports = async function() {
   try {
-    const [repSnap, acSnap] = await Promise.all([
-      getDocs(collection(db,'embiReports')),
-      getDocs(collection(db,'embiAcciones'))
-    ]);
+    const snap = await getDocs(collection(db,'embiReports'));
     _embiReports = [];
-    repSnap.forEach(d => _embiReports.push({id:d.id,...d.data()}));
+    snap.forEach(d => _embiReports.push({id:d.id,...d.data()}));
     _embiReports.sort((a,b)=>(b.creadoEn||'').localeCompare(a.creadoEn||''));
-
-    // Métricas de acciones
-    const acciones=[];
-    acSnap.forEach(d=>acciones.push(d.data()));
-    const ok=acciones.filter(a=>a.estado==='ok').length;
-    const err=acciones.filter(a=>a.estado!=='ok').length;
-    const tasa=acciones.length>0?Math.round((ok/acciones.length)*100):null;
-    // Tipo más usado
-    const tipos={};
-    acciones.filter(a=>a.estado==='ok').forEach(a=>{tipos[a.tipo]=(tipos[a.tipo]||0)+1;});
-    const topTipo=Object.entries(tipos).sort((a,b)=>b[1]-a[1])[0];
-    const tipoLabels={INGRESO:'Ingresos',EGRESO:'Egresos',CLIENTE:'Clientes',COBRO:'Cobros',OC_RECIBIDA:'OC recibidas'};
-
-    const setEl=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
-    setEl('embi-kpi-acciones-ok', ok);
-    setEl('embi-kpi-acciones-err', err);
-    setEl('embi-kpi-tasa', tasa!==null ? tasa+'%' : '—');
-    setEl('embi-kpi-tipo-top', topTipo ? tipoLabels[topTipo[0]]||topTipo[0] : '—');
-
     renderEmbiReports();
   } catch(e){ console.log('loadEmbiReports error:',e); }
 };
@@ -11166,7 +10925,7 @@ window.embiDeleteReport = function(id) {
   showConfirm('¿Eliminar este reporte?', async()=>{
     try {
       const {deleteDoc:dd}=await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
-      await softDelete(doc(db,'embiReports',id),'admin-embi');
+      await dd(doc(db,'embiReports',id));
       _embiReports = _embiReports.filter(r=>r.id!==id);
       renderEmbiReports();
     } catch(e){ alert('Error: '+e.message); }
@@ -11819,7 +11578,7 @@ window.deleteProducto = function(id) {
     try {
       var fsi = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
       var fdb = window.db || fsi.getFirestore();
-      await softDelete(fsi.doc(fdb,'clientes',uid,'productos',id),'comercial-productos');
+      await fsi.deleteDoc(fsi.doc(fdb,'clientes',uid,'productos',id));
       await loadProductos();
     } catch(e){ alert('Error: '+e.message); }
   }, 'Eliminar producto');
@@ -12078,76 +11837,19 @@ async function embiSend(){
   var resp=await embiCallAPI(val);
   embiRemoveTyping();
 
-  // Detectar y ejecutar acciones — regex robusta que maneja JSON con arrays
-  var actionMatch=resp.match(/\[ACCION_EJECUTAR:([A-Z_]+):([\s\S]*?)\](?:\s*$|\n|$)/m);
-  if(!actionMatch){
-    // fallback: buscar desde el tag hasta el final
-    var tagIdx=resp.indexOf('[ACCION_EJECUTAR:');
-    if(tagIdx!==-1){
-      var afterTag=resp.slice(tagIdx+17);
-      var colonIdx=afterTag.indexOf(':');
-      if(colonIdx!==-1){
-        var tipo2=afterTag.slice(0,colonIdx);
-        var jsonStr=afterTag.slice(colonIdx+1);
-        // cerrar en el último }
-        var lastBrace=jsonStr.lastIndexOf('}');
-        if(lastBrace!==-1)jsonStr=jsonStr.slice(0,lastBrace+1);
-        try{
-          var datos2=JSON.parse(jsonStr);
-          actionMatch={1:tipo2,2:jsonStr};
-          actionMatch[0]=resp;
-        }catch(e){}
-      }
-    }
-  }
+  // Detectar y ejecutar acciones
+  var actionMatch=resp.match(/\[ACCION_EJECUTAR:([^:]+):([^\]]+)\]/);
   if(actionMatch){
-    // Modo explicativo — no ejecuta acciones reales
-    if(window._embiModo === 'explicativo') {
-      var textoSinTag=resp.replace(/\[ACCION_EJECUTAR:[\s\S]*?\][\s]*/,'').trim();
-      embiAddMsg('bot', textoSinTag || 'Para ejecutar acciones necesitás el plan Embi Operativo. Contactá a Micaela para conocer más.');
-      return;
-    }
     var tipo=actionMatch[1], datosStr=actionMatch[2];
-    var textoLimpio=resp.replace(/\[ACCION_EJECUTAR:[\s\S]*?\][\s]*/,'').trim();
-    embiAddMsg('bot',textoLimpio||'Procesando...');
-    var datos={};
-    try{ datos=JSON.parse(datosStr); }catch(e){
-      embiAddMsg('bot','Hubo un problema al procesar los datos. Intentá de nuevo con el mismo pedido.');
-      embiLogAccion(tipo,'error_parse',datosStr);
-      return;
-    }
-    // Validar datos mínimos
-    var valid=true;
-    if((tipo==='INGRESO'||tipo==='EGRESO'||tipo==='COBRO')&&!(parseFloat(datos.monto)>0)){
-      embiAddMsg('bot','Faltó el monto. ¿Cuánto fue?');valid=false;
-    }
-    if(tipo==='CLIENTE'&&!datos.nombre){
-      embiAddMsg('bot','Faltó el nombre del cliente. ¿Cómo se llama?');valid=false;
-    }
-    if(!valid){embiLogAccion(tipo,'error_validacion',datos);return;}
+    var textoLimpio=resp.replace(/\[ACCION_EJECUTAR:[^\]]+\]/,'').trim();
+    embiAddMsg('bot',textoLimpio||'Ejecutando...');
     try{
+      var datos=JSON.parse(datosStr);
       await embiEjecutarAccion(tipo,datos);
-      embiLogAccion(tipo,'ok',datos);
-    }catch(e){
-      embiAddMsg('bot','Error al ejecutar: '+e.message);
-      embiLogAccion(tipo,'error_ejecucion',{error:e.message,...datos});
-    }
+    }catch(e){embiAddMsg('bot','No pude ejecutar la acción. Intentá de nuevo.');}
     return;
   }
   embiAddMsg('bot',resp);
-}
-
-async function embiLogAccion(tipo,estado,datos){
-  try{
-    if(!currentClientUID)return;
-    await addDoc(collection(db,'embiAcciones'),{
-      tipo,estado,
-      datos:typeof datos==='object'?JSON.stringify(datos):datos,
-      clienteId:currentClientUID,
-      cliente:window.currentClientData?.nombre||'',
-      fecha:new Date().toISOString()
-    });
-  }catch(e){}
 }
 
 async function embiEjecutarAccion(tipo,datos){
