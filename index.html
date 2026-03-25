@@ -3322,8 +3322,6 @@ window._query = query;
 window._where = where;
 window._orderBy = orderBy;
 window._updateDoc = updateDoc;
-window._deleteDoc = deleteDoc;
-window._deleteField = deleteField;
 
 let currentUser = null;
 let currentClientId = null;
@@ -10978,6 +10976,189 @@ window.toggleCheck = async function(contentId, itemIdx) {
   } catch(e) { console.log(e); }
 };
 
+// ── PAPELERA ──
+let _papeleraItems = [];
+let _papeleraFilterTipo = 'todos';
+
+const PAPELERA_SUBCOLS = [
+  {col:'ingresos', tipo:'Ingreso', bg:'#5A8A62', desc:d=>d.concepto||'Ingreso', monto:d=>d.monto},
+  {col:'egresos', tipo:'Egreso', bg:'#C4786A', desc:d=>d.concepto||'Egreso', monto:d=>d.monto},
+  {col:'presupuestos', tipo:'Presupuesto', bg:'#4A6A8A', desc:d=>d.titulo||d.cliente||'Presupuesto', monto:d=>0},
+  {col:'misClientes', tipo:'Cliente CRM', bg:'#7A8E7D', desc:d=>d.nombre||'Cliente', monto:d=>0},
+  {col:'proveedores', tipo:'Proveedor', bg:'#6B7A60', desc:d=>d.nombre||'Proveedor', monto:d=>0},
+  {col:'prodCompra', tipo:'Producto compra', bg:'#B08A42', desc:d=>d.nombre||'Producto', monto:d=>d.precio},
+  {col:'necesidades', tipo:'Necesidad', bg:'#B08A42', desc:d=>d.categoria||'Necesidad', monto:d=>0},
+  {col:'tareas', tipo:'Tarea', bg:'#4A6A8A', desc:d=>d.titulo||'Tarea', monto:d=>0},
+  {col:'calculos', tipo:'Calculador', bg:'#8A9E8D', desc:d=>d.nombre||'Cálculo', monto:d=>0},
+  {col:'productos', tipo:'Producto', bg:'#B08A42', desc:d=>d.nombre||'Producto', monto:d=>d.precio},
+  {col:'categoriasProveedor', tipo:'Categoría', bg:'#D0CFC9', desc:d=>d.nombre||'Categoría', monto:d=>0},
+];
+const PAPELERA_TOP = [
+  {col:'cobros', tipo:'Cobro', bg:'#5A8A62', desc:d=>d.concepto||'Cobro', monto:d=>d.monto},
+  {col:'tareas', tipo:'Tarea admin', bg:'#4A6A8A', desc:d=>d.titulo||'Tarea', monto:d=>0},
+  {col:'pendientes', tipo:'Pendiente', bg:'#B08A42', desc:d=>d.texto||'Pendiente', monto:d=>0},
+  {col:'presupuestos', tipo:'Presupuesto admin', bg:'#4A6A8A', desc:d=>d.titulo||'Presupuesto', monto:d=>0},
+  {col:'embiReports', tipo:'Reporte Embi', bg:'#8A9E8D', desc:d=>d.descripcion||'Reporte', monto:d=>0},
+];
+
+function papeleraTimeAgo(dateStr) {
+  if(!dateStr) return '';
+  const d = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now - d;
+  const mins = Math.floor(diffMs/60000);
+  if(mins < 1) return 'ahora';
+  if(mins < 60) return 'hace '+mins+'min';
+  const hrs = Math.floor(mins/60);
+  if(hrs < 24) return 'hace '+hrs+'h';
+  const days = Math.floor(hrs/24);
+  if(days === 1) return 'ayer';
+  if(days < 7) return 'hace '+days+'d';
+  if(days < 30) return 'hace '+Math.floor(days/7)+' sem';
+  return 'hace '+Math.floor(days/30)+' mes'+(Math.floor(days/30)>1?'es':'');
+}
+
+window.loadPapelera = async function() {
+  showSkeleton('papelera-lista','list');
+  _papeleraItems = [];
+  try {
+    const allCliSnap = await getDocs(collection(db,'clientes'));
+    const clients = [];
+    allCliSnap.forEach(d => clients.push({id:d.id,...d.data()}));
+    for(const c of clients) {
+      for(const cfg of PAPELERA_SUBCOLS) {
+        try {
+          const snap = await getDocs(collection(db,'clientes',c.id,cfg.col));
+          snap.forEach(d => {
+            const data = d.data();
+            if(data.eliminado) {
+              _papeleraItems.push({
+                tipo: cfg.tipo, bg: cfg.bg,
+                descripcion: cfg.desc(data),
+                monto: parseFloat(cfg.monto(data))||0,
+                clienteNombre: c.nombre, clienteId: c.id,
+                docId: d.id,
+                pathSegments: ['clientes', c.id, cfg.col],
+                eliminadoEn: data.eliminadoEn||''
+              });
+            }
+          });
+        } catch(e) {}
+      }
+    }
+    for(const cfg of PAPELERA_TOP) {
+      try {
+        const snap = await getDocs(collection(db,cfg.col));
+        snap.forEach(d => {
+          const data = d.data();
+          if(data.eliminado) {
+            _papeleraItems.push({
+              tipo: cfg.tipo, bg: cfg.bg,
+              descripcion: cfg.desc(data),
+              monto: parseFloat(cfg.monto(data))||0,
+              clienteNombre: 'Admin', clienteId: '',
+              docId: d.id,
+              pathSegments: [cfg.col],
+              eliminadoEn: data.eliminadoEn||''
+            });
+          }
+        });
+      } catch(e) {}
+    }
+    try {
+      const cSnap = await getDocs(collection(db,'clientes'));
+      cSnap.forEach(d => {
+        const data = d.data();
+        if(data.eliminado) {
+          _papeleraItems.push({
+            tipo: 'Cliente admin', bg: '#7A8E7D',
+            descripcion: data.nombre||'Cliente',
+            monto: 0,
+            clienteNombre: 'Admin', clienteId: '',
+            docId: d.id,
+            pathSegments: ['clientes'],
+            eliminadoEn: data.eliminadoEn||''
+          });
+        }
+      });
+    } catch(e) {}
+    _papeleraItems.sort((a,b) => (b.eliminadoEn||'').localeCompare(a.eliminadoEn||''));
+    const sel = document.getElementById('pap-filtro-cliente');
+    if(sel) {
+      const clienteNames = [...new Set(_papeleraItems.map(i=>i.clienteNombre).filter(Boolean))];
+      sel.innerHTML = '<option value="">Todos los clientes</option>' + clienteNames.map(n=>`<option value="${n}">${n}</option>`).join('');
+    }
+    renderPapelera();
+  } catch(e) { console.log('loadPapelera error:', e); }
+};
+
+function renderPapelera() {
+  const el = document.getElementById('papelera-lista');
+  if(!el) return;
+  const now = new Date();
+  const h24 = new Date(now - 86400000);
+  const d7 = new Date(now - 7*86400000);
+  const setEl=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  setEl('pap-kpi-total', _papeleraItems.length);
+  setEl('pap-kpi-24h', _papeleraItems.filter(i=>new Date(i.eliminadoEn)>=h24).length);
+  setEl('pap-kpi-7d', _papeleraItems.filter(i=>new Date(i.eliminadoEn)>=d7).length);
+  const filtroCliente = document.getElementById('pap-filtro-cliente')?.value || '';
+  let items = _papeleraItems;
+  if(_papeleraFilterTipo !== 'todos') items = items.filter(i=>i.tipo===_papeleraFilterTipo);
+  if(filtroCliente) items = items.filter(i=>i.clienteNombre===filtroCliente);
+  if(items.length === 0) {
+    el.innerHTML = '<div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">La papelera está vacía.</div>';
+    return;
+  }
+  el.innerHTML = items.map((item,idx) => {
+    const montoStr = item.monto ? ' · $'+Math.round(item.monto).toLocaleString('es-AR') : '';
+    const pathStr = JSON.stringify(item.pathSegments).replace(/"/g,'&quot;');
+    return `<div style="background:var(--white);border:.5px solid var(--cream-d);border-radius:12px;padding:14px;margin-bottom:8px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px;">
+            <span style="background:${item.bg};color:#fff;font-size:10px;font-weight:500;padding:2px 9px;border-radius:20px;">${item.tipo}</span>
+            <span style="font-size:13px;font-weight:500;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${item.descripcion}</span>
+          </div>
+          <div style="font-size:11px;color:var(--text-l);">${item.clienteNombre}${montoStr} · ${papeleraTimeAgo(item.eliminadoEn)}</div>
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0;">
+          <button onclick="restaurarItem(${pathStr},'${item.docId}')" style="background:#5A8A62;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">Restaurar</button>
+          <button onclick="eliminarPermanente(${pathStr},'${item.docId}')" style="background:transparent;border:.5px solid #C4786A;color:#C4786A;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">Eliminar</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+window.renderPapelera = renderPapelera;
+
+window.papeleraFilterTipo = function(tipo, btn) {
+  _papeleraFilterTipo = tipo;
+  document.querySelectorAll('#av-papelera .presup-fil').forEach(b => b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderPapelera();
+};
+
+window.restaurarItem = async function(pathSegments, docId) {
+  try {
+    const ref = doc(db, ...pathSegments, docId);
+    await updateDoc(ref, { eliminado: deleteField(), eliminadoEn: deleteField() });
+    _papeleraItems = _papeleraItems.filter(i => !(i.docId===docId && JSON.stringify(i.pathSegments)===JSON.stringify(pathSegments)));
+    renderPapelera();
+  } catch(e) { alert('Error al restaurar: '+e.message); }
+};
+
+window.eliminarPermanente = function(pathSegments, docId) {
+  showConfirm('¿Eliminar permanentemente? Esta acción NO se puede deshacer.', async () => {
+    try {
+      const ref = doc(db, ...pathSegments, docId);
+      await deleteDoc(ref);
+      _papeleraItems = _papeleraItems.filter(i => !(i.docId===docId && JSON.stringify(i.pathSegments)===JSON.stringify(pathSegments)));
+      renderPapelera();
+    } catch(e) { alert('Error: '+e.message); }
+  }, 'Eliminar permanentemente');
+};
+
 </script>
 
 <script>
@@ -11036,196 +11217,6 @@ window.hideAppError = function() {
 };
 
 
-
-// ── PAPELERA ──
-const _db=window.db, _gd=window._getDocs, _col=window._collection, _dc=window._doc, _ud=window._updateDoc, _dd=window._deleteDoc, _df=window._deleteField;
-let _papeleraItems = [];
-let _papeleraFilterTipo = 'todos';
-
-const PAPELERA_SUBCOLS = [
-  {col:'ingresos', tipo:'Ingreso', bg:'#5A8A62', desc:d=>d.concepto||'Ingreso', monto:d=>d.monto},
-  {col:'egresos', tipo:'Egreso', bg:'#C4786A', desc:d=>d.concepto||'Egreso', monto:d=>d.monto},
-  {col:'presupuestos', tipo:'Presupuesto', bg:'#4A6A8A', desc:d=>d.titulo||d.cliente||'Presupuesto', monto:d=>0},
-  {col:'misClientes', tipo:'Cliente CRM', bg:'#7A8E7D', desc:d=>d.nombre||'Cliente', monto:d=>0},
-  {col:'proveedores', tipo:'Proveedor', bg:'#6B7A60', desc:d=>d.nombre||'Proveedor', monto:d=>0},
-  {col:'prodCompra', tipo:'Producto compra', bg:'#B08A42', desc:d=>d.nombre||'Producto', monto:d=>d.precio},
-  {col:'necesidades', tipo:'Necesidad', bg:'#B08A42', desc:d=>d.categoria||'Necesidad', monto:d=>0},
-  {col:'tareas', tipo:'Tarea', bg:'#4A6A8A', desc:d=>d.titulo||'Tarea', monto:d=>0},
-  {col:'calculos', tipo:'Calculador', bg:'#8A9E8D', desc:d=>d.nombre||'Cálculo', monto:d=>0},
-  {col:'productos', tipo:'Producto', bg:'#B08A42', desc:d=>d.nombre||'Producto', monto:d=>d.precio},
-  {col:'categoriasProveedor', tipo:'Categoría', bg:'#D0CFC9', desc:d=>d.nombre||'Categoría', monto:d=>0},
-];
-const PAPELERA_TOP = [
-  {col:'cobros', tipo:'Cobro', bg:'#5A8A62', desc:d=>d.concepto||'Cobro', monto:d=>d.monto},
-  {col:'tareas', tipo:'Tarea admin', bg:'#4A6A8A', desc:d=>d.titulo||'Tarea', monto:d=>0},
-  {col:'pendientes', tipo:'Pendiente', bg:'#B08A42', desc:d=>d.texto||'Pendiente', monto:d=>0},
-  {col:'presupuestos', tipo:'Presupuesto admin', bg:'#4A6A8A', desc:d=>d.titulo||'Presupuesto', monto:d=>0},
-  {col:'embiReports', tipo:'Reporte Embi', bg:'#8A9E8D', desc:d=>d.descripcion||'Reporte', monto:d=>0},
-];
-
-function papeleraTimeAgo(dateStr) {
-  if(!dateStr) return '';
-  const d = new Date(dateStr);
-  const now = new Date();
-  const diffMs = now - d;
-  const mins = Math.floor(diffMs/60000);
-  if(mins < 1) return 'ahora';
-  if(mins < 60) return 'hace '+mins+'min';
-  const hrs = Math.floor(mins/60);
-  if(hrs < 24) return 'hace '+hrs+'h';
-  const days = Math.floor(hrs/24);
-  if(days === 1) return 'ayer';
-  if(days < 7) return 'hace '+days+'d';
-  if(days < 30) return 'hace '+Math.floor(days/7)+' sem';
-  return 'hace '+Math.floor(days/30)+' mes'+(Math.floor(days/30)>1?'es':'');
-}
-
-window.loadPapelera = async function() {
-  showSkeleton('papelera-lista','list');
-  _papeleraItems = [];
-  try {
-    // Cargar TODOS los clientes (incluyendo eliminados) para revisar subcols
-    const allCliSnap = await _gd(_col(_db,'clientes'));
-    const clients = [];
-    allCliSnap.forEach(d => clients.push({id:d.id,...d.data()}));
-    // Subcols de cada cliente
-    for(const c of clients) {
-      for(const cfg of PAPELERA_SUBCOLS) {
-        try {
-          const snap = await _gd(_col(_db,'clientes',c.id,cfg.col));
-          snap.forEach(d => {
-            const data = d.data();
-            if(data.eliminado) {
-              _papeleraItems.push({
-                tipo: cfg.tipo, bg: cfg.bg,
-                descripcion: cfg.desc(data),
-                monto: parseFloat(cfg.monto(data))||0,
-                clienteNombre: c.nombre, clienteId: c.id,
-                docId: d.id,
-                pathSegments: ['clientes', c.id, cfg.col],
-                eliminadoEn: data.eliminadoEn||''
-              });
-            }
-          });
-        } catch(e) {}
-      }
-    }
-    // Colecciones top-level
-    for(const cfg of PAPELERA_TOP) {
-      try {
-        const snap = await _gd(_col(_db,cfg.col));
-        snap.forEach(d => {
-          const data = d.data();
-          if(data.eliminado) {
-            _papeleraItems.push({
-              tipo: cfg.tipo, bg: cfg.bg,
-              descripcion: cfg.desc(data),
-              monto: parseFloat(cfg.monto(data))||0,
-              clienteNombre: 'Admin', clienteId: '',
-              docId: d.id,
-              pathSegments: [cfg.col],
-              eliminadoEn: data.eliminadoEn||''
-            });
-          }
-        });
-      } catch(e) {}
-    }
-    // Clientes top-level eliminados
-    try {
-      const cSnap = await _gd(_col(_db,'clientes'));
-      cSnap.forEach(d => {
-        const data = d.data();
-        if(data.eliminado) {
-          _papeleraItems.push({
-            tipo: 'Cliente admin', bg: '#7A8E7D',
-            descripcion: data.nombre||'Cliente',
-            monto: 0,
-            clienteNombre: 'Admin', clienteId: '',
-            docId: d.id,
-            pathSegments: ['clientes'],
-            eliminadoEn: data.eliminadoEn||''
-          });
-        }
-      });
-    } catch(e) {}
-    _papeleraItems.sort((a,b) => (b.eliminadoEn||'').localeCompare(a.eliminadoEn||''));
-    // Populate client filter
-    const sel = document.getElementById('pap-filtro-cliente');
-    if(sel) {
-      const clienteNames = [...new Set(_papeleraItems.map(i=>i.clienteNombre).filter(Boolean))];
-      sel.innerHTML = '<option value="">Todos los clientes</option>' + clienteNames.map(n=>`<option value="${n}">${n}</option>`).join('');
-    }
-    renderPapelera();
-  } catch(e) { console.log('loadPapelera error:', e); }
-};
-
-window.renderPapelera = function() {
-  const el = document.getElementById('papelera-lista');
-  if(!el) return;
-  const now = new Date();
-  const h24 = new Date(now - 86400000);
-  const d7 = new Date(now - 7*86400000);
-  // KPIs
-  const setEl=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
-  setEl('pap-kpi-total', _papeleraItems.length);
-  setEl('pap-kpi-24h', _papeleraItems.filter(i=>new Date(i.eliminadoEn)>=h24).length);
-  setEl('pap-kpi-7d', _papeleraItems.filter(i=>new Date(i.eliminadoEn)>=d7).length);
-  // Filtros
-  const filtroCliente = document.getElementById('pap-filtro-cliente')?.value || '';
-  let items = _papeleraItems;
-  if(_papeleraFilterTipo !== 'todos') items = items.filter(i=>i.tipo===_papeleraFilterTipo);
-  if(filtroCliente) items = items.filter(i=>i.clienteNombre===filtroCliente);
-  if(items.length === 0) {
-    el.innerHTML = '<div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">La papelera está vacía.</div>';
-    return;
-  }
-  el.innerHTML = items.map((item,idx) => {
-    const montoStr = item.monto ? ' · $'+Math.round(item.monto).toLocaleString('es-AR') : '';
-    const pathStr = JSON.stringify(item.pathSegments).replace(/"/g,'&quot;');
-    return `<div style="background:var(--white);border:.5px solid var(--cream-d);border-radius:12px;padding:14px;margin-bottom:8px;">
-      <div style="display:flex;align-items:center;gap:10px;">
-        <div style="flex:1;min-width:0;">
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px;">
-            <span style="background:${item.bg};color:#fff;font-size:10px;font-weight:500;padding:2px 9px;border-radius:20px;">${item.tipo}</span>
-            <span style="font-size:13px;font-weight:500;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${item.descripcion}</span>
-          </div>
-          <div style="font-size:11px;color:var(--text-l);">${item.clienteNombre}${montoStr} · ${papeleraTimeAgo(item.eliminadoEn)}</div>
-        </div>
-        <div style="display:flex;gap:6px;flex-shrink:0;">
-          <button onclick="restaurarItem(${pathStr},'${item.docId}')" style="background:#5A8A62;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">Restaurar</button>
-          <button onclick="eliminarPermanente(${pathStr},'${item.docId}')" style="background:transparent;border:.5px solid #C4786A;color:#C4786A;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">Eliminar</button>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-};
-
-window.papeleraFilterTipo = function(tipo, btn) {
-  _papeleraFilterTipo = tipo;
-  document.querySelectorAll('#av-papelera .presup-fil').forEach(b => b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-  renderPapelera();
-};
-
-window.restaurarItem = async function(pathSegments, docId) {
-  try {
-    const ref = _dc(_db, ...pathSegments, docId);
-    await _ud(ref, { eliminado: _df(), eliminadoEn: _df() });
-    _papeleraItems = _papeleraItems.filter(i => !(i.docId===docId && JSON.stringify(i.pathSegments)===JSON.stringify(pathSegments)));
-    renderPapelera();
-  } catch(e) { alert('Error al restaurar: '+e.message); }
-};
-
-window.eliminarPermanente = function(pathSegments, docId) {
-  showConfirm('¿Eliminar permanentemente? Esta acción NO se puede deshacer.', async () => {
-    try {
-      const ref = _dc(_db, ...pathSegments, docId);
-      await _dd(ref);
-      _papeleraItems = _papeleraItems.filter(i => !(i.docId===docId && JSON.stringify(i.pathSegments)===JSON.stringify(pathSegments)));
-      renderPapelera();
-    } catch(e) { alert('Error: '+e.message); }
-  }, 'Eliminar permanentemente');
-};
 
 window.showConfirm = function(msg, onOk, title='¿Confirmar acción?') {
   document.getElementById('confirmTitle').textContent = title;
