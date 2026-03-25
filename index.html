@@ -11081,7 +11081,10 @@ window.loadPapelera = async function() {
   showSkeleton('papelera-lista','list');
   _papeleraItems = [];
   try {
-    const clients = window._allClients || [];
+    // Cargar TODOS los clientes (incluyendo eliminados) para revisar subcols
+    const allCliSnap = await getDocs(collection(db,'clientes'));
+    const clients = [];
+    allCliSnap.forEach(d => clients.push({id:d.id,...d.data()}));
     // Subcols de cada cliente
     for(const c of clients) {
       for(const cfg of PAPELERA_SUBCOLS) {
