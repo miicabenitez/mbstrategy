@@ -363,6 +363,7 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
         <button class="nt" onclick="showATab('tareas',this)">Plan de acción</button>
         <button class="nt" onclick="showATab('kpis',this)">KPIs MB</button>
         <button class="nt" onclick="showATab('embi',this)">Embi ✦</button>
+        <button class="nt" onclick="showATab('papelera',this)">Papelera</button>
       </div>
       <div class="nav-tabs" id="cNav" style="display:none;">
         <button class="nt active" onclick="showClientMod('inicio',this)">Inicio</button>
@@ -1003,6 +1004,45 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
             <div class="ct">Distribucion financiera</div>
             <div style="position:relative;height:180px;"><canvas id="mbDonut"></canvas></div>
           </div>
+        </div>
+      </div>
+
+      <!-- PAPELERA -->
+      <div class="view" id="av-papelera">
+        <div style="background:var(--sage-dark);border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;">
+          <div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:22px;">Papelera</div>
+          <div style="font-size:12px;opacity:.65;margin-top:4px;">Elementos eliminados. Podés restaurarlos o eliminarlos permanentemente.</div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px;">
+          <div class="mc accent"><div class="ml" style="color:rgba(255,255,255,.6);">Total eliminados</div><div class="mv" style="color:#fff;" id="pap-kpi-total">0</div></div>
+          <div class="mc"><div class="ml">Últimas 24h</div><div class="mv" style="color:var(--err);" id="pap-kpi-24h">0</div></div>
+          <div class="mc"><div class="ml">Últimos 7 días</div><div class="mv" style="color:var(--warn);" id="pap-kpi-7d">0</div></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center;">
+          <button onclick="papeleraFilterTipo('todos',this)" class="presup-fil active" id="pfbtn-todos">Todos</button>
+          <button onclick="papeleraFilterTipo('Ingreso',this)" class="presup-fil">Ingresos</button>
+          <button onclick="papeleraFilterTipo('Egreso',this)" class="presup-fil">Egresos</button>
+          <button onclick="papeleraFilterTipo('Presupuesto',this)" class="presup-fil">Presupuestos</button>
+          <button onclick="papeleraFilterTipo('Cliente CRM',this)" class="presup-fil">Clientes CRM</button>
+          <button onclick="papeleraFilterTipo('Proveedor',this)" class="presup-fil">Proveedores</button>
+          <button onclick="papeleraFilterTipo('Producto',this)" class="presup-fil">Productos</button>
+          <button onclick="papeleraFilterTipo('Necesidad',this)" class="presup-fil">Necesidades</button>
+          <button onclick="papeleraFilterTipo('Tarea',this)" class="presup-fil">Tareas</button>
+          <button onclick="papeleraFilterTipo('Calculador',this)" class="presup-fil">Calculador</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:14px;align-items:center;">
+          <label style="font-size:11px;color:var(--text-l);white-space:nowrap;">Filtrar cliente:</label>
+          <select id="pap-filtro-cliente" class="fi" style="max-width:220px;padding:6px 10px;margin-top:0;" onchange="renderPapelera()">
+            <option value="">Todos los clientes</option>
+          </select>
+        </div>
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+            <div class="ct">Elementos eliminados</div>
+            <button onclick="loadPapelera()" style="background:none;border:none;font-size:12px;color:var(--text-l);cursor:pointer;font-family:'DM Sans',sans-serif;">↺ Actualizar</button>
+          </div>
+          <div id="papelera-lista"><div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Cargando...</div></div>
         </div>
       </div>
 
@@ -3261,7 +3301,7 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, addDoc, collection, getDocs, query, where, orderBy, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, addDoc, collection, getDocs, query, where, orderBy, updateDoc, deleteDoc, deleteField } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 // Expose firestore db globally for cross-block access
 
 const cfg = {apiKey:"AIzaSyCZr_VAn5fumCzkrfxb1oK9-W2_cADnGTI",authDomain:"mb-strategy.firebaseapp.com",projectId:"mb-strategy",storageBucket:"mb-strategy.firebasestorage.app",messagingSenderId:"1055393429525",appId:"1:1055393429525:web:0f40fa5869ef5aa8bb761c"};
@@ -10995,6 +11035,192 @@ window.hideAppError = function() {
 
 
 
+// ── PAPELERA ──
+let _papeleraItems = [];
+let _papeleraFilterTipo = 'todos';
+
+const PAPELERA_SUBCOLS = [
+  {col:'ingresos', tipo:'Ingreso', bg:'#5A8A62', desc:d=>d.concepto||'Ingreso', monto:d=>d.monto},
+  {col:'egresos', tipo:'Egreso', bg:'#C4786A', desc:d=>d.concepto||'Egreso', monto:d=>d.monto},
+  {col:'presupuestos', tipo:'Presupuesto', bg:'#4A6A8A', desc:d=>d.titulo||d.cliente||'Presupuesto', monto:d=>0},
+  {col:'misClientes', tipo:'Cliente CRM', bg:'#7A8E7D', desc:d=>d.nombre||'Cliente', monto:d=>0},
+  {col:'proveedores', tipo:'Proveedor', bg:'#6B7A60', desc:d=>d.nombre||'Proveedor', monto:d=>0},
+  {col:'prodCompra', tipo:'Producto compra', bg:'#B08A42', desc:d=>d.nombre||'Producto', monto:d=>d.precio},
+  {col:'necesidades', tipo:'Necesidad', bg:'#B08A42', desc:d=>d.categoria||'Necesidad', monto:d=>0},
+  {col:'tareas', tipo:'Tarea', bg:'#4A6A8A', desc:d=>d.titulo||'Tarea', monto:d=>0},
+  {col:'calculos', tipo:'Calculador', bg:'#8A9E8D', desc:d=>d.nombre||'Cálculo', monto:d=>0},
+  {col:'productos', tipo:'Producto', bg:'#B08A42', desc:d=>d.nombre||'Producto', monto:d=>d.precio},
+  {col:'categoriasProveedor', tipo:'Categoría', bg:'#D0CFC9', desc:d=>d.nombre||'Categoría', monto:d=>0},
+];
+const PAPELERA_TOP = [
+  {col:'cobros', tipo:'Cobro', bg:'#5A8A62', desc:d=>d.concepto||'Cobro', monto:d=>d.monto},
+  {col:'tareas', tipo:'Tarea admin', bg:'#4A6A8A', desc:d=>d.titulo||'Tarea', monto:d=>0},
+  {col:'pendientes', tipo:'Pendiente', bg:'#B08A42', desc:d=>d.texto||'Pendiente', monto:d=>0},
+  {col:'presupuestos', tipo:'Presupuesto admin', bg:'#4A6A8A', desc:d=>d.titulo||'Presupuesto', monto:d=>0},
+  {col:'embiReports', tipo:'Reporte Embi', bg:'#8A9E8D', desc:d=>d.descripcion||'Reporte', monto:d=>0},
+];
+
+function papeleraTimeAgo(dateStr) {
+  if(!dateStr) return '';
+  const d = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now - d;
+  const mins = Math.floor(diffMs/60000);
+  if(mins < 1) return 'ahora';
+  if(mins < 60) return 'hace '+mins+'min';
+  const hrs = Math.floor(mins/60);
+  if(hrs < 24) return 'hace '+hrs+'h';
+  const days = Math.floor(hrs/24);
+  if(days === 1) return 'ayer';
+  if(days < 7) return 'hace '+days+'d';
+  if(days < 30) return 'hace '+Math.floor(days/7)+' sem';
+  return 'hace '+Math.floor(days/30)+' mes'+(Math.floor(days/30)>1?'es':'');
+}
+
+window.loadPapelera = async function() {
+  showSkeleton('papelera-lista','list');
+  _papeleraItems = [];
+  try {
+    const clients = window._allClients || [];
+    // Subcols de cada cliente
+    for(const c of clients) {
+      for(const cfg of PAPELERA_SUBCOLS) {
+        try {
+          const snap = await getDocs(collection(db,'clientes',c.id,cfg.col));
+          snap.forEach(d => {
+            const data = d.data();
+            if(data.eliminado) {
+              _papeleraItems.push({
+                tipo: cfg.tipo, bg: cfg.bg,
+                descripcion: cfg.desc(data),
+                monto: parseFloat(cfg.monto(data))||0,
+                clienteNombre: c.nombre, clienteId: c.id,
+                docId: d.id,
+                pathSegments: ['clientes', c.id, cfg.col],
+                eliminadoEn: data.eliminadoEn||''
+              });
+            }
+          });
+        } catch(e) {}
+      }
+    }
+    // Colecciones top-level
+    for(const cfg of PAPELERA_TOP) {
+      try {
+        const snap = await getDocs(collection(db,cfg.col));
+        snap.forEach(d => {
+          const data = d.data();
+          if(data.eliminado) {
+            _papeleraItems.push({
+              tipo: cfg.tipo, bg: cfg.bg,
+              descripcion: cfg.desc(data),
+              monto: parseFloat(cfg.monto(data))||0,
+              clienteNombre: 'Admin', clienteId: '',
+              docId: d.id,
+              pathSegments: [cfg.col],
+              eliminadoEn: data.eliminadoEn||''
+            });
+          }
+        });
+      } catch(e) {}
+    }
+    // Clientes top-level eliminados
+    try {
+      const cSnap = await getDocs(collection(db,'clientes'));
+      cSnap.forEach(d => {
+        const data = d.data();
+        if(data.eliminado) {
+          _papeleraItems.push({
+            tipo: 'Cliente admin', bg: '#7A8E7D',
+            descripcion: data.nombre||'Cliente',
+            monto: 0,
+            clienteNombre: 'Admin', clienteId: '',
+            docId: d.id,
+            pathSegments: ['clientes'],
+            eliminadoEn: data.eliminadoEn||''
+          });
+        }
+      });
+    } catch(e) {}
+    _papeleraItems.sort((a,b) => (b.eliminadoEn||'').localeCompare(a.eliminadoEn||''));
+    // Populate client filter
+    const sel = document.getElementById('pap-filtro-cliente');
+    if(sel) {
+      const clienteNames = [...new Set(_papeleraItems.map(i=>i.clienteNombre).filter(Boolean))];
+      sel.innerHTML = '<option value="">Todos los clientes</option>' + clienteNames.map(n=>`<option value="${n}">${n}</option>`).join('');
+    }
+    renderPapelera();
+  } catch(e) { console.log('loadPapelera error:', e); }
+};
+
+window.renderPapelera = function() {
+  const el = document.getElementById('papelera-lista');
+  if(!el) return;
+  const now = new Date();
+  const h24 = new Date(now - 86400000);
+  const d7 = new Date(now - 7*86400000);
+  // KPIs
+  const setEl=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  setEl('pap-kpi-total', _papeleraItems.length);
+  setEl('pap-kpi-24h', _papeleraItems.filter(i=>new Date(i.eliminadoEn)>=h24).length);
+  setEl('pap-kpi-7d', _papeleraItems.filter(i=>new Date(i.eliminadoEn)>=d7).length);
+  // Filtros
+  const filtroCliente = document.getElementById('pap-filtro-cliente')?.value || '';
+  let items = _papeleraItems;
+  if(_papeleraFilterTipo !== 'todos') items = items.filter(i=>i.tipo===_papeleraFilterTipo);
+  if(filtroCliente) items = items.filter(i=>i.clienteNombre===filtroCliente);
+  if(items.length === 0) {
+    el.innerHTML = '<div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">La papelera está vacía.</div>';
+    return;
+  }
+  el.innerHTML = items.map((item,idx) => {
+    const montoStr = item.monto ? ' · $'+Math.round(item.monto).toLocaleString('es-AR') : '';
+    const pathStr = JSON.stringify(item.pathSegments).replace(/"/g,'&quot;');
+    return `<div style="background:var(--white);border:.5px solid var(--cream-d);border-radius:12px;padding:14px;margin-bottom:8px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px;">
+            <span style="background:${item.bg};color:#fff;font-size:10px;font-weight:500;padding:2px 9px;border-radius:20px;">${item.tipo}</span>
+            <span style="font-size:13px;font-weight:500;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${item.descripcion}</span>
+          </div>
+          <div style="font-size:11px;color:var(--text-l);">${item.clienteNombre}${montoStr} · ${papeleraTimeAgo(item.eliminadoEn)}</div>
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0;">
+          <button onclick="restaurarItem(${pathStr},'${item.docId}')" style="background:#5A8A62;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">Restaurar</button>
+          <button onclick="eliminarPermanente(${pathStr},'${item.docId}')" style="background:transparent;border:.5px solid #C4786A;color:#C4786A;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">Eliminar</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+};
+
+window.papeleraFilterTipo = function(tipo, btn) {
+  _papeleraFilterTipo = tipo;
+  document.querySelectorAll('#av-papelera .presup-fil').forEach(b => b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderPapelera();
+};
+
+window.restaurarItem = async function(pathSegments, docId) {
+  try {
+    const ref = doc(db, ...pathSegments, docId);
+    await updateDoc(ref, { eliminado: deleteField(), eliminadoEn: deleteField() });
+    _papeleraItems = _papeleraItems.filter(i => !(i.docId===docId && JSON.stringify(i.pathSegments)===JSON.stringify(pathSegments)));
+    renderPapelera();
+  } catch(e) { alert('Error al restaurar: '+e.message); }
+};
+
+window.eliminarPermanente = function(pathSegments, docId) {
+  showConfirm('¿Eliminar permanentemente? Esta acción NO se puede deshacer.', async () => {
+    try {
+      const ref = doc(db, ...pathSegments, docId);
+      await deleteDoc(ref);
+      _papeleraItems = _papeleraItems.filter(i => !(i.docId===docId && JSON.stringify(i.pathSegments)===JSON.stringify(pathSegments)));
+      renderPapelera();
+    } catch(e) { alert('Error: '+e.message); }
+  }, 'Eliminar permanentemente');
+};
+
 window.showConfirm = function(msg, onOk, title='¿Confirmar acción?') {
   document.getElementById('confirmTitle').textContent = title;
   document.getElementById('confirmMsg').textContent = msg;
@@ -11026,6 +11252,7 @@ window.showATab = function(tab, btn) {
   if (tab === 'kpis') setTimeout(() => { if(window._mbChartFn) window._mbChartFn(); initMbChart(); }, 100);
   if (tab === 'cobros') setTimeout(() => { initCashflowCharts(); }, 100);
   if (tab === 'embi') setTimeout(() => { loadEmbiReports(); }, 100);
+  if (tab === 'papelera') setTimeout(() => { loadPapelera(); }, 100);
 };
 
 // ── EMBI ADMIN PANEL ──
