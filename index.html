@@ -1557,7 +1557,7 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
               </div>
               <div style="display:flex;gap:6px;flex-shrink:0;">
                 <button id="mcd-quick-presup" onclick="" style="background:var(--sage-xl);border:.5px solid var(--sage-light);border-radius:9px;padding:6px 11px;font-size:11px;color:var(--topbar);cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;">+ Presupuesto</button>
-                <button id="mcd-edit-btn" onclick="" style="background:var(--cream);border:.5px solid var(--cream-d);border-radius:9px;padding:6px 11px;font-size:11px;color:var(--text-m);cursor:pointer;font-family:'DM Sans',sans-serif;">✏️</button>
+                <button id="mcd-edit-btn" onclick="" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
               </div>
             </div>
             <div id="mcd-notas-wrap" style="margin-top:12px;padding-top:12px;border-top:.5px solid var(--cream-d);display:none;">
@@ -2243,7 +2243,7 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
     <button class="mc2" onclick="closeModal('newContentModal')">×</button>
     <div class="mt">Agregar contenido</div>
     <div class="fg"><label class="fl">Semana</label><select class="fi" id="cont-semana" style="margin-top:0;" onchange="updateSemanasSelect()"><option value="1">Semana 1</option><option value="2">Semana 2</option><option value="3">Semana 3</option><option value="4">Semana 4</option></select></div>
-    <div class="fg"><label class="fl">Tipo</label><select class="fi" id="cont-tipo" style="margin-top:0;" onchange="toggleContDesc()"><option value="texto">📝 Texto explicativo</option><option value="link">🎥 Video / Link</option><option value="pdf">📄 PDF</option><option value="checklist">✅ Checklist de tareas</option></select></div>
+    <div class="fg"><label class="fl">Tipo</label><select class="fi" id="cont-tipo" style="margin-top:0;" onchange="toggleContDesc()"><option value="texto">Texto explicativo</option><option value="link">Video / Link</option><option value="pdf">PDF</option><option value="checklist">Checklist de tareas</option></select></div>
     <div class="fg"><label class="fl">Título</label><input type="text" class="fi" id="cont-titulo" placeholder="Ej: Guía de la semana 1"/></div>
     <div id="cont-desc-group" class="fg"><label class="fl">Descripción / Texto</label><textarea class="na" id="cont-desc" style="min-height:70px;" placeholder="Escribí el texto explicativo..."></textarea></div>
     <div id="cont-url-group" class="fg" style="display:none;"><label class="fl">Link (YouTube / Vimeo)</label><input type="url" class="fi" id="cont-url" placeholder="https://..."/></div>
@@ -2652,7 +2652,7 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
     <input type="hidden" id="ec-cont-id"/>
     <div class="fg"><label class="fl">Semana</label><select class="fi" id="ec-cont-semana" style="margin-top:0;"><option value="1">Semana 1</option><option value="2">Semana 2</option><option value="3">Semana 3</option><option value="4">Semana 4</option></select></div>
     <div class="fg"><label class="fl">Título</label><input type="text" class="fi" id="ec-cont-titulo"/></div>
-    <div class="fg"><label class="fl">Tipo</label><select class="fi" id="ec-cont-tipo" style="margin-top:0;" onchange="toggleEditContDesc()"><option value="texto">📝 Texto explicativo</option><option value="link">🎥 Video / Link</option><option value="pdf">📄 PDF</option><option value="checklist">✅ Checklist</option></select></div>
+    <div class="fg"><label class="fl">Tipo</label><select class="fi" id="ec-cont-tipo" style="margin-top:0;" onchange="toggleEditContDesc()"><option value="texto">Texto explicativo</option><option value="link">Video / Link</option><option value="pdf">PDF</option><option value="checklist">Checklist</option></select></div>
     <div id="ec-cont-desc-group" class="fg"><label class="fl">Descripción / Texto</label><textarea class="na" id="ec-cont-desc" style="min-height:70px;"></textarea></div>
     <div id="ec-cont-url-group" class="fg" style="display:none;"><label class="fl">Link</label><input type="url" class="fi" id="ec-cont-url"/></div>
     <div id="ec-cont-pdf-group" class="fg" style="display:none;">
@@ -3544,7 +3544,7 @@ async function loadAdminData() {
 }
 
 function renderClientList(clients) {
-  const colors = [['#EDF0EA','#7A8E7D'],['#E6EEF5','#4A6A8A'],['#F5ECD8','#8A6A3A'],['#EEE6F5','#6A4A8A']];
+  const avatarColors = ['#7A8E7D','#5A8A62','#4A6A8A','#B08A42','#C4786A','#6B7A60'];
 
   // Segmentos
   const seg30 = clients.filter(c=>c.programa==='30D').length;
@@ -3561,7 +3561,7 @@ function renderClientList(clients) {
   const html = clients.length === 0
     ? '<div style="text-align:center;padding:20px;color:var(--text-l);font-size:13px;">Sin clientes aún. Creá el primero.</div>'
     : clients.map((c, i) => {
-        const col = colors[i % colors.length];
+        const col = avatarColors[i % avatarColors.length];
         const init = c.nombre.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
         const total = c.programa === '90D' ? 12 : 4;
         const sem = c.semanaActual || 1;
@@ -3572,7 +3572,7 @@ function renderClientList(clients) {
         }).join('');
         return `<div style="padding:12px 0;border-bottom:.5px solid var(--cream-d);">
           <div style="display:flex;align-items:center;gap:11px;">
-            <div class="av" style="background:${col[0]};color:${col[1]};width:38px;height:38px;font-size:12px;flex-shrink:0;cursor:pointer;" onclick="openClientDetail('${c.id}')">${init}</div>
+            <div class="av" style="background:${col};color:#fff;width:38px;height:38px;font-size:12px;flex-shrink:0;cursor:pointer;" onclick="openClientDetail('${c.id}')">${init}</div>
             <div style="flex:1;min-width:0;cursor:pointer;" onclick="openClientDetail('${c.id}')">
               <div style="font-size:13px;font-weight:500;color:var(--text);">${c.nombre}</div>
               <div style="font-size:11px;color:var(--text-l);margin-top:1px;">${c.rubro} · Programa ${c.programa} · $${c.precio} USD</div>
@@ -3584,8 +3584,8 @@ function renderClientList(clients) {
             <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;">
               <div class="badge bg" style="cursor:pointer;" onclick="openClientDetail('${c.id}')">Sem. ${sem}</div>
               <div style="display:flex;gap:4px;">
-                <button onclick="editCliente('${c.id}',event)" style="background:none;border:none;cursor:pointer;color:var(--text-l);font-size:11px;padding:2px 4px;" title="Editar">✏️ Editar</button>
-                <button onclick="deleteCliente(this,event)" data-id="${c.id}" data-nombre="${c.nombre}" style="background:none;border:none;cursor:pointer;color:var(--text-l);font-size:11px;padding:2px 4px;" title="Eliminar">× Eliminar</button>
+                <button onclick="editCliente('${c.id}',event)" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                <button onclick="deleteCliente(this,event)" data-id="${c.id}" data-nombre="${c.nombre}" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
               </div>
             </div>
           </div>
@@ -3671,8 +3671,8 @@ function renderCobros(cobros, clients=[]) {
           ? `<span style="font-size:11px;background:var(--sage-xl);color:var(--sage-dark);padding:1px 7px;border-radius:20px;margin-left:5px;">${clienteVinculado.nombre.split(' ')[0]}</span>`
           : '';
         const editBtns = !c._auto && c.id
-          ? `<button onclick="editCobro('${c.id}')" style="background:none;border:none;cursor:pointer;color:var(--text-l);font-size:13px;padding:2px 4px;" title="Editar">✏️</button>
-             <button onclick="deleteCobro('${c.id}')" style="background:none;border:none;cursor:pointer;color:var(--text-l);font-size:14px;padding:2px 4px;" title="Eliminar">×</button>`
+          ? `<button onclick="editCobro('${c.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+             <button onclick="deleteCobro('${c.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>`
           : '';
         return `<div class="row" style="align-items:center;">
           <div style="flex:1;">
@@ -3719,8 +3719,8 @@ function renderTasks(tasks) {
           <div class="tkm">${t.meta||''}</div>
         </div>
         <div style="display:flex;gap:3px;flex-shrink:0;" onclick="event.stopPropagation()">
-          <button onclick="editTask(this.closest('.tk'))" style="background:none;border:none;color:var(--text-l);cursor:pointer;font-size:12px;padding:2px 4px;" title="Editar">✏️</button>
-          <button onclick="deleteTask(this.closest('.tk'))" style="background:none;border:none;color:var(--text-l);cursor:pointer;font-size:12px;padding:2px 4px;" title="Eliminar">×</button>
+          <button onclick="editTask(this.closest('.tk'))" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button onclick="deleteTask(this.closest('.tk'))" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
         </div>
       </div>`;
     el.onclick = () => moveTask(el);
@@ -3951,13 +3951,13 @@ async function loadContentAdmin(clientId) {
     const docs = [];
     snap.forEach(d => docs.push({id:d.id,...d.data()}));
     docs.sort((a,b) => a.semana !== b.semana ? a.semana - b.semana : (a.creadoEn||"")<(b.creadoEn||"") ? -1 : 1);
-    const iconMap = {texto:'📝',link:'🎥',pdf:'📄',checklist:'✅'};
+    const iconMap = {texto:'',link:'',pdf:'',checklist:''};
     const html = docs.length === 0
       ? '<div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin contenido cargado aún.</div>'
       : docs.map(c => {
           const isBase64 = (c.descripcion||'').startsWith('data:application/pdf');
           const isLink = c.tipo === 'link';
-          const desc = isBase64 ? '📄 Archivo PDF cargado' : isLink ? (c.descripcion||'').slice(0,50) : (c.descripcion||'').slice(0,60);
+          const desc = isBase64 ? 'Archivo PDF cargado' : isLink ? (c.descripcion||'').slice(0,50) : (c.descripcion||'').slice(0,60);
           const previewBtn = (isBase64 || isLink)
             ? `<button onclick="${isBase64 ? `abrirPDFBase64('${c.id}')` : `window.open('${c.descripcion}','_blank')`}" style="background:var(--sage-xl);border:none;color:var(--sage-dark);cursor:pointer;font-size:11px;padding:4px 10px;border-radius:20px;font-family:'DM Sans',sans-serif;font-weight:500;">Ver</button>`
             : '';
@@ -3969,7 +3969,7 @@ async function loadContentAdmin(clientId) {
             <div style="display:flex;gap:6px;flex-shrink:0;align-items:center;">
               ${previewBtn}
               <button onclick="editContent('${c.id}')" style="background:none;border:.5px solid var(--cream-d);color:var(--text-l);cursor:pointer;font-size:11px;padding:4px 10px;border-radius:20px;font-family:'DM Sans',sans-serif;">Editar</button>
-              <button onclick="deleteContent('${c.id}')" style="background:none;border:none;color:var(--text-l);cursor:pointer;font-size:13px;padding:0 4px;" title="Eliminar">🗑</button>
+              <button onclick="deleteContent('${c.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
             </div>
           </div>`;
         }).join('');
@@ -4272,8 +4272,8 @@ window.createTask = async function() {
           <div class="tkm">${meta||''}</div>
         </div>
         <div style="display:flex;gap:3px;flex-shrink:0;" onclick="event.stopPropagation()">
-          <button onclick="editTask(this.closest('.tk'))" style="background:none;border:none;color:var(--text-l);cursor:pointer;font-size:12px;padding:2px 4px;" title="Editar">✏️</button>
-          <button onclick="deleteTask(this.closest('.tk'))" style="background:none;border:none;color:var(--text-l);cursor:pointer;font-size:12px;padding:2px 4px;" title="Eliminar">×</button>
+          <button onclick="editTask(this.closest('.tk'))" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button onclick="deleteTask(this.closest('.tk'))" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
         </div>
       </div>`;
     el.onclick = () => moveTask(el);
@@ -4436,8 +4436,8 @@ function renderGastosData(gastos) {
       </div>
       <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
         <span style="color:var(--err);font-weight:500;">-$${m.toLocaleString('es-AR')}</span>
-        <button onclick="editGasto('${g.id}')" style="background:none;border:none;cursor:pointer;color:var(--text-l);font-size:13px;padding:2px 4px;" title="Editar">✏️</button>
-        <button onclick="deleteGasto('${g.id}')" style="background:none;border:none;cursor:pointer;color:var(--text-l);font-size:14px;padding:2px 4px;" title="Eliminar">×</button>
+        <button onclick="editGasto('${g.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button onclick="deleteGasto('${g.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
       </div>
     </div>`;
   }).join('');
@@ -4876,8 +4876,8 @@ function renderCalcList() {
         </div>
       </div>
       <div style="display:flex;gap:4px;flex-shrink:0;" onclick="event.stopPropagation()">
-        <button onclick="editCalc('${c.id}')" style="background:none;border:.5px solid var(--cream-d);border-radius:8px;padding:4px 8px;font-size:12px;color:var(--text-l);cursor:pointer;" title="Editar">✏️</button>
-        <button onclick="deleteCalc('${c.id}')" style="background:none;border:.5px solid var(--cream-d);border-radius:8px;padding:4px 8px;font-size:12px;color:var(--err);cursor:pointer;" title="Eliminar">×</button>
+        <button onclick="editCalc('${c.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button onclick="deleteCalc('${c.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
       </div>
     </div>`;
   }).join('');
@@ -5057,7 +5057,7 @@ function renderCalc() {
       <div style="width:10px;height:10px;border-radius:50%;background:${calcColors[i%calcColors.length]};flex-shrink:0;"></div>
       <div><div class="rn">${c.n}</div><div class="rs">$${c.m.toLocaleString('es-AR')}</div></div>
     </div>
-    <button style="background:none;border:none;color:var(--text-l);cursor:pointer;font-size:16px;" onclick="deleteCalcCost(${i})">×</button></div>`).join('');
+    <button style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" onclick="deleteCalcCost(${i})" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button></div>`).join('');
 
   if(window._calcChart){window._calcChart.destroy();window._calcChart=null;}
   const ctx = document.getElementById('calcChart');
@@ -5199,7 +5199,7 @@ function initMbChart() {
       labels: MESES_SHORT,
       datasets:[
         {label:'Facturacion',data:ing,backgroundColor:'#A1B1A4',borderRadius:4},
-        {label:'Gastos',data:eg,backgroundColor:'#F5E8E8',borderRadius:4},
+        {label:'Gastos',data:eg,backgroundColor:'#C4786A',borderRadius:4},
         {label:'Ganancia',data:gan,backgroundColor:'#D0CFC9',borderRadius:4,type:'line',borderColor:'#7A8E7D',borderWidth:2,pointRadius:3,fill:false}
       ]
     },
@@ -5223,7 +5223,7 @@ function initCashflowCharts() {
       labels: MESES_SHORT,
       datasets: [
         {label:'Ingresos', data:ing, backgroundColor:'#A1B1A4', borderRadius:5},
-        {label:'Egresos', data:eg, backgroundColor:'#F5E8E8', borderRadius:5}
+        {label:'Egresos', data:eg, backgroundColor:'#C4786A', borderRadius:5}
       ]
     },
     options: {
@@ -5246,7 +5246,7 @@ function initMbDonut(facturacion, gastos) {
     type:'doughnut',
     data:{
       labels:['Ganancia','Gastos'],
-      datasets:[{data:[ganancia||0.1, gastos||0.1],backgroundColor:['#A1B1A4','#F5E8E8'],borderWidth:0}]
+      datasets:[{data:[ganancia||0.1, gastos||0.1],backgroundColor:['#7A8E7D','#C4786A'],borderWidth:0}]
     },
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:'DM Sans',size:10},color:'#9AACA0',boxWidth:10,padding:10}}},cutout:'65%'}
   });
@@ -5326,9 +5326,9 @@ function renderPendientes(list) {
             ${p.notas ? `<div style="font-size:11px;color:var(--text-m);margin-top:3px;font-style:italic;">${p.notas}</div>` : ''}
           </div>
           <div style="display:flex;gap:4px;flex-shrink:0;">
-            <button onclick="editPendiente('${p.id}')" style="background:none;border:.5px solid var(--cream-d);border-radius:8px;padding:4px 8px;font-size:11px;color:var(--text-l);cursor:pointer;font-family:'DM Sans',sans-serif;" title="Editar">✏️</button>
+            <button onclick="editPendiente('${p.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
             <button onclick="completarPendiente('${p.id}')" style="background:none;border:.5px solid var(--cream-d);border-radius:8px;padding:4px 8px;font-size:11px;color:var(--ok);cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;">✓</button>
-            <button onclick="deletePendiente('${p.id}')" style="background:none;border:.5px solid var(--cream-d);border-radius:8px;padding:4px 8px;font-size:11px;color:var(--err);cursor:pointer;font-family:'DM Sans',sans-serif;">×</button>
+            <button onclick="deletePendiente('${p.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
           </div>
         </div>`;
       }).join('');
@@ -5499,8 +5499,8 @@ function renderPresupuestos(list) {
           `<button onclick="updatePresupEstado('${p.id}','${e}')" style="font-size:11px;padding:3px 9px;border-radius:20px;border:.5px solid ${p.estado===e?'var(--sage-dark)':'var(--cream-d)'};background:${p.estado===e?'var(--sage-dark)':'transparent'};color:${p.estado===e?'var(--white)':'var(--text-m)'};cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;">${e}</button>`
         ).join('')}
         <div style="margin-left:auto;display:flex;gap:5px;">
-          <button onclick="editPresup('${p.id}')" style="font-size:11px;padding:3px 9px;border-radius:20px;border:.5px solid var(--sage-light);background:var(--sage-xl);color:var(--sage-dark);cursor:pointer;font-family:'DM Sans',sans-serif;">✏️ Editar</button>
-          <button onclick="deletePresup('${p.id}')" style="font-size:11px;padding:3px 9px;border-radius:20px;border:.5px solid var(--cream-d);background:transparent;color:var(--text-l);cursor:pointer;font-family:'DM Sans',sans-serif;">× Eliminar</button>
+          <button onclick="editPresup('${p.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button onclick="deletePresup('${p.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
         </div>
       </div>
     </div>`;
@@ -5736,7 +5736,7 @@ function initGastosDonut(gastos) {
   });
   const labels = Object.keys(cats);
   const data = labels.map(k=>cats[k]);
-  const colors = ['#A1B1A4','#D0CFC9','#F5ECD8','#E6EEF5','#F5E8E8','#EEE6F5','#EDF0EA'];
+  const colors = ['#7A8E7D','#5A8A62','#4A6A8A','#B08A42','#C4786A','#6B7A60','#8A9E8D','#D0CFC9'];
 
   window._gastosDonut = new Chart(canvas.getContext('2d'), {
     type:'doughnut',
@@ -5770,7 +5770,7 @@ function renderProveedores() {
   const totalGeneral = list.reduce((a,p)=>a+p.total,0);
   el.innerHTML = list.map((p,i)=>{
     const pct = totalGeneral>0?Math.round((p.total/totalGeneral)*100):0;
-    const colors = ['#A1B1A4','#D0CFC9','#F5ECD8','#E6EEF5','#EEE6F5'];
+    const colors = ['#7A8E7D','#5A8A62','#4A6A8A','#B08A42','#C4786A','#6B7A60','#8A9E8D','#D0CFC9'];
     return `<div style="padding:10px 0;border-bottom:.5px solid var(--cream-d);">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
         <div><div style="font-size:13px;font-weight:500;">${p.nombre}</div><div style="font-size:11px;color:var(--text-l);">${p.cat}</div></div>
@@ -6339,8 +6339,8 @@ function renderClientIngresosList(ingresos) {
   const total = ingresos.reduce((a,i)=>a+(parseFloat(i.monto)||0),0);
   el.innerHTML = ingresos.map(i=>{
     const origen = i.origen==='comercial' ? `<span style="background:#E6EEF5;color:#2A4A6A;font-size:11px;padding:2px 7px;border-radius:20px;margin-left:6px;">Comercial</span>` : `<span style="background:var(--cream);color:var(--text-l);font-size:11px;padding:2px 7px;border-radius:20px;margin-left:6px;">Manual</span>`;
-    const editBtn = i.origen!=='comercial' ? `<button onclick="editClientIngreso('${i.id}')" style="background:none;border:.5px solid var(--cream-d);border-radius:7px;padding:3px 8px;font-size:11px;color:var(--text-l);cursor:pointer;">✏️</button>
-      <button onclick="deleteClientIngreso('${i.id}')" style="background:none;border:.5px solid var(--cream-d);border-radius:7px;padding:3px 8px;font-size:11px;color:var(--err);cursor:pointer;">×</button>` : '';
+    const editBtn = i.origen!=='comercial' ? `<button onclick="editClientIngreso('${i.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <button onclick="deleteClientIngreso('${i.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>` : '';
     return `<div class="row" style="gap:8px;">
       <div style="flex:1;min-width:0;">
         <div class="rn" style="display:flex;align-items:center;flex-wrap:wrap;">${i.concepto||'—'}${origen}</div>
@@ -6362,8 +6362,8 @@ function renderClientEgresosList(egresos) {
   const total = egresos.reduce((a,e)=>a+(parseFloat(e.monto)||0),0);
   el.innerHTML = egresos.map(e=>{
     const origen = e.proveedorId ? `<span style="background:#EDF0EA;color:#3A6A42;font-size:11px;padding:2px 7px;border-radius:20px;margin-left:6px;">Proveedor</span>` : `<span style="background:var(--cream);color:var(--text-l);font-size:11px;padding:2px 7px;border-radius:20px;margin-left:6px;">Manual</span>`;
-    const editBtn = !e.proveedorId ? `<button onclick="editClientEgreso('${e.id}')" style="background:none;border:.5px solid var(--cream-d);border-radius:7px;padding:3px 8px;font-size:11px;color:var(--text-l);cursor:pointer;">✏️</button>
-      <button onclick="deleteClientEgreso('${e.id}')" style="background:none;border:.5px solid var(--cream-d);border-radius:7px;padding:3px 8px;font-size:11px;color:var(--err);cursor:pointer;">×</button>` : '';
+    const editBtn = !e.proveedorId ? `<button onclick="editClientEgreso('${e.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <button onclick="deleteClientEgreso('${e.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>` : '';
     return `<div class="row" style="gap:8px;">
       <div style="flex:1;min-width:0;">
         <div class="rn" style="display:flex;align-items:center;flex-wrap:wrap;">${e.concepto||'—'}${origen}</div>
@@ -6387,7 +6387,7 @@ function renderClientProveedores() {
   egresos.forEach(e=>{ const k=e.concepto||'Otro'; provs[k]=(provs[k]||0)+(parseFloat(e.monto)||0); });
   const list = Object.entries(provs).sort((a,b)=>b[1]-a[1]);
   const total = list.reduce((a,p)=>a+p[1],0);
-  const colors=['#A1B1A4','#D0CFC9','#F5ECD8','#E6EEF5','#EEE6F5'];
+  const colors=['#7A8E7D','#5A8A62','#4A6A8A','#B08A42','#C4786A','#6B7A60','#8A9E8D','#D0CFC9'];
   el.innerHTML = list.map(([nombre,monto],i)=>{
     const pct = total>0?Math.round((monto/total)*100):0;
     return `<div style="padding:9px 0;border-bottom:.5px solid var(--cream-d);">
@@ -6412,7 +6412,7 @@ function initClientCashflow(ingresos, egresos) {
   ingresos.forEach(i=>{ const idx=MESES.findIndex(m=>(i.mes||'').startsWith(m)); if(idx>=0) ing[idx]+=parseFloat(i.monto)||0; });
   egresos.forEach(e=>{ const idx=MESES.findIndex(m=>(e.mes||'').startsWith(m)); if(idx>=0) eg[idx]+=parseFloat(e.monto)||0; });
   ccCashflowChart = new Chart(canvas.getContext('2d'),{
-    type:'bar', data:{labels:MESES_SHORT, datasets:[{label:'Ingresos',data:ing,backgroundColor:'#A1B1A4',borderRadius:4},{label:'Egresos',data:eg,backgroundColor:'#F5E8E8',borderRadius:4}]},
+    type:'bar', data:{labels:MESES_SHORT, datasets:[{label:'Ingresos',data:ing,backgroundColor:'#A1B1A4',borderRadius:4},{label:'Egresos',data:eg,backgroundColor:'#C4786A',borderRadius:4}]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#D0CFC9'},ticks:{font:{family:'DM Sans',size:10},color:'#9AACA0',callback:v=>'$'+v.toLocaleString('es-AR')}},x:{grid:{display:false},ticks:{font:{family:'DM Sans',size:10},color:'#9AACA0'}}}}
   });
 }
@@ -6425,7 +6425,7 @@ function initClientGastosDonut(egresos) {
   const cats={};
   egresos.forEach(e=>{ const c=e.categoria||'Otro'; cats[c]=(cats[c]||0)+(parseFloat(e.monto)||0); });
   const labels=Object.keys(cats), data=labels.map(k=>cats[k]);
-  const colors=['#A1B1A4','#D0CFC9','#F5ECD8','#E6EEF5','#F5E8E8','#EEE6F5'];
+  const colors=['#7A8E7D','#5A8A62','#4A6A8A','#B08A42','#C4786A','#6B7A60','#8A9E8D','#D0CFC9'];
   ccGastosDonut = new Chart(canvas.getContext('2d'),{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:colors.slice(0,labels.length),borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{family:'DM Sans',size:10},boxWidth:10,padding:6}}},cutout:'65%'}});
   const total=data.reduce((a,b)=>a+b,0);
   const leg=document.getElementById('cc-gastos-legend');
@@ -6443,7 +6443,7 @@ function initCkChart(ingresos, egresos) {
   egresos.forEach(e=>{ const idx=MESES.findIndex(m=>(e.mes||'').startsWith(m)); if(idx>=0) eg[idx]+=parseFloat(e.monto)||0; });
   const gan=ing.map((v,i)=>Math.max(0,v-eg[i]));
   ckChart = new Chart(canvas.getContext('2d'),{
-    type:'bar', data:{labels:MESES_SHORT, datasets:[{label:'Ingresos',data:ing,backgroundColor:'#A1B1A4',borderRadius:4},{label:'Egresos',data:eg,backgroundColor:'#F5C4BE',borderRadius:4},{label:'Ganancia',data:gan,type:'line',borderColor:'#7A8E7D',borderWidth:2,pointRadius:3,fill:false,backgroundColor:'#7A8E7D'}]},
+    type:'bar', data:{labels:MESES_SHORT, datasets:[{label:'Ingresos',data:ing,backgroundColor:'#A1B1A4',borderRadius:4},{label:'Egresos',data:eg,backgroundColor:'#C4786A',borderRadius:4},{label:'Ganancia',data:gan,type:'line',borderColor:'#7A8E7D',borderWidth:2,pointRadius:3,fill:false,backgroundColor:'#7A8E7D'}]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#D0CFC9'},ticks:{font:{family:'DM Sans',size:10},color:'#4A5A4E',callback:v=>'$'+v.toLocaleString('es-AR')}},x:{grid:{display:false},ticks:{font:{family:'DM Sans',size:10},color:'#4A5A4E'}}}}
   });
 }
@@ -6485,7 +6485,7 @@ function initCkMesChart(ingresos, egresos, mes) {
     type:'bar',
     data:{
       labels:['Ingresos','Egresos'],
-      datasets:[{data:[totalIng,totalEg],backgroundColor:['#A1B1A4','#F5C4BE'],borderRadius:6,barThickness:52}]
+      datasets:[{data:[totalIng,totalEg],backgroundColor:['#7A8E7D','#C4786A'],borderRadius:6,barThickness:52}]
     },
     options:{
       responsive:true,maintainAspectRatio:false,
@@ -6517,7 +6517,7 @@ function initCkEgAnualChart(egresos) {
   egresos.forEach(e=>{const c=e.categoria||'Otros'; cats[c]=(cats[c]||0)+(parseFloat(e.monto)||0);});
   const sorted=Object.entries(cats).sort((a,b)=>b[1]-a[1]);
   const labels=sorted.map(([k])=>k), data=sorted.map(([,v])=>v);
-  const colors=['#A1B1A4','#C8D4CA','#F5C4BE','#B0C8DA','#F5ECD8','#D5EDDA','#EEE6F5','#D0CFC9'];
+  const colors=['#7A8E7D','#5A8A62','#4A6A8A','#B08A42','#C4786A','#6B7A60','#8A9E8D','#D0CFC9'];
   ckEgAnualChart = new Chart(canvas.getContext('2d'),{
     type:'bar',
     data:{labels,datasets:[{data,backgroundColor:colors.slice(0,labels.length),borderRadius:4}]},
@@ -6558,7 +6558,7 @@ function initCkEgMesChart(egresos, mes) {
   egresos.forEach(e=>{const c=e.categoria||'Otros'; cats[c]=(cats[c]||0)+(parseFloat(e.monto)||0);});
   const sorted=Object.entries(cats).sort((a,b)=>b[1]-a[1]);
   const labels=sorted.map(([k])=>k), data=sorted.map(([,v])=>v);
-  const colors=['#A1B1A4','#C8D4CA','#F5C4BE','#B0C8DA','#F5ECD8','#D5EDDA','#EEE6F5','#D0CFC9'];
+  const colors=['#7A8E7D','#5A8A62','#4A6A8A','#B08A42','#C4786A','#6B7A60','#8A9E8D','#D0CFC9'];
   ckEgMesChart = new Chart(canvas.getContext('2d'),{
     type:'bar',
     data:{labels,datasets:[{data,backgroundColor:colors.slice(0,labels.length),borderRadius:4}]},
@@ -6588,7 +6588,7 @@ function initCkDonutChart(egresos) {
   egresos.forEach(e=>{const c=e.categoria||'Otro'; cats[c]=(cats[c]||0)+(parseFloat(e.monto)||0);});
   const labels=Object.keys(cats), data=labels.map(k=>cats[k]);
   const total=data.reduce((a,b)=>a+b,0);
-  const colors=['#A1B1A4','#D0CFC9','#F5ECD8','#E6EEF5','#EEE6F5','#F5E8E8'];
+  const colors=['#7A8E7D','#5A8A62','#4A6A8A','#B08A42','#C4786A','#6B7A60','#8A9E8D','#D0CFC9'];
   ckDonutChart=new Chart(canvas.getContext('2d'),{
     type:'doughnut',
     data:{labels,datasets:[{data,backgroundColor:colors.slice(0,labels.length),borderWidth:0}]},
@@ -6702,7 +6702,7 @@ function renderCkRankingClientes(ingresos) {
     const list = conCobros.sort((a,b)=>(parseFloat(b.totalCobrado)||0)-(parseFloat(a.totalCobrado)||0)).slice(0,6);
     const total = list.reduce((a,c)=>a+(parseFloat(c.totalCobrado)||0),0);
     const maxMonto = parseFloat(list[0]?.totalCobrado)||1;
-    const colors=['#A1B1A4','#7A8E7D','#B0C0B2','#C8D4CA','#D0CFC9','#E7E5DF'];
+    const colors=['#7A8E7D','#5A8A62','#4A6A8A','#B08A42','#C4786A','#6B7A60','#8A9E8D','#D0CFC9'];
     el.innerHTML=list.map((c,i)=>{
       const monto=parseFloat(c.totalCobrado)||0;
       const pct=Math.round((monto/maxMonto)*100);
@@ -6731,7 +6731,7 @@ function renderCkRankingClientes(ingresos) {
   const list=Object.entries(clientes).sort((a,b)=>b[1]-a[1]).slice(0,6);
   const maxMonto=list[0]?.[1]||1;
   const total=list.reduce((a,p)=>a+p[1],0);
-  const colors=['#A1B1A4','#7A8E7D','#B0C0B2','#C8D4CA','#D0CFC9','#E7E5DF'];
+  const colors=['#7A8E7D','#5A8A62','#4A6A8A','#B08A42','#C4786A','#6B7A60','#8A9E8D','#D0CFC9'];
   el.innerHTML=list.map(([nombre,monto],i)=>{
     const pct=Math.round((monto/maxMonto)*100);
     const pctTotal=total>0?Math.round((monto/total)*100):0;
@@ -6868,7 +6868,7 @@ function renderClientTareas(tareas) {
     el.className='tk'+(t.estado==='done'?' done':'');
     el.dataset.estado=t.estado||'pend';
     el.dataset.id=t.id||'';
-    el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px;"><div style="flex:1;"><div class="tkt">${t.titulo}</div><div class="tkm">${t.meta||''}</div></div><div style="display:flex;gap:3px;" onclick="event.stopPropagation()"><button onclick="deleteClientTask(this.closest('.tk'))" style="background:none;border:none;cursor:pointer;color:var(--text-l);font-size:14px;padding:2px 4px;">×</button></div></div>`;
+    el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px;"><div style="flex:1;"><div class="tkt">${t.titulo}</div><div class="tkm">${t.meta||''}</div></div><div style="display:flex;gap:3px;" onclick="event.stopPropagation()"><button onclick="deleteClientTask(this.closest('.tk'))" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button></div></div>`;
     el.onclick=()=>moveClientTask(el);
     const col=document.getElementById('clt-tasks-'+(t.estado||'pend'));
     if(col) col.appendChild(el);
@@ -6886,7 +6886,7 @@ window.createClientTask = async function() {
     const el=document.createElement('div');
     el.className='tk'+(estado==='done'?' done':'');
     el.dataset.estado=estado; el.dataset.id=ref.id;
-    el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px;"><div style="flex:1;"><div class="tkt">${titulo}</div><div class="tkm">${meta||''}</div></div><div style="display:flex;gap:3px;" onclick="event.stopPropagation()"><button onclick="deleteClientTask(this.closest('.tk'))" style="background:none;border:none;cursor:pointer;color:var(--text-l);font-size:14px;padding:2px 4px;">×</button></div></div>`;
+    el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px;"><div style="flex:1;"><div class="tkt">${titulo}</div><div class="tkm">${meta||''}</div></div><div style="display:flex;gap:3px;" onclick="event.stopPropagation()"><button onclick="deleteClientTask(this.closest('.tk'))" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button></div></div>`;
     el.onclick=()=>moveClientTask(el);
     const col=document.getElementById('clt-tasks-'+estado); if(col) col.appendChild(el);
     document.getElementById('clt-titulo').value=''; document.getElementById('clt-meta').value='';
@@ -6978,7 +6978,7 @@ function renderMcPresupuestos(list) {
       ${p.link?`<a href="${p.link}" target="_blank" style="display:inline-block;margin-top:8px;font-size:11px;color:var(--topbar);text-decoration:none;">Ver presupuesto →</a>`:''}
       <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
         ${['Pendiente de enviar','Enviado','Consultado','Aprobado','Denegado'].map(s=>s!==p.estado?`<button onclick="updateMcPresupEstado('${p.id}','${s}')" style="font-size:11px;padding:3px 9px;border-radius:20px;border:.5px solid var(--cream-d);background:var(--white);color:var(--text-m);cursor:pointer;font-family:'DM Sans',sans-serif;">${s}</button>`:'').join('')}
-        <button onclick="deleteMcPresup('${p.id}')" style="font-size:11px;padding:3px 9px;border-radius:20px;border:.5px solid var(--cream-d);background:var(--white);color:var(--err);cursor:pointer;font-family:'DM Sans',sans-serif;">× Eliminar</button>
+        <button onclick="deleteMcPresup('${p.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
       </div>
     </div>`;
   }).join('');
@@ -6999,7 +6999,7 @@ function renderMcPendientes() {
     </div>
     <div style="display:flex;gap:4px;flex-shrink:0;">
       ${!p.completado?`<button onclick="completarMcPendiente('${p.id}')" style="font-size:11px;padding:3px 9px;border-radius:20px;border:.5px solid var(--ok);background:var(--ok-bg);color:var(--ok);cursor:pointer;font-family:'DM Sans',sans-serif;">✓</button>`:''}
-      <button onclick="deleteMcPendiente('${p.id}')" style="font-size:11px;padding:3px 9px;border-radius:20px;border:.5px solid var(--cream-d);background:var(--white);color:var(--err);cursor:pointer;font-family:'DM Sans',sans-serif;">×</button>
+      <button onclick="deleteMcPendiente('${p.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
     </div>
   </div>`).join('');
 }
@@ -7063,15 +7063,12 @@ function renderMcLista(clientes) {
     }
     return;
   }
-  const colors = [
-    ['#EDF0EA','#5A7A5E'],['#E6EEF5','#3A5A7A'],['#F5ECD8','#7A5A2A'],
-    ['#EEE6F5','#5A3A7A'],['#F5E8E8','#7A3A3A'],['#E8F5EE','#2A6A4A']
-  ];
+  const avatarColors = ['#7A8E7D','#5A8A62','#4A6A8A','#B08A42','#C4786A','#6B7A60'];
   lista.style.display = 'grid';
   lista.style.gridTemplateColumns = 'repeat(3,minmax(0,1fr))';
   lista.style.gap = '12px';
   lista.innerHTML = clientes.map((c, i) => {
-    const col  = colors[i % colors.length];
+    const col  = avatarColors[i % avatarColors.length];
     const init = (c.nombre||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     const cobradoReal = parseFloat(c.totalCobrado)||0;
     const presapsAprobados = _mcPresupuestos.filter(p=>(p.clienteId===c.id||p.cliente===c.nombre)&&p.estado==='Aprobado').reduce((s,p)=>s+getPresupMonto(p),0);
@@ -7088,11 +7085,11 @@ function renderMcLista(clientes) {
       onmouseout="this.style.borderColor='var(--cream-d)';this.style.boxShadow='none'">
       <!-- Acciones rápidas -->
       <div style="position:absolute;top:10px;right:10px;display:flex;gap:3px;" onclick="event.stopPropagation()">
-        <button onclick="editMcCliente('${c.id}',event)" style="width:24px;height:24px;border-radius:6px;border:.5px solid var(--cream-d);background:var(--cream);color:var(--text-l);cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;">✏</button>
-        <button onclick="deleteMcCliente('${c.id}',event)" style="width:24px;height:24px;border-radius:6px;border:.5px solid var(--cream-d);background:var(--cream);color:var(--err);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;">×</button>
+        <button onclick="editMcCliente('${c.id}',event)" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button onclick="deleteMcCliente('${c.id}',event)" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
       </div>
       <!-- Avatar -->
-      <div style="width:48px;height:48px;border-radius:12px;background:${col[0]};color:${col[1]};display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:500;margin-bottom:12px;">${init}</div>
+      <div style="width:48px;height:48px;border-radius:12px;background:${col};color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:500;margin-bottom:12px;">${init}</div>
       <!-- Nombre -->
       <div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:3px;padding-right:56px;line-height:1.3;">${c.nombre}</div>
       <!-- Tel o DNI -->
@@ -7460,9 +7457,9 @@ function renderMcDetallePresupuestos(list, clienteId, clienteNombre) {
           ${estados.filter(s=>s!==p.estado).map(s=>`<button onclick="updateMcPresupEstado('${p.id}','${s}')" style="font-size:11px;padding:3px 9px;border-radius:20px;border:.5px solid var(--cream-d);background:var(--white);color:var(--text-m);cursor:pointer;font-family:'DM Sans',sans-serif;">${estadoLabel[s]}</button>`).join('')}
         </div>
         <div style="display:flex;gap:4px;flex-shrink:0;">
-          <button onclick="editClientPresup('${p.id}')" style="font-size:11px;padding:3px 9px;border-radius:20px;border:.5px solid #C8D4CA;background:var(--white);color:#5A7A5E;cursor:pointer;font-family:'DM Sans',sans-serif;">✏ Editar</button>
-          <button onclick="exportarPresupuestoPDF('${p.id}')" style="font-size:11px;padding:3px 9px;border-radius:20px;border:.5px solid #C8D4CA;background:var(--white);color:#5A7A5E;cursor:pointer;font-family:'DM Sans',sans-serif;">↓ PDF</button>
-          <button onclick="deleteMcPresup('${p.id}')" style="font-size:11px;padding:3px 9px;border-radius:20px;border:.5px solid #F5E8E8;background:var(--white);color:#8A4A4A;cursor:pointer;font-family:'DM Sans',sans-serif;">× Eliminar</button>
+          <button onclick="editClientPresup('${p.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button onclick="exportarPresupuestoPDF('${p.id}')" style="font-size:11px;padding:3px 9px;border-radius:20px;border:.5px solid var(--cream-d);background:var(--white);color:var(--text-m);cursor:pointer;font-family:'DM Sans',sans-serif;">↓ PDF</button>
+          <button onclick="deleteMcPresup('${p.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
         </div>
       </div>
     </div>`;
@@ -8148,9 +8145,9 @@ function renderClientPresup(list) {
           <button onclick="exportarPresupuestoPDF('${p.id}')" style="font-size:11px;padding:2px 9px;border-radius:20px;border:.5px solid var(--sage-light);background:var(--sage-xl);color:var(--sage-dark);cursor:pointer;font-family:'DM Sans',sans-serif;">↓ Ver / PDF</button>
         </div>
         <div style="display:flex;gap:4px;margin-top:7px;flex-wrap:wrap;">
-          <button onclick="editClientPresup('${p.id}')" style="font-size:11px;padding:2px 8px;border-radius:20px;border:.5px solid var(--sage-light);background:var(--sage-xl);color:var(--sage-dark);cursor:pointer;font-family:'DM Sans',sans-serif;">✏️ Editar</button>
+          <button onclick="editClientPresup('${p.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           ${['Pendiente de enviar','Enviado','Consultado','Aprobado','Denegado'].map(s=>s!==p.estado?`<button onclick="updateClientPresupEstado('${p.id}','${s}')" style="font-size:11px;padding:2px 8px;border-radius:20px;border:.5px solid var(--cream-d);background:var(--white);color:var(--text-m);cursor:pointer;font-family:'DM Sans',sans-serif;">${s}</button>`:'').join('')}
-          <button onclick="deleteClientPresup('${p.id}')" style="font-size:11px;padding:2px 8px;border-radius:20px;border:.5px solid var(--cream-d);background:var(--white);color:var(--err);cursor:pointer;font-family:'DM Sans',sans-serif;">× Eliminar</button>
+          <button onclick="deleteClientPresup('${p.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
         </div>
       </div>
       ${m>0?`<div style="flex-shrink:0;text-align:right;"><div style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:500;color:var(--text);">$${m.toLocaleString('es-AR')}</div><div style="font-size:11px;color:var(--text-l);">${p.moneda||'ARS'}</div></div>`:''}
@@ -8435,8 +8432,8 @@ function renderProductosModule() {
         </div>
       </div>
       <div style="display:flex;gap:4px;justify-content:flex-end;">
-        <button onclick="editProducto('${p.id}')" style="background:none;border:.5px solid var(--cream-d);border-radius:7px;padding:4px 8px;font-size:11px;color:var(--text-l);cursor:pointer;font-family:'DM Sans',sans-serif;">✏️</button>
-        <button onclick="deleteProducto('${p.id}')" style="background:none;border:.5px solid var(--cream-d);border-radius:7px;padding:4px 8px;font-size:11px;color:var(--err);cursor:pointer;font-family:'DM Sans',sans-serif;">×</button>
+        <button onclick="editProducto('${p.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button onclick="deleteProducto('${p.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
       </div>
     </div>`;
   }).join('');
@@ -8769,8 +8766,8 @@ function renderProductosCompra(lista) {
       <span style="background:${bg};color:${tc};font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px;width:fit-content;">${p.categoria||''}</span>
       <span style="font-size:12px;color:var(--text-m);text-align:center;">${p.unidad||''}</span>
       <div style="display:flex;gap:4px;justify-content:flex-end;">
-        <button onclick="editProdCompra('${p.id}')" style="background:none;border:.5px solid var(--cream-d);border-radius:7px;padding:3px 8px;font-size:11px;color:var(--text-l);cursor:pointer;">✏️</button>
-        <button onclick="deleteProdCompra('${p.id}')" style="background:none;border:.5px solid var(--cream-d);border-radius:7px;padding:3px 8px;font-size:11px;color:var(--err);cursor:pointer;">×</button>
+        <button onclick="editProdCompra('${p.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button onclick="deleteProdCompra('${p.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
       </div>
     </div>`;
   }).join('');
@@ -8872,7 +8869,7 @@ function renderNecesidades() {
             ? `<button onclick="verOCsDeNecesidad('${n.id}')" class="bp" style="font-size:11px;padding:6px 12px;">Ver OC</button>`
             : `<button onclick="abrirCotizacion('${n.id}')" class="bp" style="font-size:11px;padding:6px 12px;">Cotizar</button>`
           }
-          <button onclick="deleteNecesidad('${n.id}')" style="background:none;border:.5px solid var(--cream-d);border-radius:20px;padding:6px 10px;font-size:11px;color:var(--err);cursor:pointer;font-family:'DM Sans',sans-serif;" title="Eliminar">×</button>
+          <button onclick="deleteNecesidad('${n.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
         </div>
       </div>
       ${prods?`<div style="background:var(--cream);border-radius:8px;padding:8px 12px;font-size:11px;color:var(--text-m);">${prods}</div>`:''}
@@ -10034,8 +10031,8 @@ function renderCuentaCorriente() {
 
   const saldoBadge = document.getElementById('cc-saldo-badge-full');
   if(saldoBadge) saldoBadge.innerHTML = saldo>0
-    ? `<span style="background:rgba(240,133,122,.2);color:#f0857a;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;">Con deuda</span>`
-    : `<span style="background:rgba(168,216,160,.2);color:#a8d8a0;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;">Al día</span>`;
+    ? `<span style="background:#C4786A;color:#fff;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;">Con deuda</span>`
+    : `<span style="background:#5A8A62;color:#fff;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;">Al día</span>`;
 
   // Actualizar saldo en tarjeta proveedor
   const prov=_proveedores.find(p=>p.id===_ccProvId);
@@ -10326,7 +10323,7 @@ function renderCatPanel() {
     return `<div style="display:grid;grid-template-columns:1fr 80px 40px;gap:10px;align-items:center;padding:11px 0;border-bottom:.5px solid var(--cream-d);">
       <div style="font-size:13px;color:var(--text);font-weight:${isDefault?'400':'500'};">${c}</div>
       <span style="text-align:center;background:${isDefault?'var(--cream)':'var(--sage-xl)'};color:${isDefault?'var(--text-l)':'var(--topbar)'};font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;border:.5px solid ${isDefault?'var(--cream-d)':'var(--sage-light)'};">${isDefault?'Base':'Custom'}</span>
-      <div style="text-align:right;">${!isDefault ? `<button onclick="deleteCatCustom('${c}')" style="background:none;border:.5px solid var(--cream-d);border-radius:7px;padding:3px 8px;font-size:11px;color:var(--err);cursor:pointer;">×</button>` : ''}</div>
+      <div style="text-align:right;">${!isDefault ? `<button onclick="deleteCatCustom('${c}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>` : ''}</div>
     </div>`;
   }).join('');
 }
@@ -10431,7 +10428,7 @@ function renderProveedoresModule() {
     if(list.length===0) { ranking.innerHTML='<div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin gastos registrados para proveedores.</div>'; }
     else {
       const max=list[0][1]||1;
-      const colors=['#A1B1A4','#7A8E7D','#B0C0B2','#C8D4CA','#D0CFC9','#E7E5DF'];
+      const colors=['#7A8E7D','#5A8A62','#4A6A8A','#B08A42','#C4786A','#6B7A60','#8A9E8D','#D0CFC9'];
       ranking.innerHTML = list.map(([nombre,monto],i)=>`
         <div style="margin-bottom:9px;">
           <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
@@ -10462,17 +10459,17 @@ function renderListaProveedores(filtro) {
     lista.innerHTML=`<div style="text-align:center;padding:20px;color:var(--text-l);font-size:13px;">Sin resultados para "${filtro}"</div>`;
     return;
   }
-  const colors=[['#EDF0EA','#7A8E7D'],['#E6EEF5','#4A6A8A'],['#F5ECD8','#8A6A3A'],['#EEE6F5','#6A4A8A']];
+  const avatarColors=['#7A8E7D','#5A8A62','#4A6A8A','#B08A42','#C4786A','#6B7A60'];
   lista.innerHTML = provsFiltrados.map((p,i)=>{
-    const col=colors[i%colors.length];
+    const col=avatarColors[i%avatarColors.length];
     const init=(p.nombre||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     const saldo=p._saldo||0;
     const saldoHtml=saldo>0
-      ?`<span style="background:var(--err-bg);color:var(--err);font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;">$${saldo.toLocaleString('es-AR')} pendiente</span>`
-      :`<span style="background:var(--ok-bg);color:var(--ok);font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;">Al día</span>`;
+      ?`<span style="background:#C4786A;color:#fff;font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;">$${saldo.toLocaleString('es-AR')} pendiente</span>`
+      :`<span style="background:#5A8A62;color:#fff;font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;">Al día</span>`;
     return `<div style="padding:12px 0;border-bottom:.5px solid var(--cream-d);">
       <div style="display:flex;align-items:center;gap:10px;">
-        <div style="width:38px;height:38px;border-radius:10px;background:${col[0]};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:${col[1]};flex-shrink:0;">${init}</div>
+        <div style="width:38px;height:38px;border-radius:10px;background:${col};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:#fff;flex-shrink:0;">${init}</div>
         <div style="flex:1;min-width:0;">
           <div style="font-size:13px;font-weight:500;color:var(--text);">${p.nombre}</div>
           <div style="font-size:11px;color:var(--text-l);margin-top:1px;">${p.categoria||''}${p.tel?' · '+p.tel:''}</div>
@@ -10480,8 +10477,8 @@ function renderListaProveedores(filtro) {
         </div>
         <div style="display:flex;gap:4px;flex-shrink:0;align-items:center;">
           <button onclick="abrirCuentaCorriente('${p.id}')" style="background:var(--sage-xl);border:none;color:var(--sage-dark);cursor:pointer;font-size:11px;padding:5px 12px;border-radius:20px;font-family:'DM Sans',sans-serif;font-weight:500;">CC</button>
-          <button onclick="editProveedor('${p.id}')" style="background:none;border:.5px solid var(--cream-d);border-radius:8px;padding:4px 8px;font-size:11px;color:var(--text-l);cursor:pointer;font-family:'DM Sans',sans-serif;">✏️</button>
-          <button onclick="deleteProveedor('${p.id}')" style="background:none;border:.5px solid var(--cream-d);border-radius:8px;padding:4px 8px;font-size:11px;color:var(--err);cursor:pointer;font-family:'DM Sans',sans-serif;">×</button>
+          <button onclick="editProveedor('${p.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button onclick="deleteProveedor('${p.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
         </div>
       </div>
       ${p.notas?`<div style="font-size:11px;color:var(--text-l);margin-top:6px;margin-left:48px;font-style:italic;">${p.notas}</div>`:''}
@@ -10500,7 +10497,7 @@ function initProvDonutChart(egresos) {
   egresos.forEach(e=>{ const c=e.categoria||'Otro'; cats[c]=(cats[c]||0)+(parseFloat(e.monto)||0); });
   const labels=Object.keys(cats), data=labels.map(k=>cats[k]);
   const total=data.reduce((a,b)=>a+b,0);
-  const colors=['#A1B1A4','#D0CFC9','#F5ECD8','#E6EEF5','#EEE6F5','#F5E8E8'];
+  const colors=['#7A8E7D','#5A8A62','#4A6A8A','#B08A42','#C4786A','#6B7A60','#8A9E8D','#D0CFC9'];
   provDonutChart=new Chart(canvas.getContext('2d'),{
     type:'doughnut',
     data:{labels,datasets:[{data,backgroundColor:colors.slice(0,labels.length),borderWidth:0}]},
@@ -11664,8 +11661,8 @@ async function loadProductos() {
             +'<input type="number" value="'+pr+'" data-id="'+p.id+'" class="prod-precio-input" style="width:100%;padding:6px 10px;border:.5px solid var(--cream-d);border-radius:8px;font-size:12px;color:var(--text);font-family:\'DM Sans\',sans-serif;text-align:right;" onchange="marcarCambioPrecio()"/>'
             +'<div style="display:flex;justify-content:center;"><div onclick="toggleActivoProducto(\''+p.id+'\','+inact+')" style="width:36px;height:20px;border-radius:10px;background:'+(inact?'var(--cream-d)':'var(--topbar)')+';position:relative;cursor:pointer;flex-shrink:0;"><div style="position:absolute;width:14px;height:14px;border-radius:50%;background:#fff;top:3px;'+(inact?'left:3px':'left:19px')+';"></div></div></div>'
             +'<div style="display:flex;gap:4px;justify-content:flex-end;">'
-            +'<button onclick="editProducto(\''+p.id+'\')" style="background:none;border:.5px solid var(--cream-d);border-radius:7px;padding:4px 8px;font-size:11px;color:var(--text-l);cursor:pointer;font-family:\'DM Sans\',sans-serif;">✏️</button>'
-            +'<button onclick="deleteProducto(\''+p.id+'\')" style="background:none;border:.5px solid var(--cream-d);border-radius:7px;padding:4px 8px;font-size:11px;color:var(--err);cursor:pointer;font-family:\'DM Sans\',sans-serif;">×</button>'
+            +'<button onclick="editProducto(\''+p.id+'\')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>'
+            +'<button onclick="deleteProducto(\''+p.id+'\')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>'
             +'</div></div>';
         }).join('');
       }
