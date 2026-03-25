@@ -166,6 +166,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 .cont-snav:hover:not(.active){background:var(--cream);color:var(--text);}
 input[type=date],input[type=time],select{background:var(--cream);border:.5px solid var(--cream-d);border-radius:8px;padding:7px 10px;font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;width:100%;margin-top:5px;outline:none;}
 input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sage);}
+/* ── BOTTOM NAV MOBILE (cliente) ── */
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:.5px solid var(--cream-d);padding:6px 0 10px;z-index:150;justify-content:space-around;align-items:flex-start;}
+.bottom-nav-btn{background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 0;font-family:'DM Sans',sans-serif;color:#888780;transition:color .15s;-webkit-tap-highlight-color:transparent;}
+.bottom-nav-btn svg{width:20px;height:20px;}
+.bottom-nav-btn span{font-size:9px;line-height:1;}
+.bottom-nav-btn.active{color:var(--sage-dark);font-weight:500;}
 @media(max-width:768px){
   .mg{grid-template-columns:1fr 1fr;}
   .g2{grid-template-columns:1fr;}
@@ -179,9 +185,6 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
   .topbar-brand{font-size:13px;}
   .dash-banner-stats{flex-wrap:wrap;gap:12px;}
   .dash-banner-stat{min-width:80px;}
-  .mod-subnav{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:6px;scrollbar-width:none;}
-  .mod-subnav::-webkit-scrollbar{display:none;}
-  .subctab{white-space:nowrap;flex-shrink:0;}
   .client-tabs{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;}
   .client-tabs::-webkit-scrollbar{display:none;}
   .ctab{white-space:nowrap;flex-shrink:0;padding:10px 14px;}
@@ -201,6 +204,21 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
   /* Banner topbar */
   .topbar{padding:0 12px;}
   .topbar-right{gap:4px;}
+  /* ── Cliente mobile: bottom nav + sub-nav grid ── */
+  body.client-view .bottom-nav{display:flex;}
+  body.client-view .mobile-menu{display:none !important;}
+  body.client-view .mobile-nav{display:none !important;}
+  body.client-view .content{padding-bottom:76px;}
+  body.client-view .embi-fab{bottom:76px;}
+  /* Sub-nav grid para cliente mobile */
+  body.client-view .mod-subnav{display:none;flex-wrap:wrap;gap:6px;padding-bottom:0;overflow-x:visible;}
+  body.client-view .mod-subnav[style*="display: flex"],body.client-view .mod-subnav[style*="display:flex"]{display:grid !important;grid-template-columns:1fr 1fr 1fr;gap:6px;}
+  body.client-view .mod-subnav .subctab{white-space:normal;background:var(--white);border:.5px solid var(--cream-d);border-radius:10px;padding:10px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;text-align:center;}
+  body.client-view .mod-subnav .subctab.active{background:var(--topbar);color:#fff;border-color:var(--topbar);}
+  /* 4 items → 2 cols */
+  body.client-view #subnav-herramientas{grid-template-columns:1fr 1fr 1fr !important;}
+  /* 5 items (compras) → 3+2 */
+  body.client-view #subnav-compras{grid-template-columns:1fr 1fr 1fr !important;}
 }
 @media(max-width:480px){
   .mg{grid-template-columns:1fr 1fr;}
@@ -3203,6 +3221,7 @@ async function getClientByEmail(email) {
 }
 
 window.showAdminUI = async function(email) {
+  document.body.classList.remove('client-view');
   const btnMiCuenta = document.getElementById('btn-mi-cuenta');
   if(btnMiCuenta) btnMiCuenta.style.display = 'none';
   document.getElementById('ub').style.display = '';
@@ -3218,6 +3237,7 @@ window.showAdminUI = async function(email) {
 };
 
 window.showClientUI = async function(email, clientData) {
+  document.body.classList.add('client-view');
   const btnMiCuenta = document.getElementById('btn-mi-cuenta');
   if(btnMiCuenta) btnMiCuenta.style.display = 'none';
   document.getElementById('ub').style.display = 'none';
@@ -10509,6 +10529,10 @@ window.showClientMod = function(mod, btn) {
   // Activar tab en topbar
   document.querySelectorAll('#cNav .nt').forEach(b => b.classList.remove('active'));
   if(btn) btn.classList.add('active');
+  // Sincronizar bottom nav
+  document.querySelectorAll('.bottom-nav-btn').forEach(b => b.classList.remove('active'));
+  const bBtn = document.querySelector('.bottom-nav-btn[onclick*="\''+mod+'\'"]');
+  if(bBtn) bBtn.classList.add('active');
   // Ocultar todos los sub-navs
   document.querySelectorAll('.mod-subnav').forEach(el => el.style.display = 'none');
 
@@ -10534,6 +10558,15 @@ window.showClientMod = function(mod, btn) {
     if(subnav) { subnav.style.display = 'flex'; subnav.querySelectorAll('.subctab').forEach(b => b.classList.remove('active')); const fb = subnav.querySelector('.subctab'); if(fb) fb.classList.add('active'); }
     showCTab('calculador', null);
   }
+};
+
+// Bottom nav mobile — llama a showClientMod y sincroniza botones
+window.bottomNav = function(mod, btn) {
+  document.querySelectorAll('.bottom-nav-btn').forEach(b => b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  // Sincronizar topbar tabs también
+  const topBtn = document.querySelector('#cNav .nt[onclick*="\''+mod+'\'"]');
+  window.showClientMod(mod, topBtn);
 };
 
 window.showCTab = function(tab, btn) {
@@ -11160,6 +11193,30 @@ window.marcarCambioPrecio = function() {
 };
 
 </script>
+
+<!-- ═══════════ BOTTOM NAV MOBILE (cliente) ═══════════ -->
+<div class="bottom-nav" id="bottomNav">
+  <button class="bottom-nav-btn active" onclick="bottomNav('inicio',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1z"/></svg>
+    <span>Inicio</span>
+  </button>
+  <button class="bottom-nav-btn" onclick="bottomNav('finanzas',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+    <span>Finanzas</span>
+  </button>
+  <button class="bottom-nav-btn" onclick="bottomNav('ventas',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><circle cx="18" cy="8" r="2.5"/><path d="M21 21v-1.5a3 3 0 00-2-2.83"/></svg>
+    <span>Ventas</span>
+  </button>
+  <button class="bottom-nav-btn" onclick="bottomNav('compras',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+    <span>Compras</span>
+  </button>
+  <button class="bottom-nav-btn" onclick="bottomNav('herramientas',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+    <span>Herram.</span>
+  </button>
+</div>
 
 <!-- ═══════════════ EMBI ═══════════════ -->
 <div class="embi-fab" id="embiFab" style="display:none;">
