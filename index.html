@@ -3322,6 +3322,8 @@ window._query = query;
 window._where = where;
 window._orderBy = orderBy;
 window._updateDoc = updateDoc;
+window._deleteDoc = deleteDoc;
+window._deleteField = deleteField;
 
 let currentUser = null;
 let currentClientId = null;
@@ -11036,6 +11038,7 @@ window.hideAppError = function() {
 
 
 // ── PAPELERA ──
+const _db=window.db, _gd=window._getDocs, _col=window._collection, _dc=window._doc, _ud=window._updateDoc, _dd=window._deleteDoc, _df=window._deleteField;
 let _papeleraItems = [];
 let _papeleraFilterTipo = 'todos';
 
@@ -11082,14 +11085,14 @@ window.loadPapelera = async function() {
   _papeleraItems = [];
   try {
     // Cargar TODOS los clientes (incluyendo eliminados) para revisar subcols
-    const allCliSnap = await getDocs(collection(db,'clientes'));
+    const allCliSnap = await _gd(_col(_db,'clientes'));
     const clients = [];
     allCliSnap.forEach(d => clients.push({id:d.id,...d.data()}));
     // Subcols de cada cliente
     for(const c of clients) {
       for(const cfg of PAPELERA_SUBCOLS) {
         try {
-          const snap = await getDocs(collection(db,'clientes',c.id,cfg.col));
+          const snap = await _gd(_col(_db,'clientes',c.id,cfg.col));
           snap.forEach(d => {
             const data = d.data();
             if(data.eliminado) {
@@ -11110,7 +11113,7 @@ window.loadPapelera = async function() {
     // Colecciones top-level
     for(const cfg of PAPELERA_TOP) {
       try {
-        const snap = await getDocs(collection(db,cfg.col));
+        const snap = await _gd(_col(_db,cfg.col));
         snap.forEach(d => {
           const data = d.data();
           if(data.eliminado) {
@@ -11129,7 +11132,7 @@ window.loadPapelera = async function() {
     }
     // Clientes top-level eliminados
     try {
-      const cSnap = await getDocs(collection(db,'clientes'));
+      const cSnap = await _gd(_col(_db,'clientes'));
       cSnap.forEach(d => {
         const data = d.data();
         if(data.eliminado) {
@@ -11206,8 +11209,8 @@ window.papeleraFilterTipo = function(tipo, btn) {
 
 window.restaurarItem = async function(pathSegments, docId) {
   try {
-    const ref = doc(db, ...pathSegments, docId);
-    await updateDoc(ref, { eliminado: deleteField(), eliminadoEn: deleteField() });
+    const ref = _dc(_db, ...pathSegments, docId);
+    await _ud(ref, { eliminado: _df(), eliminadoEn: _df() });
     _papeleraItems = _papeleraItems.filter(i => !(i.docId===docId && JSON.stringify(i.pathSegments)===JSON.stringify(pathSegments)));
     renderPapelera();
   } catch(e) { alert('Error al restaurar: '+e.message); }
@@ -11216,8 +11219,8 @@ window.restaurarItem = async function(pathSegments, docId) {
 window.eliminarPermanente = function(pathSegments, docId) {
   showConfirm('¿Eliminar permanentemente? Esta acción NO se puede deshacer.', async () => {
     try {
-      const ref = doc(db, ...pathSegments, docId);
-      await deleteDoc(ref);
+      const ref = _dc(_db, ...pathSegments, docId);
+      await _dd(ref);
       _papeleraItems = _papeleraItems.filter(i => !(i.docId===docId && JSON.stringify(i.pathSegments)===JSON.stringify(pathSegments)));
       renderPapelera();
     } catch(e) { alert('Error: '+e.message); }
