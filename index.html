@@ -1223,12 +1223,7 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
 
         <!-- Banner -->
         <div style="background:var(--sage-dark);border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;"><div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;margin-bottom:12px;">Finanzas</div><div style="display:flex;gap:20px;align-items:center;"><div style="flex:1;min-width:0;"><div style="font-size:11px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.5px;">Ingresos</div><div style="font-family:'Cormorant Garamond',serif;font-size:20px;margin-top:2px;color:#fff;" id="bn-fin-ing">$0</div></div><div style="width:1px;background:rgba(255,255,255,.15);align-self:stretch;"></div><div style="flex:1;min-width:0;"><div style="font-size:11px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.5px;">Egresos</div><div style="font-family:'Cormorant Garamond',serif;font-size:20px;margin-top:2px;color:#fff;" id="bn-fin-eg">$0</div></div><div style="width:1px;background:rgba(255,255,255,.15);align-self:stretch;"></div><div style="flex:1;min-width:0;"><div style="font-size:11px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.5px;">Ganancia</div><div style="font-family:'Cormorant Garamond',serif;font-size:20px;margin-top:2px;color:#fff;" id="bn-fin-gan">$0</div></div><div style="width:1px;background:rgba(255,255,255,.15);align-self:stretch;"></div><div style="flex:1;min-width:0;"><div style="font-size:11px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.5px;">Margen</div><div style="font-family:'Cormorant Garamond',serif;font-size:20px;margin-top:2px;color:#fff;" id="bn-fin-margen">0%</div></div></div></div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
-          <div style="display:flex;gap:0;background:var(--white);border:.5px solid var(--cream-d);border-radius:12px;padding:4px;flex-wrap:wrap;">
-            <button class="cont-snav active" onclick="showClientContView('home',this)">Resumen</button>
-            <button class="cont-snav" onclick="showClientContView('ingresos',this)">Ingresos</button>
-            <button class="cont-snav" onclick="showClientContView('egresos',this)">Egresos</button>
-          </div>
+          <div style="display:flex;justify-content:flex-end;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
           <select id="cc-mes-sel" style="width:auto;padding:8px 14px;font-size:12px;margin-top:0;border-radius:20px;border:.5px solid var(--cream-d);" onchange="filterCcByMes(this.value)">
             <option value="todo">Todo el año</option>
             <option>Enero 2026</option><option>Febrero 2026</option><option selected>Marzo 2026</option>
@@ -5981,14 +5976,11 @@ window.showClientContView = function(view, btn) {
   if(target) target.style.display = 'block';
   // Activar botón en sub-nav Finanzas
   document.querySelectorAll('#subnav-finanzas .subctab').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('#ct-contabilidad .cont-snav').forEach(b => b.classList.remove('active'));
   if(btn) btn.classList.add('active');
   else {
     const map = {home:0,ingresos:1,egresos:2};
     const subBtns = document.querySelectorAll('#subnav-finanzas .subctab');
     if(subBtns[map[view]]) subBtns[map[view]].classList.add('active');
-    const contBtns = document.querySelectorAll('#ct-contabilidad .cont-snav');
-    if(contBtns[map[view]]) contBtns[map[view]].classList.add('active');
   }
   if(view==='home') {
     setTimeout(()=>{ const ing=window._clientIngresos||[]; const eg=window._clientEgresos||[]; initClientCashflow(ing,eg); initClientGastosDonut(eg); },200);
