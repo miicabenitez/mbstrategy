@@ -1949,9 +1949,9 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
           <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:#fff;">Necesidades de compra</div>
         </div>
         <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px;">
-          <div class="mc" style="background:var(--err-bg);"><div class="ml" style="color:var(--err);">Urgentes</div><div class="mv" style="color:var(--err);" id="nc-kpi-urgente">0</div><div class="ms" style="color:var(--err);">sin cotizar</div></div>
-          <div class="mc" style="background:var(--warn-bg);"><div class="ml" style="color:var(--warn);">Próximas</div><div class="mv" style="color:var(--warn);" id="nc-kpi-proximo">0</div><div class="ms" style="color:var(--warn);">en proceso</div></div>
-          <div class="mc" style="background:var(--ok-bg);"><div class="ml" style="color:var(--ok);">Programadas</div><div class="mv" style="color:var(--ok);" id="nc-kpi-programado">0</div><div class="ms" style="color:var(--ok);">al día</div></div>
+          <div class="mc" style="background:#C4786A;"><div class="ml" style="color:rgba(255,255,255,.75);">Urgentes</div><div class="mv" style="color:#fff;" id="nc-kpi-urgente">0</div><div class="ms" style="color:rgba(255,255,255,.65);">sin cotizar</div></div>
+          <div class="mc" style="background:#B08A42;"><div class="ml" style="color:rgba(255,255,255,.75);">Próximas</div><div class="mv" style="color:#fff;" id="nc-kpi-proximo">0</div><div class="ms" style="color:rgba(255,255,255,.65);">en proceso</div></div>
+          <div class="mc" style="background:#5A8A62;"><div class="ml" style="color:rgba(255,255,255,.75);">Programadas</div><div class="mv" style="color:#fff;" id="nc-kpi-programado">0</div><div class="ms" style="color:rgba(255,255,255,.65);">al día</div></div>
         </div>
         <div style="display:flex;justify-content:flex-end;margin-bottom:14px;">
           <button class="bp" onclick="openModal('newNecesidadModal')">+ Nueva necesidad</button>
@@ -2841,7 +2841,7 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;">
         <div class="mc"><div class="ml">Total comprado</div><div class="mv" id="cc-kpi-comprado">$0</div></div>
         <div class="mc"><div class="ml">Total pagado</div><div class="mv" style="color:var(--ok);" id="cc-kpi-pagado">$0</div></div>
-        <div class="mc" style="background:var(--err-bg);"><div class="ml" style="color:var(--err);">Pendiente</div><div class="mv" style="color:var(--err);" id="cc-kpi-pendiente">$0</div></div>
+        <div class="mc" style="background:#C4786A;"><div class="ml" style="color:rgba(255,255,255,.75);">Pendiente</div><div class="mv" style="color:#fff;" id="cc-kpi-pendiente">$0</div></div>
       </div>
       <!-- Acciones -->
       <div style="display:flex;gap:8px;margin-bottom:14px;justify-content:flex-end;">
@@ -8712,9 +8712,9 @@ function renderNecesidades() {
   const el=document.getElementById('nc-lista');if(!el)return;
   if(_necesidades.length===0){el.innerHTML='<div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Sin necesidades cargadas.</div>';return;}
   const estadoConfig={
-    urgente:{label:'Urgente',bg:'var(--err-bg)',tc:'var(--err)',bc:'#C4786A'},
-    proximo:{label:'Próxima',bg:'var(--warn-bg)',tc:'var(--warn)',bc:'#B08A42'},
-    programado:{label:'Programada',bg:'var(--ok-bg)',tc:'var(--ok)',bc:'#5A8A62'},
+    urgente:{label:'Urgente',bg:'#C4786A',tc:'#fff',bc:'#C4786A'},
+    proximo:{label:'Próxima',bg:'#B08A42',tc:'#fff',bc:'#B08A42'},
+    programado:{label:'Programada',bg:'#5A8A62',tc:'#fff',bc:'#5A8A62'},
   };
   el.innerHTML = _necesidades.map(n=>{
     const ec=estadoConfig[n.estado]||estadoConfig.programado;
