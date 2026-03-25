@@ -177,8 +177,9 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
   .g2{grid-template-columns:1fr;}
   .sg{grid-template-columns:1fr 1fr;}
   .tasks-board{grid-template-columns:1fr;}
-  .nav-tabs{display:none;}
-  .content{padding:12px;}
+  .nav-tabs,#cNav{display:none !important;}
+  body{overflow-x:hidden;}
+  .content{padding:12px;overflow-x:hidden;}
   .mc .mv{font-size:20px;}
   .md{padding:18px 14px;margin:8px;width:calc(100% - 16px);max-width:100%;max-height:92vh;border-radius:14px;}
   .mobile-menu{display:block !important;}
@@ -211,11 +212,12 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
   body.client-view .content{padding-bottom:76px;overflow-x:hidden;}
   body.client-view .embi-fab{bottom:76px;}
   /* Sub-nav grid para cliente mobile */
-  body.client-view .mod-subnav.visible{display:grid !important;grid-template-columns:1fr 1fr 1fr;gap:6px;}
-  body.client-view .mod-subnav .subctab{white-space:normal;background:var(--white);border:.5px solid var(--cream-d);border-radius:10px;padding:10px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;text-align:center;}
-  body.client-view .mod-subnav .subctab.active{background:var(--topbar);color:#fff;border-color:var(--topbar);}
-  /* Banners no desbordan */
-  body.client-view [style*="border-radius:13px"]{overflow:hidden;word-break:break-word;}
+  body.client-view .mod-subnav.visible{display:grid !important;grid-template-columns:1fr 1fr 1fr;gap:6px !important;margin-bottom:14px;}
+  body.client-view #subnav-compras.visible{grid-template-columns:1fr 1fr !important;}
+  body.client-view .mod-subnav .subctab{white-space:normal !important;background:var(--white);border:.5px solid var(--cream-d) !important;border-radius:10px !important;padding:10px !important;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px !important;text-align:center;}
+  body.client-view .mod-subnav .subctab.active{background:var(--topbar) !important;color:#fff !important;border-color:var(--topbar) !important;}
+  /* Banners y contenido no desbordan */
+  body.client-view [style*="border-radius:13px"]{overflow:hidden;word-break:break-word;max-width:100%;box-sizing:border-box;}
 }
 @media(max-width:480px){
   .mg{grid-template-columns:1fr 1fr;}
@@ -1088,21 +1090,21 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
       <div class="client-tabs" id="mod-bar" style="display:none;"></div>
 
       <!-- SUB-NAV Finanzas -->
-      <div id="subnav-finanzas" class="mod-subnav" style="display:none;gap:4px;margin-bottom:20px;">
+      <div id="subnav-finanzas" class="mod-subnav" style="display:none;gap:4px;margin-bottom:14px;">
         <button class="subctab active" onclick="showClientContView('home',this)">Resumen</button>
         <button class="subctab" onclick="showClientContView('ingresos',this)">Ingresos</button>
         <button class="subctab" onclick="showClientContView('egresos',this)">Egresos</button>
       </div>
 
       <!-- SUB-NAV Ventas -->
-      <div id="subnav-ventas" class="mod-subnav" style="display:none;gap:4px;margin-bottom:20px;">
+      <div id="subnav-ventas" class="mod-subnav" style="display:none;gap:4px;margin-bottom:14px;">
         <button class="subctab active" onclick="showCTab('mclientes',this)">Clientes</button>
         <button class="subctab" onclick="showCTab('presupuestos',this)">Presupuestos</button>
         <button class="subctab" onclick="showCTab('productos',this)">Catálogo de precios</button>
       </div>
 
       <!-- SUB-NAV Compras -->
-      <div id="subnav-compras" class="mod-subnav" style="display:none;gap:4px;margin-bottom:20px;">
+      <div id="subnav-compras" class="mod-subnav" style="display:none;gap:4px;margin-bottom:14px;">
         <button class="subctab active" onclick="showCTab('necesidades',this)">Necesidades</button>
         <button class="subctab" onclick="showCTab('proveedores',this)">Proveedores</button>
         <button class="subctab" onclick="showCTab('ordenes-compra',this)">Órdenes</button>
@@ -1111,7 +1113,7 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
       </div>
 
       <!-- SUB-NAV Herramientas -->
-      <div id="subnav-herramientas" class="mod-subnav" style="display:none;gap:4px;margin-bottom:20px;">
+      <div id="subnav-herramientas" class="mod-subnav" style="display:none;gap:4px;margin-bottom:14px;">
         <button class="subctab active" onclick="showCTab('calculador',this)">Calculador</button>
         <button class="subctab" onclick="showCTab('kpis',this)">Indicadores</button>
         <button class="subctab" onclick="showCTab('tareas',this)">Plan de acción</button>
