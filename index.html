@@ -208,22 +208,20 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
   body.client-view .bottom-nav{display:flex;}
   body.client-view .mobile-menu{display:none !important;}
   body.client-view .mobile-nav{display:none !important;}
-  body.client-view .content{padding-bottom:76px;}
+  body.client-view .content{padding-bottom:76px;overflow-x:hidden;}
   body.client-view .embi-fab{bottom:76px;}
   /* Sub-nav grid para cliente mobile */
-  body.client-view .mod-subnav{display:none;flex-wrap:wrap;gap:6px;padding-bottom:0;overflow-x:visible;}
-  body.client-view .mod-subnav[style*="display: flex"],body.client-view .mod-subnav[style*="display:flex"]{display:grid !important;grid-template-columns:1fr 1fr 1fr;gap:6px;}
+  body.client-view .mod-subnav.visible{display:grid !important;grid-template-columns:1fr 1fr 1fr;gap:6px;}
   body.client-view .mod-subnav .subctab{white-space:normal;background:var(--white);border:.5px solid var(--cream-d);border-radius:10px;padding:10px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;text-align:center;}
   body.client-view .mod-subnav .subctab.active{background:var(--topbar);color:#fff;border-color:var(--topbar);}
-  /* 4 items → 2 cols */
-  body.client-view #subnav-herramientas{grid-template-columns:1fr 1fr 1fr !important;}
-  /* 5 items (compras) → 3+2 */
-  body.client-view #subnav-compras{grid-template-columns:1fr 1fr 1fr !important;}
+  /* Banners no desbordan */
+  body.client-view [style*="border-radius:13px"]{overflow:hidden;word-break:break-word;}
 }
 @media(max-width:480px){
   .mg{grid-template-columns:1fr 1fr;}
   .presup-card .presup-actions{flex-wrap:wrap;}
-  .content{padding:10px;}
+  .content{padding:10px;overflow-x:hidden;}
+  body.client-view .content{padding-bottom:76px;}
   .md{margin:4px;width:calc(100% - 8px);padding:16px 12px;border-radius:12px;}
   /* Selector de producto en modal presupuesto — 1 columna */
   .md [style*="grid-template-columns:1fr 64px 100px"],
@@ -10534,28 +10532,28 @@ window.showClientMod = function(mod, btn) {
   const bBtn = document.querySelector('.bottom-nav-btn[onclick*="\''+mod+'\'"]');
   if(bBtn) bBtn.classList.add('active');
   // Ocultar todos los sub-navs
-  document.querySelectorAll('.mod-subnav').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('.mod-subnav').forEach(el => { el.style.display = 'none'; el.classList.remove('visible'); });
+
+  const showSubnav = function(id) {
+    const subnav = document.getElementById(id);
+    if(subnav) { subnav.style.display = 'flex'; subnav.classList.add('visible'); subnav.querySelectorAll('.subctab').forEach(b => b.classList.remove('active')); const fb = subnav.querySelector('.subctab'); if(fb) fb.classList.add('active'); }
+  };
 
   if(mod === 'inicio') {
-    // Placeholder: mostrar contabilidad resumen hasta Fase 4
     showCTab('contabilidad', null);
     showClientContView('home', null);
   } else if(mod === 'finanzas') {
-    const subnav = document.getElementById('subnav-finanzas');
-    if(subnav) { subnav.style.display = 'flex'; subnav.querySelectorAll('.subctab').forEach(b => b.classList.remove('active')); const fb = subnav.querySelector('.subctab'); if(fb) fb.classList.add('active'); }
+    showSubnav('subnav-finanzas');
     showCTab('contabilidad', null);
     showClientContView('home', null);
   } else if(mod === 'ventas') {
-    const subnav = document.getElementById('subnav-ventas');
-    if(subnav) { subnav.style.display = 'flex'; subnav.querySelectorAll('.subctab').forEach(b => b.classList.remove('active')); const fb = subnav.querySelector('.subctab'); if(fb) fb.classList.add('active'); }
+    showSubnav('subnav-ventas');
     showCTab('mclientes', null);
   } else if(mod === 'compras') {
-    const subnav = document.getElementById('subnav-compras');
-    if(subnav) { subnav.style.display = 'flex'; subnav.querySelectorAll('.subctab').forEach(b => b.classList.remove('active')); const fb = subnav.querySelector('.subctab'); if(fb) fb.classList.add('active'); }
+    showSubnav('subnav-compras');
     showCTab('necesidades', null);
   } else if(mod === 'herramientas') {
-    const subnav = document.getElementById('subnav-herramientas');
-    if(subnav) { subnav.style.display = 'flex'; subnav.querySelectorAll('.subctab').forEach(b => b.classList.remove('active')); const fb = subnav.querySelector('.subctab'); if(fb) fb.classList.add('active'); }
+    showSubnav('subnav-herramientas');
     showCTab('calculador', null);
   }
 };
