@@ -342,6 +342,13 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
         <button class="nt" onclick="showATab('kpis',this)">KPIs MB</button>
         <button class="nt" onclick="showATab('embi',this)">Embi ✦</button>
       </div>
+      <div class="nav-tabs" id="cNav" style="display:none;">
+        <button class="nt active" onclick="showClientMod('inicio',this)">Inicio</button>
+        <button class="nt" onclick="showClientMod('finanzas',this)">Finanzas</button>
+        <button class="nt" onclick="showClientMod('ventas',this)">Ventas</button>
+        <button class="nt" onclick="showClientMod('compras',this)">Compras</button>
+        <button class="nt" onclick="showClientMod('herramientas',this)">Herramientas</button>
+      </div>
     </div>
     <div class="topbar-right">
       <div class="ub" id="ub">—</div>
@@ -1061,43 +1068,38 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
         </div>
         <button onclick="window.location.reload()" style="font-size:12px;font-weight:500;padding:5px 14px;background:#fff;border:.5px solid #E8C8C8;border-radius:20px;color:#7A3A3A;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;">Recargar</button>
       </div>
-      <div class="client-tabs" id="mod-bar">
-        <button class="ctab active" onclick="showMod('gestion',this)">MB Gestión</button>
-      </div>
+      <!-- MOD-BAR oculto (legacy) -->
+      <div class="client-tabs" id="mod-bar" style="display:none;"></div>
 
-      <!-- SUB-NAV MB Gestión -->
-      <div id="subnav-gestion" class="mod-subnav" style="display:none;gap:4px;margin-bottom:8px;">
-        <button class="subctab active" onclick="showGestionSub('contabilidad',this)">Finanzas</button>
-        <button class="subctab" onclick="showGestionSub('mclientes',this)">Comercial</button>
-        <button class="subctab" onclick="showGestionSub('proveedores',this)">Compras</button>
-        <button class="subctab" onclick="showGestionSub('membresia',this)">Membresía</button>
-      </div>
-
-      <!-- SUB-NAV secundario Finanzas -->
+      <!-- SUB-NAV Finanzas -->
       <div id="subnav-finanzas" class="mod-subnav" style="display:none;gap:4px;margin-bottom:20px;">
-        <button class="subctab active" onclick="showCTab('contabilidad',this)">Mi negocio</button>
-        <button class="subctab" onclick="showCTab('kpis',this)">Indicadores</button>
-        <button class="subctab" onclick="showCTab('calculador',this)">Calculador de costos</button>
+        <button class="subctab active" onclick="showClientContView('home',this)">Resumen</button>
+        <button class="subctab" onclick="showClientContView('ingresos',this)">Ingresos</button>
+        <button class="subctab" onclick="showClientContView('egresos',this)">Egresos</button>
       </div>
 
-      <!-- SUB-NAV secundario Comercial -->
-      <div id="subnav-comercial" class="mod-subnav" style="display:none;gap:4px;margin-bottom:20px;">
-        <button class="subctab active" onclick="showCTab('mclientes',this)">Mis clientes</button>
+      <!-- SUB-NAV Ventas -->
+      <div id="subnav-ventas" class="mod-subnav" style="display:none;gap:4px;margin-bottom:20px;">
+        <button class="subctab active" onclick="showCTab('mclientes',this)">Clientes</button>
         <button class="subctab" onclick="showCTab('presupuestos',this)">Presupuestos</button>
-        <button class="subctab" onclick="showCTab('productos',this)">Productos</button>
-        <button class="subctab" onclick="showCTab('tareas',this)">Plan de acción</button>
+        <button class="subctab" onclick="showCTab('productos',this)">Catálogo de precios</button>
       </div>
 
+      <!-- SUB-NAV Compras -->
       <div id="subnav-compras" class="mod-subnav" style="display:none;gap:4px;margin-bottom:20px;">
-        <button class="subctab active" onclick="showCTab('proveedores',this)">Proveedores</button>
+        <button class="subctab active" onclick="showCTab('necesidades',this)">Necesidades</button>
+        <button class="subctab" onclick="showCTab('proveedores',this)">Proveedores</button>
+        <button class="subctab" onclick="showCTab('ordenes-compra',this)">Órdenes</button>
         <button class="subctab" onclick="showCTab('prod-compra',this)">Productos</button>
-        <button class="subctab" onclick="showCTab('necesidades',this)">Necesidades</button>
-        <button class="subctab" onclick="showCTab('ordenes-compra',this)">Órdenes de compra</button>
-        <button class="subctab" onclick="showCTab('historial-compra',this)">Historial</button>
         <button class="subctab" onclick="showCTab('categorias-compra',this)">Categorías</button>
       </div>
 
-      <div id="subnav-membresia" class="mod-subnav" style="display:none;gap:4px;margin-bottom:20px;"></div>
+      <!-- SUB-NAV Herramientas -->
+      <div id="subnav-herramientas" class="mod-subnav" style="display:none;gap:4px;margin-bottom:20px;">
+        <button class="subctab active" onclick="showCTab('calculador',this)">Calculador</button>
+        <button class="subctab" onclick="showCTab('kpis',this)">Indicadores</button>
+        <button class="subctab" onclick="showCTab('tareas',this)">Plan de acción</button>
+      </div>
 
       <!-- CONTABILIDAD CLIENTE -->
       <div id="ct-contabilidad" style="display:none;">
@@ -3209,6 +3211,7 @@ window.showAdminUI = async function(email) {
   document.getElementById('aArea').style.display = 'block';
   document.getElementById('cArea').style.display = 'none';
   document.getElementById('aNav').style.display = 'flex';
+  document.getElementById('cNav').style.display = 'none';
   document.getElementById('ub').textContent = 'Admin';
   await loadAdminData();
   if(window.embiShow) window.embiShow(false);
@@ -3223,6 +3226,7 @@ window.showClientUI = async function(email, clientData) {
   document.getElementById('aArea').style.display = 'none';
   document.getElementById('cArea').style.display = 'block';
   document.getElementById('aNav').style.display = 'none';
+  document.getElementById('cNav').style.display = 'flex';
 
   // Reset variables globales — evita cruce entre clientes
   currentClientId = null;
@@ -3277,9 +3281,9 @@ window.showClientUI = async function(email, clientData) {
       if(negNombre) negNombre.textContent = clientData.negocioNombre || clientData.nombre || 'Mi negocio';
     }
     if(window.embiShow) window.embiShow(true);
-    // Arrancar en MB Gestión (Finanzas por defecto)
-    const firstTab = document.querySelector('.ctab');
-    if(firstTab) window.showMod('gestion', firstTab);
+    // Arrancar en Inicio por defecto
+    const firstClientTab = document.querySelector('#cNav .nt');
+    if(firstClientTab) window.showClientMod('inicio', firstClientTab);
 };
 
 async function loadAdminData() {
@@ -5766,18 +5770,29 @@ function checkMembresiaBadge(semActual, totalSemanas) {
 
 // Navegación contabilidad cliente
 window.showClientContView = function(view, btn) {
+  // Asegurar que ct-contabilidad esté visible
+  document.querySelectorAll('[id^="ct-"]').forEach(el => el.style.display = 'none');
+  const ct = document.getElementById('ct-contabilidad');
+  if(ct) ct.style.display = 'block';
   ['home','ingresos','egresos'].forEach(v => {
     const el = document.getElementById('cc-'+v);
     if(el) el.style.display = 'none';
   });
   const target = document.getElementById('cc-'+view);
   if(target) target.style.display = 'block';
+  // Activar botón en sub-nav Finanzas
+  document.querySelectorAll('#subnav-finanzas .subctab').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('#ct-contabilidad .cont-snav').forEach(b => b.classList.remove('active'));
   if(btn) btn.classList.add('active');
   else {
     const map = {home:0,ingresos:1,egresos:2};
-    const btns = document.querySelectorAll('#ct-contabilidad .cont-snav');
-    if(btns[map[view]]) btns[map[view]].classList.add('active');
+    const subBtns = document.querySelectorAll('#subnav-finanzas .subctab');
+    if(subBtns[map[view]]) subBtns[map[view]].classList.add('active');
+    const contBtns = document.querySelectorAll('#ct-contabilidad .cont-snav');
+    if(contBtns[map[view]]) contBtns[map[view]].classList.add('active');
+  }
+  if(view==='home') {
+    setTimeout(()=>{ const ing=window._clientIngresos||[]; const eg=window._clientEgresos||[]; initClientCashflow(ing,eg); initClientGastosDonut(eg); },200);
   }
 };
 
@@ -10489,47 +10504,36 @@ window.backToAdmin = function() {
   if (el) el.classList.add('active');
 };
 
-// Módulos de navegación
-const MOD_MAP = {
-  gestion:   { tabs: ['contabilidad','kpis','calculador','mclientes','productos','presupuestos','tareas','proveedores','prod-compra','necesidades','ordenes-compra','historial-compra','membresia'], subnav: 'subnav-gestion', default: 'contabilidad' },
-  finanzas:  { tabs: ['contabilidad','kpis','calculador'],              subnav: 'subnav-finanzas',  default: 'contabilidad'},
-  comercial: { tabs: ['mclientes','productos','presupuestos','tareas'],  subnav: 'subnav-comercial', default: 'mclientes'   },
-  compras:   { tabs: ['proveedores','prod-compra','necesidades','ordenes-compra','historial-compra','categorias-compra'], subnav: 'subnav-compras', default: 'proveedores' },
-  membresia: { tabs: ['membresia'],                                     subnav: 'subnav-membresia', default: 'membresia'   },
-};
-
-window.showMod = function(mod, btn) {
-  document.querySelectorAll('.ctab').forEach(b => b.classList.remove('active'));
+// Navegación cliente — 5 módulos en topbar
+window.showClientMod = function(mod, btn) {
+  // Activar tab en topbar
+  document.querySelectorAll('#cNav .nt').forEach(b => b.classList.remove('active'));
   if(btn) btn.classList.add('active');
+  // Ocultar todos los sub-navs
   document.querySelectorAll('.mod-subnav').forEach(el => el.style.display = 'none');
 
-  if(mod === 'gestion') {
-    // Mostrar sub-nav de gestión y activar Finanzas por defecto
-    const subnav = document.getElementById('subnav-gestion');
-    if(subnav) { subnav.style.display = 'flex'; const fb = subnav.querySelector('.subctab'); if(fb) fb.classList.add('active'); }
-    const subFinanzas = document.getElementById('subnav-finanzas');
-    if(subFinanzas) subFinanzas.style.display = 'flex';
+  if(mod === 'inicio') {
+    // Placeholder: mostrar contabilidad resumen hasta Fase 4
     showCTab('contabilidad', null);
-  } else {
-    const subnav = document.getElementById('subnav-' + mod);
-    if(subnav) { subnav.style.display = 'flex'; const firstBtn = subnav.querySelector('.subctab'); if(firstBtn) firstBtn.classList.add('active'); }
-    const defaultTab = MOD_MAP[mod]?.default;
-    if(defaultTab) showCTab(defaultTab, null);
+    showClientContView('home', null);
+  } else if(mod === 'finanzas') {
+    const subnav = document.getElementById('subnav-finanzas');
+    if(subnav) { subnav.style.display = 'flex'; subnav.querySelectorAll('.subctab').forEach(b => b.classList.remove('active')); const fb = subnav.querySelector('.subctab'); if(fb) fb.classList.add('active'); }
+    showCTab('contabilidad', null);
+    showClientContView('home', null);
+  } else if(mod === 'ventas') {
+    const subnav = document.getElementById('subnav-ventas');
+    if(subnav) { subnav.style.display = 'flex'; subnav.querySelectorAll('.subctab').forEach(b => b.classList.remove('active')); const fb = subnav.querySelector('.subctab'); if(fb) fb.classList.add('active'); }
+    showCTab('mclientes', null);
+  } else if(mod === 'compras') {
+    const subnav = document.getElementById('subnav-compras');
+    if(subnav) { subnav.style.display = 'flex'; subnav.querySelectorAll('.subctab').forEach(b => b.classList.remove('active')); const fb = subnav.querySelector('.subctab'); if(fb) fb.classList.add('active'); }
+    showCTab('necesidades', null);
+  } else if(mod === 'herramientas') {
+    const subnav = document.getElementById('subnav-herramientas');
+    if(subnav) { subnav.style.display = 'flex'; subnav.querySelectorAll('.subctab').forEach(b => b.classList.remove('active')); const fb = subnav.querySelector('.subctab'); if(fb) fb.classList.add('active'); }
+    showCTab('calculador', null);
   }
-};
-
-// Cuando se clickea un sub-tab de gestión, mostrar el sub-nav correspondiente
-window.showGestionSub = function(area, btn) {
-  document.querySelectorAll('#subnav-gestion .subctab').forEach(b => b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-  // Ocultar sub-navs secundarios
-  ['subnav-finanzas','subnav-comercial','subnav-compras','subnav-membresia'].forEach(id => {
-    const el = document.getElementById(id); if(el) el.style.display = 'none';
-  });
-  const subMap = { contabilidad:'finanzas', kpis:'finanzas', calculador:'finanzas', mclientes:'comercial', productos:'comercial', presupuestos:'comercial', tareas:'comercial', proveedores:'compras', membresia:'membresia' };
-  const subNav = document.getElementById('subnav-' + (subMap[area]||area));
-  if(subNav) { subNav.style.display = 'flex'; const fb = subNav.querySelector('.subctab'); if(fb){ document.querySelectorAll('#subnav-'+subNav.id.replace('subnav-','')+' .subctab').forEach(b=>b.classList.remove('active')); fb.classList.add('active'); } }
-  showCTab(area, null);
 };
 
 window.showCTab = function(tab, btn) {
