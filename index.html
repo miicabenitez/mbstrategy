@@ -3604,13 +3604,13 @@ function renderClientList(clients) {
 
   document.getElementById('full-clients').innerHTML = html;
   document.getElementById('dash-clients').innerHTML = clients.map((c,i) => {
-    const col = colors[i%colors.length];
+    const col = avatarColors[i%avatarColors.length];
     const init = c.nombre.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     const total = c.programa==='90D'?12:4;
     const sem = c.semanaActual||1;
     const dots = Array(4).fill(0).map((_,j)=>`<div class="wd ${j<sem-1?'done':j===sem-1?'active':''}"></div>`).join('');
     return `<div class="cr" onclick="openClientDetail('${c.id}')">
-      <div class="av" style="background:${col[0]};color:${col[1]};">${init}</div>
+      <div class="av" style="background:${col};color:#fff;">${init}</div>
       <div class="ci"><div class="cn">${c.nombre}</div><div class="cs">${c.rubro} · Programa ${c.programa}</div><div class="wb">${dots}</div></div>
       <div class="badge bg">Sem. ${sem}</div>
     </div>`;
@@ -3869,7 +3869,7 @@ window.openClientDetail = async function(clientId) {
     currentClientData = data;
     const init = data.nombre.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     document.getElementById('detail-header').innerHTML = `
-      <div class="av" style="width:42px;height:42px;background:#EDF0EA;color:#6B7A60;font-size:13px;">${init}</div>
+      <div class="av" style="width:42px;height:42px;background:#7A8E7D;color:#fff;font-size:13px;">${init}</div>
       <div><div style="font-size:16px;font-weight:500;">${data.nombre}</div><div style="font-size:12px;color:var(--text-l);">${data.rubro} · Programa ${data.programa} · $${data.precio} USD</div></div>
       <div class="badge bg" style="margin-left:auto;">Semana ${data.semanaActual||1} activa</div>`;
     renderSemanas(data);
@@ -4099,7 +4099,7 @@ function loadReuniones(clients) {
     const init = c.nombre.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     return `<div class="row">
       <div style="display:flex;align-items:center;gap:10px;flex:1;">
-        <div class="av" style="background:#EDF0EA;color:#6B7A60;width:30px;height:30px;font-size:11px;flex-shrink:0;">${init}</div>
+        <div class="av" style="background:#7A8E7D;color:#fff;width:30px;height:30px;font-size:11px;flex-shrink:0;">${init}</div>
         <div>
           <div class="rn">${c.nombre}</div>
           <div class="rs">${fechaFormateada} a las ${r.hora}hs · Programa ${c.programa} · Sem. ${c.semanaActual||1}</div>
