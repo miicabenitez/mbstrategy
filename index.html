@@ -3348,6 +3348,31 @@ window.showSkeleton = function(containerId, type) {
   el.innerHTML = html;
 };
 
+window.createEmptyState = function(icon, title, description, buttonText, buttonAction) {
+  const svgs = {
+    'documento-plus': '<svg width="64" height="64" viewBox="0 0 64 64" fill="none"><rect x="14" y="8" width="36" height="48" rx="4" stroke="var(--sage)" stroke-width="1.5" fill="var(--sage-xl)"/><path d="M26 32h12M32 26v12" stroke="var(--sage-dark)" stroke-width="1.5" stroke-linecap="round"/><path d="M22 18h10" stroke="var(--sage)" stroke-width="1.5" stroke-linecap="round"/></svg>',
+    'personas': '<svg width="64" height="64" viewBox="0 0 64 64" fill="none"><circle cx="26" cy="24" r="8" stroke="var(--sage)" stroke-width="1.5" fill="var(--sage-xl)"/><circle cx="42" cy="26" r="6" stroke="var(--sage)" stroke-width="1.5" fill="var(--sage-xl)"/><path d="M10 52c0-10 7-16 16-16s16 6 16 16" stroke="var(--sage-dark)" stroke-width="1.5" stroke-linecap="round" fill="none"/><path d="M38 36c6 0 12 4 12 12" stroke="var(--sage)" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg>',
+    'tienda': '<svg width="64" height="64" viewBox="0 0 64 64" fill="none"><rect x="12" y="28" width="40" height="28" rx="3" stroke="var(--sage)" stroke-width="1.5" fill="var(--sage-xl)"/><path d="M12 28l4-16h32l4 16" stroke="var(--sage-dark)" stroke-width="1.5" fill="none"/><rect x="26" y="40" width="12" height="16" rx="2" stroke="var(--sage)" stroke-width="1.5" fill="var(--cream)"/></svg>',
+    'lista-check': '<svg width="64" height="64" viewBox="0 0 64 64" fill="none"><rect x="14" y="10" width="36" height="44" rx="4" stroke="var(--sage)" stroke-width="1.5" fill="var(--sage-xl)"/><path d="M24 26l3 3 6-6" stroke="var(--sage-dark)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M38 26h6" stroke="var(--sage)" stroke-width="1.5" stroke-linecap="round"/><path d="M24 38l3 3 6-6" stroke="var(--sage-dark)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M38 38h6" stroke="var(--sage)" stroke-width="1.5" stroke-linecap="round"/></svg>',
+    'documento-sello': '<svg width="64" height="64" viewBox="0 0 64 64" fill="none"><rect x="14" y="8" width="36" height="48" rx="4" stroke="var(--sage)" stroke-width="1.5" fill="var(--sage-xl)"/><path d="M22 20h20M22 28h14M22 36h10" stroke="var(--sage)" stroke-width="1.5" stroke-linecap="round"/><circle cx="42" cy="44" r="8" stroke="var(--sage-dark)" stroke-width="1.5" fill="var(--cream)"/><path d="M39 44l2 2 4-4" stroke="var(--sage-dark)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    'caja': '<svg width="64" height="64" viewBox="0 0 64 64" fill="none"><rect x="12" y="24" width="40" height="28" rx="3" stroke="var(--sage)" stroke-width="1.5" fill="var(--sage-xl)"/><path d="M12 24l6-12h28l6 12" stroke="var(--sage-dark)" stroke-width="1.5" fill="none"/><path d="M26 24v8h12v-8" stroke="var(--sage)" stroke-width="1.5" fill="var(--cream)"/></svg>',
+    'calculadora': '<svg width="64" height="64" viewBox="0 0 64 64" fill="none"><rect x="16" y="8" width="32" height="48" rx="4" stroke="var(--sage)" stroke-width="1.5" fill="var(--sage-xl)"/><rect x="22" y="14" width="20" height="10" rx="2" fill="var(--cream)" stroke="var(--sage)" stroke-width="1"/><circle cx="26" cy="32" r="2.5" fill="var(--sage-dark)"/><circle cx="32" cy="32" r="2.5" fill="var(--sage-dark)"/><circle cx="38" cy="32" r="2.5" fill="var(--sage-dark)"/><circle cx="26" cy="40" r="2.5" fill="var(--sage)"/><circle cx="32" cy="40" r="2.5" fill="var(--sage)"/><rect x="35.5" y="37.5" width="5" height="11" rx="2.5" fill="var(--sage-dark)"/><circle cx="26" cy="48" r="2.5" fill="var(--sage)"/><circle cx="32" cy="48" r="2.5" fill="var(--sage)"/></svg>',
+    'etiqueta': '<svg width="64" height="64" viewBox="0 0 64 64" fill="none"><path d="M14 12h20l18 20-20 20-18-20V12z" stroke="var(--sage)" stroke-width="1.5" fill="var(--sage-xl)"/><circle cx="26" cy="24" r="3" fill="var(--sage-dark)"/><path d="M28 38h12M28 44h8" stroke="var(--sage-dark)" stroke-width="1.5" stroke-linecap="round"/></svg>',
+    'ingreso': '<svg width="64" height="64" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="22" stroke="var(--sage)" stroke-width="1.5" fill="var(--sage-xl)"/><path d="M32 42V22" stroke="var(--sage-dark)" stroke-width="2" stroke-linecap="round"/><path d="M24 30l8-8 8 8" stroke="var(--sage-dark)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 44h20" stroke="var(--sage)" stroke-width="1.5" stroke-linecap="round"/></svg>',
+    'egreso': '<svg width="64" height="64" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="22" stroke="var(--sage)" stroke-width="1.5" fill="var(--sage-xl)"/><path d="M32 22v20" stroke="var(--sage-dark)" stroke-width="2" stroke-linecap="round"/><path d="M24 34l8 8 8-8" stroke="var(--sage-dark)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 20h20" stroke="var(--sage)" stroke-width="1.5" stroke-linecap="round"/></svg>'
+  };
+  const svg = svgs[icon] || '';
+  const btnHtml = buttonText && buttonAction
+    ? '<button onclick="'+buttonAction+'" style="background:var(--topbar);color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:13px;font-family:\'DM Sans\',sans-serif;cursor:pointer;font-weight:500;margin-top:14px;">'+buttonText+'</button>'
+    : '';
+  return '<div style="text-align:center;padding:32px 20px;">'
+    + '<div style="margin-bottom:14px;">'+svg+'</div>'
+    + '<div style="font-family:\'Cormorant Garamond\',serif;font-size:18px;color:var(--text);margin-bottom:6px;">'+title+'</div>'
+    + '<div style="font-size:12px;color:var(--text-l);line-height:1.5;max-width:280px;margin:0 auto;">'+description+'</div>'
+    + btnHtml
+    + '</div>';
+};
+
 onAuthStateChanged(auth, async (user) => {
   const lo = document.getElementById('lo');
   if(lo){ lo.style.opacity='0'; lo.style.display='none'; }
@@ -4848,7 +4873,7 @@ function renderCalcList() {
   const colors = ['var(--ok)','var(--blue)','var(--warn)','var(--sage)','var(--err)'];
 
   if(items.length === 0) {
-    document.getElementById('calc-items').innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-l);font-size:13px;">Sin cálculos aún. Creá el primero.</div>';
+    document.getElementById('calc-items').innerHTML = createEmptyState('calculadora','Sin cálculos de costos','Creá tu primer cálculo para saber exactamente cuánto te cuesta producir','+ Nuevo cálculo','showNewCalcForm()');
     return;
   }
 
@@ -6268,7 +6293,7 @@ window.loadInicio = loadInicio;
 function renderClientIngresosList(ingresos) {
   const el = document.getElementById('cc-ingresos-list');
   if(!el) return;
-  if(ingresos.length===0){el.innerHTML='<div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin ingresos registrados.</div>';return;}
+  if(ingresos.length===0){el.innerHTML=createEmptyState('ingreso','Sin ingresos registrados','Registrá tu primer ingreso para empezar a trackear tus finanzas','+ Nuevo ingreso',"openModal('newClientIngresoModal')");return;}
   const total = ingresos.reduce((a,i)=>a+(parseFloat(i.monto)||0),0);
   el.innerHTML = ingresos.map(i=>{
     const origen = i.origen==='comercial' ? `<span style="background:#E6EEF5;color:#2A4A6A;font-size:9px;padding:2px 7px;border-radius:20px;margin-left:6px;">Comercial</span>` : `<span style="background:var(--cream);color:var(--text-l);font-size:9px;padding:2px 7px;border-radius:20px;margin-left:6px;">Manual</span>`;
@@ -6291,7 +6316,7 @@ function renderClientIngresosList(ingresos) {
 function renderClientEgresosList(egresos) {
   const el = document.getElementById('cc-egresos-list');
   if(!el) return;
-  if(egresos.length===0){el.innerHTML='<div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin egresos registrados.</div>';return;}
+  if(egresos.length===0){el.innerHTML=createEmptyState('egreso','Sin egresos registrados','Cargá tus gastos para conocer tu ganancia real','+ Nuevo egreso',"openModal('newClientEgresoModal')");return;}
   const total = egresos.reduce((a,e)=>a+(parseFloat(e.monto)||0),0);
   el.innerHTML = egresos.map(e=>{
     const origen = e.proveedorId ? `<span style="background:#EDF0EA;color:#3A6A42;font-size:9px;padding:2px 7px;border-radius:20px;margin-left:6px;">Proveedor</span>` : `<span style="background:var(--cream);color:var(--text-l);font-size:9px;padding:2px 7px;border-radius:20px;margin-left:6px;">Manual</span>`;
@@ -6976,7 +7001,11 @@ function renderMcLista(clientes) {
   const lista = document.getElementById('mc-lista');
   if (!lista) return;
   if (!clientes || clientes.length === 0) {
-    lista.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-l);font-size:13px;">Sin clientes que coincidan.</div>';
+    if(!_mcClientes || _mcClientes.length === 0) {
+      lista.innerHTML = createEmptyState('personas','Aún no tenés clientes','Cargá tu primer cliente para empezar a gestionar tus ventas','+ Nuevo cliente',"openModal('newMclienteModal')");
+    } else {
+      lista.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-l);font-size:13px;">Sin clientes que coincidan.</div>';
+    }
     return;
   }
   const colors = [
@@ -8028,7 +8057,7 @@ function renderClientPresup(list) {
   const el = document.getElementById('cp-list');
   if(!el) return;
   if(!list||list.length===0){
-    el.innerHTML='<div style="text-align:center;padding:24px;color:var(--text-l);font-size:13px;">Sin presupuestos. Agregá el primero.</div>';
+    el.innerHTML=createEmptyState('documento-plus','Aún no tenés presupuestos','Creá tu primer presupuesto para profesionalizar tus propuestas comerciales','+ Crear presupuesto',"openModal('newClientPresupModal')");
     return;
   }
   const dot  = {'Pendiente de enviar':'#B08A42','Enviado':'#4A6A8A','Consultado':'#856404','Aprobado':'#5A7A4E','Denegado':'#8A4A4A'};
@@ -8315,7 +8344,7 @@ function renderProductosModule() {
   const lista = document.getElementById('prod-lista');
   if(!lista) return;
   if(_productos.length===0){
-    lista.innerHTML='<div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Sin ítems. ¡Agregá el primero!</div>';
+    lista.innerHTML=createEmptyState('etiqueta','Sin productos en el catálogo','Agregá tus productos y servicios con sus precios','+ Agregar producto',"openModal('newProductoModal')");
     const footer=document.getElementById('prod-footer-guardar');
     if(footer)footer.style.display='none';
     return;
@@ -8656,7 +8685,7 @@ function renderProductosCompra(lista) {
   setEl('pc-kpi-cats', cats.length);
   const el = document.getElementById('pc-lista');
   if(!el) return;
-  if(lista.length===0){ el.innerHTML='<div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Sin productos. ¡Cargá el primero!</div>'; return; }
+  if(lista.length===0){ el.innerHTML=createEmptyState('caja','Sin productos de compra','Cargá los insumos que comprás habitualmente','+ Nuevo producto',"openModal('newProdCompraModal')"); return; }
   el.innerHTML = lista.map(p=>{
     const [bg,tc] = CAT_COLORS[p.categoria]||['#F5F6F3','#4A5A4E'];
     return `<div style="display:grid;grid-template-columns:1fr 130px 90px 60px;gap:10px;align-items:center;padding:12px 0;border-bottom:.5px solid var(--cream-d);">
@@ -8740,7 +8769,7 @@ function renderNecesidades() {
   setEl('nc-kpi-proximo',_necesidades.filter(n=>n.estado==='proximo').length);
   setEl('nc-kpi-programado',_necesidades.filter(n=>n.estado==='programado').length);
   const el=document.getElementById('nc-lista');if(!el)return;
-  if(_necesidades.length===0){el.innerHTML='<div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Sin necesidades cargadas.</div>';return;}
+  if(_necesidades.length===0){el.innerHTML=createEmptyState('lista-check','Sin necesidades de compra','Creá necesidades para organizar lo que tu negocio necesita comprar','+ Nueva necesidad',"openModal('newNecesidadModal')");return;}
   const estadoConfig={
     urgente:{label:'Urgente',bg:'var(--err-bg)',tc:'var(--err)',bc:'#C4786A'},
     proximo:{label:'Próxima',bg:'var(--warn-bg)',tc:'var(--warn)',bc:'#B08A42'},
@@ -9436,7 +9465,7 @@ function renderOrdenesCompra() {
   setEl('oc-kpi-pendiente','$'+pendiente.toLocaleString('es-AR'));
   setEl('oc-kpi-pagado','$'+pagado.toLocaleString('es-AR'));
   const el=document.getElementById('oc-lista');if(!el)return;
-  if(_ordenesCompra.length===0){el.innerHTML='<div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Sin órdenes de compra.</div>';return;}
+  if(_ordenesCompra.length===0){el.innerHTML=createEmptyState('documento-sello','Sin órdenes de compra','Las órdenes se generan automáticamente al cotizar una necesidad');return;}
   el.innerHTML=_ordenesCompra.map(o=>{
     const estadoPago=o.estadoPago||'pendiente';
     const estadoRec=o.estadoRecepcion||'emitida';
@@ -10332,7 +10361,7 @@ function renderListaProveedores(filtro) {
     : _proveedores;
 
   if(_proveedores.length===0) {
-    lista.innerHTML='<div style="text-align:center;padding:20px;color:var(--text-l);font-size:13px;">Sin proveedores. ¡Agregá el primero!</div>';
+    lista.innerHTML=createEmptyState('tienda','Aún no tenés proveedores','Cargá tus proveedores para cotizar y emitir órdenes de compra','+ Nuevo proveedor',"openModal('newProveedorModal')");
     return;
   }
   if(provsFiltrados.length===0) {
