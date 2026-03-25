@@ -3507,7 +3507,7 @@ async function loadAdminData() {
   try {
     const snap = await getDocs(collection(db, 'clientes'));
     const clients = [];
-    snap.forEach(d => clients.push({ id: d.id, ...d.data() }));
+    snap.forEach(d => { const data=d.data(); if(!data.eliminado) clients.push({id:d.id,...data}); });
     renderClientList(clients);
     window._allClients = clients;
     const sel = document.getElementById('cob-cliente');
@@ -3518,7 +3518,7 @@ async function loadAdminData() {
     // Leer cobros de colección global para renderizado de lista
     const cobrosSnap = await getDocs(collection(db, 'cobros'));
     const cobros = [];
-    cobrosSnap.forEach(d => cobros.push({ id: d.id, ...d.data() }));
+    cobrosSnap.forEach(d => { const data=d.data(); if(!data.eliminado) cobros.push({id:d.id,...data}); });
     renderCobros(cobros, clients);
 
     // Calcular total cobrado real desde sub-colecciones de cada cliente
@@ -3528,8 +3528,10 @@ async function loadAdminData() {
       const subSnap = await getDocs(collection(db,'clientes',c.id,'cobros'));
       subSnap.forEach(d => {
         const data = d.data();
-        totalRealCobrado += parseFloat(data.monto)||0;
-        cobrosSubcollection.push({...data, clienteId: c.id, cliente: c.nombre});
+        if(!data.eliminado) {
+          totalRealCobrado += parseFloat(data.monto)||0;
+          cobrosSubcollection.push({...data, clienteId: c.id, cliente: c.nombre});
+        }
       });
     }
     window._totalRealCobrado = totalRealCobrado;
@@ -3537,11 +3539,11 @@ async function loadAdminData() {
 
     const tasksSnap = await getDocs(collection(db, 'tareas'));
     const tasks = [];
-    tasksSnap.forEach(d => tasks.push({ id: d.id, ...d.data() }));
+    tasksSnap.forEach(d => { const data=d.data(); if(!data.eliminado) tasks.push({id:d.id,...data}); });
     renderTasks(tasks);
     const gastosSnap = await getDocs(collection(db, 'gastos'));
     const gastos = [];
-    gastosSnap.forEach(d => gastos.push({ id: d.id, ...d.data() }));
+    gastosSnap.forEach(d => { const data=d.data(); if(!data.eliminado) gastos.push({id:d.id,...data}); });
     updateMetrics(clients, cobros, gastos);
     renderGastosData(gastos);
     await loadPresupuestosGlobal();
@@ -3959,7 +3961,7 @@ async function loadContentAdmin(clientId) {
   try {
     const snap = await getDocs(collection(db,'clientes',clientId,'contenido'));
     const docs = [];
-    snap.forEach(d => docs.push({id:d.id,...d.data()}));
+    snap.forEach(d => { const data=d.data(); if(!data.eliminado) docs.push({id:d.id,...data}); });
     docs.sort((a,b) => a.semana !== b.semana ? a.semana - b.semana : (a.creadoEn||"")<(b.creadoEn||"") ? -1 : 1);
     const iconMap = {texto:'',link:'',pdf:'',checklist:''};
     const html = docs.length === 0
@@ -3996,7 +3998,7 @@ async function loadCobrosCliente(clientId) {
     const snap = await getDocs(collection(db,'clientes',clientId,'cobros'));
     let html = '', totalCobrado = 0;
     const pagos = [];
-    snap.forEach(d => { pagos.push({id:d.id,...d.data()}); });
+    snap.forEach(d => { const data=d.data(); if(!data.eliminado) pagos.push({id:d.id,...data}); });
 
     pagos.forEach(c => {
       const m = parseFloat(c.monto)||0;
@@ -4112,10 +4114,9 @@ function loadReuniones(clients) {
 
 window.deleteContent = async function(contentId) {
   if (!currentClientId) return;
-  showConfirm('¿Eliminar este contenido? Esta acción no se puede deshacer.', async () => {
+  showConfirm('¿Eliminar este contenido?', async () => {
     try {
-      const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
-      await deleteDoc(doc(db,'clientes',currentClientId,'contenido',contentId));
+      await updateDoc(doc(db,'clientes',currentClientId,'contenido',contentId), {eliminado:true, eliminadoEn:new Date().toISOString()});
       await loadContentAdmin(currentClientId);
     } catch(e) { console.log('Error al eliminar:', e); }
   }, 'Eliminar contenido');
@@ -4180,11 +4181,10 @@ window.saveEditCliente = async function() {
 window.deleteCliente = function(id, nombre, event) {
   if(event) event.stopPropagation();
   showConfirm(
-    `¿Eliminar a ${nombre}? Se borrarán también sus notas, contenido y cobros vinculados. Esta acción no se puede deshacer.`,
+    `¿Eliminar a ${nombre}?`,
     async () => {
       try {
-        const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
-        await deleteDoc(doc(db,'clientes',id));
+        await updateDoc(doc(db,'clientes',id), {eliminado:true, eliminadoEn:new Date().toISOString()});
         await loadAdminData();
       } catch(e) { alert('Error: '+e.message); }
     },
@@ -4255,8 +4255,7 @@ window.deleteTask = function(el) {
     const taskId = el.dataset.id;
     if (taskId) {
       try {
-        const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
-        await deleteDoc(doc(db,'tareas',taskId));
+        await updateDoc(doc(db,'tareas',taskId), {eliminado:true, eliminadoEn:new Date().toISOString()});
       } catch(e) {}
     }
     el.remove();
@@ -4355,8 +4354,7 @@ window.saveEditCobro = async function() {
 window.deleteCobro = function(id) {
   showConfirm('¿Eliminar este ingreso?', async () => {
     try {
-      const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
-      await deleteDoc(doc(db,'cobros',id));
+      await updateDoc(doc(db,'cobros',id), {eliminado:true, eliminadoEn:new Date().toISOString()});
       await loadAdminData();
     } catch(e) { console.log(e); }
   }, 'Eliminar ingreso');
@@ -4411,8 +4409,7 @@ window.saveEditGasto = async function() {
 window.deleteGasto = function(id) {
   showConfirm('¿Eliminar este egreso?', async () => {
     try {
-      const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
-      await deleteDoc(doc(db,'gastos',id));
+      await updateDoc(doc(db,'gastos',id), {eliminado:true, eliminadoEn:new Date().toISOString()});
       await loadGastos();
     } catch(e) { console.log(e); }
   }, 'Eliminar egreso');
@@ -4477,7 +4474,7 @@ async function loadGastos() {
   try {
     const snap = await getDocs(collection(db,'gastos'));
     const gastos = [];
-    snap.forEach(d => gastos.push({id:d.id,...d.data()}));
+    snap.forEach(d => { const data=d.data(); if(!data.eliminado) gastos.push({id:d.id,...data}); });
     renderGastosData(gastos);
     // Re-run metrics with updated gastos
     const cobros = window._allCobros || [];
@@ -4628,7 +4625,7 @@ async function loadClientContent(clientId, semActual) {
   try {
     const snap = await getDocs(collection(db,'clientes',clientId,'contenido'));
     const docs = [];
-    snap.forEach(d => docs.push({id:d.id,...d.data()}));
+    snap.forEach(d => { const data=d.data(); if(!data.eliminado) docs.push({id:d.id,...data}); });
     docs.sort((a,b) => a.semana !== b.semana ? a.semana - b.semana : (a.creadoEn||"")<(b.creadoEn||"") ? -1 : 1);
     // Cache para acceso rápido sin re-fetch
     window._clientContenido = docs;
@@ -4836,7 +4833,7 @@ async function loadCalcItems(clientId) {
   try {
     calcData = {};  // reset antes de cargar
     const snap = await getDocs(collection(db,'clientes',clientId,'calculos'));
-    snap.forEach(d => { calcData[d.id] = { id:d.id, ...d.data() }; });
+    snap.forEach(d => { const data=d.data(); if(!data.eliminado) calcData[d.id]={id:d.id,...data}; });
     renderCalcList();
   } catch(e) {}
 }
@@ -4988,8 +4985,7 @@ window.deleteCalc = function(id) {
   const nombre = calcData[id]?.nombre || 'este cálculo';
   showConfirm(`¿Eliminar "${nombre}"?`, async () => {
     try {
-      const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
-      await deleteDoc(doc(db,'clientes',currentClientId,'calculos',id));
+      await updateDoc(doc(db,'clientes',currentClientId,'calculos',id), {eliminado:true, eliminadoEn:new Date().toISOString()});
       delete calcData[id];
       renderCalcList();
     } catch(e) { console.log(e); }
@@ -5284,7 +5280,7 @@ async function loadPendientes() {
   try {
     const snap = await getDocs(collection(db,'pendientes'));
     _allPendientes = [];
-    snap.forEach(d => _allPendientes.push({id:d.id,...d.data()}));
+    snap.forEach(d => { const data=d.data(); if(!data.eliminado) _allPendientes.push({id:d.id,...data}); });
     _allPendientes = _allPendientes.filter(p=>!p.completado).sort((a,b)=>new Date(a.fecha||'2099')-new Date(b.fecha||'2099'));
     renderPendientes(_allPendientes);
   } catch(e) {}
@@ -5401,8 +5397,7 @@ window.saveEditPendiente = async function() {
 window.deletePendiente = function(id) {
   showConfirm('¿Eliminar este pendiente?', async () => {
     try {
-      const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
-      await deleteDoc(doc(db,'pendientes',id));
+      await updateDoc(doc(db,'pendientes',id), {eliminado:true, eliminadoEn:new Date().toISOString()});
       await loadPendientes();
     } catch(e) { console.log(e); }
   }, 'Eliminar pendiente');
@@ -5439,7 +5434,7 @@ async function loadPresupuestosGlobal() {
   try {
     const snap = await getDocs(collection(db,'presupuestos'));
     _allPresupuestos = [];
-    snap.forEach(d => _allPresupuestos.push({id:d.id,...d.data()}));
+    snap.forEach(d => { const data=d.data(); if(!data.eliminado) _allPresupuestos.push({id:d.id,...data}); });
     _allPresupuestos.sort((a,b) => new Date(b.creadoEn||0) - new Date(a.creadoEn||0));
 
     // Calcular KPIs
@@ -5636,8 +5631,7 @@ window.updatePresupEstado = async function(id, nuevoEstado) {
 window.deletePresup = async function(id) {
   showConfirm('¿Eliminar este presupuesto?', async () => {
     try {
-      const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
-      await deleteDoc(doc(db,'presupuestos',id));
+      await updateDoc(doc(db,'presupuestos',id), {eliminado:true, eliminadoEn:new Date().toISOString()});
       await loadPresupuestosGlobal();
     } catch(e) { console.log(e); }
   }, 'Eliminar presupuesto');
@@ -6027,13 +6021,14 @@ async function loadClientContabilidad() {
       getDocs(collection(db,'clientes',currentClientUID,'egresos')),
       getDocs(collection(db,'clientes',currentClientUID,'cobros'))
     ]);
-    const ingresosManuales = []; ingSnap.forEach(d=>ingresosManuales.push({id:d.id,...d.data(),origen:'manual'}));
-    const egresos = []; egSnap.forEach(d=>egresos.push({id:d.id,...d.data()}));
+    const ingresosManuales = []; ingSnap.forEach(d=>{ const data=d.data(); if(!data.eliminado) ingresosManuales.push({id:d.id,...data,origen:'manual'}); });
+    const egresos = []; egSnap.forEach(d=>{ const data=d.data(); if(!data.eliminado) egresos.push({id:d.id,...data}); });
 
     // Cobros de comercial como ingresos
     const cobrosComoIngresos = [];
     cobrosSnap.forEach(d=>{
       const data = d.data();
+      if(data.eliminado) return;
       cobrosComoIngresos.push({
         id:d.id,
         concepto: data.concepto||'Cobro',
@@ -6830,8 +6825,7 @@ window.editClientIngreso = function(id) {
 window.deleteClientIngreso = async function(id) {
   showConfirm('¿Eliminar este ingreso?', async()=>{
     try{
-      const {deleteDoc:dd}=await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
-      await dd(doc(db,'clientes',currentClientUID,'ingresos',id));
+      await updateDoc(doc(db,'clientes',currentClientUID,'ingresos',id), {eliminado:true, eliminadoEn:new Date().toISOString()});
       await loadClientContabilidad();
     }catch(e){ alert('Error: '+e.message); }
   },'Eliminar ingreso');
@@ -6852,8 +6846,7 @@ window.editClientEgreso = function(id) {
 window.deleteClientEgreso = async function(id) {
   showConfirm('¿Eliminar este egreso?', async()=>{
     try{
-      const {deleteDoc:dd}=await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
-      await dd(doc(db,'clientes',currentClientUID,'egresos',id));
+      await updateDoc(doc(db,'clientes',currentClientUID,'egresos',id), {eliminado:true, eliminadoEn:new Date().toISOString()});
       await loadClientContabilidad();
     }catch(e){ alert('Error: '+e.message); }
   },'Eliminar egreso');
@@ -6862,7 +6855,7 @@ async function loadClientTareas() {
   if(!currentClientUID) return;
   try {
     const snap = await getDocs(collection(db,'clientes',currentClientUID,'tareas'));
-    const tareas = []; snap.forEach(d=>tareas.push({id:d.id,...d.data()}));
+    const tareas = []; snap.forEach(d=>{ const data=d.data(); if(!data.eliminado) tareas.push({id:d.id,...data}); });
     renderClientTareas(tareas);
   } catch(e){ console.log(e); }
 }
@@ -6918,7 +6911,7 @@ window.moveClientTask = async function(el) {
 window.deleteClientTask = function(el) {
   showConfirm('¿Eliminar esta tarea?', async()=>{
     const id=el.dataset.id;
-    if(id && currentClientUID) { try{ const {deleteDoc}=await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js"); await deleteDoc(doc(db,'clientes',currentClientUID,'tareas',id)); }catch(e){} }
+    if(id && currentClientUID) { try{ await updateDoc(doc(db,'clientes',currentClientUID,'tareas',id), {eliminado:true, eliminadoEn:new Date().toISOString()}); }catch(e){} }
     el.remove();
   },'Eliminar tarea');
 };
@@ -6935,11 +6928,11 @@ async function loadMcModule() {
   showSkeleton('mc-lista','list');
   try {
     const csSnap = await getDocs(collection(db,'clientes',currentClientUID,'misClientes'));
-    _mcClientes = []; csSnap.forEach(d=>_mcClientes.push({id:d.id,...d.data()}));
+    _mcClientes = []; csSnap.forEach(d=>{ const data=d.data(); if(!data.eliminado) _mcClientes.push({id:d.id,...data}); });
     _mcClientes.sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||''));
     window._mcClientes = _mcClientes;
     const psSnap = await getDocs(collection(db,'clientes',currentClientUID,'presupuestos'));
-    _mcPresupuestos = []; psSnap.forEach(d=>_mcPresupuestos.push({id:d.id,...d.data()}));
+    _mcPresupuestos = []; psSnap.forEach(d=>{ const data=d.data(); if(!data.eliminado) _mcPresupuestos.push({id:d.id,...data}); });
     _mcPresupuestos.sort((a,b)=>new Date(b.creadoEn||0)-new Date(a.creadoEn||0));
     window._mcPresupuestos = _mcPresupuestos;
     renderMcModule();
@@ -7379,7 +7372,7 @@ async function loadMcCobrosList(clienteId) {
   try {
     const snap = await getDocs(collection(db,'clientes',currentClientUID,'misClientes',clienteId,'cobros'));
     const cobros = [];
-    snap.forEach(d => cobros.push({id:d.id,...d.data()}));
+    snap.forEach(d => { const data=d.data(); if(!data.eliminado) cobros.push({id:d.id,...data}); });
     cobros.sort((a,b) => new Date(b.fecha||0) - new Date(a.fecha||0));
     if (cobros.length === 0) { el.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin cobros registrados.</div>'; return; }
     const total = cobros.reduce((s,c) => s + (parseFloat(c.monto)||0), 0);
@@ -7410,9 +7403,8 @@ async function loadMcCobrosList(clienteId) {
 window.eliminarCobro = function(clienteId, cobroId, monto) {
   showConfirm('¿Eliminar este cobro? Se descontará del total cobrado del cliente.', async () => {
     try {
-      const {deleteDoc: dd} = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
-      // 1. Eliminar el cobro
-      await dd(doc(db,'clientes',currentClientUID,'misClientes',clienteId,'cobros',cobroId));
+      // 1. Soft-delete el cobro
+      await updateDoc(doc(db,'clientes',currentClientUID,'misClientes',clienteId,'cobros',cobroId), {eliminado:true, eliminadoEn:new Date().toISOString()});
       // 2. Descontar de totalCobrado
       const cSnap = await getDoc(doc(db,'clientes',currentClientUID,'misClientes',clienteId));
       const actual = parseFloat(cSnap.data()?.totalCobrado||0);
@@ -7733,18 +7725,7 @@ window.deleteMcCliente = function(id, event) {
   if(event) event.stopPropagation();
   showConfirm('¿Eliminar este cliente? Se borrarán también sus cobros, historial y notas.',async()=>{
     try {
-      const {deleteDoc, getDocs: gd, collection: col} = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
-      const base = ['cobros','historial','notas'];
-      for(const sub of base) {
-        const snap = await getDocs(collection(db,'clientes',currentClientUID,'misClientes',id,sub));
-        for(const d of snap.docs) { try{ await deleteDoc(d.ref); }catch(e){} }
-      }
-      await deleteDoc(doc(db,'clientes',currentClientUID,'misClientes',id));
-      // También eliminar presupuestos vinculados a este cliente
-      const pSnap = await getDocs(collection(db,'clientes',currentClientUID,'presupuestos'));
-      for(const d of pSnap.docs) {
-        if(d.data().clienteId === id) { try{ await deleteDoc(d.ref); }catch(e){} }
-      }
+      await updateDoc(doc(db,'clientes',currentClientUID,'misClientes',id), {eliminado:true, eliminadoEn:new Date().toISOString()});
       await loadMcModule();
       closeMcDetalle();
     }catch(e){ console.log(e); }
@@ -7790,8 +7771,7 @@ function renderMcVentas(presups, clienteId) {
 window.deleteMcPresup = function(id) {
   showConfirm('¿Eliminar este presupuesto?',async()=>{
     try {
-      const {deleteDoc}=await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
-      await deleteDoc(doc(db,'clientes',currentClientUID,'presupuestos',id));
+      await updateDoc(doc(db,'clientes',currentClientUID,'presupuestos',id), {eliminado:true, eliminadoEn:new Date().toISOString()});
       await loadMcModule();
       if (_currentMcClienteId) openMcDetalle(_currentMcClienteId);
     } catch(e) {}
@@ -7817,7 +7797,7 @@ window.completarMcPendiente = async function(id) {
 
 window.deleteMcPendiente = function(id) {
   showConfirm('¿Eliminar pendiente?',async()=>{
-    try{const {deleteDoc}=await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");await deleteDoc(doc(db,'clientes',currentClientUID,'mcPendientes',id));await loadMcModule();}catch(e){}
+    try{await updateDoc(doc(db,'clientes',currentClientUID,'mcPendientes',id), {eliminado:true, eliminadoEn:new Date().toISOString()});await loadMcModule();}catch(e){}
   },'Eliminar pendiente');
 };
 
@@ -8088,7 +8068,7 @@ window.goToClientFromPresup = function(clienteId) {
 
 window.deleteClientPresup = function(id) {
   showConfirm('¿Eliminar este presupuesto?', async()=>{
-    try { const {deleteDoc}=await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js"); await deleteDoc(doc(db,'clientes',currentClientUID,'presupuestos',id)); await loadClientPresupuestos(); }catch(e){}
+    try { await updateDoc(doc(db,'clientes',currentClientUID,'presupuestos',id), {eliminado:true, eliminadoEn:new Date().toISOString()}); await loadClientPresupuestos(); }catch(e){}
   },'Eliminar presupuesto');
 };
 
@@ -8099,7 +8079,7 @@ async function loadClientPresupuestos() {
   try {
     const snap = await getDocs(collection(db,'clientes',currentClientUID,'presupuestos'));
     let list = [];
-    snap.forEach(d => list.push({id:d.id,...d.data()}));
+    snap.forEach(d => { const data=d.data(); if(!data.eliminado) list.push({id:d.id,...data}); });
     list.sort((a,b)=>new Date(b.creadoEn||0)-new Date(a.creadoEn||0));
     window._clientPresupuestos = list;
     window._mcPresupuestos = list;
@@ -8369,7 +8349,7 @@ async function loadProductos() {
   try {
     const snap = await getDocs(collection(db,'clientes',uid,'productos'));
     _productos = [];
-    snap.forEach(d => _productos.push({id:d.id,...d.data()}));
+    snap.forEach(d => { const data=d.data(); if(!data.eliminado) _productos.push({id:d.id,...data}); });
     _productos.sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||''));
     renderProductosModule();
     actualizarSelectorProductos();
@@ -8748,7 +8728,7 @@ async function loadProductosCompra() {
   try {
     const snap = await getDocs(collection(db,'clientes',currentClientUID,'prodCompra'));
     _prodCompra = [];
-    snap.forEach(d => _prodCompra.push({id:d.id,...d.data()}));
+    snap.forEach(d => { const data=d.data(); if(!data.eliminado) _prodCompra.push({id:d.id,...data}); });
     _prodCompra.sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||''));
     renderProductosCompra(_prodCompra);
   } catch(e){ console.log(e); }
@@ -8825,7 +8805,7 @@ window.editProdCompra = function(id) {
 
 window.deleteProdCompra = function(id) {
   showConfirm('¿Eliminar este producto?', async()=>{
-    try{const {deleteDoc}=await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");await deleteDoc(doc(db,'clientes',currentClientUID,'prodCompra',id));await loadProductosCompra();}catch(e){}
+    try{await updateDoc(doc(db,'clientes',currentClientUID,'prodCompra',id), {eliminado:true, eliminadoEn:new Date().toISOString()});await loadProductosCompra();}catch(e){}
   },'Eliminar producto');
 };
 
@@ -8836,7 +8816,7 @@ async function loadNecesidades() {
   try {
     const snap = await getDocs(collection(db,'clientes',currentClientUID,'necesidades'));
     _necesidades = [];
-    snap.forEach(d => _necesidades.push({id:d.id,...d.data()}));
+    snap.forEach(d => { const data=d.data(); if(!data.eliminado) _necesidades.push({id:d.id,...data}); });
     _necesidades.sort((a,b)=>{const ord={urgente:0,proximo:1,programado:2};return (ord[a.estado]||1)-(ord[b.estado]||1);});
     renderNecesidades();
   }catch(e){console.log(e);}
@@ -8978,8 +8958,7 @@ window.saveNecesidad = async function() {
 window.deleteNecesidad = function(id) {
   showConfirm('¿Eliminar esta necesidad de compra?', async()=>{
     try{
-      const {deleteDoc:dd}=await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
-      await dd(doc(db,'clientes',currentClientUID,'necesidades',id));
+      await updateDoc(doc(db,'clientes',currentClientUID,'necesidades',id), {eliminado:true, eliminadoEn:new Date().toISOString()});
       await loadNecesidades();
     }catch(e){alert('Error: '+e.message);}
   },'Eliminar necesidad');
@@ -10232,7 +10211,7 @@ async function loadCatsProveedor() {
   try {
     const snap = await getDocs(collection(db,'clientes',currentClientUID,'categoriasProveedor'));
     const custom = [];
-    snap.forEach(d => custom.push(d.data().nombre));
+    snap.forEach(d => { const data=d.data(); if(!data.eliminado) custom.push(data.nombre); });
     _catsProv = [...CATS_DEFAULT, ...custom.filter(c => !CATS_DEFAULT.includes(c))];
   } catch(e) { _catsProv = [...CATS_DEFAULT]; }
   window._catsProv = _catsProv;
@@ -10301,12 +10280,11 @@ window.deleteCatCustom = async function(nombre) {
   if(CATS_DEFAULT.includes(nombre)) return; // No se pueden borrar las predeterminadas
   showConfirm(`¿Eliminar la categoría "${nombre}"?\n\nLos proveedores y productos con esta categoría no se modifican.`, async()=>{
     try {
-      // Buscar y eliminar de Firestore
+      // Buscar y soft-delete de Firestore
       const snap = await getDocs(collection(db,'clientes',currentClientUID,'categoriasProveedor'));
       for(const d of snap.docs) {
-        if(d.data().nombre === nombre) {
-          const {deleteDoc:dd} = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
-          await dd(doc(db,'clientes',currentClientUID,'categoriasProveedor',d.id));
+        if(d.data().nombre === nombre && !d.data().eliminado) {
+          await updateDoc(doc(db,'clientes',currentClientUID,'categoriasProveedor',d.id), {eliminado:true, eliminadoEn:new Date().toISOString()});
         }
       }
       _catsProv = _catsProv.filter(c=>c!==nombre);
@@ -10376,7 +10354,7 @@ async function loadProveedores() {
       getDocs(collection(db,'clientes',currentClientUID,'proveedores')),
       getDocs(collection(db,'clientes',currentClientUID,'ordenesCompra'))
     ]);
-    _proveedores = []; provSnap.forEach(d=>_proveedores.push({id:d.id,...d.data()}));
+    _proveedores = []; provSnap.forEach(d=>{ const data=d.data(); if(!data.eliminado) _proveedores.push({id:d.id,...data}); });
     _proveedores.sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||''));
     // Cargar OC para tener datos de gasto por proveedor
     window._ordenesCompra = window._ordenesCompra || [];
@@ -10557,7 +10535,7 @@ window.saveProveedor = async function(id) {
 
 window.deleteProveedor = function(id) {
   showConfirm('¿Eliminar este proveedor?',async()=>{
-    try{const {deleteDoc}=await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");await deleteDoc(doc(db,'clientes',currentClientUID,'proveedores',id));await loadProveedores();}catch(e){}
+    try{await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',id), {eliminado:true, eliminadoEn:new Date().toISOString()});await loadProveedores();}catch(e){}
   },'Eliminar proveedor');
 };
 
@@ -11057,7 +11035,7 @@ window.loadEmbiReports = async function() {
   try {
     const snap = await getDocs(collection(db,'embiReports'));
     _embiReports = [];
-    snap.forEach(d => _embiReports.push({id:d.id,...d.data()}));
+    snap.forEach(d => { const data=d.data(); if(!data.eliminado) _embiReports.push({id:d.id,...data}); });
     _embiReports.sort((a,b)=>(b.creadoEn||'').localeCompare(a.creadoEn||''));
     renderEmbiReports();
   } catch(e){ console.log('loadEmbiReports error:',e); }
@@ -11122,8 +11100,7 @@ window.embiUpdateEstado = async function(id, estado) {
 window.embiDeleteReport = function(id) {
   showConfirm('¿Eliminar este reporte?', async()=>{
     try {
-      const {deleteDoc:dd}=await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
-      await dd(doc(db,'embiReports',id));
+      await updateDoc(doc(db,'embiReports',id), {eliminado:true, eliminadoEn:new Date().toISOString()});
       _embiReports = _embiReports.filter(r=>r.id!==id);
       renderEmbiReports();
     } catch(e){ alert('Error: '+e.message); }
@@ -11650,7 +11627,7 @@ async function loadProductos() {
     const fdb = window.db || fsi.getFirestore();
     const snap = await fsi.getDocs(fsi.collection(fdb,'clientes',uid,'productos'));
     const prods = [];
-    snap.forEach(d => prods.push({id:d.id,...d.data()}));
+    snap.forEach(d => { const data=d.data(); if(!data.eliminado) prods.push({id:d.id,...data}); });
     prods.sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||''));
     // Guardar en window para que todos los módulos puedan acceder
     window._productosData = prods;
@@ -11775,9 +11752,7 @@ window.deleteProducto = function(id) {
     var uid = window.currentClientUID;
     if(!uid) return;
     try {
-      var fsi = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
-      var fdb = window.db || fsi.getFirestore();
-      await fsi.deleteDoc(fsi.doc(fdb,'clientes',uid,'productos',id));
+      await updateDoc(doc(db,'clientes',uid,'productos',id), {eliminado:true, eliminadoEn:new Date().toISOString()});
       await loadProductos();
     } catch(e){ alert('Error: '+e.message); }
   }, 'Eliminar producto');
