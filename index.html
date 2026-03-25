@@ -1178,6 +1178,9 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
           </div>
         </div>
 
+        <!-- Onboarding checklist -->
+        <div id="onboarding-checklist" style="display:none;"></div>
+
         <!-- Accesos rápidos -->
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;">
           <button onclick="openModal('newClientIngresoModal')" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:14px 10px;background:#5A8A62;color:#fff;border:none;border-radius:12px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">
@@ -6287,8 +6290,69 @@ async function loadInicio() {
     }
 
   } catch(e) { console.log('loadInicio error:',e); }
+
+  // Onboarding checklist
+  try { await renderOnboardingChecklist(); } catch(e){ console.log('onboarding:',e); }
 }
 window.loadInicio = loadInicio;
+
+window.checkOnboardingStatus = function() {
+  const d = currentClientData || {};
+  const ing = window._clientIngresos || [];
+  const eg = window._clientEgresos || [];
+  const pr = window._clientPresupuestos || [];
+  return {
+    nombre: !!(d.negocioNombre && d.negocioNombre.trim()),
+    logo: !!d.logoNegocio,
+    ingreso: ing.length > 0,
+    egreso: eg.length > 0,
+    presupuesto: pr.length > 0
+  };
+};
+
+async function renderOnboardingChecklist() {
+  const el = document.getElementById('onboarding-checklist');
+  if(!el) return;
+  const s = checkOnboardingStatus();
+  const done = Object.values(s).filter(Boolean).length;
+  if(done === 5) { el.style.display = 'none'; return; }
+  const pct = Math.round((done/5)*100);
+  const steps = [
+    { key:'nombre', label:'Cargá el nombre de tu negocio', sub:'', action:"openModal('miCuentaModal')", btn:'Completar' },
+    { key:'logo', label:'Subí tu logo', sub:'Aparece en presupuestos y PDFs', action:"openModal('miCuentaModal')", btn:'Subir' },
+    { key:'ingreso', label:'Registrá tu primer ingreso', sub:'Empezá a trackear tus finanzas', action:"openModal('newClientIngresoModal')", btn:'Registrar' },
+    { key:'egreso', label:'Cargá un egreso', sub:'Para calcular tu ganancia real', action:"openModal('newClientEgresoModal')", btn:'Cargar' },
+    { key:'presupuesto', label:'Creá tu primer presupuesto', sub:'Profesionalizá tus propuestas', action:"openModal('newClientPresupModal')", btn:'Crear' }
+  ];
+  const checkSvg = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 6l2.5 2.5L9 4" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  let firstPending = true;
+  const stepsHtml = steps.map(st => {
+    const ok = s[st.key];
+    const highlight = !ok && firstPending;
+    if(highlight) firstPending = false;
+    const chk = ok
+      ? '<div style="width:22px;height:22px;border-radius:6px;background:var(--sage);display:flex;align-items:center;justify-content:center;flex-shrink:0;">'+checkSvg+'</div>'
+      : '<div style="width:22px;height:22px;border-radius:6px;border:1.5px solid var(--cream-d);flex-shrink:0;"></div>';
+    const txt = ok
+      ? '<span style="font-size:13px;color:var(--text-l);text-decoration:line-through;">'+st.label+'</span>'
+      : '<div><span style="font-size:13px;font-weight:500;color:var(--text);">'+st.label+'</span>'+(st.sub?'<div style="font-size:11px;color:var(--text-l);margin-top:1px;">'+st.sub+'</div>':'')+'</div>';
+    const btnHtml = ok ? '' : '<button onclick="'+st.action+'" style="background:var(--topbar);color:#fff;border:none;border-radius:8px;padding:4px 12px;font-size:11px;font-family:\'DM Sans\',sans-serif;cursor:pointer;font-weight:500;white-space:nowrap;margin-left:auto;">'+st.btn+'</button>';
+    const bg = highlight ? 'background:var(--white);' : '';
+    return '<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:.5px solid var(--cream-d);'+bg+'">'+chk+txt+btnHtml+'</div>';
+  }).join('');
+
+  el.innerHTML = '<div style="background:var(--white);border:.5px solid var(--cream-d);border-radius:12px;padding:20px;margin-bottom:14px;">'
+    + '<div style="font-family:\'Cormorant Garamond\',serif;font-size:18px;color:var(--text);margin-bottom:4px;">Bienvenido a MB Strategy</div>'
+    + '<div style="font-size:12px;color:var(--text-l);margin-bottom:14px;">Completá estos pasos para configurar tu negocio</div>'
+    + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">'
+    +   '<div style="flex:1;height:4px;background:var(--cream-d);border-radius:4px;overflow:hidden;"><div style="height:100%;width:'+pct+'%;background:var(--sage);border-radius:4px;transition:width .5s;"></div></div>'
+    +   '<span style="font-size:11px;color:var(--text-l);white-space:nowrap;">'+done+' de 5 completados</span>'
+    + '</div>'
+    + stepsHtml
+    + '</div>';
+  el.style.display = 'block';
+}
+window.renderOnboardingChecklist = renderOnboardingChecklist;
 
 function renderClientIngresosList(ingresos) {
   const el = document.getElementById('cc-ingresos-list');
