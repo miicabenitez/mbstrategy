@@ -3365,7 +3365,7 @@ onAuthStateChanged(auth, async (user) => {
       if (adminDoc && adminDoc.exists()) {
         await showAdminUI(user.email);
       } else {
-        const clientData = await getClientByEmail(user.email);
+        const clientData = await getClientByAuth(user);
         await showClientUI(user.email, clientData);
       }
     } catch(e) {
@@ -3379,23 +3379,33 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-async function getClientByEmail(email) {
+async function getClientByAuth(user) {
   try {
-    // Búsqueda exacta primero
-    const q = query(collection(db, 'clientes'), where('email', '==', email));
+    // Búsqueda por uid (preferida, matchea con Security Rules)
+    const qUid = query(collection(db, 'clientes'), where('uid', '==', user.uid));
+    const snapUid = await getDocs(qUid);
+    if (!snapUid.empty) {
+      const d = snapUid.docs[0];
+      return { id: d.id, ...d.data() };
+    }
+    // Fallback: búsqueda por email (para clientes que aún no tienen uid)
+    const q = query(collection(db, 'clientes'), where('email', '==', user.email));
     const snap = await getDocs(q);
     if (!snap.empty) {
       const d = snap.docs[0];
+      // Auto-fix: agregar uid al documento si no lo tiene
+      try { await updateDoc(doc(db, 'clientes', d.id), { uid: user.uid }); } catch(e) {}
       return { id: d.id, ...d.data() };
     }
-    // Fallback: búsqueda por email en minúsculas (por si fue guardado con diferente capitalización)
-    const qLower = query(collection(db, 'clientes'), where('email', '==', email.toLowerCase()));
+    // Fallback 2: email en minúsculas
+    const qLower = query(collection(db, 'clientes'), where('email', '==', user.email.toLowerCase()));
     const snapLower = await getDocs(qLower);
     if (!snapLower.empty) {
       const d = snapLower.docs[0];
+      try { await updateDoc(doc(db, 'clientes', d.id), { uid: user.uid }); } catch(e) {}
       return { id: d.id, ...d.data() };
     }
-  } catch(e) { console.log('getClientByEmail error:', e); }
+  } catch(e) { console.log('getClientByAuth error:', e); }
   return null;
 }
 
