@@ -58,6 +58,8 @@ body{font-family:'DM Sans',sans-serif;background:#ff0000;color:var(--text);font-
 .ub{font-size:11px;padding:4px 11px;border-radius:20px;border:.5px solid rgba(255,255,255,.35);color:#fff;background:rgba(255,255,255,.15);}
 .btn-out{font-size:12px;padding:5px 11px;border-radius:20px;border:.5px solid rgba(255,255,255,.25);color:rgba(255,255,255,.65);background:transparent;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;}
 .btn-out:hover{color:#fff;border-color:rgba(255,255,255,.5);}
+.skeleton{background:linear-gradient(90deg,var(--cream-d) 25%,#DDDCD6 50%,var(--cream-d) 75%);background-size:200px 100%;animation:shimmer 1.5s infinite;border-radius:6px;}
+@keyframes shimmer{0%{background-position:-200px 0}100%{background-position:200px 0}}
 .content{flex:1;padding:20px;max-width:1100px;margin:0 auto;width:100%;}
 .view{display:none;}
 .view.active{display:block;}
@@ -3393,6 +3395,23 @@ window.doLogout = async function() {
   currentUser = null;
 };
 
+window.showSkeleton = function(containerId, type) {
+  const el = document.getElementById(containerId);
+  if(!el) return;
+  let html = '';
+  if(type === 'kpis') {
+    html = '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">' +
+      Array(4).fill('<div class="skeleton" style="height:80px;"></div>').join('') + '</div>';
+  } else if(type === 'list') {
+    html = Array(4).fill('<div class="skeleton" style="height:50px;margin-bottom:8px;"></div>').join('');
+  } else if(type === 'cards') {
+    html = Array(3).fill('<div class="skeleton" style="height:100px;margin-bottom:10px;"></div>').join('');
+  } else if(type === 'chart') {
+    html = '<div class="skeleton" style="height:180px;"></div>';
+  }
+  el.innerHTML = html;
+};
+
 onAuthStateChanged(auth, async (user) => {
   const lo = document.getElementById('lo');
   if(lo){ lo.style.opacity='0'; lo.style.display='none'; }
@@ -4854,6 +4873,7 @@ let calcData = {};
 let currentCalcId = null;
 
 async function loadCalcItems(clientId) {
+  showSkeleton('calc-items','cards');
   try {
     calcData = {};  // reset antes de cargar
     const snap = await getDocs(collection(db,'clientes',clientId,'calculos'));
@@ -6027,6 +6047,8 @@ window.showClientContView = function(view, btn) {
 // Cargar contabilidad cliente desde Firebase
 async function loadClientContabilidad() {
   if(!currentClientUID) return;
+  showSkeleton('cc-ingresos-list','list');
+  showSkeleton('cc-egresos-list','list');
   try {
     const [ingSnap, egSnap, cobrosSnap] = await Promise.all([
       getDocs(collection(db,'clientes',currentClientUID,'ingresos')),
@@ -6690,6 +6712,7 @@ let _mcCurrentId = null;
 
 async function loadMcModule() {
   if(!currentClientUID) return;
+  showSkeleton('mc-lista','list');
   try {
     const csSnap = await getDocs(collection(db,'clientes',currentClientUID,'misClientes'));
     _mcClientes = []; csSnap.forEach(d=>_mcClientes.push({id:d.id,...d.data()}));
@@ -7847,6 +7870,7 @@ window.deleteClientPresup = function(id) {
 
 async function loadClientPresupuestos() {
   if(!currentClientUID) return;
+  showSkeleton('cp-list','list');
   try {
     const snap = await getDocs(collection(db,'clientes',currentClientUID,'presupuestos'));
     let list = [];
@@ -8108,6 +8132,7 @@ let _productos = [];
 async function loadProductos() {
   const uid = currentClientUID || window.currentClientUID;
   if(!uid) return;
+  showSkeleton('prod-lista','list');
   try {
     const snap = await getDocs(collection(db,'clientes',uid,'productos'));
     _productos = [];
@@ -8351,6 +8376,7 @@ const CAT_COLORS = {
 // ─ Productos de Compra ─
 async function loadProductosCompra() {
   if(!currentClientUID) return;
+  showSkeleton('pc-lista','list');
   try {
     const snap = await getDocs(collection(db,'clientes',currentClientUID,'prodCompra'));
     _prodCompra = [];
@@ -8435,6 +8461,7 @@ window.deleteProdCompra = function(id) {
 // ─ Necesidades ─
 async function loadNecesidades() {
   if(!currentClientUID) return;
+  showSkeleton('nc-lista','cards');
   try {
     const snap = await getDocs(collection(db,'clientes',currentClientUID,'necesidades'));
     _necesidades = [];
@@ -9128,6 +9155,7 @@ window.generarPDFNecesidad = async function(ncId) {
 // ─ Órdenes de Compra ─
 async function loadOrdenesCompra() {
   if(!currentClientUID) return;
+  showSkeleton('oc-lista','list');
   try{
     const snap=await getDocs(collection(db,'clientes',currentClientUID,'ordenesCompra'));
     _ordenesCompra=[];
@@ -9956,6 +9984,7 @@ window.guardarNuevaCat = async function() {
 
 async function loadProveedores() {
   if(!currentClientUID) return;
+  showSkeleton('prov-lista','list');
   try {
     const [provSnap, ocSnap] = await Promise.all([
       getDocs(collection(db,'clientes',currentClientUID,'proveedores')),
