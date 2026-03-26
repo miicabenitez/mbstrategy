@@ -10718,12 +10718,14 @@ window.verDetalleMovCC = async function(tipo, m) {
 };
 
 window.eliminarFacturaCC = async function(movId) {
-  if(!_ccProvId || !currentClientUID || !movId) {
-    console.error('eliminarFacturaCC: faltan datos', {_ccProvId, currentClientUID, movId});
+  const provId = _ccProvId || window._ccProvId;
+  console.log('eliminarFacturaCC:', { provId, currentClientUID, movId });
+  if(!provId || !currentClientUID || !movId) {
+    console.error('Faltan datos para eliminar factura');
     return;
   }
   try {
-    await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',_ccProvId,'facturas',movId), {
+    await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',provId,'facturas',movId), {
       eliminado: true, eliminadoEn: new Date()
     });
     closeModal('detalleMovCCModal');
