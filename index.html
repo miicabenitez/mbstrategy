@@ -10151,7 +10151,7 @@ window.buscarHistorialCompra = function(q) { renderHistorialCompra(q); };
 
 
 // ===== CUENTA CORRIENTE PROVEEDOR =====
-let _ccProvId = null, _ccFacturas = [], _ccPagos = [];
+let _ccProvId = null, _ccFacturas = [], _ccPagos = [], _ccOCsComoFactura = [];
 
 window.abrirCuentaCorriente = async function(provId) {
   const prov = _proveedores.find(p=>p.id===provId);
@@ -10215,9 +10215,11 @@ window.abrirCuentaCorriente = async function(provId) {
       getDocs(collection(db,'clientes',currentClientUID,'proveedores',provId,'facturas')),
       getDocs(collection(db,'clientes',currentClientUID,'proveedores',provId,'pagos'))
     ]);
-    _ccFacturas = [];
-    facSnap.forEach(d=>_ccFacturas.push({id:d.id,...d.data()}));
-    _ccFacturas.sort((a,b)=>(a.fecha||'')>(b.fecha||'')?-1:1);
+    const todasFacturas = [];
+    facSnap.forEach(d=>todasFacturas.push({id:d.id,...d.data()}));
+    todasFacturas.sort((a,b)=>(a.fecha||'')>(b.fecha||'')?-1:1);
+    _ccFacturas = todasFacturas.filter(f => !f.esOC);
+    _ccOCsComoFactura = todasFacturas.filter(f => f.esOC === true);
     _ccPagos = [];
     pagSnap.forEach(d=>_ccPagos.push({id:d.id,...d.data()}));
     _ccPagos.sort((a,b)=>(a.fecha||'')>(b.fecha||'')?-1:1);
@@ -10279,7 +10281,10 @@ function renderCuentaCorriente() {
   const movsPagos = _ccPagos.map(p=>({...p,tipo:'pago'}));
 
   // OC recibidas que no tienen factura asociada
-  const ocIdsConFactura = new Set(_ccFacturas.map(f=>f.ocId).filter(Boolean));
+  const ocIdsConFactura = new Set([
+    ..._ccFacturas.map(f=>f.ocId).filter(Boolean),
+    ..._ccOCsComoFactura.map(f=>f.ocId).filter(Boolean)
+  ]);
   const ocsMovs = ocsRecibidas
     .filter(o=>!ocIdsConFactura.has(o.id))
     .map(o=>({
@@ -10287,8 +10292,9 @@ function renderCuentaCorriente() {
       monto:o.totalRecibido||o.total, nombre:o.proveedor,
       numero:`OC-${String(o.numero||0).padStart(3,'0')}`, ocId:o.id
     }));
+  const movsOCsFactura = _ccOCsComoFactura.map(f=>({...f, tipo:'oc_recibida', fecha:f.fecha||''}));
 
-  const movs = [...movsFacturas, ...movsPagos, ...ocsMovs]
+  const movs = [...movsFacturas, ...movsPagos, ...ocsMovs, ...movsOCsFactura]
     .sort((a,b)=>(a.fecha||'')>(b.fecha||'')?-1:1);
 
   const el = document.getElementById('cc-movimientos-full') || document.getElementById('cc-movimientos');
