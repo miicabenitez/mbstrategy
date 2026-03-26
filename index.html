@@ -10263,9 +10263,10 @@ function renderCuentaCorriente() {
   if(!el) return;
   if(movs.length===0){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-l);font-size:13px;">Sin movimientos registrados.</div>';return;}
 
-  el.innerHTML=movs.map(m=>{
+  el.innerHTML=movs.map((m,_mi)=>{
+    window['_ccMov'+_mi]=m;
     if(m.tipo==='oc_recibida'){
-      return `<div style="display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:.5px solid var(--cream-d);cursor:pointer;" onclick="abrirDetalleOC('${m.ocId}')">
+      return `<div style="display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:.5px solid var(--cream-d);cursor:pointer;" onclick="verDetalleMovCC('oc_recibida',window['_ccMov${_mi}'])">
         <div style="width:40px;height:40px;background:var(--sage-xl);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="12" rx="2" stroke="var(--sage-dark)" stroke-width="1.2"/><path d="M4 7h8M4 10h5" stroke="var(--sage-dark)" stroke-width="1.2" stroke-linecap="round"/></svg>
         </div>
@@ -10282,7 +10283,7 @@ function renderCuentaCorriente() {
       const estadoFac = m.estado||'pendiente';
       const badgeCfg={pendiente:{bg:'var(--err-bg)',tc:'var(--err)',label:'Pendiente'},pagada:{bg:'var(--ok-bg)',tc:'var(--ok)',label:'Pagada'},parcial:{bg:'var(--warn-bg)',tc:'var(--warn)',label:'Pago parcial'}};
       const bc=badgeCfg[estadoFac]||badgeCfg.pendiente;
-      return `<div style="display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:.5px solid var(--cream-d);">
+      return `<div style="display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:.5px solid var(--cream-d);cursor:pointer;" onclick="verDetalleMovCC('factura',window['_ccMov${_mi}'])">
         <div style="width:40px;height:40px;background:#E6EEF5;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="1" width="12" height="14" rx="2" stroke="#2A4A6A" stroke-width="1.2"/><path d="M5 5h6M5 8h6M5 11h4" stroke="#2A4A6A" stroke-width="1.2" stroke-linecap="round"/></svg>
         </div>
@@ -10296,7 +10297,7 @@ function renderCuentaCorriente() {
         </div>
       </div>`;
     } else {
-      return `<div style="display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:.5px solid var(--cream-d);">
+      return `<div style="display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:.5px solid var(--cream-d);cursor:pointer;" onclick="verDetalleMovCC('pago',window['_ccMov${_mi}'])">
         <div style="width:40px;height:40px;background:var(--ok-bg);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-6" stroke="var(--ok)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
@@ -10306,7 +10307,7 @@ function renderCuentaCorriente() {
         </div>
         <div style="text-align:right;">
           <div style="font-family:'Cormorant Garamond',serif;font-size:19px;color:var(--ok);font-weight:500;">+$${(parseFloat(m.monto)||0).toLocaleString('es-AR')}</div>
-          <span style="background:var(--ok-bg);color:var(--ok);font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;">Pago</span>${m.id ? `<button onclick="verPDFop('${m.id}')" style="font-size:10px;background:none;border:.5px solid #7A8E7D;color:#7A8E7D;border-radius:5px;padding:2px 7px;cursor:pointer;margin-left:6px;font-family:'DM Sans',sans-serif;">PDF</button>` : ''}
+          <span style="background:var(--ok-bg);color:var(--ok);font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;">Pago</span>${m.id ? `<button onclick="event.stopPropagation();verPDFop('${m.id}')" style="font-size:10px;background:none;border:.5px solid #7A8E7D;color:#7A8E7D;border-radius:5px;padding:2px 7px;cursor:pointer;margin-left:6px;font-family:'DM Sans',sans-serif;">PDF</button>` : ''}
         </div>
       </div>`;
     }
@@ -10580,6 +10581,89 @@ window.verPDFop = async function(movId) {
     window._ultimaOP = { ...snap.data(), id: movId };
     generarPDFOrdenPago();
   } catch(e) { console.error(e); }
+};
+window.verDetalleMovCC = function(tipo, m) {
+  const contenido = document.getElementById('detalle-mov-cc-content');
+  if(!contenido) return;
+  if(tipo === 'oc_recibida') {
+    contenido.innerHTML = `
+      <div style="background:var(--sage-dark);border-radius:10px;padding:14px 16px;margin-bottom:16px;">
+        <div style="font-size:10px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Orden de Compra recibida</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:24px;color:#fff;font-weight:600;">${m.numero || 'OC'}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid var(--cream-d);">
+          <span style="color:var(--text-l);">Fecha</span><span style="font-weight:500;">${m.fecha||'—'}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid var(--cream-d);">
+          <span style="color:var(--text-l);">Monto</span><span style="font-weight:500;color:#C4786A;">$${(m.monto||0).toLocaleString('es-AR')}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid var(--cream-d);">
+          <span style="color:var(--text-l);">Estado factura</span><span style="font-weight:500;color:#B08A42;">Pendiente de factura</span>
+        </div>
+        ${m.descripcion ? `<div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;"><span style="color:var(--text-l);">Descripción</span><span style="font-weight:500;">${m.descripcion}</span></div>` : ''}
+      </div>
+      <div style="margin-top:16px;">
+        <button onclick="closeModal('detalleMovCCModal');abrirDetalleOC('${m.ocId||m.id||''}');" style="width:100%;background:var(--sage-dark);color:#fff;border:none;border-radius:8px;padding:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;">Ver OC completa</button>
+      </div>
+    `;
+  } else if(tipo === 'factura') {
+    const estadoColor = m.estadoPago==='pagada' ? '#5A8A62' : m.estadoPago==='parcial' ? '#B08A42' : '#C4786A';
+    const estadoLabel = m.estadoPago==='pagada' ? 'Pagada' : m.estadoPago==='parcial' ? 'Pago parcial' : 'Pendiente';
+    contenido.innerHTML = `
+      <div style="background:#4A6A8A;border-radius:10px;padding:14px 16px;margin-bottom:16px;">
+        <div style="font-size:10px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Factura</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:24px;color:#fff;font-weight:600;">${m.numero||m.descripcion||'—'}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid var(--cream-d);">
+          <span style="color:var(--text-l);">Fecha</span><span style="font-weight:500;">${m.fecha||'—'}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid var(--cream-d);">
+          <span style="color:var(--text-l);">Monto total</span><span style="font-weight:500;color:#C4786A;">$${(m.monto||0).toLocaleString('es-AR')}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid var(--cream-d);">
+          <span style="color:var(--text-l);">Monto pagado</span><span style="font-weight:500;color:#5A8A62;">$${(m.montoPagado||0).toLocaleString('es-AR')}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid var(--cream-d);">
+          <span style="color:var(--text-l);">Saldo pendiente</span><span style="font-weight:500;color:#C4786A;">$${((m.monto||0)-(m.montoPagado||0)).toLocaleString('es-AR')}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid var(--cream-d);">
+          <span style="color:var(--text-l);">Estado</span><span style="font-weight:500;color:${estadoColor};">${estadoLabel}</span>
+        </div>
+        ${m.ocId ? `<div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid var(--cream-d);"><span style="color:var(--text-l);">OC asociada</span><span style="font-weight:500;">${m.ocId}</span></div>` : ''}
+        ${m.descripcion ? `<div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;"><span style="color:var(--text-l);">Descripción</span><span style="font-weight:500;">${m.descripcion}</span></div>` : ''}
+      </div>
+    `;
+  } else if(tipo === 'pago') {
+    contenido.innerHTML = `
+      <div style="background:#5A8A62;border-radius:10px;padding:14px 16px;margin-bottom:16px;">
+        <div style="font-size:10px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Orden de Pago</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:24px;color:#fff;font-weight:600;">${m.numero||'OP'}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid var(--cream-d);">
+          <span style="color:var(--text-l);">Fecha</span><span style="font-weight:500;">${m.fecha||'—'}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid var(--cream-d);">
+          <span style="color:var(--text-l);">Monto pagado</span><span style="font-weight:500;color:#5A8A62;">$${(m.monto||0).toLocaleString('es-AR')}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid var(--cream-d);">
+          <span style="color:var(--text-l);">Medio de pago</span><span style="font-weight:500;">${m.medio||'—'}</span>
+        </div>
+        ${m.facturasNombres?.length ? `<div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid var(--cream-d);"><span style="color:var(--text-l);">Facturas canceladas</span><span style="font-weight:500;text-align:right;">${m.facturasNombres.join(', ')}</span></div>` : ''}
+        ${m.concepto ? `<div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;"><span style="color:var(--text-l);">Concepto</span><span style="font-weight:500;">${m.concepto}</span></div>` : ''}
+      </div>
+      <div style="margin-top:16px;">
+        <button id="detalle-pago-pdf-btn" style="width:100%;background:#5A8A62;color:#fff;border:none;border-radius:8px;padding:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;">Descargar PDF</button>
+      </div>
+    `;
+    setTimeout(()=>{
+      const btn = document.getElementById('detalle-pago-pdf-btn');
+      if(btn) btn.onclick = () => { window._ultimaOP = m; generarPDFOrdenPago(); };
+    }, 100);
+  }
+  openModal('detalleMovCCModal');
 };
 
 // ===== CATEGORÍAS DE PROVEEDORES =====
@@ -12718,6 +12802,13 @@ function embiShow(show){
 }
 window.embiShow=embiShow;
 </script>
+
+<div class="mo" id="detalleMovCCModal">
+  <div class="md" style="max-width:480px;">
+    <button class="mc2" onclick="closeModal('detalleMovCCModal')">×</button>
+    <div id="detalle-mov-cc-content"></div>
+  </div>
+</div>
 
 </body>
 </html>
