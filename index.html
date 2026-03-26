@@ -9014,6 +9014,7 @@ function renderProductosCompra(lista) {
 
 window.abrirProdDesdeNC = function() {
   const cat = document.getElementById('nc-cat')?.value;
+  document.getElementById('newProdCompraModal').style.zIndex = '510';
   openModal('newProdCompraModal');
   if(cat) { const catEl = document.getElementById('pc-cat'); if(catEl) catEl.value = cat; }
   window._prodDesdeNC = true;
@@ -9034,7 +9035,7 @@ window.saveProdCompra = async function() {
     if(id) await updateDoc(doc(db,'clientes',currentClientUID,'prodCompra',id),data);
     else await addDoc(collection(db,'clientes',currentClientUID,'prodCompra'),data);
     const s=document.getElementById('pc-saved');if(s)s.style.display='block';
-    setTimeout(async()=>{if(s)s.style.display='none';closeModal('newProdCompraModal');['pc-nombre','pc-desc'].forEach(i=>{const e=document.getElementById(i);if(e)e.value='';});document.getElementById('pc-edit-id').value='';await loadProductosCompra();
+    setTimeout(async()=>{if(s)s.style.display='none';closeModal('newProdCompraModal');document.getElementById('newProdCompraModal').style.zIndex='';['pc-nombre','pc-desc'].forEach(i=>{const e=document.getElementById(i);if(e)e.value='';});document.getElementById('pc-edit-id').value='';await loadProductosCompra();
       // Si veníamos desde NC, recargar el selector
       if(window._prodDesdeNC){ window._prodDesdeNC=false; cargarProductosPorCat(); }
     },1500);
