@@ -2129,19 +2129,58 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
         <!-- Sección 3: Membresía -->
         <div class="card" style="margin-bottom:14px;">
           <div style="font-size:11px;font-weight:500;color:var(--text-m);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;">Membresía</div>
-          <div style="text-align:center;padding:8px 0 0;">
-            <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-l);margin-bottom:10px;">Post-programa</div>
-            <div class="memb-price">$40</div>
-            <div style="font-size:13px;color:var(--text-l);margin-top:3px;">USD por mes</div>
-            <div style="margin:16px 0;">
-              <div style="font-size:13px;color:var(--text-m);padding:6px 0;border-bottom:.5px solid var(--cream-d);">✓ Acceso completo a la plataforma</div>
-              <div style="font-size:13px;color:var(--text-m);padding:6px 0;border-bottom:.5px solid var(--cream-d);">✓ KPIs y reportes evolutivos</div>
-              <div style="font-size:13px;color:var(--text-m);padding:6px 0;border-bottom:.5px solid var(--cream-d);">✓ Calculador de costos ilimitado</div>
-              <div style="font-size:13px;color:var(--text-m);padding:6px 0;border-bottom:.5px solid var(--cream-d);">✓ Soporte por WhatsApp (48hs)</div>
-              <div style="font-size:13px;color:var(--text-m);padding:6px 0;">✓ Actualizaciones del sistema</div>
+          <!-- Estado: activo -->
+          <div id="memb-activo" style="display:none;">
+            <div style="display:flex;align-items:center;gap:8px;background:#EEF5EF;border-radius:10px;padding:12px 14px;margin-bottom:12px;border:.5px solid #5A8A62;">
+              <div style="width:8px;height:8px;border-radius:50%;background:#5A8A62;flex-shrink:0;"></div>
+              <div><div style="font-size:13px;font-weight:500;color:#5A8A62;">Plan activo</div></div>
             </div>
-            <div class="badge bgr" style="display:inline-block;">Disponible al finalizar semana 4</div>
+            <div style="font-size:12px;color:var(--text-m);padding:6px 0;border-bottom:.5px solid var(--cream-d);display:flex;justify-content:space-between;"><span>Plan</span><span id="memb-plan-nombre" style="font-weight:500;color:var(--text);"></span></div>
+            <div style="font-size:12px;color:var(--text-m);padding:6px 0;border-bottom:.5px solid var(--cream-d);display:flex;justify-content:space-between;"><span>Próximo cobro</span><span id="memb-proximo-cobro" style="font-weight:500;color:var(--text);"></span></div>
+            <div style="font-size:12px;color:var(--text-m);padding:6px 0;display:flex;justify-content:space-between;"><span>Monto mensual</span><span id="memb-monto" style="font-weight:500;color:var(--text);"></span></div>
+            <div style="margin-top:14px;">
+              <button onclick="cancelarMembresia()" style="width:100%;background:#F5F6F3;color:#C4786A;border:.5px solid #C4786A;border-radius:8px;padding:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;">Cancelar suscripción</button>
+            </div>
           </div>
+          <!-- Estado: pendiente -->
+          <div id="memb-pendiente" style="display:none;">
+            <div style="display:flex;align-items:center;gap:8px;background:#FBF5E8;border-radius:10px;padding:12px 14px;margin-bottom:12px;border:.5px solid #B08A42;">
+              <div style="width:8px;height:8px;border-radius:50%;background:#B08A42;flex-shrink:0;"></div>
+              <div><div style="font-size:13px;font-weight:500;color:#B08A42;">Pago pendiente</div><div style="font-size:11px;color:var(--text-l);margin-top:2px;">Completá el pago para activar tu plan</div></div>
+            </div>
+            <button onclick="continuarPago()" style="width:100%;background:#7A8E7D;color:#fff;border:none;border-radius:8px;padding:11px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;">Continuar con el pago</button>
+          </div>
+          <!-- Estado: sin plan -->
+          <div id="memb-sin-plan" style="display:none;">
+            <div style="display:flex;align-items:center;gap:8px;background:#FAEAE7;border-radius:10px;padding:12px 14px;margin-bottom:14px;border:.5px solid #C4786A;">
+              <div style="width:8px;height:8px;border-radius:50%;background:#C4786A;flex-shrink:0;"></div>
+              <div style="font-size:13px;font-weight:500;color:#C4786A;">Sin plan activo</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+              <div style="background:var(--cream);border-radius:10px;padding:14px;border:.5px solid var(--cream-d);">
+                <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:var(--text);margin-bottom:2px;">Base</div>
+                <div style="font-size:10px;color:var(--text-l);margin-bottom:10px;">Sistema + Embi</div>
+                <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700;color:#7A8E7D;line-height:1;" id="memb-precio-base">$—</div>
+                <div style="font-size:10px;color:var(--text-l);margin-bottom:12px;">por mes</div>
+                <div style="font-size:11px;color:var(--text-m);margin-bottom:4px;">✓ Sistema completo</div>
+                <div style="font-size:11px;color:var(--text-m);margin-bottom:4px;">✓ Embi explicativo</div>
+                <div style="font-size:11px;color:var(--text-m);margin-bottom:12px;">✓ Soporte email</div>
+                <button onclick="suscribirseMP('base')" id="memb-btn-base" style="width:100%;background:#7A8E7D;color:#fff;border:none;border-radius:7px;padding:9px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;">Suscribirme</button>
+              </div>
+              <div style="background:var(--cream);border-radius:10px;padding:14px;border:1.5px solid #7A8E7D;">
+                <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:var(--text);margin-bottom:2px;">Pro</div>
+                <div style="font-size:10px;color:var(--text-l);margin-bottom:10px;">Sistema + Embi op.</div>
+                <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700;color:#7A8E7D;line-height:1;" id="memb-precio-pro">$—</div>
+                <div style="font-size:10px;color:var(--text-l);margin-bottom:12px;">por mes</div>
+                <div style="font-size:11px;color:var(--text-m);margin-bottom:4px;">✓ Todo lo del Base</div>
+                <div style="font-size:11px;color:var(--text-m);margin-bottom:4px;">✓ Embi operativo</div>
+                <div style="font-size:11px;color:var(--text-m);margin-bottom:12px;">✓ Soporte prioritario</div>
+                <button onclick="suscribirseMP('pro')" id="memb-btn-pro" style="width:100%;background:#7A8E7D;color:#fff;border:none;border-radius:7px;padding:9px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;">Suscribirme</button>
+              </div>
+            </div>
+            <div style="font-size:10px;color:var(--text-l);text-align:center;line-height:1.5;">Sin período de gracia · El acceso se activa al acreditarse el pago · Podés cancelar en cualquier momento</div>
+          </div>
+          <div id="memb-error" style="display:none;background:var(--err-bg);color:var(--err);border-radius:8px;padding:10px;font-size:12px;margin-top:10px;"></div>
         </div>
 
       </div>
@@ -8583,6 +8622,88 @@ window.guardarMiCuenta = async function() {
   }
 };
 
+// ===== MEMBRESÍA MP =====
+window.loadMembresiaSection = async function() {
+  if(!currentClientUID) return;
+  try {
+    const [clienteSnap, planesSnap] = await Promise.all([
+      getDoc(doc(db,'clientes',currentClientUID)),
+      getDoc(doc(db,'config','planes'))
+    ]);
+    if(planesSnap.exists()) {
+      const planes = planesSnap.data();
+      const precioBase = document.getElementById('memb-precio-base');
+      const precioPro = document.getElementById('memb-precio-pro');
+      if(precioBase && planes.base?.precioPesos) precioBase.textContent = '$' + planes.base.precioPesos.toLocaleString('es-AR');
+      if(precioPro && planes.pro?.precioPesos) precioPro.textContent = '$' + planes.pro.precioPesos.toLocaleString('es-AR');
+    }
+    const memb = clienteSnap.exists() ? (clienteSnap.data().membresia || {}) : {};
+    const estado = memb.estado || 'sin-plan';
+    ['memb-activo','memb-pendiente','memb-sin-plan'].forEach(id => {
+      const el = document.getElementById(id);
+      if(el) el.style.display = 'none';
+    });
+    if(estado === 'activo') {
+      const el = document.getElementById('memb-activo');
+      if(el) el.style.display = 'block';
+      const planNombre = document.getElementById('memb-plan-nombre');
+      if(planNombre) planNombre.textContent = memb.plan === 'pro' ? 'Pro' : 'Base';
+      const proximoCobro = document.getElementById('memb-proximo-cobro');
+      if(proximoCobro && memb.proximoCobro) {
+        const fecha = memb.proximoCobro.toDate ? memb.proximoCobro.toDate() : new Date(memb.proximoCobro);
+        proximoCobro.textContent = fecha.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'});
+      }
+      const monto = document.getElementById('memb-monto');
+      if(monto && memb.precioPesos) monto.textContent = '$' + memb.precioPesos.toLocaleString('es-AR');
+    } else if(estado === 'pendiente') {
+      const el = document.getElementById('memb-pendiente');
+      if(el) el.style.display = 'block';
+    } else {
+      const el = document.getElementById('memb-sin-plan');
+      if(el) el.style.display = 'block';
+    }
+  } catch(e) { console.error('Error loadMembresiaSection:', e); }
+};
+window.suscribirseMP = async function(plan) {
+  if(!currentClientUID) return;
+  const btnId = plan === 'base' ? 'memb-btn-base' : 'memb-btn-pro';
+  const btn = document.getElementById(btnId);
+  const errEl = document.getElementById('memb-error');
+  if(errEl) errEl.style.display = 'none';
+  if(btn) { btn.textContent = 'Procesando...'; btn.disabled = true; }
+  try {
+    const res = await fetch('/.netlify/functions/mp-subscription', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ clienteId: currentClientUID, plan })
+    });
+    const data = await res.json();
+    if(!res.ok || !data.init_point) throw new Error(data.error || 'Error al iniciar suscripción');
+    await updateDoc(doc(db,'clientes',currentClientUID), { 'membresia.initPoint': data.init_point });
+    window.location.href = data.init_point;
+  } catch(e) {
+    if(errEl) { errEl.textContent = e.message; errEl.style.display = 'block'; }
+    if(btn) { btn.textContent = 'Suscribirme'; btn.disabled = false; }
+  }
+};
+window.continuarPago = async function() {
+  if(!currentClientUID) return;
+  try {
+    const snap = await getDoc(doc(db,'clientes',currentClientUID));
+    const initPoint = snap.data()?.membresia?.initPoint;
+    if(initPoint) window.location.href = initPoint;
+  } catch(e) { console.error(e); }
+};
+window.cancelarMembresia = async function() {
+  if(!confirm('¿Confirmás que querés cancelar tu suscripción? Perderás el acceso al finalizar el período.')) return;
+  if(!currentClientUID) return;
+  try {
+    await updateDoc(doc(db,'clientes',currentClientUID), { 'membresia.estado': 'cancelado', 'membresia.canceladoEn': new Date() });
+    alert('Suscripción cancelada. Tu acceso se mantendrá hasta fin del período.');
+    loadMembresiaSection();
+  } catch(e) { console.error(e); }
+};
+
 // ─── TOPBAR THREE-DOTS MENU ───
 window.toggleTopbarMenu = function() {
   const dd = document.getElementById('topbar-dropdown');
@@ -8606,6 +8727,7 @@ window.navigateToMiCuenta = function() {
   // Ocultar sub-navs
   document.querySelectorAll('.mod-subnav').forEach(el => { el.style.display = 'none'; el.classList.remove('visible'); });
   loadMiCuentaPage();
+  loadMembresiaSection();
 };
 
 async function loadMiCuentaPage() {
