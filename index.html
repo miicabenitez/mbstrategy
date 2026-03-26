@@ -10714,8 +10714,7 @@ window.verDetalleMovCC = async function(tipo, m) {
 };
 
 window.eliminarFacturaCC = async function(movId) {
-  if(!confirm('¿Eliminar esta factura? Esta acción no se puede deshacer.')) return;
-  if(!window._ccProvId || !currentClientUID) return;
+  if(!window._ccProvId || !currentClientUID || !movId) return;
   try {
     await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',window._ccProvId,'facturas',movId), {
       eliminado: true, eliminadoEn: new Date()
