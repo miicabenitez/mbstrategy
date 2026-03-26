@@ -10415,7 +10415,24 @@ window.saveFactura = async function() {
     creadoEn: new Date().toISOString()
   };
   try{
-    await addDoc(collection(db,'clientes',currentClientUID,'proveedores',_ccProvId,'facturas'),data);
+    // Si hay OC asociada, buscar si ya existe una entrada esOC:true para reemplazarla
+    let reemplazado = false;
+    if(data.ocId) {
+      const facSnap = await getDocs(collection(db,'clientes',currentClientUID,'proveedores',_ccProvId,'facturas'));
+      for(const fd of facSnap.docs) {
+        const fdata = fd.data();
+        if(fdata.ocId === data.ocId && fdata.esOC === true && !fdata.eliminado) {
+          await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',_ccProvId,'facturas',fd.id), {
+            numero: data.numero, monto: data.monto, fecha: data.fecha, desc: data.desc, estado: data.estado, esOC: false
+          });
+          reemplazado = true;
+          break;
+        }
+      }
+    }
+    if(!reemplazado) {
+      await addDoc(collection(db,'clientes',currentClientUID,'proveedores',_ccProvId,'facturas'),data);
+    }
     const s=document.getElementById('fac-saved');if(s)s.style.display='block';
     setTimeout(async()=>{
       if(s)s.style.display='none';
