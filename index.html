@@ -2965,29 +2965,54 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
 
 <!-- Modal registrar pago a proveedor -->
 <div class="mo" id="newPagoProvModal">
-  <div class="md" style="max-width:440px;padding:0;overflow:hidden;position:relative;">
-    <button class="mc2" onclick="closeModal('newPagoProvModal')" style="position:absolute;top:14px;right:14px;z-index:2;color:#fff;background:rgba(255,255,255,.15);border:none;">×</button>
-    <div style="background:var(--topbar);padding:20px 24px 16px;">
-      <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">MB Strategy</div>
-      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:#fff;">Registrar pago</div>
-      <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:3px;" id="pago-prov-sub">Proveedor</div>
+  <div class="md" style="max-width:560px;">
+    <button class="mc2" onclick="closeModal('newPagoProvModal')">×</button>
+    <div class="mt">Nueva Orden de Pago</div>
+    <div id="npp-proveedor-info" style="background:var(--sage-xl);border-radius:10px;padding:10px 14px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div style="font-size:13px;font-weight:500;color:var(--sage-dark);" id="npp-prov-nombre">—</div>
+        <div style="font-size:11px;color:var(--text-l);">Saldo pendiente: <span id="npp-saldo-prov" style="color:#C4786A;font-weight:500;">$0</span></div>
+      </div>
+      <div style="font-size:10px;color:var(--text-l);" id="npp-op-numero">OP-0001</div>
     </div>
-    <div style="padding:20px 24px;">
-      <div class="fg"><label class="fl">Aplicar a factura</label>
-        <select class="fi" id="pago-factura-sel" style="margin-top:0;"><option value="">Seleccionar factura pendiente...</option></select>
-      </div>
-      <div class="fg"><label class="fl">Monto</label><input type="number" class="fi" id="pago-prov-monto" placeholder="0"/></div>
-      <div class="fg"><label class="fl">Concepto</label><input type="text" class="fi" id="pago-prov-concepto" placeholder="Ej: Transferencia, efectivo..."/></div>
-      <div class="fg"><label class="fl">Fecha</label><input type="date" class="fi" id="pago-prov-fecha"/></div>
-      <div style="background:var(--ok-bg);border-radius:8px;padding:10px;font-size:11px;color:var(--ok);margin-bottom:14px;">
-        Este pago se registrará automáticamente en <b>Egresos</b>
-      </div>
-      <div class="br2">
-        <button class="bp" onclick="savePagoProveedor()">Registrar pago</button>
-        <button class="bs" onclick="closeModal('newPagoProvModal')">Cancelar</button>
-      </div>
-      <div class="saved-msg" id="pago-prov-saved">✓ Pago registrado</div>
+    <div class="fg">
+      <label class="fl">Fecha de pago</label>
+      <input type="date" class="fi" id="npp-fecha"/>
     </div>
+    <div class="fg">
+      <label class="fl">Medio de pago</label>
+      <select class="fi" id="npp-medio" style="margin-top:0;">
+        <option value="transferencia">Transferencia</option>
+        <option value="efectivo">Efectivo</option>
+        <option value="cheque">Cheque</option>
+        <option value="otro">Otro</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label class="fl" style="margin-bottom:8px;">Facturas a cancelar</label>
+      <div id="npp-facturas-lista" style="display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;"></div>
+      <div id="npp-sin-facturas" style="display:none;font-size:12px;color:var(--text-l);padding:10px;text-align:center;">No hay facturas pendientes</div>
+    </div>
+    <div class="fg">
+      <label class="fl">Monto libre (sin factura, opcional)</label>
+      <input type="number" class="fi" id="npp-monto-libre" placeholder="$0" oninput="recalcularTotalOP()"/>
+    </div>
+    <div style="background:var(--sage-xl);border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <span style="font-size:13px;color:var(--text-m);">Total a pagar</span>
+      <span style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:#7A8E7D;" id="npp-total">$0</span>
+    </div>
+    <div class="fg">
+      <label class="fl">Concepto / Notas (opcional)</label>
+      <input type="text" class="fi" id="npp-concepto" placeholder="Ej: Pago parcial, retención IIBB..."/>
+    </div>
+    <div style="font-size:11px;color:var(--text-l);background:var(--cream);border-radius:8px;padding:8px 12px;margin-bottom:14px;">✓ Se registra automáticamente como egreso en Finanzas</div>
+    <div class="br2">
+      <button class="bp" onclick="savePagoProveedor()">Registrar pago</button>
+      <button class="bs" onclick="generarPDFOrdenPago()">PDF</button>
+      <button class="bs" onclick="closeModal('newPagoProvModal')">Cancelar</button>
+    </div>
+    <div class="saved-msg" id="npp-saved">✓ Orden de pago registrada</div>
+    <div id="npp-error" style="display:none;background:var(--err-bg);color:var(--err);border-radius:8px;padding:10px;font-size:12px;margin-top:8px;"></div>
   </div>
 </div>
 
@@ -10281,7 +10306,7 @@ function renderCuentaCorriente() {
         </div>
         <div style="text-align:right;">
           <div style="font-family:'Cormorant Garamond',serif;font-size:19px;color:var(--ok);font-weight:500;">+$${(parseFloat(m.monto)||0).toLocaleString('es-AR')}</div>
-          <span style="background:var(--ok-bg);color:var(--ok);font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;">Pago</span>
+          <span style="background:var(--ok-bg);color:var(--ok);font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;">Pago</span>${m.id ? `<button onclick="verPDFop('${m.id}')" style="font-size:10px;background:none;border:.5px solid #7A8E7D;color:#7A8E7D;border-radius:5px;padding:2px 7px;cursor:pointer;margin-left:6px;font-family:'DM Sans',sans-serif;">PDF</button>` : ''}
         </div>
       </div>`;
     }
@@ -10315,80 +10340,246 @@ window.saveFactura = async function() {
   }catch(e){alert('Error: '+e.message);}
 };
 
-window.openModal_newPagoProvModal_extra = function() {
-  // Cargar facturas pendientes en selector
-  const sel = document.getElementById('pago-factura-sel');
-  const sub = document.getElementById('pago-prov-sub');
-  const prov = _proveedores.find(p=>p.id===_ccProvId);
-  if(sub&&prov) sub.textContent = prov.nombre+' · Saldo: $'+((prov._saldo||0).toLocaleString('es-AR'));
-  if(sel){
-    const pendientes = _ccFacturas.filter(f=>f.estado!=='pagada' && !f.esOC && !((f.numero||'').startsWith('OC-')));
-    sel.innerHTML = '<option value="">Sin factura específica</option>'+
-      pendientes.map(f=>`<option value="${f.id}" data-monto="${f.monto}">${f.numero} — $${(parseFloat(f.monto)||0).toLocaleString('es-AR')} — ${f.fecha}</option>`).join('');
-  }
-  const fechaEl=document.getElementById('pago-prov-fecha');
-  if(fechaEl) fechaEl.value=new Date().toISOString().split('T')[0];
-};
-
-window.savePagoProveedor = async function() {
-  if(!currentClientUID||!_ccProvId) return;
-  const monto=parseFloat(document.getElementById('pago-prov-monto').value)||0;
-  const concepto=document.getElementById('pago-prov-concepto').value;
-  const fecha=document.getElementById('pago-prov-fecha').value;
-  const facturaId=document.getElementById('pago-factura-sel').value;
-  if(!monto){alert('Ingresá un monto');return;}
-  if(!fecha){alert('Ingresá la fecha');return;}
-  const prov=_proveedores.find(p=>p.id===_ccProvId);
-  const factura=_ccFacturas.find(f=>f.id===facturaId);
-  try{
-    // Guardar pago en sub-colección proveedor
-    await addDoc(collection(db,'clientes',currentClientUID,'proveedores',_ccProvId,'pagos'),{
-      monto,concepto,fecha,facturaId:facturaId||'',
-      facturaNum:factura?.numero||'',
-      proveedorId:_ccProvId,
-      creadoEn:new Date().toISOString()
-    });
-    // Actualizar estado factura si aplica
-    if(facturaId&&factura){
-      const totalPagadoFac=(_ccPagos.filter(p=>p.facturaId===facturaId).reduce((a,p)=>a+(parseFloat(p.monto)||0),0))+monto;
-      const estadoFac=totalPagadoFac>=parseFloat(factura.monto)?'pagada':'parcial';
-      await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',_ccProvId,'facturas',facturaId),{estado:estadoFac});
-    }
-    // Registrar en Egresos automáticamente
-    await addDoc(collection(db,'clientes',currentClientUID,'egresos'),{
-      concepto: concepto||`Pago a ${prov?.nombre||'proveedor'}${factura?' - '+factura.numero:''}`,
-      monto, fecha,
-      categoria: prov?.categoria||'Proveedores',
-      proveedorId: _ccProvId,
-      mes: new Date(fecha+'T12:00:00').toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase()),
-      creadoEn: new Date().toISOString()
-    });
-    // Actualizar estadoPago en OCs vinculadas al proveedor
-    try {
-      const ocSnap = await getDocs(collection(db,'clientes',currentClientUID,'ordenesCompra'));
-      const pagSnap = await getDocs(collection(db,'clientes',currentClientUID,'proveedores',_ccProvId,'pagos'));
-      const totalPagado = pagSnap.docs.reduce((a,d)=>a+(parseFloat(d.data().monto)||0),0);
-      for(const ocDoc of ocSnap.docs) {
-        const oc = {id:ocDoc.id,...ocDoc.data()};
-        if(oc.proveedorId !== _ccProvId) continue;
-        const totalOC = parseFloat(oc.total)||0;
-        const nuevoEstado = totalPagado >= totalOC ? 'pagada' : totalPagado > 0 ? 'parcial' : 'pendiente';
-        if(nuevoEstado !== oc.estadoPago) {
-          await updateDoc(doc(db,'clientes',currentClientUID,'ordenesCompra',oc.id),{estadoPago: nuevoEstado});
+window.openModal_newPagoProvModal_extra = async function() {
+  if(!window._ccProvId) return;
+  const errEl = document.getElementById('npp-error');
+  if(errEl) errEl.style.display = 'none';
+  const saved = document.getElementById('npp-saved');
+  if(saved) saved.style.display = 'none';
+  // Fecha hoy
+  const hoy = new Date().toISOString().split('T')[0];
+  const fechaEl = document.getElementById('npp-fecha');
+  if(fechaEl) fechaEl.value = hoy;
+  // Limpiar campos
+  const montoLibre = document.getElementById('npp-monto-libre');
+  if(montoLibre) montoLibre.value = '';
+  const concepto = document.getElementById('npp-concepto');
+  if(concepto) concepto.value = '';
+  try {
+    const snap = await getDoc(doc(db,'clientes',currentClientUID));
+    const data = snap.data() || {};
+    // Info proveedor
+    const provSnap = await getDoc(doc(db,'clientes',currentClientUID,'proveedores',window._ccProvId));
+    const prov = provSnap.exists() ? provSnap.data() : {};
+    const nombreEl = document.getElementById('npp-prov-nombre');
+    if(nombreEl) nombreEl.textContent = prov.nombre || '—';
+    // Número OP correlativo
+    const ops = await getDocs(query(
+      collection(db,'clientes',currentClientUID,'proveedores',window._ccProvId,'movimientos'),
+      where('tipo','==','pago')
+    ));
+    const opNum = String(ops.size + 1).padStart(4,'0');
+    const opNumEl = document.getElementById('npp-op-numero');
+    if(opNumEl) opNumEl.textContent = `OP-${opNum}`;
+    window._opNumero = `OP-${opNum}`;
+    // Cargar facturas pendientes
+    const movsSnap = await getDocs(collection(db,'clientes',currentClientUID,'proveedores',window._ccProvId,'movimientos'));
+    const facturasPendientes = [];
+    let saldoPendiente = 0;
+    movsSnap.forEach(d => {
+      const m = d.data();
+      if(m.tipo === 'factura' && m.estadoPago !== 'pagada' && !m.eliminado) {
+        const pendiente = (m.monto || 0) - (m.montoPagado || 0);
+        if(pendiente > 0) {
+          facturasPendientes.push({ id: d.id, ...m, pendiente });
+          saldoPendiente += pendiente;
         }
       }
-      await loadOrdenesCompra();
-    } catch(e){ console.log('OC update error:', e); }
-    const s=document.getElementById('pago-prov-saved');if(s)s.style.display='block';
-    setTimeout(async()=>{
-      if(s)s.style.display='none';
-      closeModal('newPagoProvModal');
-      ['pago-prov-monto','pago-prov-concepto'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
-      await abrirCuentaCorriente(_ccProvId);
-      await loadClientContabilidad();
-      await loadProveedores();
-    },1500);
-  }catch(e){alert('Error: '+e.message);}
+    });
+    const saldoEl = document.getElementById('npp-saldo-prov');
+    if(saldoEl) saldoEl.textContent = '$' + saldoPendiente.toLocaleString('es-AR');
+    const lista = document.getElementById('npp-facturas-lista');
+    const sinFacturas = document.getElementById('npp-sin-facturas');
+    if(lista) lista.innerHTML = '';
+    if(facturasPendientes.length === 0) {
+      if(lista) lista.style.display = 'none';
+      if(sinFacturas) sinFacturas.style.display = 'block';
+    } else {
+      if(lista) lista.style.display = 'flex';
+      if(sinFacturas) sinFacturas.style.display = 'none';
+      window._facturasOP = facturasPendientes;
+      facturasPendientes.forEach((f, i) => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--cream);border-radius:7px;cursor:pointer;border:.5px solid var(--cream-d);';
+        row.innerHTML = `
+          <input type="checkbox" id="npp-fac-${i}" data-idx="${i}" data-monto="${f.pendiente}" onchange="recalcularTotalOP()" style="width:15px;height:15px;accent-color:#7A8E7D;cursor:pointer;flex-shrink:0;"/>
+          <div style="flex:1;">
+            <div style="font-size:12px;font-weight:500;color:var(--text);">${f.numero || f.descripcion || 'Factura'}</div>
+            <div style="font-size:10px;color:var(--text-l);">${f.fecha ? 'Fecha: '+f.fecha : ''} ${f.estadoPago === 'parcial' ? '· Pago parcial' : ''}</div>
+          </div>
+          <div style="font-size:12px;font-weight:500;color:#C4786A;">$${f.pendiente.toLocaleString('es-AR')}</div>
+        `;
+        row.onclick = (e) => { if(e.target.type !== 'checkbox') { const cb = row.querySelector('input'); cb.checked = !cb.checked; recalcularTotalOP(); } };
+        if(lista) lista.appendChild(row);
+      });
+    }
+    recalcularTotalOP();
+  } catch(e) { console.error(e); }
+};
+window.recalcularTotalOP = function() {
+  let total = 0;
+  document.querySelectorAll('[id^="npp-fac-"]').forEach(cb => {
+    if(cb.checked) total += parseFloat(cb.dataset.monto) || 0;
+  });
+  const libre = parseFloat(document.getElementById('npp-monto-libre')?.value) || 0;
+  total += libre;
+  const totalEl = document.getElementById('npp-total');
+  if(totalEl) totalEl.textContent = '$' + total.toLocaleString('es-AR');
+  window._totalOP = total;
+};
+window.savePagoProveedor = async function() {
+  if(!window._ccProvId || !currentClientUID) return;
+  const errEl = document.getElementById('npp-error');
+  const showErr = (msg) => { if(errEl){ errEl.textContent=msg; errEl.style.display='block'; } };
+  const fecha = document.getElementById('npp-fecha')?.value;
+  const medio = document.getElementById('npp-medio')?.value || 'transferencia';
+  const concepto = document.getElementById('npp-concepto')?.value?.trim() || '';
+  const montoLibre = parseFloat(document.getElementById('npp-monto-libre')?.value) || 0;
+  const total = window._totalOP || 0;
+  if(!fecha) return showErr('Ingresá la fecha de pago');
+  if(total <= 0) return showErr('Seleccioná al menos una factura o ingresá un monto');
+  try {
+    const batch = [];
+    const facturasSeleccionadas = [];
+    // Procesar facturas seleccionadas
+    const checkboxes = document.querySelectorAll('[id^="npp-fac-"]');
+    for(const cb of checkboxes) {
+      if(cb.checked) {
+        const idx = parseInt(cb.dataset.idx);
+        const f = window._facturasOP[idx];
+        facturasSeleccionadas.push(f);
+        const montoPagadoNuevo = (f.montoPagado || 0) + f.pendiente;
+        const nuevoEstado = montoPagadoNuevo >= f.monto ? 'pagada' : 'parcial';
+        await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',window._ccProvId,'movimientos',f.id), {
+          estadoPago: nuevoEstado,
+          montoPagado: montoPagadoNuevo
+        });
+      }
+    }
+    // Guardar OP como movimiento de tipo pago
+    const opData = {
+      tipo: 'pago',
+      numero: window._opNumero || 'OP-0001',
+      monto: total,
+      montoLibre,
+      fecha,
+      medio,
+      concepto,
+      facturasIds: facturasSeleccionadas.map(f => f.id),
+      facturasNombres: facturasSeleccionadas.map(f => f.numero || f.descripcion || 'Factura'),
+      creadoEn: new Date()
+    };
+    const opRef = await addDoc(collection(db,'clientes',currentClientUID,'proveedores',window._ccProvId,'movimientos'), opData);
+    window._ultimaOP = { ...opData, id: opRef.id };
+    // Registrar egreso automático en contabilidad
+    const provSnap = await getDoc(doc(db,'clientes',currentClientUID,'proveedores',window._ccProvId));
+    const provNombre = provSnap.exists() ? provSnap.data().nombre : 'Proveedor';
+    await addDoc(collection(db,'clientes',currentClientUID,'egresos'), {
+      descripcion: `Pago a ${provNombre} — ${window._opNumero}${concepto ? ' · '+concepto : ''}`,
+      monto: total,
+      fecha,
+      categoria: 'Proveedores',
+      medio,
+      proveedorId: window._ccProvId,
+      opId: opRef.id,
+      eliminado: false,
+      creadoEn: new Date()
+    });
+    const saved = document.getElementById('npp-saved');
+    if(saved){ saved.style.display='block'; setTimeout(()=>{ saved.style.display='none'; closeModal('newPagoProvModal'); renderCuentaCorriente(); if(typeof loadContabilidad==='function') loadContabilidad(); }, 1500); }
+  } catch(e) {
+    console.error(e);
+    showErr('Error al registrar el pago: ' + e.message);
+  }
+};
+window.generarPDFOrdenPago = function() {
+  const op = window._ultimaOP || {};
+  const prov = document.getElementById('npp-prov-nombre')?.textContent || 'Proveedor';
+  const negocio = document.getElementById('negocio-nombre-display')?.textContent || '';
+  const { jsPDF } = window.jspdf;
+  const doc2 = new jsPDF({ format: 'a4' });
+  const W = 210, M = 15;
+  // Header
+  doc2.setFillColor(122,142,125);
+  doc2.rect(0,0,W,32,'F');
+  doc2.setTextColor(255,255,255);
+  doc2.setFont('helvetica','bold');
+  doc2.setFontSize(14);
+  doc2.text(negocio || 'MB Strategy', M, 13);
+  doc2.setFontSize(10);
+  doc2.setFont('helvetica','normal');
+  doc2.text('ORDEN DE PAGO', W-M, 13, {align:'right'});
+  doc2.setFontSize(9);
+  doc2.text(`N° ${op.numero || 'OP-0001'}`, W-M, 20, {align:'right'});
+  doc2.text(`Fecha: ${op.fecha || ''}`, W-M, 26, {align:'right'});
+  // Proveedor
+  doc2.setTextColor(60,60,58);
+  doc2.setFontSize(10);
+  doc2.setFont('helvetica','bold');
+  doc2.text('Proveedor:', M, 42);
+  doc2.setFont('helvetica','normal');
+  doc2.text(prov, M+30, 42);
+  doc2.setFont('helvetica','bold');
+  doc2.text('Medio de pago:', M, 50);
+  doc2.setFont('helvetica','normal');
+  doc2.text(op.medio || 'Transferencia', M+38, 50);
+  // Facturas
+  doc2.setFont('helvetica','bold');
+  doc2.text('Facturas canceladas:', M, 62);
+  doc2.setDrawColor(200,200,200);
+  doc2.line(M, 65, W-M, 65);
+  let y = 72;
+  doc2.setFont('helvetica','normal');
+  doc2.setFontSize(9);
+  if(op.facturasNombres && op.facturasNombres.length > 0) {
+    op.facturasNombres.forEach((nombre, i) => {
+      doc2.text(`• ${nombre}`, M+2, y);
+      y += 7;
+    });
+  } else {
+    doc2.text('Sin facturas asociadas', M+2, y);
+    y += 7;
+  }
+  if(op.montoLibre > 0) {
+    doc2.text(`• Monto libre: $${op.montoLibre.toLocaleString('es-AR')}`, M+2, y);
+    y += 7;
+  }
+  // Total
+  y += 5;
+  doc2.setDrawColor(122,142,125);
+  doc2.setLineWidth(0.5);
+  doc2.line(M, y, W-M, y);
+  y += 8;
+  doc2.setFont('helvetica','bold');
+  doc2.setFontSize(12);
+  doc2.text('TOTAL:', M, y);
+  doc2.setTextColor(122,142,125);
+  doc2.text(`$${(op.monto||0).toLocaleString('es-AR')}`, W-M, y, {align:'right'});
+  // Concepto
+  if(op.concepto) {
+    y += 12;
+    doc2.setTextColor(120,120,118);
+    doc2.setFont('helvetica','normal');
+    doc2.setFontSize(9);
+    doc2.text(`Concepto: ${op.concepto}`, M, y);
+  }
+  // Footer
+  doc2.setFillColor(122,142,125);
+  doc2.rect(0,277,W,20,'F');
+  doc2.setTextColor(255,255,255);
+  doc2.setFontSize(8);
+  doc2.setFont('helvetica','normal');
+  doc2.text('MB Strategy · sistema.mbstrategy.com.ar', W/2, 287, {align:'center'});
+  doc2.save(`OP-${op.numero || '0001'}-${prov}.pdf`);
+};
+window.verPDFop = async function(movId) {
+  if(!window._ccProvId || !currentClientUID) return;
+  try {
+    const snap = await getDoc(doc(db,'clientes',currentClientUID,'proveedores',window._ccProvId,'movimientos',movId));
+    if(!snap.exists()) return;
+    window._ultimaOP = { ...snap.data(), id: movId };
+    generarPDFOrdenPago();
+  } catch(e) { console.error(e); }
 };
 
 // ===== CATEGORÍAS DE PROVEEDORES =====
