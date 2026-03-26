@@ -2148,7 +2148,31 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
               <div style="width:8px;height:8px;border-radius:50%;background:#B08A42;flex-shrink:0;"></div>
               <div><div style="font-size:13px;font-weight:500;color:#B08A42;">Pago pendiente</div><div style="font-size:11px;color:var(--text-l);margin-top:2px;">Completá el pago para activar tu plan</div></div>
             </div>
-            <button onclick="continuarPago()" style="width:100%;background:#7A8E7D;color:#fff;border:none;border-radius:8px;padding:11px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;">Continuar con el pago</button>
+            <button onclick="continuarPago()" style="width:100%;background:#7A8E7D;color:#fff;border:none;border-radius:8px;padding:11px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;margin-bottom:14px;">Continuar con el pago</button>
+            <div style="font-size:11px;font-weight:500;color:var(--text-m);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">O elegí otro plan</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+              <div style="background:var(--cream);border-radius:10px;padding:14px;border:.5px solid var(--cream-d);">
+                <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:var(--text);margin-bottom:2px;">Base</div>
+                <div style="font-size:10px;color:var(--text-l);margin-bottom:10px;">Sistema + Embi</div>
+                <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700;color:#7A8E7D;line-height:1;" id="memb-precio-base-p">$—</div>
+                <div style="font-size:10px;color:var(--text-l);margin-bottom:12px;">por mes</div>
+                <div style="font-size:11px;color:var(--text-m);margin-bottom:4px;">✓ Sistema completo</div>
+                <div style="font-size:11px;color:var(--text-m);margin-bottom:4px;">✓ Embi explicativo</div>
+                <div style="font-size:11px;color:var(--text-m);margin-bottom:12px;">✓ Soporte email</div>
+                <button onclick="suscribirseMP('base')" id="memb-btn-base-p" style="width:100%;background:#7A8E7D;color:#fff;border:none;border-radius:7px;padding:9px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;">Suscribirme</button>
+              </div>
+              <div style="background:var(--cream);border-radius:10px;padding:14px;border:1.5px solid #7A8E7D;">
+                <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:var(--text);margin-bottom:2px;">Pro</div>
+                <div style="font-size:10px;color:var(--text-l);margin-bottom:10px;">Sistema + Embi op.</div>
+                <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700;color:#7A8E7D;line-height:1;" id="memb-precio-pro-p">$—</div>
+                <div style="font-size:10px;color:var(--text-l);margin-bottom:12px;">por mes</div>
+                <div style="font-size:11px;color:var(--text-m);margin-bottom:4px;">✓ Todo lo del Base</div>
+                <div style="font-size:11px;color:var(--text-m);margin-bottom:4px;">✓ Embi operativo</div>
+                <div style="font-size:11px;color:var(--text-m);margin-bottom:12px;">✓ Soporte prioritario</div>
+                <button onclick="suscribirseMP('pro')" id="memb-btn-pro-p" style="width:100%;background:#7A8E7D;color:#fff;border:none;border-radius:7px;padding:9px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;">Suscribirme</button>
+              </div>
+            </div>
+            <div style="font-size:10px;color:var(--text-l);text-align:center;line-height:1.5;">Sin período de gracia · El acceso se activa al acreditarse el pago · Podés cancelar en cualquier momento</div>
           </div>
           <!-- Estado: sin plan -->
           <div id="memb-sin-plan" style="display:none;">
@@ -8636,6 +8660,10 @@ window.loadMembresiaSection = async function() {
       const precioPro = document.getElementById('memb-precio-pro');
       if(precioBase && planes.base?.precioPesos) precioBase.textContent = '$' + planes.base.precioPesos.toLocaleString('es-AR');
       if(precioPro && planes.pro?.precioPesos) precioPro.textContent = '$' + planes.pro.precioPesos.toLocaleString('es-AR');
+      const precioBaseP = document.getElementById('memb-precio-base-p');
+      const precioProP = document.getElementById('memb-precio-pro-p');
+      if(precioBaseP && planes.base?.precioPesos) precioBaseP.textContent = '$' + planes.base.precioPesos.toLocaleString('es-AR');
+      if(precioProP && planes.pro?.precioPesos) precioProP.textContent = '$' + planes.pro.precioPesos.toLocaleString('es-AR');
     }
     const memb = clienteSnap.exists() ? (clienteSnap.data().membresia || {}) : {};
     const estado = memb.estado || 'sin-plan';
