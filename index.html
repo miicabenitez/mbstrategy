@@ -6348,7 +6348,7 @@ async function loadInicio() {
       try {
         const necSnap = await getDocs(collection(db,'clientes',currentClientUID,'necesidades'));
         let urgentes = 0;
-        necSnap.forEach(d=>{ if(d.data().estado==='urgente') urgentes++; });
+        necSnap.forEach(d=>{ const data=d.data(); if(data.estado==='urgente' && !data.eliminado) urgentes++; });
         if(urgentes > 0) alertas.push({dot:'#D4A843',txt:urgentes+' necesidad'+(urgentes>1?'es':'')+' urgente'+(urgentes>1?'s':'')});
       } catch(e) {}
 
