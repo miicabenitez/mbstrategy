@@ -9796,6 +9796,21 @@ window.eliminarOC = async function(ocId) {
   if(!currentClientUID) return;
   try {
     await updateDoc(doc(db,'clientes',currentClientUID,'ordenesCompra',ocId), {eliminado:true, eliminadoEn:new Date().toISOString()});
+    // Buscar y eliminar la factura esOC asociada en la CC del proveedor
+    try {
+      const oc = _ordenesCompra.find(o => o.id === ocId);
+      if(oc?.proveedorId) {
+        const factsSnap = await getDocs(collection(db,'clientes',currentClientUID,'proveedores',oc.proveedorId,'facturas'));
+        for(const fd of factsSnap.docs) {
+          const fdata = fd.data();
+          if(fdata.ocId === ocId && fdata.esOC === true) {
+            await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',oc.proveedorId,'facturas',fd.id), {
+              eliminado: true, eliminadoEn: new Date()
+            });
+          }
+        }
+      }
+    } catch(e) { console.error('Error eliminando factura esOC:', e); }
     _ordenesCompra = _ordenesCompra.filter(o=>o.id!==ocId);
     renderOrdenesCompra();
   } catch(e) { alert('Error: '+e.message); }
