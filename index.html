@@ -1990,14 +1990,22 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
           <div class="mc" style="background:#C4786A;border-color:#C4786A;"><div class="ml" style="color:rgba(255,255,255,.75);">Pendiente pago</div><div class="mv" style="color:#fff;" id="oc-kpi-pendiente">$0</div><div class="ms" style="color:rgba(255,255,255,.65);">a pagar</div></div>
           <div class="mc" style="background:#5A8A62;border-color:#5A8A62;"><div class="ml" style="color:rgba(255,255,255,.75);">Pagado</div><div class="mv" style="color:#fff;" id="oc-kpi-pagado">$0</div><div class="ms" style="color:rgba(255,255,255,.65);">este año</div></div>
         </div>
+        <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center;">
+          <input type="text" id="oc-search" class="fi" placeholder="Buscar por N° o proveedor..." style="flex:1;min-width:160px;max-width:260px;padding:8px 12px;margin-top:0;" oninput="filtrarOCsLista()"/>
+          <select id="oc-filtro-recepcion" class="fi" style="width:auto;min-width:120px;padding:8px 10px;margin-top:0;" onchange="filtrarOCsLista()">
+            <option value="">Recepción: Todas</option>
+            <option value="emitida">Emitida</option>
+            <option value="recibida">Recibida</option>
+            <option value="parcial">Parcial</option>
+          </select>
+          <select id="oc-filtro-pago" class="fi" style="width:auto;min-width:120px;padding:8px 10px;margin-top:0;" onchange="filtrarOCsLista()">
+            <option value="">Pago: Todas</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="pagada">Pagada</option>
+            <option value="parcial">Parcial</option>
+          </select>
+        </div>
         <div class="card">
-          <div style="display:grid;grid-template-columns:70px 1fr 100px 100px 60px;gap:10px;padding-bottom:8px;border-bottom:.5px solid var(--cream-d);margin-bottom:4px;">
-            <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;">N°</span>
-            <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;">Proveedor</span>
-            <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;">Fecha</span>
-            <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;text-align:right;">Total</span>
-            <span></span>
-          </div>
           <div id="oc-lista"><div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Sin órdenes de compra.</div></div>
         </div>
       </div>
@@ -9748,7 +9756,18 @@ function renderOrdenesCompra() {
   setEl('bn-oc-pagado','$'+pagado.toLocaleString('es-AR'));
   const el=document.getElementById('oc-lista');if(!el)return;
   if(_ordenesCompra.length===0){el.innerHTML=createEmptyState('documento-sello','Sin órdenes de compra','Las órdenes se generan automáticamente al cotizar una necesidad');return;}
-  el.innerHTML=_ordenesCompra.map(o=>{
+  // Aplicar filtros
+  const searchQ=(document.getElementById('oc-search')?.value||'').toLowerCase();
+  const filtroRec=document.getElementById('oc-filtro-recepcion')?.value||'';
+  const filtroPago=document.getElementById('oc-filtro-pago')?.value||'';
+  let ocsFiltered=_ordenesCompra.filter(o=>{
+    if(searchQ){const num='OC-'+String(o.numero||0).padStart(3,'0');if(!num.toLowerCase().includes(searchQ)&&!(o.proveedor||'').toLowerCase().includes(searchQ))return false;}
+    if(filtroRec&&(o.estadoRecepcion||'emitida')!==filtroRec)return false;
+    if(filtroPago&&(o.estadoPago||'pendiente')!==filtroPago)return false;
+    return true;
+  });
+  if(ocsFiltered.length===0){el.innerHTML='<div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Sin resultados.</div>';return;}
+  el.innerHTML=ocsFiltered.map(o=>{
     const estadoPago=o.estadoPago||'pendiente';
     const estadoRec=o.estadoRecepcion||'emitida';
     const badgeCfg={pagada:{bg:'var(--ok-bg)',tc:'var(--ok)',label:'Pagada'},pendiente:{bg:'var(--err-bg)',tc:'var(--err)',label:'Pendiente pago'},parcial:{bg:'var(--warn-bg)',tc:'var(--warn)',label:'Pago parcial'}};
@@ -9758,16 +9777,29 @@ function renderOrdenesCompra() {
     const btnRecibir = estadoRec==='emitida'
       ? `<button onclick="event.stopPropagation();marcarOCRecibida('${o.id}')" style="background:var(--sage-xl);border:.5px solid var(--sage-light);border-radius:20px;padding:5px 12px;cursor:pointer;font-size:11px;color:var(--sage-dark);font-family:'DM Sans',sans-serif;font-weight:500;white-space:nowrap;">✓ Recibida</button>`
       : `<span style="background:${rc.bg};color:${rc.tc};font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px;white-space:nowrap;">${rc.label}</span>`;
-    return `<div onclick="abrirDetalleOC('${o.id}')" style="display:grid;grid-template-columns:58px 1fr auto auto auto auto;gap:10px;align-items:center;padding:12px 0;border-bottom:.5px solid var(--cream-d);cursor:pointer;border-radius:4px;" onmouseenter="this.style.background='var(--cream)'" onmouseleave="this.style.background=''">
-      <div style="width:42px;height:42px;background:var(--sage-xl);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:var(--sage-dark);">OC-${String(o.numero||0).padStart(3,'0')}</div>
-      <div><div style="font-size:13px;font-weight:500;color:var(--text);">${o.proveedor||'—'}</div><div style="font-size:11px;color:var(--text-l);">${(o.items||[]).length} ítem${(o.items||[]).length!==1?'s':''} · ${o.fecha||'—'}</div></div>
-      <div style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:500;color:var(--text);text-align:right;white-space:nowrap;">$${(parseFloat(o.total)||0).toLocaleString('es-AR')}</div>
+    return `<div onclick="abrirDetalleOC('${o.id}')" style="display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:.5px solid var(--cream-d);cursor:pointer;position:relative;" onmouseenter="this.querySelector('.oc-actions').style.opacity='1'" onmouseleave="this.querySelector('.oc-actions').style.opacity='0'">
+      <div style="width:42px;height:42px;background:var(--sage-xl);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:var(--sage-dark);flex-shrink:0;">OC-${String(o.numero||0).padStart(3,'0')}</div>
+      <div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:500;color:var(--text);">${o.proveedor||'—'}</div><div style="font-size:11px;color:var(--text-l);">${(o.items||[]).length} ítem${(o.items||[]).length!==1?'s':''} · ${o.fecha||'—'}</div></div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:500;color:var(--text);white-space:nowrap;">$${(parseFloat(o.total)||0).toLocaleString('es-AR')}</div>
       <span style="background:${bc.bg};color:${bc.tc};font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px;white-space:nowrap;">${bc.label}</span>
       ${btnRecibir}
-      <button onclick="event.stopPropagation();_ocDetalleActual=_ordenesCompra.find(x=>x.id==='${o.id}');generarPDFOrdenCompra()" style="background:none;border:.5px solid var(--cream-d);border-radius:8px;padding:5px 10px;cursor:pointer;font-size:11px;color:var(--text-m);font-family:'DM Sans',sans-serif;white-space:nowrap;">↓ PDF</button>
+      <div class="oc-actions" style="display:flex;gap:3px;opacity:0;transition:opacity .15s;" onclick="event.stopPropagation()">
+        <button onclick="abrirDetalleOC('${o.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button onclick="eliminarOC('${o.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
+      </div>
     </div>`;
   }).join('');
 }
+window.filtrarOCsLista = function() { renderOrdenesCompra(); };
+window.eliminarOC = async function(ocId) {
+  if(!confirm('¿Eliminar esta orden de compra?')) return;
+  if(!currentClientUID) return;
+  try {
+    await updateDoc(doc(db,'clientes',currentClientUID,'ordenesCompra',ocId), {eliminado:true, eliminadoEn:new Date().toISOString()});
+    _ordenesCompra = _ordenesCompra.filter(o=>o.id!==ocId);
+    renderOrdenesCompra();
+  } catch(e) { alert('Error: '+e.message); }
+};
 
 
 let _ocDetalleActual = null;
@@ -10587,62 +10619,46 @@ window.verDetalleMovCC = async function(tipo, m) {
   if(!contenido) return;
   if(tipo === 'oc_recibida') {
     contenido.innerHTML = `
-      <div style="background:var(--sage-dark);border-radius:10px;padding:14px 16px;margin-bottom:16px;">
-        <div style="font-size:10px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Orden de Compra recibida</div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:24px;color:#fff;font-weight:600;">${m.numero || 'OC'}</div>
+      <div style="background:#7A8E7D;border-radius:10px;padding:14px 16px;margin-bottom:16px;">
+        <div style="font-size:10px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">OC recibida sin factura</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:24px;color:#fff;font-weight:600;">${m.numero||'OC'}</div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:8px;">
-        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid var(--cream-d);">
-          <span style="color:var(--text-l);">Fecha</span><span style="font-weight:500;">${m.fecha||'—'}</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid var(--cream-d);">
-          <span style="color:var(--text-l);">Monto</span><span style="font-weight:500;color:#C4786A;">$${(m.monto||0).toLocaleString('es-AR')}</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid var(--cream-d);">
-          <span style="color:var(--text-l);">Estado factura</span><span style="font-weight:500;color:#B08A42;">Pendiente de factura</span>
-        </div>
-        ${m.descripcion ? `<div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;"><span style="color:var(--text-l);">Descripción</span><span style="font-weight:500;">${m.descripcion}</span></div>` : ''}
+      <div style="display:flex;flex-direction:column;">
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid rgba(0,0,0,.07);"><span style="color:#888780;">Proveedor</span><span style="font-weight:500;">${m.proveedorNombre||'—'}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid rgba(0,0,0,.07);"><span style="color:#888780;">Fecha</span><span style="font-weight:500;">${m.fecha||'—'}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid rgba(0,0,0,.07);"><span style="color:#888780;">Monto</span><span style="font-weight:500;color:#C4786A;">$${(m.monto||0).toLocaleString('es-AR')}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;"><span style="color:#888780;">Estado factura</span><span style="font-weight:500;color:#B08A42;">Pendiente de factura</span></div>
       </div>
-      <div style="margin-top:16px;">
-        <button onclick="closeModal('detalleMovCCModal');abrirDetalleOC('${m.ocId||m.id||''}');" style="width:100%;background:var(--sage-dark);color:#fff;border:none;border-radius:8px;padding:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;">Ver OC completa</button>
+      <div style="margin-top:14px;">
+        <button onclick="closeModal('detalleMovCCModal');abrirDetalleOC('${m.ocId||m.id}');" style="width:100%;display:flex;align-items:center;justify-content:center;gap:6px;background:#F5F6F3;border:.5px solid rgba(0,0,0,.1);border-radius:8px;padding:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:#3d3d3a;cursor:pointer;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Ver OC completa</button>
       </div>
     `;
+    openModal('detalleMovCCModal');
+    return;
   } else if(tipo === 'factura') {
     const estadoColor = m.estadoPago==='pagada' ? '#5A8A62' : m.estadoPago==='parcial' ? '#B08A42' : '#C4786A';
     const estadoLabel = m.estadoPago==='pagada' ? 'Pagada' : m.estadoPago==='parcial' ? 'Pago parcial' : 'Pendiente';
-    let ocNumero = '—';
+    let ocNumero = null;
     if(m.ocId) {
       try {
-        const ocSnap = await getDoc(doc(db,'clientes',currentClientUID,'ordenesCompra',m.ocId));
-        if(ocSnap.exists()) ocNumero = ocSnap.data().numero || m.ocId;
-      } catch(e) { ocNumero = m.ocId; }
+        const ocSnap = await getDoc(doc(db,'clientes',currentClientUID,'ordenes',m.ocId));
+        if(ocSnap.exists()) ocNumero = ocSnap.data().numero || null;
+      } catch(e) {}
     }
     contenido.innerHTML = `
       <div style="background:#4A6A8A;border-radius:10px;padding:14px 16px;margin-bottom:16px;">
         <div style="font-size:10px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Factura</div>
         <div style="font-family:'Cormorant Garamond',serif;font-size:24px;color:#fff;font-weight:600;">${m.numero||m.descripcion||'—'}</div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:8px;">
-        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid var(--cream-d);">
-          <span style="color:var(--text-l);">Fecha</span><span style="font-weight:500;">${m.fecha||'—'}</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid var(--cream-d);">
-          <span style="color:var(--text-l);">Monto total</span><span style="font-weight:500;color:#C4786A;">$${(m.monto||0).toLocaleString('es-AR')}</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid var(--cream-d);">
-          <span style="color:var(--text-l);">Monto pagado</span><span style="font-weight:500;color:#5A8A62;">$${(m.montoPagado||0).toLocaleString('es-AR')}</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid var(--cream-d);">
-          <span style="color:var(--text-l);">Saldo pendiente</span><span style="font-weight:500;color:#C4786A;">$${((m.monto||0)-(m.montoPagado||0)).toLocaleString('es-AR')}</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid var(--cream-d);">
-          <span style="color:var(--text-l);">Estado</span><span style="font-weight:500;color:${estadoColor};">${estadoLabel}</span>
-        </div>
-        ${m.ocId ? `<div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid var(--cream-d);"><span style="color:var(--text-l);">OC asociada</span><span style="font-weight:500;">${ocNumero}</span></div>` : ''}
-        ${m.descripcion ? `<div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;"><span style="color:var(--text-l);">Descripción</span><span style="font-weight:500;">${m.descripcion}</span></div>` : ''}
+      <div style="display:flex;flex-direction:column;">
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid rgba(0,0,0,.07);"><span style="color:#888780;">Fecha</span><span style="font-weight:500;">${m.fecha||'—'}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid rgba(0,0,0,.07);"><span style="color:#888780;">Monto</span><span style="font-weight:500;color:#C4786A;">$${(m.monto||0).toLocaleString('es-AR')}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid rgba(0,0,0,.07);"><span style="color:#888780;">Estado</span><span style="font-weight:500;color:${estadoColor};">${estadoLabel}</span></div>
+        ${ocNumero ? `<div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:8px 0;border-bottom:.5px solid rgba(0,0,0,.07);"><span style="color:#888780;">OC asociada</span><button onclick="closeModal('detalleMovCCModal');abrirDetalleOC('${m.ocId}');" style="display:flex;align-items:center;gap:5px;background:#EEF2EF;border:none;border-radius:6px;padding:3px 10px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;color:#5A8A62;cursor:pointer;">${ocNumero} <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button></div>` : ''}
       </div>
-      <div style="display:flex;gap:8px;margin-top:16px;">
-        <button onclick="closeModal('detalleMovCCModal')" style="flex:1;background:#F5F6F3;color:#C4786A;border:.5px solid #C4786A;border-radius:8px;padding:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;">Eliminar</button>
+      <div style="display:flex;gap:8px;margin-top:14px;padding-top:12px;border-top:.5px solid rgba(0,0,0,.07);">
+        <button onclick="editarFacturaCC('${m.id}')" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;background:#F5F6F3;border:.5px solid rgba(0,0,0,.1);border-radius:8px;padding:9px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;color:#3d3d3a;cursor:pointer;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Editar</button>
+        <button onclick="eliminarFacturaCC('${m.id}')" style="display:flex;align-items:center;justify-content:center;gap:6px;background:#FDF2F0;border:.5px solid #C4786A;border-radius:8px;padding:9px 14px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;color:#C4786A;cursor:pointer;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>Eliminar</button>
       </div>
     `;
   } else if(tipo === 'pago') {
@@ -10674,6 +10690,30 @@ window.verDetalleMovCC = async function(tipo, m) {
     }, 100);
   }
   openModal('detalleMovCCModal');
+};
+
+window.eliminarFacturaCC = async function(movId) {
+  if(!confirm('¿Eliminar esta factura? Esta acción no se puede deshacer.')) return;
+  if(!window._ccProvId || !currentClientUID) return;
+  try {
+    await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',window._ccProvId,'movimientos',movId), {
+      eliminado: true, eliminadoEn: new Date()
+    });
+    closeModal('detalleMovCCModal');
+    renderCuentaCorriente();
+  } catch(e) { console.error(e); alert('Error al eliminar'); }
+};
+window.editarFacturaCC = function(movId) {
+  closeModal('detalleMovCCModal');
+  const m = window._facturasOP?.find(f => f.id === movId);
+  const modal = document.getElementById('newFacturaModal');
+  if(!modal) return;
+  document.getElementById('nf-numero') && (document.getElementById('nf-numero').value = m?.numero||'');
+  document.getElementById('nf-monto') && (document.getElementById('nf-monto').value = m?.monto||'');
+  document.getElementById('nf-fecha') && (document.getElementById('nf-fecha').value = m?.fecha||'');
+  document.getElementById('nf-desc') && (document.getElementById('nf-desc').value = m?.descripcion||'');
+  window._editandoFacturaId = movId;
+  openModal('newFacturaModal');
 };
 
 // ===== CATEGORÍAS DE PROVEEDORES =====
