@@ -10582,7 +10582,7 @@ window.verPDFop = async function(movId) {
     generarPDFOrdenPago();
   } catch(e) { console.error(e); }
 };
-window.verDetalleMovCC = function(tipo, m) {
+window.verDetalleMovCC = async function(tipo, m) {
   const contenido = document.getElementById('detalle-mov-cc-content');
   if(!contenido) return;
   if(tipo === 'oc_recibida') {
@@ -10610,6 +10610,13 @@ window.verDetalleMovCC = function(tipo, m) {
   } else if(tipo === 'factura') {
     const estadoColor = m.estadoPago==='pagada' ? '#5A8A62' : m.estadoPago==='parcial' ? '#B08A42' : '#C4786A';
     const estadoLabel = m.estadoPago==='pagada' ? 'Pagada' : m.estadoPago==='parcial' ? 'Pago parcial' : 'Pendiente';
+    let ocNumero = '—';
+    if(m.ocId) {
+      try {
+        const ocSnap = await getDoc(doc(db,'clientes',currentClientUID,'ordenesCompra',m.ocId));
+        if(ocSnap.exists()) ocNumero = ocSnap.data().numero || m.ocId;
+      } catch(e) { ocNumero = m.ocId; }
+    }
     contenido.innerHTML = `
       <div style="background:#4A6A8A;border-radius:10px;padding:14px 16px;margin-bottom:16px;">
         <div style="font-size:10px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Factura</div>
@@ -10631,8 +10638,11 @@ window.verDetalleMovCC = function(tipo, m) {
         <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid var(--cream-d);">
           <span style="color:var(--text-l);">Estado</span><span style="font-weight:500;color:${estadoColor};">${estadoLabel}</span>
         </div>
-        ${m.ocId ? `<div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid var(--cream-d);"><span style="color:var(--text-l);">OC asociada</span><span style="font-weight:500;">${m.ocId}</span></div>` : ''}
+        ${m.ocId ? `<div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid var(--cream-d);"><span style="color:var(--text-l);">OC asociada</span><span style="font-weight:500;">${ocNumero}</span></div>` : ''}
         ${m.descripcion ? `<div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;"><span style="color:var(--text-l);">Descripción</span><span style="font-weight:500;">${m.descripcion}</span></div>` : ''}
+      </div>
+      <div style="display:flex;gap:8px;margin-top:16px;">
+        <button onclick="closeModal('detalleMovCCModal')" style="flex:1;background:#F5F6F3;color:#C4786A;border:.5px solid #C4786A;border-radius:8px;padding:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;">Eliminar</button>
       </div>
     `;
   } else if(tipo === 'pago') {
