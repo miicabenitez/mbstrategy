@@ -10969,7 +10969,7 @@ function renderProveedoresModule() {
 
   // También sumar lo de OC por proveedor
   (window._ordenesCompra||[]).forEach(o=>{
-    if(o.proveedor && o.total){
+    if(o.proveedor && o.total && o.proveedorId && _proveedores.find(p=>p.id===o.proveedorId)){
       gastosPorProv[o.proveedor]=(gastosPorProv[o.proveedor]||0)+(parseFloat(o.total)||0);
     }
   });
