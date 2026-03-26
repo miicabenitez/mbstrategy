@@ -9736,7 +9736,7 @@ async function loadOrdenesCompra() {
   try{
     const snap=await getDocs(collection(db,'clientes',currentClientUID,'ordenesCompra'));
     _ordenesCompra=[];
-    snap.forEach(d=>_ordenesCompra.push({id:d.id,...d.data()}));
+    snap.forEach(d=>{ const data=d.data(); if(!data.eliminado) _ordenesCompra.push({id:d.id,...data}); });
     _ordenesCompra.sort((a,b)=>(b.numero||0)-(a.numero||0));
     renderOrdenesCompra();
   }catch(e){console.log(e);}
@@ -10702,7 +10702,7 @@ window.eliminarFacturaCC = async function(movId) {
   if(!confirm('¿Eliminar esta factura? Esta acción no se puede deshacer.')) return;
   if(!window._ccProvId || !currentClientUID) return;
   try {
-    await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',window._ccProvId,'movimientos',movId), {
+    await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',window._ccProvId,'facturas',movId), {
       eliminado: true, eliminadoEn: new Date()
     });
     closeModal('detalleMovCCModal');
