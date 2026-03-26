@@ -9764,6 +9764,7 @@ async function loadOrdenesCompra() {
     _ordenesCompra=[];
     snap.forEach(d=>{ const data=d.data(); if(!data.eliminado) _ordenesCompra.push({id:d.id,...data}); });
     _ordenesCompra.sort((a,b)=>(b.numero||0)-(a.numero||0));
+    window._ordenesCompra = _ordenesCompra;
     renderOrdenesCompra();
   }catch(e){console.log(e);}
 }
@@ -10199,6 +10200,7 @@ window.abrirCuentaCorriente = async function(provId) {
   const prov = _proveedores.find(p=>p.id===provId);
   if(!prov) return;
   _ccProvId = provId;
+  window._ccProvId = provId;
 
   // Asegurar que _ordenesCompra esté cargado
   if(!window._ordenesCompra || window._ordenesCompra.length===0) {
@@ -10270,6 +10272,8 @@ window.abrirCuentaCorriente = async function(provId) {
 };
 
 window.cerrarCCView = function() {
+  _ccProvId = null;
+  window._ccProvId = null;
   document.getElementById('prov-cc-view').style.display='none';
   const lv = document.getElementById('prov-lista-view');
   if(lv) lv.style.display='block';
@@ -10928,6 +10932,7 @@ async function loadProveedores() {
     ]);
     _proveedores = []; provSnap.forEach(d=>{ const data=d.data(); if(!data.eliminado) _proveedores.push({id:d.id,...data}); });
     _proveedores.sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||''));
+    window._proveedores = _proveedores;
     // Cargar OC para tener datos de gasto por proveedor
     window._ordenesCompra = window._ordenesCompra || [];
     ocSnap.forEach(d=>{ if(!window._ordenesCompra.find(o=>o.id===d.id)) window._ordenesCompra.push({id:d.id,...d.data()}); });
