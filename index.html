@@ -8755,14 +8755,19 @@ window.continuarPago = async function() {
     if(initPoint) window.location.href = initPoint;
   } catch(e) { console.error(e); }
 };
-window.cancelarMembresia = async function() {
-  if(!confirm('¿Confirmás que querés cancelar tu suscripción? Perderás el acceso al finalizar el período.')) return;
-  if(!currentClientUID) return;
-  try {
-    await updateDoc(doc(db,'clientes',currentClientUID), { 'membresia.estado': 'cancelado', 'membresia.canceladoEn': new Date() });
-    alert('Suscripción cancelada. Tu acceso se mantendrá hasta fin del período.');
-    loadMembresiaSection();
-  } catch(e) { console.error(e); }
+window.cancelarMembresia = function() {
+  showConfirm(
+    '¿Confirmás que querés cancelar tu suscripción? Perderás el acceso al finalizar el período.',
+    async () => {
+      if(!currentClientUID) return;
+      try {
+        await updateDoc(doc(db,'clientes',currentClientUID), { 'membresia.estado': 'cancelado', 'membresia.canceladoEn': new Date() });
+        alert('Suscripción cancelada. Tu acceso se mantendrá hasta fin del período.');
+        loadMembresiaSection();
+      } catch(e) { console.error(e); }
+    },
+    'Cancelar suscripción'
+  );
 };
 
 // ─── TOPBAR THREE-DOTS MENU ───
@@ -9791,29 +9796,30 @@ function renderOrdenesCompra() {
   }).join('');
 }
 window.filtrarOCsLista = function() { renderOrdenesCompra(); };
-window.eliminarOC = async function(ocId) {
-  if(!confirm('¿Eliminar esta orden de compra?')) return;
-  if(!currentClientUID) return;
-  try {
-    await updateDoc(doc(db,'clientes',currentClientUID,'ordenesCompra',ocId), {eliminado:true, eliminadoEn:new Date().toISOString()});
-    // Buscar y eliminar la factura esOC asociada en la CC del proveedor
+window.eliminarOC = function(ocId) {
+  showConfirm('¿Eliminar esta orden de compra?', async () => {
+    if(!currentClientUID) return;
     try {
-      const oc = _ordenesCompra.find(o => o.id === ocId);
-      if(oc?.proveedorId) {
-        const factsSnap = await getDocs(collection(db,'clientes',currentClientUID,'proveedores',oc.proveedorId,'facturas'));
-        for(const fd of factsSnap.docs) {
-          const fdata = fd.data();
-          if(fdata.ocId === ocId && fdata.esOC === true) {
-            await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',oc.proveedorId,'facturas',fd.id), {
-              eliminado: true, eliminadoEn: new Date()
-            });
+      await updateDoc(doc(db,'clientes',currentClientUID,'ordenesCompra',ocId), {eliminado:true, eliminadoEn:new Date().toISOString()});
+      // Buscar y eliminar la factura esOC asociada en la CC del proveedor
+      try {
+        const oc = _ordenesCompra.find(o => o.id === ocId);
+        if(oc?.proveedorId) {
+          const factsSnap = await getDocs(collection(db,'clientes',currentClientUID,'proveedores',oc.proveedorId,'facturas'));
+          for(const fd of factsSnap.docs) {
+            const fdata = fd.data();
+            if(fdata.ocId === ocId && fdata.esOC === true) {
+              await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',oc.proveedorId,'facturas',fd.id), {
+                eliminado: true, eliminadoEn: new Date()
+              });
+            }
           }
         }
-      }
-    } catch(e) { console.error('Error eliminando factura esOC:', e); }
-    _ordenesCompra = _ordenesCompra.filter(o=>o.id!==ocId);
-    renderOrdenesCompra();
-  } catch(e) { alert('Error: '+e.message); }
+      } catch(e) { console.error('Error eliminando factura esOC:', e); }
+      _ordenesCompra = _ordenesCompra.filter(o=>o.id!==ocId);
+      renderOrdenesCompra();
+    } catch(e) { alert('Error: '+e.message); }
+  }, 'Eliminar orden de compra');
 };
 
 
