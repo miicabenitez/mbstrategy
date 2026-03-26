@@ -10718,24 +10718,28 @@ window.verDetalleMovCC = async function(tipo, m) {
 };
 
 window.eliminarFacturaCC = async function(movId) {
-  if(!window._ccProvId || !currentClientUID || !movId) return;
+  if(!_ccProvId || !currentClientUID || !movId) {
+    console.error('eliminarFacturaCC: faltan datos', {_ccProvId, currentClientUID, movId});
+    return;
+  }
   try {
-    await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',window._ccProvId,'facturas',movId), {
+    await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',_ccProvId,'facturas',movId), {
       eliminado: true, eliminadoEn: new Date()
     });
     closeModal('detalleMovCCModal');
     renderCuentaCorriente();
-  } catch(e) { console.error(e); alert('Error al eliminar'); }
+  } catch(e) { console.error('Error eliminarFacturaCC:', e); }
 };
 window.editarFacturaCC = function(movId) {
   closeModal('detalleMovCCModal');
-  const m = window._facturasOP?.find(f => f.id === movId);
-  const modal = document.getElementById('newFacturaModal');
-  if(!modal) return;
-  document.getElementById('nf-numero') && (document.getElementById('nf-numero').value = m?.numero||'');
-  document.getElementById('nf-monto') && (document.getElementById('nf-monto').value = m?.monto||'');
-  document.getElementById('nf-fecha') && (document.getElementById('nf-fecha').value = m?.fecha||'');
-  document.getElementById('nf-desc') && (document.getElementById('nf-desc').value = m?.descripcion||'');
+  const m = _ccFacturas.find(f => f.id === movId) || window._facturasOP?.find(f => f.id === movId);
+  if(!document.getElementById('newFacturaModal')) return;
+  const el = (id) => document.getElementById(id);
+  if(el('fac-numero')) el('fac-numero').value = m?.numero||'';
+  if(el('fac-monto')) el('fac-monto').value = m?.monto||'';
+  if(el('fac-fecha')) el('fac-fecha').value = m?.fecha||'';
+  if(el('fac-desc')) el('fac-desc').value = m?.desc||m?.descripcion||'';
+  if(el('fac-oc')) el('fac-oc').value = m?.ocId||'';
   window._editandoFacturaId = movId;
   openModal('newFacturaModal');
 };
