@@ -219,6 +219,10 @@ exports.handler = async (event) => {
         await pendienteSnap.ref.update({ estado: 'error', error: createErr.message });
         return { statusCode: 500, headers: HEADERS, body: JSON.stringify({ error: 'Error creando cuenta' }) };
       }
+    } else if (pendienteSnap.exists) {
+      // Pendiente existe pero no autorizado aún — no caer al flujo interno
+      console.log(`Pendiente ${externalRef} existe, estado MP: ${sub.status} — esperando autorización`);
+      return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ ok: true, msg: 'Pendiente existe, esperando autorización' }) };
     }
 
     // ── FLUJO INTERNO (cliente existente) ──
