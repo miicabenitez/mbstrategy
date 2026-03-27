@@ -36,7 +36,6 @@ async function crearSuscripcionMP(plan, planData, email, externalRef, freeTrial)
     body: JSON.stringify({
       reason: `MB Strategy — Plan ${plan === 'base' ? 'Base' : 'Pro'}`,
       external_reference: externalRef,
-      payer_email: email,
       auto_recurring: autoRecurring,
       back_url: 'https://sistema.mbstrategy.com.ar',
       status: 'pending'
