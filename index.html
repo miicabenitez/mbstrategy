@@ -9909,6 +9909,8 @@ window.marcarOCRecibida = async function(ocId) {
     try {
       const oc = _ordenesCompra.find(o=>o.id===ocId);
       if(!oc) return;
+      if(oc.estadoRecepcion === 'recibida') { alert('Esta OC ya fue marcada como recibida.'); return; }
+      if(oc.eliminado) return;
       const hoy = new Date().toISOString().split('T')[0];
 
       // 1. Actualizar estado de recepción en la OC
@@ -10532,7 +10534,9 @@ window.recalcularTotalOP = function() {
   window._totalOP = total;
 };
 window.savePagoProveedor = async function() {
-  if(!window._ccProvId || !currentClientUID) return;
+  if(window._savingPago) return;
+  window._savingPago = true;
+  if(!window._ccProvId || !currentClientUID) { window._savingPago = false; return; }
   const errEl = document.getElementById('npp-error');
   const showErr = (msg) => { if(errEl){ errEl.textContent=msg; errEl.style.display='block'; } };
   const fecha = document.getElementById('npp-fecha')?.value;
@@ -10594,6 +10598,8 @@ window.savePagoProveedor = async function() {
   } catch(e) {
     console.error(e);
     showErr('Error al registrar el pago: ' + e.message);
+  } finally {
+    window._savingPago = false;
   }
 };
 window.generarPDFOrdenPago = function() {
