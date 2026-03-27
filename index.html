@@ -341,7 +341,7 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
     <div class="login-title">Bienvenido/a</div>
     <div class="login-sub">Estructura, control y decisiones claras.</div>
     <div class="fg"><label class="fl">Email</label><input type="email" class="fi" id="le" placeholder="tu@email.com"/></div>
-    <div class="fg"><label class="fl">Contraseña</label><input type="password" class="fi" id="lp2" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+    <div class="fg"><label class="fl">Contraseña</label><div style="position:relative;"><input type="password" class="fi" id="lp2" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" style="padding-right:40px;"/><button type="button" onclick="(function(){var i=document.getElementById('lp2');i.type=i.type==='password'?'text':'password';this.textContent=i.type==='password'?'👁':'🙈';}).call(this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:15px;color:var(--text-l);padding:0;line-height:1;">👁</button></div></div>
     <button class="btn-login" onclick="doLogin()">Ingresar</button>
     <div class="login-err" id="lerr"></div>
   </div>
@@ -2167,8 +2167,30 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
             <div style="font-size:12px;color:var(--text-m);padding:6px 0;border-bottom:.5px solid var(--cream-d);display:flex;justify-content:space-between;"><span>Plan</span><span id="memb-plan-nombre" style="font-weight:500;color:var(--text);"></span></div>
             <div style="font-size:12px;color:var(--text-m);padding:6px 0;border-bottom:.5px solid var(--cream-d);display:flex;justify-content:space-between;"><span>Próximo cobro</span><span id="memb-proximo-cobro" style="font-weight:500;color:var(--text);"></span></div>
             <div style="font-size:12px;color:var(--text-m);padding:6px 0;display:flex;justify-content:space-between;"><span>Monto mensual</span><span id="memb-monto" style="font-weight:500;color:var(--text);"></span></div>
-            <div style="margin-top:14px;">
+            <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px;">
+              <button onclick="toggleCambiarPlan()" style="width:100%;background:var(--sage-xl);color:var(--sage-dark);border:.5px solid var(--sage-dark);border-radius:8px;padding:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;">Cambiar plan</button>
               <button onclick="cancelarMembresia()" style="width:100%;background:#F5F6F3;color:#C4786A;border:.5px solid #C4786A;border-radius:8px;padding:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;">Cancelar suscripción</button>
+            </div>
+            <!-- Panel cambio de plan (oculto por defecto) -->
+            <div id="memb-cambiar-plan" style="display:none;margin-top:14px;padding:14px;background:var(--cream);border-radius:10px;border:.5px solid var(--cream-d);">
+              <div style="font-size:11px;font-weight:500;color:var(--text-m);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Elegí tu nuevo plan</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+                <div style="background:var(--white);border-radius:9px;padding:12px;border:.5px solid var(--cream-d);">
+                  <div style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:var(--text);margin-bottom:2px;">Base</div>
+                  <div style="font-size:10px;color:var(--text-l);margin-bottom:8px;">Sistema + Embi</div>
+                  <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:#7A8E7D;" id="memb-cambio-precio-base">$—</div>
+                  <div style="font-size:10px;color:var(--text-l);margin-bottom:10px;">por mes</div>
+                  <button onclick="cambiarPlan('base')" style="width:100%;background:#7A8E7D;color:#fff;border:none;border-radius:7px;padding:8px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;">Cambiar a Base</button>
+                </div>
+                <div style="background:var(--white);border-radius:9px;padding:12px;border:1.5px solid #7A8E7D;">
+                  <div style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:var(--text);margin-bottom:2px;">Pro</div>
+                  <div style="font-size:10px;color:var(--text-l);margin-bottom:8px;">Sistema + Embi op.</div>
+                  <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:#7A8E7D;" id="memb-cambio-precio-pro">$—</div>
+                  <div style="font-size:10px;color:var(--text-l);margin-bottom:10px;">por mes</div>
+                  <button onclick="cambiarPlan('pro')" style="width:100%;background:#7A8E7D;color:#fff;border:none;border-radius:7px;padding:8px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;">Cambiar a Pro</button>
+                </div>
+              </div>
+              <div style="font-size:11px;color:var(--text-l);">Al cambiar de plan se generará una nueva suscripción en Mercado Pago. Tu plan actual se cancelará.</div>
             </div>
           </div>
           <!-- Estado: pendiente -->
@@ -3658,9 +3680,11 @@ window.showClientUI = async function(email, clientData) {
       setTimeout(() => openModal('cambioPassModal'), 1000);
     }
     if(window.embiShow) window.embiShow(true);
-    // Arrancar en Inicio por defecto
-    const firstClientTab = document.querySelector('#cNav .nt');
-    if(firstClientTab) window.showClientMod('inicio', firstClientTab);
+    // Restaurar último módulo activo (o Inicio por defecto)
+    const savedMod = (() => { try { return localStorage.getItem('mbst_lastmod'); } catch(e) { return null; } })();
+    const modToShow = savedMod || 'inicio';
+    const modBtn = document.querySelector(`#cNav .nt[onclick*="'${modToShow}'"]`) || document.querySelector('#cNav .nt');
+    window.showClientMod(modToShow, modBtn);
 };
 
 async function loadAdminData() {
@@ -6302,10 +6326,13 @@ async function loadInicio() {
     });
     const ingresos = [...ingManuales,...cobrosComoIng];
 
-    // Mes actual
+    // Mes actual — usar mismo formato que poblarMeses ("Marzo 2026") para que coincida con el campo mes guardado
     const hoy = new Date();
-    const mesActual = hoy.toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase());
-    const mesAnterior = new Date(hoy.getFullYear(),hoy.getMonth()-1,1).toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase());
+    const MESES_DASH = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    const mesActual = `${MESES_DASH[hoy.getMonth()]} ${hoy.getFullYear()}`;
+    const mesAntIdx = hoy.getMonth() === 0 ? 11 : hoy.getMonth() - 1;
+    const mesAntAnio = hoy.getMonth() === 0 ? hoy.getFullYear() - 1 : hoy.getFullYear();
+    const mesAnterior = `${MESES_DASH[mesAntIdx]} ${mesAntAnio}`;
 
     const ingMes = ingresos.filter(i=>(i.mes||'').toLowerCase()===mesActual.toLowerCase());
     const egMes = egresos.filter(e=>(e.mes||'').toLowerCase()===mesActual.toLowerCase());
@@ -6351,8 +6378,10 @@ async function loadInicio() {
       if(!window._clientPresupuestos || window._clientPresupuestos.length === 0) await loadClientPresupuestos();
       const aprobados = (window._clientPresupuestos||[]).filter(p=>p.estado==='Aprobado');
       const totalAprobado = aprobados.reduce((s,p)=>s+getPresupMonto(p),0);
-      const totalCobros = cobrosComoIng.reduce((s,c)=>s+(parseFloat(c.monto)||0),0);
-      porCobrar = Math.max(0, totalAprobado - totalCobros);
+      // Alineado con renderCkKpis: usar totalCobrado de mcClientes
+      if(!window._mcClientes || window._mcClientes.length===0) { try { await loadMcModule(); } catch(e){} }
+      const totalCobrado = (window._mcClientes||[]).reduce((a,c)=>a+(parseFloat(c.totalCobrado)||0),0);
+      porCobrar = Math.max(0, totalAprobado - totalCobrado);
     } catch(e) { console.log(e); }
     setEl('inicio-por-cobrar','$'+porCobrar.toLocaleString('es-AR'));
 
@@ -6374,8 +6403,8 @@ async function loadInicio() {
       try {
         const necSnap = await getDocs(collection(db,'clientes',currentClientUID,'necesidades'));
         let urgentes = 0;
-        necSnap.forEach(d=>{ const data=d.data(); if(data.estado==='urgente' && !data.eliminado) urgentes++; });
-        if(urgentes > 0) alertas.push({dot:'#D4A843',txt:urgentes+' necesidad'+(urgentes>1?'es':'')+' urgente'+(urgentes>1?'s':'')});
+        necSnap.forEach(d=>{ const data=d.data(); if(data.estado==='urgente' && !data.eliminado && data.estadoCotizacion !== 'cotizada') urgentes++; });
+        if(urgentes > 0) alertas.push({dot:'#D4A843',txt:urgentes+' necesidad'+(urgentes>1?'es':'')+' urgente'+(urgentes>1?'s':'')+' sin OC'});
       } catch(e) {}
 
       // Próxima reunión
@@ -8731,9 +8760,12 @@ window.loadMembresiaSection = async function() {
       const el = document.getElementById(id);
       if(el) el.style.display = 'none';
     });
-    if(estado === 'activo') {
+    if(estado === 'activo' || estado === 'trial') {
       const el = document.getElementById('memb-activo');
       if(el) el.style.display = 'block';
+      // Ocultar panel cambio de plan al recargar
+      const cambPanel = document.getElementById('memb-cambiar-plan');
+      if(cambPanel) cambPanel.style.display = 'none';
       const planNombre = document.getElementById('memb-plan-nombre');
       if(planNombre) planNombre.textContent = memb.plan === 'pro' ? 'Pro' : 'Base';
       const proximoCobro = document.getElementById('memb-proximo-cobro');
@@ -8794,6 +8826,34 @@ window.cancelarMembresia = function() {
       } catch(e) { console.error(e); }
     },
     'Cancelar suscripción'
+  );
+};
+window.toggleCambiarPlan = function() {
+  const panel = document.getElementById('memb-cambiar-plan');
+  if(!panel) return;
+  const visible = panel.style.display !== 'none';
+  panel.style.display = visible ? 'none' : 'block';
+  if(!visible) {
+    // Poblar precios al abrir
+    const base = document.getElementById('memb-cambio-precio-base');
+    const pro = document.getElementById('memb-cambio-precio-pro');
+    const baseRef = document.getElementById('memb-precio-base');
+    const proRef = document.getElementById('memb-precio-pro');
+    if(base && baseRef) base.textContent = baseRef.textContent;
+    if(pro && proRef) pro.textContent = proRef.textContent;
+  }
+};
+window.cambiarPlan = async function(nuevoPlan) {
+  if(!currentClientUID) return;
+  showConfirm(
+    `¿Confirmar cambio al plan ${nuevoPlan === 'pro' ? 'Pro' : 'Base'}? Se generará una nueva suscripción y tu plan actual quedará cancelado.`,
+    async () => {
+      try {
+        await updateDoc(doc(db,'clientes',currentClientUID), { 'membresia.estado': 'cancelado', 'membresia.canceladoEn': new Date() });
+        await window.suscribirseMP(nuevoPlan);
+      } catch(e) { console.error(e); alert('Error al cambiar de plan: ' + e.message); }
+    },
+    `Cambiar a ${nuevoPlan === 'pro' ? 'Pro' : 'Base'}`
   );
 };
 
@@ -10429,18 +10489,28 @@ window.saveFactura = async function() {
     creadoEn: new Date().toISOString()
   };
   try{
-    // Si hay OC asociada, buscar si ya existe una entrada esOC:true para reemplazarla
+    // Si hay OC asociada, actualizar el movimiento existente en CC (esOC:true → esOC:false)
     let reemplazado = false;
     if(data.ocId) {
-      const facSnap = await getDocs(collection(db,'clientes',currentClientUID,'proveedores',_ccProvId,'facturas'));
-      for(const fd of facSnap.docs) {
-        const fdata = fd.data();
-        if(fdata.ocId === data.ocId && fdata.esOC === true && !fdata.eliminado) {
-          await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',_ccProvId,'facturas',fd.id), {
-            numero: data.numero, monto: data.monto, fecha: data.fecha, desc: data.desc, estado: data.estado, esOC: false
-          });
-          reemplazado = true;
-          break;
+      // Usar lista en memoria primero (más rápido y consistente con la vista actual)
+      const existente = (_ccOCsComoFactura||[]).find(f => f.ocId === data.ocId && !f.eliminado);
+      if(existente) {
+        await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',_ccProvId,'facturas',existente.id), {
+          numero: data.numero, monto: data.monto, fecha: data.fecha, desc: data.desc, estado: data.estado, esOC: false
+        });
+        reemplazado = true;
+      } else {
+        // Fallback: buscar en Firestore (por si la vista no estaba abierta)
+        const facSnap = await getDocs(collection(db,'clientes',currentClientUID,'proveedores',_ccProvId,'facturas'));
+        for(const fd of facSnap.docs) {
+          const fdata = fd.data();
+          if(fdata.ocId === data.ocId && fdata.esOC === true && !fdata.eliminado) {
+            await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',_ccProvId,'facturas',fd.id), {
+              numero: data.numero, monto: data.monto, fecha: data.fecha, desc: data.desc, estado: data.estado, esOC: false
+            });
+            reemplazado = true;
+            break;
+          }
         }
       }
     }
@@ -11976,6 +12046,8 @@ window.backToAdmin = function() {
 
 // Navegación cliente — 5 módulos en topbar
 window.showClientMod = function(mod, btn) {
+  // Persistir módulo activo para restaurar en recarga
+  try { localStorage.setItem('mbst_lastmod', mod); } catch(e) {}
   // Activar tab en topbar
   document.querySelectorAll('#cNav .nt').forEach(b => b.classList.remove('active'));
   if(btn) btn.classList.add('active');
