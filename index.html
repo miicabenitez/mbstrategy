@@ -10209,7 +10209,7 @@ window.abrirCuentaCorriente = async function(provId) {
     try {
       const ocSnap = await getDocs(collection(db,'clientes',currentClientUID,'ordenesCompra'));
       window._ordenesCompra = [];
-      ocSnap.forEach(d=>window._ordenesCompra.push({id:d.id,...d.data()}));
+      ocSnap.forEach(d=>{ const data=d.data(); if(!data.eliminado) window._ordenesCompra.push({id:d.id,...data}); });
     } catch(e){ window._ordenesCompra = []; }
   }
 
@@ -10287,7 +10287,7 @@ function renderCuentaCorriente() {
 
   // OC recibidas de este proveedor = deuda generada
   const ocsRecibidas = (_ordenesCompra||[]).filter(o=>
-    o.proveedorId===_ccProvId && (o.estadoRecepcion==='recibida'||o.estadoRecepcion==='parcial')
+    o.proveedorId===_ccProvId && (o.estadoRecepcion==='recibida'||o.estadoRecepcion==='parcial') && !o.eliminado
   );
   const totalDeOCs = ocsRecibidas.reduce((a,o)=>a+(parseFloat(o.totalRecibido||o.total)||0),0);
 
@@ -10987,7 +10987,7 @@ function renderProveedoresModule() {
 
   // También sumar lo de OC por proveedor
   (window._ordenesCompra||[]).forEach(o=>{
-    if(o.proveedor && o.total && o.proveedorId && _proveedores.find(p=>p.id===o.proveedorId)){
+    if(o.proveedor && o.total && o.proveedorId && !o.eliminado && _proveedores.find(p=>p.id===o.proveedorId)){
       gastosPorProv[o.proveedor]=(gastosPorProv[o.proveedor]||0)+(parseFloat(o.total)||0);
     }
   });
