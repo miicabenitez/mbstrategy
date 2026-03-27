@@ -10261,12 +10261,12 @@ window.abrirCuentaCorriente = async function(provId) {
       getDocs(collection(db,'clientes',currentClientUID,'proveedores',provId,'pagos'))
     ]);
     const todasFacturas = [];
-    facSnap.forEach(d=>todasFacturas.push({id:d.id,...d.data()}));
+    facSnap.forEach(d=>{ const data=d.data(); if(!data.eliminado) todasFacturas.push({id:d.id,...data}); });
     todasFacturas.sort((a,b)=>(a.fecha||'')>(b.fecha||'')?-1:1);
     _ccFacturas = todasFacturas.filter(f => !f.esOC);
     _ccOCsComoFactura = todasFacturas.filter(f => f.esOC === true);
     _ccPagos = [];
-    pagSnap.forEach(d=>_ccPagos.push({id:d.id,...d.data()}));
+    pagSnap.forEach(d=>{ const data=d.data(); if(!data.eliminado) _ccPagos.push({id:d.id,...data}); });
     _ccPagos.sort((a,b)=>(a.fecha||'')>(b.fecha||'')?-1:1);
     renderCuentaCorriente();
   }catch(e){console.log(e);}
