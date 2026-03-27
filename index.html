@@ -10551,10 +10551,7 @@ window.openModal_newPagoProvModal_extra = async function() {
     const nombreEl = document.getElementById('npp-prov-nombre');
     if(nombreEl) nombreEl.textContent = prov.nombre || '—';
     // Número OP correlativo
-    const ops = await getDocs(query(
-      collection(db,'clientes',currentClientUID,'proveedores',window._ccProvId,'movimientos'),
-      where('tipo','==','pago')
-    ));
+    const ops = await getDocs(collection(db,'clientes',currentClientUID,'proveedores',window._ccProvId,'pagos'));
     const opNum = String(ops.size + 1).padStart(4,'0');
     const opNumEl = document.getElementById('npp-op-numero');
     if(opNumEl) opNumEl.textContent = `OP-${opNum}`;
@@ -10658,13 +10655,16 @@ window.savePagoProveedor = async function() {
       facturasNombres: facturasSeleccionadas.map(f => f.numero || f.descripcion || 'Factura'),
       creadoEn: new Date()
     };
-    const opRef = await addDoc(collection(db,'clientes',currentClientUID,'proveedores',window._ccProvId,'movimientos'), opData);
+    const opRef = await addDoc(collection(db,'clientes',currentClientUID,'proveedores',window._ccProvId,'pagos'), opData);
     window._ultimaOP = { ...opData, id: opRef.id };
+    _ccPagos.push({ ...opData, id: opRef.id });
+    _ccPagos.sort((a,b)=>(a.fecha||'')>(b.fecha||'')?-1:1);
     // Registrar egreso automático en contabilidad
     const provSnap = await getDoc(doc(db,'clientes',currentClientUID,'proveedores',window._ccProvId));
     const provNombre = provSnap.exists() ? provSnap.data().nombre : 'Proveedor';
     await addDoc(collection(db,'clientes',currentClientUID,'egresos'), {
-      descripcion: `Pago a ${provNombre} — ${window._opNumero}${concepto ? ' · '+concepto : ''}`,
+      concepto: `Pago a ${provNombre} — ${window._opNumero}${concepto ? ' · '+concepto : ''}`,
+      proveedorNombre: provNombre,
       monto: total,
       fecha,
       categoria: 'Proveedores',
