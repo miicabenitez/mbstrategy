@@ -3654,6 +3654,9 @@ window.showClientUI = async function(email, clientData) {
       const negNombre = document.getElementById('negocio-nombre-display');
       if(negNombre) negNombre.textContent = clientData.negocioNombre || clientData.nombre || 'Mi negocio';
     }
+    if(clientData && clientData.primerLogin === true) {
+      setTimeout(() => openModal('cambioPassModal'), 1000);
+    }
     if(window.embiShow) window.embiShow(true);
     // Arrancar en Inicio por defecto
     const firstClientTab = document.querySelector('#cNav .nt');
@@ -11793,6 +11796,43 @@ window.hideAppError = function() {
 
 
 
+window.guardarNuevaPass = async function() {
+  const pass1 = document.getElementById('cp-pass1').value;
+  const pass2 = document.getElementById('cp-pass2').value;
+  const errEl = document.getElementById('cp-error');
+  if(errEl) errEl.style.display = 'none';
+  if(!pass1 || pass1.length < 8) {
+    if(errEl) { errEl.textContent = 'La contraseña debe tener al menos 8 caracteres.'; errEl.style.display = 'block'; }
+    return;
+  }
+  if(pass1 !== pass2) {
+    if(errEl) { errEl.textContent = 'Las contraseñas no coinciden.'; errEl.style.display = 'block'; }
+    return;
+  }
+  try {
+    const user = window._auth?.currentUser;
+    if(!user) return;
+    const { updatePassword } = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js');
+    await updatePassword(user, pass1);
+    await window._updateDoc(window._doc(window.db, 'clientes', window.currentClientUID), { primerLogin: false });
+    const s = document.getElementById('cp-saved');
+    if(s) s.style.display = 'block';
+    setTimeout(() => {
+      if(s) s.style.display = 'none';
+      closeModal('cambioPassModal');
+    }, 2000);
+  } catch(e) {
+    if(errEl) {
+      if(e.code === 'auth/requires-recent-login') {
+        errEl.textContent = 'Tu sesión expiró. Cerrá sesión, volvé a entrar con la contraseña temporal, y cambiala inmediatamente.';
+      } else {
+        errEl.textContent = 'Error: ' + e.message;
+      }
+      errEl.style.display = 'block';
+    }
+  }
+};
+
 window.showConfirm = function(msg, onOk, title='¿Confirmar acción?') {
   document.getElementById('confirmTitle').textContent = title;
   document.getElementById('confirmMsg').textContent = msg;
@@ -12957,6 +12997,29 @@ window.embiShow=embiShow;
   <div class="md" style="max-width:480px;">
     <button class="mc2" onclick="closeModal('detalleMovCCModal')">×</button>
     <div id="detalle-mov-cc-content"></div>
+  </div>
+</div>
+
+<div class="mo" id="cambioPassModal">
+  <div class="md" style="max-width:440px;padding:0;overflow:hidden;">
+    <div style="background:var(--topbar);padding:22px 24px 18px;">
+      <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">MB Strategy</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;color:#fff;">Cambiá tu contraseña</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.7);margin-top:6px;">Por seguridad, elegí una contraseña nueva para tu cuenta.</div>
+    </div>
+    <div style="padding:22px 24px;">
+      <div class="fg"><label class="fl">Nueva contraseña</label>
+        <input type="password" class="fi" id="cp-pass1" placeholder="Mínimo 8 caracteres"/>
+      </div>
+      <div class="fg"><label class="fl">Repetir contraseña</label>
+        <input type="password" class="fi" id="cp-pass2" placeholder="Repetí tu contraseña"/>
+      </div>
+      <div id="cp-error" style="display:none;color:var(--err);font-size:12px;margin-bottom:10px;"></div>
+      <div class="br2">
+        <button class="bp" onclick="guardarNuevaPass()">Guardar contraseña</button>
+      </div>
+      <div class="saved-msg" id="cp-saved">✓ Contraseña actualizada</div>
+    </div>
   </div>
 </div>
 
