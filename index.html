@@ -7342,7 +7342,7 @@ window.openMcDetalle = async function(id) {
   try {
     const cobrosSnap = await getDocs(collection(db,'clientes',currentClientUID,'misClientes',id,'cobros'));
     let cobradoReal = 0;
-    cobrosSnap.forEach(d => cobradoReal += parseFloat(d.data().monto||0));
+    cobrosSnap.forEach(d => { const data=d.data(); if(!data.eliminado) cobradoReal += parseFloat(data.monto||0); });
     // Sincronizar si está desincronizado
     if(Math.abs(cobradoReal - (parseFloat(c.totalCobrado)||0)) > 0.01) {
       await updateDoc(doc(db,'clientes',currentClientUID,'misClientes',id),{totalCobrado:cobradoReal});
