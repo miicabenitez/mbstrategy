@@ -81,7 +81,7 @@ exports.handler = async (event) => {
       const mpData = await mpRes.json();
       if (!mpRes.ok || !mpData.init_point) {
         console.error('MP API error (público):', JSON.stringify(mpData));
-        return { statusCode: 502, headers: HEADERS, body: JSON.stringify({ error: 'Error al crear suscripción en Mercado Pago' }) };
+        return { statusCode: 502, headers: HEADERS, body: JSON.stringify({ error: 'Error al crear suscripción en Mercado Pago', detail: mpData }) };
       }
       await pendienteRef.update({ mpSubscriptionId: mpData.id });
       return {
@@ -109,7 +109,7 @@ exports.handler = async (event) => {
     const mpData = await mpRes.json();
     if (!mpRes.ok || !mpData.init_point) {
       console.error('MP API error:', JSON.stringify(mpData));
-      return { statusCode: 502, headers: HEADERS, body: JSON.stringify({ error: 'Error al crear suscripción en Mercado Pago' }) };
+      return { statusCode: 502, headers: HEADERS, body: JSON.stringify({ error: 'Error al crear suscripción en Mercado Pago', detail: mpData }) };
     }
     await db.collection('clientes').doc(clienteId).update({
       'membresia.plan': plan,
