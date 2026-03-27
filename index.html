@@ -5281,7 +5281,7 @@ function renderCalc() {
         tooltip: {
           callbacks: {
             label: (ctx) => {
-              const pct = Math.round((ctx.raw / precio) * 100);
+              const pct = precio > 0 ? Math.round((ctx.raw / precio) * 100) : 0;
               return ` ${ctx.label}: $${Math.round(ctx.raw).toLocaleString('es-AR')} (${pct}%)`;
             }
           }
@@ -8057,6 +8057,7 @@ window.updateMcPresupEstado = async function(id, estado) {
 };
 
 window.exportarPresupuestoPDF = async function(presupId) {
+  if(!currentClientUID) { alert('Error: no se pudo identificar el cliente.'); return; }
   // Buscar en memoria primero, luego en Firestore si no se encuentra
   let p = [...(_mcPresupuestos||[]), ...(window._clientPresupuestos||[])].find(x=>x.id===presupId);
   if(!p) {
@@ -11873,6 +11874,8 @@ window.showATab = function(tab, btn) {
 var _embiReports = [], _embiFilter = 'todos';
 
 window.loadEmbiReports = async function() {
+  const aArea = document.getElementById('aArea');
+  if(!aArea || aArea.style.display === 'none') return;
   try {
     const snap = await getDocs(collection(db,'embiReports'));
     _embiReports = [];
