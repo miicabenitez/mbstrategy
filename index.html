@@ -10340,9 +10340,10 @@ function renderCuentaCorriente() {
     .map(o=>({
       tipo:'oc_recibida', id:o.id, fecha:o.fechaRecepcion||o.fecha,
       monto:o.totalRecibido||o.total, nombre:o.proveedor,
+      proveedorNombre: o.proveedor || (_proveedores.find(p=>p.id===o.proveedorId)?.nombre) || '—',
       numero:`OC-${String(o.numero||0).padStart(3,'0')}`, ocId:o.id
     }));
-  const movsOCsFactura = _ccOCsComoFactura.map(f=>({...f, tipo:'oc_recibida', fecha:f.fecha||''}));
+  const movsOCsFactura = _ccOCsComoFactura.map(f=>({...f, tipo:'oc_recibida', fecha:f.fecha||'', proveedorNombre:f.proveedor||f.desc||'—'}));
 
   const movs = [...movsFacturas, ...movsPagos, ...ocsMovs, ...movsOCsFactura]
     .sort((a,b)=>(a.fecha||'')>(b.fecha||'')?-1:1);
@@ -10414,6 +10415,7 @@ window.saveFactura = async function() {
     numero, monto, fecha,
     ocId: document.getElementById('fac-oc').value||'',
     desc: document.getElementById('fac-desc').value,
+    esOC: false,
     estado: 'pendiente',
     creadoEn: new Date().toISOString()
   };
