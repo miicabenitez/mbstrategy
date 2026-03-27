@@ -9031,7 +9031,9 @@ window.saveProdCompra = async function() {
   const id = document.getElementById('pc-edit-id').value;
   const nombre = document.getElementById('pc-nombre').value.trim();
   if(!nombre){alert('Ingresá un nombre');return;}
-  const data = { nombre, categoria:document.getElementById('pc-cat').value, unidad:document.getElementById('pc-unidad').value, descripcion:document.getElementById('pc-desc').value, creadoEn:new Date().toISOString() };
+  const catVal = document.getElementById('pc-cat').value;
+  if(!catVal){alert('Seleccioná una categoría');return;}
+  const data = { nombre, categoria:catVal, unidad:document.getElementById('pc-unidad').value, descripcion:document.getElementById('pc-desc').value, creadoEn:new Date().toISOString() };
   try {
     if(id) await updateDoc(doc(db,'clientes',currentClientUID,'prodCompra',id),data);
     else await addDoc(collection(db,'clientes',currentClientUID,'prodCompra'),data);
@@ -9956,7 +9958,7 @@ window.marcarOCRecibida = async function(ocId) {
 
 window.generarPDFOrdenCompra = async function() {
   const oc = _ocDetalleActual;
-  if(!oc) return;
+  if(!oc) { alert('No se pudo cargar la OC para generar el PDF.'); return; }
 
   if(!window.jspdf) {
     await new Promise((res,rej)=>{
@@ -10606,7 +10608,8 @@ window.savePagoProveedor = async function() {
   }
 };
 window.generarPDFOrdenPago = function() {
-  const op = window._ultimaOP || {};
+  if(!window._ultimaOP) { alert('No hay datos de la orden de pago.'); return; }
+  const op = window._ultimaOP;
   const prov = document.getElementById('npp-prov-nombre')?.textContent || 'Proveedor';
   const negocio = document.getElementById('negocio-nombre-display')?.textContent || '';
   const { jsPDF } = window.jspdf;
