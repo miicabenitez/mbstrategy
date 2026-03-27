@@ -25,7 +25,12 @@ function verificarFirma(event) {
   const hmac = crypto.createHmac('sha256', process.env.MP_WEBHOOK_SECRET);
   hmac.update(manifest);
   const expected = hmac.digest('hex');
-  return expected === parts.v1;
+  if (!parts.v1) return false;
+  try {
+    return crypto.timingSafeEqual(Buffer.from(expected, 'utf8'), Buffer.from(parts.v1, 'utf8'));
+  } catch(e) {
+    return false;
+  }
 }
 
 function generarPassword() {
@@ -67,6 +72,23 @@ exports.handler = async (event) => {
   try {
     const body = JSON.parse(event.body || '{}');
     const { type, data } = body;
+
+    // Deduplicación: verificar si este webhook ya fue procesado
+    // TODO: cleanup — agregar TTL de 7 días via Cloud Function scheduled o batch delete
+    const xRequestId = event.headers['x-request-id'];
+    if (xRequestId) {
+      const dedupSnap = await db.collection('webhookProcessed').doc(xRequestId).get();
+      if (dedupSnap.exists) {
+        console.log('Webhook duplicado ignorado:', xRequestId);
+        return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ ok: true, msg: 'Ya procesado (duplicado)' }) };
+      }
+      await db.collection('webhookProcessed').doc(xRequestId).set({
+        timestamp: FieldValue.serverTimestamp(),
+        type: type || 'unknown',
+        dataId: data?.id || null
+      });
+    }
+
     if (type !== 'subscription_preapproval') {
       return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ ok: true, msg: 'Evento ignorado' }) };
     }
