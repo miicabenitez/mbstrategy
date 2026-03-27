@@ -159,7 +159,7 @@ body{font-family:'DM Sans',sans-serif;background:#F5F4EF;color:#2C2C2C;min-heigh
         <input type="email" id="wl-email" placeholder="tu@email.com"/>
       </div>
       <div class="waitlist-msg" id="wl-msg">Listo, te avisamos cuando esté disponible.</div>
-      <button class="btn-biz" onclick="joinWaitlist()">Avisame cuando esté</button>
+      <button class="btn-biz" id="wl-btn" onclick="joinWaitlist()" style="cursor:pointer;">Avisame cuando esté</button>
     </div>
   </div>
 </div>
@@ -281,12 +281,17 @@ window.submitCheckout = async function() {
 };
 
 window.joinWaitlist = async function() {
-  const email = document.getElementById('wl-email').value.trim();
-  if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return;
+  const input = document.getElementById('wl-email');
+  const email = (input?.value||'').trim();
+  const btn = document.getElementById('wl-btn');
+  if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if(input) { input.style.borderColor='#C4786A'; setTimeout(()=>{ input.style.borderColor=''; },2000); }
+    return;
+  }
   try {
     await addDoc(collection(db, 'waitlist'), { email, plan: 'business', creadoEn: new Date().toISOString() });
-    document.getElementById('wl-msg').style.display = 'block';
-    document.getElementById('wl-email').value = '';
+    if(input) input.value = '';
+    if(btn) { btn.textContent='✓ Te avisamos cuando esté'; btn.disabled=true; btn.style.background='#EBF0EC'; btn.style.color='#5A8A62'; btn.style.cursor='default'; }
   } catch(e) { console.error(e); }
 };
 </script>
