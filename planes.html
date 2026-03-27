@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Planes — MB Strategy</title>
+<meta name="description" content="Elegí el plan perfecto para tu negocio. Sistema de gestión + Embi, tu asistente IA.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%237A8E7D'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='serif' font-size='18' fill='white'%3EM%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:#F5F4EF;color:#2C2C2C;min-height:100vh;}
+.header{background:#7A8E7D;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;}
+.logo{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:500;color:#fff;letter-spacing:2px;}
+.logo span{color:rgba(255,255,255,.7);}
+.tagline{font-size:11px;color:rgba(255,255,255,.65);}
+.hero{text-align:center;padding:48px 24px 32px;}
+.hero h1{font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:400;color:#2C2C2C;line-height:1.15;margin-bottom:12px;}
+.hero p{font-size:15px;color:#4A5A4E;max-width:500px;margin:0 auto;}
+.plans{display:flex;gap:16px;max-width:960px;margin:0 auto 48px;padding:0 24px;align-items:flex-start;}
+.plan-card{flex:1;background:#fff;border-radius:16px;padding:28px 24px;border:.5px solid rgba(0,0,0,.08);position:relative;}
+.plan-card.featured{border:2px solid #7A8E7D;box-shadow:0 4px 20px rgba(122,142,125,.15);}
+.badge-pop{position:absolute;top:-12px;right:20px;background:#5A8A62;color:#fff;font-size:10px;font-weight:500;padding:4px 12px;border-radius:20px;letter-spacing:.5px;}
+.badge-coming{position:absolute;top:-12px;right:20px;background:#B08A42;color:#fff;font-size:10px;font-weight:500;padding:4px 12px;border-radius:20px;}
+.plan-name{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:#2C2C2C;margin-bottom:4px;}
+.plan-desc{font-size:12px;color:#4A5A4E;margin-bottom:16px;}
+.plan-price{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:600;color:#7A8E7D;line-height:1;}
+.plan-price-sub{font-size:12px;color:#888780;margin-bottom:4px;}
+.plan-period{font-size:12px;color:#888780;margin-bottom:20px;}
+.plan-features{list-style:none;margin-bottom:24px;}
+.plan-features li{font-size:13px;color:#3E4E42;padding:5px 0;display:flex;align-items:flex-start;gap:8px;}
+.plan-features li::before{content:'✓';color:#5A8A62;font-weight:600;flex-shrink:0;}
+.plan-features li.highlight{font-weight:500;color:#7A8E7D;}
+.btn-primary{width:100%;padding:12px;background:#7A8E7D;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;transition:background .15s;}
+.btn-primary:hover{background:#6B7A60;}
+.btn-outline{width:100%;padding:12px;background:transparent;color:#7A8E7D;border:1.5px solid #7A8E7D;border-radius:10px;font-size:14px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s;}
+.btn-outline:hover{background:#7A8E7D;color:#fff;}
+.btn-disabled{width:100%;padding:12px;background:#D0CFC9;color:#888780;border:none;border-radius:10px;font-size:14px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:default;}
+.waitlist-row{display:flex;gap:8px;margin-top:12px;}
+.waitlist-row input{flex:1;padding:10px 12px;border:.5px solid #D0CFC9;border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;}
+.waitlist-row input:focus{border-color:#7A8E7D;}
+.waitlist-row button{padding:10px 16px;background:#B08A42;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;}
+.waitlist-msg{font-size:11px;color:#5A8A62;margin-top:6px;display:none;}
+.mo{position:fixed;inset:0;background:rgba(26,42,30,.6);display:none;align-items:center;justify-content:center;z-index:500;backdrop-filter:blur(3px);}
+.mo.open{display:flex;}
+.md{background:#fff;border-radius:18px;padding:28px;width:90%;max-width:420px;position:relative;}
+.md-close{position:absolute;top:12px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;color:#888780;}
+.md h2{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;margin-bottom:6px;}
+.md p{font-size:13px;color:#4A5A4E;margin-bottom:18px;}
+.fg{margin-bottom:12px;}
+.fl{font-size:10px;font-weight:500;color:#3E4E42;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:5px;}
+.fi{width:100%;padding:11px 13px;border:.5px solid #D0CFC9;border-radius:9px;font-size:14px;font-family:'DM Sans',sans-serif;color:#2C2C2C;background:#F5F4EF;outline:none;}
+.fi:focus{border-color:#7A8E7D;background:#fff;}
+.md-error{background:#F5ECEC;color:#C4786A;font-size:12px;padding:9px 12px;border-radius:7px;margin-top:10px;display:none;}
+.md-loading{display:none;text-align:center;padding:20px;color:#7A8E7D;font-size:13px;}
+.footer{background:#fff;border-top:.5px solid #D0CFC9;padding:32px 24px;text-align:center;}
+.footer-name{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:500;color:#2C2C2C;}
+.footer-role{font-size:11px;color:#888780;margin-bottom:12px;}
+.footer-links{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:12px;}
+.footer-links a{font-size:12px;color:#7A8E7D;text-decoration:none;}
+.footer-links a:hover{text-decoration:underline;}
+.footer-wa{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#888780;text-decoration:none;margin-top:8px;}
+.footer-wa:hover{color:#5A8A62;}
+@media(max-width:768px){
+  .plans{flex-direction:column;align-items:stretch;}
+  .hero h1{font-size:28px;}
+  .header{flex-direction:column;gap:4px;}
+}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="logo">MB <span>STRATEGY</span></div>
+  <div class="tagline">Tu sistema de gestión inteligente</div>
+</div>
+
+<div class="hero">
+  <h1>Elegí el plan perfecto para tu negocio</h1>
+  <p>Todo lo que necesitás para gestionar finanzas, ventas, compras y más. Con Embi, tu asistente IA.</p>
+</div>
+
+<div class="plans">
+  <!-- BASE -->
+  <div class="plan-card featured">
+    <div class="badge-pop">7 días gratis</div>
+    <div class="plan-name">Base</div>
+    <div class="plan-desc">Sistema + Embi explicativo</div>
+    <div class="plan-price">$105.000</div>
+    <div class="plan-price-sub">~USD $80</div>
+    <div class="plan-period">por mes</div>
+    <ul class="plan-features">
+      <li>Sistema de gestión completo</li>
+      <li>Finanzas (ingresos, egresos, reportes)</li>
+      <li>Ventas (clientes, presupuestos, catálogo)</li>
+      <li>Compras (proveedores, OC, cuenta corriente)</li>
+      <li>Herramientas (calculador, indicadores)</li>
+      <li class="highlight">Embi explicativo (tu asistente IA)</li>
+    </ul>
+    <button class="btn-primary" onclick="openCheckout('base')">Empezar prueba gratis</button>
+  </div>
+
+  <!-- PRO -->
+  <div class="plan-card">
+    <div class="plan-name">Pro</div>
+    <div class="plan-desc">Sistema + Embi operativo</div>
+    <div class="plan-price">$157.000</div>
+    <div class="plan-price-sub">~USD $120</div>
+    <div class="plan-period">por mes</div>
+    <ul class="plan-features">
+      <li>Todo lo del plan Base</li>
+      <li class="highlight">Embi operativo (ejecuta acciones por vos)</li>
+      <li class="highlight">Vos le pedís, Embi lo hace</li>
+      <li>Soporte prioritario</li>
+    </ul>
+    <button class="btn-outline" onclick="openCheckout('pro')">Suscribirme</button>
+  </div>
+
+  <!-- BUSINESS -->
+  <div class="plan-card">
+    <div class="badge-coming">Próximamente</div>
+    <div class="plan-name">Business</div>
+    <div class="plan-desc">Para equipos</div>
+    <div class="plan-price" style="color:#B08A42;">Próximamente</div>
+    <div class="plan-period">&nbsp;</div>
+    <ul class="plan-features">
+      <li>Todo lo del plan Pro</li>
+      <li>Multi-usuario con roles</li>
+      <li>Ideal para equipos</li>
+    </ul>
+    <div class="waitlist-row">
+      <input type="email" id="wl-email" placeholder="tu@email.com"/>
+      <button onclick="joinWaitlist()">Avisame</button>
+    </div>
+    <div class="waitlist-msg" id="wl-msg">Listo, te avisamos cuando esté disponible.</div>
+    <button class="btn-disabled" style="margin-top:12px;" disabled>Próximamente</button>
+  </div>
+</div>
+
+<!-- Modal pre-checkout -->
+<div class="mo" id="checkoutModal">
+  <div class="md">
+    <button class="md-close" onclick="closeCheckout()">×</button>
+    <h2 id="checkout-title">Empezar con Base</h2>
+    <p id="checkout-sub">Completá tus datos para continuar al pago.</p>
+    <div id="checkout-form">
+      <div class="fg"><label class="fl">Email</label><input type="email" class="fi" id="co-email" placeholder="tu@email.com"/></div>
+      <div class="fg"><label class="fl">Nombre completo</label><input type="text" class="fi" id="co-nombre" placeholder="Nombre y apellido"/></div>
+      <div class="fg"><label class="fl">Nombre del negocio</label><input type="text" class="fi" id="co-negocio" placeholder="Ej: Estudio Creativo Luna"/></div>
+      <button class="btn-primary" onclick="submitCheckout()" id="co-btn">Continuar al pago</button>
+      <div class="md-error" id="co-error"></div>
+    </div>
+    <div class="md-loading" id="co-loading">Preparando tu suscripción...</div>
+  </div>
+</div>
+
+<div class="footer">
+  <div class="footer-name">Micaela Benitez</div>
+  <div class="footer-role">Founder & CEO · micaela@mbstrategy.com.ar</div>
+  <div class="footer-links">
+    <a href="/terminos.html" target="_blank">Términos y Condiciones</a>
+    <a href="/privacidad.html" target="_blank">Política de Privacidad</a>
+  </div>
+  <a href="https://wa.me/5491176553318" target="_blank" class="footer-wa">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492l4.625-1.466A11.96 11.96 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818c-2.168 0-4.19-.578-5.937-1.588l-.425-.253-2.744.87.873-2.688-.276-.44A9.77 9.77 0 012.182 12c0-5.418 4.4-9.818 9.818-9.818S21.818 6.582 21.818 12 17.418 21.818 12 21.818z"/></svg>
+    WhatsApp
+  </a>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+const app = initializeApp({apiKey:"AIzaSyCZr_VAn5fumCzkrfxb1oK9-W2_cADnGTI",authDomain:"mb-strategy.firebaseapp.com",projectId:"mb-strategy",storageBucket:"mb-strategy.firebasestorage.app",messagingSenderId:"1055393429525",appId:"1:1055393429525:web:0f40fa5869ef5aa8bb761c"});
+const db = getFirestore(app);
+
+let selectedPlan = 'base';
+
+window.openCheckout = function(plan) {
+  selectedPlan = plan;
+  const title = document.getElementById('checkout-title');
+  const sub = document.getElementById('checkout-sub');
+  if(plan === 'base') {
+    title.textContent = 'Empezar con Base';
+    sub.textContent = '7 días gratis, después $105.000/mes. Completá tus datos.';
+  } else {
+    title.textContent = 'Suscribirme a Pro';
+    sub.textContent = '$157.000/mes. Completá tus datos para continuar.';
+  }
+  document.getElementById('checkout-form').style.display = 'block';
+  document.getElementById('co-loading').style.display = 'none';
+  document.getElementById('co-error').style.display = 'none';
+  document.getElementById('checkoutModal').classList.add('open');
+};
+
+window.closeCheckout = function() {
+  document.getElementById('checkoutModal').classList.remove('open');
+};
+
+window.submitCheckout = async function() {
+  const email = document.getElementById('co-email').value.trim();
+  const nombre = document.getElementById('co-nombre').value.trim();
+  const negocioNombre = document.getElementById('co-negocio').value.trim();
+  const errEl = document.getElementById('co-error');
+  errEl.style.display = 'none';
+  if(!email || !nombre || !negocioNombre) {
+    errEl.textContent = 'Completá todos los campos.';
+    errEl.style.display = 'block';
+    return;
+  }
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    errEl.textContent = 'Ingresá un email válido.';
+    errEl.style.display = 'block';
+    return;
+  }
+  document.getElementById('checkout-form').style.display = 'none';
+  document.getElementById('co-loading').style.display = 'block';
+  try {
+    const res = await fetch('/.netlify/functions/mp-subscription', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, nombre, negocioNombre, plan: selectedPlan })
+    });
+    const data = await res.json();
+    if(!res.ok || !data.init_point) throw new Error(data.error || 'Error al procesar');
+    window.location.href = data.init_point;
+  } catch(e) {
+    document.getElementById('checkout-form').style.display = 'block';
+    document.getElementById('co-loading').style.display = 'none';
+    errEl.textContent = e.message;
+    errEl.style.display = 'block';
+  }
+};
+
+window.joinWaitlist = async function() {
+  const email = document.getElementById('wl-email').value.trim();
+  if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return;
+  try {
+    await addDoc(collection(db, 'waitlist'), { email, plan: 'business', creadoEn: new Date().toISOString() });
+    document.getElementById('wl-msg').style.display = 'block';
+    document.getElementById('wl-email').value = '';
+  } catch(e) { console.error(e); }
+};
+</script>
+</body>
+</html>
