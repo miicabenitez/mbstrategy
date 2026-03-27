@@ -121,8 +121,6 @@ exports.handler = async (event) => {
     // ── Verificar si es flujo público (pendientes_suscripcion) ──
     const pendienteSnap = await db.collection('pendientes_suscripcion').doc(externalRef).get();
 
-    console.log('Webhook:', { type, subscriptionId, mpStatus: sub.status, externalRef, pendienteExists: pendienteSnap.exists });
-
     if (pendienteSnap.exists && ['authorized', 'pending'].includes(sub.status)) {
       // ── FLUJO PÚBLICO: crear cuenta nueva ──
       const pendiente = pendienteSnap.data();
