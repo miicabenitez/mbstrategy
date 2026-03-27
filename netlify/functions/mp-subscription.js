@@ -6,25 +6,88 @@ if (!getApps().length) {
 }
 const db = getFirestore();
 const HEADERS = {
-  'Access-Control-Allow-Origin': 'https://sistema.mbstrategy.com.ar',
+  'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   'Content-Type': 'application/json'
 };
+
+async function crearSuscripcionMP(plan, planData, email, externalRef, freeTrial) {
+  const autoRecurring = {
+    frequency: 1,
+    frequency_type: 'months',
+    transaction_amount: planData.precioPesos,
+    currency_id: 'ARS'
+  };
+  if (freeTrial) {
+    autoRecurring.free_trial = { frequency: 7, frequency_type: 'days' };
+  }
+  const mpRes = await fetch('https://api.mercadopago.com/preapproval', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${process.env.MP_ACCESS_TOKEN}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      reason: `MB Strategy — Plan ${plan === 'base' ? 'Base' : 'Pro'}`,
+      external_reference: externalRef,
+      payer_email: email,
+      auto_recurring: autoRecurring,
+      back_url: 'https://sistema.mbstrategy.com.ar',
+      status: 'pending'
+    })
+  });
+  return mpRes;
+}
+
 exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers: HEADERS, body: '' };
   if (event.httpMethod !== 'POST') return { statusCode: 405, headers: HEADERS, body: JSON.stringify({ error: 'Método no permitido' }) };
   try {
-    const { clienteId, plan } = JSON.parse(event.body || '{}');
-    if (!clienteId || !['base', 'pro'].includes(plan)) {
-      return { statusCode: 400, headers: HEADERS, body: JSON.stringify({ error: 'Datos inválidos' }) };
+    const body = JSON.parse(event.body || '{}');
+    const { clienteId, email, nombre, negocioNombre, plan } = body;
+
+    if (!['base', 'pro'].includes(plan)) {
+      return { statusCode: 400, headers: HEADERS, body: JSON.stringify({ error: 'Plan inválido' }) };
     }
+
     const configSnap = await db.collection('config').doc('planes').get();
     if (!configSnap.exists) {
-      return { statusCode: 500, headers: HEADERS, body: JSON.stringify({ error: 'Configuración de planes no encontrada. Creá el documento config/planes en Firestore.' }) };
+      return { statusCode: 500, headers: HEADERS, body: JSON.stringify({ error: 'Configuración de planes no encontrada.' }) };
     }
     const planData = configSnap.data()[plan];
     if (!planData?.precioPesos) {
       return { statusCode: 500, headers: HEADERS, body: JSON.stringify({ error: `Precio del plan "${plan}" no configurado` }) };
+    }
+
+    // ── FLUJO PÚBLICO (desde planes.html) ──
+    if (email && !clienteId) {
+      if (!nombre) {
+        return { statusCode: 400, headers: HEADERS, body: JSON.stringify({ error: 'Nombre requerido' }) };
+      }
+      // Guardar en pendientes
+      const pendienteRef = await db.collection('pendientes_suscripcion').add({
+        email, nombre, negocioNombre: negocioNombre || '',
+        plan, estado: 'pendiente',
+        creadoEn: FieldValue.serverTimestamp()
+      });
+      const freeTrial = plan === 'base';
+      const mpRes = await crearSuscripcionMP(plan, planData, email, pendienteRef.id, freeTrial);
+      const mpData = await mpRes.json();
+      if (!mpRes.ok || !mpData.init_point) {
+        console.error('MP API error (público):', JSON.stringify(mpData));
+        return { statusCode: 502, headers: HEADERS, body: JSON.stringify({ error: 'Error al crear suscripción en Mercado Pago' }) };
+      }
+      await pendienteRef.update({ mpSubscriptionId: mpData.id });
+      return {
+        statusCode: 200,
+        headers: HEADERS,
+        body: JSON.stringify({ init_point: mpData.init_point })
+      };
+    }
+
+    // ── FLUJO INTERNO (desde Mi cuenta en el sistema) ──
+    if (!clienteId) {
+      return { statusCode: 400, headers: HEADERS, body: JSON.stringify({ error: 'Datos inválidos' }) };
     }
     const clienteSnap = await db.collection('clientes').doc(clienteId).get();
     if (!clienteSnap.exists) {
@@ -34,26 +97,9 @@ exports.handler = async (event) => {
     if (cliente.membresia?.estado === 'activo') {
       return { statusCode: 409, headers: HEADERS, body: JSON.stringify({ error: 'El cliente ya tiene una suscripción activa' }) };
     }
-    const mpRes = await fetch('https://api.mercadopago.com/preapproval', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.MP_ACCESS_TOKEN}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        reason: `MB Strategy — Plan ${plan === 'base' ? 'Base' : 'Pro'}`,
-        external_reference: clienteId,
-        payer_email: cliente.email,
-        auto_recurring: {
-          frequency: 1,
-          frequency_type: 'months',
-          transaction_amount: planData.precioPesos,
-          currency_id: 'ARS'
-        },
-        back_url: 'https://sistema.mbstrategy.com.ar',
-        status: 'pending'
-      })
-    });
+    // Free trial solo si es base y no tiene historial de suscripción
+    const freeTrial = plan === 'base' && !cliente.membresia?.activoDesde;
+    const mpRes = await crearSuscripcionMP(plan, planData, cliente.email, clienteId, freeTrial);
     const mpData = await mpRes.json();
     if (!mpRes.ok || !mpData.init_point) {
       console.error('MP API error:', JSON.stringify(mpData));
