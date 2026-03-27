@@ -8979,6 +8979,7 @@ async function loadProductosCompra() {
     _prodCompra = [];
     snap.forEach(d => { const data=d.data(); if(!data.eliminado) _prodCompra.push({id:d.id,...data}); });
     _prodCompra.sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||''));
+    window._prodCompra = _prodCompra;
     renderProductosCompra(_prodCompra);
   } catch(e){ console.log(e); }
 }
@@ -11138,6 +11139,13 @@ window.saveProveedor = async function(id) {
 };
 
 window.deleteProveedor = function(id) {
+  const ocsActivas = (window._ordenesCompra||[]).filter(o => o.proveedorId === id && !o.eliminado);
+  if(ocsActivas.length > 0) {
+    showConfirm('Este proveedor tiene ' + ocsActivas.length + ' orden(es) de compra activa(s). ¿Eliminarlo de todos modos?', async () => {
+      try { await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',id), {eliminado:true, eliminadoEn:new Date().toISOString()}); await loadProveedores(); } catch(e){}
+    }, 'Eliminar de todos modos');
+    return;
+  }
   showConfirm('¿Eliminar este proveedor?',async()=>{
     try{await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',id), {eliminado:true, eliminadoEn:new Date().toISOString()});await loadProveedores();}catch(e){}
   },'Eliminar proveedor');
