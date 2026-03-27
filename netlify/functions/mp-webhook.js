@@ -123,12 +123,22 @@ exports.handler = async (event) => {
         // 1. Generar contraseña temporal
         const password = generarPassword();
 
-        // 2. Crear usuario en Firebase Auth
-        const userRecord = await auth.createUser({
-          email: pendiente.email,
-          password: password,
-          displayName: pendiente.nombre
-        });
+        // 2. Crear usuario en Firebase Auth (o recuperar existente)
+        let userRecord;
+        try {
+          userRecord = await auth.createUser({
+            email: pendiente.email,
+            password: password,
+            displayName: pendiente.nombre
+          });
+        } catch(authError) {
+          if (authError.code === 'auth/email-already-exists') {
+            userRecord = await auth.getUserByEmail(pendiente.email);
+            await auth.updateUser(userRecord.uid, { password: password });
+          } else {
+            throw authError;
+          }
+        }
 
         // 3. Calcular trial end
         const plan = pendiente.plan || 'base';

@@ -5,11 +5,17 @@ if (!getApps().length) {
   initializeApp({ credential: cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)) });
 }
 const db = getFirestore();
-const HEADERS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  'Content-Type': 'application/json'
-};
+const ALLOWED_ORIGINS = ['https://sistema.mbstrategy.com.ar', 'https://dev--creative-griffin-98f177.netlify.app'];
+
+function getCorsHeaders(event) {
+  const origin = (event && event.headers && event.headers.origin) || '';
+  const corsOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  return {
+    'Access-Control-Allow-Origin': corsOrigin,
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Content-Type': 'application/json'
+  };
+}
 
 async function crearSuscripcionMP(plan, planData, email, externalRef, freeTrial) {
   const autoRecurring = {
@@ -40,6 +46,7 @@ async function crearSuscripcionMP(plan, planData, email, externalRef, freeTrial)
 }
 
 exports.handler = async (event) => {
+  const HEADERS = getCorsHeaders(event);
   if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers: HEADERS, body: '' };
   if (event.httpMethod !== 'POST') return { statusCode: 405, headers: HEADERS, body: JSON.stringify({ error: 'Método no permitido' }) };
   try {
