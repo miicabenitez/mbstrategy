@@ -4098,7 +4098,7 @@ async function loadNotasClienteAdmin(clientId) {
   try {
     const snap = await getDocs(collection(db,'clientes',clientId,'notasReunion'));
     const notas = [];
-    snap.forEach(d => notas.push({id:d.id,...d.data()}));
+    snap.forEach(d => { const data=d.data(); if(!data.eliminado) notas.push({id:d.id,...data}); });
     notas.sort((a,b) => new Date(b.fecha)-new Date(a.fecha));
     const wrap = document.getElementById('admin-notas-cliente-wrap');
     const list = document.getElementById('admin-notas-cliente-list');
@@ -6003,14 +6003,15 @@ async function updateMiniMetrics() {
     const mesNombre = new Date().toLocaleString('es-AR',{month:'long'}).toLowerCase();
     let ingMes = 0;
     ingSnap.forEach(d => {
-      if((d.data().mes||'').toLowerCase().includes(mesNombre)) ingMes += parseFloat(d.data().monto)||0;
+      const dd=d.data(); if(dd.eliminado) return;
+      if((dd.mes||'').toLowerCase().includes(mesNombre)) ingMes += parseFloat(dd.monto)||0;
     });
     const tarSnap = await getDocs(collection(db,'clientes',currentClientUID,'tareas'));
     let tareasPend = 0;
-    tarSnap.forEach(d => { if(d.data().estado==='pend') tareasPend++; });
+    tarSnap.forEach(d => { const dd=d.data(); if(!dd.eliminado && dd.estado==='pend') tareasPend++; });
     const presSnap = await getDocs(collection(db,'clientes',currentClientUID,'presupuestos'));
     let presAprobados = 0;
-    presSnap.forEach(d => { if(d.data().estado==='Aprobado') presAprobados++; });
+    presSnap.forEach(d => { const dd=d.data(); if(!dd.eliminado && dd.estado==='Aprobado') presAprobados++; });
     const setEl = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
     setEl('cm-ingresos', ingMes > 0 ? '$'+ingMes.toLocaleString('es-AR') : '$0');
     setEl('cm-tareas', tareasPend);
@@ -6035,7 +6036,7 @@ async function loadNotasReunion() {
   if(!currentClientUID) return;
   try {
     const snap = await getDocs(collection(db,'clientes',currentClientUID,'notasReunion'));
-    const notas = []; snap.forEach(d=>notas.push({id:d.id,...d.data()}));
+    const notas = []; snap.forEach(d=>{ const data=d.data(); if(!data.eliminado) notas.push({id:d.id,...data}); });
     notas.sort((a,b)=>new Date(b.fecha)-new Date(a.fecha));
     const el = document.getElementById('c-notas-reunion-list'); if(!el) return;
     if(notas.length===0){el.innerHTML='';return;}
@@ -6291,11 +6292,12 @@ async function loadInicio() {
       getDocs(collection(db,'clientes',currentClientUID,'egresos')),
       getDocs(collection(db,'clientes',currentClientUID,'cobros'))
     ]);
-    const ingManuales = []; ingSnap.forEach(d=>ingManuales.push({id:d.id,...d.data(),origen:'manual'}));
-    const egresos = []; egSnap.forEach(d=>egresos.push({id:d.id,...d.data()}));
+    const ingManuales = []; ingSnap.forEach(d=>{ const data=d.data(); if(!data.eliminado) ingManuales.push({id:d.id,...data,origen:'manual'}); });
+    const egresos = []; egSnap.forEach(d=>{ const data=d.data(); if(!data.eliminado) egresos.push({id:d.id,...data}); });
     const cobrosComoIng = [];
     cobrosSnap.forEach(d=>{
       const data = d.data();
+      if(data.eliminado) return;
       cobrosComoIng.push({id:d.id,concepto:data.concepto||'Cobro',monto:parseFloat(data.monto)||0,mes:data.fecha?new Date(data.fecha+'T12:00:00').toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase()):'',fecha:data.fecha||'',origen:'comercial',...data});
     });
     const ingresos = [...ingManuales,...cobrosComoIng];
@@ -7428,7 +7430,7 @@ async function renderMcHistorial(clienteId) {
   try {
     const snap = await getDocs(collection(db,'clientes',currentClientUID,'misClientes',clienteId,'historial'));
     const items = [];
-    snap.forEach(d => items.push({...d.data()}));
+    snap.forEach(d => { const data=d.data(); if(!data.eliminado) items.push({...data}); });
     items.sort((a,b) => new Date(b.fecha||0) - new Date(a.fecha||0));
     if (items.length === 0) { el.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin actividad registrada aún.</div>'; return; }
     el.innerHTML = items.slice(0,10).map(it => {
@@ -7635,7 +7637,7 @@ async function renderMcDetalleNotas(clienteId) {
   try {
     const snap = await getDocs(collection(db,'clientes',currentClientUID,'misClientes',clienteId,'notas'));
     const notas = [];
-    snap.forEach(d => notas.push({id:d.id,...d.data()}));
+    snap.forEach(d => { const data=d.data(); if(!data.eliminado) notas.push({id:d.id,...data}); });
     notas.sort((a,b) => new Date(b.fecha||0) - new Date(a.fecha||0));
     if (notas.length === 0) { el.innerHTML = '<div style="font-size:12px;color:var(--text-l);padding:4px 0;">Sin notas aún.</div>'; return; }
     el.innerHTML = notas.slice(0,5).map(n => {
@@ -7730,7 +7732,7 @@ async function obtenerProductos() {
     if(!uid) return [];
     const snap = await getDocs(collection(db,'clientes',uid,'productos'));
     const prods = [];
-    snap.forEach(d => prods.push({id:d.id,...d.data()}));
+    snap.forEach(d => { const data=d.data(); if(!data.eliminado) prods.push({id:d.id,...data}); });
     prods.sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||''));
     window._productosData = prods;
     _productos = prods;
