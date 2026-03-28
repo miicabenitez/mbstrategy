@@ -86,6 +86,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 }
 .app{display:none;min-height:100vh;flex-direction:column;}
 .app.visible{display:flex;}
+.dash-card{opacity:0;transform:translateY(12px);transition:opacity .38s ease,transform .38s ease;}
+.dash-card.in{opacity:1;transform:none;}
 .topbar{background:var(--topbar);border-bottom:.5px solid rgba(0,0,0,.06);padding:0 20px;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
 .topbar-logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
 .topbar-brand{font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:500;letter-spacing:2px;color:#fff;}
@@ -291,6 +293,8 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
   body.client-view .mobile-nav{display:none !important;}
   body.client-view .content{padding-bottom:76px;overflow-x:hidden;}
   body.client-view .embi-fab{bottom:76px;}
+  body.client-view .topbar-right{display:none !important;}
+  body.client-view #client-mobile-menu-wrap{display:block !important;}
   /* KPIs finanzas 2x2 en mobile */
   [style*="grid-template-columns:1.4fr"]{grid-template-columns:1fr 1fr !important;}
   #inicio-kpis{grid-template-columns:1fr 1fr !important;}
@@ -463,6 +467,15 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
       <div class="ub" id="ub">—</div>
       <button class="btn-out" id="btn-mi-cuenta" onclick="openModal('miCuentaModal')" style="display:none;">Mi cuenta</button>
       <button class="btn-out" id="btn-salir-legacy" onclick="doLogout()">Salir</button>
+    </div>
+    <!-- Tres puntitos — solo mobile client view -->
+    <div id="client-mobile-menu-wrap" style="display:none;position:relative;">
+      <button onclick="toggleClientMobileMenu(event)" style="background:none;border:none;cursor:pointer;padding:8px 10px;color:rgba(255,255,255,.85);font-size:22px;line-height:1;letter-spacing:.5px;">⋮</button>
+      <div id="client-mobile-menu-drop" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:#fff;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.13);min-width:170px;z-index:400;overflow:hidden;">
+        <button onclick="navigateToMiCuenta();closeClientMobileMenu()" style="width:100%;text-align:left;padding:13px 16px;border:none;background:none;font-size:13px;font-family:'DM Sans',sans-serif;color:#1a1a1a;cursor:pointer;">Mi cuenta</button>
+        <div style="border-top:.5px solid #f0f0f0;margin:0;"></div>
+        <button onclick="doLogout()" style="width:100%;text-align:left;padding:13px 16px;border:none;background:none;font-size:13px;font-family:'DM Sans',sans-serif;color:#C4786A;cursor:pointer;">Cerrar sesión</button>
+      </div>
     </div>
   </div>
 
@@ -1351,7 +1364,7 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
       <div id="ct-inicio" style="display:none;">
 
         <!-- Banner principal -->
-        <div style="background:#4a5e4d;border-radius:14px;padding:22px 24px;margin-bottom:14px;color:#fff;">
+        <div class="dash-card" style="background:#4a5e4d;border-radius:14px;padding:22px 24px;margin-bottom:14px;color:#fff;">
           <div style="display:flex;align-items:center;gap:14px;">
             <div id="inicio-logo-wrap" style="width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.12);border:.5px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="15" rx="2" stroke="#fff" stroke-width="1.5"/><path d="M8 6V5a2 2 0 014 0v1M12 6v15" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="13" r="1.5" fill="#fff"/><circle cx="16" cy="13" r="1.5" fill="#fff"/></svg>
@@ -1366,7 +1379,7 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
           <div id="inicio-kpis" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-top:18px;">
             <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:14px;">
               <div style="font-size:11px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Ganancia del mes</div>
-              <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;color:#fff;" id="inicio-ganancia">$0</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:400;color:#fff;" id="inicio-ganancia">$0</div>
               <div style="font-size:11px;margin-top:4px;" id="inicio-vs-mes"><span style="color:rgba(255,255,255,.6);">vs mes anterior</span></div>
             </div>
             <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:14px;">
@@ -1387,11 +1400,8 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
           </div>
         </div>
 
-        <!-- Onboarding checklist -->
-        <div id="onboarding-checklist" style="display:none;"></div>
-
         <!-- Accesos rápidos -->
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;">
+        <div class="dash-card" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;">
           <button onclick="openModal('newClientIngresoModal')" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:14px 10px;background:#5A8A62;color:#fff;border:none;border-radius:12px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
             + Ingreso
@@ -1400,14 +1410,17 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
             + Egreso
           </button>
-          <button onclick="openModal('newClientPresupModal')" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:14px 10px;background:#4A6A8A;color:#fff;border:none;border-radius:12px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h6M9 11h6M9 15h4"/></svg>
+          <button onclick="openModal('newClientPresupModal')" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:14px 10px;background:transparent;color:#4a5e4d;border:1.5px solid #4a5e4d;border-radius:12px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4a5e4d" stroke-width="2" stroke-linecap="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h6M9 11h6M9 15h4"/></svg>
             + Presupuesto
           </button>
         </div>
 
+        <!-- Onboarding checklist -->
+        <div id="onboarding-checklist" style="display:none;"></div>
+
         <!-- Alertas -->
-        <div style="background:var(--white);border:.5px solid var(--cream-d);border-radius:13px;padding:18px;margin-bottom:14px;">
+        <div class="dash-card" style="background:var(--white);border:.5px solid var(--cream-d);border-radius:13px;padding:18px;margin-bottom:14px;">
           <div style="font-size:13px;font-weight:500;margin-bottom:12px;">Alertas</div>
           <div id="inicio-alertas">
             <div style="display:flex;align-items:center;gap:10px;padding:8px 0;font-size:13px;color:var(--text-l);">Cargando...</div>
@@ -1415,7 +1428,7 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
         </div>
 
         <!-- Actividad reciente -->
-        <div style="background:var(--white);border:.5px solid var(--cream-d);border-radius:13px;padding:18px;">
+        <div class="dash-card" style="background:var(--white);border:.5px solid var(--cream-d);border-radius:13px;padding:18px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
             <div style="font-size:13px;font-weight:500;">Actividad reciente</div>
             <a href="#" onclick="event.preventDefault();showClientMod('finanzas',null)" style="font-size:12px;color:var(--sage-dark);text-decoration:none;font-weight:500;">Ver todo →</a>
@@ -6438,6 +6451,18 @@ function renderClientContabilidad(ingresos, egresos) {
 }
 
 // ─── INICIO DASHBOARD ───
+function animateCounter(el, targetNum, duration, fmt) {
+  if(!el || isNaN(targetNum)) return;
+  var f = fmt || function(v){return v.toLocaleString('es-AR');};
+  var start = performance.now();
+  function tick(now) {
+    var t = Math.min((now - start) / duration, 1);
+    var ease = 1 - Math.pow(1 - t, 3);
+    el.textContent = f(Math.round(ease * targetNum));
+    if(t < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
 async function loadInicio() {
   if(!currentClientUID) return;
 
@@ -6499,9 +6524,9 @@ async function loadInicio() {
 
     // Setear KPIs
     const setEl = (id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
-    setEl('inicio-ganancia','$'+gananciaMes.toLocaleString('es-AR'));
-    setEl('inicio-ingresos','$'+totalIngMes.toLocaleString('es-AR'));
-    setEl('inicio-margen',margen+'%');
+    animateCounter(document.getElementById('inicio-ganancia'), gananciaMes, 800, v=>'$'+v.toLocaleString('es-AR'));
+    animateCounter(document.getElementById('inicio-ingresos'), totalIngMes, 800, v=>'$'+v.toLocaleString('es-AR'));
+    animateCounter(document.getElementById('inicio-margen'), margen, 800, v=>v+'%');
 
     // Barra de margen
     const margenBar = document.getElementById('inicio-margen-bar');
@@ -6532,7 +6557,7 @@ async function loadInicio() {
       const totalCobrado = (window._mcClientes||[]).reduce((a,c)=>a+(parseFloat(c.totalCobrado)||0),0);
       porCobrar = Math.max(0, totalAprobado - totalCobrado);
     } catch(e) { console.log(e); }
-    setEl('inicio-por-cobrar','$'+porCobrar.toLocaleString('es-AR'));
+    animateCounter(document.getElementById('inicio-por-cobrar'), porCobrar, 800, v=>'$'+v.toLocaleString('es-AR'));
 
     // ── Alertas ──
     const alertasEl = document.getElementById('inicio-alertas');
@@ -6616,6 +6641,10 @@ async function loadInicio() {
 
   // Onboarding checklist
   try { await renderOnboardingChecklist(); } catch(e){ console.log('onboarding:',e); }
+
+  // Staggered fade-in
+  var dashCards = document.querySelectorAll('#ct-inicio .dash-card');
+  dashCards.forEach(function(c,i){setTimeout(function(){c.classList.add('in');},80*i);});
 }
 window.loadInicio = loadInicio;
 
@@ -6643,9 +6672,9 @@ async function renderOnboardingChecklist() {
   const steps = [
     { key:'nombre', label:'Cargá el nombre de tu negocio', sub:'', action:"openModal('miCuentaModal')", btn:'Completar' },
     { key:'logo', label:'Subí tu logo', sub:'Aparece en presupuestos y PDFs', action:"openModal('miCuentaModal')", btn:'Subir' },
-    { key:'ingreso', label:'Registrá tu primer ingreso', sub:'Empezá a trackear tus finanzas', action:"openModal('newClientIngresoModal')", btn:'Registrar' },
+    { key:'ingreso', label:'Registrá tu primer ingreso', sub:'En 30 segundos ves tu ganancia real', action:"openModal('newClientIngresoModal')", btn:'Registrar' },
     { key:'egreso', label:'Cargá un egreso', sub:'Para calcular tu ganancia real', action:"openModal('newClientEgresoModal')", btn:'Cargar' },
-    { key:'presupuesto', label:'Creá tu primer presupuesto', sub:'Profesionalizá tus propuestas', action:"openModal('newClientPresupModal')", btn:'Crear' }
+    { key:'presupuesto', label:'Creá tu primer presupuesto', sub:'Profesionalizá tus propuestas en minutos', action:"openModal('newClientPresupModal')", btn:'Crear' }
   ];
   const checkSvg = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 6l2.5 2.5L9 4" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   let firstPending = true;
@@ -6668,12 +6697,13 @@ async function renderOnboardingChecklist() {
     + '<div style="font-family:\'Cormorant Garamond\',serif;font-size:18px;color:var(--text);margin-bottom:4px;">Bienvenido a MB Strategy</div>'
     + '<div style="font-size:12px;color:var(--text-l);margin-bottom:14px;">Completá estos pasos para configurar tu negocio</div>'
     + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">'
-    +   '<div style="flex:1;height:4px;background:var(--cream-d);border-radius:4px;overflow:hidden;"><div style="height:100%;width:'+pct+'%;background:var(--sage);border-radius:4px;transition:width .5s;"></div></div>'
+    +   '<div style="flex:1;height:4px;background:var(--cream-d);border-radius:4px;overflow:hidden;"><div id="onboarding-bar" style="height:100%;width:0%;background:var(--sage);border-radius:4px;transition:width .6s ease;"></div></div>'
     +   '<span style="font-size:11px;color:var(--text-l);white-space:nowrap;">'+done+' de 5 completados</span>'
     + '</div>'
     + stepsHtml
     + '</div>';
   el.style.display = 'block';
+  setTimeout(function(){var b=document.getElementById('onboarding-bar');if(b)b.style.width=pct+'%';},50);
 }
 window.renderOnboardingChecklist = renderOnboardingChecklist;
 
@@ -13438,6 +13468,17 @@ function sidebarInit(){
   }catch(e){}
 }
 window.sidebarInit=sidebarInit;
+
+function toggleClientMobileMenu(e){
+  if(e)e.stopPropagation();
+  var d=document.getElementById('client-mobile-menu-drop');
+  if(d)d.style.display=d.style.display==='none'?'block':'none';
+}
+function closeClientMobileMenu(){
+  var d=document.getElementById('client-mobile-menu-drop');
+  if(d)d.style.display='none';
+}
+document.addEventListener('click',function(){closeClientMobileMenu();});
 </script>
 
 <div class="mo" id="detalleMovCCModal">
