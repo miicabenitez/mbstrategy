@@ -2637,7 +2637,6 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
       <div class="fg"><label class="fl">Categoría</label><select class="fi" id="cli-ing-categoria" style="margin-top:0;"><option>Cobro de cliente</option><option>Otro ingreso</option><option>Transferencia recibida</option><option>Venta puntual</option><option>Reembolso</option></select></div>
       <div class="fg"><label class="fl">Monto</label><input type="number" class="fi" id="cli-ing-monto" placeholder="0"/></div>
       <div class="fg"><label class="fl">Fecha</label><input type="date" id="cli-ing-fecha" style="margin-top:0;"/></div>
-      <div class="fg"><label class="fl">Mes</label><select class="fi" id="cli-ing-mes" style="margin-top:0;"></select></div>
       <div class="br2"><button class="bp" onclick="createClientIngreso()">Guardar</button><button class="bs" onclick="closeModal('newClientIngresoModal')">Cancelar</button></div>
       <div class="saved-msg" id="cli-ing-saved">✓ Ingreso registrado</div>
     </div>
@@ -2657,7 +2656,6 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
       <div class="fg"><label class="fl">Categoría</label><select class="fi" id="cli-eg-categoria" style="margin-top:0;"><option value="Servicios y herramientas">Servicios y herramientas</option><option value="Publicidad y marketing">Publicidad y marketing</option><option value="Insumos">Insumos</option><option value="Personal">Personal</option><option value="Alimentos">Alimentos</option><option value="Limpieza">Limpieza</option><option value="Viáticos">Viáticos</option><option value="Otros">Otros</option></select></div>
       <div class="fg"><label class="fl">Monto</label><input type="number" class="fi" id="cli-eg-monto" placeholder="0"/></div>
       <div class="fg"><label class="fl">Fecha</label><input type="date" class="fi" id="cli-eg-fecha"/></div>
-      <div class="fg"><label class="fl">Mes</label><select class="fi" id="cli-eg-mes" style="margin-top:0;"></select></div>
       <div class="br2"><button class="bp" onclick="createClientEgreso()">Guardar</button><button class="bs" onclick="closeModal('newClientEgresoModal')">Cancelar</button></div>
       <div class="saved-msg" id="cli-eg-saved">✓ Egreso registrado</div>
     </div>
@@ -7169,12 +7167,14 @@ window.createClientIngreso = async function() {
   const monto = document.getElementById('cli-ing-monto').value;
   if(!concepto){ alert('Ingresá un detalle'); return; }
   if(!monto){ alert('Ingresá un monto'); return; }
+  const fecha = document.getElementById('cli-ing-fecha')?.value||'';
+  const mes = fecha ? new Date(fecha+'T12:00:00').toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase()) : '';
   const data = {
     concepto,
     categoria: document.getElementById('cli-ing-categoria')?.value || 'Otro ingreso',
     monto: parseFloat(monto)||0,
-    fecha: document.getElementById('cli-ing-fecha')?.value||'',
-    mes: document.getElementById('cli-ing-mes').value,
+    fecha,
+    mes,
     origen: 'manual',
     creadoEn: new Date().toISOString()
   };
@@ -7197,14 +7197,16 @@ window.createClientEgreso = async function() {
   const monto = document.getElementById('cli-eg-monto').value;
   if(!concepto){ alert('Ingresá un concepto'); return; }
   if(!monto){ alert('Ingresá un monto'); return; }
-  const data = { 
-    concepto, 
+  const fecha = document.getElementById('cli-eg-fecha')?.value||'';
+  const mes = fecha ? new Date(fecha+'T12:00:00').toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase()) : '';
+  const data = {
+    concepto,
     categoria: document.getElementById('cli-eg-categoria')?.value || 'Otros',
-    monto: parseFloat(monto)||0, 
-    fecha: document.getElementById('cli-eg-fecha')?.value||'',
-    mes: document.getElementById('cli-eg-mes').value, 
+    monto: parseFloat(monto)||0,
+    fecha,
+    mes,
     origen: 'manual',
-    creadoEn: new Date().toISOString() 
+    creadoEn: new Date().toISOString()
   };
   try {
     if(window._editingEgresoid) {
@@ -7225,7 +7227,6 @@ window.editClientIngreso = function(id) {
   document.getElementById('cli-ing-concepto').value = ing.concepto||'';
   document.getElementById('cli-ing-monto').value = ing.monto||'';
   document.getElementById('cli-ing-fecha').value = ing.fecha||'';
-  document.getElementById('cli-ing-mes').value = ing.mes||'Marzo 2026';
   window._editingIngresoid = id;
   openModal('newClientIngresoModal');
 };
@@ -7246,7 +7247,6 @@ window.editClientEgreso = function(id) {
   document.getElementById('cli-eg-concepto').value = eg.concepto||'';
   document.getElementById('cli-eg-monto').value = eg.monto||'';
   document.getElementById('cli-eg-fecha').value = eg.fecha||'';
-  document.getElementById('cli-eg-mes').value = eg.mes||'Marzo 2026';
   window._editingEgresoid = id;
   openModal('newClientEgresoModal');
 };
@@ -8771,6 +8771,7 @@ window.loadProductos = loadProductos;
 
 function renderProductosModule() {
   const setEl = (id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  const esc = s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   const total = _productos.length;
   const activos = _productos.filter(p=>p.activo!==false).length;
   setEl('prod-kpi-activos', activos);
@@ -8793,7 +8794,7 @@ function renderProductosModule() {
   const ultFecha = _productos.reduce((a,p)=>p.updatedAt&&p.updatedAt>a?p.updatedAt:a,'');
   if(ultFecha) {
     const meses = Math.round((Date.now()-new Date(ultFecha))/(1000*60*60*24*30));
-    setEl('prod-kpi-meses', meses===0?'<1':meses);
+    setEl('prod-kpi-meses', meses===0?'0':String(meses));
     setEl('prod-kpi-meses-sub', meses===0?'actualizado este mes':'meses sin cambios');
   } else {
     setEl('prod-kpi-meses','—');
@@ -8820,8 +8821,8 @@ function renderProductosModule() {
     const precio = parseFloat(p.precio)||0;
     return `<div style="display:grid;grid-template-columns:1fr 120px 110px 50px 60px;gap:10px;align-items:center;padding:13px 0;border-bottom:.5px solid var(--cream-d);${inactivo?'opacity:.4;':''}">
       <div>
-        <div style="font-size:13px;font-weight:500;color:var(--text);${inactivo?'text-decoration:line-through;':''}">${p.nombre}</div>
-        ${p.descripcion?`<div style="font-size:11px;color:var(--text-l);margin-top:1px;">${p.descripcion}</div>`:''}
+        <div style="font-size:13px;font-weight:500;color:var(--text);${inactivo?'text-decoration:line-through;':''}">${esc(p.nombre)}</div>
+        ${p.descripcion?`<div style="font-size:11px;color:var(--text-l);margin-top:1px;">${esc(p.descripcion)}</div>`:''}
       </div>
       <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--ok);font-weight:500;text-align:right;">$${precio.toLocaleString('es-AR')}</div>
       <input type="number" value="${precio}" data-id="${p.id}" class="prod-precio-input" ${inactivo?'disabled':''} style="width:100%;padding:6px 10px;border:.5px solid var(--cream-d);border-radius:8px;font-size:12px;color:var(--text);font-family:'DM Sans',sans-serif;text-align:right;${inactivo?'background:var(--cream);':''}" onchange="marcarCambioPrecio()"/>
@@ -8960,8 +8961,8 @@ window.loadMembresiaSection = async function() {
       getDoc(doc(db,'clientes',currentClientUID)),
       getDoc(doc(db,'config','planes'))
     ]);
-    if(planesSnap.exists()) {
-      const planes = planesSnap.data();
+    const planes = planesSnap.exists() ? planesSnap.data() : null;
+    if(planes) {
       const precioBase = document.getElementById('memb-precio-base');
       const precioPro = document.getElementById('memb-precio-pro');
       if(precioBase && planes.base?.precioPesos) precioBase.textContent = '$' + planes.base.precioPesos.toLocaleString('es-AR');
@@ -8991,7 +8992,10 @@ window.loadMembresiaSection = async function() {
         proximoCobro.textContent = fecha.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'});
       }
       const monto = document.getElementById('memb-monto');
-      if(monto && memb.precioPesos) monto.textContent = '$' + memb.precioPesos.toLocaleString('es-AR');
+      if(monto) {
+        const precio = planes?.[memb.plan]?.precioPesos;
+        if(precio) monto.textContent = '$' + precio.toLocaleString('es-AR');
+      }
     } else if(estado === 'pendiente') {
       const el = document.getElementById('memb-pendiente');
       if(el) el.style.display = 'block';
@@ -9259,6 +9263,7 @@ window.loadProductosCompra = loadProductosCompra;
 
 function renderProductosCompra(lista) {
   const setEl = (id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  const esc = s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   setEl('pc-kpi-total', lista.length);
   const cats = [...new Set(lista.map(p=>p.categoria).filter(Boolean))];
   setEl('pc-kpi-cats', cats.length);
@@ -9272,10 +9277,10 @@ function renderProductosCompra(lista) {
     const [bg,tc] = CAT_COLORS[p.categoria]||['#F5F6F3','#4A5A4E'];
     return `<div style="display:grid;grid-template-columns:1fr 130px 90px 60px;gap:10px;align-items:center;padding:12px 0;border-bottom:.5px solid var(--cream-d);">
       <div>
-        <div style="font-size:13px;font-weight:500;color:var(--text);">${p.nombre}</div>
-        ${p.descripcion?`<div style="font-size:11px;color:var(--text-l);">${p.descripcion}</div>`:''}
+        <div style="font-size:13px;font-weight:500;color:var(--text);">${esc(p.nombre)}</div>
+        ${p.descripcion?`<div style="font-size:11px;color:var(--text-l);">${esc(p.descripcion)}</div>`:''}
       </div>
-      <span style="background:${bg};color:${tc};font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px;width:fit-content;">${p.categoria||''}</span>
+      <span style="background:${bg};color:${tc};font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px;width:fit-content;">${esc(p.categoria||'')}</span>
       <span style="font-size:12px;color:var(--text-m);text-align:center;">${p.unidad||''}</span>
       <div style="display:flex;gap:4px;justify-content:flex-end;">
         <button onclick="editProdCompra('${p.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
