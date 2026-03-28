@@ -80,6 +80,42 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 .btn-out:hover{color:#fff;border-color:rgba(255,255,255,.7);}
 .skeleton{background:linear-gradient(90deg,var(--cream-d) 25%,#DDDCD6 50%,var(--cream-d) 75%);background-size:200px 100%;animation:shimmer 1.5s infinite;border-radius:6px;}
 @keyframes shimmer{0%{background-position:-200px 0}100%{background-position:200px 0}}
+/* ── SIDEBAR ── */
+.sidebar{position:fixed;left:0;top:0;width:220px;height:100vh;background:#4a5e4d;z-index:200;flex-direction:column;display:none;overflow:hidden;}
+.sb-head{padding:18px 16px 14px;border-bottom:1px solid rgba(255,255,255,.1);flex-shrink:0;}
+.sb-logo-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.sb-brand{font-size:11px;font-weight:600;color:rgba(255,255,255,.9);letter-spacing:2px;}
+.sb-date{font-size:11px;color:rgba(255,255,255,.4);line-height:1.4;}
+.sb-nav{flex:1;overflow-y:auto;overflow-x:hidden;padding:8px 0;}
+.sb-nav::-webkit-scrollbar{width:3px;}
+.sb-nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:2px;}
+.sb-group{margin-bottom:1px;}
+.sb-btn{width:100%;display:flex;align-items:center;gap:9px;padding:9px 14px;background:transparent;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;color:rgba(255,255,255,.65);text-align:left;transition:background .15s,color .15s;}
+.sb-btn:hover{background:rgba(255,255,255,.08);color:#fff;}
+.sb-btn.active{background:rgba(255,255,255,.18);color:#fff;font-weight:500;}
+.sb-btn .sb-icon{width:15px;height:15px;flex-shrink:0;stroke:currentColor;fill:none;opacity:.8;}
+.sb-btn.active .sb-icon{opacity:1;}
+.sb-label{flex:1;}
+.sb-arrow{width:13px;height:13px;flex-shrink:0;stroke:rgba(255,255,255,.4);fill:none;transition:transform .2s;}
+.sb-btn.open .sb-arrow{transform:rotate(90deg);}
+.sb-sub{display:none;padding:2px 0 4px 38px;}
+.sb-sub.open{display:block;}
+.sb-subitem{width:100%;display:block;padding:7px 10px;background:transparent;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;color:rgba(255,255,255,.55);text-align:left;transition:background .15s,color .15s;border-radius:0;}
+.sb-subitem:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.9);}
+.sb-subitem.active{background:rgba(255,255,255,.12);color:#fff;font-weight:500;}
+.sb-footer{border-top:1px solid rgba(255,255,255,.1);padding:10px 12px;flex-shrink:0;}
+.sb-footer-btn{width:100%;display:flex;align-items:center;gap:10px;padding:8px 8px;background:transparent;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;color:rgba(255,255,255,.65);border-radius:8px;transition:background .15s;text-align:left;}
+.sb-footer-btn:hover{background:rgba(255,255,255,.08);color:#fff;}
+.sb-footer-label{font-size:12px;font-weight:500;color:rgba(255,255,255,.8);line-height:1.3;}
+.sb-footer-sub{font-size:11px;color:rgba(255,255,255,.4);margin-top:1px;}
+/* Desktop client view — sidebar active */
+@media(min-width:769px){
+  body.client-view .sidebar{display:flex;}
+  body.client-view .app{padding-left:220px;}
+  body.client-view #cNav{display:none !important;}
+  body.client-view .mod-subnav{display:none !important;}
+  body.client-view .topbar-logo{display:none;}
+}
 .content{flex:1;padding:20px;max-width:1100px;margin:0 auto;width:100%;}
 .view{display:none;}
 .view.active{display:block;}
@@ -414,6 +450,89 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
           </button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- ═══════ SIDEBAR (client view, desktop) ═══════ -->
+  <div class="sidebar" id="clientSidebar">
+    <div class="sb-head">
+      <div class="sb-logo-row">
+        <svg width="26" height="26" viewBox="0 0 80 80" fill="none"><circle cx="40" cy="40" r="37" stroke="rgba(255,255,255,.6)" stroke-width="1.5"/><text x="40" y="36" text-anchor="middle" font-family="Georgia,serif" font-size="20" font-weight="500" fill="rgba(255,255,255,.8)">MB</text><text x="40" y="52" text-anchor="middle" font-family="Arial,sans-serif" font-size="7.5" letter-spacing="2" fill="rgba(255,255,255,.6)">STRATEGY</text></svg>
+        <div class="sb-brand">MB STRATEGY</div>
+      </div>
+      <div class="sb-date" id="sbDate"></div>
+    </div>
+    <nav class="sb-nav">
+      <!-- Inicio -->
+      <div class="sb-group" id="sbg-inicio">
+        <button class="sb-btn" onclick="sidebarNav('inicio')">
+          <svg class="sb-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1z"/></svg>
+          <span class="sb-label">Inicio</span>
+        </button>
+      </div>
+      <!-- Finanzas -->
+      <div class="sb-group" id="sbg-finanzas">
+        <button class="sb-btn sb-has-sub" onclick="sidebarToggle('finanzas')">
+          <svg class="sb-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+          <span class="sb-label">Finanzas</span>
+          <svg class="sb-arrow" viewBox="0 0 16 16" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+        </button>
+        <div class="sb-sub" id="sbsub-finanzas">
+          <button class="sb-subitem" data-sub="resumen" onclick="sidebarNav('finanzas','resumen')">Resumen</button>
+          <button class="sb-subitem" data-sub="ingresos" onclick="sidebarNav('finanzas','ingresos')">Ingresos</button>
+          <button class="sb-subitem" data-sub="egresos" onclick="sidebarNav('finanzas','egresos')">Egresos</button>
+        </div>
+      </div>
+      <!-- Ventas -->
+      <div class="sb-group" id="sbg-ventas">
+        <button class="sb-btn sb-has-sub" onclick="sidebarToggle('ventas')">
+          <svg class="sb-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><circle cx="18" cy="8" r="2.5"/><path d="M21 21v-1.5a3 3 0 00-2-2.83"/></svg>
+          <span class="sb-label">Ventas</span>
+          <svg class="sb-arrow" viewBox="0 0 16 16" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+        </button>
+        <div class="sb-sub" id="sbsub-ventas">
+          <button class="sb-subitem" data-sub="clientes" onclick="sidebarNav('ventas','clientes')">Clientes</button>
+          <button class="sb-subitem" data-sub="presupuestos" onclick="sidebarNav('ventas','presupuestos')">Presupuestos</button>
+          <button class="sb-subitem" data-sub="catalogo" onclick="sidebarNav('ventas','catalogo')">Catálogo</button>
+        </div>
+      </div>
+      <!-- Compras -->
+      <div class="sb-group" id="sbg-compras">
+        <button class="sb-btn sb-has-sub" onclick="sidebarToggle('compras')">
+          <svg class="sb-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+          <span class="sb-label">Compras</span>
+          <svg class="sb-arrow" viewBox="0 0 16 16" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+        </button>
+        <div class="sb-sub" id="sbsub-compras">
+          <button class="sb-subitem" data-sub="necesidades" onclick="sidebarNav('compras','necesidades')">Necesidades</button>
+          <button class="sb-subitem" data-sub="proveedores" onclick="sidebarNav('compras','proveedores')">Proveedores</button>
+          <button class="sb-subitem" data-sub="ordenes" onclick="sidebarNav('compras','ordenes')">Órdenes</button>
+          <button class="sb-subitem" data-sub="productos" onclick="sidebarNav('compras','productos')">Productos</button>
+          <button class="sb-subitem" data-sub="categorias" onclick="sidebarNav('compras','categorias')">Categorías</button>
+        </div>
+      </div>
+      <!-- Herramientas -->
+      <div class="sb-group" id="sbg-herramientas">
+        <button class="sb-btn sb-has-sub" onclick="sidebarToggle('herramientas')">
+          <svg class="sb-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          <span class="sb-label">Herramientas</span>
+          <svg class="sb-arrow" viewBox="0 0 16 16" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+        </button>
+        <div class="sb-sub" id="sbsub-herramientas">
+          <button class="sb-subitem" data-sub="calculador" onclick="sidebarNav('herramientas','calculador')">Calculador</button>
+          <button class="sb-subitem" data-sub="indicadores" onclick="sidebarNav('herramientas','indicadores')">Indicadores</button>
+          <button class="sb-subitem" data-sub="planaccion" onclick="sidebarNav('herramientas','planaccion')">Plan de acción</button>
+        </div>
+      </div>
+    </nav>
+    <div class="sb-footer">
+      <button class="sb-footer-btn" onclick="navigateToMiCuenta()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg>
+        <div>
+          <div class="sb-footer-label">Mi cuenta</div>
+          <div class="sb-footer-sub" id="sb-plan-badge">—</div>
+        </div>
+      </button>
     </div>
   </div>
 
@@ -3680,6 +3799,7 @@ window.showClientUI = async function(email, clientData) {
       setTimeout(() => openModal('cambioPassModal'), 1000);
     }
     if(window.embiShow) window.embiShow(true);
+    if(window.sidebarInit) window.sidebarInit();
     // Restaurar último módulo activo (o Inicio por defecto)
     const savedMod = (() => { try { return localStorage.getItem('mbst_lastmod'); } catch(e) { return null; } })();
     const modToShow = savedMod || 'inicio';
@@ -13184,6 +13304,117 @@ function embiShow(show){
   embiInitDrag();
 }
 window.embiShow=embiShow;
+
+// ══════════════════════════════════════════
+// SIDEBAR
+// ══════════════════════════════════════════
+function sidebarToggle(mod){
+  var sub=document.getElementById('sbsub-'+mod);
+  var btn=document.querySelector('#sbg-'+mod+' .sb-btn');
+  if(!sub)return;
+  var isOpen=sub.classList.contains('open');
+  // Close all
+  document.querySelectorAll('.sb-sub').forEach(function(el){el.classList.remove('open');});
+  document.querySelectorAll('.sb-btn.sb-has-sub').forEach(function(b){b.classList.remove('open');});
+  // Toggle this one
+  if(!isOpen){
+    sub.classList.add('open');
+    if(btn)btn.classList.add('open');
+  }
+}
+function sidebarSetActive(mod,sub){
+  document.querySelectorAll('.sb-btn').forEach(function(b){b.classList.remove('active');});
+  document.querySelectorAll('.sb-subitem').forEach(function(b){b.classList.remove('active');});
+  var parentBtn=document.querySelector('#sbg-'+mod+' .sb-btn');
+  if(parentBtn)parentBtn.classList.add('active');
+  if(sub){
+    var subEl=document.getElementById('sbsub-'+mod);
+    if(subEl){
+      subEl.classList.add('open');
+      if(parentBtn)parentBtn.classList.add('open');
+      var subBtn=subEl.querySelector('[data-sub="'+sub+'"]');
+      if(subBtn)subBtn.classList.add('active');
+    }
+  }
+}
+function sidebarSyncFromMod(mod){
+  document.querySelectorAll('.sb-btn').forEach(function(b){b.classList.remove('active');});
+  document.querySelectorAll('.sb-subitem').forEach(function(b){b.classList.remove('active');});
+  document.querySelectorAll('.sb-sub').forEach(function(el){el.classList.remove('open');});
+  document.querySelectorAll('.sb-btn.sb-has-sub').forEach(function(b){b.classList.remove('open');});
+  var parentBtn=document.querySelector('#sbg-'+mod+' .sb-btn');
+  if(!parentBtn)return;
+  parentBtn.classList.add('active');
+  var subEl=document.getElementById('sbsub-'+mod);
+  if(subEl){
+    subEl.classList.add('open');
+    parentBtn.classList.add('open');
+    var firstSub=subEl.querySelector('.sb-subitem');
+    if(firstSub)firstSub.classList.add('active');
+  }
+}
+window.sidebarNav=function(mod,sub){
+  try{localStorage.setItem('mbst_sb_mod',mod);localStorage.setItem('mbst_sb_sub',sub||'');}catch(e){}
+  sidebarSetActive(mod,sub);
+  if(mod==='inicio'){
+    window.showClientMod('inicio',null);
+    return;
+  }
+  // Call showClientMod for proper module initialization (ct- panels, localStorage, bottom nav sync)
+  window._sbNavInProgress=true;
+  window.showClientMod(mod,null);
+  window._sbNavInProgress=false;
+  // Override to specific sub-view
+  if(mod==='finanzas'){
+    if(sub==='ingresos')window.showClientContView('ingresos',null);
+    else if(sub==='egresos')window.showClientContView('egresos',null);
+  }else if(mod==='ventas'){
+    if(sub==='presupuestos')window.showCTab('presupuestos',null);
+    else if(sub==='catalogo')window.showCTab('productos',null);
+  }else if(mod==='compras'){
+    if(sub==='proveedores')window.showCTab('proveedores',null);
+    else if(sub==='ordenes')window.showCTab('ordenes-compra',null);
+    else if(sub==='productos')window.showCTab('prod-compra',null);
+    else if(sub==='categorias')window.showCTab('categorias-compra',null);
+  }else if(mod==='herramientas'){
+    if(sub==='indicadores')window.showCTab('kpis',null);
+    else if(sub==='planaccion')window.showCTab('tareas',null);
+  }
+};
+// Patch showClientMod to sync sidebar when called from bottom nav or other sources
+(function(){
+  var orig=window.showClientMod;
+  window.showClientMod=function(mod,btn){
+    orig(mod,btn);
+    if(!window._sbNavInProgress)sidebarSyncFromMod(mod);
+  };
+})();
+// Patch navigateToMiCuenta to clear sidebar active state
+(function(){
+  var orig=window.navigateToMiCuenta;
+  window.navigateToMiCuenta=function(){
+    orig();
+    document.querySelectorAll('.sb-btn').forEach(function(b){b.classList.remove('active');});
+    document.querySelectorAll('.sb-subitem').forEach(function(b){b.classList.remove('active');});
+    document.querySelectorAll('.sb-sub').forEach(function(el){el.classList.remove('open');});
+    document.querySelectorAll('.sb-btn.sb-has-sub').forEach(function(b){b.classList.remove('open');});
+  };
+})();
+function sidebarInit(){
+  // Date
+  var el=document.getElementById('sbDate');
+  if(el){var d=new Date();var m=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];el.textContent=d.getDate()+' de '+m[d.getMonth()]+' de '+d.getFullYear();}
+  // Plan badge
+  var pb=document.getElementById('sb-plan-badge');
+  if(pb){var memb=window.currentClientData&&window.currentClientData.membresia;pb.textContent=memb&&memb.plan?'Plan '+(memb.plan==='pro'?'Pro':'Base'):'—';}
+  // Restore last active module from localStorage
+  try{
+    var lastMod=localStorage.getItem('mbst_sb_mod');
+    var lastSub=localStorage.getItem('mbst_sb_sub');
+    if(lastMod)sidebarSetActive(lastMod,lastSub||'');
+  }catch(e){}
+}
+window.sidebarInit=sidebarInit;
 </script>
 
 <div class="mo" id="detalleMovCCModal">
