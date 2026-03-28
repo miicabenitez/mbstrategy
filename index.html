@@ -306,6 +306,8 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
   body.client-view .mod-subnav .subctab.active{background:var(--topbar) !important;color:#fff !important;border-color:var(--topbar) !important;}
   /* Banners y contenido no desbordan */
   body.client-view [style*="border-radius:13px"]{overflow:hidden;word-break:break-word;max-width:100%;box-sizing:border-box;}
+  /* Calculador form grid */
+  #calc-form-grid{grid-template-columns:1fr !important;}
 }
 @media(max-width:480px){
   .mg{grid-template-columns:1fr 1fr;}
@@ -1863,75 +1865,68 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
       <!-- CALCULADOR -->
 
       <div id="ct-calculador" style="display:none;">
+        <!-- LIST VIEW -->
         <div id="calc-list-view">
-          <!-- Header banner -->
           <div style="background:#4a5e4d;border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;"><div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;">Calculador de costos</div></div>
-
-          <!-- KPI cards -->
           <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:14px;">
-            <div style="background:#7A8E7D;border-radius:12px;padding:14px;">
-              <div style="font-size:11px;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;">Cálculos activos</div>
-              <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;color:#fff;" id="calc-kpi-count">0</div>
-            </div>
-            <div style="background:#5A8A62;border-radius:12px;padding:14px;">
-              <div style="font-size:11px;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;">Margen promedio</div>
-              <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;color:#fff;" id="calc-kpi-margen">0%</div>
-            </div>
+            <div style="background:#7A8E7D;border-radius:12px;padding:14px;"><div style="font-size:11px;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;">Cálculos activos</div><div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;color:#fff;" id="calc-kpi-count">0</div></div>
+            <div style="background:#5A8A62;border-radius:12px;padding:14px;"><div style="font-size:11px;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;">Margen promedio</div><div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;color:#fff;" id="calc-kpi-margen">0%</div></div>
           </div>
-
-          <!-- Barra de acciones -->
           <div style="display:flex;justify-content:flex-end;align-items:center;margin-bottom:14px;">
-            <button class="bp" onclick="showNewCalcForm()">+ Nuevo</button>
+            <button class="bp" onclick="showCalcForm(null)">+ Nuevo</button>
           </div>
-
-          <!-- Lista -->
           <div class="card" style="margin-bottom:14px;">
             <div style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">Mis cálculos</div>
             <div id="calc-items"><div style="text-align:center;padding:20px;color:var(--text-l);font-size:13px;">Sin cálculos aún. Creá el primero.</div></div>
           </div>
+        </div>
 
-        </div>
-        <div id="calc-detail-view" style="display:none;">
-          <button class="back-btn" onclick="closeCalcDetail()">← Volver</button>
-          <div class="card">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-              <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:500;" id="calc-name">—</div>
-              <div class="badge bg">Activo</div>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;" id="calc-summary"></div>
-            <div class="ct" style="margin-top:4px;">Detalle de costos</div>
-            <div id="calc-costs"></div>
-            <div style="position:relative;height:180px;margin:14px 0;"><canvas id="calcChart"></canvas></div>
-            <div style="background:var(--cream);border-radius:9px;padding:12px;margin-top:12px;">
-              <div class="ct" style="margin-bottom:10px;">Ingresar nuevo costo</div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
-                <div><label class="fl">Concepto</label><input type="text" class="fi" id="nc-c" placeholder="Ej: Materiales" style="padding:8px 10px;margin-top:4px;"/></div>
-                <div><label class="fl">Monto</label><input type="number" class="fi" id="nc-m" placeholder="0" style="padding:8px 10px;margin-top:4px;"/></div>
-              </div>
-              <button class="bp" onclick="addCalcCost()">Agregar</button>
-            </div>
+        <!-- FORM VIEW (crear / editar) -->
+        <div id="calc-form-view" style="display:none;">
+          <button class="back-btn" onclick="closeCalcForm()">← Volver</button>
+          <input type="hidden" id="calcf-id"/>
+
+          <!-- Mode tabs -->
+          <div style="display:flex;gap:4px;margin-bottom:14px;background:var(--cream);border-radius:10px;padding:4px;">
+            <button id="ctab-btn-producto" onclick="setCalcMode('producto')" style="flex:1;padding:8px 6px;border-radius:7px;border:none;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;background:var(--topbar);color:#fff;">Producto</button>
+            <button id="ctab-btn-hora" onclick="setCalcMode('hora')" style="flex:1;padding:8px 6px;border-radius:7px;border:none;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;background:transparent;color:var(--text-m);">Por hora</button>
+            <button id="ctab-btn-proyecto" onclick="setCalcMode('proyecto')" style="flex:1;padding:8px 6px;border-radius:7px;border:none;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;background:transparent;color:var(--text-m);">Proyecto</button>
           </div>
-        </div>
-        <div id="calc-new-form" style="display:none;">
-          <button class="back-btn" onclick="closeNewCalcForm()">← Volver</button>
-          <div class="card">
-            <div class="ct">Nuevo cálculo</div>
-            <div class="fg"><label class="fl">Producto / Servicio</label><input type="text" class="fi" id="nc-name" placeholder="Ej: Pileta 8x4, Consulta, Sandwich miga..."/></div>
-            <div class="fg"><label class="fl">Margen objetivo %</label><input type="number" class="fi" id="nc-margen" placeholder="30"/></div>
-            <div class="fg">
-              <label class="fl">Foto del producto (opcional)</label>
-              <div style="margin-top:6px;display:flex;align-items:center;gap:10px;">
-                <div id="nc-foto-preview" style="width:54px;height:54px;border-radius:10px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="4" width="16" height="13" rx="2" stroke="var(--text-l)" stroke-width="1.3"/><circle cx="10" cy="10" r="3" stroke="var(--text-l)" stroke-width="1.3"/><path d="M6 4V3a1 1 0 011-1h6a1 1 0 011 1v1" stroke="var(--text-l)" stroke-width="1.3"/></svg>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;" id="calc-form-grid">
+            <!-- Inputs -->
+            <div>
+              <div class="card">
+                <div class="fg"><label class="fl">Nombre del producto / servicio</label><input type="text" class="fi" id="calcf-nombre" placeholder="Ej: Mascarilla facial, Consulta, Diseño web..." oninput="recalcCalc()"/></div>
+                <div class="fg"><label class="fl">Margen de ganancia (%)</label><input type="number" class="fi" id="calcf-margen" placeholder="30" value="30" oninput="recalcCalc()"/></div>
+
+                <!-- Producto -->
+                <div id="calcf-prod-section">
+                  <div style="font-size:10px;font-weight:600;color:var(--text-l);text-transform:uppercase;letter-spacing:.8px;margin:12px 0 8px;">Insumos</div>
+                  <div id="calcf-insumos-wrap"></div>
+                  <button onclick="addCalcInsumo()" style="width:100%;padding:9px;border:.5px dashed var(--sage-light);border-radius:9px;background:var(--sage-xl);color:var(--sage-dark);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;margin-top:4px;">+ Agregar insumo</button>
                 </div>
-                <label style="cursor:pointer;background:var(--sage-xl);color:var(--sage-dark);border:.5px solid var(--sage-light);border-radius:9px;padding:7px 14px;font-size:12px;font-family:'DM Sans',sans-serif;">
-                  Subir foto
-                  <input type="file" accept="image/*" id="nc-foto-input" style="display:none;" onchange="previewCalcFoto(this)"/>
-                </label>
-                <span style="font-size:11px;color:var(--text-l);" id="nc-foto-name">Sin foto seleccionada</span>
+
+                <!-- Por hora -->
+                <div id="calcf-hora-section" style="display:none;">
+                  <div class="fg"><label class="fl">Costos fijos mensuales ($)</label><input type="number" class="fi" id="calcf-costos-fijos" placeholder="0" oninput="recalcCalc()"/></div>
+                  <div class="fg"><label class="fl">Horas facturables por mes</label><input type="number" class="fi" id="calcf-horas-mes" placeholder="0" oninput="recalcCalc()"/></div>
+                </div>
+
+                <!-- Proyecto -->
+                <div id="calcf-proy-section" style="display:none;">
+                  <div class="fg"><label class="fl">Horas estimadas</label><input type="number" class="fi" id="calcf-horas-est" placeholder="0" oninput="recalcCalc()"/></div>
+                  <div class="fg"><label class="fl">Tarifa por hora ($)</label><input type="number" class="fi" id="calcf-tarifa-hora" placeholder="0" oninput="recalcCalc()"/></div>
+                  <div class="fg"><label class="fl">Costos directos del proyecto ($)</label><input type="number" class="fi" id="calcf-costos-dir" placeholder="0" oninput="recalcCalc()"/></div>
+                </div>
+
+                <div style="margin-top:16px;"><button class="bp" style="width:100%;" onclick="saveCalc()">Guardar cálculo</button></div>
+                <div class="saved-msg" id="calcf-saved" style="display:none;">✓ Cálculo guardado</div>
               </div>
             </div>
-            <div class="br2"><button class="bp" onclick="createCalc()">Crear</button></div>
+
+            <!-- Resultados -->
+            <div id="calcf-results-col"></div>
           </div>
         </div>
       </div>
@@ -2600,29 +2595,6 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
 </div>
 
 <!-- MODALES CLIENTE -->
-<div class="mo" id="editCalcModal">
-  <div class="md" style="max-width:400px;">
-    <button class="mc2" onclick="closeModal('editCalcModal')">×</button>
-    <div class="mt">Editar cálculo</div>
-    <input type="hidden" id="ec-calc-id"/>
-    <div class="fg"><label class="fl">Nombre del producto/servicio</label><input type="text" class="fi" id="ec-calc-nombre" placeholder="Ej: Pileta 8x4"/></div>
-    <div class="fg"><label class="fl">Margen objetivo %</label><input type="number" class="fi" id="ec-calc-margen" placeholder="30"/></div>
-    <div class="fg">
-      <label class="fl">Foto</label>
-      <div style="margin-top:6px;display:flex;align-items:center;gap:10px;">
-        <div id="ec-calc-foto-preview" style="width:48px;height:48px;border-radius:10px;background:var(--cream);border:.5px solid var(--cream-d);overflow:hidden;flex-shrink:0;"></div>
-        <label style="cursor:pointer;background:var(--sage-xl);color:var(--sage-dark);border:.5px solid var(--sage-light);border-radius:9px;padding:6px 12px;font-size:12px;font-family:'DM Sans',sans-serif;">
-          Cambiar foto
-          <input type="file" accept="image/*" style="display:none;" onchange="previewEditCalcFoto(this)"/>
-        </label>
-      </div>
-    </div>
-    <div class="br2">
-      <button class="bp" onclick="saveEditCalc()">Guardar cambios</button>
-      <button class="bs" onclick="closeModal('editCalcModal')">Cancelar</button>
-    </div>
-  </div>
-</div>
 
 <div class="mo" id="newClientIngresoModal">
   <div class="md" style="max-width:440px;padding:0;overflow:hidden;position:relative;">
@@ -3796,7 +3768,6 @@ window.showClientUI = async function(email, clientData) {
   window._clientPresupuestos = [];
   window._allCobros = [];
   window.calcData = {};
-  window.currentCalcId = null;
 
   // Reset UI visual — SIEMPRE, antes de cargar datos del nuevo cliente
   const logoWrap = document.getElementById('negocio-logo-wrap');
@@ -5173,107 +5144,324 @@ window.createPresup = async function() {
   } catch(e) {}
 };
 
+// ===== CALCULADOR v2 =====
 let calcData = {};
-let currentCalcId = null;
+let _calcMode = 'producto';
+let _calcFormInsumos = [];
 
 async function loadCalcItems(clientId) {
   showSkeleton('calc-items','cards');
   try {
-    calcData = {};  // reset antes de cargar
+    calcData = {};
     const snap = await getDocs(collection(db,'clientes',clientId,'calculos'));
     snap.forEach(d => { const data=d.data(); if(!data.eliminado) calcData[d.id]={id:d.id,...data}; });
     renderCalcList();
   } catch(e) {}
 }
 
+function calcCostoProducto(insumos) {
+  return (insumos||[]).reduce((total, ins) => {
+    const precio = parseFloat(ins.precio)||0;
+    const eqQty = parseFloat(ins.eqQty)||1;
+    if(ins.tipoUso === 'durabilidad') {
+      const usos = parseFloat(ins.usosTotal)||1;
+      return total + precio/usos;
+    }
+    return total + (precio/eqQty)*(parseFloat(ins.usoPorUnidad)||0);
+  }, 0);
+}
+
 function renderCalcList() {
   const items = Object.values(calcData);
   const setEl = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
-
-  // KPIs
   const count = items.length;
-  const avgMargen = count > 0 ? Math.round(items.reduce((a,c)=>a+(c.margen||30),0)/count) : 0;
-  const precios = items.map(c=>{ const t=(c.costs||[]).reduce((a,x)=>a+x.m,0); return t*(1+(c.margen||30)/100); });
-  const avgPrecio = count > 0 ? Math.round(precios.reduce((a,p)=>a+p,0)/count) : 0;
+  const avg = count > 0 ? Math.round(items.reduce((a,c)=>a+(parseFloat(c.margen)||30),0)/count) : 0;
   setEl('calc-kpi-count', count);
-  setEl('calc-kpi-margen', avgMargen+'%');
-  setEl('calc-kpi-precio', '$'+avgPrecio.toLocaleString('es-AR'));
-  // Banner KPIs
-  setEl('bn-calc-count', count);
-  setEl('bn-calc-margen', avgMargen+'%');
-  const ultCalc = items.sort((a,b)=>new Date(b.creadoEn||0)-new Date(a.creadoEn||0))[0];
-  setEl('bn-calc-ultimo', ultCalc?.nombre || '—');
+  setEl('calc-kpi-margen', avg+'%');
 
-  const colors = ['var(--ok)','var(--blue)','var(--warn)','var(--sage)','var(--err)'];
-
-  if(items.length === 0) {
-    document.getElementById('calc-items').innerHTML = createEmptyState('calculadora','Sin cálculos de costos','Creá tu primer cálculo para saber exactamente cuánto te cuesta producir','+ Nuevo cálculo','showNewCalcForm()');
+  if(count === 0) {
+    document.getElementById('calc-items').innerHTML = createEmptyState('calculadora','Sin cálculos de costos','Creá tu primer cálculo para saber exactamente cuánto te cuesta producir','+ Nuevo cálculo','showCalcForm(null)');
     return;
   }
 
-  // Lista de cálculos
-  document.getElementById('calc-items').innerHTML = items.map((c,i) => {
-    const total = (c.costs||[]).reduce((a,x)=>a+x.m,0);
-    const precio = Math.round(total*(1+(c.margen||30)/100));
-    const ganancia = precio - total;
-    const color = colors[i%colors.length];
-    const foto = c.foto ? `<img src="${c.foto}" style="width:38px;height:38px;border-radius:10px;object-fit:cover;flex-shrink:0;"/>` : `<div style="width:38px;height:38px;border-radius:10px;background:var(--sage-xl);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 4h12v9H2zM5 4V3a1 1 0 011-1h4a1 1 0 011 1v1" stroke="var(--sage-dark)" stroke-width="1.3" stroke-linecap="round"/></svg></div>`;
+  const tipoBadge = {producto:'Producto',hora:'Por hora',proyecto:'Proyecto'};
+  const tipoColor = {producto:'#7A8E7D',hora:'#4A6A8A',proyecto:'#B08A42'};
+
+  document.getElementById('calc-items').innerHTML = items.map(c => {
+    const tipo = c.tipo || 'producto';
+    const tc = tipoColor[tipo]||'#7A8E7D';
+    const badge = `<span style="background:${tc}22;color:${tc};font-size:10px;font-weight:500;padding:2px 7px;border-radius:20px;">${tipoBadge[tipo]||'Producto'}</span>`;
+    let precio = 0, ganancia = 0;
+    const margen = parseFloat(c.margen)||30;
+    if(tipo === 'producto') {
+      const costo = calcCostoProducto(c.insumos||[]);
+      precio = costo*(1+margen/100); ganancia = precio-costo;
+    } else if(tipo === 'hora') {
+      const horas = parseFloat(c.horasMes)||1;
+      precio = ((parseFloat(c.costosFijos)||0)/horas)*(1+margen/100);
+      ganancia = precio*horas - (parseFloat(c.costosFijos)||0);
+    } else if(tipo === 'proyecto') {
+      const costo = (parseFloat(c.horasEstimadas)||0)*(parseFloat(c.tarifaHora)||0)+(parseFloat(c.costosDirectos)||0);
+      precio = costo*(1+margen/100); ganancia = precio-costo;
+    }
+    const ps = precio > 0 ? '$'+Math.round(precio).toLocaleString('es-AR') : '—';
+    const gs = ganancia > 0 ? '+$'+Math.round(ganancia).toLocaleString('es-AR') : '';
     return `<div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:.5px solid var(--cream-d);">
-      <div style="cursor:pointer;flex:1;display:flex;align-items:center;gap:12px;" onclick="openCalcDetail('${c.id}')">
-        ${foto}
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:13px;font-weight:500;">${c.nombre}</div>
-          <div style="font-size:11px;color:var(--text-l);margin-top:2px;">${(c.costs||[]).length} costos · Margen ${c.margen||30}%</div>
-        </div>
-        <div style="text-align:right;flex-shrink:0;">
-          <div style="font-weight:500;font-size:14px;">$${precio.toLocaleString('es-AR')}</div>
-          <div style="font-size:11px;color:var(--ok);margin-top:2px;">+$${ganancia.toLocaleString('es-AR')}</div>
+      <div style="cursor:pointer;flex:1;min-width:0;" onclick="showCalcForm('${c.id}')">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">${badge}<span style="font-size:13px;font-weight:500;">${c.nombre||'Sin nombre'}</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div style="font-size:11px;color:var(--text-l);">Margen ${margen}%</div>
+          <div style="text-align:right;"><div style="font-weight:500;font-size:14px;">${ps}</div>${gs?`<div style="font-size:11px;color:var(--ok);">${gs}</div>`:''}</div>
         </div>
       </div>
-      <div style="display:flex;gap:4px;flex-shrink:0;" onclick="event.stopPropagation()">
-        <button onclick="editCalc('${c.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <button onclick="deleteCalc('${c.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
-      </div>
+      <button onclick="event.stopPropagation();deleteCalc('${c.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
     </div>`;
   }).join('');
 }
 
-window.openCalcDetail = function(id) {
-  currentCalcId = id;
-  document.getElementById('calc-list-view').style.display='none';
-  document.getElementById('calc-detail-view').style.display='block';
-  document.getElementById('calc-name').textContent = calcData[id].nombre;
-  renderCalc();
+function newInsumo() {
+  return {nombre:'',compraQty:1,compraUnit:'kg',eqQty:1000,eqUnit:'gr',precio:0,tipoUso:'cantidad',usoPorUnidad:0,usosTotal:0};
+}
+
+function renderInsumos() {
+  const wrap = document.getElementById('calcf-insumos-wrap');
+  if(!wrap) return;
+  const uComp = ['bloque','kg','lt','unidad','frasco','caja'];
+  const uEq = ['gr','ml','unidades'];
+  wrap.innerHTML = _calcFormInsumos.map((ins, idx) => {
+    const usoCant = ins.tipoUso !== 'durabilidad';
+    const optComp = uComp.map(u=>`<option value="${u}"${ins.compraUnit===u?' selected':''}>${u}</option>`).join('');
+    const optEq = uEq.map(u=>`<option value="${u}"${ins.eqUnit===u?' selected':''}>${u}</option>`).join('');
+    return `<div style="background:var(--cream);border-radius:10px;padding:12px;margin-bottom:8px;position:relative;">
+      <button onclick="removeCalcInsumo(${idx})" style="position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;border:none;background:var(--cream-d);cursor:pointer;font-size:14px;color:var(--text-m);display:flex;align-items:center;justify-content:center;line-height:1;">×</button>
+      <input type="text" class="fi" placeholder="Nombre del insumo" value="${ins.nombre||''}" oninput="updateInsumo(${idx},'nombre',this.value)" style="margin-bottom:8px;font-weight:500;padding-right:32px;"/>
+      <div style="font-size:10px;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px;">Comprás</div>
+      <div style="display:grid;grid-template-columns:80px 1fr;gap:6px;margin-bottom:8px;">
+        <input type="number" class="fi" placeholder="Cant." value="${ins.compraQty||''}" oninput="updateInsumo(${idx},'compraQty',this.value)" style="margin:0;"/>
+        <select class="fi" onchange="updateInsumo(${idx},'compraUnit',this.value)" style="margin:0;">${optComp}</select>
+      </div>
+      <div style="font-size:10px;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px;">Que equivale a</div>
+      <div style="display:grid;grid-template-columns:80px 1fr;gap:6px;margin-bottom:8px;">
+        <input type="number" class="fi" placeholder="Equiv." value="${ins.eqQty||''}" oninput="updateInsumo(${idx},'eqQty',this.value)" style="margin:0;"/>
+        <select class="fi" onchange="updateInsumo(${idx},'eqUnit',this.value)" style="margin:0;">${optEq}</select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;">
+        <div>
+          <div style="font-size:10px;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px;">Precio de compra</div>
+          <input type="number" class="fi" placeholder="$0" value="${ins.precio||''}" oninput="updateInsumo(${idx},'precio',this.value)" style="margin:0;"/>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px;">Tipo de uso</div>
+          <div style="display:flex;background:var(--cream-d);border-radius:7px;padding:2px;">
+            <button onclick="updateInsumo(${idx},'tipoUso','cantidad')" style="flex:1;padding:5px 2px;border:none;border-radius:5px;font-size:10px;font-family:'DM Sans',sans-serif;cursor:pointer;${usoCant?'background:#fff;font-weight:600;color:var(--topbar);':'background:transparent;color:var(--text-m);'}">Por cant.</button>
+            <button onclick="updateInsumo(${idx},'tipoUso','durabilidad')" style="flex:1;padding:5px 2px;border:none;border-radius:5px;font-size:10px;font-family:'DM Sans',sans-serif;cursor:pointer;${!usoCant?'background:#fff;font-weight:600;color:var(--topbar);':'background:transparent;color:var(--text-m);'}">Por durab.</button>
+          </div>
+        </div>
+      </div>
+      ${usoCant ? `
+        <div style="font-size:10px;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px;">Uso por unidad producida</div>
+        <div style="display:grid;grid-template-columns:80px 1fr;gap:6px;align-items:center;">
+          <input type="number" class="fi" placeholder="0" value="${ins.usoPorUnidad||''}" oninput="updateInsumo(${idx},'usoPorUnidad',this.value)" style="margin:0;"/>
+          <span style="font-size:12px;color:var(--text-m);">${ins.eqUnit||'gr'} por unidad</span>
+        </div>` : `
+        <div style="font-size:10px;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px;">Usos por unidad comprada</div>
+        <div style="display:grid;grid-template-columns:80px 1fr;gap:6px;align-items:center;">
+          <input type="number" class="fi" placeholder="0" value="${ins.usosTotal||''}" oninput="updateInsumo(${idx},'usosTotal',this.value)" style="margin:0;"/>
+          <span style="font-size:12px;color:var(--text-m);">usos por ${ins.compraQty||1} ${ins.compraUnit||'kg'}</span>
+        </div>`}
+    </div>`;
+  }).join('');
+}
+
+window.updateInsumo = function(idx, field, value) {
+  if(!_calcFormInsumos[idx]) return;
+  _calcFormInsumos[idx][field] = value;
+  if(['tipoUso','compraUnit','eqUnit'].includes(field)) renderInsumos();
+  recalcCalc();
 };
 
-window.closeCalcDetail = function() {
-  document.getElementById('calc-list-view').style.display='block';
-  document.getElementById('calc-detail-view').style.display='none';
-  if (window._calcChart) { window._calcChart.destroy(); window._calcChart=null; }
+window.addCalcInsumo = function() {
+  _calcFormInsumos.push(newInsumo());
+  renderInsumos();
+  recalcCalc();
 };
 
-window.showNewCalcForm = function() {
-  document.getElementById('calc-list-view').style.display='none';
-  document.getElementById('calc-new-form').style.display='block';
+window.removeCalcInsumo = function(idx) {
+  _calcFormInsumos.splice(idx, 1);
+  if(_calcFormInsumos.length === 0) _calcFormInsumos.push(newInsumo());
+  renderInsumos();
+  recalcCalc();
 };
 
-window.closeNewCalcForm = function() {
-  document.getElementById('calc-list-view').style.display='block';
-  document.getElementById('calc-new-form').style.display='none';
+window.showCalcForm = function(id) {
+  document.getElementById('calc-list-view').style.display = 'none';
+  document.getElementById('calc-form-view').style.display = 'block';
+  document.getElementById('calcf-id').value = id||'';
+  const clearFields = ids => ids.forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});
+  if(id && calcData[id]) {
+    const c = calcData[id];
+    document.getElementById('calcf-nombre').value = c.nombre||'';
+    document.getElementById('calcf-margen').value = c.margen||30;
+    _calcMode = c.tipo||'producto';
+    if(_calcMode === 'hora') {
+      document.getElementById('calcf-costos-fijos').value = c.costosFijos||'';
+      document.getElementById('calcf-horas-mes').value = c.horasMes||'';
+    } else if(_calcMode === 'proyecto') {
+      document.getElementById('calcf-horas-est').value = c.horasEstimadas||'';
+      document.getElementById('calcf-tarifa-hora').value = c.tarifaHora||'';
+      document.getElementById('calcf-costos-dir').value = c.costosDirectos||'';
+    } else {
+      _calcFormInsumos = (c.insumos||[]).map(ins=>({...ins}));
+      if(_calcFormInsumos.length === 0) _calcFormInsumos = [newInsumo()];
+    }
+  } else {
+    document.getElementById('calcf-nombre').value = '';
+    document.getElementById('calcf-margen').value = '30';
+    _calcMode = 'producto';
+    _calcFormInsumos = [newInsumo()];
+    clearFields(['calcf-costos-fijos','calcf-horas-mes','calcf-horas-est','calcf-tarifa-hora','calcf-costos-dir']);
+  }
+  setCalcMode(_calcMode);
 };
 
-window.previewCalcFoto = function(input) {
-  const file = input.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const preview = document.getElementById('nc-foto-preview');
-    if(preview) preview.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;"/>`;
-    const name = document.getElementById('nc-foto-name');
-    if(name) name.textContent = file.name;
-    window._calcFotoData = e.target.result;
-  };
-  reader.readAsDataURL(file);
+window.closeCalcForm = function() {
+  document.getElementById('calc-list-view').style.display = 'block';
+  document.getElementById('calc-form-view').style.display = 'none';
+};
+
+window.setCalcMode = function(mode) {
+  _calcMode = mode;
+  const map = {producto:'prod',hora:'hora',proyecto:'proy'};
+  ['producto','hora','proyecto'].forEach(m => {
+    const btn = document.getElementById('ctab-btn-'+m);
+    if(btn) { btn.style.background = m===mode?'var(--topbar)':'transparent'; btn.style.color = m===mode?'#fff':'var(--text-m)'; }
+    const sec = document.getElementById('calcf-'+map[m]+'-section');
+    if(sec) sec.style.display = m===mode?'block':'none';
+  });
+  if(mode === 'producto') renderInsumos();
+  recalcCalc();
+};
+
+window.recalcCalc = function() {
+  const margen = parseFloat(document.getElementById('calcf-margen')?.value)||30;
+  const col = document.getElementById('calcf-results-col');
+  if(!col) return;
+  let html = '';
+
+  if(_calcMode === 'producto') {
+    const costo = calcCostoProducto(_calcFormInsumos);
+    const precioSug = costo*(1+margen/100);
+    const ganancia = precioSug - costo;
+    html = `<div class="card" style="background:var(--sage-xl);border:.5px solid var(--sage-light);">
+      <div style="font-size:11px;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;">Precio sugerido</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:44px;font-weight:500;color:var(--topbar);line-height:1;margin-bottom:4px;">$${Math.round(precioSug).toLocaleString('es-AR')}</div>
+      <div style="font-size:12px;color:var(--text-m);">Con ${margen}% de margen</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
+      <div class="card"><div style="font-size:10px;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px;">Precio mínimo</div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;">$${Math.round(costo).toLocaleString('es-AR')}</div><div style="font-size:11px;color:var(--text-l);margin-top:2px;">Costo total sin margen</div></div>
+      <div class="card"><div style="font-size:10px;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px;">Ganancia</div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--ok);">$${Math.round(ganancia).toLocaleString('es-AR')}</div><div style="font-size:11px;color:var(--text-l);margin-top:2px;">Por unidad producida</div></div>
+    </div>`;
+    const insConDatos = _calcFormInsumos.filter(ins=>(parseFloat(ins.precio)||0)>0||(ins.nombre||'').trim());
+    if(insConDatos.length > 0) {
+      html += `<div class="card" style="margin-top:10px;"><div style="font-size:10px;font-weight:600;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px;">Desglose por insumo</div>`;
+      insConDatos.forEach(ins => {
+        const precio = parseFloat(ins.precio)||0;
+        const eqQty = parseFloat(ins.eqQty)||1;
+        let costoIns = 0, formula = '';
+        if(ins.tipoUso === 'durabilidad') {
+          const usos = parseFloat(ins.usosTotal)||1;
+          costoIns = precio/usos;
+          formula = `$${precio.toLocaleString('es-AR')} ÷ ${usos} usos`;
+        } else {
+          const uso = parseFloat(ins.usoPorUnidad)||0;
+          costoIns = (precio/eqQty)*uso;
+          formula = `($${precio.toLocaleString('es-AR')} ÷ ${eqQty}${ins.eqUnit||'gr'}) × ${uso}${ins.eqUnit||'gr'}`;
+        }
+        const pct = costo > 0 ? Math.round((costoIns/costo)*100) : 0;
+        html += `<div style="padding:8px 0;border-bottom:.5px solid var(--cream-d);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+            <span style="font-size:12px;font-weight:500;">${ins.nombre||'Insumo'}</span>
+            <span style="font-size:13px;font-weight:500;">$${costoIns.toFixed(2)}</span>
+          </div>
+          <div style="font-size:11px;color:var(--text-l);margin-bottom:4px;">${formula}</div>
+          <div style="height:3px;background:var(--cream-d);border-radius:2px;"><div style="height:100%;width:${pct}%;background:var(--topbar);border-radius:2px;"></div></div>
+        </div>`;
+      });
+      html += `</div>`;
+    }
+
+  } else if(_calcMode === 'hora') {
+    const costosFijos = parseFloat(document.getElementById('calcf-costos-fijos')?.value)||0;
+    const horasMes = parseFloat(document.getElementById('calcf-horas-mes')?.value)||1;
+    const tarifaHora = (costosFijos/horasMes)*(1+margen/100);
+    const horasParaCubrir = tarifaHora > 0 ? Math.ceil(costosFijos/tarifaHora) : 0;
+    const gananciaMes = tarifaHora*horasMes - costosFijos;
+    html = `<div class="card" style="background:var(--sage-xl);border:.5px solid var(--sage-light);">
+      <div style="font-size:11px;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;">Tarifa por hora</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:44px;font-weight:500;color:var(--topbar);line-height:1;margin-bottom:4px;">$${Math.round(tarifaHora).toLocaleString('es-AR')}</div>
+      <div style="font-size:12px;color:var(--text-m);">Con ${margen}% de margen</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
+      <div class="card"><div style="font-size:10px;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px;">Horas para cubrir costos</div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;">${horasParaCubrir}h</div><div style="font-size:11px;color:var(--text-l);margin-top:2px;">de ${Math.round(horasMes)} horas/mes</div></div>
+      <div class="card"><div style="font-size:10px;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px;">Ganancia mensual estimada</div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--ok);">$${Math.round(gananciaMes).toLocaleString('es-AR')}</div><div style="font-size:11px;color:var(--text-l);margin-top:2px;">Con ${Math.round(horasMes)}h facturadas</div></div>
+    </div>`;
+
+  } else if(_calcMode === 'proyecto') {
+    const horas = parseFloat(document.getElementById('calcf-horas-est')?.value)||0;
+    const tarifa = parseFloat(document.getElementById('calcf-tarifa-hora')?.value)||0;
+    const costosDir = parseFloat(document.getElementById('calcf-costos-dir')?.value)||0;
+    const costoBase = horas*tarifa + costosDir;
+    const precioTotal = costoBase*(1+margen/100);
+    const ganancia = precioTotal - costoBase;
+    const margenReal = precioTotal > 0 ? Math.round((ganancia/precioTotal)*100) : 0;
+    html = `<div class="card" style="background:var(--sage-xl);border:.5px solid var(--sage-light);">
+      <div style="font-size:11px;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;">Precio del proyecto</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:44px;font-weight:500;color:var(--topbar);line-height:1;margin-bottom:4px;">$${Math.round(precioTotal).toLocaleString('es-AR')}</div>
+      <div style="font-size:12px;color:var(--text-m);">Con ${margen}% de margen</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
+      <div class="card"><div style="font-size:10px;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px;">Ganancia</div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--ok);">$${Math.round(ganancia).toLocaleString('es-AR')}</div></div>
+      <div class="card"><div style="font-size:10px;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px;">Margen real</div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;">${margenReal}%</div></div>
+    </div>`;
+  }
+
+  col.innerHTML = html;
+};
+
+window.saveCalc = async function() {
+  if(!currentClientId) return;
+  const nombre = (document.getElementById('calcf-nombre')?.value||'').trim();
+  if(!nombre) { alert('Ingresá un nombre'); return; }
+  const margen = parseFloat(document.getElementById('calcf-margen')?.value)||30;
+  const id = document.getElementById('calcf-id')?.value||'';
+  let data = {nombre, margen, tipo:_calcMode, creadoEn:new Date().toISOString()};
+  if(_calcMode === 'producto') {
+    data.insumos = _calcFormInsumos.map(ins=>({
+      nombre:ins.nombre||'', compraQty:parseFloat(ins.compraQty)||1, compraUnit:ins.compraUnit||'kg',
+      eqQty:parseFloat(ins.eqQty)||1, eqUnit:ins.eqUnit||'gr', precio:parseFloat(ins.precio)||0,
+      tipoUso:ins.tipoUso||'cantidad', usoPorUnidad:parseFloat(ins.usoPorUnidad)||0, usosTotal:parseFloat(ins.usosTotal)||0
+    }));
+  } else if(_calcMode === 'hora') {
+    data.costosFijos = parseFloat(document.getElementById('calcf-costos-fijos')?.value)||0;
+    data.horasMes = parseFloat(document.getElementById('calcf-horas-mes')?.value)||0;
+  } else if(_calcMode === 'proyecto') {
+    data.horasEstimadas = parseFloat(document.getElementById('calcf-horas-est')?.value)||0;
+    data.tarifaHora = parseFloat(document.getElementById('calcf-tarifa-hora')?.value)||0;
+    data.costosDirectos = parseFloat(document.getElementById('calcf-costos-dir')?.value)||0;
+  }
+  try {
+    if(id) {
+      await updateDoc(doc(db,'clientes',currentClientId,'calculos',id), data);
+      calcData[id] = {id,...data};
+    } else {
+      const ref = await addDoc(collection(db,'clientes',currentClientId,'calculos'), data);
+      calcData[ref.id] = {id:ref.id,...data};
+      document.getElementById('calcf-id').value = ref.id;
+    }
+    const s = document.getElementById('calcf-saved');
+    if(s) { s.style.display='block'; setTimeout(()=>s.style.display='none',2000); }
+    renderCalcList();
+  } catch(e) { alert('Error: '+e.message); }
 };
 
 window.uploadNegocioLogo = function(input) {
@@ -5291,44 +5479,6 @@ window.uploadNegocioLogo = function(input) {
   reader.readAsDataURL(file);
 };
 
-window.editCalc = function(id) {
-  const c = calcData[id];
-  if(!c) return;
-  document.getElementById('ec-calc-id').value = id;
-  document.getElementById('ec-calc-nombre').value = c.nombre||'';
-  document.getElementById('ec-calc-margen').value = c.margen||30;
-  const prev = document.getElementById('ec-calc-foto-preview');
-  if(prev) prev.innerHTML = c.foto ? `<img src="${c.foto}" style="width:100%;height:100%;object-fit:cover;"/>` : '';
-  openModal('editCalcModal');
-};
-
-window.saveEditCalc = async function() {
-  const id = document.getElementById('ec-calc-id').value;
-  if(!id || !currentClientId) return;
-  const nombre = document.getElementById('ec-calc-nombre').value;
-  const margen = parseFloat(document.getElementById('ec-calc-margen').value)||30;
-  const foto = window._editCalcFoto || calcData[id]?.foto || null;
-  window._editCalcFoto = null;
-  try {
-    await updateDoc(doc(db,'clientes',currentClientId,'calculos',id), {nombre,margen,foto});
-    calcData[id] = {...calcData[id], nombre, margen, foto};
-    closeModal('editCalcModal');
-    renderCalcList();
-  } catch(e) { alert('Error: '+e.message); }
-};
-
-window.previewEditCalcFoto = function(input) {
-  const file = input.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    window._editCalcFoto = e.target.result;
-    const prev = document.getElementById('ec-calc-foto-preview');
-    if(prev) prev.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;"/>`;
-  };
-  reader.readAsDataURL(file);
-};
-
 window.deleteCalc = function(id) {
   const nombre = calcData[id]?.nombre || 'este cálculo';
   showConfirm(`¿Eliminar "${nombre}"?`, async () => {
@@ -5339,146 +5489,6 @@ window.deleteCalc = function(id) {
     } catch(e) { console.log(e); }
   }, 'Eliminar cálculo');
 };
-
-window.createCalc = async function() {
-  const nombre = document.getElementById('nc-name').value;
-  const margen = parseFloat(document.getElementById('nc-margen').value)||30;
-  if(!nombre || !currentClientId) return;
-  try {
-    const fotoData = window._calcFotoData || null;
-    window._calcFotoData = null;
-    const ref = await addDoc(collection(db,'clientes',currentClientId,'calculos'), {nombre,margen,costs:[],foto:fotoData,creadoEn:new Date().toISOString()});
-    calcData[ref.id] = {id:ref.id,nombre,margen,costs:[],foto:fotoData};
-    document.getElementById('nc-name').value = '';
-    document.getElementById('nc-margen').value = '';
-    const prev = document.getElementById('nc-foto-preview');
-    if(prev) prev.innerHTML = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="4" width="16" height="13" rx="2" stroke="var(--text-l)" stroke-width="1.3"/><circle cx="10" cy="10" r="3" stroke="var(--text-l)" stroke-width="1.3"/><path d="M6 4V3a1 1 0 011-1h6a1 1 0 011 1v1" stroke="var(--text-l)" stroke-width="1.3"/></svg>';
-    closeNewCalcForm();
-    openCalcDetail(ref.id);
-  } catch(e) { alert('Error: '+e.message); }
-};
-
-window.addCalcCost = async function() {
-  const c = document.getElementById('nc-c').value;
-  const m = parseFloat(document.getElementById('nc-m').value)||0;
-  if (!c||!m||!currentCalcId) return;
-  calcData[currentCalcId].costs = [...(calcData[currentCalcId].costs||[]), {n:c,m}];
-  if (currentClientId) {
-    try { await updateDoc(doc(db,'clientes',currentClientId,'calculos',currentCalcId), {costs:calcData[currentCalcId].costs}); } catch(e) {}
-  }
-  document.getElementById('nc-c').value='';
-  document.getElementById('nc-m').value='';
-  renderCalc();
-};
-
-window.deleteCalcCost = async function(idx) {
-  calcData[currentCalcId].costs.splice(idx,1);
-  if (currentClientId) {
-    try { await updateDoc(doc(db,'clientes',currentClientId,'calculos',currentCalcId), {costs:calcData[currentCalcId].costs}); } catch(e) {}
-  }
-  renderCalc();
-};
-
-// Paleta de colores para conceptos del calculador
-const calcColors = [
-  '#A1B1A4', // salvia
-  '#7A9E8A', // verde medio
-  '#B8A98A', // arena dorado
-  '#8A9EBB', // azul grisáceo
-  '#B89A8A', // terracota suave
-  '#9A8ABB', // lila
-  '#8ABB9A', // menta
-  '#BB9A8A', // salmón
-  '#8AABBB', // celeste
-  '#BBAB8A', // ocre
-];
-
-function renderCalc() {
-  const data = calcData[currentCalcId];
-  const costs = data.costs||[];
-  const total = costs.reduce((a,c)=>a+c.m,0);
-  const gan = total*(data.margen/100);
-  const precio = total+gan;
-
-  document.getElementById('calc-summary').innerHTML = `
-    <div style="background:var(--cream);border-radius:9px;padding:11px 13px;"><div class="ml">Costo total</div><div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:500;">$${total.toLocaleString('es-AR')}</div></div>
-    <div style="background:var(--cream);border-radius:9px;padding:11px 13px;"><div class="ml">Margen</div><div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:500;">${data.margen}%</div></div>
-    <div style="background:var(--sage-xl);border:.5px solid var(--sage-light);border-radius:9px;padding:11px 13px;"><div class="ml">Precio sugerido</div><div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:500;color:var(--topbar);">$${Math.round(precio).toLocaleString('es-AR')}</div></div>
-    <div style="background:var(--sage-xl);border:.5px solid var(--sage-light);border-radius:9px;padding:11px 13px;"><div class="ml">Ganancia</div><div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:500;color:var(--topbar);">$${Math.round(gan).toLocaleString('es-AR')}</div></div>`;
-
-  document.getElementById('calc-costs').innerHTML = costs.map((c,i)=>`
-    <div class="row"><div style="display:flex;align-items:center;gap:8px;">
-      <div style="width:10px;height:10px;border-radius:50%;background:${calcColors[i%calcColors.length]};flex-shrink:0;"></div>
-      <div><div class="rn">${c.n}</div><div class="rs">$${c.m.toLocaleString('es-AR')}</div></div>
-    </div>
-    <button style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" onclick="deleteCalcCost(${i})" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button></div>`).join('');
-
-  if(window._calcChart){window._calcChart.destroy();window._calcChart=null;}
-  const ctx = document.getElementById('calcChart');
-  if(!ctx) return;
-
-  if(costs.length === 0) {
-    ctx.style.display = 'none';
-    const parent = ctx.parentElement;
-    if(parent && !parent.querySelector('.calc-empty-msg')) {
-      const msg = document.createElement('div');
-      msg.className = 'calc-empty-msg';
-      msg.style.cssText = 'text-align:center;padding:32px 20px;color:var(--text-l);font-size:12px;';
-      msg.textContent = 'Agregá costos para ver la distribución';
-      parent.appendChild(msg);
-    }
-    return;
-  }
-
-  // limpiar mensaje vacío si había
-  ctx.style.display = 'block';
-  const emptyMsg = ctx.parentElement?.querySelector('.calc-empty-msg');
-  if(emptyMsg) emptyMsg.remove();
-
-  // Un segmento por cada concepto de costo + ganancia
-  const labels = [...costs.map(c=>c.n), 'Ganancia'];
-  const valores = [...costs.map(c=>c.m), gan];
-  const colores = [...costs.map((_,i)=>calcColors[i%calcColors.length]), '#C8D4CA'];
-
-  window._calcChart = new Chart(ctx.getContext('2d'), {
-    type: 'doughnut',
-    data: {
-      labels,
-      datasets: [{
-        data: valores,
-        backgroundColor: colores,
-        borderWidth: 2,
-        borderColor: '#F5F6F3'
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: 'bottom',
-          labels: {
-            font: {family:'DM Sans', size:11},
-            color: '#6A7A6E',
-            boxWidth: 10,
-            padding: 10,
-            usePointStyle: true,
-            pointStyle: 'circle'
-          }
-        },
-        tooltip: {
-          callbacks: {
-            label: (ctx) => {
-              const pct = precio > 0 ? Math.round((ctx.raw / precio) * 100) : 0;
-              return ` ${ctx.label}: $${Math.round(ctx.raw).toLocaleString('es-AR')} (${pct}%)`;
-            }
-          }
-        }
-      },
-      cutout: '58%'
-    }
-  });
-}
 
 window.updateClientKpis = function() {
   const ing = parseFloat(document.getElementById('c-ing-input').value)||0;
