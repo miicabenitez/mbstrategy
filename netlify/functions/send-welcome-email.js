@@ -23,7 +23,7 @@ function buildEmailHTML({ nombre, negocioNombre, email, password, plan, trialEnd
 <!-- HEADER -->
 <tr><td style="background:#7A8E7D;border-radius:16px 16px 0 0;padding:32px 28px;text-align:center;">
   <div style="font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:normal;color:#ffffff;letter-spacing:2px;">MB STRATEGY</div>
-  <div style="font-size:13px;color:rgba(255,255,255,0.75);margin-top:8px;">Bienvenida a tu sistema de gestión</div>
+  <div style="font-size:13px;color:rgba(255,255,255,0.75);margin-top:8px;">Bienvenido/a a tu sistema de gestión</div>
 </td></tr>
 
 <!-- BODY -->
@@ -75,8 +75,8 @@ function buildEmailHTML({ nombre, negocioNombre, email, password, plan, trialEnd
   </td></tr></table>` : ''}
 
   <!-- WhatsApp -->
-  <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
-    <a href="https://wa.me/5491176553318" style="font-size:12px;color:#888780;text-decoration:none;">¿Dudas? Escribinos por WhatsApp</a>
+  <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding-bottom:8px;">
+    <a href="https://wa.me/5491176553318?text=Hola!%20Vi%20la%20Academia%20MB%20Strategy%20en%20la%20p%C3%A1gina%20de%20planes%20y%20me%20interesa.%20%C2%BFMe%20cont%C3%A1s%20m%C3%A1s%3F" style="display:inline-block;background:#25D366;color:#ffffff;text-decoration:none;padding:14px 40px;border-radius:10px;font-size:14px;font-weight:bold;">Escribinos por WhatsApp</a>
   </td></tr></table>
 
 </td></tr>
@@ -111,7 +111,7 @@ exports.handler = async (event) => {
     await transporter.sendMail({
       from: `"MB Strategy" <${process.env.GMAIL_USER}>`,
       to: email,
-      subject: `Bienvenida a MB Strategy, ${nombre} ✦`,
+      subject: `Bienvenido/a a MB Strategy, ${nombre} ✦`,
       html: buildEmailHTML({ nombre, negocioNombre: negocioNombre || 'tu negocio', email, password, plan: plan || 'base', trialEnd: trialEnd || '' })
     });
     return { statusCode: 200, body: JSON.stringify({ success: true }) };
