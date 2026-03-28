@@ -293,6 +293,8 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
   body.client-view .mobile-nav{display:none !important;}
   body.client-view .content{padding-bottom:76px;overflow-x:hidden;}
   body.client-view .embi-fab{bottom:76px;}
+  body.client-view .topbar-right{display:none !important;}
+  body.client-view #client-mobile-menu-wrap{display:block !important;}
   /* KPIs finanzas 2x2 en mobile */
   [style*="grid-template-columns:1.4fr"]{grid-template-columns:1fr 1fr !important;}
   #inicio-kpis{grid-template-columns:1fr 1fr !important;}
@@ -465,6 +467,15 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
       <div class="ub" id="ub">—</div>
       <button class="btn-out" id="btn-mi-cuenta" onclick="openModal('miCuentaModal')" style="display:none;">Mi cuenta</button>
       <button class="btn-out" id="btn-salir-legacy" onclick="doLogout()">Salir</button>
+    </div>
+    <!-- Tres puntitos — solo mobile client view -->
+    <div id="client-mobile-menu-wrap" style="display:none;position:relative;">
+      <button onclick="toggleClientMobileMenu(event)" style="background:none;border:none;cursor:pointer;padding:8px 10px;color:rgba(255,255,255,.85);font-size:22px;line-height:1;letter-spacing:.5px;">⋮</button>
+      <div id="client-mobile-menu-drop" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:#fff;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.13);min-width:170px;z-index:400;overflow:hidden;">
+        <button onclick="navigateToMiCuenta();closeClientMobileMenu()" style="width:100%;text-align:left;padding:13px 16px;border:none;background:none;font-size:13px;font-family:'DM Sans',sans-serif;color:#1a1a1a;cursor:pointer;">Mi cuenta</button>
+        <div style="border-top:.5px solid #f0f0f0;margin:0;"></div>
+        <button onclick="doLogout()" style="width:100%;text-align:left;padding:13px 16px;border:none;background:none;font-size:13px;font-family:'DM Sans',sans-serif;color:#C4786A;cursor:pointer;">Cerrar sesión</button>
+      </div>
     </div>
   </div>
 
@@ -13457,6 +13468,17 @@ function sidebarInit(){
   }catch(e){}
 }
 window.sidebarInit=sidebarInit;
+
+function toggleClientMobileMenu(e){
+  if(e)e.stopPropagation();
+  var d=document.getElementById('client-mobile-menu-drop');
+  if(d)d.style.display=d.style.display==='none'?'block':'none';
+}
+function closeClientMobileMenu(){
+  var d=document.getElementById('client-mobile-menu-drop');
+  if(d)d.style.display='none';
+}
+document.addEventListener('click',function(){closeClientMobileMenu();});
 </script>
 
 <div class="mo" id="detalleMovCCModal">
