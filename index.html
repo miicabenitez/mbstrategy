@@ -389,6 +389,10 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
 @keyframes revealComp{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
 @keyframes bounceUp{0%{transform:translateY(0);}50%{transform:translateY(-4px);}100%{transform:translateY(0);}}
 @keyframes bounceDown{0%{transform:translateY(0);}50%{transform:translateY(4px);}100%{transform:translateY(0);}}
+@keyframes flipNum{from{transform:perspective(200px) rotateX(70deg);opacity:.2;}to{transform:perspective(200px) rotateX(0deg);opacity:1;}}
+@keyframes slideIn{from{opacity:0;transform:translateX(-14px);}to{opacity:1;transform:translateX(0);}}
+@keyframes slideOut{0%{opacity:1;transform:translateX(0);max-height:100px;margin-bottom:8px;padding:0;}100%{opacity:0;transform:translateX(24px);max-height:0;margin-bottom:0;padding:0;overflow:hidden;}}
+@keyframes alertPulse{0%,100%{box-shadow:0 0 0 0 rgba(196,120,106,0);}60%{box-shadow:0 0 0 5px rgba(196,120,106,.12);}}
 </style>
 </head>
 <body>
@@ -1388,6 +1392,32 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
       <!-- INICIO DASHBOARD CLIENTE -->
       <div id="ct-inicio" style="display:none;">
 
+        <!-- Card: días restantes del mes -->
+        <div class="dash-card" id="inicio-dias-card" style="display:none;background:var(--white);border:.5px solid var(--cream-d);border-radius:13px;padding:18px 20px;margin-bottom:10px;">
+          <div style="display:flex;align-items:center;gap:20px;">
+            <div style="flex-shrink:0;text-align:center;min-width:72px;">
+              <div id="inicio-dias-num" style="font-family:'Cormorant Garamond',serif;font-size:54px;font-weight:400;line-height:1;color:#4a5e4d;display:inline-block;">—</div>
+              <div id="inicio-dias-label" style="font-size:11px;color:var(--text-l);margin-top:3px;white-space:nowrap;">días para cerrar</div>
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="height:5px;background:var(--cream-d);border-radius:5px;overflow:hidden;margin-bottom:7px;">
+                <div id="inicio-mes-bar" style="height:100%;width:0%;background:#4a5e4d;border-radius:5px;transition:width .7s ease;"></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-l);">
+                <span id="inicio-dias-start"></span>
+                <span id="inicio-dias-hoy" style="color:#4a5e4d;font-weight:600;"></span>
+                <span id="inicio-dias-end"></span>
+              </div>
+              <div style="font-size:11px;color:var(--text-l);margin-top:9px;">Cierre <span id="inicio-dias-cierre" style="color:var(--text);font-weight:500;"></span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card: salud del negocio -->
+        <div class="dash-card" id="inicio-salud-card" style="display:none;border-radius:13px;padding:11px 16px;margin-bottom:10px;transition:background .4s,border-color .4s;">
+          <div id="inicio-salud-inner" style="display:flex;align-items:center;gap:10px;font-size:13px;font-weight:500;"></div>
+        </div>
+
         <!-- Banner principal -->
         <div class="dash-card" style="background:#4a5e4d;border-radius:14px;padding:22px 24px;margin-bottom:14px;color:#fff;">
           <div style="display:flex;align-items:center;gap:14px;">
@@ -1399,9 +1429,6 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
               <div id="inicio-fecha" style="font-size:12px;color:rgba(255,255,255,.6);margin-top:2px;"></div>
             </div>
           </div>
-
-          <!-- Health bar -->
-          <div id="inicio-health-bar" style="display:none;margin-top:14px;padding:9px 14px;border-radius:9px;font-size:12px;font-weight:500;align-items:center;gap:8px;animation:slideDown .5s ease both;"></div>
 
           <!-- KPIs dentro del banner -->
           <div id="inicio-kpis" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px;margin-top:10px;">
@@ -6497,6 +6524,26 @@ function renderClientContabilidad(ingresos, egresos) {
 }
 
 // ─── INICIO DASHBOARD ───
+function animateDiasFlip(el, from, to, duration) {
+  if(!el) return;
+  const start = performance.now();
+  let prev = from;
+  el.textContent = from;
+  function tick(now) {
+    const t = Math.min((now - start) / duration, 1);
+    const ease = 1 - Math.pow(1 - t, 3);
+    const val = Math.round(from - (from - to) * ease);
+    if(val !== prev) {
+      el.style.animation = 'none';
+      el.offsetHeight; // reflow
+      el.style.animation = 'flipNum 0.18s ease';
+      el.textContent = val;
+      prev = val;
+    }
+    if(t < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
 function animateCounter(el, targetNum, duration, fmt) {
   if(!el || isNaN(targetNum)) return;
   var f = fmt || function(v){return v.toLocaleString('es-AR');};
@@ -6528,6 +6575,38 @@ async function loadInicio() {
     const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
     fechaEl.textContent = dias[hoy.getDay()]+' '+hoy.getDate()+' de '+meses[hoy.getMonth()]+', '+hoy.getFullYear();
   }
+
+  // ── Días restantes del mes ──
+  (function() {
+    const diasCard = document.getElementById('inicio-dias-card');
+    if(!diasCard) return;
+    const hoyD = new Date();
+    const diaActual = hoyD.getDate();
+    const mesIdx = hoyD.getMonth();
+    const anioD = hoyD.getFullYear();
+    const totalDias = new Date(anioD, mesIdx + 1, 0).getDate();
+    const diasRestantes = totalDias - diaActual;
+    const pctMes = Math.round((diaActual / totalDias) * 100);
+    const MESES_L = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    const MESES_C = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+    const mesNom = MESES_L[mesIdx];
+    const mesCorto = MESES_C[mesIdx];
+    const mesCap = mesNom.charAt(0).toUpperCase()+mesNom.slice(1);
+    const labelEl = document.getElementById('inicio-dias-label');
+    const barEl = document.getElementById('inicio-mes-bar');
+    const startEl = document.getElementById('inicio-dias-start');
+    const hoyEl = document.getElementById('inicio-dias-hoy');
+    const endEl = document.getElementById('inicio-dias-end');
+    const cierreEl = document.getElementById('inicio-dias-cierre');
+    if(labelEl) labelEl.textContent = 'días para cerrar '+mesCap;
+    if(startEl) startEl.textContent = '1 '+mesCap;
+    if(hoyEl) hoyEl.textContent = 'hoy · '+diaActual+' '+mesCorto;
+    if(endEl) endEl.textContent = totalDias+' '+mesCap;
+    if(cierreEl) cierreEl.textContent = totalDias+' de '+mesNom;
+    diasCard.style.display = 'block';
+    setTimeout(()=>{ if(barEl) barEl.style.width = pctMes+'%'; }, 300);
+    animateDiasFlip(document.getElementById('inicio-dias-num'), totalDias, diasRestantes, 1400);
+  })();
 
   // Cargar datos financieros
   try {
@@ -6623,61 +6702,133 @@ async function loadInicio() {
     const ccEl = document.getElementById('inicio-comp-cobrar');
     if(ccEl) ccEl.innerHTML = porCobrar > 0 ? '<span style="color:rgba(255,255,255,.5);">pendiente de cobro</span>' : '<span style="color:#a8d8a0;">Sin pendientes</span>';
 
-    // Health bar
-    const healthBar = document.getElementById('inicio-health-bar');
-    if(healthBar) {
-      let hColor, hBg, hMsg;
+    // ── Salud del negocio ──
+    const saludCard = document.getElementById('inicio-salud-card');
+    const saludInner = document.getElementById('inicio-salud-inner');
+    if(saludCard && saludInner) {
+      let sColor, sBg, sBorder, sSvg, sMsg;
       if(totalEgMes > totalIngMes) {
-        hColor = '#e8a090'; hBg = 'rgba(232,160,144,.15)'; hMsg = '⚠ Los egresos superan los ingresos este mes';
+        sColor='#C4786A'; sBg='#fdf5f4'; sBorder='#C4786A33';
+        sSvg='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C4786A" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>';
+        sMsg='Los egresos superan los ingresos este mes';
       } else if(margen < 20 || porCobrar > totalIngMes * 0.5) {
-        hColor = '#f0d687'; hBg = 'rgba(240,214,135,.15)';
-        hMsg = margen < 20 ? '↗ Margen bajo — revisá tus costos' : '↗ Cobros pendientes altos';
+        sColor='#9A7A2A'; sBg='#fdf9ee'; sBorder='#D4A84333';
+        sSvg='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9A7A2A" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>';
+        sMsg = margen < 20 ? 'Margen bajo — revisá tus costos' : 'Hay cobros pendientes altos';
       } else {
-        hColor = '#a8d8a0'; hBg = 'rgba(168,216,160,.15)'; hMsg = '✓ Negocio en buen estado este mes';
+        sColor='#3d6644'; sBg='#f3f8f4'; sBorder='#5A8A6233';
+        sSvg='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3d6644" stroke-width="2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
+        sMsg='Negocio en buen estado este mes';
       }
-      healthBar.style.background = hBg;
-      healthBar.style.color = hColor;
-      healthBar.style.border = '1px solid '+hColor+'66';
-      healthBar.innerHTML = hMsg;
-      healthBar.style.display = 'flex';
+      saludCard.style.cssText = 'display:block;border-radius:13px;padding:11px 16px;margin-bottom:10px;background:'+sBg+';border:.5px solid '+sBorder+';transition:background .4s,border-color .4s;';
+      saludInner.innerHTML = sSvg+'<span style="color:'+sColor+';font-size:13px;font-weight:500;">'+sMsg+'</span>';
     }
 
-    // ── Alertas ──
+    // ── Alertas inteligentes ──
     const alertasEl = document.getElementById('inicio-alertas');
     if(alertasEl) {
-      const alertas = [];
-      // Cobros pendientes > 15 días
-      const aprobados = (window._clientPresupuestos||[]).filter(p=>p.estado==='Aprobado');
-      const hace15 = new Date(); hace15.setDate(hace15.getDate()-15);
-      const vencidos = aprobados.filter(p=>{
-        const f = p.fecha || p.creadoEn;
-        if(!f) return false;
-        return new Date(f) < hace15;
-      });
-      if(vencidos.length > 0) alertas.push({dot:'#C4786A',txt:vencidos.length+' cobro'+(vencidos.length>1?'s':'')+' pendiente'+(vencidos.length>1?'s':'')+' hace +15 días'});
+      const now2 = Date.now();
+      const dismissedRaw = localStorage.getItem('mb_dismissed_alertas_'+currentClientUID);
+      const dismissed = dismissedRaw ? JSON.parse(dismissedRaw) : {};
+      const isDismissed = k => dismissed[k] && dismissed[k] > now2;
+      const saveDismiss = (k, days) => {
+        dismissed[k] = now2 + days * 86400000;
+        localStorage.setItem('mb_dismissed_alertas_'+currentClientUID, JSON.stringify(dismissed));
+      };
 
-      // Necesidades urgentes
-      try {
-        const necSnap = await getDocs(collection(db,'clientes',currentClientUID,'necesidades'));
-        let urgentes = 0;
-        necSnap.forEach(d=>{ const data=d.data(); if(data.estado==='urgente' && !data.eliminado && data.estadoCotizacion !== 'cotizada') urgentes++; });
-        if(urgentes > 0) alertas.push({dot:'#D4A843',txt:urgentes+' necesidad'+(urgentes>1?'es':'')+' urgente'+(urgentes>1?'s':'')+' sin OC'});
-      } catch(e) {}
+      const alertas = []; // {tipo, key, svg, color, title, subtitle, monto, accionLabel, accionFn, tag}
 
-      // Próxima reunión
-      if(currentClientData?.proximaReunion?.fecha) {
-        const r = currentClientData.proximaReunion;
-        const fReunion = new Date(r.fecha+'T'+(r.hora||'10:00'));
-        const diffDias = Math.ceil((fReunion - new Date())/(1000*60*60*24));
-        if(diffDias >= 0 && diffDias <= 7) {
-          alertas.push({dot:'#5A8A62',txt:'Reunión '+(diffDias===0?'hoy':diffDias===1?'mañana':'en '+diffDias+' días')+(r.hora?' a las '+r.hora:'')});
+      // URGENTES
+      const aprobados2 = (window._clientPresupuestos||[]).filter(p=>p.estado==='Aprobado');
+      const hace15b = new Date(); hace15b.setDate(hace15b.getDate()-15);
+      const vencidos2 = aprobados2.filter(p=>{ const f=p.fecha||p.creadoEn; return f && new Date(f)<hace15b; });
+      if(vencidos2.length > 0) {
+        const mv = vencidos2.reduce((s,p)=>s+(getPresupMonto?getPresupMonto(p):0),0);
+        alertas.push({tipo:'urgente',key:'cobros-venc',color:'#C4786A',
+          svg:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C4786A" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>',
+          title:vencidos2.length+(vencidos2.length>1?' cobros pendientes':' cobro pendiente')+' sin cobrar',
+          subtitle:'Hace más de 15 días que están aprobados',
+          monto:mv>0?'$'+mv.toLocaleString('es-AR'):'',
+          accionLabel:'Ver presupuestos', accionFn:"showClientMod('ventas',null)", tag:'Urgente'});
+      }
+      if(totalEgMes > totalIngMes && totalIngMes > 0) {
+        alertas.push({tipo:'urgente',key:'eg-sup-ing',color:'#C4786A',
+          svg:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C4786A" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>',
+          title:'Los egresos superan los ingresos',
+          subtitle:'Este mes gastás más de lo que ingresa',
+          monto:'−$'+(totalEgMes-totalIngMes).toLocaleString('es-AR'),
+          accionLabel:'Ver egresos', accionFn:"showClientMod('finanzas',null)", tag:'Urgente'});
+      }
+
+      // ATENCIÓN (descartables 7 días)
+      if(!isDismissed('presup-sin-resp')) {
+        const hace7 = new Date(); hace7.setDate(hace7.getDate()-7);
+        const sinResp = (window._clientPresupuestos||[]).filter(p=>p.estado==='Enviado'&&p.fecha&&new Date(p.fecha)<hace7);
+        if(sinResp.length > 0) {
+          alertas.push({tipo:'atencion',key:'presup-sin-resp',color:'#9A7A2A',
+            svg:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9A7A2A" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>',
+            title:sinResp.length+(sinResp.length>1?' presupuestos enviados':' presupuesto enviado')+' sin respuesta',
+            subtitle:'Sin novedades hace más de 7 días',
+            monto:'',
+            accionLabel:'Hacer seguimiento', accionFn:"showClientMod('ventas',null)", tag:'Atención'});
+        }
+      }
+      if(!isDismissed('margen-cayo')) {
+        const margenAntA = totalIngAnt > 0 ? Math.round(((totalIngAnt-totalEgAnt)/totalIngAnt)*100) : 0;
+        const caida = margenAntA - margen;
+        if(caida > 20 && gananciaAnt > 0) {
+          alertas.push({tipo:'atencion',key:'margen-cayo',color:'#9A7A2A',
+            svg:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9A7A2A" stroke-width="1.8" stroke-linecap="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>',
+            title:'El margen bajó '+caida+'% este mes',
+            subtitle:'Era '+margenAntA+'% el mes pasado, ahora es '+margen+'%',
+            monto:'',
+            accionLabel:'Ver finanzas', accionFn:"showClientMod('finanzas',null)", tag:'Atención'});
         }
       }
 
+      // POSITIVAS (descartables 24h)
+      const recKey = 'record-ing-'+hoy.getFullYear()+'-'+(hoy.getMonth()+1);
+      if(!isDismissed(recKey) && totalIngMes > totalIngAnt && totalIngAnt > 0) {
+        const pctRec = Math.round(((totalIngMes-totalIngAnt)/totalIngAnt)*100);
+        alertas.push({tipo:'positiva',key:recKey,color:'#3d6644',
+          svg:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3d6644" stroke-width="1.8" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+          title:'Récord de ingresos superado',
+          subtitle:'Este mes ingresó '+pctRec+'% más que el mes anterior',
+          monto:'$'+totalIngMes.toLocaleString('es-AR'),
+          accionLabel:'Ver finanzas', accionFn:"showClientMod('finanzas',null)", tag:'Positivo'});
+      }
+
       if(alertas.length === 0) {
-        alertasEl.innerHTML = '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;"><div style="width:8px;height:8px;border-radius:50%;background:#5A8A62;"></div><span style="font-size:13px;color:var(--text-m);">Todo al día</span></div>';
+        alertasEl.innerHTML = '<div style="display:flex;align-items:center;gap:12px;padding:10px 0;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5A8A62" stroke-width="2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span style="font-size:13px;color:var(--text-m);">Todo al día — tu negocio está en orden</span></div>';
       } else {
-        alertasEl.innerHTML = alertas.map(a=>'<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:.5px solid var(--cream);"><div style="width:8px;height:8px;border-radius:50%;background:'+a.dot+';flex-shrink:0;"></div><span style="font-size:13px;color:var(--text);">'+a.txt+'</span></div>').join('');
+        const colorsMap = {urgente:{bg:'#fdf5f4',bar:'#C4786A'},atencion:{bg:'#fdf9ee',bar:'#D4A843'},positiva:{bg:'#f3f8f4',bar:'#5A8A62'}};
+        alertasEl.innerHTML = alertas.map((a,idx)=>{
+          const cm = colorsMap[a.tipo]||colorsMap.urgente;
+          const canDismiss = a.tipo !== 'urgente';
+          const anim = 'animation:slideIn .35s ease both;animation-delay:'+(idx*60)+'ms;';
+          const pulse = a.tipo==='urgente' ? 'animation:alertPulse 2.5s ease infinite;' : '';
+          const days = a.tipo==='positiva' ? 1 : 7;
+          const dismissBtn = canDismiss ? '<button onclick="dismissAlerta(\'alerta-'+idx+'\',\''+a.key+'\','+days+')" style="background:none;border:none;cursor:pointer;padding:0;color:var(--text-l);font-size:18px;line-height:1;flex-shrink:0;" title="Descartar">×</button>' : '';
+          return '<div id="alerta-'+idx+'" style="display:flex;align-items:flex-start;gap:0;border-radius:10px;overflow:hidden;margin-bottom:8px;'+anim+pulse+'background:'+cm.bg+';border:.5px solid '+a.color+'22;">'+
+            '<div style="width:3px;min-height:100%;background:'+cm.bar+';flex-shrink:0;align-self:stretch;"></div>'+
+            '<div style="padding:12px 12px 12px 14px;flex:1;min-width:0;">'+
+              '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px;">'+
+                '<div style="display:flex;align-items:center;gap:8px;">'+a.svg+
+                  '<span style="font-size:13px;font-weight:600;color:var(--text);">'+a.title+'</span>'+
+                '</div>'+
+                '<div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">'+
+                  (a.monto?'<span style="font-size:13px;font-weight:700;color:'+a.color+';">'+a.monto+'</span>':'')+
+                  dismissBtn+
+                '</div>'+
+              '</div>'+
+              '<div style="font-size:12px;color:var(--text-l);margin-bottom:8px;">'+a.subtitle+'</div>'+
+              '<div style="display:flex;align-items:center;gap:8px;">'+
+                '<button onclick="'+a.accionFn+'" style="font-size:11px;font-weight:500;color:'+a.color+';background:'+a.color+'15;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-family:inherit;">'+a.accionLabel+'</button>'+
+                '<span style="font-size:10px;color:var(--text-l);background:var(--cream-d);border-radius:4px;padding:2px 7px;font-weight:500;">'+a.tag+'</span>'+
+              '</div>'+
+            '</div>'+
+          '</div>';
+        }).join('');
       }
     }
 
@@ -6730,6 +6881,14 @@ async function loadInicio() {
   dashCards.forEach(function(c,i){setTimeout(function(){c.classList.add('in');},80*i);});
 }
 window.loadInicio = loadInicio;
+window.dismissAlerta = function(elId, key, days) {
+  const raw = localStorage.getItem('mb_dismissed_alertas_'+(currentClientUID||''));
+  const d = raw ? JSON.parse(raw) : {};
+  d[key] = Date.now() + days * 86400000;
+  localStorage.setItem('mb_dismissed_alertas_'+(currentClientUID||''), JSON.stringify(d));
+  const el = document.getElementById(elId);
+  if(el) { el.style.animation = 'slideOut .3s ease forwards'; setTimeout(()=>{ if(el.parentNode) el.remove(); }, 320); }
+};
 
 window.checkOnboardingStatus = function() {
   const d = currentClientData || {};
