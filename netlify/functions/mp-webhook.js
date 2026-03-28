@@ -61,7 +61,25 @@ async function enviarWelcomeEmail(data) {
   }
 }
 
-exports.handler = async (event) => {
+async function notificarPushover({ nombreCliente, email, plan, monto }) {
+  try {
+    await fetch('https://api.pushover.net/1/messages.json', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        token: process.env.PUSHOVER_TOKEN,
+        user: process.env.PUSHOVER_USER,
+        title: '🎉 Nueva suscripción',
+        message: `👤 ${nombreCliente}\n📧 ${email}\n📦 Plan ${plan}\n💰 ${monto}/mes`,
+        priority: 0
+      })
+    });
+  } catch (e) {
+    console.error('Error notificando Pushover:', e);
+  }
+}
+
+
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, headers: HEADERS, body: JSON.stringify({ error: 'Método no permitido' }) };
   }
@@ -204,7 +222,13 @@ exports.handler = async (event) => {
           trialEnd
         });
 
-        // 6. Actualizar pendiente
+        // 6. Notificar Pushover
+        const monto = sub.auto_recurring?.transaction_amount
+          ? `$${sub.auto_recurring.transaction_amount}`
+          : '—';
+        await notificarPushover({ nombreCliente: pendiente.nombre, email: pendiente.email, plan, monto });
+
+        // 7. Actualizar pendiente
         await pendienteSnap.ref.update({
           estado: 'completado',
           uid: userRecord.uid,
