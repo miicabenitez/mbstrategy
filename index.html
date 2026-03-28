@@ -13140,20 +13140,6 @@ function embiInitDrag(){
 }
 function embiToggle(){
   if(_embiDragHappened){_embiDragHappened=false;return;}
-  if(!embiModo){
-    var tip=document.getElementById('embiUpgradeTip');
-    if(tip){
-      var showing=tip.style.display!=='block';
-      tip.style.display=showing?'block':'none';
-      if(showing){
-        setTimeout(function(){
-          function closeOnOutside(e){var fab=document.getElementById('embiFab');if(fab&&!fab.contains(e.target)){tip.style.display='none';document.removeEventListener('click',closeOnOutside,true);}}
-          document.addEventListener('click',closeOnOutside,true);
-        },50);
-      }
-    }
-    return;
-  }
   embiOpen=!embiOpen;
   var panel=document.getElementById('embiPanel');
   var btn=document.getElementById('embiFabBtn');
@@ -13193,29 +13179,8 @@ function embiShow(show){
   var fab=document.getElementById('embiFab');
   if(!fab)return;
   if(!show){fab.style.display='none';if(embiOpen)embiToggle();return;}
-  // Determine access level
-  var productoEmbi=(window.currentClientData?.productos?.embi)||null;
-  // Fallback: suscripción activa sin campo productos.embi → modo explicativo
-  if(!productoEmbi){
-    var memEstado=window.currentClientData?.membresia?.estado||'';
-    if(memEstado==='activo'||memEstado==='trial'||memEstado==='pendiente'){
-      productoEmbi='explicativo';
-    }
-  }
-  embiModo=productoEmbi;
+  embiModo='operativo';
   fab.style.display='block';
-  var btn=document.getElementById('embiFabBtn');
-  var pulse=document.getElementById('embiPulse');
-  var badge=document.getElementById('embiBadge');
-  if(!productoEmbi){
-    if(btn){btn.style.opacity='0.6';btn.style.cursor='not-allowed';}
-    if(pulse)pulse.style.display='none';
-    if(badge)badge.style.display='flex';
-  }else{
-    if(btn){btn.style.opacity='';btn.style.cursor='';}
-    if(pulse)pulse.style.display='';
-    if(badge)badge.style.display='none';
-  }
   embiInitDrag();
 }
 window.embiShow=embiShow;
