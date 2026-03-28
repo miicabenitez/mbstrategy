@@ -50,20 +50,40 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 .loading-circle{width:54px;height:54px;border-radius:50%;border:1.5px solid var(--accent);display:flex;align-items:center;justify-content:center;animation:pulse 1.5s ease-in-out infinite;}
 .loading-text{font-family:'Cormorant Garamond',serif;font-size:17px;letter-spacing:4px;color:var(--accent);}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.95)}}
-.login-page{min-height:100vh;display:none;align-items:center;justify-content:center;background:var(--cream);}
-.login-card{background:var(--white);border:.5px solid var(--cream-d);border-radius:20px;padding:44px 36px;width:100%;max-width:380px;}
-.login-logo{display:flex;align-items:center;gap:10px;margin-bottom:32px;}
-.login-brand{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:500;letter-spacing:2px;color:var(--text);}
-.login-brand span{color:var(--sage-dark);}
-.login-title{font-family:'Cormorant Garamond',serif;font-size:26px;margin-bottom:4px;color:var(--text);}
-.login-sub{font-size:13px;color:var(--text-l);margin-bottom:28px;}
-.fg{margin-bottom:13px;}
-.fl{font-size:10px;font-weight:500;color:var(--text-m);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:5px;}
-.fi{width:100%;padding:11px 13px;border:.5px solid var(--cream-d);border-radius:9px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);background:var(--cream);outline:none;transition:border-color .2s;}
-.fi:focus{border-color:var(--sage);background:var(--white);}
-.btn-login{width:100%;padding:12px;background:var(--topbar);color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;letter-spacing:.3px;}
-.btn-login:hover{background:var(--topbar2);}
-.login-err{background:var(--err-bg);color:var(--err);font-size:12px;padding:9px 12px;border-radius:7px;margin-top:10px;display:none;}
+.login-page{min-height:100vh;display:none;flex-direction:row;}
+.login-left{width:42%;background:#4a5e4d;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 40px;text-align:center;position:relative;animation:loginSlideLeft .7s cubic-bezier(.22,.8,.44,1) both;}
+.login-left-logo{width:160px;height:160px;border-radius:50%;border:1.5px solid rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;margin-bottom:28px;animation:loginBreathe 3.5s ease-in-out infinite;}
+.login-left-brand{color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;letter-spacing:4px;text-transform:uppercase;margin-bottom:18px;}
+.login-left-rule{width:36px;height:1px;background:rgba(255,255,255,.25);margin:0 auto 18px;}
+.login-left-tagline{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:20px;line-height:1.5;background:linear-gradient(90deg,rgba(255,255,255,.35) 0%,rgba(255,255,255,.95) 35%,rgba(255,255,255,.65) 50%,rgba(255,255,255,.95) 65%,rgba(255,255,255,.35) 100%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:mixAnim 3.5s cubic-bezier(.16,1,.3,1) 1s both;}
+.login-right{width:58%;background:#f5f4f0;display:flex;align-items:center;justify-content:center;padding:40px 24px;animation:loginSlideRight .7s cubic-bezier(.22,.8,.44,1) .15s both;}
+.login-card{background:#fff;border-radius:18px;padding:44px;width:100%;max-width:400px;box-shadow:0 4px 32px rgba(0,0,0,.06);}
+.login-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;color:#1a1a1a;margin-bottom:6px;}
+.login-sub{font-size:13px;color:#8a8a8a;margin-bottom:32px;}
+.fg{margin-bottom:16px;}
+.fl{font-size:11px;font-weight:700;color:#4a4a4a;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px;}
+.fi{width:100%;padding:12px 14px;border:1.5px solid #e8e8e8;border-radius:10px;font-size:14px;font-family:'DM Sans',sans-serif;color:#1a1a1a;background:#fff;outline:none;transition:border-color .2s,box-shadow .2s;box-sizing:border-box;}
+.fi:focus{border-color:#4a5e4d;background:#fff;box-shadow:0 0 0 3px rgba(74,94,77,.08);}
+.btn-login{width:100%;padding:14px;background:#4a5e4d;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;letter-spacing:.3px;margin-top:8px;transition:background .15s,transform .15s,box-shadow .15s;position:relative;overflow:hidden;}
+.btn-login::after{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);transform:skewX(-20deg);transition:left .4s;}
+.btn-login:hover{background:#3d4f40;transform:translateY(-1px);box-shadow:0 6px 20px rgba(74,94,77,.3);}
+.btn-login:hover::after{left:160%;}
+.login-footer{margin-top:20px;text-align:center;font-size:12px;color:#b0b0b0;}
+.login-footer a{color:#b0b0b0;text-decoration:none;transition:color .15s;}
+.login-footer a:hover{color:#4a5e4d;}
+.login-err{background:#fef2f2;color:#c4786a;font-size:12px;padding:9px 12px;border-radius:7px;margin-top:10px;display:none;}
+@keyframes loginSlideLeft{from{opacity:0;transform:translateX(-40px);}to{opacity:1;transform:translateX(0);}}
+@keyframes loginSlideRight{from{opacity:0;transform:translateX(40px);}to{opacity:1;transform:translateX(0);}}
+@keyframes loginBreathe{0%,100%{transform:scale(1);}50%{transform:scale(1.03);}}
+@keyframes mixAnim{0%{background-position:200% center;opacity:0;filter:blur(10px);transform:translateY(8px);}25%{opacity:1;filter:blur(3px);}60%{filter:blur(0);transform:translateY(0);}100%{background-position:-200% center;opacity:1;filter:blur(0);transform:translateY(0);}}
+@media(max-width:767px){
+  .login-page{flex-direction:column;}
+  .login-left{width:100%;padding:32px 24px 28px;min-height:auto;animation:none;}
+  .login-left-logo{width:72px;height:72px;margin-bottom:14px;}
+  .login-left-rule,.login-left-tagline{display:none;}
+  .login-right{width:100%;padding:24px 20px 40px;animation:none;}
+  .login-card{padding:28px 24px;box-shadow:none;border-radius:14px;}
+}
 .app{display:none;min-height:100vh;flex-direction:column;}
 .app.visible{display:flex;}
 .topbar{background:var(--topbar);border-bottom:.5px solid rgba(0,0,0,.06);padding:0 20px;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
@@ -80,6 +100,43 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 .btn-out:hover{color:#fff;border-color:rgba(255,255,255,.7);}
 .skeleton{background:linear-gradient(90deg,var(--cream-d) 25%,#DDDCD6 50%,var(--cream-d) 75%);background-size:200px 100%;animation:shimmer 1.5s infinite;border-radius:6px;}
 @keyframes shimmer{0%{background-position:-200px 0}100%{background-position:200px 0}}
+/* ── SIDEBAR ── */
+.sidebar{position:fixed;left:0;top:0;width:220px;height:100vh;background:#4a5e4d;z-index:200;flex-direction:column;display:none;overflow:hidden;}
+.sb-head{padding:18px 16px 14px;border-bottom:1px solid rgba(255,255,255,.1);flex-shrink:0;}
+.sb-logo-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.sb-brand{font-size:11px;font-weight:600;color:rgba(255,255,255,.9);letter-spacing:2px;}
+.sb-date{font-size:11px;color:rgba(255,255,255,.4);line-height:1.4;}
+.sb-nav{flex:1;overflow-y:auto;overflow-x:hidden;padding:8px 0;}
+.sb-nav::-webkit-scrollbar{width:3px;}
+.sb-nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:2px;}
+.sb-group{margin-bottom:1px;}
+.sb-btn{width:100%;display:flex;align-items:center;gap:9px;padding:9px 14px;background:transparent;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;color:rgba(255,255,255,.65);text-align:left;transition:background .15s,color .15s;}
+.sb-btn:hover{background:rgba(255,255,255,.08);color:#fff;}
+.sb-btn.active{background:rgba(255,255,255,.18);color:#fff;font-weight:500;}
+.sb-btn .sb-icon{width:15px;height:15px;flex-shrink:0;stroke:currentColor;fill:none;opacity:.8;}
+.sb-btn.active .sb-icon{opacity:1;}
+.sb-label{flex:1;}
+.sb-arrow{width:13px;height:13px;flex-shrink:0;stroke:rgba(255,255,255,.4);fill:none;transition:transform .2s;}
+.sb-btn.open .sb-arrow{transform:rotate(90deg);}
+.sb-sub{display:none;padding:2px 0 4px 38px;}
+.sb-sub.open{display:block;}
+.sb-subitem{width:100%;display:block;padding:7px 10px;background:transparent;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;color:rgba(255,255,255,.55);text-align:left;transition:background .15s,color .15s;border-radius:0;}
+.sb-subitem:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.9);}
+.sb-subitem.active{background:rgba(255,255,255,.12);color:#fff;font-weight:500;}
+.sb-footer{border-top:1px solid rgba(255,255,255,.1);padding:10px 12px;flex-shrink:0;}
+.sb-footer-btn{width:100%;display:flex;align-items:center;gap:10px;padding:8px 8px;background:transparent;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;color:rgba(255,255,255,.65);border-radius:8px;transition:background .15s;text-align:left;}
+.sb-footer-btn:hover{background:rgba(255,255,255,.08);color:#fff;}
+.sb-footer-label{font-size:12px;font-weight:500;color:rgba(255,255,255,.8);line-height:1.3;}
+.sb-footer-sub{font-size:11px;color:rgba(255,255,255,.4);margin-top:1px;}
+/* Desktop client view — sidebar active */
+@media(min-width:769px){
+  body.client-view .sidebar{display:flex;}
+  body.client-view .app{padding-left:220px;}
+  body.client-view .topbar{display:none !important;}
+  body.client-view #cNav{display:none !important;}
+  body.client-view .mod-subnav{display:none !important;}
+  body.client-view .topbar-logo{display:none;}
+}
 .content{flex:1;padding:20px;max-width:1100px;margin:0 auto;width:100%;}
 .view{display:none;}
 .view.active{display:block;}
@@ -228,7 +285,6 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
   /* Banner topbar */
   .topbar{padding:0 12px;}
   .topbar-right{gap:4px;}
-  #topbar-dots-btn{width:28px !important;height:28px !important;}
   /* ── Cliente mobile: bottom nav + sub-nav grid ── */
   body.client-view .bottom-nav{display:flex;}
   body.client-view .mobile-menu{display:none !important;}
@@ -237,6 +293,7 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
   body.client-view .embi-fab{bottom:76px;}
   /* KPIs finanzas 2x2 en mobile */
   [style*="grid-template-columns:1.4fr"]{grid-template-columns:1fr 1fr !important;}
+  #inicio-kpis{grid-template-columns:1fr 1fr !important;}
   /* Sub-nav grid para cliente mobile */
   body.client-view .mod-subnav.visible{display:grid !important;grid-template-columns:1fr 1fr 1fr;gap:6px !important;margin-bottom:14px !important;}
   body.client-view .mod-subnav .subctab{white-space:normal !important;background:var(--white) !important;border:.5px solid var(--cream-d) !important;border-radius:10px !important;padding:10px !important;display:flex !important;align-items:center;justify-content:center;gap:6px;font-size:12px !important;text-align:center;}
@@ -333,17 +390,25 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
 </div>
 
 <div class="login-page" id="lp">
-  <div class="login-card">
-    <div class="login-logo">
-      <svg width="38" height="38" viewBox="0 0 80 80" fill="none"><circle cx="40" cy="40" r="38" stroke="#A1B1A4" stroke-width="2"/><text x="40" y="37" text-anchor="middle" font-family="Georgia,serif" font-size="24" font-weight="500" fill="#A1B1A4">MB</text><text x="40" y="56" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" letter-spacing="2.5" fill="#A1B1A4">STRATEGY</text></svg>
-      <div class="login-brand">MB <span>STRATEGY</span></div>
+  <div class="login-left">
+    <div class="login-left-logo">
+      <span style="font-size:36px;font-weight:700;color:white;letter-spacing:0.05em;">MB</span>
     </div>
-    <div class="login-title">Bienvenido/a</div>
-    <div class="login-sub">Estructura, control y decisiones claras.</div>
-    <div class="fg"><label class="fl">Email</label><input type="email" class="fi" id="le" placeholder="tu@email.com"/></div>
-    <div class="fg"><label class="fl">Contraseña</label><div style="position:relative;"><input type="password" class="fi" id="lp2" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" style="padding-right:40px;"/><button type="button" onclick="(function(){var i=document.getElementById('lp2');i.type=i.type==='password'?'text':'password';this.innerHTML=i.type==='password'?'<svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;#9ca3af&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z&quot;/><circle cx=&quot;12&quot; cy=&quot;12&quot; r=&quot;3&quot;/></svg>':'<svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;#9ca3af&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24&quot;/><line x1=&quot;1&quot; y1=&quot;1&quot; x2=&quot;23&quot; y2=&quot;23&quot;/></svg>';}).call(this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;line-height:0;display:flex;align-items:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
-    <button class="btn-login" onclick="doLogin()">Ingresar</button>
-    <div class="login-err" id="lerr"></div>
+    <div class="login-left-brand">MB STRATEGY</div>
+    <div class="login-left-rule"></div>
+    <div class="login-left-tagline">Estructura, control y decisiones claras.</div>
+    <div style="position:absolute;bottom:28px;left:0;right:0;text-align:center;font-size:11px;color:rgba(255,255,255,.3);"><a href="https://mbstrategy.com.ar" target="_blank" style="color:rgba(255,255,255,.3);text-decoration:none;">mbstrategy.com.ar</a>&nbsp;·&nbsp;<a href="/terminos.html" target="_blank" style="color:rgba(255,255,255,.3);text-decoration:none;">Términos y condiciones</a></div>
+  </div>
+  <div class="login-right">
+    <div class="login-card">
+      <div class="login-title">Bienvenido/a</div>
+      <div class="login-sub">Ingresá a tu cuenta para continuar.</div>
+      <div class="fg"><label class="fl">Email</label><input type="email" class="fi" id="le" placeholder="tu@email.com"/></div>
+      <div class="fg"><label class="fl">Contraseña</label><div style="position:relative;"><input type="password" class="fi" id="lp2" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" style="padding-right:44px;"/><button type="button" id="lp2-toggle" onclick="(function(){var i=document.getElementById('lp2'),b=document.getElementById('lp2-toggle');i.type=i.type==='password'?'text':'password';b.innerHTML=i.type==='password'?'<svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;#9ca3af&quot; stroke-width=&quot;1.8&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z&quot;/><circle cx=&quot;12&quot; cy=&quot;12&quot; r=&quot;3&quot;/></svg>':'<svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;#9ca3af&quot; stroke-width=&quot;1.8&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24&quot;/><line x1=&quot;1&quot; y1=&quot;1&quot; x2=&quot;23&quot; y2=&quot;23&quot;/></svg>';})()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;line-height:0;display:flex;align-items:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
+      <div style="text-align:right;margin:8px 0 24px;"><a href="#" onclick="resetPassword()" style="font-size:12px;color:#aaa;text-decoration:none;">¿Olvidaste tu contraseña?</a></div>
+      <button class="btn-login" onclick="doLogin()">Ingresar</button>
+      <div class="login-err" id="lerr"></div>
+    </div>
   </div>
 </div>
 
@@ -398,22 +463,104 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
       <div class="ub" id="ub">—</div>
       <button class="btn-out" id="btn-mi-cuenta" onclick="openModal('miCuentaModal')" style="display:none;">Mi cuenta</button>
       <button class="btn-out" id="btn-salir-legacy" onclick="doLogout()">Salir</button>
-      <div id="topbar-menu-wrap" style="position:relative;display:none;">
-        <button id="topbar-dots-btn" onclick="toggleTopbarMenu()" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.15);border:.5px solid rgba(255,255,255,.25);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="4" r="1.5" fill="#fff"/><circle cx="10" cy="10" r="1.5" fill="#fff"/><circle cx="10" cy="16" r="1.5" fill="#fff"/></svg>
+    </div>
+  </div>
+
+  <!-- ═══════ SIDEBAR (client view, desktop) ═══════ -->
+  <div class="sidebar" id="clientSidebar">
+    <div class="sb-head">
+      <div class="sb-logo-row">
+        <svg width="26" height="26" viewBox="0 0 80 80" fill="none"><circle cx="40" cy="40" r="37" stroke="rgba(255,255,255,.6)" stroke-width="1.5"/><text x="40" y="36" text-anchor="middle" font-family="Georgia,serif" font-size="20" font-weight="500" fill="rgba(255,255,255,.8)">MB</text><text x="40" y="52" text-anchor="middle" font-family="Arial,sans-serif" font-size="7.5" letter-spacing="2" fill="rgba(255,255,255,.6)">STRATEGY</text></svg>
+        <div class="sb-brand">MB STRATEGY</div>
+      </div>
+      <div class="sb-date" id="sbDate"></div>
+    </div>
+    <nav class="sb-nav">
+      <!-- Inicio -->
+      <div class="sb-group" id="sbg-inicio">
+        <button class="sb-btn" onclick="sidebarNav('inicio')">
+          <svg class="sb-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1z"/></svg>
+          <span class="sb-label">Inicio</span>
         </button>
-        <div id="topbar-dropdown" style="display:none;position:absolute;top:calc(100% + 6px);right:0;width:200px;background:var(--white);border:.5px solid var(--cream-d);border-radius:12px;padding:6px;box-shadow:0 4px 20px rgba(0,0,0,.1);z-index:200;">
-          <button onclick="navigateToMiCuenta();toggleTopbarMenu();" style="width:100%;text-align:left;padding:10px 12px;border-radius:8px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;gap:10px;font-family:'DM Sans',sans-serif;transition:background .15s;" onmouseover="this.style.background='var(--cream)'" onmouseout="this.style.background='transparent'">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg>
-            <div><div style="font-size:13px;font-weight:500;color:var(--text);">Mi cuenta</div><div style="font-size:11px;color:var(--text-l);">Datos, membresía</div></div>
-          </button>
-          <div style="height:.5px;background:var(--cream-d);margin:4px 8px;"></div>
-          <button onclick="doLogout()" style="width:100%;text-align:left;padding:10px 12px;border-radius:8px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;gap:10px;font-family:'DM Sans',sans-serif;transition:background .15s;" onmouseover="this.style.background='var(--err-bg)'" onmouseout="this.style.background='transparent'">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C4786A" stroke-width="1.5" stroke-linecap="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
-            <div style="font-size:13px;font-weight:500;color:#C4786A;">Cerrar sesión</div>
-          </button>
+      </div>
+      <!-- Finanzas -->
+      <div class="sb-group" id="sbg-finanzas">
+        <button class="sb-btn sb-has-sub" onclick="sidebarToggle('finanzas')">
+          <svg class="sb-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+          <span class="sb-label">Finanzas</span>
+          <svg class="sb-arrow" viewBox="0 0 16 16" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+        </button>
+        <div class="sb-sub" id="sbsub-finanzas">
+          <button class="sb-subitem" data-sub="resumen" onclick="sidebarNav('finanzas','resumen')">Resumen</button>
+          <button class="sb-subitem" data-sub="ingresos" onclick="sidebarNav('finanzas','ingresos')">Ingresos</button>
+          <button class="sb-subitem" data-sub="egresos" onclick="sidebarNav('finanzas','egresos')">Egresos</button>
         </div>
       </div>
+      <!-- Ventas → Comercial -->
+      <div class="sb-group" id="sbg-ventas">
+        <button class="sb-btn sb-has-sub" onclick="sidebarToggle('ventas')">
+          <svg class="sb-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><circle cx="18" cy="8" r="2.5"/><path d="M21 21v-1.5a3 3 0 00-2-2.83"/></svg>
+          <span class="sb-label">Comercial</span>
+          <svg class="sb-arrow" viewBox="0 0 16 16" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+        </button>
+        <div class="sb-sub" id="sbsub-ventas">
+          <button class="sb-subitem" data-sub="clientes" onclick="sidebarNav('ventas','clientes')">Clientes</button>
+          <button class="sb-subitem" data-sub="presupuestos" onclick="sidebarNav('ventas','presupuestos')">Presupuestos</button>
+          <button class="sb-subitem" data-sub="catalogo" onclick="sidebarNav('ventas','catalogo')">Catálogo</button>
+        </div>
+      </div>
+      <!-- Compras -->
+      <div class="sb-group" id="sbg-compras">
+        <button class="sb-btn sb-has-sub" onclick="sidebarToggle('compras')">
+          <svg class="sb-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+          <span class="sb-label">Compras</span>
+          <svg class="sb-arrow" viewBox="0 0 16 16" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+        </button>
+        <div class="sb-sub" id="sbsub-compras">
+          <button class="sb-subitem" data-sub="necesidades" onclick="sidebarNav('compras','necesidades')">Necesidades</button>
+          <button class="sb-subitem" data-sub="proveedores" onclick="sidebarNav('compras','proveedores')">Proveedores</button>
+          <button class="sb-subitem" data-sub="ordenes" onclick="sidebarNav('compras','ordenes')">Órdenes</button>
+          <div style="margin:4px 0;border-top:.5px solid rgba(255,255,255,.2);width:40%;"></div>
+          <button class="sb-subitem" data-sub="productos" onclick="sidebarNav('compras','productos')">Productos</button>
+          <button class="sb-subitem" data-sub="categorias" onclick="sidebarNav('compras','categorias')">Categorías</button>
+        </div>
+      </div>
+      <!-- Herramientas → Control del negocio -->
+      <div class="sb-group" id="sbg-herramientas">
+        <button class="sb-btn sb-has-sub" onclick="sidebarToggle('herramientas')">
+          <svg class="sb-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          <span class="sb-label">Control del negocio</span>
+          <svg class="sb-arrow" viewBox="0 0 16 16" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+        </button>
+        <div class="sb-sub" id="sbsub-herramientas">
+          <button class="sb-subitem" data-sub="calculador" onclick="sidebarNav('herramientas','calculador')">Calculador de costos</button>
+          <button class="sb-subitem" data-sub="indicadores" onclick="sidebarNav('herramientas','indicadores')">Indicadores</button>
+        </div>
+      </div>
+      <!-- Gestión -->
+      <div class="sb-group" id="sbg-gestion">
+        <button class="sb-btn sb-has-sub" onclick="sidebarToggle('gestion')">
+          <svg class="sb-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h4M8 17h2"/></svg>
+          <span class="sb-label">Gestión</span>
+          <svg class="sb-arrow" viewBox="0 0 16 16" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+        </button>
+        <div class="sb-sub" id="sbsub-gestion">
+          <button class="sb-subitem" data-sub="planaccion" onclick="sidebarNav('gestion','planaccion')">Plan de acción</button>
+        </div>
+      </div>
+    </nav>
+    <div class="sb-footer">
+      <button class="sb-footer-btn" onclick="navigateToMiCuenta()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg>
+        <div>
+          <div class="sb-footer-label">Mi cuenta</div>
+          <div class="sb-footer-sub" id="sb-plan-badge" style="display:none;"></div>
+        </div>
+      </button>
+      <button class="sb-footer-btn" onclick="doLogout()" style="margin-top:2px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.5" stroke-linecap="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        <div class="sb-footer-label" style="color:rgba(255,255,255,.5);">Cerrar sesión</div>
+      </button>
     </div>
   </div>
 
@@ -1030,7 +1177,7 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
 
       <!-- PAPELERA -->
       <div class="view" id="av-papelera">
-        <div style="background:var(--sage-dark);border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;">
+        <div style="background:#4a5e4d;border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;">
           <div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div>
           <div style="font-family:'Cormorant Garamond',serif;font-size:22px;">Papelera</div>
           <div style="font-size:12px;opacity:.65;margin-top:4px;">Elementos eliminados. Podés restaurarlos o eliminarlos permanentemente.</div>
@@ -1204,37 +1351,38 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
       <div id="ct-inicio" style="display:none;">
 
         <!-- Banner principal -->
-        <div style="background:var(--sage-dark);border-radius:14px;padding:22px 24px;margin-bottom:14px;color:#fff;">
-          <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;">
+        <div style="background:#4a5e4d;border-radius:14px;padding:22px 24px;margin-bottom:14px;color:#fff;">
+          <div style="display:flex;align-items:center;gap:14px;">
             <div id="inicio-logo-wrap" style="width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.12);border:.5px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="15" rx="2" stroke="#fff" stroke-width="1.5"/><path d="M8 6V5a2 2 0 014 0v1M12 6v15" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="13" r="1.5" fill="#fff"/><circle cx="16" cy="13" r="1.5" fill="#fff"/></svg>
             </div>
             <div style="flex:1;min-width:0;">
-              <div id="inicio-negocio-nombre" style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Mi negocio</div>
-              <div id="inicio-fecha" style="font-size:12px;color:rgba(255,255,255,.7);margin-top:2px;"></div>
+              <div id="inicio-negocio-nombre" style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;line-height:1.15;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Mi negocio</div>
+              <div id="inicio-fecha" style="font-size:12px;color:rgba(255,255,255,.6);margin-top:2px;"></div>
             </div>
           </div>
-          <!-- KPIs -->
-          <div id="inicio-kpis" style="display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:10px;">
-            <div style="background:rgba(255,255,255,.1);border-radius:11px;padding:14px;">
-              <div style="font-size:11px;opacity:.55;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Ganancia del mes</div>
-              <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;" id="inicio-ganancia">$0</div>
-              <div style="font-size:11px;margin-top:4px;" id="inicio-vs-mes"><span style="opacity:.5;">vs mes anterior</span></div>
+
+          <!-- KPIs dentro del banner -->
+          <div id="inicio-kpis" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-top:18px;">
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:14px;">
+              <div style="font-size:11px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Ganancia del mes</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;color:#fff;" id="inicio-ganancia">$0</div>
+              <div style="font-size:11px;margin-top:4px;" id="inicio-vs-mes"><span style="color:rgba(255,255,255,.6);">vs mes anterior</span></div>
             </div>
-            <div style="background:rgba(255,255,255,.1);border-radius:11px;padding:14px;">
-              <div style="font-size:11px;opacity:.55;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Por cobrar</div>
-              <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;" id="inicio-por-cobrar">$0</div>
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:14px;">
+              <div style="font-size:11px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Por cobrar</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;color:#fff;" id="inicio-por-cobrar">$0</div>
             </div>
-            <div style="background:rgba(255,255,255,.1);border-radius:11px;padding:14px;">
-              <div style="font-size:11px;opacity:.55;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Margen</div>
-              <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;" id="inicio-margen">0%</div>
-              <div style="margin-top:6px;height:4px;background:rgba(255,255,255,.15);border-radius:4px;overflow:hidden;">
-                <div id="inicio-margen-bar" style="height:100%;width:0%;background:#a8d8a0;border-radius:4px;transition:width .4s;"></div>
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:14px;">
+              <div style="font-size:11px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Margen</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;color:#fff;" id="inicio-margen">0%</div>
+              <div style="margin-top:6px;height:4px;background:rgba(255,255,255,.2);border-radius:4px;overflow:hidden;">
+                <div id="inicio-margen-bar" style="height:100%;width:0%;background:rgba(255,255,255,.7);border-radius:4px;transition:width .4s;"></div>
               </div>
             </div>
-            <div style="background:rgba(255,255,255,.1);border-radius:11px;padding:14px;">
-              <div style="font-size:11px;opacity:.55;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Ingresos</div>
-              <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;" id="inicio-ingresos">$0</div>
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:14px;">
+              <div style="font-size:11px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Ingresos</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;color:#fff;" id="inicio-ingresos">$0</div>
             </div>
           </div>
         </div>
@@ -1283,7 +1431,7 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
       <div id="ct-contabilidad" style="display:none;">
 
         <!-- Banner -->
-        <div style="background:var(--sage-dark);border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;"><div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;">Finanzas</div></div>
+        <div style="background:#4a5e4d;border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;"><div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;">Finanzas</div></div>
 
         <!-- Resumen -->
         <div id="cc-home">
@@ -1381,7 +1529,7 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
 
       <!-- TAREAS CLIENTE -->
       <div id="ct-tareas" style="display:none;">
-        <div style="background:var(--sage-dark);border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;"><div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;">Plan de acción</div></div>
+        <div style="background:#4a5e4d;border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;"><div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;">Plan de acción</div></div>
         <div style="display:flex;justify-content:flex-end;align-items:center;margin-bottom:14px;">
           <button class="bp" onclick="openModal('newClientTaskModal')">+ Nueva tarea</button>
         </div>
@@ -1403,7 +1551,7 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
 
       <!-- KPIs CLIENTE -->
       <div id="ct-kpis" style="display:none;">
-        <div style="background:var(--sage-dark);border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;"><div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;">Indicadores</div></div>
+        <div style="background:#4a5e4d;border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;"><div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;">Indicadores</div></div>
 
         <!-- Fila 1: financieros -->
         <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:10px;">
@@ -1521,7 +1669,7 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
       <div id="ct-presupuestos" style="display:none;">
 
         <!-- Header banner -->
-        <div style="background:var(--sage-dark);border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;"><div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;">Presupuestos</div></div>
+        <div style="background:#4a5e4d;border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;"><div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;">Presupuestos</div></div>
 
         <!-- Acciones -->
         <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:14px;">
@@ -1554,7 +1702,7 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
         <div id="mc-lista-view">
 
           <!-- Header banner -->
-          <div style="background:var(--sage-dark);border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;"><div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;">Clientes</div></div>
+          <div style="background:#4a5e4d;border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;"><div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;">Clientes</div></div>
 
           <!-- KPIs -->
           <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px;">
@@ -1700,7 +1848,7 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
       <div id="ct-calculador" style="display:none;">
         <div id="calc-list-view">
           <!-- Header banner -->
-          <div style="background:var(--sage-dark);border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;"><div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;">Calculador de costos</div></div>
+          <div style="background:#4a5e4d;border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;"><div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;">Calculador de costos</div></div>
 
           <!-- KPI cards -->
           <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:14px;">
@@ -1775,7 +1923,7 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
       <div id="ct-productos" style="display:none;">
 
         <!-- Header banner sage -->
-        <div style="background:var(--sage-dark);border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;"><div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;">Catálogo de precios</div></div>
+        <div style="background:#4a5e4d;border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;"><div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;">Catálogo de precios</div></div>
 
         <!-- KPIs -->
         <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:16px;">
@@ -1825,7 +1973,7 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
       <div id="ct-proveedores" style="display:none;">
       <div id="prov-lista-view">
 
-          <div style="background:var(--sage-dark);border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;"><div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;">Proveedores</div></div>
+          <div style="background:#4a5e4d;border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;"><div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;">Proveedores</div></div>
 
         <!-- KPIs -->
         <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px;">
@@ -1964,7 +2112,7 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
 
       <!-- PRODUCTOS DE COMPRA -->
       <div id="ct-prod-compra" style="display:none;">
-        <div style="background:var(--sage-dark);border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;"><div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;">Productos de compra</div></div>
+        <div style="background:#4a5e4d;border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;"><div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;">Productos de compra</div></div>
         <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px;">
           <div class="mc" style="background:#7A8E7D;border-color:#7A8E7D;"><div class="ml" style="color:rgba(255,255,255,.75);">Productos</div><div class="mv" style="color:#fff;" id="pc-kpi-total">0</div><div class="ms" style="color:rgba(255,255,255,.65);">en base de datos</div></div>
           <div class="mc" style="background:#4A6A8A;border-color:#4A6A8A;"><div class="ml" style="color:rgba(255,255,255,.75);">Categorías</div><div class="mv" style="color:#fff;" id="pc-kpi-cats">0</div><div class="ms" style="color:rgba(255,255,255,.65);">tipos de insumo</div></div>
@@ -1990,7 +2138,7 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
 
       <!-- NECESIDADES -->
       <div id="ct-necesidades" style="display:none;">
-        <div style="background:var(--sage-dark);border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;"><div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;">Necesidades de compra</div></div>
+        <div style="background:#4a5e4d;border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;"><div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;">Necesidades de compra</div></div>
         <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px;">
           <div class="mc" style="background:#C4786A;border-color:#C4786A;"><div class="ml" style="color:rgba(255,255,255,.75);">Urgentes</div><div class="mv" style="color:#fff;" id="nc-kpi-urgente">0</div><div class="ms" style="color:rgba(255,255,255,.65);">sin cotizar</div></div>
           <div class="mc" style="background:#B08A42;border-color:#B08A42;"><div class="ml" style="color:rgba(255,255,255,.75);">Próximas</div><div class="mv" style="color:#fff;" id="nc-kpi-proximo">0</div><div class="ms" style="color:rgba(255,255,255,.65);">en proceso</div></div>
@@ -2005,7 +2153,7 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
 
       <!-- ÓRDENES DE COMPRA -->
       <div id="ct-ordenes-compra" style="display:none;">
-        <div style="background:var(--sage-dark);border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;"><div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;">Órdenes de compra</div></div>
+        <div style="background:#4a5e4d;border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;"><div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;">Órdenes de compra</div></div>
         <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px;">
           <div class="mc" style="background:#7A8E7D;border-color:#7A8E7D;"><div class="ml" style="color:rgba(255,255,255,.75);">Total OC</div><div class="mv" style="color:#fff;" id="oc-kpi-total">0</div><div class="ms" style="color:rgba(255,255,255,.65);">emitidas</div></div>
           <div class="mc" style="background:#C4786A;border-color:#C4786A;"><div class="ml" style="color:rgba(255,255,255,.75);">Pendiente pago</div><div class="mv" style="color:#fff;" id="oc-kpi-pendiente">$0</div><div class="ms" style="color:rgba(255,255,255,.65);">a pagar</div></div>
@@ -2046,7 +2194,7 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
 
       <!-- CATEGORÍAS DE COMPRAS -->
       <div id="ct-categorias-compra" style="display:none;">
-        <div style="background:var(--sage-dark);border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;"><div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;">Categorías</div></div>
+        <div style="background:#4a5e4d;border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;"><div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;">Categorías</div></div>
 
         <!-- Barra de acciones -->
         <div style="display:flex;justify-content:flex-end;align-items:center;margin-bottom:14px;">
@@ -2108,7 +2256,7 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
             Volver
           </button>
-          <div style="background:var(--sage-dark);border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;"><div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;">Mi cuenta</div><div style="font-size:12px;color:rgba(255,255,255,.7);margin-top:4px;" id="micuenta-email-display"></div></div>
+          <div style="background:#4a5e4d;border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;"><div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;">Mi cuenta</div><div style="font-size:12px;color:rgba(255,255,255,.7);margin-top:4px;" id="micuenta-email-display"></div></div>
         </div>
 
         <!-- Sección 1: Datos del negocio -->
@@ -3680,6 +3828,7 @@ window.showClientUI = async function(email, clientData) {
       setTimeout(() => openModal('cambioPassModal'), 1000);
     }
     if(window.embiShow) window.embiShow(true);
+    if(window.sidebarInit) window.sidebarInit();
     // Restaurar último módulo activo (o Inicio por defecto)
     const savedMod = (() => { try { return localStorage.getItem('mbst_lastmod'); } catch(e) { return null; } })();
     const modToShow = savedMod || 'inicio';
@@ -8891,17 +9040,6 @@ window.cambiarPlan = async function(nuevoPlan) {
   );
 };
 
-// ─── TOPBAR THREE-DOTS MENU ───
-window.toggleTopbarMenu = function() {
-  const dd = document.getElementById('topbar-dropdown');
-  if(!dd) return;
-  dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
-};
-document.addEventListener('click', function(e) {
-  const wrap = document.getElementById('topbar-menu-wrap');
-  const dd = document.getElementById('topbar-dropdown');
-  if(wrap && dd && !wrap.contains(e.target)) dd.style.display = 'none';
-});
 
 window.navigateToMiCuenta = function() {
   // Ocultar todas las vistas ct-*
@@ -12895,12 +13033,30 @@ function embiRenderChips(){
 }
 function embiUseChip(el){document.getElementById('embiInput').value=el.textContent;embiSend();}
 function embiReport(){document.getElementById('embiInput').value='Quiero reportar un problema con el sistema';embiSend();}
+function embiRenderMd(text){
+  var s=text.replace(/\[REPORT:[^\]]+\]/g,'').trim();
+  s=s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  var lines=s.split('\n'),html='',inList=false;
+  for(var i=0;i<lines.length;i++){
+    var line=lines[i];
+    if(/^-\s+/.test(line)){
+      if(!inList){if(html)html+='<br/>';html+='<ul style="margin:4px 0 4px 14px;padding:0;">';inList=true;}
+      html+='<li>'+line.replace(/^-\s+/,'')+'</li>';
+    }else{
+      if(inList){html+='</ul>';inList=false;}
+      if(html)html+='<br/>';
+      html+=line;
+    }
+  }
+  if(inList)html+='</ul>';
+  return html;
+}
 function embiAddMsg(role,text){
   var msgs=document.getElementById('embiMsgs');if(!msgs)return;
   var now=new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
-  var clean=text.replace(/\[REPORT:[^\]]+\]/g,'').trim();
+  var content=role==='bot'?embiRenderMd(text):text.replace(/\[REPORT:[^\]]+\]/g,'').trim().replace(/\n/g,'<br/>');
   var div=document.createElement('div');div.className='embi-msg '+role;
-  div.innerHTML='<div class="embi-bubble">'+clean.replace(/\n/g,'<br/>')+'</div><div class="embi-time">'+now+'</div>';
+  div.innerHTML='<div class="embi-bubble">'+content+'</div><div class="embi-time">'+now+'</div>';
   msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;
 }
 function embiShowTyping(){
@@ -13166,6 +13322,122 @@ function embiShow(show){
   embiInitDrag();
 }
 window.embiShow=embiShow;
+
+// ══════════════════════════════════════════
+// SIDEBAR
+// ══════════════════════════════════════════
+function sidebarToggle(mod){
+  var sub=document.getElementById('sbsub-'+mod);
+  var btn=document.querySelector('#sbg-'+mod+' .sb-btn');
+  if(!sub)return;
+  var isOpen=sub.classList.contains('open');
+  // Close all
+  document.querySelectorAll('.sb-sub').forEach(function(el){el.classList.remove('open');});
+  document.querySelectorAll('.sb-btn.sb-has-sub').forEach(function(b){b.classList.remove('open');});
+  // Toggle this one
+  if(!isOpen){
+    sub.classList.add('open');
+    if(btn)btn.classList.add('open');
+  }
+}
+function sidebarSetActive(mod,sub){
+  document.querySelectorAll('.sb-btn').forEach(function(b){b.classList.remove('active');});
+  document.querySelectorAll('.sb-subitem').forEach(function(b){b.classList.remove('active');});
+  var parentBtn=document.querySelector('#sbg-'+mod+' .sb-btn');
+  if(parentBtn)parentBtn.classList.add('active');
+  if(sub){
+    var subEl=document.getElementById('sbsub-'+mod);
+    if(subEl){
+      subEl.classList.add('open');
+      if(parentBtn)parentBtn.classList.add('open');
+      var subBtn=subEl.querySelector('[data-sub="'+sub+'"]');
+      if(subBtn)subBtn.classList.add('active');
+    }
+  }
+}
+function sidebarSyncFromMod(mod){
+  document.querySelectorAll('.sb-btn').forEach(function(b){b.classList.remove('active');});
+  document.querySelectorAll('.sb-subitem').forEach(function(b){b.classList.remove('active');});
+  document.querySelectorAll('.sb-sub').forEach(function(el){el.classList.remove('open');});
+  document.querySelectorAll('.sb-btn.sb-has-sub').forEach(function(b){b.classList.remove('open');});
+  var parentBtn=document.querySelector('#sbg-'+mod+' .sb-btn');
+  if(!parentBtn)return;
+  parentBtn.classList.add('active');
+  var subEl=document.getElementById('sbsub-'+mod);
+  if(subEl){
+    subEl.classList.add('open');
+    parentBtn.classList.add('open');
+    var firstSub=subEl.querySelector('.sb-subitem');
+    if(firstSub)firstSub.classList.add('active');
+  }
+}
+window.sidebarNav=function(mod,sub){
+  try{localStorage.setItem('mbst_sb_mod',mod);localStorage.setItem('mbst_sb_sub',sub||'');}catch(e){}
+  sidebarSetActive(mod,sub);
+  if(mod==='inicio'){
+    window.showClientMod('inicio',null);
+    return;
+  }
+  // Call showClientMod for proper module initialization (ct- panels, localStorage, bottom nav sync)
+  window._sbNavInProgress=true;
+  window.showClientMod(mod,null);
+  window._sbNavInProgress=false;
+  // Override to specific sub-view
+  if(mod==='finanzas'){
+    if(sub==='ingresos')window.showClientContView('ingresos',null);
+    else if(sub==='egresos')window.showClientContView('egresos',null);
+  }else if(mod==='ventas'){
+    if(sub==='presupuestos')window.showCTab('presupuestos',null);
+    else if(sub==='catalogo')window.showCTab('productos',null);
+  }else if(mod==='compras'){
+    if(sub==='proveedores')window.showCTab('proveedores',null);
+    else if(sub==='ordenes')window.showCTab('ordenes-compra',null);
+    else if(sub==='productos')window.showCTab('prod-compra',null);
+    else if(sub==='categorias')window.showCTab('categorias-compra',null);
+  }else if(mod==='herramientas'){
+    if(sub==='indicadores')window.showCTab('kpis',null);
+    else if(sub==='calculador')window.showCTab('calculador',null);
+  }else if(mod==='gestion'){
+    window._sbNavInProgress=true;
+    window.showClientMod('herramientas',null);
+    window._sbNavInProgress=false;
+    if(sub==='planaccion')window.showCTab('tareas',null);
+  }
+};
+// Patch showClientMod to sync sidebar when called from bottom nav or other sources
+(function(){
+  var orig=window.showClientMod;
+  window.showClientMod=function(mod,btn){
+    orig(mod,btn);
+    if(!window._sbNavInProgress)sidebarSyncFromMod(mod);
+  };
+})();
+// Patch navigateToMiCuenta to clear sidebar active state
+(function(){
+  var orig=window.navigateToMiCuenta;
+  window.navigateToMiCuenta=function(){
+    orig();
+    document.querySelectorAll('.sb-btn').forEach(function(b){b.classList.remove('active');});
+    document.querySelectorAll('.sb-subitem').forEach(function(b){b.classList.remove('active');});
+    document.querySelectorAll('.sb-sub').forEach(function(el){el.classList.remove('open');});
+    document.querySelectorAll('.sb-btn.sb-has-sub').forEach(function(b){b.classList.remove('open');});
+  };
+})();
+function sidebarInit(){
+  // Date
+  var el=document.getElementById('sbDate');
+  if(el){var d=new Date();var m=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];el.textContent=d.getDate()+' de '+m[d.getMonth()]+' de '+d.getFullYear();}
+  // Plan badge
+  var pb=document.getElementById('sb-plan-badge');
+  if(pb){var memb=window.currentClientData&&window.currentClientData.membresia;if(memb&&memb.plan){pb.textContent='Plan '+(memb.plan==='pro'?'Pro':'Base');pb.style.display='';}else{pb.textContent='';pb.style.display='none';}}
+  // Restore last active module from localStorage
+  try{
+    var lastMod=localStorage.getItem('mbst_sb_mod');
+    var lastSub=localStorage.getItem('mbst_sb_sub');
+    if(lastMod)sidebarSetActive(lastMod,lastSub||'');
+  }catch(e){}
+}
+window.sidebarInit=sidebarInit;
 </script>
 
 <div class="mo" id="detalleMovCCModal">
