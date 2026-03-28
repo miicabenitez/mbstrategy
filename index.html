@@ -10801,9 +10801,15 @@ window.generarPDFOrdenPago = function() {
 window.verPDFop = async function(movId) {
   if(!window._ccProvId || !currentClientUID) return;
   try {
-    const snap = await getDoc(doc(db,'clientes',currentClientUID,'proveedores',window._ccProvId,'movimientos',movId));
+    const snap = await getDoc(doc(db,'clientes',currentClientUID,'proveedores',window._ccProvId,'pagos',movId));
     if(!snap.exists()) return;
     window._ultimaOP = { ...snap.data(), id: movId };
+    // Asegurar nombre del proveedor para el PDF
+    const provEl = document.getElementById('npp-prov-nombre');
+    if(provEl) {
+      const prov = (window._proveedores||[]).find(p=>p.id===window._ccProvId);
+      if(prov) provEl.textContent = prov.nombre;
+    }
     generarPDFOrdenPago();
   } catch(e) { console.error(e); }
 };
@@ -10879,7 +10885,12 @@ window.verDetalleMovCC = async function(tipo, m) {
     `;
     setTimeout(()=>{
       const btn = document.getElementById('detalle-pago-pdf-btn');
-      if(btn) btn.onclick = () => { window._ultimaOP = m; generarPDFOrdenPago(); };
+      if(btn) btn.onclick = () => {
+        window._ultimaOP = m;
+        const provEl = document.getElementById('npp-prov-nombre');
+        if(provEl) { const prov=(window._proveedores||[]).find(p=>p.id===window._ccProvId); if(prov) provEl.textContent=prov.nombre; }
+        generarPDFOrdenPago();
+      };
     }, 100);
   }
   openModal('detalleMovCCModal');
@@ -13165,8 +13176,15 @@ function embiShow(show){
   if(!fab)return;
   if(!show){fab.style.display='none';if(embiOpen)embiToggle();return;}
   // Determine access level
-  var planVal=(window.currentClientData?.productos?.embi)||null;
-  embiModo=planVal;
+  var productoEmbi=(window.currentClientData?.productos?.embi)||null;
+  // Fallback: suscripción activa sin campo productos.embi → modo explicativo
+  if(!productoEmbi){
+    var memEstado=window.currentClientData?.membresia?.estado||'';
+    if(memEstado==='activo'||memEstado==='trial'||memEstado==='pendiente'){
+      productoEmbi='explicativo';
+    }
+  }
+  embiModo=productoEmbi;
   fab.style.display='block';
   var btn=document.getElementById('embiFabBtn');
   var pulse=document.getElementById('embiPulse');
