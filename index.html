@@ -13535,7 +13535,7 @@ window.doResetPassword = async function(){
   if(!email){ msgEl.textContent='Ingresá tu email.'; msgEl.style.cssText='display:block;font-size:13px;padding:10px 14px;border-radius:9px;margin-bottom:16px;background:#fef2f2;color:#c4786a;'; return; }
   try {
     const { sendPasswordResetEmail } = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js');
-    await sendPasswordResetEmail(auth, email);
+    await sendPasswordResetEmail(window._auth, email);
     formEl.style.display = 'none';
     msgEl.textContent = 'Te enviamos un email para restablecer tu contraseña. Revisá tu bandeja de entrada.';
     msgEl.style.cssText = 'display:block;font-size:13px;padding:10px 14px;border-radius:9px;margin-bottom:0;background:#e8f4e9;color:#2d6a35;';
