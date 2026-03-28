@@ -54,8 +54,7 @@ async function enviarWelcomeEmail(data) {
     body: JSON.stringify(data)
   };
   try {
-    const result = await handler(event);
-    console.log('Welcome email result:', result.statusCode);
+    await handler(event);
   } catch (e) {
     console.error('Error enviando welcome email:', e);
   }
@@ -79,7 +78,6 @@ exports.handler = async (event) => {
     if (xRequestId) {
       const dedupSnap = await db.collection('webhookProcessed').doc(xRequestId).get();
       if (dedupSnap.exists) {
-        console.log('Webhook duplicado ignorado:', xRequestId);
         return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ ok: true, msg: 'Ya procesado (duplicado)' }) };
       }
       await db.collection('webhookProcessed').doc(xRequestId).set({
@@ -211,7 +209,6 @@ exports.handler = async (event) => {
           completadoEn: FieldValue.serverTimestamp()
         });
 
-        console.log(`Nuevo cliente creado: ${pendiente.email} (${userRecord.uid}) — Plan ${plan}`);
         return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ ok: true, msg: 'Cliente creado' }) };
 
       } catch (createErr) {
@@ -221,7 +218,6 @@ exports.handler = async (event) => {
       }
     } else if (pendienteSnap.exists) {
       // Pendiente existe pero no autorizado aún — no caer al flujo interno
-      console.log(`Pendiente ${externalRef} existe, estado MP: ${sub.status} — esperando autorización`);
       return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ ok: true, msg: 'Pendiente existe, esperando autorización' }) };
     }
 
@@ -242,7 +238,6 @@ exports.handler = async (event) => {
 
     try {
       await db.collection('clientes').doc(externalRef).update(update);
-      console.log(`Cliente ${externalRef} → membresia.estado: ${estadoInterno}`);
     } catch (updateErr) {
       // Podría ser un pendiente no-authorized, ignorar
       console.warn(`No se pudo actualizar cliente ${externalRef}:`, updateErr.message);
