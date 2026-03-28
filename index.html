@@ -50,20 +50,31 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 .loading-circle{width:54px;height:54px;border-radius:50%;border:1.5px solid var(--accent);display:flex;align-items:center;justify-content:center;animation:pulse 1.5s ease-in-out infinite;}
 .loading-text{font-family:'Cormorant Garamond',serif;font-size:17px;letter-spacing:4px;color:var(--accent);}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.95)}}
-.login-page{min-height:100vh;display:none;align-items:center;justify-content:center;background:var(--cream);}
-.login-card{background:var(--white);border:.5px solid var(--cream-d);border-radius:20px;padding:44px 36px;width:100%;max-width:380px;}
-.login-logo{display:flex;align-items:center;gap:10px;margin-bottom:32px;}
-.login-brand{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:500;letter-spacing:2px;color:var(--text);}
-.login-brand span{color:var(--sage-dark);}
-.login-title{font-family:'Cormorant Garamond',serif;font-size:26px;margin-bottom:4px;color:var(--text);}
-.login-sub{font-size:13px;color:var(--text-l);margin-bottom:28px;}
-.fg{margin-bottom:13px;}
-.fl{font-size:10px;font-weight:500;color:var(--text-m);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:5px;}
-.fi{width:100%;padding:11px 13px;border:.5px solid var(--cream-d);border-radius:9px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);background:var(--cream);outline:none;transition:border-color .2s;}
-.fi:focus{border-color:var(--sage);background:var(--white);}
-.btn-login{width:100%;padding:12px;background:var(--topbar);color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;letter-spacing:.3px;}
-.btn-login:hover{background:var(--topbar2);}
-.login-err{background:var(--err-bg);color:var(--err);font-size:12px;padding:9px 12px;border-radius:7px;margin-top:10px;display:none;}
+.login-page{min-height:100vh;display:none;flex-direction:row;}
+.login-left{width:42%;background:#4a5e4d;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 40px;text-align:center;}
+.login-left-logo{width:140px;height:140px;margin-bottom:28px;}
+.login-left-brand{color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;letter-spacing:4px;text-transform:uppercase;margin-bottom:18px;}
+.login-left-rule{width:36px;height:1px;background:rgba(255,255,255,.25);margin:0 auto 18px;}
+.login-left-tagline{color:rgba(255,255,255,.6);font-family:'Cormorant Garamond',serif;font-style:italic;font-size:16px;line-height:1.5;}
+.login-right{width:58%;background:#f5f4f0;display:flex;align-items:center;justify-content:center;padding:40px 24px;}
+.login-card{background:#fff;border-radius:18px;padding:44px;width:100%;max-width:400px;box-shadow:0 4px 32px rgba(0,0,0,.06);}
+.login-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;color:#1a1a1a;margin-bottom:6px;}
+.login-sub{font-size:13px;color:#8a8a8a;margin-bottom:32px;}
+.fg{margin-bottom:16px;}
+.fl{font-size:11px;font-weight:700;color:#4a4a4a;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px;}
+.fi{width:100%;padding:12px 14px;border:1.5px solid #e8e8e8;border-radius:10px;font-size:14px;font-family:'DM Sans',sans-serif;color:#1a1a1a;background:#fff;outline:none;transition:border-color .2s;box-sizing:border-box;}
+.fi:focus{border-color:#4a5e4d;background:#fff;}
+.btn-login{width:100%;padding:14px;background:#4a5e4d;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;letter-spacing:.3px;margin-top:8px;transition:background .15s;}
+.btn-login:hover{background:#3d4f40;}
+.login-err{background:#fef2f2;color:#c4786a;font-size:12px;padding:9px 12px;border-radius:7px;margin-top:10px;display:none;}
+@media(max-width:767px){
+  .login-page{flex-direction:column;}
+  .login-left{width:100%;padding:32px 24px 28px;min-height:auto;}
+  .login-left-logo{width:72px;height:72px;margin-bottom:14px;}
+  .login-left-rule,.login-left-tagline{display:none;}
+  .login-right{width:100%;padding:24px 20px 40px;}
+  .login-card{padding:28px 24px;box-shadow:none;border-radius:14px;}
+}
 .app{display:none;min-height:100vh;flex-direction:column;}
 .app.visible{display:flex;}
 .topbar{background:var(--topbar);border-bottom:.5px solid rgba(0,0,0,.06);padding:0 20px;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
@@ -370,17 +381,26 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
 </div>
 
 <div class="login-page" id="lp">
-  <div class="login-card">
-    <div class="login-logo">
-      <svg width="38" height="38" viewBox="0 0 80 80" fill="none"><circle cx="40" cy="40" r="38" stroke="#A1B1A4" stroke-width="2"/><text x="40" y="37" text-anchor="middle" font-family="Georgia,serif" font-size="24" font-weight="500" fill="#A1B1A4">MB</text><text x="40" y="56" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" letter-spacing="2.5" fill="#A1B1A4">STRATEGY</text></svg>
-      <div class="login-brand">MB <span>STRATEGY</span></div>
+  <div class="login-left">
+    <svg class="login-left-logo" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="40" cy="40" r="38" stroke="rgba(255,255,255,.45)" stroke-width="1.5"/>
+      <circle cx="40" cy="40" r="30" stroke="rgba(255,255,255,.12)" stroke-width=".5"/>
+      <text x="40" y="38" text-anchor="middle" font-family="Georgia,serif" font-size="24" font-weight="500" fill="#fff">MB</text>
+      <text x="40" y="56" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" letter-spacing="2.5" fill="rgba(255,255,255,.8)">STRATEGY</text>
+    </svg>
+    <div class="login-left-brand">MB STRATEGY</div>
+    <div class="login-left-rule"></div>
+    <div class="login-left-tagline">Estructura, control y decisiones claras.</div>
+  </div>
+  <div class="login-right">
+    <div class="login-card">
+      <div class="login-title">Bienvenido/a</div>
+      <div class="login-sub">Ingresá a tu cuenta para continuar.</div>
+      <div class="fg"><label class="fl">Email</label><input type="email" class="fi" id="le" placeholder="tu@email.com"/></div>
+      <div class="fg"><label class="fl">Contraseña</label><div style="position:relative;"><input type="password" class="fi" id="lp2" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" style="padding-right:44px;"/><button type="button" id="lp2-toggle" onclick="(function(){var i=document.getElementById('lp2'),b=document.getElementById('lp2-toggle');i.type=i.type==='password'?'text':'password';b.innerHTML=i.type==='password'?'<svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;#9ca3af&quot; stroke-width=&quot;1.8&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z&quot;/><circle cx=&quot;12&quot; cy=&quot;12&quot; r=&quot;3&quot;/></svg>':'<svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;#9ca3af&quot; stroke-width=&quot;1.8&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24&quot;/><line x1=&quot;1&quot; y1=&quot;1&quot; x2=&quot;23&quot; y2=&quot;23&quot;/></svg>';})()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;line-height:0;display:flex;align-items:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
+      <button class="btn-login" onclick="doLogin()">Ingresar</button>
+      <div class="login-err" id="lerr"></div>
     </div>
-    <div class="login-title">Bienvenido/a</div>
-    <div class="login-sub">Estructura, control y decisiones claras.</div>
-    <div class="fg"><label class="fl">Email</label><input type="email" class="fi" id="le" placeholder="tu@email.com"/></div>
-    <div class="fg"><label class="fl">Contraseña</label><div style="position:relative;"><input type="password" class="fi" id="lp2" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" style="padding-right:40px;"/><button type="button" onclick="(function(){var i=document.getElementById('lp2');i.type=i.type==='password'?'text':'password';this.innerHTML=i.type==='password'?'<svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;#9ca3af&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z&quot;/><circle cx=&quot;12&quot; cy=&quot;12&quot; r=&quot;3&quot;/></svg>':'<svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;#9ca3af&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24&quot;/><line x1=&quot;1&quot; y1=&quot;1&quot; x2=&quot;23&quot; y2=&quot;23&quot;/></svg>';}).call(this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;line-height:0;display:flex;align-items:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
-    <button class="btn-login" onclick="doLogin()">Ingresar</button>
-    <div class="login-err" id="lerr"></div>
   </div>
 </div>
 
