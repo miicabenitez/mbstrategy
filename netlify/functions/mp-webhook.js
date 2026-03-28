@@ -80,6 +80,7 @@ async function notificarPushover({ nombreCliente, email, plan, monto }) {
 }
 
 
+exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, headers: HEADERS, body: JSON.stringify({ error: 'Método no permitido' }) };
   }
