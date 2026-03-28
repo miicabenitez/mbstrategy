@@ -152,7 +152,8 @@ exports.handler = async (event) => {
             'membresia.estado': estadoInterno,
             'membresia.mpSubscriptionId': subscriptionId,
             'membresia.mpEstado': sub.status,
-            'membresia.actualizadoEn': FieldValue.serverTimestamp()
+            'membresia.actualizadoEn': FieldValue.serverTimestamp(),
+            'productos.embi': (pendiente.plan || 'base') === 'pro' ? 'operativo' : 'explicativo'
           };
           if (sub.next_payment_date) update['membresia.proximoCobro'] = new Date(sub.next_payment_date);
           await clienteDoc.ref.update(update);
