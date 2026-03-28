@@ -525,7 +525,7 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg>
         <div>
           <div class="sb-footer-label">Mi cuenta</div>
-          <div class="sb-footer-sub" id="sb-plan-badge">—</div>
+          <div class="sb-footer-sub" id="sb-plan-badge" style="display:none;"></div>
         </div>
       </button>
       <button class="sb-footer-btn" onclick="doLogout()" style="margin-top:2px;">
@@ -13400,7 +13400,7 @@ function sidebarInit(){
   if(el){var d=new Date();var m=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];el.textContent=d.getDate()+' de '+m[d.getMonth()]+' de '+d.getFullYear();}
   // Plan badge
   var pb=document.getElementById('sb-plan-badge');
-  if(pb){var memb=window.currentClientData&&window.currentClientData.membresia;pb.textContent=memb&&memb.plan?'Plan '+(memb.plan==='pro'?'Pro':'Base'):'—';}
+  if(pb){var memb=window.currentClientData&&window.currentClientData.membresia;if(memb&&memb.plan){pb.textContent='Plan '+(memb.plan==='pro'?'Pro':'Base');pb.style.display='';}else{pb.textContent='';pb.style.display='none';}}
   // Restore last active module from localStorage
   try{
     var lastMod=localStorage.getItem('mbst_sb_mod');
