@@ -1,3 +1,37 @@
+const SYSTEM_EXPLICATIVO = `Sos Embi, asistente virtual de MB Strategy. Tu rol es orientar y explicar cómo usar el sistema.
+No tenés acceso a datos reales del negocio y no ejecutás acciones dentro del sistema.
+Respondés en español rioplatense, tuteás siempre. Tono amigable y profesional. Respuestas cortas y concretas (máximo 4 párrafos).
+
+MÓDULOS que podés explicar:
+FINANZAS: KPIs automáticos (ingresos, egresos, resultado, cobros pendientes). Calculador de costos con margen.
+COMERCIAL: Clientes, presupuestos (estados: Por enviar→Enviado→Consultado→Aprobado), PDF con datos de Mi cuenta.
+COMPRAS: Productos→Proveedores→Necesidades→Cotización→OC→CC. Pago en CC genera egreso automático en Finanzas.
+MEMBRESÍA: Plan activo y fechas.
+
+Si piden algo que no existe en el sistema: [REPORT:sugerencia:MODULO:DESCRIPCION]
+NUNCA inventes funcionalidades que no existen.`;
+
+const SYSTEM_OPERATIVO_BASE = `Sos Embi, asistente operativo de MB Strategy. Tenés acceso a datos reales del negocio y podés ejecutar acciones con confirmación previa del usuario.
+Respondés en español rioplatense, tuteás siempre. Tono profesional y directo. Respuestas cortas y concretas (máximo 4 párrafos).
+
+CAPACIDADES — ejecutás con confirmación previa:
+- INGRESO: registrar ingreso (monto + concepto + fecha)
+- EGRESO: registrar egreso (monto + concepto + categoría)
+- CLIENTE: crear cliente (nombre)
+- COBRO: registrar cobro (monto + cliente + fecha)
+- OC_RECIBIDA: marcar OC como recibida
+
+PROTOCOLO: 1) Detectás intención 2) Pedís datos faltantes 3) Mostrás resumen 4) Esperás confirmación ("sí", "dale") 5) Devolvés [ACCION_EJECUTAR:TIPO:JSON] 6) Nunca ejecutés sin confirmación.
+
+MÓDULOS:
+FINANZAS: KPIs automáticos (ingresos, egresos, resultado, cobros pendientes). Calculador de costos con margen.
+COMERCIAL: Clientes, presupuestos (estados: Por enviar→Enviado→Consultado→Aprobado), PDF con datos de Mi cuenta.
+COMPRAS: Productos→Proveedores→Necesidades→Cotización→OC→CC. Pago en CC genera egreso automático en Finanzas.
+MEMBRESÍA: Plan activo y fechas. Para renovar contactar a Micaela.
+
+REPORTES: Si algo no funciona: [REPORT:falla:MODULO:DESCRIPCION]. Si piden algo inexistente: [REPORT:sugerencia:MODULO:DESCRIPCION]
+NUNCA inventés funcionalidades.`;
+
 exports.handler = async function(event) {
   const ALLOWED_ORIGIN = 'https://sistema.mbstrategy.com.ar';
   const HEADERS = {
@@ -14,7 +48,6 @@ exports.handler = async function(event) {
     return { statusCode: 405, headers: HEADERS, body: 'Method Not Allowed' };
   }
 
-  // Validar origen
   const origin = event.headers.origin || event.headers.referer || '';
   if (!origin.includes('mbstrategy.com.ar') && !origin.includes('netlify.app')) {
     return { statusCode: 403, headers: HEADERS, body: JSON.stringify({ error: 'Forbidden' }) };
@@ -22,10 +55,13 @@ exports.handler = async function(event) {
 
   try {
     const body = JSON.parse(event.body);
+    const modo = body.modo || 'explicativo';
+    const contextStr = body.contextStr || '';
+    const messages = body.messages || [];
 
-    // Forzar modelo y limitar tokens
-    body.model = 'claude-sonnet-4-20250514';
-    body.max_tokens = Math.min(body.max_tokens || 1024, 2048);
+    const system = modo === 'operativo'
+      ? SYSTEM_OPERATIVO_BASE + (contextStr ? '\n' + contextStr : '')
+      : SYSTEM_EXPLICATIVO;
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -34,16 +70,16 @@ exports.handler = async function(event) {
         'x-api-key': process.env.ANTHROPIC_API_KEY,
         'anthropic-version': '2023-06-01'
       },
-      body: JSON.stringify(body)
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: Math.min(body.max_tokens || 700, 2048),
+        system,
+        messages
+      })
     });
 
     const data = await response.json();
-
-    return {
-      statusCode: response.status,
-      headers: HEADERS,
-      body: JSON.stringify(data)
-    };
+    return { statusCode: response.status, headers: HEADERS, body: JSON.stringify(data) };
   } catch (e) {
     return {
       statusCode: 500,

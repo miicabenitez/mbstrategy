@@ -12774,8 +12774,13 @@ window.marcarCambioPrecio = function() {
 
 <!-- ═══════════════ EMBI ═══════════════ -->
 <div class="embi-fab" id="embiFab" style="display:none;">
+  <div id="embiUpgradeTip" style="display:none;position:absolute;bottom:64px;right:0;width:220px;background:#fff;border:.5px solid var(--cream-d);border-radius:12px;padding:12px 14px;box-shadow:0 4px 20px rgba(0,0,0,.14);font-family:'DM Sans',sans-serif;z-index:10;">
+    <div style="font-size:12px;color:var(--text);line-height:1.55;margin-bottom:9px;">Embi operativo está disponible en el plan Pro</div>
+    <button onclick="(function(){document.getElementById('embiUpgradeTip').style.display='none';var b=document.querySelector('#cNav .nt[onclick*=\'membresia\']');if(b)showClientMod('membresia',b);})();" style="width:100%;padding:7px;background:var(--topbar);color:#fff;border:none;border-radius:7px;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;font-weight:500;">Ver plan Pro</button>
+  </div>
   <button class="embi-fab-btn" id="embiFabBtn" onclick="embiToggle()">
-    <div class="embi-pulse"></div>
+    <div class="embi-pulse" id="embiPulse"></div>
+    <div id="embiBadge" style="display:none;position:absolute;top:-3px;right:-3px;width:18px;height:18px;border-radius:50%;background:#B08A42;border:2px solid #fff;font-size:9px;color:#fff;align-items:center;justify-content:center;line-height:1;">✦</div>
     <svg id="embiIconChat" width="22" height="22" viewBox="0 0 22 22" fill="none">
       <path d="M11 2C6.03 2 2 5.8 2 10.5c0 2.1.8 4 2.1 5.5L3 20l4.3-1.4A9.3 9.3 0 0 0 11 19c4.97 0 9-3.8 9-8.5S15.97 2 11 2z" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/>
       <path d="M7.5 10.5h7M7.5 13.5h4.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
@@ -12812,7 +12817,7 @@ window.marcarCambioPrecio = function() {
 </div>
 
 <script>
-var embiOpen=false,embiHistory=[],embiGreeted=false;
+var embiOpen=false,embiHistory=[],embiGreeted=false,embiModo=null,_embiDragHappened=false;
 var EMBI_CONTEXT={
   default:['¿Cómo empiezo?','¿Qué puedo hacer acá?'],
   contabilidad:['¿Cómo registro un ingreso?','¿Cómo registro un egreso?','¿Por qué mi saldo no cuadra?'],
@@ -12862,31 +12867,7 @@ function embiGetFinancialContext(){
   }catch(e){return '';}
 }
 
-var EMBI_SYSTEM_BASE=`Sos Embi, asistente de gestión de MB Strategy. Ayudás a dueños de negocios a tener visibilidad financiera y tomar decisiones con datos reales.
-
-PERSONALIDAD: Hablás de vos. Tono profesional y directo. Respuestas cortas y concretas. Nunca inventás funcionalidades ni datos que no existen.
-
-CAPACIDADES — podés ejecutar estas acciones con confirmación previa:
-- INGRESO: registrar ingreso (monto + concepto + fecha)
-- EGRESO: registrar egreso (monto + concepto + categoría)
-- CLIENTE: crear cliente (nombre)
-- COBRO: registrar cobro (monto + cliente + fecha)
-- OC_RECIBIDA: marcar OC como recibida
-
-PROTOCOLO: 1) Detectás intención 2) Pedís datos faltantes 3) Mostrás resumen 4) Esperás confirmación ("sí", "dale") 5) Devolvés [ACCION_EJECUTAR:TIPO:JSON] 6) Nunca ejecutés sin confirmación.
-
-MÓDULOS:
-FINANZAS: KPIs automáticos (ingresos, egresos, resultado, cobros pendientes). Calculador de costos con margen.
-COMERCIAL: Clientes, presupuestos (estados: Por enviar→Enviado→Consultado→Aprobado), PDF con datos de Mi cuenta.
-COMPRAS: Productos→Proveedores→Necesidades→Cotización→OC→CC. Pago en CC genera egreso automático en Finanzas.
-MEMBRESÍA: Plan activo y fechas. Para renovar contactar a Micaela.
-
-REPORTES: Si algo no funciona: [REPORT:falla:MODULO:DESCRIPCION]. Si piden algo inexistente: [REPORT:sugerencia:MODULO:DESCRIPCION]
-
-NUNCA: inventés funcionalidades, respondas en más de 4 párrafos.`;
-
-function embiGetSystem(){return EMBI_SYSTEM_BASE+embiGetFinancialContext();}
-var EMBI_SYSTEM=EMBI_SYSTEM_BASE;
+// System prompts viven en el servidor (embi.js). El cliente solo envía modo + contextStr.
 function embiGetContext(){
   var active=document.querySelector('[id^="ct-"][style*="block"]');
   if(active){var t=active.id.replace('ct-','');return EMBI_CONTEXT[t]||EMBI_CONTEXT.default;}
@@ -12922,10 +12903,12 @@ async function embiCallAPI(userMsg){
   embiHistory.push({role:'user',content:userMsg});
   if(embiHistory.length>10)embiHistory=embiHistory.slice(-10);
   try{
+    var payload={messages:embiHistory,modo:embiModo||'explicativo'};
+    if(embiModo==='operativo')payload.contextStr=embiGetFinancialContext();
     var resp=await fetch('/.netlify/functions/embi',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:700,system:embiGetSystem(),messages:embiHistory})
+      body:JSON.stringify(payload)
     });
     var data=await resp.json();
     var text=(data.content&&data.content[0]&&data.content[0].text)?data.content[0].text:'Lo siento, no pude procesar tu consulta. Intentá de nuevo.';
@@ -13074,7 +13057,74 @@ function embiIniciarReconocimiento(){
   try{embiRecognition.start();}catch(e){resetMicUI();}
 }
 function embiMicStop(){if(!embiRecording||!embiRecognition)return;try{embiRecognition.stop();}catch(e){}}
+function embiInitDrag(){
+  var fab=document.getElementById('embiFab');if(!fab)return;
+  // Restore saved position
+  try{
+    var s=JSON.parse(localStorage.getItem('mbst_embi_pos')||'null');
+    if(s&&s.top!=null&&s.left!=null){
+      fab.style.top=Math.min(s.top,window.innerHeight-fab.offsetHeight||54)+'px';
+      fab.style.left=Math.min(s.left,window.innerWidth-fab.offsetWidth||54)+'px';
+      fab.style.bottom='auto';fab.style.right='auto';
+    }
+  }catch(e){}
+  // Prevent re-attaching listeners
+  if(fab._dragInit)return;fab._dragInit=true;
+  var sx,sy,sl,st,dragging=false;
+  function onStart(e){
+    if(e.button&&e.button!==0)return;
+    var t=e.touches?e.touches[0]:e;
+    sx=t.clientX;sy=t.clientY;
+    var r=fab.getBoundingClientRect();sl=r.left;st=r.top;
+    dragging=false;_embiDragHappened=false;
+    document.addEventListener('mousemove',onMove);
+    document.addEventListener('touchmove',onMove,{passive:false});
+    document.addEventListener('mouseup',onEnd);
+    document.addEventListener('touchend',onEnd);
+  }
+  function onMove(e){
+    var t=e.touches?e.touches[0]:e;
+    var dx=t.clientX-sx,dy=t.clientY-sy;
+    if(!dragging&&(Math.abs(dx)>5||Math.abs(dy)>5))dragging=true;
+    if(dragging){
+      e.preventDefault();
+      var nL=Math.max(0,Math.min(window.innerWidth-(fab.offsetWidth||54),sl+dx));
+      var nT=Math.max(0,Math.min(window.innerHeight-(fab.offsetHeight||54),st+dy));
+      fab.style.left=nL+'px';fab.style.top=nT+'px';
+      fab.style.bottom='auto';fab.style.right='auto';
+    }
+  }
+  function onEnd(){
+    document.removeEventListener('mousemove',onMove);
+    document.removeEventListener('touchmove',onMove);
+    document.removeEventListener('mouseup',onEnd);
+    document.removeEventListener('touchend',onEnd);
+    if(dragging){
+      _embiDragHappened=true;
+      var r=fab.getBoundingClientRect();
+      try{localStorage.setItem('mbst_embi_pos',JSON.stringify({top:r.top,left:r.left}));}catch(e){}
+    }
+    dragging=false;
+  }
+  fab.addEventListener('mousedown',onStart);
+  fab.addEventListener('touchstart',onStart,{passive:false});
+}
 function embiToggle(){
+  if(_embiDragHappened){_embiDragHappened=false;return;}
+  if(!embiModo){
+    var tip=document.getElementById('embiUpgradeTip');
+    if(tip){
+      var showing=tip.style.display!=='block';
+      tip.style.display=showing?'block':'none';
+      if(showing){
+        setTimeout(function(){
+          function closeOnOutside(e){var fab=document.getElementById('embiFab');if(fab&&!fab.contains(e.target)){tip.style.display='none';document.removeEventListener('click',closeOnOutside,true);}}
+          document.addEventListener('click',closeOnOutside,true);
+        },50);
+      }
+    }
+    return;
+  }
   embiOpen=!embiOpen;
   var panel=document.getElementById('embiPanel');
   var btn=document.getElementById('embiFabBtn');
@@ -13085,6 +13135,20 @@ function embiToggle(){
   ic.style.display=embiOpen?'none':'block';
   ix.style.display=embiOpen?'block':'none';
   if(embiOpen){
+    // Position panel near FAB on desktop
+    if(window.innerWidth>480){
+      var fab=document.getElementById('embiFab');
+      if(fab){
+        var r=fab.getBoundingClientRect();
+        var pw=350,ph=Math.min(540,window.innerHeight-80);
+        var pL=r.right-pw,pT=r.top-ph-12;
+        if(pL<8)pL=8;if(pT<8)pT=r.bottom+12;
+        if(pT+ph>window.innerHeight-8)pT=window.innerHeight-ph-8;
+        panel.style.left=pL+'px';panel.style.top=pT+'px';
+        panel.style.bottom='auto';panel.style.right='auto';
+        panel.style.width=pw+'px';panel.style.maxHeight=ph+'px';
+      }
+    }
     embiRenderChips();
     if(!embiGreeted){
       embiGreeted=true;
@@ -13098,8 +13162,25 @@ function embiToggle(){
 }
 function embiShow(show){
   var fab=document.getElementById('embiFab');
-  if(fab)fab.style.display=show?'block':'none';
-  if(!show&&embiOpen)embiToggle();
+  if(!fab)return;
+  if(!show){fab.style.display='none';if(embiOpen)embiToggle();return;}
+  // Determine access level
+  var planVal=(window.currentClientData?.productos?.embi)||null;
+  embiModo=planVal;
+  fab.style.display='block';
+  var btn=document.getElementById('embiFabBtn');
+  var pulse=document.getElementById('embiPulse');
+  var badge=document.getElementById('embiBadge');
+  if(!planVal){
+    if(btn){btn.style.opacity='0.6';btn.style.cursor='not-allowed';}
+    if(pulse)pulse.style.display='none';
+    if(badge)badge.style.display='flex';
+  }else{
+    if(btn){btn.style.opacity='';btn.style.cursor='';}
+    if(pulse)pulse.style.display='';
+    if(badge)badge.style.display='none';
+  }
+  embiInitDrag();
 }
 window.embiShow=embiShow;
 </script>
