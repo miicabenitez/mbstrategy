@@ -6554,10 +6554,18 @@ async function loadInicio() {
     const mesAntAnio = hoy.getMonth() === 0 ? hoy.getFullYear() - 1 : hoy.getFullYear();
     const mesAnterior = `${MESES_DASH[mesAntIdx]} ${mesAntAnio}`;
 
-    const ingMes = ingresos.filter(i=>(i.mes||'').toLowerCase()===mesActual.toLowerCase());
-    const egMes = egresos.filter(e=>(e.mes||'').toLowerCase()===mesActual.toLowerCase());
-    const ingAnt = ingresos.filter(i=>(i.mes||'').toLowerCase()===mesAnterior.toLowerCase());
-    const egAnt = egresos.filter(e=>(e.mes||'').toLowerCase()===mesAnterior.toLowerCase());
+    // Filtro por mes: incluye "Marzo 2026" y "Marzo de 2026" (formato varía por browser/locale)
+    const mesFiltro = (storedMes, target) => {
+      if(!storedMes || !target) return false;
+      const parts = target.split(' ');
+      const nombre = parts[0].toLowerCase();
+      const anio = parts[parts.length - 1];
+      return storedMes.toLowerCase().includes(nombre) && storedMes.includes(anio);
+    };
+    const ingMes = ingresos.filter(i=>mesFiltro(i.mes, mesActual));
+    const egMes  = egresos.filter(e=>mesFiltro(e.mes, mesActual));
+    const ingAnt = ingresos.filter(i=>mesFiltro(i.mes, mesAnterior));
+    const egAnt  = egresos.filter(e=>mesFiltro(e.mes, mesAnterior));
 
     const totalIngMes = ingMes.reduce((a,i)=>a+(parseFloat(i.monto)||0),0);
     const totalEgMes = egMes.reduce((a,e)=>a+(parseFloat(e.monto)||0),0);
