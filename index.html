@@ -12895,12 +12895,30 @@ function embiRenderChips(){
 }
 function embiUseChip(el){document.getElementById('embiInput').value=el.textContent;embiSend();}
 function embiReport(){document.getElementById('embiInput').value='Quiero reportar un problema con el sistema';embiSend();}
+function embiRenderMd(text){
+  var s=text.replace(/\[REPORT:[^\]]+\]/g,'').trim();
+  s=s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  var lines=s.split('\n'),html='',inList=false;
+  for(var i=0;i<lines.length;i++){
+    var line=lines[i];
+    if(/^-\s+/.test(line)){
+      if(!inList){if(html)html+='<br/>';html+='<ul style="margin:4px 0 4px 14px;padding:0;">';inList=true;}
+      html+='<li>'+line.replace(/^-\s+/,'')+'</li>';
+    }else{
+      if(inList){html+='</ul>';inList=false;}
+      if(html)html+='<br/>';
+      html+=line;
+    }
+  }
+  if(inList)html+='</ul>';
+  return html;
+}
 function embiAddMsg(role,text){
   var msgs=document.getElementById('embiMsgs');if(!msgs)return;
   var now=new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
-  var clean=text.replace(/\[REPORT:[^\]]+\]/g,'').trim();
+  var content=role==='bot'?embiRenderMd(text):text.replace(/\[REPORT:[^\]]+\]/g,'').trim().replace(/\n/g,'<br/>');
   var div=document.createElement('div');div.className='embi-msg '+role;
-  div.innerHTML='<div class="embi-bubble">'+clean.replace(/\n/g,'<br/>')+'</div><div class="embi-time">'+now+'</div>';
+  div.innerHTML='<div class="embi-bubble">'+content+'</div><div class="embi-time">'+now+'</div>';
   msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;
 }
 function embiShowTyping(){
