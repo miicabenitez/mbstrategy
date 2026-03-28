@@ -139,6 +139,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
   body.client-view .mod-subnav{display:none !important;}
   body.client-view .topbar-logo{display:none;}
 }
+#navProgressBar{position:fixed;top:0;left:220px;right:0;height:2.5px;background:#4a5e4d;border-radius:0 2px 2px 0;z-index:500;width:0;opacity:0;pointer-events:none;}
+@media(max-width:768px){#navProgressBar{left:0;}}
 .content{flex:1;padding:20px;max-width:1100px;margin:0 auto;width:100%;}
 .view{display:none;}
 .view.active{display:block;}
@@ -478,6 +480,8 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
       </div>
     </div>
   </div>
+
+  <div id="navProgressBar"></div>
 
   <!-- ═══════ SIDEBAR (client view, desktop) ═══════ -->
   <div class="sidebar" id="clientSidebar">
@@ -13401,38 +13405,70 @@ function sidebarSyncFromMod(mod){
     if(firstSub)firstSub.classList.add('active');
   }
 }
+function navTransition(callback){
+  var isDesktopClient=window.innerWidth>=769&&document.body.classList.contains('client-view');
+  if(!isDesktopClient){callback();return;}
+  var bar=document.getElementById('navProgressBar');
+  var content=document.getElementById('cArea');
+  if(!bar||!content){callback();return;}
+  // Reset bar
+  bar.style.transition='none';
+  bar.style.width='0';
+  bar.style.opacity='1';
+  void bar.offsetWidth;
+  bar.style.transition='width 350ms cubic-bezier(.4,0,.2,1)';
+  bar.style.width='70%';
+  // Fade out content
+  content.style.transition='opacity 150ms ease,transform 150ms ease';
+  content.style.opacity='0';
+  content.style.transform='translateY(-6px)';
+  setTimeout(function(){
+    callback();
+    content.style.transition='none';
+    content.style.transform='translateY(6px)';
+    content.style.opacity='0';
+    bar.style.transition='width 80ms ease';
+    bar.style.width='100%';
+    requestAnimationFrame(function(){requestAnimationFrame(function(){
+      content.style.transition='opacity 250ms ease,transform 250ms ease';
+      content.style.opacity='1';
+      content.style.transform='translateY(0)';
+    });});
+    setTimeout(function(){
+      bar.style.transition='opacity 300ms ease';
+      bar.style.opacity='0';
+    },180);
+  },150);
+}
 window.sidebarNav=function(mod,sub){
-  try{localStorage.setItem('mbst_sb_mod',mod);localStorage.setItem('mbst_sb_sub',sub||'');}catch(e){}
-  sidebarSetActive(mod,sub);
-  if(mod==='inicio'){
-    window.showClientMod('inicio',null);
-    return;
-  }
-  // Call showClientMod for proper module initialization (ct- panels, localStorage, bottom nav sync)
-  window._sbNavInProgress=true;
-  window.showClientMod(mod,null);
-  window._sbNavInProgress=false;
-  // Override to specific sub-view
-  if(mod==='finanzas'){
-    if(sub==='ingresos')window.showClientContView('ingresos',null);
-    else if(sub==='egresos')window.showClientContView('egresos',null);
-  }else if(mod==='ventas'){
-    if(sub==='presupuestos')window.showCTab('presupuestos',null);
-    else if(sub==='catalogo')window.showCTab('productos',null);
-  }else if(mod==='compras'){
-    if(sub==='proveedores')window.showCTab('proveedores',null);
-    else if(sub==='ordenes')window.showCTab('ordenes-compra',null);
-    else if(sub==='productos')window.showCTab('prod-compra',null);
-    else if(sub==='categorias')window.showCTab('categorias-compra',null);
-  }else if(mod==='herramientas'){
-    if(sub==='indicadores')window.showCTab('kpis',null);
-    else if(sub==='calculador')window.showCTab('calculador',null);
-  }else if(mod==='gestion'){
+  navTransition(function(){
+    try{localStorage.setItem('mbst_sb_mod',mod);localStorage.setItem('mbst_sb_sub',sub||'');}catch(e){}
+    sidebarSetActive(mod,sub);
+    if(mod==='inicio'){window.showClientMod('inicio',null);return;}
     window._sbNavInProgress=true;
-    window.showClientMod('herramientas',null);
+    window.showClientMod(mod,null);
     window._sbNavInProgress=false;
-    if(sub==='planaccion')window.showCTab('tareas',null);
-  }
+    if(mod==='finanzas'){
+      if(sub==='ingresos')window.showClientContView('ingresos',null);
+      else if(sub==='egresos')window.showClientContView('egresos',null);
+    }else if(mod==='ventas'){
+      if(sub==='presupuestos')window.showCTab('presupuestos',null);
+      else if(sub==='catalogo')window.showCTab('productos',null);
+    }else if(mod==='compras'){
+      if(sub==='proveedores')window.showCTab('proveedores',null);
+      else if(sub==='ordenes')window.showCTab('ordenes-compra',null);
+      else if(sub==='productos')window.showCTab('prod-compra',null);
+      else if(sub==='categorias')window.showCTab('categorias-compra',null);
+    }else if(mod==='herramientas'){
+      if(sub==='indicadores')window.showCTab('kpis',null);
+      else if(sub==='calculador')window.showCTab('calculador',null);
+    }else if(mod==='gestion'){
+      window._sbNavInProgress=true;
+      window.showClientMod('herramientas',null);
+      window._sbNavInProgress=false;
+      if(sub==='planaccion')window.showCTab('tareas',null);
+    }
+  });
 };
 // Patch showClientMod to sync sidebar when called from bottom nav or other sources
 (function(){
