@@ -420,6 +420,20 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
   </div>
 </div>
 
+<!-- PANTALLA MEMBRESÍA CANCELADA -->
+<div id="memb-cancelada" style="display:none;min-height:100vh;align-items:center;justify-content:center;background:#f5f4f0;flex-direction:column;text-align:center;padding:40px 24px;">
+  <div style="max-width:400px;width:100%;">
+    <div style="width:72px;height:72px;border-radius:50%;background:rgba(74,94,77,.1);display:flex;align-items:center;justify-content:center;margin:0 auto 28px;">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#4a5e4d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v5"/><circle cx="12" cy="16.5" r=".5" fill="#4a5e4d"/></svg>
+    </div>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:400;color:#2c2c2c;margin-bottom:12px;line-height:1.2;">Tu suscripción fue cancelada</div>
+    <div style="font-size:14px;color:#888780;line-height:1.65;margin-bottom:36px;">Para seguir usando MB Strategy<br>reactivá tu suscripción.</div>
+    <a href="/planes.html" style="display:block;background:#4a5e4d;color:#fff;padding:14px 24px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;text-decoration:none;margin-bottom:10px;">Reactivar suscripción</a>
+    <a href="https://wa.me/5491176553318" target="_blank" rel="noopener" style="display:block;background:transparent;color:#4a5e4d;padding:13px 24px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;text-decoration:none;border:.5px solid rgba(74,94,77,.4);margin-bottom:28px;">Contactar soporte</a>
+    <a href="#" onclick="doLogout();return false;" style="font-size:12px;color:#aaa;text-decoration:none;font-family:'DM Sans',sans-serif;">Cerrar sesión</a>
+  </div>
+</div>
+
 <div class="app" id="app">
 
   <!-- MOBILE NAV -->
@@ -3778,6 +3792,14 @@ window.showClientUI = async function(email, clientData) {
     document.getElementById('ub').textContent = name;
     if(!clientData) {
       // No se encontró cliente para este email — mostrar mensaje claro
+      return;
+    }
+    // Bloqueo por membresía cancelada
+    if(clientData.membresia?.estado === 'cancelado') {
+      document.getElementById('lp').style.display = 'none';
+      document.getElementById('app').classList.remove('visible');
+      const mc = document.getElementById('memb-cancelada');
+      if(mc) mc.style.display = 'flex';
       return;
     }
     if(clientData) {
