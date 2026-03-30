@@ -420,6 +420,56 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
 .caja-table tbody tr{border-bottom:1px solid #f5f4f0;cursor:pointer;transition:background .12s;}
 .caja-table tbody tr:last-child{border-bottom:none;}.caja-table tbody tr:hover{background:#fafafa;}
 .caja-table td{padding:14px 0;vertical-align:middle;white-space:nowrap;}
+/* ── CAJA MODALES ── */
+@keyframes modalIn{from{opacity:0;transform:scale(.97) translateY(10px);}to{opacity:1;transform:none;}}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+.cj-overlay{display:none;position:fixed;inset:0;z-index:1001;background:rgba(0,0,0,.18);backdrop-filter:blur(3px);align-items:center;justify-content:center;padding:20px;}
+.cj-overlay.open{display:flex;animation:fadeIn .2s ease both;}
+.cj-modal{background:white;border-radius:20px;width:100%;max-width:460px;box-shadow:0 24px 80px rgba(0,0,0,.14);animation:modalIn .35s cubic-bezier(.16,1,.3,1) both;display:flex;flex-direction:column;max-height:90vh;overflow:hidden;}
+.cj-mheader{padding:20px 22px 16px;border-bottom:1px solid #f0efeb;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.cj-mbody{overflow-y:auto;flex:1;padding:20px 22px;display:flex;flex-direction:column;gap:16px;}
+.cj-mfooter{padding:14px 22px 20px;border-top:1px solid #f0efeb;flex-shrink:0;}
+.cj-close{width:30px;height:30px;border-radius:50%;background:#f5f4f0;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#999;font-size:18px;line-height:1;transition:all .12s;}
+.cj-close:hover{background:#ece9e3;color:#333;}
+.cj-slabel{font-size:10px;font-weight:700;color:#888;letter-spacing:.06em;display:block;margin-bottom:8px;}
+.cj-tipo-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.cj-tipo-btn{padding:12px 8px;border-radius:10px;border:1.5px solid #e8e8e4;background:white;cursor:pointer;text-align:center;transition:all .15s;font-family:inherit;}
+.cj-tipo-btn.active-ing{border-color:#4a5e4d;background:#f0f5f0;}.cj-tipo-btn.active-ing .cj-tlabel{color:#4a5e4d;}
+.cj-tipo-btn.active-eg{border-color:#993C1D;background:#fdf0ec;}.cj-tipo-btn.active-eg .cj-tlabel{color:#993C1D;}
+.cj-tipo-btn.active-tr{border-color:#185FA5;background:#e6f1fb;}.cj-tipo-btn.active-tr .cj-tlabel{color:#185FA5;}
+.cj-tlabel{font-size:12px;font-weight:600;color:#555;margin-top:5px;}
+.cj-clist{display:flex;flex-wrap:wrap;gap:6px;}
+.cj-chip{padding:6px 14px;border-radius:20px;border:1.5px solid #e8e8e4;background:white;font-size:12px;font-weight:500;color:#666;cursor:pointer;transition:all .15s;font-family:inherit;}
+.cj-chip:hover{border-color:#4a5e4d;color:#4a5e4d;}
+.cj-chip.sel-ing{background:#4a5e4d;color:white;border-color:#4a5e4d;}
+.cj-chip.sel-eg{background:#993C1D;color:white;border-color:#993C1D;}
+.cj-chip.nuevo-chip{border-style:dashed;color:#4a5e4d;border-color:#c8d5c9;background:transparent;}
+.cj-chip.nuevo-chip:hover{background:#f0f5f0;}
+.cj-field label{font-size:10px;font-weight:700;color:#888;letter-spacing:.06em;display:block;margin-bottom:5px;}
+.cj-field input,.cj-field select,.cj-field textarea{width:100%;padding:10px 13px;border:1.5px solid #e8e8e4;border-radius:8px;font-size:13px;color:#2c2c2a;background:#fafafa;outline:none;font-family:inherit;transition:border .15s;}
+.cj-field input:focus,.cj-field select:focus,.cj-field textarea:focus{border-color:#4a5e4d;background:white;}
+.cj-field textarea{resize:none;height:56px;}
+.cj-row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.cj-cdf{padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;margin-top:8px;}
+.cj-cdf.sobrante{background:#edf7ed;color:#3B6D11;}.cj-cdf.faltante{background:#fdf0ec;color:#993C1D;}
+.cj-btn-save{padding:13px;background:#4a5e4d;border:none;border-radius:10px;font-size:14px;font-weight:600;color:white;cursor:pointer;font-family:inherit;transition:all .15s;width:100%;}
+.cj-btn-save:hover:not(:disabled){background:#3d4f40;}.cj-btn-save:disabled{background:#c8d5c9;cursor:not-allowed;}
+.cj-btn-cancel{flex:1;padding:13px;background:white;border:1.5px solid #e8e8e4;border-radius:10px;font-size:14px;font-weight:500;color:#888;cursor:pointer;font-family:inherit;}
+.vrc-search{position:relative;}
+.vrc-search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);pointer-events:none;}
+.vrc-search input{width:100%;padding:10px 13px 10px 40px;border:1.5px solid #e8e8e4;border-radius:10px;font-size:13px;color:#1a1a1a;background:#fafafa;outline:none;font-family:inherit;transition:border .15s,background .15s;}
+.vrc-search input:focus{border-color:#4a5e4d;background:white;}
+.vrc-cart-item{display:flex;align-items:center;gap:10px;background:#f8faf8;border:1.5px solid #dce8dc;border-radius:12px;padding:11px 13px;animation:fadeUp .2s ease both;}
+.vrc-qty-btn{width:26px;height:26px;border-radius:8px;border:1.5px solid #dce8dc;background:white;cursor:pointer;font-size:15px;color:#4a5e4d;display:flex;align-items:center;justify-content:center;font-weight:600;transition:all .12s;}
+.vrc-qty-btn:hover{background:#4a5e4d;color:white;border-color:#4a5e4d;}
+.vrc-prod-row{display:flex;align-items:center;justify-content:space-between;padding:10px 13px;border-radius:10px;border:1.5px solid #eee;background:#fafafa;cursor:pointer;transition:all .12s;}
+.vrc-prod-row:hover{border-color:#4a5e4d;background:#f5faf5;}
+.vrc-add-btn{width:26px;height:26px;border-radius:7px;background:#f0f5f0;border:none;cursor:pointer;color:#4a5e4d;display:flex;align-items:center;justify-content:center;transition:all .12s;flex-shrink:0;}
+.vrc-prod-row:hover .vrc-add-btn{background:#4a5e4d;color:white;}
+.vrc-metodo-btn{padding:10px 8px;border-radius:10px;border:1.5px solid #e8e8e4;background:white;cursor:pointer;text-align:center;font-family:inherit;transition:all .15s;color:#888;}
+.vrc-metodo-btn:hover,.vrc-metodo-btn.sel{border-color:#4a5e4d;background:#f2f7f2;color:#4a5e4d;}
+.vrc-metodo-btn.sel .vrc-mlabel{color:#4a5e4d;}
+.vrc-mlabel{font-size:12px;font-weight:600;color:#555;margin-top:5px;}
 </style>
 </head>
 <body>
@@ -6596,12 +6646,374 @@ window.cajaMesSiguiente = function() {
 window.cajaMostrarMovimiento = function(id) {
   console.log('movimiento:', id);
 };
-window.cajaNuevoMovimiento = function() {
-  console.log('nuevo movimiento');
+// ─── MODAL NUEVO MOVIMIENTO ───
+let _mvmTipo = 'ingreso', _mvmConceptoSel = null, _mvmConceptos = [], _mvmCuentas = [], _mvmEfectivoSaldo = 0;
+
+window.cajaNuevoMovimiento = async function() {
+  if(!currentClientUID) return;
+  const uid = currentClientUID;
+  try {
+    const [cuentasSnap, conceptosSnap, movsSnap] = await Promise.all([
+      getDocs(collection(db,'clientes',uid,'cuentas')),
+      getDocs(collection(db,'clientes',uid,'conceptos')),
+      getDocs(collection(db,'clientes',uid,'movimientos'))
+    ]);
+    const seenC = new Set();
+    _mvmCuentas = [];
+    cuentasSnap.forEach(d => { const n=d.data().nombre; if(n&&!seenC.has(n)){seenC.add(n);_mvmCuentas.push({id:d.id,...d.data()});} });
+    _mvmCuentas.sort((a,b)=>(a.orden||0)-(b.orden||0));
+    _mvmConceptos = [];
+    conceptosSnap.forEach(d => _mvmConceptos.push({id:d.id,...d.data()}));
+    const ef = _mvmCuentas.find(c=>c.nombre==='Efectivo');
+    _mvmEfectivoSaldo = parseFloat(ef?.saldo)||0;
+    movsSnap.forEach(d => {
+      const m = d.data();
+      if(!m.eliminado && m.cuenta==='Efectivo') {
+        if(m.tipo==='ingreso') _mvmEfectivoSaldo += parseFloat(m.monto)||0;
+        else if(m.tipo==='egreso') _mvmEfectivoSaldo -= parseFloat(m.monto)||0;
+      }
+    });
+    _mvmTipo = 'ingreso'; _mvmConceptoSel = null;
+    _mvmRenderCuentas();
+    // Reset fields
+    const hoy = new Date().toISOString().split('T')[0];
+    ['mvm-fecha','mvm-tr-fecha'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=hoy;});
+    ['mvm-monto','mvm-tr-monto','mvm-contado'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    ['mvm-detalle','mvm-tr-detalle'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    document.getElementById('mvm-nuevo-input')?.style && (document.getElementById('mvm-nuevo-input').style.display='none');
+    document.getElementById('mvm-cierre-sec')?.style && (document.getElementById('mvm-cierre-sec').style.display='none');
+    document.getElementById('mvm-cierre-diff')?.style && (document.getElementById('mvm-cierre-diff').style.display='none');
+    // Set tipo
+    document.querySelectorAll('#mvm-tipo-row .cj-tipo-btn').forEach(b=>b.classList.remove('active-ing','active-eg','active-tr'));
+    document.getElementById('mvm-tipo-ingreso')?.classList.add('active-ing');
+    document.getElementById('mvm-concepto-sec').style.display = '';
+    document.getElementById('mvm-campos-normal').style.display = '';
+    document.getElementById('mvm-campos-transfer').style.display = 'none';
+    _mvmRenderConceptos();
+    const btnSave = document.getElementById('mvm-btn-save');
+    if(btnSave){btnSave.disabled=false;btnSave.textContent='Guardar';}
+    const ov = document.getElementById('mvm-overlay');
+    if(ov) ov.style.display = 'flex';
+  } catch(e){console.log('cajaNuevoMovimiento:',e);}
 };
-window.cajaVentaRapida = function() {
-  console.log('venta rapida');
+
+function _mvmRenderCuentas() {
+  const opts = _mvmCuentas.map(c=>`<option value="${c.nombre}">${c.nombre}</option>`).join('');
+  ['mvm-cuenta','mvm-tr-desde','mvm-tr-hacia'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=opts;});
+  const haciaEl = document.getElementById('mvm-tr-hacia');
+  if(haciaEl && _mvmCuentas.length>1) haciaEl.value = _mvmCuentas[1].nombre;
+}
+
+window.mvmSetTipo = function(tipo, btn) {
+  _mvmTipo = tipo; _mvmConceptoSel = null;
+  document.querySelectorAll('#mvm-tipo-row .cj-tipo-btn').forEach(b=>b.classList.remove('active-ing','active-eg','active-tr'));
+  if(btn){ if(tipo==='ingreso')btn.classList.add('active-ing'); else if(tipo==='egreso')btn.classList.add('active-eg'); else btn.classList.add('active-tr'); }
+  const concSec = document.getElementById('mvm-concepto-sec');
+  const normal = document.getElementById('mvm-campos-normal');
+  const transfer = document.getElementById('mvm-campos-transfer');
+  const cierreSec = document.getElementById('mvm-cierre-sec');
+  const nuevoInput = document.getElementById('mvm-nuevo-input');
+  if(tipo==='transferencia') {
+    if(concSec) concSec.style.display='none';
+    if(normal) normal.style.display='none';
+    if(transfer) transfer.style.display='';
+  } else {
+    if(concSec) concSec.style.display='';
+    if(normal) normal.style.display='';
+    if(transfer) transfer.style.display='none';
+    if(cierreSec) cierreSec.style.display='none';
+    if(nuevoInput) nuevoInput.style.display='none';
+    _mvmRenderConceptos();
+  }
 };
+
+function _mvmRenderConceptos() {
+  const list = document.getElementById('mvm-conceptos-list');
+  if(!list) return;
+  const isEg = _mvmTipo === 'egreso';
+  const filtered = _mvmConceptos
+    .filter(c=>c.tipo===_mvmTipo)
+    .sort((a,b)=>{ if(a.sistema&&!b.sistema)return -1; if(!a.sistema&&b.sistema)return 1; return (a.nombre||'').localeCompare(b.nombre||''); });
+  if(!_mvmConceptoSel && filtered.length) _mvmConceptoSel = filtered[0].nombre;
+  const selCls = isEg ? 'sel-eg' : 'sel-ing';
+  list.innerHTML = filtered.map(c=>{
+    const isSel = _mvmConceptoSel===c.nombre;
+    const safe = c.nombre.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    return `<button class="cj-chip${isSel?' '+selCls:''}" onclick="mvmSelConcepto(this,'${safe}')">${c.nombre}</button>`;
+  }).join('') + `<button class="cj-chip nuevo-chip" onclick="mvmToggleNuevo()">+ Nuevo</button>`;
+}
+
+window.mvmSelConcepto = function(btn, nombre) {
+  _mvmConceptoSel = nombre;
+  const isEg = _mvmTipo === 'egreso';
+  const selCls = isEg ? 'sel-eg' : 'sel-ing';
+  btn.closest('.cj-clist').querySelectorAll('.cj-chip:not(.nuevo-chip)').forEach(b=>b.classList.remove('sel-ing','sel-eg'));
+  btn.classList.add(selCls);
+  const cierreSec = document.getElementById('mvm-cierre-sec');
+  const diffEl = document.getElementById('mvm-cierre-diff');
+  if(nombre==='Cierre de caja') {
+    if(cierreSec) cierreSec.style.display = '';
+    const espEl = document.getElementById('mvm-saldo-esp');
+    if(espEl) espEl.textContent = '$'+Math.round(_mvmEfectivoSaldo).toLocaleString('es-AR');
+    window.mvmActualizarCierre();
+  } else {
+    if(cierreSec) cierreSec.style.display = 'none';
+    if(diffEl) diffEl.style.display = 'none';
+  }
+};
+
+window.mvmToggleNuevo = function() {
+  const el = document.getElementById('mvm-nuevo-input');
+  if(!el) return;
+  const visible = el.style.display === 'flex';
+  el.style.display = visible ? 'none' : 'flex';
+  if(!visible) setTimeout(()=>document.getElementById('mvm-nuevo-txt')?.focus(), 50);
+};
+
+window.mvmAgregarConcepto = async function() {
+  if(!currentClientUID) return;
+  const txt = document.getElementById('mvm-nuevo-txt')?.value?.trim();
+  if(!txt) return;
+  try {
+    const ref = await addDoc(collection(db,'clientes',currentClientUID,'conceptos'), {nombre:txt,tipo:_mvmTipo,sistema:false});
+    _mvmConceptos.push({id:ref.id,nombre:txt,tipo:_mvmTipo,sistema:false});
+    document.getElementById('mvm-nuevo-txt').value = '';
+    document.getElementById('mvm-nuevo-input').style.display = 'none';
+    _mvmConceptoSel = txt;
+    _mvmRenderConceptos();
+  } catch(e){console.log('mvmAgregarConcepto:',e);}
+};
+
+window.mvmActualizarCierre = function() {
+  const ctEl = document.getElementById('mvm-contado');
+  const diffEl = document.getElementById('mvm-cierre-diff');
+  if(!ctEl||!diffEl) return;
+  const val = ctEl.value.trim();
+  if(!val){diffEl.style.display='none';return;}
+  const diff = (parseFloat(val)||0) - _mvmEfectivoSaldo;
+  diffEl.style.display = '';
+  diffEl.className = 'cj-cdf ' + (diff>=0 ? 'sobrante' : 'faltante');
+  diffEl.textContent = diff>=0
+    ? 'Sobrante $'+Math.round(Math.abs(diff)).toLocaleString('es-AR')
+    : 'Faltante $'+Math.round(Math.abs(diff)).toLocaleString('es-AR');
+};
+
+window.mvmGuardar = async function() {
+  if(!currentClientUID) return;
+  const uid = currentClientUID;
+  const hoy = new Date().toISOString().split('T')[0];
+  const mkMes = f => new Date(f+'T12:00:00').toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase());
+  const docs = [];
+  try {
+    if(_mvmTipo==='transferencia') {
+      const fecha = document.getElementById('mvm-tr-fecha')?.value||hoy;
+      const monto = parseFloat(document.getElementById('mvm-tr-monto')?.value)||0;
+      const desde = document.getElementById('mvm-tr-desde')?.value;
+      const hacia = document.getElementById('mvm-tr-hacia')?.value;
+      const detalle = document.getElementById('mvm-tr-detalle')?.value||'';
+      if(!monto) return;
+      if(desde===hacia){alert('Las cuentas no pueden ser iguales.');return;}
+      docs.push({fecha,tipo:'transferencia',concepto:'Transferencia entre cuentas',cuentaOrigen:desde,cuentaDestino:hacia,monto,detalle,mes:mkMes(fecha),origen:'manual',eliminado:false,creadoEn:new Date().toISOString()});
+    } else {
+      const fecha = document.getElementById('mvm-fecha')?.value||hoy;
+      const cuenta = document.getElementById('mvm-cuenta')?.value||'';
+      const detalle = document.getElementById('mvm-detalle')?.value||'';
+      const mesFecha = mkMes(fecha);
+      if(_mvmConceptoSel==='Cierre de caja') {
+        const contado = parseFloat(document.getElementById('mvm-contado')?.value)||0;
+        if(!contado) return;
+        const diff = contado - _mvmEfectivoSaldo;
+        docs.push({fecha,tipo:'egreso',concepto:'Cierre de caja',cuenta,monto:contado,montoContado:contado,saldoEsperado:_mvmEfectivoSaldo,detalle,mes:mesFecha,origen:'manual',eliminado:false,creadoEn:new Date().toISOString()});
+        if(Math.abs(diff)>0.009) {
+          if(diff>0) docs.push({fecha,tipo:'ingreso',concepto:'Sobrante',cuenta,monto:Math.round(diff*100)/100,detalle:'Auto-generado por cierre de caja',mes:mesFecha,origen:'manual',eliminado:false,creadoEn:new Date().toISOString()});
+          else docs.push({fecha,tipo:'egreso',concepto:'Faltante',cuenta,monto:Math.round(Math.abs(diff)*100)/100,detalle:'Auto-generado por cierre de caja',mes:mesFecha,origen:'manual',eliminado:false,creadoEn:new Date().toISOString()});
+        }
+      } else {
+        const monto = parseFloat(document.getElementById('mvm-monto')?.value)||0;
+        if(!monto||!_mvmConceptoSel) return;
+        docs.push({fecha,tipo:_mvmTipo,concepto:_mvmConceptoSel,cuenta,monto,detalle,mes:mesFecha,origen:'manual',eliminado:false,creadoEn:new Date().toISOString()});
+      }
+    }
+    const btnSave = document.getElementById('mvm-btn-save');
+    if(btnSave){btnSave.disabled=true;btnSave.textContent='Guardando...';}
+    await Promise.all(docs.map(d=>addDoc(collection(db,'clientes',uid,'movimientos'),d)));
+    mvmCerrar();
+    loadCajaModule();
+  } catch(e){
+    console.log('mvmGuardar:',e);
+    const btnSave = document.getElementById('mvm-btn-save');
+    if(btnSave){btnSave.disabled=false;btnSave.textContent='Guardar';}
+  }
+};
+
+window.mvmCerrar = function() {
+  const ov = document.getElementById('mvm-overlay');
+  if(ov) ov.style.display = 'none';
+};
+
+// ─── MODAL VENTA RÁPIDA ───
+let _vrcCarrito = {}, _vrcMetodo = null, _vrcProductos = [], _vrcCuentas = [];
+
+window.cajaVentaRapida = async function() {
+  if(!currentClientUID) return;
+  const uid = currentClientUID;
+  _vrcCarrito = {};
+  try {
+    const [prodSnap, cuentasSnap] = await Promise.all([
+      getDocs(collection(db,'clientes',uid,'productos')),
+      getDocs(collection(db,'clientes',uid,'cuentas'))
+    ]);
+    _vrcProductos = [];
+    prodSnap.forEach(d=>{const data=d.data();if(!data.eliminado)_vrcProductos.push({id:d.id,...data});});
+    const seenC = new Set();
+    _vrcCuentas = [];
+    cuentasSnap.forEach(d=>{const data=d.data();if(data.nombre&&!seenC.has(data.nombre)){seenC.add(data.nombre);_vrcCuentas.push({id:d.id,...data});}});
+    _vrcCuentas.sort((a,b)=>(a.orden||0)-(b.orden||0));
+    _vrcMetodo = _vrcCuentas[0]?.nombre || 'Efectivo';
+    const buscarEl = document.getElementById('vrc-buscar');
+    if(buscarEl) buscarEl.value = '';
+    _vrcRenderMetodos();
+    _vrcRenderProductos(_vrcProductos);
+    _vrcRenderCarrito();
+    const ov = document.getElementById('vrc-overlay');
+    if(ov) ov.style.display = 'flex';
+  } catch(e){console.log('cajaVentaRapida:',e);}
+};
+
+function _vrcRenderMetodos() {
+  const container = document.getElementById('vrc-metodos');
+  if(!container) return;
+  const icons = {
+    'Efectivo':'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>',
+    'Mercado Pago':'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>',
+    'Transferencia':'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>'
+  };
+  const defIcon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>';
+  container.style.gridTemplateColumns = `repeat(${Math.min(_vrcCuentas.length,4)},1fr)`;
+  container.innerHTML = _vrcCuentas.map(c=>{
+    const isSel = c.nombre === _vrcMetodo;
+    const safe = c.nombre.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    return `<button class="vrc-metodo-btn${isSel?' sel':''}" onclick="vrcSetMetodo('${safe}')">
+      <div style="margin-bottom:5px;">${icons[c.nombre]||defIcon}</div>
+      <div class="vrc-mlabel">${c.nombre}</div>
+    </button>`;
+  }).join('');
+}
+
+function _vrcRenderProductos(lista) {
+  const container = document.getElementById('vrc-prod-list');
+  const emptyEl = document.getElementById('vrc-empty');
+  if(!container) return;
+  if(!lista.length) {
+    container.innerHTML = '';
+    if(emptyEl) emptyEl.style.display = 'block';
+    return;
+  }
+  if(emptyEl) emptyEl.style.display = 'none';
+  container.innerHTML = lista.map(p=>{
+    const precio = Math.round(parseFloat(p.precio)||0);
+    return `<div class="vrc-prod-row" onclick="vrcAgregar('${p.id}')">
+      <div>
+        <div style="font-size:13px;font-weight:500;color:#1a1a1a;">${p.nombre||'—'}</div>
+        <div style="font-size:11px;color:#888;">$${precio.toLocaleString('es-AR')}${p.unidad?' · '+p.unidad:''}</div>
+      </div>
+      <button class="vrc-add-btn" onclick="event.stopPropagation();vrcAgregar('${p.id}')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+    </div>`;
+  }).join('');
+}
+
+function _vrcRenderCarrito() {
+  const section = document.getElementById('vrc-carrito-sec');
+  const items = document.getElementById('vrc-carrito-items');
+  const btnSave = document.getElementById('vrc-btn-save');
+  const totalEl = document.getElementById('vrc-total');
+  if(!section||!items) return;
+  const keys = Object.keys(_vrcCarrito);
+  if(!keys.length) {
+    section.style.display = 'none';
+    if(btnSave) btnSave.disabled = true;
+    if(totalEl) totalEl.textContent = '0';
+    return;
+  }
+  section.style.display = 'block';
+  if(btnSave) btnSave.disabled = false;
+  let total = 0;
+  items.innerHTML = keys.map(id=>{
+    const item = _vrcCarrito[id];
+    const precio = parseFloat(item.producto.precio)||0;
+    const sub = precio * item.qty;
+    total += sub;
+    return `<div class="vrc-cart-item">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:600;color:#1a1a1a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${item.producto.nombre}</div>
+        <div style="font-size:11px;color:#888;">$${Math.round(precio).toLocaleString('es-AR')} c/u</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px;">
+        <button class="vrc-qty-btn" onclick="vrcCambiarQty('${id}',-1)">&#8722;</button>
+        <span style="width:24px;text-align:center;font-size:14px;font-weight:600;">${item.qty}</span>
+        <button class="vrc-qty-btn" onclick="vrcCambiarQty('${id}',1)">+</button>
+      </div>
+      <div style="font-size:13px;font-weight:650;color:#4a5e4d;min-width:72px;text-align:right;">$${Math.round(sub).toLocaleString('es-AR')}</div>
+      <button style="background:none;border:none;cursor:pointer;color:#ccc;padding:2px;transition:color .12s;" onmouseover="this.style.color='#993C1D'" onmouseout="this.style.color='#ccc'" onclick="vrcQuitar('${id}')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>`;
+  }).join('');
+  if(totalEl) totalEl.textContent = Math.round(total).toLocaleString('es-AR');
+}
+
+window.vrcAgregar = function(id) {
+  const p = _vrcProductos.find(x=>x.id===id);
+  if(!p) return;
+  if(_vrcCarrito[id]) _vrcCarrito[id].qty++; else _vrcCarrito[id]={producto:p,qty:1};
+  _vrcRenderCarrito();
+};
+window.vrcCambiarQty = function(id, delta) {
+  if(!_vrcCarrito[id]) return;
+  _vrcCarrito[id].qty += delta;
+  if(_vrcCarrito[id].qty<=0) delete _vrcCarrito[id];
+  _vrcRenderCarrito();
+};
+window.vrcQuitar = function(id) { delete _vrcCarrito[id]; _vrcRenderCarrito(); };
+window.vrcSetMetodo = function(nombre) { _vrcMetodo = nombre; _vrcRenderMetodos(); };
+window.vrcFiltrar = function(q) {
+  const lista = q.trim()==='' ? _vrcProductos : _vrcProductos.filter(p=>(p.nombre||'').toLowerCase().includes(q.toLowerCase()));
+  _vrcRenderProductos(lista);
+};
+
+window.vrcGuardar = async function() {
+  if(!currentClientUID) return;
+  const keys = Object.keys(_vrcCarrito);
+  if(!keys.length) return;
+  let total = 0;
+  const productos = keys.map(id=>{
+    const item = _vrcCarrito[id];
+    const precio = parseFloat(item.producto.precio)||0;
+    const sub = precio * item.qty;
+    total += sub;
+    return {nombre:item.producto.nombre, qty:item.qty, precioUnitario:precio, subtotal:sub};
+  });
+  const hoy = new Date().toISOString().split('T')[0];
+  const mes = new Date(hoy+'T12:00:00').toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase());
+  const btnSave = document.getElementById('vrc-btn-save');
+  try {
+    if(btnSave){btnSave.disabled=true;btnSave.innerHTML='<span style="display:flex;align-items:center;justify-content:center;gap:8px;">Registrando...</span>';}
+    await addDoc(collection(db,'clientes',currentClientUID,'movimientos'), {
+      fecha:hoy, tipo:'ingreso', concepto:'Venta caja',
+      cuenta:_vrcMetodo||'Efectivo', monto:Math.round(total*100)/100,
+      productos, mes, origen:'venta_caja', eliminado:false, creadoEn:new Date().toISOString()
+    });
+    vrcCerrar();
+    loadCajaModule();
+  } catch(e){
+    console.log('vrcGuardar:',e);
+    if(btnSave){btnSave.disabled=false;btnSave.innerHTML='<span style="display:flex;align-items:center;justify-content:center;gap:8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Registrar venta</span>';}
+  }
+};
+window.vrcCerrar = function() { const ov=document.getElementById('vrc-overlay'); if(ov)ov.style.display='none'; };
+
 window.showClientContView = function(view, btn) {
   loadCajaModule();
 };
@@ -13762,6 +14174,133 @@ window.doResetPassword = async function(){
         <button class="bp" onclick="guardarNuevaPass()">Guardar contraseña</button>
       </div>
       <div class="saved-msg" id="cp-saved">✓ Contraseña actualizada</div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NUEVO MOVIMIENTO -->
+<div class="cj-overlay" id="mvm-overlay" onclick="if(event.target===this)mvmCerrar()">
+  <div class="cj-modal">
+    <div class="cj-mheader">
+      <span style="font-size:17px;font-weight:600;color:#1a1a1a;">Nuevo movimiento</span>
+      <button class="cj-close" onclick="mvmCerrar()">&#215;</button>
+    </div>
+    <div class="cj-mbody">
+      <div>
+        <span class="cj-slabel">TIPO</span>
+        <div class="cj-tipo-row" id="mvm-tipo-row">
+          <button class="cj-tipo-btn active-ing" id="mvm-tipo-ingreso" onclick="mvmSetTipo('ingreso',this)">
+            <div><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4a5e4d" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg></div>
+            <div class="cj-tlabel">Ingreso</div>
+          </button>
+          <button class="cj-tipo-btn" id="mvm-tipo-egreso" onclick="mvmSetTipo('egreso',this)">
+            <div><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#993C1D" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg></div>
+            <div class="cj-tlabel">Egreso</div>
+          </button>
+          <button class="cj-tipo-btn" id="mvm-tipo-transferencia" onclick="mvmSetTipo('transferencia',this)">
+            <div><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="2.5" stroke-linecap="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg></div>
+            <div class="cj-tlabel">Entre cuentas</div>
+          </button>
+        </div>
+      </div>
+      <div id="mvm-concepto-sec">
+        <span class="cj-slabel">CONCEPTO</span>
+        <div class="cj-clist" id="mvm-conceptos-list"></div>
+        <div id="mvm-nuevo-input" style="display:none;margin-top:8px;gap:8px;align-items:center;">
+          <input type="text" id="mvm-nuevo-txt" placeholder="Nombre del concepto..." style="flex:1;padding:8px 12px;border:1.5px solid #4a5e4d;border-radius:8px;font-size:13px;outline:none;font-family:inherit;" onkeydown="if(event.key==='Enter')mvmAgregarConcepto()">
+          <button onclick="mvmAgregarConcepto()" style="padding:8px 14px;background:#4a5e4d;color:white;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;">Agregar</button>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:#edf4ee;border-radius:8px;margin-top:10px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3B6D11" stroke-width="2" style="flex-shrink:0;margin-top:1px;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          <p style="font-size:11px;color:#3B6D11;line-height:1.4;">Usando siempre el mismo concepto podés ver su evolución mes a mes en Indicadores.</p>
+        </div>
+      </div>
+      <div style="height:1px;background:#f0efeb;"></div>
+      <div id="mvm-campos-normal">
+        <div class="cj-row2">
+          <div class="cj-field"><label>FECHA</label><input type="date" id="mvm-fecha"></div>
+          <div class="cj-field"><label>MONTO ($)</label><input type="number" id="mvm-monto" min="0" placeholder="0"></div>
+        </div>
+        <div class="cj-field" style="margin-top:12px;"><label>CUENTA</label><select id="mvm-cuenta"></select></div>
+        <div class="cj-field" style="margin-top:12px;"><label>DETALLE (opcional)</label><textarea id="mvm-detalle" placeholder="Descripción adicional..."></textarea></div>
+        <div id="mvm-cierre-sec" style="display:none;margin-top:12px;">
+          <div class="cj-row2">
+            <div class="cj-field"><label>MONTO CONTADO ($)</label><input type="number" id="mvm-contado" min="0" placeholder="0" oninput="mvmActualizarCierre()"></div>
+            <div class="cj-field"><label>SALDO ESPERADO</label>
+              <div style="padding:10px 13px;border:1.5px solid #e8e8e4;border-radius:8px;font-size:13px;color:#888;background:#fafafa;min-height:40px;display:flex;align-items:center;"><span id="mvm-saldo-esp">—</span></div>
+            </div>
+          </div>
+          <div id="mvm-cierre-diff" style="display:none;" class="cj-cdf"></div>
+        </div>
+      </div>
+      <div id="mvm-campos-transfer" style="display:none;">
+        <div class="cj-row2">
+          <div class="cj-field"><label>FECHA</label><input type="date" id="mvm-tr-fecha"></div>
+          <div class="cj-field"><label>MONTO ($)</label><input type="number" id="mvm-tr-monto" min="0" placeholder="0"></div>
+        </div>
+        <div style="display:flex;align-items:flex-end;gap:10px;margin-top:12px;">
+          <div class="cj-field" style="flex:1;margin:0;"><label>DESDE</label><select id="mvm-tr-desde"></select></div>
+          <div style="color:#bbb;padding-bottom:10px;flex-shrink:0;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+          <div class="cj-field" style="flex:1;margin:0;"><label>HACIA</label><select id="mvm-tr-hacia"></select></div>
+        </div>
+        <div class="cj-field" style="margin-top:12px;"><label>DETALLE (opcional)</label><textarea id="mvm-tr-detalle" placeholder="Motivo de la transferencia..."></textarea></div>
+      </div>
+    </div>
+    <div class="cj-mfooter" style="display:flex;gap:10px;">
+      <button class="cj-btn-cancel" onclick="mvmCerrar()">Cancelar</button>
+      <button class="cj-btn-save" id="mvm-btn-save" style="flex:2;" onclick="mvmGuardar()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL VENTA RÁPIDA -->
+<div class="cj-overlay" id="vrc-overlay" onclick="if(event.target===this)vrcCerrar()">
+  <div class="cj-modal" style="max-width:520px;">
+    <div class="cj-mheader">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:36px;height:36px;border-radius:10px;background:#4a5e4d;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+        </div>
+        <div>
+          <div style="font-size:16px;font-weight:650;color:#111;letter-spacing:-.01em;">Venta caja</div>
+          <div style="font-size:12px;color:#999;margin-top:1px;">Venta directa con productos</div>
+        </div>
+      </div>
+      <button class="cj-close" onclick="vrcCerrar()">&#215;</button>
+    </div>
+    <div class="cj-mbody">
+      <div>
+        <span class="cj-slabel">PRODUCTOS</span>
+        <div class="vrc-search">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="vrc-buscar" placeholder="Buscar producto..." oninput="vrcFiltrar(this.value)">
+        </div>
+      </div>
+      <div id="vrc-carrito-sec" style="display:none;">
+        <span class="cj-slabel">EN ESTA VENTA</span>
+        <div id="vrc-carrito-items" style="display:flex;flex-direction:column;gap:6px;margin-top:8px;"></div>
+      </div>
+      <div>
+        <span class="cj-slabel">CATÁLOGO</span>
+        <div id="vrc-prod-list" style="display:flex;flex-direction:column;gap:5px;margin-top:8px;"></div>
+        <div id="vrc-empty" style="text-align:center;padding:20px 0;color:#ccc;font-size:13px;display:none;">Sin resultados.</div>
+      </div>
+      <div>
+        <span class="cj-slabel">MÉTODO DE PAGO</span>
+        <div id="vrc-metodos" style="display:grid;gap:8px;grid-template-columns:1fr 1fr 1fr;margin-top:0;"></div>
+      </div>
+    </div>
+    <div class="cj-mfooter">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px;">
+        <span style="font-size:12px;font-weight:600;color:#aaa;letter-spacing:.05em;">TOTAL</span>
+        <span style="font-size:28px;font-weight:700;color:#1a1a1a;letter-spacing:-.02em;"><span style="font-size:16px;font-weight:500;color:#888;margin-right:2px;">$</span><span id="vrc-total">0</span></span>
+      </div>
+      <button class="cj-btn-save" id="vrc-btn-save" disabled onclick="vrcGuardar()">
+        <span style="display:flex;align-items:center;justify-content:center;gap:8px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Registrar venta
+        </span>
+      </button>
     </div>
   </div>
 </div>
