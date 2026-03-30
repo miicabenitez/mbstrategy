@@ -7038,7 +7038,13 @@ window.mdvGuardar = async function() {
 let _ccfgCuentaTipoSel = 'efectivo';
 
 async function loadCajaConfig() {
-  if(!currentClientUID) return;
+  console.log('[loadCajaConfig] inicio, uid:', currentClientUID);
+  if(!currentClientUID) {
+    console.warn('[loadCajaConfig] currentClientUID es null — saliendo');
+    const el = document.getElementById('ccfg-cuentas-list');
+    if(el) el.innerHTML = '<div style="padding:16px;color:#993C1D;font-size:13px;">Sin sesión activa. Recargá la página.</div>';
+    return;
+  }
   const uid = currentClientUID;
   try {
     const [cuentasSnap, conceptosSnap, movsSnap] = await Promise.all([
@@ -7046,6 +7052,8 @@ async function loadCajaConfig() {
       getDocs(collection(db,'clientes',uid,'conceptos')),
       getDocs(query(collection(db,'libroCaja'), where('uid','==',uid)))
     ]);
+    console.log('[loadCajaConfig] cuentas:', cuentasSnap.size, 'conceptos:', conceptosSnap.size, 'movs:', movsSnap.size);
+
     const cuentas = [];
     cuentasSnap.forEach(d=>cuentas.push({id:d.id,...d.data()}));
     cuentas.sort((a,b)=>(a.orden||0)-(b.orden||0));
@@ -7053,7 +7061,6 @@ async function loadCajaConfig() {
     const conceptos = [];
     conceptosSnap.forEach(d=>conceptos.push({id:d.id,...d.data()}));
 
-    // Build sets of cuentas/conceptos with movimientos
     const cuentasConMovs = new Set();
     const conceptosConMovs = new Set();
     movsSnap.forEach(d=>{
@@ -7068,8 +7075,14 @@ async function loadCajaConfig() {
     _ccfgRenderCuentas(cuentas, cuentasConMovs);
     _ccfgRenderConceptos(conceptos.filter(c=>c.tipo==='ingreso'), 'ingreso', conceptosConMovs);
     _ccfgRenderConceptos(conceptos.filter(c=>c.tipo==='egreso'), 'egreso', conceptosConMovs);
+    console.log('[loadCajaConfig] renderizado OK');
   } catch(e) {
-    console.error('loadCajaConfig:', e);
+    console.error('[loadCajaConfig] error:', e?.code, e?.message, e);
+    const msg = `Error al cargar: ${e?.code || e?.message || 'desconocido'} — revisar consola`;
+    ['ccfg-cuentas-list','ccfg-conceptos-ingreso','ccfg-conceptos-egreso'].forEach(id=>{
+      const el = document.getElementById(id);
+      if(el) el.innerHTML = `<div style="padding:12px;color:#993C1D;font-size:13px;">${msg}</div>`;
+    });
   }
 }
 
@@ -13555,7 +13568,7 @@ window.showCTab = function(tab, btn) {
     document.getElementById('cc-detalle-view').style.display = 'none';
     loadClientPresupuestos();
   }
-  if(tab==='caja-config') loadCajaConfig();
+  if(tab==='caja-config') { console.log('[showCTab] caja-config activado'); loadCajaConfig(); }
 };
 
 // Abre un PDF guardado como Base64 en nueva pestaña
