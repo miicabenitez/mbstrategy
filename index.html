@@ -1620,10 +1620,6 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
 
         <!-- Tabla libro de caja -->
         <div style="background:white;border-radius:18px;box-shadow:0 4px 24px rgba(0,0,0,.06);overflow:hidden;">
-          <div style="padding:16px 24px 12px;border-bottom:1px solid #f0efeb;display:flex;align-items:center;justify-content:space-between;">
-            <span style="font-size:14px;font-weight:650;color:#1a1a1a;">Libro de caja</span>
-            <span id="caja-mes-badge" style="font-size:11px;font-weight:600;color:#888;background:#f5f4f0;padding:4px 10px;border-radius:20px;">—</span>
-          </div>
           <div style="overflow-x:auto;">
             <table class="caja-table">
               <colgroup>
@@ -6488,8 +6484,6 @@ async function loadCajaModule() {
     // 4. Actualizar etiquetas de mes
     const mesLabel = document.getElementById('caja-mes-label');
     if(mesLabel) mesLabel.textContent = mes.label;
-    const mesBadge = document.getElementById('caja-mes-badge');
-    if(mesBadge) mesBadge.textContent = mes.label;
     const sigBtn = document.getElementById('caja-mes-sig');
     if(sigBtn) sigBtn.style.opacity = (window._cajaMesOffset||0) >= 0 ? '.3' : '1';
     // 5. Renderizar
@@ -6530,15 +6524,18 @@ function renderCajaKPIs(movs) {
 function renderCajaChips(cuentas, movs) {
   const container = document.getElementById('caja-chips');
   if(!container) return;
+  // Deduplicar por nombre (guard contra doble escritura en Firestore)
+  const seen = new Set();
+  const cuentasUnicas = cuentas.filter(c => { if(seen.has(c.nombre)) return false; seen.add(c.nombre); return true; });
   const saldos = {};
-  cuentas.forEach(c => { saldos[c.nombre] = parseFloat(c.saldo)||0; });
+  cuentasUnicas.forEach(c => { saldos[c.nombre] = parseFloat(c.saldo)||0; });
   movs.forEach(m => {
     if(!m.cuenta) return;
     if(m.tipo==='ingreso') saldos[m.cuenta] = (saldos[m.cuenta]||0) + (parseFloat(m.monto)||0);
     else if(m.tipo==='egreso') saldos[m.cuenta] = (saldos[m.cuenta]||0) - (parseFloat(m.monto)||0);
   });
   const dotColors = ['#4a5e4d','#3B6D11','#185FA5','#7a6a5a'];
-  container.innerHTML = cuentas.map((c,i) => {
+  container.innerHTML = cuentasUnicas.map((c,i) => {
     const s = saldos[c.nombre]||0;
     const color = dotColors[i%dotColors.length];
     return `<div class="caja-chip" style="animation:fadeUp .3s ease both;animation-delay:${i*60}ms;">
