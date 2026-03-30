@@ -5999,11 +5999,14 @@ window.filterCkByMes = function(mes) {
 async function updateMiniMetrics() {
   if(!currentClientUID) return;
   try {
-    const ingSnap = await getDocs(collection(db,'clientes',currentClientUID,'ingresos'));
+    const cajaSnap = await getDocs(query(collection(db,'libroCaja'), where('uid','==',currentClientUID), where('eliminado','==',false)));
     const mesNombre = new Date().toLocaleString('es-AR',{month:'long'}).toLowerCase();
+    const EXCL_ING = ['Apertura de caja','Sobrante'];
     let ingMes = 0;
-    ingSnap.forEach(d => {
-      const dd=d.data(); if(dd.eliminado) return;
+    cajaSnap.forEach(d => {
+      const dd=d.data();
+      if(dd.tipo!=='ingreso') return;
+      if(EXCL_ING.includes(dd.concepto)) return;
       if((dd.mes||'').toLowerCase().includes(mesNombre)) ingMes += parseFloat(dd.monto)||0;
     });
     const tarSnap = await getDocs(collection(db,'clientes',currentClientUID,'tareas'));
@@ -6177,31 +6180,13 @@ async function loadClientContabilidad() {
   showSkeleton('cc-ingresos-list','list');
   showSkeleton('cc-egresos-list','list');
   try {
-    const [ingSnap, egSnap, cobrosSnap] = await Promise.all([
-      getDocs(collection(db,'clientes',currentClientUID,'ingresos')),
-      getDocs(collection(db,'clientes',currentClientUID,'egresos')),
-      getDocs(collection(db,'clientes',currentClientUID,'cobros'))
-    ]);
-    const ingresosManuales = []; ingSnap.forEach(d=>{ const data=d.data(); if(!data.eliminado) ingresosManuales.push({id:d.id,...data,origen:'manual'}); });
-    const egresos = []; egSnap.forEach(d=>{ const data=d.data(); if(!data.eliminado) egresos.push({id:d.id,...data}); });
-
-    // Cobros de comercial como ingresos
-    const cobrosComoIngresos = [];
-    cobrosSnap.forEach(d=>{
+    const cajaSnap = await getDocs(query(collection(db,'libroCaja'), where('uid','==',currentClientUID), where('eliminado','==',false)));
+    const ingresos = [], egresos = [];
+    cajaSnap.forEach(d => {
       const data = d.data();
-      if(data.eliminado) return;
-      cobrosComoIngresos.push({
-        id:d.id,
-        concepto: data.concepto||'Cobro',
-        monto: parseFloat(data.monto)||0,
-        mes: data.fecha ? new Date(data.fecha+'T12:00:00').toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase()) : '',
-        fecha: data.fecha||'',
-        origen: 'comercial',
-        ...data
-      });
+      if(data.tipo === 'ingreso') ingresos.push({id:d.id,...data});
+      else if(data.tipo === 'egreso') egresos.push({id:d.id,...data});
     });
-
-    const ingresos = [...ingresosManuales, ...cobrosComoIngresos];
     window._clientIngresos = ingresos;
     window._clientEgresos = egresos;
     renderClientContabilidad(ingresos, egresos);
@@ -6264,6 +6249,885 @@ function renderClientContabilidad(ingresos, egresos) {
   }, 200);
 }
 
+function _mdvFechaCorta(fecha) {
+  if(!fecha) return '';
+  const [y,mo,d] = fecha.split('-');
+  return `${d}/${mo}/${y}`;
+}
+
+function _mdvTipoBadge(tipo) {
+  const map = {ingreso:'<span class="caja-badge-ingreso">Ingreso</span>',egreso:'<span class="caja-badge-egreso">Egreso</span>',transfer:'<span class="caja-badge-transfer">Entre cuentas</span>'};
+  return map[tipo]||'';
+}
+
+function _mdvBuildBody(m, editing) {
+  const isTransfer = m.tipo==='transfer';
+  const isVenta = m.origen==='venta_caja';
+  const isEgreso = m.tipo==='egreso';
+  const cuentasOpts = _mdvOverlayCuentas.map(c=>`<option value="${c.nombre}"${c.nombre===m.cuenta?' selected':''}>${c.nombre}</option>`).join('');
+  const cuentasOptsDesde = _mdvOverlayCuentas.map(c=>`<option value="${c.nombre}"${c.nombre===m.cuentaDesde?' selected':''}>${c.nombre}</option>`).join('');
+  const cuentasOptsHacia = _mdvOverlayCuentas.map(c=>`<option value="${c.nombre}"${c.nombre===m.cuentaHacia?' selected':''}>${c.nombre}</option>`).join('');
+  const conceptosFiltrados = _mdvOverlayConceptos.filter(c=>c.tipo===m.tipo);
+  const conceptosOpts = conceptosFiltrados.map(c=>`<option value="${c.nombre}"${c.nombre===m.concepto?' selected':''}>${c.nombre}</option>`).join('');
+
+  const montoFmt = (v)=>'$'+Math.round(parseFloat(v||0)).toLocaleString('es-AR');
+  const montoColor = isEgreso?'rojo':(m.tipo==='ingreso'?'verde':'');
+
+  let html = '';
+
+  if(isTransfer) {
+    html += _mdvField('FECHA',
+      `<div class="mdv-fv">${_mdvFechaCorta(m.fecha)}</div>`,
+      `<input type="date" class="cj-input" id="mdv-fecha" value="${m.fecha||''}">`,
+      editing);
+    html += _mdvField('MONTO',
+      `<div class="mdv-fv">${montoFmt(m.monto)}</div>`,
+      `<input type="number" class="cj-input" id="mdv-monto" value="${m.monto||''}">`,
+      editing);
+    html += '<div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:end;margin-bottom:12px;">';
+    html += '<div>'+_mdvFieldRaw('DESDE',
+      `<div class="mdv-fv">${m.cuentaDesde||'—'}</div>`,
+      `<select class="cj-input" id="mdv-cuentaDesde">${cuentasOptsDesde}</select>`,
+      editing)+'</div>';
+    html += '<div style="padding-bottom:10px;color:#bbb;">'+
+      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>'+
+      '</div>';
+    html += '<div>'+_mdvFieldRaw('HACIA',
+      `<div class="mdv-fv">${m.cuentaHacia||'—'}</div>`,
+      `<select class="cj-input" id="mdv-cuentaHacia">${cuentasOptsHacia}</select>`,
+      editing)+'</div>';
+    html += '</div>';
+    html += _mdvField('DETALLE',
+      `<div class="mdv-fv" style="color:#666;">${m.detalle||'Sin detalle'}</div>`,
+      `<textarea class="cj-input" id="mdv-detalle" style="height:56px;resize:none;">${m.detalle||''}</textarea>`,
+      editing);
+    return html;
+  }
+
+  if(isVenta) {
+    html += _mdvField('FECHA',
+      `<div class="mdv-fv">${_mdvFechaCorta(m.fecha)}</div>`,
+      `<input type="date" class="cj-input" id="mdv-fecha" value="${m.fecha||''}">`,
+      editing);
+    html += _mdvField('TOTAL',
+      `<div class="mdv-fv verde">${montoFmt(m.monto)}</div>`,
+      `<input type="number" class="cj-input" id="mdv-monto" value="${m.monto||''}">`,
+      editing);
+    html += _mdvField('COBRADO EN',
+      `<div class="mdv-fv">${m.cuenta||'—'}</div>`,
+      `<select class="cj-input" id="mdv-cuenta">${cuentasOpts}</select>`,
+      editing);
+    if(m.productos && m.productos.length) {
+      html += '<div style="margin-bottom:12px;">';
+      html += '<div style="font-size:10px;font-weight:700;color:#888;letter-spacing:.06em;margin-bottom:6px;">PRODUCTOS</div>';
+      html += '<div style="display:flex;flex-direction:column;gap:4px;">';
+      m.productos.forEach(p=>{
+        html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#fafafa;border:1.5px solid #f0efeb;border-radius:9px;font-size:13px;">`;
+        html += `<span style="color:#555;">${p.nombre} <span style="color:#aaa;">×${p.cantidad}</span></span>`;
+        html += `<span style="font-weight:600;color:#3B6D11;">${montoFmt(p.precio*p.cantidad)}</span>`;
+        html += `</div>`;
+      });
+      html += '</div></div>';
+    }
+    return html;
+  }
+
+  // Normal ingreso/egreso
+  html += _mdvField('FECHA',
+    `<div class="mdv-fv">${_mdvFechaCorta(m.fecha)}</div>`,
+    `<input type="date" class="cj-input" id="mdv-fecha" value="${m.fecha||''}">`,
+    editing);
+  html += _mdvField('CONCEPTO',
+    `<div class="mdv-fv">${m.concepto||'—'}</div>`,
+    `<select class="cj-input" id="mdv-concepto">${conceptosOpts}</select>`,
+    editing);
+  html += _mdvField('MONTO',
+    `<div class="mdv-fv ${montoColor}">${montoFmt(m.monto)}</div>`,
+    `<input type="number" class="cj-input" id="mdv-monto" value="${m.monto||''}">`,
+    editing);
+  html += _mdvField('CUENTA',
+    `<div class="mdv-fv">${m.cuenta||'—'}</div>`,
+    `<select class="cj-input" id="mdv-cuenta">${cuentasOpts}</select>`,
+    editing);
+  html += _mdvField('DETALLE',
+    `<div class="mdv-fv" style="color:${m.detalle?'#1a1a1a':'#aaa'};">${m.detalle||'Sin detalle'}</div>`,
+    `<textarea class="cj-input" id="mdv-detalle" style="height:56px;resize:none;">${m.detalle||''}</textarea>`,
+    editing);
+
+  return html;
+}
+
+function _mdvField(label, viewHtml, editHtml, editing) {
+  return `<div style="margin-bottom:12px;"><div style="font-size:10px;font-weight:700;color:#888;letter-spacing:.06em;margin-bottom:6px;">${label}</div>${editing ? editHtml : viewHtml}</div>`;
+}
+function _mdvFieldRaw(label, viewHtml, editHtml, editing) {
+  return `<div><div style="font-size:10px;font-weight:700;color:#888;letter-spacing:.06em;margin-bottom:6px;">${label}</div>${editing ? editHtml : viewHtml}</div>`;
+}
+
+function _mdvRender() {
+  const m = _mdvMovimiento;
+  if(!m) return;
+  const editing = _mdvEditing;
+
+  // Eyebrow & title
+  const eyebrow = document.getElementById('mdv-eyebrow');
+  if(eyebrow) eyebrow.textContent = _mdvFechaEyebrow(m) + ' · ' + (m.tipo==='ingreso'?'INGRESO':m.tipo==='egreso'?'EGRESO':'ENTRE CUENTAS');
+
+  const title = document.getElementById('mdv-title');
+  if(title) title.textContent = m.concepto || (m.tipo==='transfer' ? 'Transferencia entre cuentas' : '—');
+
+  // Buttons
+  const btnEditar = document.getElementById('mdv-btn-editar');
+  if(btnEditar) btnEditar.style.display = editing ? 'none' : 'flex';
+  const btnEliminar = document.getElementById('mdv-btn-eliminar');
+  if(btnEliminar) btnEliminar.style.display = editing ? 'none' : 'flex';
+
+  // Footer
+  const footer = document.getElementById('mdv-footer');
+  if(footer) footer.style.display = editing ? 'flex' : 'none';
+
+  // Body
+  const body = document.getElementById('mdv-body');
+  if(body) {
+    body.innerHTML = _mdvBuildBody(m, editing);
+    if(editing) {
+      const fechaEl = document.getElementById('mdv-fecha');
+      if(fechaEl && m.fecha) fechaEl.value = m.fecha;
+    }
+  }
+}
+
+window.mdvActivarEdicion = function() {
+  _mdvEditing = true;
+  _mdvRender();
+};
+window.mdvCancelarEdicion = function() {
+  _mdvEditing = false;
+  _mdvRender();
+};
+window.mdvCerrar = function() {
+  const ov = document.getElementById('mdv-overlay');
+  if(ov) { ov.classList.remove('open'); setTimeout(()=>ov.style.display='none', 200); }
+  _mdvMovimiento = null;
+  _mdvEditing = false;
+};
+window.mdvEliminar = async function() {
+  if(!_mdvMovimiento) return;
+  const m = _mdvMovimiento;
+  const ok = confirm('¿Eliminar este movimiento? Esta acción no se puede deshacer.');
+  if(!ok) return;
+  try {
+    await updateDoc(doc(db,'libroCaja',m.id), {eliminado:true});
+    window.mdvCerrar();
+    loadCajaModule();
+  } catch(e) {
+    alert('Error al eliminar: '+(e?.message||e));
+  }
+};
+window.mdvGuardar = async function() {
+  if(!_mdvMovimiento) return;
+  const m = _mdvMovimiento;
+  const updates = {};
+  const isTransfer = m.tipo==='transfer';
+  const isVenta = m.origen==='venta_caja';
+
+  const fechaEl = document.getElementById('mdv-fecha');
+  const montoEl = document.getElementById('mdv-monto');
+  if(fechaEl) updates.fecha = fechaEl.value;
+  if(montoEl) updates.monto = parseFloat(montoEl.value)||0;
+
+  if(isTransfer) {
+    const desdeEl = document.getElementById('mdv-cuentaDesde');
+    const haciaEl = document.getElementById('mdv-cuentaHacia');
+    if(desdeEl) updates.cuentaDesde = desdeEl.value;
+    if(haciaEl) updates.cuentaHacia = haciaEl.value;
+  } else if(isVenta) {
+    const cuentaEl = document.getElementById('mdv-cuenta');
+    if(cuentaEl) updates.cuenta = cuentaEl.value;
+  } else {
+    const conceptoEl = document.getElementById('mdv-concepto');
+    const cuentaEl = document.getElementById('mdv-cuenta');
+    const detalleEl = document.getElementById('mdv-detalle');
+    if(conceptoEl) updates.concepto = conceptoEl.value;
+    if(cuentaEl) updates.cuenta = cuentaEl.value;
+    if(detalleEl) updates.detalle = detalleEl.value.trim();
+  }
+
+  // Recalculate mes field if date changed
+  if(updates.fecha) {
+    const [y,mo] = updates.fecha.split('-');
+    const meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    const mesNombre = meses[parseInt(mo,10)-1]||'';
+    updates.mes = mesNombre.charAt(0).toUpperCase()+mesNombre.slice(1)+' de '+y;
+  }
+
+  const btnGuardar = document.getElementById('mdv-btn-guardar');
+  if(btnGuardar) { btnGuardar.disabled=true; btnGuardar.textContent='Guardando...'; }
+
+  try {
+    await updateDoc(doc(db,'libroCaja',m.id), updates);
+    window.mdvCerrar();
+    loadCajaModule();
+  } catch(e) {
+    alert('Error al guardar: '+(e?.message||e));
+    if(btnGuardar) { btnGuardar.disabled=false; btnGuardar.textContent='Guardar cambios'; }
+  }
+};
+// ─── CAJA CONFIG ───
+let _ccfgCuentaTipoSel = 'efectivo';
+
+async function loadCajaConfig() {
+  if(!currentClientUID) {
+    const el = document.getElementById('ccfg-cuentas-list');
+    if(el) el.innerHTML = '<div style="padding:16px;color:#993C1D;font-size:13px;">Sin sesión activa. Recargá la página.</div>';
+    return;
+  }
+  const uid = currentClientUID;
+  try {
+    const [cuentasSnap, conceptosSnap, movsSnap] = await Promise.all([
+      getDocs(collection(db,'clientes',uid,'cuentas')),
+      getDocs(collection(db,'clientes',uid,'conceptos')),
+      getDocs(query(collection(db,'libroCaja'), where('uid','==',uid)))
+    ]);
+    const cuentas = [];
+    cuentasSnap.forEach(d=>cuentas.push({id:d.id,...d.data()}));
+    cuentas.sort((a,b)=>(a.orden||0)-(b.orden||0));
+
+    const conceptos = [];
+    conceptosSnap.forEach(d=>conceptos.push({id:d.id,...d.data()}));
+
+    const cuentasConMovs = new Set();
+    const conceptosConMovs = new Set();
+    movsSnap.forEach(d=>{
+      const data = d.data();
+      if(data.eliminado) return;
+      if(data.cuenta) cuentasConMovs.add(data.cuenta);
+      if(data.cuentaDesde) cuentasConMovs.add(data.cuentaDesde);
+      if(data.cuentaHacia) cuentasConMovs.add(data.cuentaHacia);
+      if(data.concepto) conceptosConMovs.add(data.concepto);
+    });
+
+    _ccfgRenderCuentas(cuentas, cuentasConMovs);
+    _ccfgRenderConceptos(conceptos.filter(c=>c.tipo==='ingreso'), 'ingreso', conceptosConMovs);
+    _ccfgRenderConceptos(conceptos.filter(c=>c.tipo==='egreso'), 'egreso', conceptosConMovs);
+  } catch(e) {
+    const msg = `Error al cargar: ${e?.code || e?.message || 'desconocido'} — revisar consola`;
+    ['ccfg-cuentas-list','ccfg-conceptos-ingreso','ccfg-conceptos-egreso'].forEach(id=>{
+      const el = document.getElementById(id);
+      if(el) el.innerHTML = `<div style="padding:12px;color:#993C1D;font-size:13px;">${msg}</div>`;
+    });
+  }
+}
+
+// Exponer funciones del módulo Caja en window
+window.loadCajaModule = loadCajaModule;
+window.loadCajaConfig = loadCajaConfig;
+
+function _ccfgTipoBadgeHtml(tipo) {
+  const map = {efectivo:'efectivo',banco:'banco',mp:'mp'};
+  const label = {efectivo:'Efectivo',banco:'Banco',mp:'Mercado Pago'};
+  const cls = map[tipo]||'efectivo';
+  return `<span class="ccfg-badge ${cls}">${label[tipo]||tipo}</span>`;
+}
+
+function _ccfgRenderCuentas(cuentas, cuentasConMovs) {
+  const el = document.getElementById('ccfg-cuentas-list');
+  if(!el) return;
+  if(!cuentas.length) { el.innerHTML = '<div style="padding:12px;color:#bbb;font-size:13px;text-align:center;">Sin cuentas</div>'; return; }
+  el.innerHTML = cuentas.map(c=>{
+    const nombreSafe = (c.nombre||'').replace(/'/g,"\\'");
+    const tipoSafe = (c.tipo||'efectivo').replace(/'/g,"\\'");
+    const bancoSafe = (c.banco||'').replace(/'/g,"\\'");
+    return `
+    <div class="ccfg-row" id="ccfg-cuenta-row-${c.id}">
+      <div class="ccfg-nombre">${c.nombre||'Sin nombre'}</div>
+      ${_ccfgTipoBadgeHtml(c.tipo||'efectivo')}
+      <div class="ccfg-actions">
+        <button class="ccfg-icon-btn" title="Editar"
+          onclick="ccfgAbrirEditarCuenta('${c.id}','${nombreSafe}','${tipoSafe}','${bancoSafe}')">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+        <button class="ccfg-icon-btn danger" title="${cuentasConMovs.has(c.nombre)?'Tiene movimientos asociados':'Desactivar'}"
+          onclick="ccfgDesactivarCuenta('${c.id}','${nombreSafe}',${cuentasConMovs.has(c.nombre)})">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function _ccfgRenderConceptos(conceptos, tipo, conceptosConMovs) {
+  const el = document.getElementById(`ccfg-conceptos-${tipo}`);
+  if(!el) return;
+  if(!conceptos.length) { el.innerHTML = '<div style="padding:10px 0;color:#bbb;font-size:13px;">Sin conceptos</div>'; return; }
+  el.innerHTML = conceptos.map(c=>{
+    if(c.sistema) {
+      return `<div class="ccfg-row"><div class="ccfg-nombre">${c.nombre}</div><span class="ccfg-badge sistema">sistema</span></div>`;
+    }
+    const tieneMov = conceptosConMovs.has(c.nombre);
+    return `
+      <div class="ccfg-row" id="ccfg-concepto-row-${c.id}">
+        <div class="ccfg-nombre" id="ccfg-concepto-label-${c.id}">${c.nombre}</div>
+        <div class="ccfg-actions">
+          <button class="ccfg-icon-btn" title="Editar" onclick="ccfgEditarConcepto('${c.id}','${tipo}')">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="ccfg-icon-btn danger" title="${tieneMov?'Tiene movimientos asociados':'Eliminar'}"
+            onclick="ccfgEliminarConcepto('${c.id}','${c.nombre}',${tieneMov})">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ── Cuenta: helpers de apertura de modal ──
+function _ccfgAbrirModalCuenta({id='', nombre='', tipo='efectivo', banco=''}) {
+  _ccfgCuentaTipoSel = tipo;
+  document.getElementById('ccfg-cuenta-id').value = id;
+  document.getElementById('ccfg-cuenta-nombre').value = nombre;
+  document.getElementById('ccfg-cuenta-banco').value = banco;
+  document.querySelectorAll('.ccfg-tipo-btn').forEach(b=>b.classList.toggle('active', b.dataset.tipo===tipo));
+  document.getElementById('ccfg-banco-field').style.display = tipo==='banco' ? 'block' : 'none';
+  const esEdicion = !!id;
+  document.getElementById('ccfg-saldo-field').style.display = esEdicion ? 'none' : 'block';
+  if(!esEdicion) document.getElementById('ccfg-cuenta-saldo').value = '0';
+  document.getElementById('ccfg-cuenta-modal-title').textContent = esEdicion ? 'Editar cuenta' : 'Agregar cuenta';
+  const saveBtn = document.getElementById('ccfg-cuenta-save');
+  saveBtn.textContent = esEdicion ? 'Guardar cambios' : 'Agregar cuenta';
+  saveBtn.disabled = false;
+  const ov = document.getElementById('ccfg-cuenta-overlay');
+  if(ov) { ov.style.display='flex'; requestAnimationFrame(()=>ov.classList.add('open')); }
+  setTimeout(()=>document.getElementById('ccfg-cuenta-nombre').focus(), 200);
+}
+
+window.cajaConfigAgregarCuenta = function() {
+  _ccfgAbrirModalCuenta({});
+};
+
+window.ccfgAbrirEditarCuenta = function(id, nombre, tipo, banco) {
+  _ccfgAbrirModalCuenta({id, nombre, tipo, banco});
+};
+
+window.ccfgCuentaTipo = function(btn) {
+  document.querySelectorAll('.ccfg-tipo-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  _ccfgCuentaTipoSel = btn.dataset.tipo;
+  document.getElementById('ccfg-banco-field').style.display = _ccfgCuentaTipoSel==='banco' ? 'block' : 'none';
+};
+
+window.ccfgCuentaCerrar = function() {
+  const ov = document.getElementById('ccfg-cuenta-overlay');
+  if(ov) { ov.classList.remove('open'); setTimeout(()=>ov.style.display='none', 200); }
+};
+
+window.ccfgCuentaGuardar = async function() {
+  if(!currentClientUID) return;
+  const cuentaId = document.getElementById('ccfg-cuenta-id').value;
+  const esEdicion = !!cuentaId;
+  const nombre = document.getElementById('ccfg-cuenta-nombre').value.trim();
+  if(!nombre) { document.getElementById('ccfg-cuenta-nombre').focus(); return; }
+  const tipo = _ccfgCuentaTipoSel;
+  const banco = tipo==='banco' ? document.getElementById('ccfg-cuenta-banco').value.trim() : '';
+  const saldo = esEdicion ? 0 : (parseFloat(document.getElementById('ccfg-cuenta-saldo').value)||0);
+
+  const btn = document.getElementById('ccfg-cuenta-save');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  try {
+    if(esEdicion) {
+      // Editar cuenta existente
+      await updateDoc(doc(db,'clientes',currentClientUID,'cuentas',cuentaId), {
+        nombre, tipo, ...(banco?{banco}:{banco:''}),
+      });
+    } else {
+      // Agregar nueva cuenta
+      const snap = await getDocs(collection(db,'clientes',currentClientUID,'cuentas'));
+      const orden = snap.size;
+      await addDoc(collection(db,'clientes',currentClientUID,'cuentas'), {
+        nombre, tipo, ...(banco?{banco}:{}), saldo, orden, activa:true
+      });
+    // Si hay saldo inicial, crear movimiento apertura en libroCaja
+    if(saldo > 0) {
+      const hoy = new Date().toISOString().split('T')[0];
+      const mes = new Date().toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,ch=>ch.toUpperCase());
+      await addDoc(collection(db,'libroCaja'), {
+        uid: currentClientUID,
+        fecha: hoy,
+        tipo: 'ingreso',
+        concepto: 'Apertura de caja',
+        cuenta: nombre,
+        monto: saldo,
+        origen: 'manual',
+        detalle: 'Saldo inicial',
+        mes,
+        eliminado: false,
+        creadoEn: new Date().toISOString()
+      });
+    }
+    } // end else (agregar)
+    window.ccfgCuentaCerrar();
+    loadCajaConfig();
+  } catch(e) {
+    alert('Error: '+(e?.message||e));
+    btn.disabled=false; btn.textContent = esEdicion ? 'Guardar cambios' : 'Agregar cuenta';
+  }
+};
+
+window.ccfgDesactivarCuenta = function(id, nombre, tieneMov) {
+  if(tieneMov) { alert(`"${nombre}" tiene movimientos asociados y no puede desactivarse.`); return; }
+  if(!confirm(`¿Desactivar la cuenta "${nombre}"?`)) return;
+  deleteDoc(doc(db,'clientes',currentClientUID,'cuentas',id))
+    .then(()=>loadCajaConfig())
+    .catch(e=>alert('Error: '+(e?.message||e)));
+};
+
+// ── Concepto: nuevo inline ──
+window.cajaConfigNuevoConcepto = function(tipo) {
+  const wrap = document.getElementById(`ccfg-inline-${tipo}`);
+  if(!wrap) return;
+  wrap.style.display = 'block';
+  const inp = document.getElementById(`ccfg-new-${tipo}`);
+  if(inp) { inp.value=''; inp.focus(); }
+};
+
+window.cajaConfigCancelarConcepto = function(tipo) {
+  const wrap = document.getElementById(`ccfg-inline-${tipo}`);
+  if(wrap) wrap.style.display = 'none';
+};
+
+window.cajaConfigConfirmarConcepto = async function(tipo) {
+  if(!currentClientUID) return;
+  const inp = document.getElementById(`ccfg-new-${tipo}`);
+  const nombre = inp?.value.trim();
+  if(!nombre) return;
+  try {
+    await addDoc(collection(db,'clientes',currentClientUID,'conceptos'), {
+      nombre, tipo, sistema:false
+    });
+    window.cajaConfigCancelarConcepto(tipo);
+    loadCajaConfig();
+  } catch(e) {
+    alert('Error: '+(e?.message||e));
+  }
+};
+
+// ── Concepto: editar inline ──
+window.ccfgEditarConcepto = function(id, tipo) {
+  const row = document.getElementById(`ccfg-concepto-row-${id}`);
+  const label = document.getElementById(`ccfg-concepto-label-${id}`);
+  if(!row || !label) return;
+  const nombreActual = label.textContent;
+  const editHtml = `<div class="ccfg-inline-edit" style="flex:1;">
+    <input type="text" id="ccfg-edit-inp-${id}" value="${nombreActual.replace(/"/g,'&quot;')}"
+      onkeydown="if(event.key==='Enter')ccfgConfirmarEdicionConcepto('${id}','${tipo}');if(event.key==='Escape')loadCajaConfig();"
+      onblur="ccfgConfirmarEdicionConcepto('${id}','${tipo}')">
+  </div>`;
+  const actionsEl = row.querySelector('.ccfg-actions');
+  label.outerHTML = editHtml;
+  if(actionsEl) actionsEl.style.display='none';
+  const inp = document.getElementById(`ccfg-edit-inp-${id}`);
+  if(inp) { inp.focus(); inp.select(); }
+};
+
+window.ccfgConfirmarEdicionConcepto = async function(id, tipo) {
+  const inp = document.getElementById(`ccfg-edit-inp-${id}`);
+  if(!inp || inp._saving) return;
+  const nombre = inp.value.trim();
+  if(!nombre) { loadCajaConfig(); return; }
+  inp._saving = true;
+  try {
+    await updateDoc(doc(db,'clientes',currentClientUID,'conceptos',id), {nombre});
+    loadCajaConfig();
+  } catch(e) {
+    alert('Error: '+(e?.message||e));
+    loadCajaConfig();
+  }
+};
+
+// ── Concepto: eliminar ──
+window.ccfgEliminarConcepto = function(id, nombre, tieneMov) {
+  if(tieneMov) { alert(`"${nombre}" tiene movimientos asociados y no puede eliminarse.`); return; }
+  if(!confirm(`¿Eliminar el concepto "${nombre}"?`)) return;
+  deleteDoc(doc(db,'clientes',currentClientUID,'conceptos',id))
+    .then(()=>loadCajaConfig())
+    .catch(e=>alert('Error: '+(e?.message||e)));
+};
+
+// ─── MODAL NUEVO MOVIMIENTO ───
+let _mvmTipo = 'ingreso', _mvmConceptoSel = null, _mvmConceptos = [], _mvmCuentas = [], _mvmEfectivoSaldo = 0;
+
+window.cajaNuevoMovimiento = async function() {
+  if(!currentClientUID) return;
+  const uid = currentClientUID;
+  try {
+    const [cuentasSnap, conceptosSnap, movsSnap] = await Promise.all([
+      getDocs(collection(db,'clientes',uid,'cuentas')),
+      getDocs(collection(db,'clientes',uid,'conceptos')),
+      getDocs(query(collection(db,'libroCaja'), where('uid','==',uid)))
+    ]);
+    const seenC = new Set();
+    _mvmCuentas = [];
+    cuentasSnap.forEach(d => { const n=d.data().nombre; if(n&&!seenC.has(n)){seenC.add(n);_mvmCuentas.push({id:d.id,...d.data()});} });
+    _mvmCuentas.sort((a,b)=>(a.orden||0)-(b.orden||0));
+    _mvmConceptos = [];
+    conceptosSnap.forEach(d => _mvmConceptos.push({id:d.id,...d.data()}));
+    const ef = _mvmCuentas.find(c=>c.nombre==='Efectivo');
+    _mvmEfectivoSaldo = parseFloat(ef?.saldo)||0;
+    movsSnap.forEach(d => {
+      const m = d.data();
+      if(!m.eliminado && m.cuenta==='Efectivo') {
+        if(m.tipo==='ingreso') _mvmEfectivoSaldo += parseFloat(m.monto)||0;
+        else if(m.tipo==='egreso') _mvmEfectivoSaldo -= parseFloat(m.monto)||0;
+      }
+    });
+    _mvmTipo = 'ingreso'; _mvmConceptoSel = null;
+    _mvmRenderCuentas();
+    // Reset fields
+    const hoy = new Date().toISOString().split('T')[0];
+    ['mvm-fecha','mvm-tr-fecha'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=hoy;});
+    ['mvm-monto','mvm-tr-monto','mvm-contado'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    ['mvm-detalle','mvm-tr-detalle'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    document.getElementById('mvm-nuevo-input')?.style && (document.getElementById('mvm-nuevo-input').style.display='none');
+    document.getElementById('mvm-cierre-sec')?.style && (document.getElementById('mvm-cierre-sec').style.display='none');
+    document.getElementById('mvm-cierre-diff')?.style && (document.getElementById('mvm-cierre-diff').style.display='none');
+    // Set tipo
+    document.querySelectorAll('#mvm-tipo-row .cj-tipo-btn').forEach(b=>b.classList.remove('active-ing','active-eg','active-tr'));
+    document.getElementById('mvm-tipo-ingreso')?.classList.add('active-ing');
+    document.getElementById('mvm-concepto-sec').style.display = '';
+    document.getElementById('mvm-campos-normal').style.display = '';
+    document.getElementById('mvm-campos-transfer').style.display = 'none';
+    _mvmRenderConceptos();
+    const btnSave = document.getElementById('mvm-btn-save');
+    if(btnSave){btnSave.disabled=false;btnSave.textContent='Guardar';}
+    const ov = document.getElementById('mvm-overlay');
+    if(ov) ov.style.display = 'flex';
+  } catch(e){console.log('cajaNuevoMovimiento:',e);}
+};
+
+function _mvmRenderCuentas() {
+  const opts = _mvmCuentas.map(c=>`<option value="${c.nombre}">${c.nombre}</option>`).join('');
+  ['mvm-cuenta','mvm-tr-desde','mvm-tr-hacia'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=opts;});
+  const haciaEl = document.getElementById('mvm-tr-hacia');
+  if(haciaEl && _mvmCuentas.length>1) haciaEl.value = _mvmCuentas[1].nombre;
+}
+
+window.mvmSetTipo = function(tipo, btn) {
+  _mvmTipo = tipo; _mvmConceptoSel = null;
+  document.querySelectorAll('#mvm-tipo-row .cj-tipo-btn').forEach(b=>b.classList.remove('active-ing','active-eg','active-tr'));
+  if(btn){ if(tipo==='ingreso')btn.classList.add('active-ing'); else if(tipo==='egreso')btn.classList.add('active-eg'); else btn.classList.add('active-tr'); }
+  const concSec = document.getElementById('mvm-concepto-sec');
+  const normal = document.getElementById('mvm-campos-normal');
+  const transfer = document.getElementById('mvm-campos-transfer');
+  const cierreSec = document.getElementById('mvm-cierre-sec');
+  const nuevoInput = document.getElementById('mvm-nuevo-input');
+  if(tipo==='transferencia') {
+    if(concSec) concSec.style.display='none';
+    if(normal) normal.style.display='none';
+    if(transfer) transfer.style.display='';
+  } else {
+    if(concSec) concSec.style.display='';
+    if(normal) normal.style.display='';
+    if(transfer) transfer.style.display='none';
+    if(cierreSec) cierreSec.style.display='none';
+    if(nuevoInput) nuevoInput.style.display='none';
+    _mvmRenderConceptos();
+  }
+};
+
+function _mvmRenderConceptos() {
+  const list = document.getElementById('mvm-conceptos-list');
+  if(!list) return;
+  const isEg = _mvmTipo === 'egreso';
+  const filtered = _mvmConceptos
+    .filter(c=>c.tipo===_mvmTipo)
+    .sort((a,b)=>{ if(a.sistema&&!b.sistema)return -1; if(!a.sistema&&b.sistema)return 1; return (a.nombre||'').localeCompare(b.nombre||''); });
+  if(!_mvmConceptoSel && filtered.length) _mvmConceptoSel = filtered[0].nombre;
+  const selCls = isEg ? 'sel-eg' : 'sel-ing';
+  list.innerHTML = filtered.map(c=>{
+    const isSel = _mvmConceptoSel===c.nombre;
+    const safe = c.nombre.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    return `<button class="cj-chip${isSel?' '+selCls:''}" onclick="mvmSelConcepto(this,'${safe}')">${c.nombre}</button>`;
+  }).join('') + `<button class="cj-chip nuevo-chip" onclick="mvmToggleNuevo()">+ Nuevo</button>`;
+}
+
+window.mvmSelConcepto = function(btn, nombre) {
+  _mvmConceptoSel = nombre;
+  const isEg = _mvmTipo === 'egreso';
+  const selCls = isEg ? 'sel-eg' : 'sel-ing';
+  btn.closest('.cj-clist').querySelectorAll('.cj-chip:not(.nuevo-chip)').forEach(b=>b.classList.remove('sel-ing','sel-eg'));
+  btn.classList.add(selCls);
+  const cierreSec = document.getElementById('mvm-cierre-sec');
+  const diffEl = document.getElementById('mvm-cierre-diff');
+  if(nombre==='Cierre de caja') {
+    if(cierreSec) cierreSec.style.display = '';
+    const espEl = document.getElementById('mvm-saldo-esp');
+    if(espEl) espEl.textContent = '$'+Math.round(_mvmEfectivoSaldo).toLocaleString('es-AR');
+    window.mvmActualizarCierre();
+  } else {
+    if(cierreSec) cierreSec.style.display = 'none';
+    if(diffEl) diffEl.style.display = 'none';
+  }
+};
+
+window.mvmToggleNuevo = function() {
+  const el = document.getElementById('mvm-nuevo-input');
+  if(!el) return;
+  const visible = el.style.display === 'flex';
+  el.style.display = visible ? 'none' : 'flex';
+  if(!visible) setTimeout(()=>document.getElementById('mvm-nuevo-txt')?.focus(), 50);
+};
+
+window.mvmAgregarConcepto = async function() {
+  if(!currentClientUID) return;
+  const txt = document.getElementById('mvm-nuevo-txt')?.value?.trim();
+  if(!txt) return;
+  try {
+    const ref = await addDoc(collection(db,'clientes',currentClientUID,'conceptos'), {nombre:txt,tipo:_mvmTipo,sistema:false});
+    _mvmConceptos.push({id:ref.id,nombre:txt,tipo:_mvmTipo,sistema:false});
+    document.getElementById('mvm-nuevo-txt').value = '';
+    document.getElementById('mvm-nuevo-input').style.display = 'none';
+    _mvmConceptoSel = txt;
+    _mvmRenderConceptos();
+  } catch(e){console.log('mvmAgregarConcepto:',e);}
+};
+
+window.mvmActualizarCierre = function() {
+  const ctEl = document.getElementById('mvm-contado');
+  const diffEl = document.getElementById('mvm-cierre-diff');
+  if(!ctEl||!diffEl) return;
+  const val = ctEl.value.trim();
+  if(!val){diffEl.style.display='none';return;}
+  const diff = (parseFloat(val)||0) - _mvmEfectivoSaldo;
+  diffEl.style.display = '';
+  diffEl.className = 'cj-cdf ' + (diff>=0 ? 'sobrante' : 'faltante');
+  diffEl.textContent = diff>=0
+    ? 'Sobrante $'+Math.round(Math.abs(diff)).toLocaleString('es-AR')
+    : 'Faltante $'+Math.round(Math.abs(diff)).toLocaleString('es-AR');
+};
+
+window.mvmGuardar = async function() {
+  if(!currentClientUID) return;
+  const uid = currentClientUID;
+  const hoy = new Date().toISOString().split('T')[0];
+  const mkMes = f => new Date(f+'T12:00:00').toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase());
+  const docs = [];
+  try {
+    if(_mvmTipo==='transferencia') {
+      const fecha = document.getElementById('mvm-tr-fecha')?.value||hoy;
+      const monto = parseFloat(document.getElementById('mvm-tr-monto')?.value)||0;
+      const desde = document.getElementById('mvm-tr-desde')?.value;
+      const hacia = document.getElementById('mvm-tr-hacia')?.value;
+      const detalle = document.getElementById('mvm-tr-detalle')?.value||'';
+      if(!monto) return;
+      if(desde===hacia){alert('Las cuentas no pueden ser iguales.');return;}
+      docs.push({fecha,tipo:'transferencia',concepto:'Transferencia entre cuentas',cuentaOrigen:desde,cuentaDestino:hacia,monto,detalle,mes:mkMes(fecha),origen:'manual',eliminado:false,creadoEn:new Date().toISOString()});
+    } else {
+      const fecha = document.getElementById('mvm-fecha')?.value||hoy;
+      const cuenta = document.getElementById('mvm-cuenta')?.value||'';
+      const detalle = document.getElementById('mvm-detalle')?.value||'';
+      const mesFecha = mkMes(fecha);
+      if(_mvmConceptoSel==='Cierre de caja') {
+        const contado = parseFloat(document.getElementById('mvm-contado')?.value)||0;
+        if(!contado) return;
+        const diff = contado - _mvmEfectivoSaldo;
+        docs.push({fecha,tipo:'egreso',concepto:'Cierre de caja',cuenta,monto:contado,montoContado:contado,saldoEsperado:_mvmEfectivoSaldo,detalle,mes:mesFecha,origen:'manual',eliminado:false,creadoEn:new Date().toISOString()});
+        if(Math.abs(diff)>0.009) {
+          if(diff>0) docs.push({fecha,tipo:'ingreso',concepto:'Sobrante',cuenta,monto:Math.round(diff*100)/100,detalle:'Auto-generado por cierre de caja',mes:mesFecha,origen:'manual',eliminado:false,creadoEn:new Date().toISOString()});
+          else docs.push({fecha,tipo:'egreso',concepto:'Faltante',cuenta,monto:Math.round(Math.abs(diff)*100)/100,detalle:'Auto-generado por cierre de caja',mes:mesFecha,origen:'manual',eliminado:false,creadoEn:new Date().toISOString()});
+        }
+      } else {
+        const monto = parseFloat(document.getElementById('mvm-monto')?.value)||0;
+        if(!monto||!_mvmConceptoSel) return;
+        docs.push({fecha,tipo:_mvmTipo,concepto:_mvmConceptoSel,cuenta,monto,detalle,mes:mesFecha,origen:'manual',eliminado:false,creadoEn:new Date().toISOString()});
+      }
+    }
+    const btnSave = document.getElementById('mvm-btn-save');
+    if(btnSave){btnSave.disabled=true;btnSave.textContent='Guardando...';}
+    await Promise.all(docs.map(d=>addDoc(collection(db,'libroCaja'),{uid,...d})));
+    mvmCerrar();
+    loadCajaModule();
+  } catch(e){
+    console.log('mvmGuardar:',e);
+    const btnSave = document.getElementById('mvm-btn-save');
+    if(btnSave){btnSave.disabled=false;btnSave.textContent='Guardar';}
+  }
+};
+
+window.mvmCerrar = function() {
+  const ov = document.getElementById('mvm-overlay');
+  if(ov) ov.style.display = 'none';
+};
+
+// ─── MODAL VENTA RÁPIDA ───
+let _vrcCarrito = {}, _vrcMetodo = null, _vrcProductos = [], _vrcCuentas = [];
+
+window.cajaVentaRapida = async function() {
+  if(!currentClientUID) return;
+  const uid = currentClientUID;
+  _vrcCarrito = {};
+  try {
+    const [prodSnap, cuentasSnap] = await Promise.all([
+      getDocs(collection(db,'clientes',uid,'productos')),
+      getDocs(collection(db,'clientes',uid,'cuentas'))
+    ]);
+    _vrcProductos = [];
+    prodSnap.forEach(d=>{const data=d.data();if(!data.eliminado)_vrcProductos.push({id:d.id,...data});});
+    const seenC = new Set();
+    _vrcCuentas = [];
+    cuentasSnap.forEach(d=>{const data=d.data();if(data.nombre&&!seenC.has(data.nombre)){seenC.add(data.nombre);_vrcCuentas.push({id:d.id,...data});}});
+    _vrcCuentas.sort((a,b)=>(a.orden||0)-(b.orden||0));
+    _vrcMetodo = _vrcCuentas[0]?.nombre || 'Efectivo';
+    const buscarEl = document.getElementById('vrc-buscar');
+    if(buscarEl) buscarEl.value = '';
+    _vrcRenderMetodos();
+    _vrcRenderProductos(_vrcProductos);
+    _vrcRenderCarrito();
+    const ov = document.getElementById('vrc-overlay');
+    if(ov) ov.style.display = 'flex';
+  } catch(e){console.log('cajaVentaRapida:',e);}
+};
+
+function _vrcRenderMetodos() {
+  const container = document.getElementById('vrc-metodos');
+  if(!container) return;
+  const icons = {
+    'Efectivo':'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>',
+    'Mercado Pago':'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>',
+    'Transferencia':'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>'
+  };
+  const defIcon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>';
+  container.style.gridTemplateColumns = `repeat(${Math.min(_vrcCuentas.length,4)},1fr)`;
+  container.innerHTML = _vrcCuentas.map(c=>{
+    const isSel = c.nombre === _vrcMetodo;
+    const safe = c.nombre.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    return `<button class="vrc-metodo-btn${isSel?' sel':''}" onclick="vrcSetMetodo('${safe}')">
+      <div style="margin-bottom:5px;">${icons[c.nombre]||defIcon}</div>
+      <div class="vrc-mlabel">${c.nombre}</div>
+    </button>`;
+  }).join('');
+}
+
+function _vrcRenderProductos(lista) {
+  const container = document.getElementById('vrc-prod-list');
+  const emptyEl = document.getElementById('vrc-empty');
+  if(!container) return;
+  if(!lista.length) {
+    container.innerHTML = '';
+    if(emptyEl) emptyEl.style.display = 'block';
+    return;
+  }
+  if(emptyEl) emptyEl.style.display = 'none';
+  container.innerHTML = lista.map(p=>{
+    const precio = Math.round(parseFloat(p.precio)||0);
+    return `<div class="vrc-prod-row" onclick="vrcAgregar('${p.id}')">
+      <div>
+        <div style="font-size:13px;font-weight:500;color:#1a1a1a;">${p.nombre||'—'}</div>
+        <div style="font-size:11px;color:#888;">$${precio.toLocaleString('es-AR')}${p.unidad?' · '+p.unidad:''}</div>
+      </div>
+      <button class="vrc-add-btn" onclick="event.stopPropagation();vrcAgregar('${p.id}')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+    </div>`;
+  }).join('');
+}
+
+function _vrcRenderCarrito() {
+  const section = document.getElementById('vrc-carrito-sec');
+  const items = document.getElementById('vrc-carrito-items');
+  const btnSave = document.getElementById('vrc-btn-save');
+  const totalEl = document.getElementById('vrc-total');
+  if(!section||!items) return;
+  const keys = Object.keys(_vrcCarrito);
+  if(!keys.length) {
+    section.style.display = 'none';
+    if(btnSave) btnSave.disabled = true;
+    if(totalEl) totalEl.textContent = '0';
+    return;
+  }
+  section.style.display = 'block';
+  if(btnSave) btnSave.disabled = false;
+  let total = 0;
+  items.innerHTML = keys.map(id=>{
+    const item = _vrcCarrito[id];
+    const precio = parseFloat(item.producto.precio)||0;
+    const sub = precio * item.qty;
+    total += sub;
+    return `<div class="vrc-cart-item">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:600;color:#1a1a1a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${item.producto.nombre}</div>
+        <div style="font-size:11px;color:#888;">$${Math.round(precio).toLocaleString('es-AR')} c/u</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px;">
+        <button class="vrc-qty-btn" onclick="vrcCambiarQty('${id}',-1)">&#8722;</button>
+        <span style="width:24px;text-align:center;font-size:14px;font-weight:600;">${item.qty}</span>
+        <button class="vrc-qty-btn" onclick="vrcCambiarQty('${id}',1)">+</button>
+      </div>
+      <div style="font-size:13px;font-weight:650;color:#4a5e4d;min-width:72px;text-align:right;">$${Math.round(sub).toLocaleString('es-AR')}</div>
+      <button style="background:none;border:none;cursor:pointer;color:#ccc;padding:2px;transition:color .12s;" onmouseover="this.style.color='#993C1D'" onmouseout="this.style.color='#ccc'" onclick="vrcQuitar('${id}')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>`;
+  }).join('');
+  if(totalEl) totalEl.textContent = Math.round(total).toLocaleString('es-AR');
+}
+
+window.vrcAgregar = function(id) {
+  const p = _vrcProductos.find(x=>x.id===id);
+  if(!p) return;
+  if(_vrcCarrito[id]) _vrcCarrito[id].qty++; else _vrcCarrito[id]={producto:p,qty:1};
+  _vrcRenderCarrito();
+};
+window.vrcCambiarQty = function(id, delta) {
+  if(!_vrcCarrito[id]) return;
+  _vrcCarrito[id].qty += delta;
+  if(_vrcCarrito[id].qty<=0) delete _vrcCarrito[id];
+  _vrcRenderCarrito();
+};
+window.vrcQuitar = function(id) { delete _vrcCarrito[id]; _vrcRenderCarrito(); };
+window.vrcSetMetodo = function(nombre) { _vrcMetodo = nombre; _vrcRenderMetodos(); };
+window.vrcFiltrar = function(q) {
+  const lista = q.trim()==='' ? _vrcProductos : _vrcProductos.filter(p=>(p.nombre||'').toLowerCase().includes(q.toLowerCase()));
+  _vrcRenderProductos(lista);
+};
+
+window.vrcGuardar = async function() {
+  if(!currentClientUID) return;
+  const keys = Object.keys(_vrcCarrito);
+  if(!keys.length) return;
+  let total = 0;
+  const productos = keys.map(id=>{
+    const item = _vrcCarrito[id];
+    const precio = parseFloat(item.producto.precio)||0;
+    const sub = precio * item.qty;
+    total += sub;
+    return {nombre:item.producto.nombre, qty:item.qty, precioUnitario:precio, subtotal:sub};
+  });
+  const hoy = new Date().toISOString().split('T')[0];
+  const mes = new Date(hoy+'T12:00:00').toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase());
+  const btnSave = document.getElementById('vrc-btn-save');
+  try {
+    if(btnSave){btnSave.disabled=true;btnSave.innerHTML='<span style="display:flex;align-items:center;justify-content:center;gap:8px;">Registrando...</span>';}
+    await addDoc(collection(db,'libroCaja'), {
+      uid:currentClientUID,
+      fecha:hoy, tipo:'ingreso', concepto:'Venta caja',
+      cuenta:_vrcMetodo||'Efectivo', monto:Math.round(total*100)/100,
+      productos, mes, origen:'venta_caja', eliminado:false, creadoEn:new Date().toISOString()
+    });
+    vrcCerrar();
+    loadCajaModule();
+  } catch(e){
+    console.log('vrcGuardar:',e);
+    if(btnSave){btnSave.disabled=false;btnSave.innerHTML='<span style="display:flex;align-items:center;justify-content:center;gap:8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Registrar venta</span>';}
+  }
+};
+window.vrcCerrar = function() { const ov=document.getElementById('vrc-overlay'); if(ov)ov.style.display='none'; };
+
+window.showClientContView = function(view, btn) {
+  loadCajaModule();
+};
+
+
 // ─── INICIO DASHBOARD ───
 async function loadInicio() {
   if(!currentClientUID) return;
@@ -6287,20 +7151,15 @@ async function loadInicio() {
 
   // Cargar datos financieros
   try {
-    const [ingSnap, egSnap, cobrosSnap] = await Promise.all([
-      getDocs(collection(db,'clientes',currentClientUID,'ingresos')),
-      getDocs(collection(db,'clientes',currentClientUID,'egresos')),
-      getDocs(collection(db,'clientes',currentClientUID,'cobros'))
-    ]);
-    const ingManuales = []; ingSnap.forEach(d=>{ const data=d.data(); if(!data.eliminado) ingManuales.push({id:d.id,...data,origen:'manual'}); });
-    const egresos = []; egSnap.forEach(d=>{ const data=d.data(); if(!data.eliminado) egresos.push({id:d.id,...data}); });
-    const cobrosComoIng = [];
-    cobrosSnap.forEach(d=>{
+    const cajaSnap = await getDocs(query(collection(db,'libroCaja'), where('uid','==',currentClientUID), where('eliminado','==',false)));
+    const EXCL_ING = ['Apertura de caja','Sobrante'];
+    const EXCL_EG  = ['Cierre de caja','Faltante'];
+    const ingresos = [], egresos = [];
+    cajaSnap.forEach(d => {
       const data = d.data();
-      if(data.eliminado) return;
-      cobrosComoIng.push({id:d.id,concepto:data.concepto||'Cobro',monto:parseFloat(data.monto)||0,mes:data.fecha?new Date(data.fecha+'T12:00:00').toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase()):'',fecha:data.fecha||'',origen:'comercial',...data});
+      if(data.tipo === 'ingreso' && !EXCL_ING.includes(data.concepto)) ingresos.push({id:d.id,...data});
+      else if(data.tipo === 'egreso' && !EXCL_EG.includes(data.concepto)) egresos.push({id:d.id,...data});
     });
-    const ingresos = [...ingManuales,...cobrosComoIng];
 
     // Mes actual
     const hoy = new Date();
@@ -12059,6 +12918,7 @@ window.showCTab = function(tab, btn) {
     document.getElementById('cc-detalle-view').style.display = 'none';
     loadClientPresupuestos();
   }
+  if(tab==='caja-config') { loadCajaConfig(); }
 };
 
 // Abre un PDF guardado como Base64 en nueva pestaña
