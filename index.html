@@ -6711,11 +6711,16 @@ function renderCajaChips(cuentas, movs) {
   const seen = new Set();
   const cuentasUnicas = cuentas.filter(c => { if(seen.has(c.nombre)) return false; seen.add(c.nombre); return true; });
   const saldos = {};
-  cuentasUnicas.forEach(c => { saldos[c.nombre] = parseFloat(c.saldo)||0; });
+  cuentasUnicas.forEach(c => { saldos[c.nombre] = 0; });
   movs.forEach(m => {
-    if(!m.cuenta) return;
-    if(m.tipo==='ingreso') saldos[m.cuenta] = (saldos[m.cuenta]||0) + (parseFloat(m.monto)||0);
-    else if(m.tipo==='egreso') saldos[m.cuenta] = (saldos[m.cuenta]||0) - (parseFloat(m.monto)||0);
+    if(m.tipo==='ingreso') {
+      if(m.cuenta) saldos[m.cuenta] = (saldos[m.cuenta]||0) + (parseFloat(m.monto)||0);
+    } else if(m.tipo==='egreso') {
+      if(m.cuenta) saldos[m.cuenta] = (saldos[m.cuenta]||0) - (parseFloat(m.monto)||0);
+    } else if(m.tipo==='transfer') {
+      if(m.cuentaDesde) saldos[m.cuentaDesde] = (saldos[m.cuentaDesde]||0) - (parseFloat(m.monto)||0);
+      if(m.cuentaHacia) saldos[m.cuentaHacia] = (saldos[m.cuentaHacia]||0) + (parseFloat(m.monto)||0);
+    }
   });
   const dotColors = ['#4a5e4d','#3B6D11','#185FA5','#7a6a5a'];
   const activo = _cajaCuentaFiltro;
@@ -7237,6 +7242,24 @@ window.ccfgCuentaGuardar = async function() {
     await addDoc(collection(db,'clientes',currentClientUID,'cuentas'), {
       nombre, tipo, ...(banco?{banco}:{}), saldo, orden, activa:true
     });
+    // Si hay saldo inicial, crear movimiento apertura en libroCaja
+    if(saldo > 0) {
+      const hoy = new Date().toISOString().split('T')[0];
+      const mes = new Date().toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,ch=>ch.toUpperCase());
+      await addDoc(collection(db,'libroCaja'), {
+        uid: currentClientUID,
+        fecha: hoy,
+        tipo: 'ingreso',
+        concepto: 'Apertura de caja',
+        cuenta: nombre,
+        monto: saldo,
+        origen: 'manual',
+        detalle: 'Saldo inicial',
+        mes,
+        eliminado: false,
+        creadoEn: new Date().toISOString()
+      });
+    }
     window.ccfgCuentaCerrar();
     loadCajaConfig();
   } catch(e) {
