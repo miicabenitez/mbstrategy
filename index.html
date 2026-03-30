@@ -6490,6 +6490,48 @@ function cajaMesDesde(offset) {
   };
 }
 
+// Init lock por sesión — evita que llamadas concurrentes dupliquen escrituras
+let _cajaInitPromise = null;
+
+async function _cajaMaybeInit(uid) {
+  if(_cajaInitPromise) return _cajaInitPromise;
+  _cajaInitPromise = (async () => {
+    const [cuentasSnap, conceptosSnap] = await Promise.all([
+      getDocs(collection(db,'clientes',uid,'cuentas')),
+      getDocs(collection(db,'clientes',uid,'conceptos'))
+    ]);
+    // Cuentas
+    if(cuentasSnap.empty) {
+      await Promise.all([
+        addDoc(collection(db,'clientes',uid,'cuentas'), {nombre:'Efectivo', saldo:0, orden:0}),
+        addDoc(collection(db,'clientes',uid,'cuentas'), {nombre:'Mercado Pago', saldo:0, orden:1})
+      ]);
+    } else {
+      // Dedup cuentas por nombre
+      const seen = new Set(); const toDelete = [];
+      cuentasSnap.forEach(d => { const n=d.data().nombre; if(seen.has(n))toDelete.push(d.id); else seen.add(n); });
+      if(toDelete.length) await Promise.all(toDelete.map(id=>deleteDoc(doc(db,'clientes',uid,'cuentas',id))));
+    }
+    // Conceptos
+    if(conceptosSnap.empty) {
+      const ingresosBase = ['Cobro de cliente','Venta caja','Venta cliente','Apertura de caja','Sobrante','Otro'];
+      const egresosBase  = ['Proveedor','Cierre de caja','Faltante','Otro'];
+      const egresosUser  = ['Alquiler','Sueldos','Insumos','Gastos bancarios','Comisión MP','Servicios'];
+      await Promise.all([
+        ...ingresosBase.map(nombre => addDoc(collection(db,'clientes',uid,'conceptos'), {nombre, tipo:'ingreso', sistema:true})),
+        ...egresosBase.map(nombre  => addDoc(collection(db,'clientes',uid,'conceptos'), {nombre, tipo:'egreso',  sistema:true})),
+        ...egresosUser.map(nombre  => addDoc(collection(db,'clientes',uid,'conceptos'), {nombre, tipo:'egreso',  sistema:false}))
+      ]);
+    } else {
+      // Dedup conceptos por tipo+nombre — limpia duplicados creados por llamadas concurrentes previas
+      const seen = new Set(); const toDelete = [];
+      conceptosSnap.forEach(d => { const k=(d.data().tipo||'')+'|'+(d.data().nombre||''); if(seen.has(k))toDelete.push(d.id); else seen.add(k); });
+      if(toDelete.length) await Promise.all(toDelete.map(id=>deleteDoc(doc(db,'clientes',uid,'conceptos',id))));
+    }
+  })().catch(e => { console.error('_cajaMaybeInit:', e); _cajaInitPromise = null; });
+  return _cajaInitPromise;
+}
+
 async function loadCajaModule() {
   if(!currentClientUID) return;
   const uid = currentClientUID;
@@ -6504,32 +6546,14 @@ async function loadCajaModule() {
   if(sigBtn) sigBtn.style.opacity = (window._cajaMesOffset||0) >= 0 ? '.3' : '1';
 
   try {
-    // 1. Auto-init cuentas y conceptos si están vacíos
-    const [cuentasSnap, conceptosSnap] = await Promise.all([
-      getDocs(collection(db,'clientes',uid,'cuentas')),
-      getDocs(collection(db,'clientes',uid,'conceptos'))
-    ]);
-    if(cuentasSnap.empty) {
-      await Promise.all([
-        addDoc(collection(db,'clientes',uid,'cuentas'), {nombre:'Efectivo', saldo:0, orden:0}),
-        addDoc(collection(db,'clientes',uid,'cuentas'), {nombre:'Mercado Pago', saldo:0, orden:1})
-      ]);
-    }
-    if(conceptosSnap.empty) {
-      const ingresosBase = ['Cobro de cliente','Venta caja','Venta cliente','Apertura de caja','Sobrante','Otro'];
-      const egresosBase  = ['Proveedor','Cierre de caja','Faltante','Otro'];
-      const egresosUser  = ['Alquiler','Sueldos','Insumos','Gastos bancarios','Comisión MP','Servicios'];
-      await Promise.all([
-        ...ingresosBase.map(nombre => addDoc(collection(db,'clientes',uid,'conceptos'), {nombre, tipo:'ingreso', sistema:true})),
-        ...egresosBase.map(nombre  => addDoc(collection(db,'clientes',uid,'conceptos'), {nombre, tipo:'egreso',  sistema:true})),
-        ...egresosUser.map(nombre  => addDoc(collection(db,'clientes',uid,'conceptos'), {nombre, tipo:'egreso',  sistema:false}))
-      ]);
-    }
-    // 2. Reload cuentas (pueden haber sido recién creadas)
+    // 1. Init/dedup cuentas y conceptos (solo corre una vez por sesión)
+    await _cajaMaybeInit(uid);
+    // 2. Cargar cuentas
     const cuentasSnap2 = await getDocs(collection(db,'clientes',uid,'cuentas'));
     const cuentas = [];
     cuentasSnap2.forEach(d => cuentas.push({id:d.id,...d.data()}));
-    cuentas.sort((a,b)=>(a.orden||0)-(b.orden||0));
+    const seenC = new Set(); const cuentasUnicas = cuentas.filter(c=>{ if(seenC.has(c.nombre))return false; seenC.add(c.nombre); return true; });
+    cuentasUnicas.sort((a,b)=>(a.orden||0)-(b.orden||0));
     // 3. Cargar todos los movimientos desde libroCaja
     const movsSnap = await getDocs(query(collection(db,'libroCaja'), where('uid','==',uid)));
     const todosMovs = [];
@@ -6540,7 +6564,7 @@ async function loadCajaModule() {
     window._cajaMovimientos = movs;
     // 4. Renderizar
     renderCajaKPIs(movs);
-    renderCajaChips(cuentas, todosMovs);
+    renderCajaChips(cuentasUnicas, todosMovs);
     renderCajaTable(movs);
     // Animación staggered de cards
     document.querySelectorAll('#ct-contabilidad .dash-card').forEach((c,i) => {
