@@ -6495,6 +6495,14 @@ async function loadCajaModule() {
   const uid = currentClientUID;
   const tbody = document.getElementById('caja-tbody');
   if(tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:28px;color:#bbb;font-size:13px;">Cargando...</td></tr>';
+
+  // Actualizar mes ANTES de cualquier await para que no quede "—"
+  const mes = cajaMesDesde(window._cajaMesOffset||0);
+  const mesLabel = document.getElementById('caja-mes-label');
+  if(mesLabel) mesLabel.textContent = mes.label;
+  const sigBtn = document.getElementById('caja-mes-sig');
+  if(sigBtn) sigBtn.style.opacity = (window._cajaMesOffset||0) >= 0 ? '.3' : '1';
+
   try {
     // 1. Auto-init cuentas y conceptos si están vacíos
     const [cuentasSnap, conceptosSnap] = await Promise.all([
@@ -6522,8 +6530,7 @@ async function loadCajaModule() {
     const cuentas = [];
     cuentasSnap2.forEach(d => cuentas.push({id:d.id,...d.data()}));
     cuentas.sort((a,b)=>(a.orden||0)-(b.orden||0));
-    // 3. Cargar todos los movimientos (para saldo histórico de chips)
-    const mes = cajaMesDesde(window._cajaMesOffset||0);
+    // 3. Cargar todos los movimientos desde libroCaja
     const movsSnap = await getDocs(query(collection(db,'libroCaja'), where('uid','==',uid)));
     const todosMovs = [];
     movsSnap.forEach(d => { const data = d.data(); if(!data.eliminado) todosMovs.push({id:d.id,...data}); });
@@ -6531,12 +6538,7 @@ async function loadCajaModule() {
     const movs = todosMovs.filter(m => m.mes === mes.stored);
     movs.sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
     window._cajaMovimientos = movs;
-    // 4. Actualizar etiquetas de mes
-    const mesLabel = document.getElementById('caja-mes-label');
-    if(mesLabel) mesLabel.textContent = mes.label;
-    const sigBtn = document.getElementById('caja-mes-sig');
-    if(sigBtn) sigBtn.style.opacity = (window._cajaMesOffset||0) >= 0 ? '.3' : '1';
-    // 5. Renderizar
+    // 4. Renderizar
     renderCajaKPIs(movs);
     renderCajaChips(cuentas, todosMovs);
     renderCajaTable(movs);
@@ -6545,7 +6547,10 @@ async function loadCajaModule() {
       c.classList.remove('in');
       setTimeout(()=>c.classList.add('in'), 60*i);
     });
-  } catch(e) { console.log('loadCajaModule:', e); }
+  } catch(e) {
+    console.error('loadCajaModule error:', e?.code, e?.message, e);
+    if(tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:28px;color:#993C1D;font-size:12px;">Error: ${e?.code||e?.message||'desconocido'} — revisar consola</td></tr>`;
+  }
 }
 
 function renderCajaKPIs(movs) {
