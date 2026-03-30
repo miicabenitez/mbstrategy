@@ -482,6 +482,33 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
 .cj-input:focus{border-color:#4a5e4d;box-shadow:0 0 0 3px rgba(74,94,77,.1);}
 select.cj-input{cursor:pointer;}
 textarea.cj-input{resize:none;}
+/* Caja config panel */
+.ccfg-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;border:1.5px solid #f0efeb;background:#fafafa;margin-bottom:6px;transition:border-color .15s;}
+.ccfg-row:hover{border-color:#c8d0c9;background:#f5f5f2;}
+.ccfg-row:hover .ccfg-actions{opacity:1;}
+.ccfg-nombre{flex:1;font-size:13px;font-weight:500;color:#1a1a1a;}
+.ccfg-badge{font-size:10px;font-weight:700;letter-spacing:.04em;padding:3px 8px;border-radius:20px;flex-shrink:0;}
+.ccfg-badge.sistema{background:#e6f1fb;color:#185FA5;}
+.ccfg-badge.efectivo{background:#edf7ed;color:#3B6D11;}
+.ccfg-badge.banco{background:#f3f0fb;color:#5c3fa5;}
+.ccfg-badge.mp{background:#e6f1fb;color:#185FA5;}
+.ccfg-actions{opacity:0;display:flex;gap:4px;transition:opacity .15s;flex-shrink:0;}
+.ccfg-icon-btn{height:28px;width:28px;border-radius:7px;border:1.5px solid #e8e8e4;background:white;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#999;transition:all .12s;font-size:11px;}
+.ccfg-icon-btn:hover{background:#f5f4f0;color:#333;border-color:#ddd;}
+.ccfg-icon-btn.danger:hover{background:#fdf0ec;border-color:#f0c4b4;color:#993C1D;}
+.ccfg-section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.ccfg-section-title{font-size:11px;font-weight:700;color:#888;letter-spacing:.06em;text-transform:uppercase;}
+.ccfg-add-btn{height:28px;padding:0 12px;border:1.5px solid #c8d5c9;border-radius:8px;background:white;font-size:12px;font-weight:600;color:#4a5e4d;cursor:pointer;font-family:inherit;transition:all .12s;display:flex;align-items:center;gap:4px;}
+.ccfg-add-btn:hover{background:#f0f5f0;border-color:#4a5e4d;}
+.ccfg-inline-add{display:flex;gap:6px;margin-bottom:6px;}
+.ccfg-inline-add input{flex:1;padding:8px 12px;border:1.5px solid #c8d0c9;border-radius:9px;font-size:13px;font-family:inherit;outline:none;}
+.ccfg-inline-add input:focus{border-color:#4a5e4d;}
+.ccfg-inline-add button{height:36px;padding:0 12px;border-radius:9px;border:none;background:#4a5e4d;color:white;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
+.ccfg-tipo-row{display:flex;gap:6px;margin-bottom:12px;}
+.ccfg-tipo-btn{flex:1;padding:8px 6px;border-radius:9px;border:1.5px solid #e8e8e4;background:white;cursor:pointer;font-size:12px;font-weight:600;color:#888;font-family:inherit;transition:all .15s;text-align:center;}
+.ccfg-tipo-btn.active{border-color:#4a5e4d;background:#f0f5f0;color:#4a5e4d;}
+.ccfg-inline-edit{display:flex;gap:6px;}
+.ccfg-inline-edit input{flex:1;padding:7px 10px;border:1.5px solid #4a5e4d;border-radius:8px;font-size:13px;font-family:inherit;outline:none;background:white;}
 </style>
 </head>
 <body>
@@ -1502,7 +1529,8 @@ textarea.cj-input{resize:none;}
 
       <!-- SUB-NAV Finanzas -->
       <div id="subnav-finanzas" class="mod-subnav" style="display:none;gap:4px;margin-bottom:14px;">
-        <button class="subctab active">Caja</button>
+        <button class="subctab active" onclick="showCTab('contabilidad',this)">Caja</button>
+        <button class="subctab" onclick="showCTab('caja-config',this)">Configuración</button>
       </div>
 
       <!-- SUB-NAV Ventas -->
@@ -1698,6 +1726,64 @@ textarea.cj-input{resize:none;}
                 <tr><td colspan="7" style="text-align:center;padding:36px;color:#bbb;font-size:13px;">Cargando...</td></tr>
               </tbody>
             </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- CAJA CONFIG -->
+      <div id="ct-caja-config" style="display:none;">
+
+        <!-- Sección Cuentas -->
+        <div class="card" style="margin-bottom:12px;">
+          <div class="ccfg-section-hdr">
+            <span class="ccfg-section-title">Cuentas</span>
+            <button class="ccfg-add-btn" onclick="cajaConfigAgregarCuenta()">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Agregar cuenta
+            </button>
+          </div>
+          <div id="ccfg-cuentas-list">
+            <div style="padding:20px;text-align:center;color:#bbb;font-size:13px;">Cargando...</div>
+          </div>
+        </div>
+
+        <!-- Sección Conceptos -->
+        <div class="card">
+          <!-- Ingresos -->
+          <div class="ccfg-section-hdr" style="margin-bottom:8px;">
+            <span class="ccfg-section-title">Conceptos de ingreso</span>
+            <button class="ccfg-add-btn" onclick="cajaConfigNuevoConcepto('ingreso')">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Nuevo
+            </button>
+          </div>
+          <div id="ccfg-inline-ingreso" style="display:none;">
+            <div class="ccfg-inline-add">
+              <input type="text" id="ccfg-new-ingreso" placeholder="Nombre del concepto" onkeydown="if(event.key==='Enter')cajaConfigConfirmarConcepto('ingreso');if(event.key==='Escape')cajaConfigCancelarConcepto('ingreso');">
+              <button onclick="cajaConfigConfirmarConcepto('ingreso')">✓</button>
+            </div>
+          </div>
+          <div id="ccfg-conceptos-ingreso" style="margin-bottom:16px;">
+            <div style="padding:16px;text-align:center;color:#bbb;font-size:13px;">Cargando...</div>
+          </div>
+
+          <!-- Egresos -->
+          <div class="ccfg-section-hdr" style="margin-bottom:8px;padding-top:12px;border-top:1px solid #f0efeb;">
+            <span class="ccfg-section-title">Conceptos de egreso</span>
+            <button class="ccfg-add-btn" onclick="cajaConfigNuevoConcepto('egreso')">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Nuevo
+            </button>
+          </div>
+          <div id="ccfg-inline-egreso" style="display:none;">
+            <div class="ccfg-inline-add">
+              <input type="text" id="ccfg-new-egreso" placeholder="Nombre del concepto" onkeydown="if(event.key==='Enter')cajaConfigConfirmarConcepto('egreso');if(event.key==='Escape')cajaConfigCancelarConcepto('egreso');">
+              <button onclick="cajaConfigConfirmarConcepto('egreso')">✓</button>
+            </div>
+          </div>
+          <div id="ccfg-conceptos-egreso">
+            <div style="padding:16px;text-align:center;color:#bbb;font-size:13px;">Cargando...</div>
           </div>
         </div>
 
@@ -6947,6 +7033,226 @@ window.mdvGuardar = async function() {
     if(btnGuardar) { btnGuardar.disabled=false; btnGuardar.textContent='Guardar cambios'; }
   }
 };
+// ─── CAJA CONFIG ───
+let _ccfgCuentaTipoSel = 'efectivo';
+
+async function loadCajaConfig() {
+  if(!currentClientUID) return;
+  const uid = currentClientUID;
+  try {
+    const [cuentasSnap, conceptosSnap, movsSnap] = await Promise.all([
+      getDocs(collection(db,'clientes',uid,'cuentas')),
+      getDocs(collection(db,'clientes',uid,'conceptos')),
+      getDocs(query(collection(db,'libroCaja'), where('uid','==',uid)))
+    ]);
+    const cuentas = [];
+    cuentasSnap.forEach(d=>cuentas.push({id:d.id,...d.data()}));
+    cuentas.sort((a,b)=>(a.orden||0)-(b.orden||0));
+
+    const conceptos = [];
+    conceptosSnap.forEach(d=>conceptos.push({id:d.id,...d.data()}));
+
+    // Build sets of cuentas/conceptos with movimientos
+    const cuentasConMovs = new Set();
+    const conceptosConMovs = new Set();
+    movsSnap.forEach(d=>{
+      const data = d.data();
+      if(data.eliminado) return;
+      if(data.cuenta) cuentasConMovs.add(data.cuenta);
+      if(data.cuentaDesde) cuentasConMovs.add(data.cuentaDesde);
+      if(data.cuentaHacia) cuentasConMovs.add(data.cuentaHacia);
+      if(data.concepto) conceptosConMovs.add(data.concepto);
+    });
+
+    _ccfgRenderCuentas(cuentas, cuentasConMovs);
+    _ccfgRenderConceptos(conceptos.filter(c=>c.tipo==='ingreso'), 'ingreso', conceptosConMovs);
+    _ccfgRenderConceptos(conceptos.filter(c=>c.tipo==='egreso'), 'egreso', conceptosConMovs);
+  } catch(e) {
+    console.error('loadCajaConfig:', e);
+  }
+}
+
+function _ccfgTipoBadgeHtml(tipo) {
+  const map = {efectivo:'efectivo',banco:'banco',mp:'mp'};
+  const label = {efectivo:'Efectivo',banco:'Banco',mp:'Mercado Pago'};
+  const cls = map[tipo]||'efectivo';
+  return `<span class="ccfg-badge ${cls}">${label[tipo]||tipo}</span>`;
+}
+
+function _ccfgRenderCuentas(cuentas, cuentasConMovs) {
+  const el = document.getElementById('ccfg-cuentas-list');
+  if(!el) return;
+  if(!cuentas.length) { el.innerHTML = '<div style="padding:12px;color:#bbb;font-size:13px;text-align:center;">Sin cuentas</div>'; return; }
+  el.innerHTML = cuentas.map(c=>`
+    <div class="ccfg-row" id="ccfg-cuenta-row-${c.id}">
+      <div class="ccfg-nombre">${c.nombre}</div>
+      ${_ccfgTipoBadgeHtml(c.tipo||'efectivo')}
+      <div class="ccfg-actions">
+        <button class="ccfg-icon-btn danger" title="${cuentasConMovs.has(c.nombre)?'Tiene movimientos asociados':'Desactivar'}"
+          onclick="ccfgDesactivarCuenta('${c.id}','${c.nombre}',${cuentasConMovs.has(c.nombre)})">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function _ccfgRenderConceptos(conceptos, tipo, conceptosConMovs) {
+  const el = document.getElementById(`ccfg-conceptos-${tipo}`);
+  if(!el) return;
+  if(!conceptos.length) { el.innerHTML = '<div style="padding:10px 0;color:#bbb;font-size:13px;">Sin conceptos</div>'; return; }
+  el.innerHTML = conceptos.map(c=>{
+    if(c.sistema) {
+      return `<div class="ccfg-row"><div class="ccfg-nombre">${c.nombre}</div><span class="ccfg-badge sistema">sistema</span></div>`;
+    }
+    const tieneMov = conceptosConMovs.has(c.nombre);
+    return `
+      <div class="ccfg-row" id="ccfg-concepto-row-${c.id}">
+        <div class="ccfg-nombre" id="ccfg-concepto-label-${c.id}">${c.nombre}</div>
+        <div class="ccfg-actions">
+          <button class="ccfg-icon-btn" title="Editar" onclick="ccfgEditarConcepto('${c.id}','${tipo}')">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="ccfg-icon-btn danger" title="${tieneMov?'Tiene movimientos asociados':'Eliminar'}"
+            onclick="ccfgEliminarConcepto('${c.id}','${c.nombre}',${tieneMov})">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ── Cuenta: agregar ──
+window.cajaConfigAgregarCuenta = function() {
+  _ccfgCuentaTipoSel = 'efectivo';
+  document.querySelectorAll('.ccfg-tipo-btn').forEach(b=>b.classList.toggle('active', b.dataset.tipo==='efectivo'));
+  document.getElementById('ccfg-banco-field').style.display = 'none';
+  document.getElementById('ccfg-cuenta-nombre').value = '';
+  document.getElementById('ccfg-cuenta-banco').value = '';
+  document.getElementById('ccfg-cuenta-saldo').value = '0';
+  const ov = document.getElementById('ccfg-cuenta-overlay');
+  if(ov) { ov.style.display='flex'; requestAnimationFrame(()=>ov.classList.add('open')); }
+  setTimeout(()=>document.getElementById('ccfg-cuenta-nombre').focus(), 200);
+};
+
+window.ccfgCuentaTipo = function(btn) {
+  document.querySelectorAll('.ccfg-tipo-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  _ccfgCuentaTipoSel = btn.dataset.tipo;
+  document.getElementById('ccfg-banco-field').style.display = _ccfgCuentaTipoSel==='banco' ? 'block' : 'none';
+};
+
+window.ccfgCuentaCerrar = function() {
+  const ov = document.getElementById('ccfg-cuenta-overlay');
+  if(ov) { ov.classList.remove('open'); setTimeout(()=>ov.style.display='none', 200); }
+};
+
+window.ccfgCuentaGuardar = async function() {
+  if(!currentClientUID) return;
+  const nombre = document.getElementById('ccfg-cuenta-nombre').value.trim();
+  if(!nombre) { document.getElementById('ccfg-cuenta-nombre').focus(); return; }
+  const tipo = _ccfgCuentaTipoSel;
+  const banco = tipo==='banco' ? document.getElementById('ccfg-cuenta-banco').value.trim() : '';
+  const saldo = parseFloat(document.getElementById('ccfg-cuenta-saldo').value)||0;
+
+  const btn = document.getElementById('ccfg-cuenta-save');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  try {
+    // Count existing cuentas for orden
+    const snap = await getDocs(collection(db,'clientes',currentClientUID,'cuentas'));
+    const orden = snap.size;
+    await addDoc(collection(db,'clientes',currentClientUID,'cuentas'), {
+      nombre, tipo, ...(banco?{banco}:{}), saldo, orden, activa:true
+    });
+    window.ccfgCuentaCerrar();
+    loadCajaConfig();
+  } catch(e) {
+    alert('Error: '+(e?.message||e));
+    btn.disabled=false; btn.textContent='Agregar cuenta';
+  }
+};
+
+window.ccfgDesactivarCuenta = function(id, nombre, tieneMov) {
+  if(tieneMov) { alert(`"${nombre}" tiene movimientos asociados y no puede desactivarse.`); return; }
+  if(!confirm(`¿Desactivar la cuenta "${nombre}"?`)) return;
+  deleteDoc(doc(db,'clientes',currentClientUID,'cuentas',id))
+    .then(()=>loadCajaConfig())
+    .catch(e=>alert('Error: '+(e?.message||e)));
+};
+
+// ── Concepto: nuevo inline ──
+window.cajaConfigNuevoConcepto = function(tipo) {
+  const wrap = document.getElementById(`ccfg-inline-${tipo}`);
+  if(!wrap) return;
+  wrap.style.display = 'block';
+  const inp = document.getElementById(`ccfg-new-${tipo}`);
+  if(inp) { inp.value=''; inp.focus(); }
+};
+
+window.cajaConfigCancelarConcepto = function(tipo) {
+  const wrap = document.getElementById(`ccfg-inline-${tipo}`);
+  if(wrap) wrap.style.display = 'none';
+};
+
+window.cajaConfigConfirmarConcepto = async function(tipo) {
+  if(!currentClientUID) return;
+  const inp = document.getElementById(`ccfg-new-${tipo}`);
+  const nombre = inp?.value.trim();
+  if(!nombre) return;
+  try {
+    await addDoc(collection(db,'clientes',currentClientUID,'conceptos'), {
+      nombre, tipo, sistema:false
+    });
+    window.cajaConfigCancelarConcepto(tipo);
+    loadCajaConfig();
+  } catch(e) {
+    alert('Error: '+(e?.message||e));
+  }
+};
+
+// ── Concepto: editar inline ──
+window.ccfgEditarConcepto = function(id, tipo) {
+  const row = document.getElementById(`ccfg-concepto-row-${id}`);
+  const label = document.getElementById(`ccfg-concepto-label-${id}`);
+  if(!row || !label) return;
+  const nombreActual = label.textContent;
+  const editHtml = `<div class="ccfg-inline-edit" style="flex:1;">
+    <input type="text" id="ccfg-edit-inp-${id}" value="${nombreActual.replace(/"/g,'&quot;')}"
+      onkeydown="if(event.key==='Enter')ccfgConfirmarEdicionConcepto('${id}','${tipo}');if(event.key==='Escape')loadCajaConfig();"
+      onblur="ccfgConfirmarEdicionConcepto('${id}','${tipo}')">
+  </div>`;
+  const actionsEl = row.querySelector('.ccfg-actions');
+  label.outerHTML = editHtml;
+  if(actionsEl) actionsEl.style.display='none';
+  const inp = document.getElementById(`ccfg-edit-inp-${id}`);
+  if(inp) { inp.focus(); inp.select(); }
+};
+
+window.ccfgConfirmarEdicionConcepto = async function(id, tipo) {
+  const inp = document.getElementById(`ccfg-edit-inp-${id}`);
+  if(!inp || inp._saving) return;
+  const nombre = inp.value.trim();
+  if(!nombre) { loadCajaConfig(); return; }
+  inp._saving = true;
+  try {
+    await updateDoc(doc(db,'clientes',currentClientUID,'conceptos',id), {nombre});
+    loadCajaConfig();
+  } catch(e) {
+    alert('Error: '+(e?.message||e));
+    loadCajaConfig();
+  }
+};
+
+// ── Concepto: eliminar ──
+window.ccfgEliminarConcepto = function(id, nombre, tieneMov) {
+  if(tieneMov) { alert(`"${nombre}" tiene movimientos asociados y no puede eliminarse.`); return; }
+  if(!confirm(`¿Eliminar el concepto "${nombre}"?`)) return;
+  deleteDoc(doc(db,'clientes',currentClientUID,'conceptos',id))
+    .then(()=>loadCajaConfig())
+    .catch(e=>alert('Error: '+(e?.message||e)));
+};
+
 // ─── MODAL NUEVO MOVIMIENTO ───
 let _mvmTipo = 'ingreso', _mvmConceptoSel = null, _mvmConceptos = [], _mvmCuentas = [], _mvmEfectivoSaldo = 0;
 
@@ -13248,6 +13554,7 @@ window.showCTab = function(tab, btn) {
     document.getElementById('cc-detalle-view').style.display = 'none';
     loadClientPresupuestos();
   }
+  if(tab==='caja-config') loadCajaConfig();
 };
 
 // Abre un PDF guardado como Base64 en nueva pestaña
@@ -14637,6 +14944,42 @@ window.doResetPassword = async function(){
     <div class="cj-mfooter" id="mdv-footer" style="display:none;">
       <button class="cj-btn-cancel" onclick="mdvCancelarEdicion()">Cancelar</button>
       <button class="cj-btn-save" id="mdv-btn-guardar" onclick="mdvGuardar()">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL AGREGAR CUENTA -->
+<div class="cj-overlay" id="ccfg-cuenta-overlay" onclick="if(event.target===this)ccfgCuentaCerrar()" style="display:none;">
+  <div class="cj-modal" style="max-width:400px;" onclick="event.stopPropagation()">
+    <div class="cj-mheader">
+      <span style="font-size:15px;font-weight:650;color:#1a1a1a;">Agregar cuenta</span>
+      <button class="cj-close" onclick="ccfgCuentaCerrar()">×</button>
+    </div>
+    <div class="cj-mbody" style="gap:12px;">
+      <div>
+        <label class="cj-slabel">NOMBRE</label>
+        <input type="text" class="cj-input" id="ccfg-cuenta-nombre" placeholder="Ej: Efectivo mostrador">
+      </div>
+      <div>
+        <label class="cj-slabel">TIPO</label>
+        <div class="ccfg-tipo-row">
+          <button class="ccfg-tipo-btn active" data-tipo="efectivo" onclick="ccfgCuentaTipo(this)">Efectivo</button>
+          <button class="ccfg-tipo-btn" data-tipo="banco" onclick="ccfgCuentaTipo(this)">Banco</button>
+          <button class="ccfg-tipo-btn" data-tipo="mp" onclick="ccfgCuentaTipo(this)">Mercado Pago</button>
+        </div>
+      </div>
+      <div id="ccfg-banco-field" style="display:none;">
+        <label class="cj-slabel">BANCO</label>
+        <input type="text" class="cj-input" id="ccfg-cuenta-banco" placeholder="Ej: Santander">
+      </div>
+      <div>
+        <label class="cj-slabel">SALDO INICIAL</label>
+        <input type="number" class="cj-input" id="ccfg-cuenta-saldo" value="0" min="0">
+      </div>
+    </div>
+    <div class="cj-mfooter" style="display:flex;gap:8px;">
+      <button class="cj-btn-cancel" onclick="ccfgCuentaCerrar()">Cancelar</button>
+      <button class="cj-btn-save" id="ccfg-cuenta-save" onclick="ccfgCuentaGuardar()">Agregar cuenta</button>
     </div>
   </div>
 </div>
