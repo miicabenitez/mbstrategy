@@ -6524,7 +6524,7 @@ async function loadCajaModule() {
     cuentas.sort((a,b)=>(a.orden||0)-(b.orden||0));
     // 3. Cargar todos los movimientos (para saldo histórico de chips)
     const mes = cajaMesDesde(window._cajaMesOffset||0);
-    const movsSnap = await getDocs(collection(db,'clientes',uid,'movimientos'));
+    const movsSnap = await getDocs(query(collection(db,'libroCaja'), where('uid','==',uid)));
     const todosMovs = [];
     movsSnap.forEach(d => { const data = d.data(); if(!data.eliminado) todosMovs.push({id:d.id,...data}); });
     // Filtrar por mes para tabla y KPIs
@@ -6656,7 +6656,7 @@ window.cajaNuevoMovimiento = async function() {
     const [cuentasSnap, conceptosSnap, movsSnap] = await Promise.all([
       getDocs(collection(db,'clientes',uid,'cuentas')),
       getDocs(collection(db,'clientes',uid,'conceptos')),
-      getDocs(collection(db,'clientes',uid,'movimientos'))
+      getDocs(query(collection(db,'libroCaja'), where('uid','==',uid)))
     ]);
     const seenC = new Set();
     _mvmCuentas = [];
@@ -6836,7 +6836,7 @@ window.mvmGuardar = async function() {
     }
     const btnSave = document.getElementById('mvm-btn-save');
     if(btnSave){btnSave.disabled=true;btnSave.textContent='Guardando...';}
-    await Promise.all(docs.map(d=>addDoc(collection(db,'clientes',uid,'movimientos'),d)));
+    await Promise.all(docs.map(d=>addDoc(collection(db,'libroCaja'),{uid,...d})));
     mvmCerrar();
     loadCajaModule();
   } catch(e){
@@ -7000,7 +7000,8 @@ window.vrcGuardar = async function() {
   const btnSave = document.getElementById('vrc-btn-save');
   try {
     if(btnSave){btnSave.disabled=true;btnSave.innerHTML='<span style="display:flex;align-items:center;justify-content:center;gap:8px;">Registrando...</span>';}
-    await addDoc(collection(db,'clientes',currentClientUID,'movimientos'), {
+    await addDoc(collection(db,'libroCaja'), {
+      uid:currentClientUID,
       fecha:hoy, tipo:'ingreso', concepto:'Venta caja',
       cuenta:_vrcMetodo||'Efectivo', monto:Math.round(total*100)/100,
       productos, mes, origen:'venta_caja', eliminado:false, creadoEn:new Date().toISOString()
