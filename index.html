@@ -6862,7 +6862,13 @@ function _mdvRender() {
 
   // Body
   const body = document.getElementById('mdv-body');
-  if(body) body.innerHTML = _mdvBuildBody(m, editing);
+  if(body) {
+    body.innerHTML = _mdvBuildBody(m, editing);
+    if(editing) {
+      const fechaEl = document.getElementById('mdv-fecha');
+      if(fechaEl && m.fecha) fechaEl.value = m.fecha;
+    }
+  }
 }
 
 window.mdvActivarEdicion = function() {
