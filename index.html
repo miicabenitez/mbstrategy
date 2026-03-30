@@ -8349,18 +8349,21 @@ window.createMcCobro = async function() {
     const clienteNombre = cLocal?.nombre || '';
     if (cLocal) { cLocal.totalCobrado = nuevoTotal; cLocal.ultimoContacto = new Date().toISOString(); }
 
-    // 4. DISPARAR INGRESO en contabilidad automáticamente
+    // 4. DISPARAR INGRESO en libroCaja automáticamente
     const mesIngreso = fecha
       ? new Date(fecha+'T12:00:00').toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,ch=>ch.toUpperCase())
       : new Date().toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,ch=>ch.toUpperCase());
-    await addDoc(collection(db,'clientes',currentClientUID,'ingresos'), {
-      concepto : concepto || `Cobro de ${clienteNombre}`,
-      categoria: 'Cobro de cliente',
-      monto    : parseFloat(monto)||0,
+    await addDoc(collection(db,'libroCaja'), {
+      uid      : currentClientUID,
       fecha, mes: mesIngreso,
+      tipo     : 'ingreso',
+      concepto : concepto || 'Cobro de cliente',
+      cuenta   : formaPago,
+      monto    : parseFloat(monto)||0,
       origen   : 'comercial',
       clienteId,
       cliente  : clienteNombre,
+      eliminado: false,
       creadoEn : new Date().toISOString()
     });
 
@@ -11449,19 +11452,25 @@ window.savePagoProveedor = async function() {
     };
     const opRef = await addDoc(collection(db,'clientes',currentClientUID,'proveedores',window._ccProvId,'movimientos'), opData);
     window._ultimaOP = { ...opData, id: opRef.id };
-    // Registrar egreso automático en contabilidad
+    // Registrar egreso en libroCaja
     const provSnap = await getDoc(doc(db,'clientes',currentClientUID,'proveedores',window._ccProvId));
     const provNombre = provSnap.exists() ? provSnap.data().nombre : 'Proveedor';
-    await addDoc(collection(db,'clientes',currentClientUID,'egresos'), {
-      descripcion: `Pago a ${provNombre} — ${window._opNumero}${concepto ? ' · '+concepto : ''}`,
-      monto: total,
-      fecha,
-      categoria: 'Proveedores',
-      medio,
+    const mesPago = fecha
+      ? new Date(fecha+'T12:00:00').toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,ch=>ch.toUpperCase())
+      : new Date().toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,ch=>ch.toUpperCase());
+    await addDoc(collection(db,'libroCaja'), {
+      uid        : currentClientUID,
+      fecha, mes : mesPago,
+      tipo       : 'egreso',
+      concepto   : concepto || 'Proveedor',
+      cuenta     : medio,
+      monto      : total,
+      origen     : 'proveedor',
       proveedorId: window._ccProvId,
-      opId: opRef.id,
-      eliminado: false,
-      creadoEn: new Date()
+      proveedor  : provNombre,
+      opId       : opRef.id,
+      eliminado  : false,
+      creadoEn   : new Date().toISOString()
     });
     const saved = document.getElementById('npp-saved');
     if(saved){ saved.style.display='block'; setTimeout(()=>{ saved.style.display='none'; closeModal('newPagoProvModal'); renderCuentaCorriente(); if(typeof loadContabilidad==='function') loadContabilidad(); }, 1500); }
