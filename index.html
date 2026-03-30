@@ -596,9 +596,7 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
           <svg class="sb-arrow" viewBox="0 0 16 16" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
         </button>
         <div class="sb-sub" id="sbsub-finanzas">
-          <button class="sb-subitem" data-sub="resumen" onclick="sidebarNav('finanzas','resumen')">Resumen</button>
-          <button class="sb-subitem" data-sub="ingresos" onclick="sidebarNav('finanzas','ingresos')">Ingresos</button>
-          <button class="sb-subitem" data-sub="egresos" onclick="sidebarNav('finanzas','egresos')">Egresos</button>
+          <button class="sb-subitem active" data-sub="caja" onclick="sidebarNav('finanzas','caja')">Caja</button>
         </div>
       </div>
       <!-- Ventas → Comercial -->
@@ -1424,9 +1422,7 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
 
       <!-- SUB-NAV Finanzas -->
       <div id="subnav-finanzas" class="mod-subnav" style="display:none;gap:4px;margin-bottom:14px;">
-        <button class="subctab active" onclick="showClientContView('home',this)">Resumen</button>
-        <button class="subctab" onclick="showClientContView('ingresos',this)">Ingresos</button>
-        <button class="subctab" onclick="showClientContView('egresos',this)">Egresos</button>
+        <button class="subctab active">Caja</button>
       </div>
 
       <!-- SUB-NAV Ventas -->
@@ -1565,99 +1561,9 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
       <!-- CONTABILIDAD CLIENTE -->
       <div id="ct-contabilidad" style="display:none;">
 
-        <!-- Banner -->
-        <div style="background:#4a5e4d;border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;"><div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;">Finanzas</div></div>
-
-        <!-- Resumen -->
-        <div id="cc-home">
-          <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:10px;margin-bottom:14px;">
-            <div style="background:var(--sage-dark);border-radius:14px;padding:18px;color:var(--white);position:relative;overflow:hidden;">
-              <div style="position:absolute;right:-10px;bottom:-10px;width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,.06);"></div>
-              <div style="font-size:10px;opacity:.6;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Ganancia neta</div>
-              <div style="font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:400;" id="cc-ganancia">$0</div>
-              <div style="font-size:11px;opacity:.65;margin-top:4px;" id="cc-margen-txt">— margen</div>
-            </div>
-            <div style="background:#5A8A62;border-radius:14px;padding:16px;">
-              <div style="font-size:11px;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Ingresos</div>
-              <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#fff;" id="cc-ing-kpi">$0</div>
-            </div>
-            <div style="background:#C4786A;border-radius:14px;padding:16px;">
-              <div style="font-size:11px;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Egresos</div>
-              <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#fff;" id="cc-eg-kpi">$0</div>
-            </div>
-            <div style="background:#4A6A8A;border-radius:14px;padding:16px;">
-              <div style="font-size:11px;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Margen %</div>
-              <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#fff;" id="cc-margen-pct">0%</div>
-            </div>
-          </div>
-          <!-- Barra de acciones -->
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-            <div>
-              <select id="cc-mes-sel" style="width:auto;padding:8px 14px;font-size:12px;margin-top:0;border-radius:20px;border:.5px solid var(--cream-d);" onchange="filterCcByMes(this.value)">
-                <option value="todo">Todo el año</option>
-                <option>Enero 2026</option><option>Febrero 2026</option><option selected>Marzo 2026</option>
-                <option>Abril 2026</option><option>Mayo 2026</option><option>Junio 2026</option>
-                <option>Julio 2026</option><option>Agosto 2026</option><option>Septiembre 2026</option>
-                <option>Octubre 2026</option><option>Noviembre 2026</option><option>Diciembre 2026</option>
-              </select>
-            </div>
-            <div style="display:flex;gap:8px;">
-              <button onclick="exportar('financiero','pdf')" style="display:inline-flex;align-items:center;gap:5px;padding:8px 16px;background:var(--sage-dark);color:#fff;border:none;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="0.5" width="11" height="12" rx="1.5" stroke="#fff" stroke-width="1.2"/><path d="M3.5 6.5h6M3.5 9h4M3.5 4h3" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/></svg>PDF</button>
-              <button onclick="exportar('financiero','excel')" style="display:inline-flex;align-items:center;gap:5px;padding:8px 16px;background:var(--white);color:var(--text-m);border:.5px solid var(--cream-d);border-radius:20px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="0.5" width="11" height="12" rx="1.5" stroke="var(--text-m)" stroke-width="1.2"/><path d="M4 5h2M7.5 5h2M4 8h2M7.5 8h2M4 11h2M7.5 11h2" stroke="var(--text-m)" stroke-width="1.2" stroke-linecap="round"/></svg>Excel</button>
-            </div>
-          </div>
-          <!-- Punto de equilibrio -->
-          <div class="card" style="margin-bottom:12px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-              <div><div class="ct" style="margin:0;">Punto de equilibrio</div><div style="font-size:12px;color:var(--text-m);margin-top:3px;">Necesitás facturar al menos <b id="cc-pe-monto">$0</b> para cubrir tus costos</div></div>
-              <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:500;" id="cc-pe-pct">—</div>
-            </div>
-            <div style="height:8px;background:var(--cream-d);border-radius:4px;overflow:hidden;"><div id="cc-pe-bar" style="height:100%;border-radius:4px;background:var(--sage);width:0%;transition:width .6s;"></div></div>
-            <div style="font-size:11px;margin-top:5px;" id="cc-pe-label">Cargá ingresos y egresos para ver tu punto de equilibrio</div>
-          </div>
-          <!-- Gráfico cashflow -->
-          <div class="g2" style="margin-bottom:12px;">
-            <div class="card">
-              <div class="ct">Cash Flow</div>
-              <div style="position:relative;height:160px;"><canvas id="ccCashflowChart"></canvas></div>
-            </div>
-            <div class="card">
-              <div class="ct">Distribución de egresos</div>
-              <div style="position:relative;height:130px;"><canvas id="ccGastosDonut"></canvas></div>
-              <div id="cc-gastos-legend" style="margin-top:8px;"></div>
-            </div>
-          </div>
-          <!-- Insights -->
-          <div class="card" style="margin-bottom:12px;">
-            <div class="ct">💡 Insights</div>
-            <div id="cc-insights"></div>
-          </div>
-        </div>
-
-        <!-- Ingresos cliente -->
-        <div id="cc-ingresos" style="display:none;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-            <div style="font-family:'Cormorant Garamond',serif;font-size:20px;">Mis ingresos</div>
-            <div style="display:flex;gap:8px;">
-              <button onclick="exportar('ingresos','pdf')" style="display:inline-flex;align-items:center;gap:5px;padding:8px 16px;background:var(--sage-dark);color:#fff;border:none;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;"><svg width="12" height="12" viewBox="0 0 13 13" fill="none"><rect x="1" y="0.5" width="11" height="12" rx="1.5" stroke="#fff" stroke-width="1.2"/><path d="M3.5 6.5h6M3.5 9h4M3.5 4h3" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/></svg>PDF</button>
-              <button onclick="exportar('ingresos','excel')" style="display:inline-flex;align-items:center;gap:5px;padding:8px 16px;background:var(--white);color:var(--text-m);border:.5px solid var(--cream-d);border-radius:20px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;"><svg width="12" height="12" viewBox="0 0 13 13" fill="none"><rect x="1" y="0.5" width="11" height="12" rx="1.5" stroke="var(--text-m)" stroke-width="1.2"/><path d="M4 5h2M7.5 5h2M4 8h2M7.5 8h2" stroke="var(--text-m)" stroke-width="1.2" stroke-linecap="round"/></svg>Excel</button>
-              <button class="bp" onclick="openModal('newClientIngresoModal')">+ Registrar ingreso</button>
-            </div>
-          </div>
-          <div class="card"><div id="cc-ingresos-list"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin ingresos registrados.</div></div></div>
-        </div>
-
-        <!-- Egresos cliente -->
-        <div id="cc-egresos" style="display:none;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-            <div style="font-family:'Cormorant Garamond',serif;font-size:20px;">Mis egresos</div>
-            <div style="display:flex;gap:8px;">
-              <button onclick="exportar('egresos','pdf')" style="display:inline-flex;align-items:center;gap:5px;padding:8px 16px;background:var(--sage-dark);color:#fff;border:none;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;"><svg width="12" height="12" viewBox="0 0 13 13" fill="none"><rect x="1" y="0.5" width="11" height="12" rx="1.5" stroke="#fff" stroke-width="1.2"/><path d="M3.5 6.5h6M3.5 9h4M3.5 4h3" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/></svg>PDF</button>
-              <button onclick="exportar('egresos','excel')" style="display:inline-flex;align-items:center;gap:5px;padding:8px 16px;background:var(--white);color:var(--text-m);border:.5px solid var(--cream-d);border-radius:20px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;"><svg width="12" height="12" viewBox="0 0 13 13" fill="none"><rect x="1" y="0.5" width="11" height="12" rx="1.5" stroke="var(--text-m)" stroke-width="1.2"/><path d="M4 5h2M7.5 5h2M4 8h2M7.5 8h2" stroke="var(--text-m)" stroke-width="1.2" stroke-linecap="round"/></svg>Excel</button>
-              <button class="bp" onclick="openModal('newClientEgresoModal')">+ Registrar egreso</button>
-            </div>
-          </div>
-          <div class="card"><div id="cc-egresos-list"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin egresos registrados.</div></div></div>
+        <!-- Caja — módulo en construcción -->
+        <div style="display:flex;align-items:center;justify-content:center;min-height:240px;">
+          <span style="font-size:14px;color:var(--text-l);">Módulo en construcción</span>
         </div>
 
       </div>
@@ -2711,44 +2617,6 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
 </div>
 
 <!-- MODALES CLIENTE -->
-
-<div class="mo" id="newClientIngresoModal">
-  <div class="md" style="max-width:440px;padding:0;overflow:hidden;position:relative;">
-    <button class="mc2" onclick="closeModal('newClientIngresoModal')" style="position:absolute;top:14px;right:14px;z-index:2;color:#fff;background:rgba(255,255,255,.15);border:none;">×</button>
-    <div style="background:var(--topbar);padding:20px 24px 16px;">
-      <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">MB Gestión</div>
-      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:#fff;">Ingreso sin concepto</div>
-      <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:3px;">Para ingresos que no vienen de una venta registrada</div>
-    </div>
-    <div style="padding:20px 24px;">
-      <div class="fg"><label class="fl">Detalle</label><input type="text" class="fi" id="cli-ing-concepto" placeholder="Describí brevemente este ingreso..."/></div>
-      <div class="fg"><label class="fl">Categoría</label><select class="fi" id="cli-ing-categoria" style="margin-top:0;"><option>Cobro de cliente</option><option>Otro ingreso</option><option>Transferencia recibida</option><option>Venta puntual</option><option>Reembolso</option></select></div>
-      <div class="fg"><label class="fl">Monto</label><input type="number" class="fi" id="cli-ing-monto" placeholder="0"/></div>
-      <div class="fg"><label class="fl">Fecha</label><input type="date" id="cli-ing-fecha" style="margin-top:0;"/></div>
-      <div class="br2"><button class="bp" onclick="createClientIngreso()">Guardar</button><button class="bs" onclick="closeModal('newClientIngresoModal')">Cancelar</button></div>
-      <div class="saved-msg" id="cli-ing-saved">✓ Ingreso registrado</div>
-    </div>
-  </div>
-</div>
-
-<div class="mo" id="newClientEgresoModal">
-  <div class="md" style="max-width:440px;padding:0;overflow:hidden;position:relative;">
-    <button class="mc2" onclick="closeModal('newClientEgresoModal')" style="position:absolute;top:14px;right:14px;z-index:2;color:#fff;background:rgba(255,255,255,.15);border:none;">×</button>
-    <div style="background:var(--topbar);padding:20px 24px 16px;">
-      <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">MB Gestión</div>
-      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:#fff;">Nuevo egreso</div>
-      <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:3px;">Para gastos que no vienen de un proveedor registrado</div>
-    </div>
-    <div style="padding:20px 24px;">
-      <div class="fg"><label class="fl">Detalle</label><input type="text" class="fi" id="cli-eg-concepto" placeholder="Describí brevemente este gasto..."/></div>
-      <div class="fg"><label class="fl">Categoría</label><select class="fi" id="cli-eg-categoria" style="margin-top:0;"><option value="Servicios y herramientas">Servicios y herramientas</option><option value="Publicidad y marketing">Publicidad y marketing</option><option value="Insumos">Insumos</option><option value="Personal">Personal</option><option value="Alimentos">Alimentos</option><option value="Limpieza">Limpieza</option><option value="Viáticos">Viáticos</option><option value="Otros">Otros</option></select></div>
-      <div class="fg"><label class="fl">Monto</label><input type="number" class="fi" id="cli-eg-monto" placeholder="0"/></div>
-      <div class="fg"><label class="fl">Fecha</label><input type="date" class="fi" id="cli-eg-fecha"/></div>
-      <div class="br2"><button class="bp" onclick="createClientEgreso()">Guardar</button><button class="bs" onclick="closeModal('newClientEgresoModal')">Cancelar</button></div>
-      <div class="saved-msg" id="cli-eg-saved">✓ Egreso registrado</div>
-    </div>
-  </div>
-</div>
 
 <div class="mo" id="newClientTaskModal">
   <div class="md" style="max-width:440px;">
@@ -6291,15 +6159,6 @@ window.filterContByMes = function(mes) {
 
 window.filterKpiByMes = function(mes) { loadAdminData(); };
 
-window.filterCcByMes = function(mes) {
-  const ing = window._clientIngresos || [];
-  const eg  = window._clientEgresos  || [];
-  const filtIng = mes === 'todo' ? ing : ing.filter(i => (i.mes||'').includes(mes.split(' ')[0]));
-  const filtEg  = mes === 'todo' ? eg  : eg.filter(e => (e.mes||'').includes(mes.split(' ')[0]));
-  renderClientContabilidad(filtIng, filtEg);
-  renderClientIngresosList(filtIng);
-  renderClientEgresosList(filtEg);
-};
 
 window.filterCkByMes = function(mes) {
   const ing = window._clientIngresos || [];
@@ -6469,35 +6328,9 @@ function checkMembresiaBadge(semActual, totalSemanas) {
 // ===== MÓDULOS CLIENTE =====
 
 // Navegación contabilidad cliente
-window.showClientContView = function(view, btn) {
-  // Asegurar que ct-contabilidad esté visible
-  document.querySelectorAll('[id^="ct-"]').forEach(el => el.style.display = 'none');
-  const ct = document.getElementById('ct-contabilidad');
-  if(ct) ct.style.display = 'block';
-  ['home','ingresos','egresos'].forEach(v => {
-    const el = document.getElementById('cc-'+v);
-    if(el) el.style.display = 'none';
-  });
-  const target = document.getElementById('cc-'+view);
-  if(target) target.style.display = 'block';
-  // Activar botón en sub-nav Finanzas
-  document.querySelectorAll('#subnav-finanzas .subctab').forEach(b => b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-  else {
-    const map = {home:0,ingresos:1,egresos:2};
-    const subBtns = document.querySelectorAll('#subnav-finanzas .subctab');
-    if(subBtns[map[view]]) subBtns[map[view]].classList.add('active');
-  }
-  if(view==='home') {
-    setTimeout(()=>{ const ing=window._clientIngresos||[]; const eg=window._clientEgresos||[]; initClientCashflow(ing,eg); initClientGastosDonut(eg); },200);
-  }
-};
-
 // Cargar contabilidad cliente desde Firebase
 async function loadClientContabilidad() {
   if(!currentClientUID) return;
-  showSkeleton('cc-ingresos-list','list');
-  showSkeleton('cc-egresos-list','list');
   try {
     const [ingSnap, egSnap, cobrosSnap] = await Promise.all([
       getDocs(collection(db,'clientes',currentClientUID,'ingresos')),
@@ -6506,84 +6339,16 @@ async function loadClientContabilidad() {
     ]);
     const ingresosManuales = []; ingSnap.forEach(d=>{ const data=d.data(); if(!data.eliminado) ingresosManuales.push({id:d.id,...data,origen:'manual'}); });
     const egresos = []; egSnap.forEach(d=>{ const data=d.data(); if(!data.eliminado) egresos.push({id:d.id,...data}); });
-
-    // Cobros de comercial como ingresos
     const cobrosComoIngresos = [];
     cobrosSnap.forEach(d=>{
       const data = d.data();
       if(data.eliminado) return;
-      cobrosComoIngresos.push({
-        id:d.id,
-        concepto: data.concepto||'Cobro',
-        monto: parseFloat(data.monto)||0,
-        mes: data.fecha ? new Date(data.fecha+'T12:00:00').toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase()) : '',
-        fecha: data.fecha||'',
-        origen: 'comercial',
-        ...data
-      });
+      cobrosComoIngresos.push({id:d.id,concepto:data.concepto||'Cobro',monto:parseFloat(data.monto)||0,mes:data.fecha?new Date(data.fecha+'T12:00:00').toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase()):'',fecha:data.fecha||'',origen:'comercial',...data});
     });
-
     const ingresos = [...ingresosManuales, ...cobrosComoIngresos];
     window._clientIngresos = ingresos;
     window._clientEgresos = egresos;
-    renderClientContabilidad(ingresos, egresos);
-    renderClientIngresosList(ingresos);
-    renderClientEgresosList(egresos);
   } catch(e) { console.log(e); }
-}
-
-function renderClientContabilidad(ingresos, egresos) {
-  const totalIng = ingresos.reduce((a,i)=>a+(parseFloat(i.monto)||0),0);
-  const totalEg = egresos.reduce((a,e)=>a+(parseFloat(e.monto)||0),0);
-  const ganancia = totalIng - totalEg;
-  const margen = totalIng > 0 ? Math.round((ganancia/totalIng)*100) : 0;
-
-  const setEl = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
-  setEl('cc-ing-kpi', '$'+totalIng.toLocaleString('es-AR'));
-  setEl('cc-eg-kpi', '$'+totalEg.toLocaleString('es-AR'));
-  setEl('cc-ganancia', '$'+ganancia.toLocaleString('es-AR'));
-  setEl('cc-margen-txt', margen+'% margen neto');
-  setEl('cc-margen-pct', margen+'%');
-  // Banner KPIs
-  setEl('bn-fin-ing', '$'+totalIng.toLocaleString('es-AR'));
-  setEl('bn-fin-eg', '$'+totalEg.toLocaleString('es-AR'));
-  setEl('bn-fin-gan', '$'+ganancia.toLocaleString('es-AR'));
-  setEl('bn-fin-margen', margen+'%');
-  // KPIs tab
-  setEl('ck-ing', '$'+totalIng.toLocaleString('es-AR'));
-  setEl('ck-eg', '$'+totalEg.toLocaleString('es-AR'));
-  setEl('ck-gan', '$'+ganancia.toLocaleString('es-AR'));
-  setEl('ck-margen', margen+'%');
-
-  // Punto de equilibrio
-  const pe = totalEg;
-  const pePct = pe > 0 ? Math.min(Math.round((totalIng/pe)*100),200) : 0;
-  setEl('cc-pe-monto', '$'+pe.toLocaleString('es-AR'));
-  setEl('cc-pe-pct', pePct > 0 ? pePct+'%' : '—');
-  const bar = document.getElementById('cc-pe-bar');
-  const label = document.getElementById('cc-pe-label');
-  if(bar) { bar.style.width=Math.min(pePct,100)+'%'; bar.style.background=pePct>=100?'var(--ok)':pePct>=70?'var(--warn)':'var(--err)'; }
-  if(label) {
-    if(pe===0) label.textContent='Cargá egresos para ver tu punto de equilibrio';
-    else if(pePct>=100) { label.textContent=`✅ Superás tu punto de equilibrio — facturás un ${pePct}% de tus costos`; label.style.color='var(--ok)'; }
-    else { label.textContent=`⚠️ Estás al ${pePct}% — te faltan $${(pe-totalIng).toLocaleString('es-AR')} para cubrir costos`; label.style.color='var(--warn)'; }
-  }
-
-  // Insights
-  const insights = [];
-  if(margen>=70) insights.push({i:'▲',t:`Tu margen es del ${margen}%. ¡Excelente rentabilidad!`});
-  else if(margen>=40) insights.push({i:'·',t:`Tu margen es del ${margen}%. Negocio sano.`});
-  else if(totalIng===0) insights.push({i:'·',t:'Registrá tus ingresos y egresos para ver el análisis.'});
-  else insights.push({i:'·',t:`Tu margen es del ${margen}%. Podés mejorar reduciendo egresos.`});
-  if(totalEg > totalIng*0.6 && totalIng>0) insights.push({i:'!',t:'Tus egresos representan más del 60% de tus ingresos.'});
-  const insEl = document.getElementById('cc-insights');
-  if(insEl) insEl.innerHTML = insights.map(i=>`<div style="display:flex;gap:10px;padding:9px 12px;background:var(--cream);border-radius:9px;margin-bottom:6px;"><span>${i.i}</span><span style="font-size:13px;color:var(--text-m);">${i.t}</span></div>`).join('');
-
-  setTimeout(() => {
-    initClientCashflow(ingresos, egresos);
-    initClientGastosDonut(egresos);
-    initCkChart(ingresos, egresos);
-  }, 200);
 }
 
 // ─── INICIO DASHBOARD ───
@@ -7046,85 +6811,6 @@ async function renderOnboardingChecklist() {
 }
 window.renderOnboardingChecklist = renderOnboardingChecklist;
 
-function renderClientIngresosList(ingresos) {
-  const el = document.getElementById('cc-ingresos-list');
-  if(!el) return;
-  if(ingresos.length===0){el.innerHTML=createEmptyState('ingreso','Sin ingresos registrados','Registrá tu primer ingreso para empezar a trackear tus finanzas','+ Nuevo ingreso',"openModal('newClientIngresoModal')");return;}
-  const total = ingresos.reduce((a,i)=>a+(parseFloat(i.monto)||0),0);
-  const iconUp = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5A8A62" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>`;
-  const btnStyle = 'width:28px;height:28px;border-radius:7px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;';
-  const editSvg = `<svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-  const delSvg  = `<svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg>`;
-  el.innerHTML = ingresos.map(i=>{
-    const isComercial = i.origen === 'comercial';
-    const nombre = isComercial ? (i.cliente||i.concepto||'—') : (i.categoria||i.concepto||'—');
-    const badge = isComercial
-      ? `<span style="background:#E6EEF5;color:#2A4A6A;font-size:10px;font-weight:500;padding:2px 7px;border-radius:20px;">Comercial</span>`
-      : `<span style="background:var(--cream);color:var(--text-l);font-size:10px;font-weight:500;padding:2px 7px;border-radius:20px;">Manual</span>`;
-    const fecha = i.fecha || (i.mes||'');
-    const actionStyle = isComercial ? `${btnStyle}opacity:0.35;cursor:default;pointer-events:none;` : `${btnStyle}cursor:pointer;`;
-    const editFn  = isComercial ? '' : `onclick="editClientIngreso('${i.id}')"`;
-    const delFn   = isComercial ? '' : `onclick="deleteClientIngreso('${i.id}')"`;
-    return `<div style="display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:.5px solid var(--cream-d);">
-      <div style="width:42px;height:42px;background:#EDF4EE;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${iconUp}</div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:15px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${nombre}</div>
-        <div style="display:flex;align-items:center;gap:5px;margin-top:3px;flex-wrap:wrap;">
-          <span style="font-size:12px;color:var(--text-l);">${fecha}</span>
-          ${badge}
-        </div>
-      </div>
-      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
-        <span style="font-size:16px;font-weight:500;color:var(--ok);">$${(parseFloat(i.monto)||0).toLocaleString('es-AR')}</span>
-        <button title="Editar" ${editFn} style="${actionStyle}">${editSvg}</button>
-        <button title="Eliminar" ${delFn} style="${actionStyle}">${delSvg}</button>
-      </div>
-    </div>`;
-  }).join('') +
-    `<div style="padding:10px 12px;display:flex;justify-content:space-between;font-size:12px;background:var(--cream);border-radius:0 0 10px 10px;margin-top:4px;"><span style="color:var(--text-l);">Total</span><span style="font-weight:500;color:var(--ok);">$${total.toLocaleString('es-AR')}</span></div>`;
-}
-
-function renderClientEgresosList(egresos) {
-  const el = document.getElementById('cc-egresos-list');
-  if(!el) return;
-  if(egresos.length===0){el.innerHTML=createEmptyState('egreso','Sin egresos registrados','Cargá tus gastos para conocer tu ganancia real','+ Nuevo egreso',"openModal('newClientEgresoModal')");return;}
-  const total = egresos.reduce((a,e)=>a+(parseFloat(e.monto)||0),0);
-  const iconDown = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C4786A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M19 12l-7 7-7-7"/></svg>`;
-  const btnStyle = 'width:28px;height:28px;border-radius:7px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;';
-  const editSvg = `<svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-  const delSvg  = `<svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg>`;
-  el.innerHTML = egresos.map(e=>{
-    const isAuto = !!e.proveedorId;
-    const provCat = isAuto ? ((window._proveedores||[]).find(p=>p.id===e.proveedorId)?.categoria || 'Proveedor') : null;
-    const nombre = isAuto ? (e.proveedorNombre||e.concepto||'—') : (e.categoria||e.concepto||'—');
-    const opMatch = (e.concepto||'').match(/OP-\d+/);
-    const ref = opMatch ? `<span style="font-size:12px;color:var(--text-l);">· ${opMatch[0]}</span>` : '';
-    const badge = isAuto
-      ? `<span style="background:#EDF0EA;color:#3A6A42;font-size:10px;font-weight:500;padding:2px 7px;border-radius:20px;">${provCat}</span>`
-      : `<span style="background:var(--cream);color:var(--text-l);font-size:10px;font-weight:500;padding:2px 7px;border-radius:20px;">Manual</span>`;
-    const fecha = e.fecha || (e.mes||'');
-    const actionStyle = isAuto ? `${btnStyle}opacity:0.35;cursor:default;pointer-events:none;` : `${btnStyle}cursor:pointer;`;
-    const editFn = isAuto ? '' : `onclick="editClientEgreso('${e.id}')"`;
-    const delFn  = isAuto ? '' : `onclick="deleteClientEgreso('${e.id}')"`;
-    return `<div style="display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:.5px solid var(--cream-d);">
-      <div style="width:42px;height:42px;background:#F9EDE9;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${iconDown}</div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:15px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${nombre}</div>
-        <div style="display:flex;align-items:center;gap:5px;margin-top:3px;flex-wrap:wrap;">
-          <span style="font-size:12px;color:var(--text-l);">${fecha}</span>
-          ${ref}
-          ${badge}
-        </div>
-      </div>
-      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
-        <span style="font-size:16px;font-weight:500;color:var(--err);">-$${(parseFloat(e.monto)||0).toLocaleString('es-AR')}</span>
-        <button title="Editar" ${editFn} style="${actionStyle}">${editSvg}</button>
-        <button title="Eliminar" ${delFn} style="${actionStyle}">${delSvg}</button>
-      </div>
-    </div>`;
-  }).join('') +
-    `<div style="padding:10px 12px;display:flex;justify-content:space-between;font-size:12px;background:var(--cream);border-radius:0 0 10px 10px;margin-top:4px;"><span style="color:var(--text-l);">Total</span><span style="font-weight:500;color:var(--err);">-$${total.toLocaleString('es-AR')}</span></div>`;
-}
 
 function renderClientProveedores() {
   const egresos = window._clientEgresos||[];
@@ -7497,105 +7183,8 @@ function renderCkRankingClientes(ingresos) {
   </div>`;
 }
 
-// Crear ingreso cliente
-window.createClientIngreso = async function() {
-  if(!currentClientUID) { alert('Error: no hay cliente activo.'); return; }
-  const concepto = document.getElementById('cli-ing-concepto').value.trim();
-  const monto = document.getElementById('cli-ing-monto').value;
-  if(!concepto){ alert('Ingresá un detalle'); return; }
-  if(!monto){ alert('Ingresá un monto'); return; }
-  const fecha = document.getElementById('cli-ing-fecha')?.value||'';
-  const mes = fecha ? new Date(fecha+'T12:00:00').toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase()) : '';
-  const data = {
-    concepto,
-    categoria: document.getElementById('cli-ing-categoria')?.value || 'Otro ingreso',
-    monto: parseFloat(monto)||0,
-    fecha,
-    mes,
-    origen: 'manual',
-    creadoEn: new Date().toISOString()
-  };
-  try {
-    if(window._editingIngresoid) {
-      await updateDoc(doc(db,'clientes',currentClientUID,'ingresos',window._editingIngresoid), data);
-      window._editingIngresoid = null;
-    } else {
-      await addDoc(collection(db,'clientes',currentClientUID,'ingresos'), data);
-    }
-    const s=document.getElementById('cli-ing-saved'); if(s) s.style.display='block';
-    setTimeout(async()=>{ if(s) s.style.display='none'; closeModal('newClientIngresoModal'); await loadClientContabilidad(); },1500);
-  } catch(e){ alert('Error: '+e.message); }
-};
 
-// Crear egreso cliente
-window.createClientEgreso = async function() {
-  if(!currentClientUID) { alert('Error: no hay cliente activo. Intentá recargar.'); return; }
-  const concepto = document.getElementById('cli-eg-concepto').value.trim();
-  const monto = document.getElementById('cli-eg-monto').value;
-  if(!concepto){ alert('Ingresá un concepto'); return; }
-  if(!monto){ alert('Ingresá un monto'); return; }
-  const fecha = document.getElementById('cli-eg-fecha')?.value||'';
-  const mes = fecha ? new Date(fecha+'T12:00:00').toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase()) : '';
-  const data = {
-    concepto,
-    categoria: document.getElementById('cli-eg-categoria')?.value || 'Otros',
-    monto: parseFloat(monto)||0,
-    fecha,
-    mes,
-    origen: 'manual',
-    creadoEn: new Date().toISOString()
-  };
-  try {
-    if(window._editingEgresoid) {
-      await updateDoc(doc(db,'clientes',currentClientUID,'egresos',window._editingEgresoid), data);
-      window._editingEgresoid = null;
-    } else {
-      await addDoc(collection(db,'clientes',currentClientUID,'egresos'), data);
-    }
-    const s=document.getElementById('cli-eg-saved'); if(s) s.style.display='block';
-    setTimeout(async()=>{ if(s) s.style.display='none'; closeModal('newClientEgresoModal'); await loadClientContabilidad(); },1500);
-  } catch(e){ alert('Error al guardar: '+e.message); }
-};
 
-// Editar/eliminar ingreso manual
-window.editClientIngreso = function(id) {
-  const ing = (window._clientIngresos||[]).find(i=>i.id===id);
-  if(!ing||ing.origen==='comercial') return;
-  document.getElementById('cli-ing-concepto').value = ing.concepto||'';
-  document.getElementById('cli-ing-monto').value = ing.monto||'';
-  document.getElementById('cli-ing-fecha').value = ing.fecha||'';
-  window._editingIngresoid = id;
-  openModal('newClientIngresoModal');
-};
-
-window.deleteClientIngreso = async function(id) {
-  showConfirm('¿Eliminar este ingreso?', async()=>{
-    try{
-      await updateDoc(doc(db,'clientes',currentClientUID,'ingresos',id), {eliminado:true, eliminadoEn:new Date().toISOString()});
-      await loadClientContabilidad();
-    }catch(e){ alert('Error: '+e.message); }
-  },'Eliminar ingreso');
-};
-
-// Editar/eliminar egreso manual
-window.editClientEgreso = function(id) {
-  const eg = (window._clientEgresos||[]).find(e=>e.id===id);
-  if(!eg||eg.proveedorId) return;
-  document.getElementById('cli-eg-concepto').value = eg.concepto||'';
-  document.getElementById('cli-eg-monto').value = eg.monto||'';
-  document.getElementById('cli-eg-fecha').value = eg.fecha||'';
-  window._editingEgresoid = id;
-  openModal('newClientEgresoModal');
-};
-
-window.deleteClientEgreso = async function(id) {
-  showConfirm('¿Eliminar este egreso?', async()=>{
-    try{
-      await updateDoc(doc(db,'clientes',currentClientUID,'egresos',id), {eliminado:true, eliminadoEn:new Date().toISOString()});
-      await loadClientContabilidad();
-    }catch(e){ alert('Error: '+e.message); }
-  },'Eliminar egreso');
-};
 async function loadClientTareas() {
   if(!currentClientUID) return;
   try {
@@ -12906,18 +12495,6 @@ window.openModal = function(id) {
       const sel = document.getElementById(selId);
       if(sel) sel.innerHTML = '<option value="">Sin cliente específico</option>' + clients.map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('');
     });
-  }
-  if(id === 'newClientEgresoModal') {
-    poblarMeses('cli-eg-mes');
-    const fechaEl = document.getElementById('cli-eg-fecha');
-    if(fechaEl) fechaEl.value = new Date().toISOString().split('T')[0];
-    window._editingEgresoid = null;
-  }
-  if(id === 'newClientIngresoModal') {
-    poblarMeses('cli-ing-mes');
-    const fechaEl = document.getElementById('cli-ing-fecha');
-    if(fechaEl) fechaEl.value = new Date().toISOString().split('T')[0];
-    window._editingIngresoid = null;
   }
   if(id === 'newCobroClienteModal') { loadCcBalance(); }
   if(id === 'miCuentaModal') { openModal_miCuentaModal_extra(); }
