@@ -6722,7 +6722,7 @@ function renderCajaChips(cuentas, movs) {
       if(m.cuentaHacia) saldos[m.cuentaHacia] = (saldos[m.cuentaHacia]||0) + (parseFloat(m.monto)||0);
     }
   });
-  const dotColors = ['#4a5e4d','#3B6D11','#185FA5','#7a6a5a'];
+  const tipoColor = {efectivo:'#4a5e4d', mp:'#185FA5', banco:'#B45309'};
   const activo = _cajaCuentaFiltro;
 
   const chipTodas = `<div class="caja-chip${activo===null?' caja-chip-activo':''}" style="cursor:pointer;animation:fadeUp .3s ease both;" onclick="cajaFiltrarCuenta(null,this)">
@@ -6731,11 +6731,12 @@ function renderCajaChips(cuentas, movs) {
 
   const chipsCuentas = cuentasUnicas.map((c,i) => {
     const s = saldos[c.nombre]||0;
-    const color = dotColors[i%dotColors.length];
+    const color = tipoColor[c.tipo] || '#888';
     const sel = activo === c.nombre;
-    return `<div class="caja-chip${sel?' caja-chip-activo':''}" style="cursor:pointer;animation:fadeUp .3s ease both;animation-delay:${(i+1)*60}ms;" onclick="cajaFiltrarCuenta('${c.nombre}',this)">
+    const nombreSafe = (c.nombre||'Sin nombre').replace(/'/g,'&#39;');
+    return `<div class="caja-chip${sel?' caja-chip-activo':''}" style="cursor:pointer;animation:fadeUp .3s ease both;animation-delay:${(i+1)*60}ms;" data-cuenta="${nombreSafe}" onclick="cajaFiltrarCuenta(this.dataset.cuenta,this)">
       <div style="width:8px;height:8px;border-radius:50%;background:${sel?'white':color};flex-shrink:0;"></div>
-      <span style="color:${sel?'white':'#888'};">${c.nombre}</span>
+      <span style="color:${sel?'white':'#888'};">${c.nombre||'Sin nombre'}</span>
       <span style="font-weight:650;color:${sel?'white':'#1a1a1a'};">$${Math.round(s).toLocaleString('es-AR')}</span>
     </div>`;
   }).join('');
@@ -6757,18 +6758,18 @@ window.cajaFiltrarCuenta = function(nombre, _el) {
     // Para evitar otra query, re-render inline actualizando clases y colores
     const chips = cuentasContainer.querySelectorAll('.caja-chip');
     chips.forEach(ch => {
-      const onclick = ch.getAttribute('onclick') || '';
-      const match = onclick.match(/cajaFiltrarCuenta\('([^']+)'/);
-      const chipNombre = match ? match[1] : null;
+      const chipNombre = ch.dataset.cuenta || null;
       const sel = _cajaCuentaFiltro === chipNombre;
       ch.classList.toggle('caja-chip-activo', sel || (_cajaCuentaFiltro === null && chipNombre === null));
       const dot = ch.querySelector('div[style*="border-radius:50%"]');
       const spans = ch.querySelectorAll('span');
       if(chipNombre && dot && spans.length >= 2) {
-        const dotColors = ['#4a5e4d','#3B6D11','#185FA5','#7a6a5a'];
-        const idx = Array.from(chips).indexOf(ch) - 1;
-        const color = dotColors[idx%dotColors.length];
-        dot.style.background = sel ? 'white' : color;
+        const tipoColorMap = {efectivo:'#4a5e4d', mp:'#185FA5', banco:'#B45309'};
+        const dotOrigColor = dot.dataset.color || dot.style.background;
+        // Restore original color from data attribute if available, else keep current
+        const color = dot.dataset.origColor || dotOrigColor;
+        if(!dot.dataset.origColor && !sel) dot.dataset.origColor = dot.style.background;
+        dot.style.background = sel ? 'white' : (dot.dataset.origColor || '#888');
         spans[0].style.color = sel ? 'white' : '#888';
         spans[1].style.color = sel ? 'white' : '#1a1a1a';
         spans[1].style.fontWeight = sel ? '650' : '650';
