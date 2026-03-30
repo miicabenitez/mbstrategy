@@ -476,8 +476,12 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
 .mdv-btn-icon{height:32px;border-radius:8px;border:1.5px solid #ece9e3;background:white;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#999;transition:all .12s;padding:0 10px;gap:5px;font-size:12px;font-weight:600;font-family:inherit;}
 .mdv-btn-icon:hover{background:#f5f4f0;color:#333;border-color:#ddd;}
 .mdv-btn-icon.danger:hover{background:#fdf0ec;border-color:#f0c4b4;color:#993C1D;}
-.mdv-fv{font-size:14px;font-weight:500;color:#1a1a1a;padding:9px 13px;background:#fafafa;border:1.5px solid #f0efeb;border-radius:9px;min-height:40px;display:flex;align-items:center;}
+.mdv-fv{font-size:14px;font-weight:500;color:#1a1a1a;padding:9px 13px;background:#fafafa;border:1.5px solid #f0efeb;border-radius:9px;min-height:40px;display:flex;align-items:center;user-select:none;pointer-events:none;}
 .mdv-fv.verde{color:#3B6D11;font-weight:650;}.mdv-fv.rojo{color:#993C1D;font-weight:650;}
+.cj-input{width:100%;padding:9px 13px;border:1.5px solid #c8d0c9;border-radius:9px;font-size:14px;color:#1a1a1a;background:white;outline:none;font-family:inherit;transition:border .15s,box-shadow .15s;box-sizing:border-box;}
+.cj-input:focus{border-color:#4a5e4d;box-shadow:0 0 0 3px rgba(74,94,77,.1);}
+select.cj-input{cursor:pointer;}
+textarea.cj-input{resize:none;}
 </style>
 </head>
 <body>
@@ -6740,7 +6744,7 @@ function _mdvBuildBody(m, editing) {
   const conceptosFiltrados = _mdvOverlayConceptos.filter(c=>c.tipo===m.tipo);
   const conceptosOpts = conceptosFiltrados.map(c=>`<option value="${c.nombre}"${c.nombre===m.concepto?' selected':''}>${c.nombre}</option>`).join('');
 
-  const montoFmt = (v)=>'$'+parseFloat(v||0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const montoFmt = (v)=>'$'+Math.round(parseFloat(v||0)).toLocaleString('es-AR');
   const montoColor = isEgreso?'rojo':(m.tipo==='ingreso'?'verde':'');
 
   let html = '';
