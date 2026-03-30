@@ -1586,9 +1586,14 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
             <span id="caja-mes-label" style="font-size:14px;font-weight:650;color:#1a1a1a;min-width:128px;text-align:center;">—</span>
             <button class="caja-nav-btn" id="caja-mes-sig" onclick="cajaMesSiguiente()" style="opacity:.3;">&#8250;</button>
           </div>
-          <button onclick="cajaNuevoMovimiento()" style="height:32px;padding:0 14px;background:#4a5e4d;color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Nuevo
-          </button>
+          <div style="display:flex;gap:6px;">
+            <button onclick="cajaVentaRapida()" style="height:32px;padding:0 14px;background:#4a5e4d;color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Venta caja
+            </button>
+            <button onclick="cajaNuevoMovimiento()" style="height:32px;padding:0 14px;background:white;color:#4a5e4d;border:1.5px solid #4a5e4d;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Movimiento
+            </button>
+          </div>
         </div>
 
         <!-- KPI cards -->
@@ -6457,10 +6462,13 @@ async function loadCajaModule() {
       ]);
     }
     if(conceptosSnap.empty) {
+      const ingresosBase = ['Cobro de cliente','Venta caja','Venta cliente','Apertura de caja','Sobrante','Otro'];
+      const egresosBase  = ['Proveedor','Cierre de caja','Faltante','Otro'];
+      const egresosUser  = ['Alquiler','Sueldos','Insumos','Gastos bancarios','Comisión MP','Servicios'];
       await Promise.all([
-        addDoc(collection(db,'clientes',uid,'conceptos'), {nombre:'Ingreso', tipo:'ingreso', sistema:true}),
-        addDoc(collection(db,'clientes',uid,'conceptos'), {nombre:'Egreso', tipo:'egreso', sistema:true}),
-        addDoc(collection(db,'clientes',uid,'conceptos'), {nombre:'Gasto general', tipo:'egreso', sistema:false})
+        ...ingresosBase.map(nombre => addDoc(collection(db,'clientes',uid,'conceptos'), {nombre, tipo:'ingreso', sistema:true})),
+        ...egresosBase.map(nombre  => addDoc(collection(db,'clientes',uid,'conceptos'), {nombre, tipo:'egreso',  sistema:true})),
+        ...egresosUser.map(nombre  => addDoc(collection(db,'clientes',uid,'conceptos'), {nombre, tipo:'egreso',  sistema:false}))
       ]);
     }
     // 2. Reload cuentas (pueden haber sido recién creadas)
@@ -6468,14 +6476,13 @@ async function loadCajaModule() {
     const cuentas = [];
     cuentasSnap2.forEach(d => cuentas.push({id:d.id,...d.data()}));
     cuentas.sort((a,b)=>(a.orden||0)-(b.orden||0));
-    // 3. Cargar movimientos del mes seleccionado
+    // 3. Cargar todos los movimientos (para saldo histórico de chips)
     const mes = cajaMesDesde(window._cajaMesOffset||0);
     const movsSnap = await getDocs(collection(db,'clientes',uid,'movimientos'));
-    const movs = [];
-    movsSnap.forEach(d => {
-      const data = d.data();
-      if(!data.eliminado && data.mes === mes.stored) movs.push({id:d.id,...data});
-    });
+    const todosMovs = [];
+    movsSnap.forEach(d => { const data = d.data(); if(!data.eliminado) todosMovs.push({id:d.id,...data}); });
+    // Filtrar por mes para tabla y KPIs
+    const movs = todosMovs.filter(m => m.mes === mes.stored);
     movs.sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
     window._cajaMovimientos = movs;
     // 4. Actualizar etiquetas de mes
@@ -6487,7 +6494,7 @@ async function loadCajaModule() {
     if(sigBtn) sigBtn.style.opacity = (window._cajaMesOffset||0) >= 0 ? '.3' : '1';
     // 5. Renderizar
     renderCajaKPIs(movs);
-    renderCajaChips(cuentas, movs);
+    renderCajaChips(cuentas, todosMovs);
     renderCajaTable(movs);
     // Animación staggered de cards
     document.querySelectorAll('#ct-contabilidad .dash-card').forEach((c,i) => {
@@ -6594,6 +6601,9 @@ window.cajaMostrarMovimiento = function(id) {
 };
 window.cajaNuevoMovimiento = function() {
   console.log('nuevo movimiento');
+};
+window.cajaVentaRapida = function() {
+  console.log('venta rapida');
 };
 window.showClientContView = function(view, btn) {
   loadCajaModule();
