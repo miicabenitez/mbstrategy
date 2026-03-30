@@ -402,6 +402,24 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
 @keyframes wsStep{from{opacity:0;transform:translateX(-14px);}to{opacity:1;transform:translateX(0);}}
 @keyframes wsBtnPulse{0%,100%{box-shadow:0 0 0 0 rgba(74,94,77,0);}50%{box-shadow:0 0 0 9px rgba(74,94,77,.14);}}
 #ws-btn-start:hover{background-position:0% 0 !important;}
+/* ── CAJA MODULE ── */
+.caja-badge-ingreso{background:#edf7ed;color:#3B6D11;font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;display:inline-block;}
+.caja-badge-egreso{background:#fdf0ec;color:#993C1D;font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;display:inline-block;}
+.caja-badge-transfer{background:#e6f1fb;color:#185FA5;font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;display:inline-block;}
+.caja-chip{display:flex;align-items:center;gap:8px;background:#f5f4f0;border-radius:20px;padding:6px 14px 6px 10px;font-size:12px;}
+.caja-nav-btn{width:28px;height:28px;border-radius:8px;border:1.5px solid #ece9e3;background:white;cursor:pointer;font-size:16px;color:#888;display:flex;align-items:center;justify-content:center;font-family:inherit;transition:all .12s;}
+.caja-nav-btn:hover{background:#f5f4f0;color:#333;}
+.caja-table{width:100%;border-collapse:collapse;table-layout:auto;}
+.caja-table col.c-fecha{width:72px;}.caja-table col.c-concepto{width:180px;}.caja-table col.c-movimiento{width:120px;}
+.caja-table col.c-cuenta{width:150px;}.caja-table col.c-entrada,.caja-table col.c-salida,.caja-table col.c-saldo{width:100px;}
+.caja-table thead tr{background:#fafafa;border-bottom:1px solid #f0efeb;}
+.caja-table th{font-size:10px;font-weight:700;color:#bbb;letter-spacing:.06em;padding:10px 0;text-align:left;white-space:nowrap;}
+.caja-table th.r{text-align:right;}.caja-table td.r{text-align:right;}
+.caja-table th:first-child,.caja-table td:first-child{padding-left:24px;padding-right:16px;}
+.caja-table th:last-child,.caja-table td:last-child{padding-right:24px;}
+.caja-table tbody tr{border-bottom:1px solid #f5f4f0;cursor:pointer;transition:background .12s;}
+.caja-table tbody tr:last-child{border-bottom:none;}.caja-table tbody tr:hover{background:#fafafa;}
+.caja-table td{padding:14px 0;vertical-align:middle;white-space:nowrap;}
 </style>
 </head>
 <body>
@@ -1558,12 +1576,66 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
 
       </div>
 
-      <!-- CONTABILIDAD CLIENTE -->
+      <!-- CONTABILIDAD CLIENTE — CAJA -->
       <div id="ct-contabilidad" style="display:none;">
 
-        <!-- Caja — módulo en construcción -->
-        <div style="display:flex;align-items:center;justify-content:center;min-height:240px;">
-          <span style="font-size:14px;color:var(--text-l);">Módulo en construcción</span>
+        <!-- Header: mes nav + botón nuevo -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <button class="caja-nav-btn" onclick="cajaMesAnterior()">&#8249;</button>
+            <span id="caja-mes-label" style="font-size:14px;font-weight:650;color:#1a1a1a;min-width:128px;text-align:center;">—</span>
+            <button class="caja-nav-btn" id="caja-mes-sig" onclick="cajaMesSiguiente()" style="opacity:.3;">&#8250;</button>
+          </div>
+          <button onclick="cajaNuevoMovimiento()" style="height:32px;padding:0 14px;background:#4a5e4d;color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Nuevo
+          </button>
+        </div>
+
+        <!-- KPI cards -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;">
+          <div class="dash-card" style="background:white;border-radius:14px;padding:16px 18px;box-shadow:0 2px 8px rgba(0,0,0,.05);">
+            <div style="font-size:10px;font-weight:700;color:#bbb;letter-spacing:.06em;margin-bottom:6px;">ENTRADAS</div>
+            <div id="caja-kpi-entradas" style="font-size:22px;font-weight:700;color:#3B6D11;">—</div>
+          </div>
+          <div class="dash-card" style="background:white;border-radius:14px;padding:16px 18px;box-shadow:0 2px 8px rgba(0,0,0,.05);">
+            <div style="font-size:10px;font-weight:700;color:#bbb;letter-spacing:.06em;margin-bottom:6px;">SALIDAS</div>
+            <div id="caja-kpi-salidas" style="font-size:22px;font-weight:700;color:#993C1D;">—</div>
+          </div>
+          <div class="dash-card" style="background:white;border-radius:14px;padding:16px 18px;box-shadow:0 2px 8px rgba(0,0,0,.05);">
+            <div style="font-size:10px;font-weight:700;color:#bbb;letter-spacing:.06em;margin-bottom:6px;">RESULTADO</div>
+            <div style="display:flex;align-items:baseline;gap:1px;">
+              <span id="caja-kpi-resultado-signo" style="font-size:18px;font-weight:700;color:#993C1D;"></span>
+              <div id="caja-kpi-resultado" style="font-size:22px;font-weight:700;color:#1a1a1a;">—</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chips saldo por cuenta -->
+        <div id="caja-chips" style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;"></div>
+
+        <!-- Tabla libro de caja -->
+        <div style="background:white;border-radius:18px;box-shadow:0 4px 24px rgba(0,0,0,.06);overflow:hidden;">
+          <div style="padding:16px 24px 12px;border-bottom:1px solid #f0efeb;display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:14px;font-weight:650;color:#1a1a1a;">Libro de caja</span>
+            <span id="caja-mes-badge" style="font-size:11px;font-weight:600;color:#888;background:#f5f4f0;padding:4px 10px;border-radius:20px;">—</span>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="caja-table">
+              <colgroup>
+                <col class="c-fecha"><col class="c-concepto"><col class="c-movimiento">
+                <col class="c-cuenta"><col class="c-entrada"><col class="c-salida"><col class="c-saldo">
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>FECHA</th><th>CONCEPTO</th><th>MOVIMIENTO</th><th>CUENTA</th>
+                  <th class="r">ENTRADA</th><th class="r">SALIDA</th><th class="r">SALDO</th>
+                </tr>
+              </thead>
+              <tbody id="caja-tbody">
+                <tr><td colspan="7" style="text-align:center;padding:36px;color:#bbb;font-size:13px;">Cargando...</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
       </div>
@@ -6350,6 +6422,182 @@ async function loadClientContabilidad() {
     window._clientEgresos = egresos;
   } catch(e) { console.log(e); }
 }
+
+// ─── CAJA MODULE ───
+window._cajaMesOffset = 0;
+
+function cajaMesDesde(offset) {
+  const d = new Date();
+  d.setDate(1);
+  d.setMonth(d.getMonth() + offset);
+  const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const nombre = meses[d.getMonth()];
+  const anio = d.getFullYear();
+  return {
+    label: nombre.charAt(0).toUpperCase()+nombre.slice(1)+' '+anio,
+    stored: nombre.charAt(0).toUpperCase()+nombre.slice(1)+' de '+anio
+  };
+}
+
+async function loadCajaModule() {
+  if(!currentClientUID) return;
+  const uid = currentClientUID;
+  const tbody = document.getElementById('caja-tbody');
+  if(tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:28px;color:#bbb;font-size:13px;">Cargando...</td></tr>';
+  try {
+    // 1. Auto-init cuentas y conceptos si están vacíos
+    const [cuentasSnap, conceptosSnap] = await Promise.all([
+      getDocs(collection(db,'clientes',uid,'cuentas')),
+      getDocs(collection(db,'clientes',uid,'conceptos'))
+    ]);
+    if(cuentasSnap.empty) {
+      await Promise.all([
+        addDoc(collection(db,'clientes',uid,'cuentas'), {nombre:'Efectivo', saldo:0, orden:0}),
+        addDoc(collection(db,'clientes',uid,'cuentas'), {nombre:'Mercado Pago', saldo:0, orden:1})
+      ]);
+    }
+    if(conceptosSnap.empty) {
+      await Promise.all([
+        addDoc(collection(db,'clientes',uid,'conceptos'), {nombre:'Ingreso', tipo:'ingreso', sistema:true}),
+        addDoc(collection(db,'clientes',uid,'conceptos'), {nombre:'Egreso', tipo:'egreso', sistema:true}),
+        addDoc(collection(db,'clientes',uid,'conceptos'), {nombre:'Gasto general', tipo:'egreso', sistema:false})
+      ]);
+    }
+    // 2. Reload cuentas (pueden haber sido recién creadas)
+    const cuentasSnap2 = await getDocs(collection(db,'clientes',uid,'cuentas'));
+    const cuentas = [];
+    cuentasSnap2.forEach(d => cuentas.push({id:d.id,...d.data()}));
+    cuentas.sort((a,b)=>(a.orden||0)-(b.orden||0));
+    // 3. Cargar movimientos del mes seleccionado
+    const mes = cajaMesDesde(window._cajaMesOffset||0);
+    const movsSnap = await getDocs(collection(db,'clientes',uid,'movimientos'));
+    const movs = [];
+    movsSnap.forEach(d => {
+      const data = d.data();
+      if(!data.eliminado && data.mes === mes.stored) movs.push({id:d.id,...data});
+    });
+    movs.sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
+    window._cajaMovimientos = movs;
+    // 4. Actualizar etiquetas de mes
+    const mesLabel = document.getElementById('caja-mes-label');
+    if(mesLabel) mesLabel.textContent = mes.label;
+    const mesBadge = document.getElementById('caja-mes-badge');
+    if(mesBadge) mesBadge.textContent = mes.label;
+    const sigBtn = document.getElementById('caja-mes-sig');
+    if(sigBtn) sigBtn.style.opacity = (window._cajaMesOffset||0) >= 0 ? '.3' : '1';
+    // 5. Renderizar
+    renderCajaKPIs(movs);
+    renderCajaChips(cuentas, movs);
+    renderCajaTable(movs);
+    // Animación staggered de cards
+    document.querySelectorAll('#ct-contabilidad .dash-card').forEach((c,i) => {
+      c.classList.remove('in');
+      setTimeout(()=>c.classList.add('in'), 60*i);
+    });
+  } catch(e) { console.log('loadCajaModule:', e); }
+}
+
+function renderCajaKPIs(movs) {
+  let entradas = 0, salidas = 0;
+  movs.forEach(m => {
+    const monto = parseFloat(m.monto)||0;
+    if(m.tipo==='ingreso') entradas += monto;
+    else if(m.tipo==='egreso') salidas += monto;
+  });
+  const resultado = entradas - salidas;
+  const fmt = v => '$'+Math.round(Math.abs(v)).toLocaleString('es-AR');
+  const kpiE = document.getElementById('caja-kpi-entradas');
+  const kpiS = document.getElementById('caja-kpi-salidas');
+  const kpiR = document.getElementById('caja-kpi-resultado');
+  const kpiRS = document.getElementById('caja-kpi-resultado-signo');
+  if(kpiE) animateCounter(kpiE, entradas, 600, fmt);
+  if(kpiS) animateCounter(kpiS, salidas, 600, fmt);
+  if(kpiR) {
+    animateCounter(kpiR, Math.abs(resultado), 600, fmt);
+    kpiR.style.color = resultado >= 0 ? '#3B6D11' : '#993C1D';
+  }
+  if(kpiRS) kpiRS.style.color = resultado < 0 ? '#993C1D' : 'transparent';
+  if(kpiRS) kpiRS.textContent = resultado < 0 ? '−' : '';
+}
+
+function renderCajaChips(cuentas, movs) {
+  const container = document.getElementById('caja-chips');
+  if(!container) return;
+  const saldos = {};
+  cuentas.forEach(c => { saldos[c.nombre] = parseFloat(c.saldo)||0; });
+  movs.forEach(m => {
+    if(!m.cuenta) return;
+    if(m.tipo==='ingreso') saldos[m.cuenta] = (saldos[m.cuenta]||0) + (parseFloat(m.monto)||0);
+    else if(m.tipo==='egreso') saldos[m.cuenta] = (saldos[m.cuenta]||0) - (parseFloat(m.monto)||0);
+  });
+  const dotColors = ['#4a5e4d','#3B6D11','#185FA5','#7a6a5a'];
+  container.innerHTML = cuentas.map((c,i) => {
+    const s = saldos[c.nombre]||0;
+    const color = dotColors[i%dotColors.length];
+    return `<div class="caja-chip" style="animation:fadeUp .3s ease both;animation-delay:${i*60}ms;">
+      <div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0;"></div>
+      <span style="color:#888;">${c.nombre}</span>
+      <span style="font-weight:650;color:#1a1a1a;">$${Math.round(s).toLocaleString('es-AR')}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderCajaTable(movs) {
+  const tbody = document.getElementById('caja-tbody');
+  if(!tbody) return;
+  if(!movs.length) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:36px;color:#bbb;font-size:13px;">Sin movimientos este mes</td></tr>`;
+    return;
+  }
+  let saldo = 0;
+  tbody.innerHTML = movs.map((m, i) => {
+    const monto = parseFloat(m.monto)||0;
+    if(m.tipo==='ingreso') saldo += monto;
+    else if(m.tipo==='egreso') saldo -= monto;
+    let fechaStr = '—';
+    if(m.fecha) {
+      const p = m.fecha.split('-');
+      if(p.length===3) fechaStr = p[2]+'/'+p[1]+'/'+p[0].slice(2);
+    }
+    let badgeClass='caja-badge-ingreso', badgeText='Ingreso';
+    if(m.tipo==='egreso'){badgeClass='caja-badge-egreso';badgeText='Egreso';}
+    else if(m.tipo==='transferencia'){badgeClass='caja-badge-transfer';badgeText='Entre cuentas';}
+    const entradaHtml = m.tipo==='ingreso'
+      ? `<span style="font-size:13px;font-weight:600;color:#3B6D11;display:block;text-align:right;">$${Math.round(monto).toLocaleString('es-AR')}</span>`
+      : `<span style="font-size:13px;color:#e0e0e0;display:block;text-align:right;">—</span>`;
+    const salidaHtml = m.tipo==='egreso'
+      ? `<span style="font-size:13px;font-weight:600;color:#993C1D;display:block;text-align:right;">$${Math.round(monto).toLocaleString('es-AR')}</span>`
+      : `<span style="font-size:13px;color:#e0e0e0;display:block;text-align:right;">—</span>`;
+    return `<tr style="opacity:0;animation:fadeUp .3s ease both;animation-delay:${80+i*50}ms;" onclick="cajaMostrarMovimiento('${m.id}')">
+      <td><span style="font-size:12px;color:#bbb;">${fechaStr}</span></td>
+      <td><span style="font-size:13px;font-weight:500;color:#1a1a1a;white-space:nowrap;">${m.concepto||'—'}</span></td>
+      <td><span class="${badgeClass}">${badgeText}</span></td>
+      <td><span style="font-size:12px;color:#aaa;">${m.cuenta||'—'}</span></td>
+      <td class="r">${entradaHtml}</td>
+      <td class="r">${salidaHtml}</td>
+      <td class="r"><span style="font-size:13px;font-weight:650;color:#1a1a1a;display:block;text-align:right;">$${Math.round(saldo).toLocaleString('es-AR')}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+window.cajaMesAnterior = function() {
+  window._cajaMesOffset = (window._cajaMesOffset||0) - 1;
+  loadCajaModule();
+};
+window.cajaMesSiguiente = function() {
+  if((window._cajaMesOffset||0) >= 0) return;
+  window._cajaMesOffset = (window._cajaMesOffset||0) + 1;
+  loadCajaModule();
+};
+window.cajaMostrarMovimiento = function(id) {
+  console.log('movimiento:', id);
+};
+window.cajaNuevoMovimiento = function() {
+  console.log('nuevo movimiento');
+};
+window.showClientContView = function(view, btn) {
+  loadCajaModule();
+};
 
 // ─── INICIO DASHBOARD ───
 function animateDiasFlip(el, from, to, duration) {
@@ -13368,7 +13616,8 @@ window.sidebarNav=function(mod,sub){
     window.showClientMod(mod,null);
     window._sbNavInProgress=false;
     if(mod==='finanzas'){
-      if(sub==='ingresos')window.showClientContView('ingresos',null);
+      if(sub==='caja')window.showClientContView('caja',null);
+      else if(sub==='ingresos')window.showClientContView('ingresos',null);
       else if(sub==='egresos')window.showClientContView('egresos',null);
     }else if(mod==='ventas'){
       if(sub==='presupuestos')window.showCTab('presupuestos',null);
