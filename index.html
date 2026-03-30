@@ -2939,6 +2939,7 @@ textarea.cj-input{resize:none;}
     <input type="hidden" id="mcc-cobro-presup-id"/>
     <div class="fg"><label class="fl">Concepto</label><input type="text" class="fi" id="mcc-cobro-concepto" placeholder="Ej: 1er pago, seña, cuota 2..."/></div>
     <div class="fg"><label class="fl">Forma de pago</label><select class="fi" id="mcc-cobro-forma" style="margin-top:0;"><option value="Transferencia">Transferencia</option><option value="Efectivo">Efectivo</option><option value="Tarjeta">Tarjeta</option><option value="QR">QR</option></select></div>
+    <div class="fg"><label class="fl">Cuenta de cobro</label><select class="fi" id="mcc-cobro-cuenta" style="margin-top:0;"><option value="">Cargando...</option></select></div>
     <div class="fg"><label class="fl">Monto</label><input type="number" class="fi" id="mcc-cobro-monto" placeholder="0"/></div>
     <div class="fg"><label class="fl">Moneda</label><select class="fi" id="mcc-cobro-moneda" style="margin-top:0;"><option>ARS</option><option>USD</option></select></div>
     <div class="fg"><label class="fl">Fecha</label><input type="date" id="mcc-cobro-fecha" style="margin-top:0;"/></div>
@@ -8912,13 +8913,24 @@ async function renderMcHistorial(clienteId) {
 }
 
 // --- Cobros por cliente ---
-window.openMcCobroModal = function(clienteId, presupId, concepto, monto) {
+window.openMcCobroModal = async function(clienteId, presupId, concepto, monto) {
   document.getElementById('mcc-cobro-cliente-id').value  = clienteId || '';
   document.getElementById('mcc-cobro-presup-id').value   = presupId  || '';
   document.getElementById('mcc-cobro-concepto').value    = concepto  || '';
   document.getElementById('mcc-cobro-monto').value       = monto     || '';
   document.getElementById('mcc-cobro-notas').value       = '';
   document.getElementById('mcc-cobro-fecha').value       = new Date().toISOString().split('T')[0];
+  // Cargar cuentas activas
+  const cuentaSel = document.getElementById('mcc-cobro-cuenta');
+  if(cuentaSel && currentClientUID) {
+    try {
+      const snap = await getDocs(collection(db,'clientes',currentClientUID,'cuentas'));
+      const cuentas = [];
+      snap.forEach(d=>cuentas.push({id:d.id,...d.data()}));
+      cuentas.sort((a,b)=>(a.orden||0)-(b.orden||0));
+      cuentaSel.innerHTML = cuentas.map(c=>`<option value="${c.nombre}">${c.nombre}</option>`).join('');
+    } catch(e) { cuentaSel.innerHTML = '<option value="Efectivo">Efectivo</option>'; }
+  }
   openModal('newMcCobroModal');
 };
 
@@ -8967,6 +8979,24 @@ window.createMcCobro = async function() {
       origen   : 'comercial',
       clienteId,
       cliente  : clienteNombre,
+      creadoEn : new Date().toISOString()
+    });
+
+    // 4b. Escribir en libroCaja
+    const cuentaCobro = document.getElementById('mcc-cobro-cuenta')?.value || formaPago;
+    const presupNumero = document.getElementById('mcc-cobro-presup-id')?.value || '';
+    await addDoc(collection(db,'libroCaja'), {
+      uid      : currentClientUID,
+      fecha    : fecha || new Date().toISOString().split('T')[0],
+      tipo     : 'ingreso',
+      concepto : 'Cobro de cliente',
+      cuenta   : cuentaCobro,
+      monto    : parseFloat(monto)||0,
+      origen   : 'cobro_cliente',
+      ...(presupNumero ? {referenciaId: presupNumero} : {}),
+      detalle  : concepto || `Cobro de ${clienteNombre}`,
+      mes      : mesIngreso,
+      eliminado: false,
       creadoEn : new Date().toISOString()
     });
 
@@ -12104,6 +12134,26 @@ window.savePagoProveedor = async function() {
       eliminado: false,
       creadoEn: new Date()
     });
+
+    // Escribir en libroCaja
+    const mesEgreso = fecha
+      ? new Date(fecha+'T12:00:00').toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,ch=>ch.toUpperCase())
+      : new Date().toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,ch=>ch.toUpperCase());
+    await addDoc(collection(db,'libroCaja'), {
+      uid        : currentClientUID,
+      fecha      : fecha || new Date().toISOString().split('T')[0],
+      tipo       : 'egreso',
+      concepto   : 'Proveedor',
+      cuenta     : medio,
+      monto      : total,
+      origen     : 'proveedor',
+      referenciaId: opRef.id,
+      detalle    : `Pago a ${provNombre}${concepto ? ' · '+concepto : ''}`,
+      mes        : mesEgreso,
+      eliminado  : false,
+      creadoEn   : new Date().toISOString()
+    });
+
     const saved = document.getElementById('npp-saved');
     if(saved){ saved.style.display='block'; setTimeout(()=>{ saved.style.display='none'; closeModal('newPagoProvModal'); renderCuentaCorriente(); if(typeof loadContabilidad==='function') loadContabilidad(); }, 1500); }
   } catch(e) {
