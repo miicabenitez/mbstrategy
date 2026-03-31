@@ -10356,9 +10356,13 @@ async function loadMcCobrosList(clienteId) {
     cobros.sort((a,b) => new Date(b.fecha||0) - new Date(a.fecha||0));
     if (cobros.length === 0) { el.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin cobros registrados.</div>'; return; }
     const total = cobros.reduce((s,c) => s + (parseFloat(c.monto)||0), 0);
-    // Calcular saldo a favor si cobrado > presupuestado
-    const totalPresupuestado = _mcPresupuestos.filter(p=>(p.clienteId===clienteId||p.cliente===(_mcClientes.find(x=>x.id===clienteId)?.nombre))&&p.estado==='Aprobado').reduce((s,p)=>s+getPresupMonto(p),0);
-    const saldoAFavor = total > totalPresupuestado && totalPresupuestado > 0 ? total - totalPresupuestado : 0;
+    // Calcular saldo a favor: incluir 'Cobrado' además de 'Aprobado' para evitar falso saldo
+    const clienteNombreRef = _mcClientes.find(x=>x.id===clienteId)?.nombre;
+    const totalPresupuestado = _mcPresupuestos.filter(p=>
+      (p.clienteId===clienteId||p.cliente===clienteNombreRef)&&
+      (p.estado==='Aprobado'||p.estado==='Cobrado')
+    ).reduce((s,p)=>s+getPresupMonto(p),0);
+    const saldoAFavor = totalPresupuestado > 0 && total > totalPresupuestado ? total - totalPresupuestado : 0;
     const formaIcon = {'Transferencia':'⇄','Efectivo':'💵','Tarjeta':'💳','QR':'◉'};
     el.innerHTML = `<div style="background:var(--ok-bg);border-radius:9px;padding:10px 14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
       <span style="font-size:12px;color:var(--ok);">Total cobrado</span>
