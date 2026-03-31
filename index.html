@@ -4349,7 +4349,7 @@ window.showClientUI = async function(email, clientData) {
       const negNombre = document.getElementById('negocio-nombre-display');
       if(negNombre) negNombre.textContent = clientData.negocioNombre || clientData.nombre || 'Mi negocio';
     }
-    if(clientData && clientData.primerLogin === true) {
+    if(clientData && clientData.onboardingCompletado !== true) {
       setTimeout(() => window.showWelcomeScreen(clientData), 500);
     }
     if(window.embiShow) window.embiShow(true);
@@ -5079,7 +5079,6 @@ window.createClient = async function() {
       eliminado:          false,
       suscripcionEstado:  'active',
       productos:          { academia: false, sistema: true, embi: 'explicativo' },
-      primerLogin:        true,
       semanaActual:       1,
       creadoEn:           new Date().toISOString()
     });
@@ -9197,18 +9196,15 @@ window.showWelcomeScreen = function(clientData) {
   ws.style.display = 'flex';
 };
 
-window.closeWelcomeScreen = async function() {
+window.closeWelcomeScreen = function() {
   const ws = document.getElementById('welcome-screen');
   if(ws) {
     ws.style.transition = 'opacity .4s ease';
     ws.style.opacity = '0';
     setTimeout(() => { ws.style.display = 'none'; ws.style.opacity = ''; ws.style.transition = ''; }, 420);
   }
-  try {
-    if(currentClientUID) {
-      await updateDoc(doc(db, 'clientes', currentClientUID), { primerLogin: false });
-    }
-  } catch(e) { console.log('closeWelcomeScreen:', e); }
+  // No escribe en Firestore: la pantalla vuelve al próximo login
+  // hasta que el checklist de onboarding esté completo
 };
 
 window.checkOnboardingStatus = function() {
@@ -9230,7 +9226,15 @@ async function renderOnboardingChecklist() {
   if(!el) return;
   const s = checkOnboardingStatus();
   const done = Object.values(s).filter(Boolean).length;
-  if(done === 5) { el.style.display = 'none'; return; }
+  if(done === 5) {
+    el.style.display = 'none';
+    // Checklist completo: marcar onboarding como terminado y cerrar pantalla de bienvenida
+    if(currentClientUID) {
+      try { await updateDoc(doc(db,'clientes',currentClientUID), { onboardingCompletado: true }); } catch(e) {}
+    }
+    window.closeWelcomeScreen();
+    return;
+  }
   const pct = Math.round((done/5)*100);
   const steps = [
     { key:'nombre', label:'Cargá el nombre de tu negocio', sub:'', action:"openModal('miCuentaModal')", btn:'Completar' },
