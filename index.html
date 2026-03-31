@@ -3022,16 +3022,18 @@ textarea.cj-input{resize:none;}
     <div class="mt">Nuevo cliente</div>
     <div class="fg"><label class="fl">Nombre / Negocio</label><input type="text" class="fi" id="nc-nombre" placeholder="Ej: Marcelo — La Playa en Tu Casa"/></div>
     <div class="fg"><label class="fl">Género</label><select class="fi" id="nc-genero" style="margin-top:0;"><option value="F">Femenino — Bienvenida</option><option value="M">Masculino — Bienvenido</option><option value="N">Neutro — ¡Hola!</option></select></div>
-    <div class="fg"><label class="fl">Rubro</label><input type="text" class="fi" id="nc-rubro" placeholder="Ej: Piletas, Salud, Retail..."/></div>
+    <div class="fg"><label class="fl">Rubro / Nombre del negocio</label><input type="text" class="fi" id="nc-rubro" placeholder="Ej: Piletas, Salud, Retail..."/></div>
     <div class="fg"><label class="fl">Programa</label><select class="fi" id="nc-prog" style="margin-top:0;"><option value="30D">Programa 30D — Orden Operativo</option><option value="90D">Programa 90D — Gestión Estratégica</option></select></div>
+    <div class="fg"><label class="fl">Plan</label><select class="fi" id="nc-plan" style="margin-top:0;"><option value="base">Base</option><option value="pro">Pro</option><option value="business">Business</option></select></div>
     <div class="fg"><label class="fl">Precio acordado (USD)</label><input type="number" class="fi" id="nc-precio" placeholder="Ingresá el precio"/></div>
     <div class="fg"><label class="fl">Email del cliente</label><input type="email" class="fi" id="nc-email" placeholder="cliente@email.com"/></div>
+    <div class="fg"><label class="fl">UID Firebase Auth <span style="font-size:11px;color:#999;">(del usuario creado en Authentication)</span></label><input type="text" class="fi" id="nc-uid" placeholder="Ej: abc123XYZ..."/></div>
     <div class="fg"><label class="fl">Notas iniciales (opcional)</label><textarea class="na" id="nc-notas" style="min-height:60px;" placeholder="Contexto, dolores, situacion actual..."></textarea></div>
     <div class="br2">
       <button class="bp" onclick="createClient()">Crear cliente</button>
       <button class="bs" onclick="closeModal('newClientModal')">Cancelar</button>
     </div>
-    <div class="saved-msg" id="client-saved">✓ Cliente creado. Recordá crear su usuario en Firebase Authentication.</div>
+    <div class="saved-msg" id="client-saved">✓ Cliente creado correctamente.</div>
   </div>
 </div>
 
@@ -5049,16 +5051,37 @@ window.deleteCliente = function(id, nombre, event) {
 };
 
 window.createClient = async function() {
-  const nombre = document.getElementById('nc-nombre').value;
-  const rubro = document.getElementById('nc-rubro').value;
-  const prog = document.getElementById('nc-prog').value;
-  const precio = document.getElementById('nc-precio').value;
-  const email = document.getElementById('nc-email').value;
-  const notas = document.getElementById('nc-notas').value;
-  const genero = document.getElementById('nc-genero').value;
+  const nombre  = document.getElementById('nc-nombre').value.trim();
+  const rubro   = document.getElementById('nc-rubro').value.trim();
+  const prog    = document.getElementById('nc-prog').value;
+  const plan    = document.getElementById('nc-plan').value;
+  const precio  = document.getElementById('nc-precio').value;
+  const email   = document.getElementById('nc-email').value.trim();
+  const uid     = document.getElementById('nc-uid').value.trim();
+  const notas   = document.getElementById('nc-notas').value;
+  const genero  = document.getElementById('nc-genero').value;
   if (!nombre || !email) { alert('Nombre y email son obligatorios'); return; }
+  if (!uid) { alert('El UID de Firebase Auth es obligatorio'); return; }
   try {
-    await addDoc(collection(db,'clientes'), {nombre,rubro,programa:prog,precio,email,notas,genero,semanaActual:1,creadoEn:new Date().toISOString()});
+    await setDoc(doc(db,'clientes',uid), {
+      uid,
+      nombre,
+      email,
+      genero,
+      rubro,
+      negocioNombre: nombre,
+      negocioRubro:  rubro,
+      programa:      prog,
+      plan,
+      precio,
+      notas,
+      activo:             true,
+      eliminado:          false,
+      suscripcionEstado:  'active',
+      productos:          { academia: false, sistema: true, embi: 'explicativo' },
+      semanaActual:       1,
+      creadoEn:           new Date().toISOString()
+    });
     const s = document.getElementById('client-saved');
     s.style.display = 'block';
     setTimeout(async () => { s.style.display='none'; closeModal('newClientModal'); await loadAdminData(); }, 2500);
