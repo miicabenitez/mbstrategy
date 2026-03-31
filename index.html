@@ -8493,6 +8493,14 @@ window.cajaNuevoMovimiento = async function() {
   } catch(e){console.log('cajaNuevoMovimiento:',e);}
 };
 
+window.onboardingAbrirMovimiento = async function(tipo) {
+  showClientMod('finanzas', null);
+  await cajaNuevoMovimiento();
+  if(tipo === 'egreso') {
+    mvmSetTipo('egreso', document.getElementById('mvm-tipo-egreso'));
+  }
+};
+
 function _mvmRenderCuentas() {
   const opts = _mvmCuentas.map(c=>`<option value="${c.nombre}">${c.nombre}</option>`).join('');
   ['mvm-cuenta','mvm-tr-desde','mvm-tr-hacia'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=opts;});
