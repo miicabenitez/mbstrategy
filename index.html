@@ -3233,7 +3233,7 @@ textarea.cj-input{resize:none;}
     <div class="fg"><label class="fl">Validez</label><input type="date" id="cp-validez" style="margin-top:0;"/></div>
     <div class="fg"><label class="fl">Estado</label><select class="fi" id="cp-estado" style="margin-top:0;"><option>Pendiente de enviar</option><option>Enviado</option><option>Consultado</option><option>Aprobado</option><option>Denegado</option></select></div>
     <div class="fg"><label class="fl">Condiciones / Notas</label><textarea class="na" id="cp-notas" style="min-height:50px;" placeholder="Ej: Seña 50% para confirmar..."></textarea></div>
-    <div class="br2"><button class="bp" onclick="createClientPresup()">Guardar</button><button class="bs" onclick="closeModal('newClientPresupModal')">Cancelar</button></div>
+    <div class="br2"><button class="bp" id="btn-save-client-presup" onclick="createClientPresup()">Guardar</button><button class="bs" onclick="closeModal('newClientPresupModal')">Cancelar</button></div>
     <div class="saved-msg" id="cp-saved">✓ Presupuesto guardado</div>
     <div id="cp-error" style="display:none;background:var(--err-bg,#fdecea);color:var(--err,#b00020);font-size:12px;padding:9px 12px;border-radius:7px;margin-top:8px;"></div>
   </div>
@@ -3391,7 +3391,7 @@ textarea.cj-input{resize:none;}
     <div class="fg"><label class="fl">Validez</label><input type="date" id="mcp-presup-validez" style="margin-top:0;"/></div>
     <div class="fg"><label class="fl">Estado</label><select class="fi" id="mcp-presup-estado" style="margin-top:0;"><option>Pendiente de enviar</option><option>Enviado</option><option>Consultado</option><option>Aprobado</option><option>Denegado</option></select></div>
     <div class="fg"><label class="fl">Condiciones / Notas</label><textarea class="na" id="mcp-presup-notas" style="min-height:50px;" placeholder="Ej: Seña 50% para confirmar..."></textarea></div>
-    <div class="br2"><button class="bp" onclick="createMcPresup()">Guardar</button><button class="bs" onclick="closeModal('newMcPresupModal')">Cancelar</button></div>
+    <div class="br2"><button class="bp" id="btn-save-mc-presup" onclick="createMcPresup()">Guardar</button><button class="bs" onclick="closeModal('newMcPresupModal')">Cancelar</button></div>
     <div class="saved-msg" id="mcp-presup-saved">✓ Presupuesto guardado</div>
   </div>
 </div>
@@ -3563,7 +3563,7 @@ textarea.cj-input{resize:none;}
         </div>
       </div>
       <div class="br2">
-        <button class="bp" onclick="saveNecesidad()">Guardar</button>
+        <button class="bp" id="btn-save-necesidad" onclick="saveNecesidad()">Guardar</button>
         <button class="bs" onclick="closeModal('newNecesidadModal')">Cancelar</button>
       </div>
       <div class="saved-msg" id="nc-saved">✓ Guardado</div>
@@ -3614,7 +3614,7 @@ textarea.cj-input{resize:none;}
         <div id="cot-ahorro" style="background:var(--ok-bg);border-radius:8px;padding:10px;font-size:11px;color:var(--ok);margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;"></div>
         <div style="display:flex;justify-content:flex-end;gap:8px;">
           <button class="bs" onclick="cotVolver2()">← Ajustar</button>
-          <button class="bp" onclick="confirmarOC()">Confirmar y emitir OC</button>
+          <button class="bp" id="btn-confirmar-oc" onclick="confirmarOC()">Confirmar y emitir OC</button>
         </div>
         <div class="saved-msg" id="cot-saved">✓ Órdenes emitidas</div>
       </div>
@@ -3733,7 +3733,7 @@ textarea.cj-input{resize:none;}
     </div>
     <div style="font-size:11px;color:var(--text-l);background:var(--cream);border-radius:8px;padding:8px 12px;margin-bottom:14px;">✓ Se registra automáticamente como egreso en Finanzas</div>
     <div class="br2">
-      <button class="bp" onclick="savePagoProveedor()">Registrar pago</button>
+      <button class="bp" id="btn-save-pago-prov" onclick="savePagoProveedor()">Registrar pago</button>
       <button class="bs" onclick="generarPDFOrdenPago()">PDF</button>
       <button class="bs" onclick="closeModal('newPagoProvModal')">Cancelar</button>
     </div>
@@ -8275,7 +8275,7 @@ function _ccfgRenderConceptos(conceptos, tipo, conceptosConMovs) {
 }
 
 // ── Cuenta: helpers de apertura de modal ──
-function _ccfgAbrirModalCuenta({id='', nombre='', tipo='efectivo', banco='', saldo=0}) {
+function _ccfgAbrirModalCuenta({id='', nombre='', tipo='efectivo', banco='', saldo=0, tieneMovimientos=false}) {
   _ccfgCuentaTipoSel = tipo;
   document.getElementById('ccfg-cuenta-id').value = id;
   document.getElementById('ccfg-cuenta-nombre').value = nombre;
@@ -8285,8 +8285,20 @@ function _ccfgAbrirModalCuenta({id='', nombre='', tipo='efectivo', banco='', sal
   const esEdicion = !!id;
   document.getElementById('ccfg-saldo-field').style.display = 'block';
   const saldoEl = document.getElementById('ccfg-cuenta-saldo');
-  saldoEl.value = saldo > 0 ? saldo.toLocaleString('es-AR') : '';
-  saldoEl.placeholder = esEdicion ? 'Saldo actual' : '0';
+  const saldoLabel = document.querySelector('#ccfg-saldo-field .cj-slabel');
+  if(esEdicion && tieneMovimientos) {
+    // Cuenta con movimientos: mostrar saldo en modo lectura
+    saldoEl.value = saldo > 0 ? saldo.toLocaleString('es-AR') : '0';
+    saldoEl.readOnly = true;
+    saldoEl.style.cssText = 'background:#f5f4f0;color:#999;cursor:not-allowed;';
+    if(saldoLabel) saldoLabel.textContent = 'SALDO INICIAL (solo lectura)';
+  } else {
+    saldoEl.value = saldo > 0 ? saldo.toLocaleString('es-AR') : '';
+    saldoEl.readOnly = false;
+    saldoEl.style.cssText = '';
+    if(saldoLabel) saldoLabel.textContent = 'SALDO INICIAL';
+    saldoEl.placeholder = esEdicion ? 'Saldo actual' : '0';
+  }
   document.getElementById('ccfg-cuenta-modal-title').textContent = esEdicion ? 'Editar cuenta' : 'Agregar cuenta';
   const saveBtn = document.getElementById('ccfg-cuenta-save');
   saveBtn.textContent = esEdicion ? 'Guardar cambios' : 'Agregar cuenta';
@@ -8300,8 +8312,15 @@ window.cajaConfigAgregarCuenta = function() {
   _ccfgAbrirModalCuenta({});
 };
 
-window.ccfgAbrirEditarCuenta = function(id, nombre, tipo, banco, saldo) {
-  _ccfgAbrirModalCuenta({id, nombre, tipo, banco, saldo: parseFloat(saldo)||0});
+window.ccfgAbrirEditarCuenta = async function(id, nombre, tipo, banco, saldo) {
+  let tieneMovimientos = false;
+  if(id && currentClientUID) {
+    try {
+      const snap = await getDocs(query(collection(db,'libroCaja'),where('uid','==',currentClientUID)));
+      snap.forEach(d => { if(!d.data().eliminado && d.data().cuenta === nombre) tieneMovimientos = true; });
+    } catch(e) {}
+  }
+  _ccfgAbrirModalCuenta({id, nombre, tipo, banco, saldo: parseFloat(saldo)||0, tieneMovimientos});
 };
 
 window.ccfgCuentaTipo = function(btn) {
@@ -10485,6 +10504,8 @@ window.createMcPresup = async function() {
   const desc = document.getElementById('mcp-presup-desc').value.trim();
   if(!clienteNombre||clienteNombre==='—'){alert('Error: cliente no definido');return;}
   if(_mcPresupItems.length===0){alert('Agregá al menos un ítem al presupuesto');return;}
+  const _mcpBtn = document.getElementById('btn-save-mc-presup');
+  if(_mcpBtn){_mcpBtn.disabled=true;_mcpBtn.textContent='Guardando...';}
   const total = _mcPresupItems.reduce((s,it)=>s+(it.cant*it.precio),0);
   const data = {
     cliente:clienteNombre, clienteId: clienteId||null,
@@ -10514,7 +10535,7 @@ window.createMcPresup = async function() {
       await loadMcModule();
       if(_currentMcClienteId) openMcDetalle(_currentMcClienteId);
     },1500);
-  }catch(e){alert('Error: '+e.message);}
+  }catch(e){alert('Error: '+e.message);if(_mcpBtn){_mcpBtn.disabled=false;_mcpBtn.textContent='Guardar';}}
 };
 
 window.createMcCliente = async function() {
@@ -11169,6 +11190,7 @@ window.createClientPresup = async function() {
   const errEl = document.getElementById('cp-error');
   const showErr = msg => { if(errEl){ errEl.textContent=msg; errEl.style.display='block'; setTimeout(()=>errEl.style.display='none', 4000); } };
   if(errEl) errEl.style.display='none';
+  const _cpBtn = document.getElementById('btn-save-client-presup');
   const sel = document.getElementById('cp-cliente-sel');
   const clienteId = sel?.value || null;
   const clienteNombre = clienteId
@@ -11177,6 +11199,7 @@ window.createClientPresup = async function() {
   if(!clienteNombre) { showErr('Ingresá el nombre del prospecto o seleccioná un cliente'); return; }
   const _items = window._cpItems || _cpItems || [];
   if(_items.length === 0) { showErr('Agregá al menos un ítem al presupuesto'); return; }
+  if(_cpBtn){_cpBtn.disabled=true;_cpBtn.textContent='Guardando...';}
   const total = _items.reduce((s,it)=>s+(it.cant*it.precio),0);
   const data = {
     cliente: clienteNombre,
@@ -11209,7 +11232,7 @@ window.createClientPresup = async function() {
       todos.sort((a,b)=>new Date(b.creadoEn||0)-new Date(a.creadoEn||0));
       if(todos[0]) exportarPresupuestoPDF(todos[0].id);
     }, 1500);
-  } catch(e){ showErr('Error al guardar: '+e.message); }
+  } catch(e){ showErr('Error al guardar: '+e.message); if(_cpBtn){_cpBtn.disabled=false;_cpBtn.textContent='Guardar';} }
 };
 
 // ===== MÓDULO PROVEEDORES =====
@@ -11952,12 +11975,14 @@ window.saveNecesidad = async function() {
     cantidad:parseFloat(document.getElementById('ncq-'+p.id)?.value)||1
   }));
   if(items.length===0){alert('Seleccioná al menos un producto');return;}
+  const btn = document.getElementById('btn-save-necesidad');
+  if(btn){btn.disabled=true;btn.textContent='Guardando...';}
   const data={categoria:cat,estado:document.getElementById('nc-estado').value,periodicidad:document.getElementById('nc-periodicidad').value,items,cotizaciones:[],creadoEn:new Date().toISOString()};
   try{
     await addDoc(collection(db,'clientes',currentClientUID,'necesidades'),data);
     const s=document.getElementById('nc-saved');if(s)s.style.display='block';
     setTimeout(async()=>{if(s)s.style.display='none';closeModal('newNecesidadModal');await loadNecesidades();},1500);
-  }catch(e){alert('Error: '+e.message);}
+  }catch(e){alert('Error: '+e.message);if(btn){btn.disabled=false;btn.textContent='Guardar';}}
 };
 
 window.deleteNecesidad = function(id) {
@@ -12296,6 +12321,8 @@ window.confirmarOC = async function() {
   const nc = _necesidades.find(n=>n.id===_cotNcId);
   const ocsAEmitir = window._ocsAEmitir||[];
   if(ocsAEmitir.length===0){ alert('No hay ítems con precio para emitir.'); return; }
+  const btn = document.getElementById('btn-confirmar-oc');
+  if(btn){ btn.disabled=true; btn.textContent='Emitiendo...'; }
   const hoy = new Date().toISOString().split('T')[0];
   try {
     for(const oc of ocsAEmitir) {
@@ -12322,7 +12349,7 @@ window.confirmarOC = async function() {
         if(primera) setTimeout(()=>abrirDetalleOC(primera.id), 200);
       }
     },1500);
-  }catch(e){alert('Error: '+e.message);}
+  }catch(e){alert('Error: '+e.message);if(btn){btn.disabled=false;btn.textContent='Confirmar y emitir OC';}}
 };
 
 window.generarPDFNecesidad = async function(ncId) {
@@ -13311,7 +13338,9 @@ window.recalcularTotalOP = function() {
 window.savePagoProveedor = async function() {
   if(window._savingPago) return;
   window._savingPago = true;
-  if(!window._ccProvId || !currentClientUID) { window._savingPago = false; return; }
+  const _nppBtn = document.getElementById('btn-save-pago-prov');
+  if(_nppBtn){_nppBtn.disabled=true;_nppBtn.textContent='Registrando...';}
+  if(!window._ccProvId || !currentClientUID) { window._savingPago = false; if(_nppBtn){_nppBtn.disabled=false;_nppBtn.textContent='Registrar pago';} return; }
   const errEl = document.getElementById('npp-error');
   const showErr = (msg) => { if(errEl){ errEl.textContent=msg; errEl.style.display='block'; } };
   const fecha = document.getElementById('npp-fecha')?.value;
@@ -13397,6 +13426,7 @@ window.savePagoProveedor = async function() {
   } catch(e) {
     console.error(e);
     showErr('Error al registrar el pago: ' + e.message);
+    if(_nppBtn){_nppBtn.disabled=false;_nppBtn.textContent='Registrar pago';}
   } finally {
     window._savingPago = false;
   }
