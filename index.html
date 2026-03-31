@@ -1744,20 +1744,23 @@ textarea.cj-input{resize:none;}
           </div>
         </div>
 
-        <!-- Accesos rápidos -->
-        <div class="dash-card" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;">
-          <button onclick="openModal('newClientIngresoModal')" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:14px 10px;background:#5A8A62;color:#fff;border:none;border-radius:12px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-            + Ingreso
-          </button>
-          <button onclick="openModal('newClientEgresoModal')" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:14px 10px;background:#C4786A;color:#fff;border:none;border-radius:12px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
-            + Egreso
-          </button>
-          <button onclick="openModal('newClientPresupModal')" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:14px 10px;background:transparent;color:#4a5e4d;border:1.5px solid #4a5e4d;border-radius:12px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4a5e4d" stroke-width="2" stroke-linecap="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h6M9 11h6M9 15h4"/></svg>
-            + Presupuesto
-          </button>
+        <!-- Accesos directos -->
+        <div class="dash-card" style="margin-bottom:14px;">
+          <div style="font-size:10px;font-weight:600;color:var(--text-l);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;">Accesos directos</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+            <button onclick="onboardingAbrirMovimiento('ingreso')" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:14px 10px;background:#5A8A62;color:#fff;border:none;border-radius:12px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+              + Ingreso
+            </button>
+            <button onclick="onboardingAbrirMovimiento('egreso')" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:14px 10px;background:#C4786A;color:#fff;border:none;border-radius:12px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+              + Egreso
+            </button>
+            <button onclick="onboardingAbrirMovimiento('ingreso')" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:14px 10px;background:transparent;color:#4a5e4d;border:1.5px solid #4a5e4d;border-radius:12px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4a5e4d" stroke-width="2" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+              + Venta caja
+            </button>
+          </div>
         </div>
 
         <!-- Onboarding checklist -->
@@ -7090,9 +7093,9 @@ function renderCajaChips(cuentas, movs) {
 window.cajaFiltrarCuenta = function(nombre, _el) {
   _cajaCuentaFiltro = (_cajaCuentaFiltro === nombre) ? null : nombre;
   const movs = window._cajaMovimientos || [];
-  const filtrados = _cajaCuentaFiltro
+  const filtrados = (_cajaCuentaFiltro
     ? movs.filter(m => m.cuenta === _cajaCuentaFiltro || m.cuentaDesde === _cajaCuentaFiltro || m.cuentaHacia === _cajaCuentaFiltro)
-    : movs;
+    : [...movs]).sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
   // Re-render solo chips y tabla (KPIs no cambian)
   const cuentasContainer = document.getElementById('caja-chips');
   if(cuentasContainer) {
@@ -8581,7 +8584,7 @@ window.mvmActualizarCierre = function() {
   if(!ctEl||!diffEl) return;
   const val = ctEl.value.trim();
   if(!val){diffEl.style.display='none';return;}
-  const diff = (parseFloat(val)||0) - _mvmEfectivoSaldo;
+  const diff = (_mvmParseMonto('mvm-contado')) - _mvmEfectivoSaldo;
   diffEl.style.display = '';
   diffEl.className = 'cj-cdf ' + (diff>=0 ? 'sobrante' : 'faltante');
   diffEl.textContent = diff>=0
@@ -8598,7 +8601,7 @@ window.mvmGuardar = async function() {
   try {
     if(_mvmTipo==='transferencia') {
       const fecha = document.getElementById('mvm-tr-fecha')?.value||hoy;
-      const monto = parseFloat(document.getElementById('mvm-tr-monto')?.value)||0;
+      const monto = _mvmParseMonto('mvm-tr-monto');
       const desde = document.getElementById('mvm-tr-desde')?.value;
       const hacia = document.getElementById('mvm-tr-hacia')?.value;
       const detalle = document.getElementById('mvm-tr-detalle')?.value||'';
@@ -8611,7 +8614,7 @@ window.mvmGuardar = async function() {
       const detalle = document.getElementById('mvm-detalle')?.value||'';
       const mesFecha = mkMes(fecha);
       if(_mvmConceptoSel==='Cierre de caja') {
-        const contado = parseFloat(document.getElementById('mvm-contado')?.value)||0;
+        const contado = _mvmParseMonto('mvm-contado');
         if(!contado) return;
         const diff = contado - _mvmEfectivoSaldo;
         docs.push({fecha,tipo:'egreso',concepto:'Cierre de caja',cuenta,monto:contado,montoContado:contado,saldoEsperado:_mvmEfectivoSaldo,detalle,mes:mesFecha,origen:'manual',eliminado:false,creadoEn:new Date().toISOString()});
@@ -8620,7 +8623,7 @@ window.mvmGuardar = async function() {
           else docs.push({fecha,tipo:'egreso',concepto:'Faltante',cuenta,monto:Math.round(Math.abs(diff)*100)/100,detalle:'Auto-generado por cierre de caja',mes:mesFecha,origen:'manual',eliminado:false,creadoEn:new Date().toISOString()});
         }
       } else {
-        const monto = parseFloat(document.getElementById('mvm-monto')?.value)||0;
+        const monto = _mvmParseMonto('mvm-monto');
         if(!monto||!_mvmConceptoSel) return;
         docs.push({fecha,tipo:_mvmTipo,concepto:_mvmConceptoSel,cuenta,monto,detalle,mes:mesFecha,origen:'manual',eliminado:false,creadoEn:new Date().toISOString()});
       }
@@ -8641,6 +8644,19 @@ window.mvmCerrar = function() {
   const ov = document.getElementById('mvm-overlay');
   if(ov) ov.style.display = 'none';
 };
+
+window.mvmFormatMonto = function(input) {
+  const raw = input.value.replace(/\./g, '').replace(/[^\d]/g, '');
+  if(!raw) { input.value = ''; return; }
+  const num = parseInt(raw, 10);
+  input.value = isNaN(num) ? '' : num.toLocaleString('es-AR');
+};
+
+function _mvmParseMonto(id) {
+  const el = document.getElementById(id);
+  if(!el) return 0;
+  return parseFloat(el.value.replace(/\./g, '').replace(',', '.')) || 0;
+}
 
 // ─── MODAL VENTA RÁPIDA ───
 let _vrcCarrito = {}, _vrcMetodo = null, _vrcProductos = [], _vrcCuentas = [];
@@ -8895,22 +8911,16 @@ async function loadInicio() {
     animateDiasFlip(document.getElementById('inicio-dias-num'), totalDias, diasRestantes, 1400);
   })();
 
-  // Cargar datos financieros
+  // Cargar datos financieros desde libroCaja
   try {
-    const [ingSnap, egSnap, cobrosSnap] = await Promise.all([
-      getDocs(collection(db,'clientes',currentClientUID,'ingresos')),
-      getDocs(collection(db,'clientes',currentClientUID,'egresos')),
-      getDocs(collection(db,'clientes',currentClientUID,'cobros'))
-    ]);
-    const ingManuales = []; ingSnap.forEach(d=>{ const data=d.data(); if(!data.eliminado) ingManuales.push({id:d.id,...data,origen:'manual'}); });
-    const egresos = []; egSnap.forEach(d=>{ const data=d.data(); if(!data.eliminado) egresos.push({id:d.id,...data}); });
-    const cobrosComoIng = [];
-    cobrosSnap.forEach(d=>{
+    const cajSnap = await getDocs(query(collection(db,'libroCaja'),where('uid','==',currentClientUID)));
+    const ingresos = [], egresos = [];
+    cajSnap.forEach(d => {
       const data = d.data();
       if(data.eliminado) return;
-      cobrosComoIng.push({id:d.id,concepto:data.concepto||'Cobro',monto:parseFloat(data.monto)||0,mes:data.fecha?new Date(data.fecha+'T12:00:00').toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase()):'',fecha:data.fecha||'',origen:'comercial',...data});
+      if(data.tipo==='ingreso') ingresos.push({id:d.id,...data});
+      else if(data.tipo==='egreso') egresos.push({id:d.id,...data});
     });
-    const ingresos = [...ingManuales,...cobrosComoIng];
 
     // Mes actual — usar mismo formato que poblarMeses ("Marzo 2026") para que coincida con el campo mes guardado
     const hoy = new Date();
@@ -9228,7 +9238,29 @@ window.checkOnboardingStatus = function() {
 async function renderOnboardingChecklist() {
   const el = document.getElementById('onboarding-checklist');
   if(!el) return;
-  const s = checkOnboardingStatus();
+  // Build status from libroCaja (new system) instead of legacy _clientIngresos/_clientEgresos
+  const d = currentClientData || {};
+  let hasIngreso = false, hasEgreso = false;
+  if(currentClientUID) {
+    try {
+      let cajMovs = window._cajaMovimientos;
+      if(!cajMovs) {
+        const snap = await getDocs(query(collection(db,'libroCaja'),where('uid','==',currentClientUID)));
+        cajMovs = [];
+        snap.forEach(doc => { const m = doc.data(); if(!m.eliminado) cajMovs.push(m); });
+      }
+      hasIngreso = cajMovs.some(m => m.tipo === 'ingreso');
+      hasEgreso = cajMovs.some(m => m.tipo === 'egreso');
+    } catch(e) {}
+    if(!window._clientPresupuestos) { try { await loadClientPresupuestos(); } catch(e) {} }
+  }
+  const s = {
+    nombre: !!(d.negocioNombre && d.negocioNombre.trim()),
+    logo: !!d.logoNegocio,
+    ingreso: hasIngreso,
+    egreso: hasEgreso,
+    presupuesto: (window._clientPresupuestos||[]).length > 0
+  };
   const done = Object.values(s).filter(Boolean).length;
   if(done === 5) { el.style.display = 'none'; return; }
   const pct = Math.round((done/5)*100);
@@ -16093,13 +16125,13 @@ window.doResetPassword = async function(){
       <div id="mvm-campos-normal">
         <div class="cj-row2">
           <div class="cj-field"><label>FECHA</label><input type="date" id="mvm-fecha"></div>
-          <div class="cj-field"><label>MONTO ($)</label><input type="number" id="mvm-monto" min="0" placeholder="0"></div>
+          <div class="cj-field"><label>MONTO ($)</label><input type="text" id="mvm-monto" inputmode="numeric" placeholder="0" oninput="mvmFormatMonto(this)"></div>
         </div>
         <div class="cj-field" style="margin-top:12px;"><label>CUENTA</label><select id="mvm-cuenta"></select></div>
         <div class="cj-field" style="margin-top:12px;"><label>DETALLE (opcional)</label><textarea id="mvm-detalle" placeholder="Descripción adicional..."></textarea></div>
         <div id="mvm-cierre-sec" style="display:none;margin-top:12px;">
           <div class="cj-row2">
-            <div class="cj-field"><label>MONTO CONTADO ($)</label><input type="number" id="mvm-contado" min="0" placeholder="0" oninput="mvmActualizarCierre()"></div>
+            <div class="cj-field"><label>MONTO CONTADO ($)</label><input type="text" id="mvm-contado" inputmode="numeric" placeholder="0" oninput="mvmFormatMonto(this);mvmActualizarCierre()"></div>
             <div class="cj-field"><label>SALDO ESPERADO</label>
               <div style="padding:10px 13px;border:1.5px solid #e8e8e4;border-radius:8px;font-size:13px;color:#888;background:#fafafa;min-height:40px;display:flex;align-items:center;"><span id="mvm-saldo-esp">—</span></div>
             </div>
@@ -16110,7 +16142,7 @@ window.doResetPassword = async function(){
       <div id="mvm-campos-transfer" style="display:none;">
         <div class="cj-row2">
           <div class="cj-field"><label>FECHA</label><input type="date" id="mvm-tr-fecha"></div>
-          <div class="cj-field"><label>MONTO ($)</label><input type="number" id="mvm-tr-monto" min="0" placeholder="0"></div>
+          <div class="cj-field"><label>MONTO ($)</label><input type="text" id="mvm-tr-monto" inputmode="numeric" placeholder="0" oninput="mvmFormatMonto(this)"></div>
         </div>
         <div style="display:flex;align-items:flex-end;gap:10px;margin-top:12px;">
           <div class="cj-field" style="flex:1;margin:0;"><label>DESDE</label><select id="mvm-tr-desde"></select></div>
