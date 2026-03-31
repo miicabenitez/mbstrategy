@@ -10105,7 +10105,7 @@ window.openMcDetalle = async function(id) {
   // KPIs cuenta corriente — recalcular desde cobros reales
   const setEl = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
   const misPresups = _mcPresupuestos.filter(p => p.clienteId === id || p.cliente === c.nombre);
-  const total = misPresups.filter(p=>p.estado==='Aprobado').reduce((s,p)=>s+getPresupMonto(p),0);
+  const total = misPresups.filter(p=>p.estado==='Aprobado'||p.estado==='Cobrado').reduce((s,p)=>s+getPresupMonto(p),0);
   const fmt = v => '$' + Math.abs(v).toLocaleString('es-AR');
   setEl('mcd-total', total > 0 ? fmt(total) : '—');
   // Calcular cobrado real desde subcolección
@@ -10277,16 +10277,20 @@ window.createMcCobro = async function() {
       try {
         const pCache = (_mcPresupuestos||[]).find(x=>x.id===presupId2) || (window._clientPresupuestos||[]).find(x=>x.id===presupId2);
         const montoPresup = pCache ? getPresupMonto(pCache) : 0;
+        // Guard: solo actualizar si encontramos el presupuesto y tiene monto válido
+        if(!pCache || montoPresup <= 0) { console.log('cobradoPorPresup skipped: presupuesto no encontrado o monto=0'); }
+        else {
         const cobradoAnterior = parseFloat(pCache?.cobradoPorPresup || 0);
         const nuevoCobrado = cobradoAnterior + (parseFloat(monto) || 0);
         const updatePresup = { cobradoPorPresup: nuevoCobrado };
-        if(montoPresup > 0 && nuevoCobrado >= montoPresup) updatePresup.estado = 'Cobrado';
+        if(nuevoCobrado >= montoPresup) updatePresup.estado = 'Cobrado';
         await updateDoc(doc(db,'clientes',currentClientUID,'presupuestos',presupId2), updatePresup);
         // Actualizar cache local
         const pLocal = (_mcPresupuestos||[]).find(x=>x.id===presupId2);
         if(pLocal) { pLocal.cobradoPorPresup = nuevoCobrado; if(updatePresup.estado) pLocal.estado = 'Cobrado'; }
         const pLocal2 = (window._clientPresupuestos||[]).find(x=>x.id===presupId2);
         if(pLocal2) { pLocal2.cobradoPorPresup = nuevoCobrado; if(updatePresup.estado) pLocal2.estado = 'Cobrado'; }
+        } // end else guard
       } catch(e){ console.log('Error actualizando cobradoPorPresup:', e); }
     }
 
@@ -10852,7 +10856,9 @@ window.onMcPresupPDFSelected = function(input) {
 window.updateClientPresupEstado = async function(id, estado) {
   if(!currentClientUID) return;
   try {
-    await updateDoc(doc(db,'clientes',currentClientUID,'presupuestos',id),{estado});
+    // Al cambiar estado manualmente, resetear cobradoPorPresup para evitar auto-Cobrado espurio
+    const presupUpdate = estado !== 'Cobrado' ? {estado, cobradoPorPresup: 0} : {estado};
+    await updateDoc(doc(db,'clientes',currentClientUID,'presupuestos',id), presupUpdate);
     const allP = [...(window._clientPresupuestos||[]), ...(_mcPresupuestos||[])];
     const p = allP.find(x=>x.id===id);
     if(p?.clienteId) {
@@ -10878,7 +10884,9 @@ window.updateClientPresupEstado = async function(id, estado) {
 window.updateMcPresupEstado = async function(id, estado) {
   if(!currentClientUID) return;
   try {
-    await updateDoc(doc(db,'clientes',currentClientUID,'presupuestos',id),{estado});
+    // Al cambiar estado manualmente, resetear cobradoPorPresup para evitar auto-Cobrado espurio
+    const presupUpdate2 = estado !== 'Cobrado' ? {estado, cobradoPorPresup: 0} : {estado};
+    await updateDoc(doc(db,'clientes',currentClientUID,'presupuestos',id), presupUpdate2);
     const p = _mcPresupuestos.find(x=>x.id===id);
     if(estado === 'Aprobado') {
       if(p?.clienteId) {
