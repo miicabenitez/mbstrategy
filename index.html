@@ -3702,6 +3702,10 @@ textarea.cj-input{resize:none;}
       <input type="date" class="fi" id="npp-fecha"/>
     </div>
     <div class="fg">
+      <label class="fl">Cuenta de pago</label>
+      <select class="fi" id="npp-cuenta" style="margin-top:0;"><option value="">Cargando...</option></select>
+    </div>
+    <div class="fg">
       <label class="fl">Medio de pago</label>
       <select class="fi" id="npp-medio" style="margin-top:0;">
         <option value="transferencia">Transferencia</option>
@@ -7011,7 +7015,7 @@ async function loadCajaModule() {
     movsSnap.forEach(d => { const data = d.data(); if(!data.eliminado) todosMovs.push({id:d.id,...data}); });
     // Filtrar por mes para tabla y KPIs
     const movs = todosMovs.filter(m => m.mes === mes.stored);
-    movs.sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
+    movs.sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')||((a.creadoEn||'').localeCompare(b.creadoEn||'')));
     window._cajaMovimientos = movs;
     // 4. Renderizar
     renderCajaKPIs(movs);
@@ -7097,7 +7101,7 @@ window.cajaFiltrarCuenta = function(nombre, _el) {
   const movs = window._cajaMovimientos || [];
   const filtrados = (_cajaCuentaFiltro
     ? movs.filter(m => m.cuenta === _cajaCuentaFiltro || m.cuentaDesde === _cajaCuentaFiltro || m.cuentaHacia === _cajaCuentaFiltro)
-    : [...movs]).sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
+    : [...movs]).sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')||((a.creadoEn||'').localeCompare(b.creadoEn||'')));
   // Re-render solo chips y tabla (KPIs no cambian)
   const cuentasContainer = document.getElementById('caja-chips');
   if(cuentasContainer) {
@@ -8232,7 +8236,7 @@ function _ccfgRenderCuentas(cuentas, cuentasConMovs) {
       ${_ccfgTipoBadgeHtml(c.tipo||'efectivo')}
       <div class="ccfg-actions">
         <button class="ccfg-icon-btn" title="Editar"
-          onclick="ccfgAbrirEditarCuenta('${c.id}','${nombreSafe}','${tipoSafe}','${bancoSafe}')">
+          onclick="ccfgAbrirEditarCuenta('${c.id}','${nombreSafe}','${tipoSafe}','${bancoSafe}',${c.saldo||0})">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
         </button>
         <button class="ccfg-icon-btn danger" title="${cuentasConMovs.has(c.nombre)?'Tiene movimientos asociados':'Desactivar'}"
@@ -8271,7 +8275,7 @@ function _ccfgRenderConceptos(conceptos, tipo, conceptosConMovs) {
 }
 
 // ── Cuenta: helpers de apertura de modal ──
-function _ccfgAbrirModalCuenta({id='', nombre='', tipo='efectivo', banco=''}) {
+function _ccfgAbrirModalCuenta({id='', nombre='', tipo='efectivo', banco='', saldo=0}) {
   _ccfgCuentaTipoSel = tipo;
   document.getElementById('ccfg-cuenta-id').value = id;
   document.getElementById('ccfg-cuenta-nombre').value = nombre;
@@ -8279,8 +8283,10 @@ function _ccfgAbrirModalCuenta({id='', nombre='', tipo='efectivo', banco=''}) {
   document.querySelectorAll('.ccfg-tipo-btn').forEach(b=>b.classList.toggle('active', b.dataset.tipo===tipo));
   document.getElementById('ccfg-banco-field').style.display = tipo==='banco' ? 'block' : 'none';
   const esEdicion = !!id;
-  document.getElementById('ccfg-saldo-field').style.display = esEdicion ? 'none' : 'block';
-  if(!esEdicion) document.getElementById('ccfg-cuenta-saldo').value = '0';
+  document.getElementById('ccfg-saldo-field').style.display = 'block';
+  const saldoEl = document.getElementById('ccfg-cuenta-saldo');
+  saldoEl.value = saldo > 0 ? saldo.toLocaleString('es-AR') : '';
+  saldoEl.placeholder = esEdicion ? 'Saldo actual' : '0';
   document.getElementById('ccfg-cuenta-modal-title').textContent = esEdicion ? 'Editar cuenta' : 'Agregar cuenta';
   const saveBtn = document.getElementById('ccfg-cuenta-save');
   saveBtn.textContent = esEdicion ? 'Guardar cambios' : 'Agregar cuenta';
@@ -8294,8 +8300,8 @@ window.cajaConfigAgregarCuenta = function() {
   _ccfgAbrirModalCuenta({});
 };
 
-window.ccfgAbrirEditarCuenta = function(id, nombre, tipo, banco) {
-  _ccfgAbrirModalCuenta({id, nombre, tipo, banco});
+window.ccfgAbrirEditarCuenta = function(id, nombre, tipo, banco, saldo) {
+  _ccfgAbrirModalCuenta({id, nombre, tipo, banco, saldo: parseFloat(saldo)||0});
 };
 
 window.ccfgCuentaTipo = function(btn) {
@@ -8318,7 +8324,7 @@ window.ccfgCuentaGuardar = async function() {
   if(!nombre) { document.getElementById('ccfg-cuenta-nombre').focus(); return; }
   const tipo = _ccfgCuentaTipoSel;
   const banco = tipo==='banco' ? document.getElementById('ccfg-cuenta-banco').value.trim() : '';
-  const saldo = esEdicion ? 0 : (parseFloat(document.getElementById('ccfg-cuenta-saldo').value)||0);
+  const saldo = esEdicion ? (_mvmParseMonto('ccfg-cuenta-saldo')||0) : (_mvmParseMonto('ccfg-cuenta-saldo')||0);
 
   const btn = document.getElementById('ccfg-cuenta-save');
   btn.disabled = true; btn.textContent = 'Guardando...';
@@ -8326,7 +8332,7 @@ window.ccfgCuentaGuardar = async function() {
     if(esEdicion) {
       // Editar cuenta existente
       await updateDoc(doc(db,'clientes',currentClientUID,'cuentas',cuentaId), {
-        nombre, tipo, ...(banco?{banco}:{banco:''}),
+        nombre, tipo, ...(banco?{banco}:{banco:''}), ...(saldo>0?{saldo}:{}),
       });
     } else {
       // Agregar nueva cuenta
@@ -11922,7 +11928,7 @@ window.filtrarProdsNecesidad = function(q) {
   lista.innerHTML = prods.map(p=>{
     const checked=checkedIds.includes(p.id);
     const cant=cantidades[p.id]||'';
-    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:.5px solid var(--cream-d);" onmousedown="event.preventDefault()">
+    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:.5px solid var(--cream-d);">
     <input type="checkbox" id="ncp-${p.id}" value="${p.id}" style="accent-color:var(--sage-dark);" ${checked?'checked':''} onchange="toggleProdNC('${p.id}','${p.nombre}','${p.unidad}')"/>
     <label for="ncp-${p.id}" style="flex:1;font-size:12px;color:var(--text);cursor:pointer;">${p.nombre} <span style="color:var(--text-l);">(${p.unidad})</span></label>
     <input type="number" id="ncq-${p.id}" placeholder="Cant." min="1" value="${cant}" style="width:60px;padding:4px 6px;border:.5px solid var(--cream-d);border-radius:7px;font-size:12px;" ${checked?'':'disabled'}/>
@@ -13223,6 +13229,16 @@ window.openModal_newPagoProvModal_extra = async function() {
   if(montoLibre) montoLibre.value = '';
   const concepto = document.getElementById('npp-concepto');
   if(concepto) concepto.value = '';
+  // Cargar cuentas disponibles
+  try {
+    const cuentasSnap = await getDocs(collection(db,'clientes',currentClientUID,'cuentas'));
+    const cuentasSel = document.getElementById('npp-cuenta');
+    if(cuentasSel) {
+      const cuentas = [];
+      cuentasSnap.forEach(d => { const c = d.data(); if(c.activa !== false && c.nombre) cuentas.push(c.nombre); });
+      cuentasSel.innerHTML = cuentas.map(n=>`<option value="${n}">${n}</option>`).join('') || '<option value="">Sin cuentas</option>';
+    }
+  } catch(e) {}
   try {
     const snap = await getDoc(doc(db,'clientes',currentClientUID));
     const data = snap.data() || {};
@@ -13300,6 +13316,7 @@ window.savePagoProveedor = async function() {
   const showErr = (msg) => { if(errEl){ errEl.textContent=msg; errEl.style.display='block'; } };
   const fecha = document.getElementById('npp-fecha')?.value;
   const medio = document.getElementById('npp-medio')?.value || 'transferencia';
+  const cuentaPago = document.getElementById('npp-cuenta')?.value || medio;
   const concepto = document.getElementById('npp-concepto')?.value?.trim() || '';
   const montoLibre = parseFloat(document.getElementById('npp-monto-libre')?.value) || 0;
   const total = window._totalOP || 0;
@@ -13365,7 +13382,7 @@ window.savePagoProveedor = async function() {
       fecha      : fecha || new Date().toISOString().split('T')[0],
       tipo       : 'egreso',
       concepto   : 'Proveedor',
-      cuenta     : medio,
+      cuenta     : cuentaPago,
       monto      : total,
       origen     : 'proveedor',
       referenciaId: opRef.id,
@@ -16225,7 +16242,7 @@ window.doResetPassword = async function(){
 <div class="cj-overlay" id="mdv-overlay" onclick="if(event.target===this)mdvCerrar()" style="display:none;">
   <div class="cj-modal" style="max-width:440px;" onclick="event.stopPropagation()">
     <!-- Header -->
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;padding:20px 22px 0;flex-shrink:0;">
       <div style="flex:1;min-width:0;">
         <div class="mdv-eyebrow" id="mdv-eyebrow">—</div>
         <div class="mdv-title" id="mdv-title">—</div>
@@ -16245,7 +16262,7 @@ window.doResetPassword = async function(){
     </div>
 
     <!-- Body -->
-    <div id="mdv-body" style="margin-bottom:4px;"></div>
+    <div id="mdv-body" style="overflow-y:auto;flex:1;padding:0 22px 20px;"></div>
 
     <!-- Footer (edit mode only) -->
     <div class="cj-mfooter" id="mdv-footer" style="display:none;">
@@ -16282,7 +16299,7 @@ window.doResetPassword = async function(){
       </div>
       <div id="ccfg-saldo-field">
         <label class="cj-slabel">SALDO INICIAL</label>
-        <input type="number" class="cj-input" id="ccfg-cuenta-saldo" value="0" min="0">
+        <input type="text" inputmode="numeric" class="cj-input" id="ccfg-cuenta-saldo" placeholder="0" oninput="mvmFormatMonto(this)">
       </div>
     </div>
     <div class="cj-mfooter" style="display:flex;gap:8px;">
