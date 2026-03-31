@@ -1678,22 +1678,24 @@ textarea.cj-input{resize:none;}
       <div id="ct-inicio" style="display:none;">
 
         <!-- Card: días restantes del mes -->
-        <div class="dash-card" id="inicio-dias-card" style="display:none;background:var(--white);border:.5px solid var(--cream-d);border-radius:13px;padding:18px 20px;margin-bottom:10px;">
-          <div style="display:flex;align-items:center;gap:20px;">
-            <div style="flex-shrink:0;text-align:center;min-width:72px;">
-              <div id="inicio-dias-num" style="font-family:'Cormorant Garamond',serif;font-size:54px;font-weight:400;line-height:1;color:#4a5e4d;display:inline-block;">—</div>
-              <div id="inicio-dias-label" style="font-size:11px;color:var(--text-l);margin-top:3px;white-space:nowrap;">días para cerrar</div>
+        <div class="dash-card" id="inicio-dias-card" style="display:none;background:var(--white);border:.5px solid var(--cream-d);border-radius:13px;padding:12px 16px;margin-bottom:10px;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="flex-shrink:0;white-space:nowrap;display:flex;align-items:baseline;gap:5px;">
+              <span id="inicio-dias-num" style="font-size:15px;font-weight:700;color:#4a5e4d;">—</span>
+              <span id="inicio-dias-label" style="font-size:12px;color:var(--text-l);">días para cerrar</span>
             </div>
             <div style="flex:1;min-width:0;">
-              <div style="height:5px;background:var(--cream-d);border-radius:5px;overflow:hidden;margin-bottom:7px;">
-                <div id="inicio-mes-bar" style="height:100%;width:0%;background:#4a5e4d;border-radius:5px;transition:width .7s ease;"></div>
+              <div style="height:4px;background:var(--cream-d);border-radius:4px;overflow:hidden;">
+                <div id="inicio-mes-bar" style="height:100%;width:0%;background:#4a5e4d;border-radius:4px;transition:width .7s ease;"></div>
               </div>
-              <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-l);">
+              <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-l);margin-top:4px;">
                 <span id="inicio-dias-start"></span>
                 <span id="inicio-dias-hoy" style="color:#4a5e4d;font-weight:600;"></span>
                 <span id="inicio-dias-end"></span>
               </div>
-              <div style="font-size:11px;color:var(--text-l);margin-top:9px;">Cierre <span id="inicio-dias-cierre" style="color:var(--text);font-weight:500;"></span></div>
+            </div>
+            <div style="flex-shrink:0;">
+              <span style="display:inline-flex;align-items:center;gap:3px;background:#FEF3C7;color:#92400E;border:.5px solid #F59E0B55;border-radius:20px;padding:4px 10px;font-size:11px;font-weight:600;white-space:nowrap;">Cierre <span id="inicio-dias-cierre"></span></span>
             </div>
           </div>
         </div>
@@ -1704,7 +1706,7 @@ textarea.cj-input{resize:none;}
         </div>
 
         <!-- Banner principal -->
-        <div class="dash-card" style="background:#4a5e4d;border-radius:14px;padding:22px 24px;margin-bottom:14px;color:#fff;">
+        <div class="dash-card" style="background:#4a5e4d;border-radius:14px;padding:22px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;">
           <div style="display:flex;align-items:center;gap:14px;">
             <div id="inicio-logo-wrap" style="width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.12);border:.5px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="15" rx="2" stroke="#fff" stroke-width="1.5"/><path d="M8 6V5a2 2 0 014 0v1M12 6v15" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="13" r="1.5" fill="#fff"/><circle cx="16" cy="13" r="1.5" fill="#fff"/></svg>
@@ -1744,20 +1746,23 @@ textarea.cj-input{resize:none;}
           </div>
         </div>
 
-        <!-- Accesos rápidos -->
-        <div class="dash-card" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;">
-          <button onclick="openModal('newClientIngresoModal')" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:14px 10px;background:#5A8A62;color:#fff;border:none;border-radius:12px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-            + Ingreso
-          </button>
-          <button onclick="openModal('newClientEgresoModal')" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:14px 10px;background:#C4786A;color:#fff;border:none;border-radius:12px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
-            + Egreso
-          </button>
-          <button onclick="openModal('newClientPresupModal')" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:14px 10px;background:transparent;color:#4a5e4d;border:1.5px solid #4a5e4d;border-radius:12px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4a5e4d" stroke-width="2" stroke-linecap="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h6M9 11h6M9 15h4"/></svg>
-            + Presupuesto
-          </button>
+        <!-- Accesos directos -->
+        <div class="dash-card" style="background:var(--white);border:.5px solid var(--cream-d);border-radius:13px;padding:14px 16px;margin-bottom:14px;">
+          <div style="font-size:10px;font-weight:600;color:var(--text-l);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;">Accesos directos</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+            <button onclick="onboardingAbrirMovimiento('ingreso')" style="display:flex;align-items:center;justify-content:center;gap:7px;padding:12px 8px;background:#E8F2E9;color:#2D5E35;border:none;border-radius:11px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+              + Ingreso
+            </button>
+            <button onclick="onboardingAbrirMovimiento('egreso')" style="display:flex;align-items:center;justify-content:center;gap:7px;padding:12px 8px;background:#FBEAE7;color:#8B3A30;border:none;border-radius:11px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+              + Egreso
+            </button>
+            <button onclick="cajaVentaRapida()" style="display:flex;align-items:center;justify-content:center;gap:7px;padding:12px 8px;background:#4a5e4d;color:#fff;border:none;border-radius:11px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              + Venta caja
+            </button>
+          </div>
         </div>
 
         <!-- Onboarding checklist -->
@@ -3228,7 +3233,7 @@ textarea.cj-input{resize:none;}
     <div class="fg"><label class="fl">Validez</label><input type="date" id="cp-validez" style="margin-top:0;"/></div>
     <div class="fg"><label class="fl">Estado</label><select class="fi" id="cp-estado" style="margin-top:0;"><option>Pendiente de enviar</option><option>Enviado</option><option>Consultado</option><option>Aprobado</option><option>Denegado</option></select></div>
     <div class="fg"><label class="fl">Condiciones / Notas</label><textarea class="na" id="cp-notas" style="min-height:50px;" placeholder="Ej: Seña 50% para confirmar..."></textarea></div>
-    <div class="br2"><button class="bp" onclick="createClientPresup()">Guardar</button><button class="bs" onclick="closeModal('newClientPresupModal')">Cancelar</button></div>
+    <div class="br2"><button class="bp" id="btn-save-client-presup" onclick="createClientPresup()">Guardar</button><button class="bs" onclick="closeModal('newClientPresupModal')">Cancelar</button></div>
     <div class="saved-msg" id="cp-saved">✓ Presupuesto guardado</div>
     <div id="cp-error" style="display:none;background:var(--err-bg,#fdecea);color:var(--err,#b00020);font-size:12px;padding:9px 12px;border-radius:7px;margin-top:8px;"></div>
   </div>
@@ -3386,7 +3391,7 @@ textarea.cj-input{resize:none;}
     <div class="fg"><label class="fl">Validez</label><input type="date" id="mcp-presup-validez" style="margin-top:0;"/></div>
     <div class="fg"><label class="fl">Estado</label><select class="fi" id="mcp-presup-estado" style="margin-top:0;"><option>Pendiente de enviar</option><option>Enviado</option><option>Consultado</option><option>Aprobado</option><option>Denegado</option></select></div>
     <div class="fg"><label class="fl">Condiciones / Notas</label><textarea class="na" id="mcp-presup-notas" style="min-height:50px;" placeholder="Ej: Seña 50% para confirmar..."></textarea></div>
-    <div class="br2"><button class="bp" onclick="createMcPresup()">Guardar</button><button class="bs" onclick="closeModal('newMcPresupModal')">Cancelar</button></div>
+    <div class="br2"><button class="bp" id="btn-save-mc-presup" onclick="createMcPresup()">Guardar</button><button class="bs" onclick="closeModal('newMcPresupModal')">Cancelar</button></div>
     <div class="saved-msg" id="mcp-presup-saved">✓ Presupuesto guardado</div>
   </div>
 </div>
@@ -3558,7 +3563,7 @@ textarea.cj-input{resize:none;}
         </div>
       </div>
       <div class="br2">
-        <button class="bp" onclick="saveNecesidad()">Guardar</button>
+        <button class="bp" id="btn-save-necesidad" onclick="saveNecesidad()">Guardar</button>
         <button class="bs" onclick="closeModal('newNecesidadModal')">Cancelar</button>
       </div>
       <div class="saved-msg" id="nc-saved">✓ Guardado</div>
@@ -3609,7 +3614,7 @@ textarea.cj-input{resize:none;}
         <div id="cot-ahorro" style="background:var(--ok-bg);border-radius:8px;padding:10px;font-size:11px;color:var(--ok);margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;"></div>
         <div style="display:flex;justify-content:flex-end;gap:8px;">
           <button class="bs" onclick="cotVolver2()">← Ajustar</button>
-          <button class="bp" onclick="confirmarOC()">Confirmar y emitir OC</button>
+          <button class="bp" id="btn-confirmar-oc" onclick="confirmarOC()">Confirmar y emitir OC</button>
         </div>
         <div class="saved-msg" id="cot-saved">✓ Órdenes emitidas</div>
       </div>
@@ -3697,6 +3702,10 @@ textarea.cj-input{resize:none;}
       <input type="date" class="fi" id="npp-fecha"/>
     </div>
     <div class="fg">
+      <label class="fl">Cuenta de pago</label>
+      <select class="fi" id="npp-cuenta" style="margin-top:0;"><option value="">Cargando...</option></select>
+    </div>
+    <div class="fg">
       <label class="fl">Medio de pago</label>
       <select class="fi" id="npp-medio" style="margin-top:0;">
         <option value="transferencia">Transferencia</option>
@@ -3724,7 +3733,7 @@ textarea.cj-input{resize:none;}
     </div>
     <div style="font-size:11px;color:var(--text-l);background:var(--cream);border-radius:8px;padding:8px 12px;margin-bottom:14px;">✓ Se registra automáticamente como egreso en Finanzas</div>
     <div class="br2">
-      <button class="bp" onclick="savePagoProveedor()">Registrar pago</button>
+      <button class="bp" id="btn-save-pago-prov" onclick="savePagoProveedor()">Registrar pago</button>
       <button class="bs" onclick="generarPDFOrdenPago()">PDF</button>
       <button class="bs" onclick="closeModal('newPagoProvModal')">Cancelar</button>
     </div>
@@ -7005,7 +7014,7 @@ async function loadCajaModule() {
     movsSnap.forEach(d => { const data = d.data(); if(!data.eliminado) todosMovs.push({id:d.id,...data}); });
     // Filtrar por mes para tabla y KPIs
     const movs = todosMovs.filter(m => m.mes === mes.stored);
-    movs.sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
+    movs.sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')||((a.creadoEn||'').localeCompare(b.creadoEn||'')));
     window._cajaMovimientos = movs;
     // 4. Renderizar
     renderCajaKPIs(movs);
@@ -7089,9 +7098,9 @@ function renderCajaChips(cuentas, movs) {
 window.cajaFiltrarCuenta = function(nombre, _el) {
   _cajaCuentaFiltro = (_cajaCuentaFiltro === nombre) ? null : nombre;
   const movs = window._cajaMovimientos || [];
-  const filtrados = _cajaCuentaFiltro
+  const filtrados = (_cajaCuentaFiltro
     ? movs.filter(m => m.cuenta === _cajaCuentaFiltro || m.cuentaDesde === _cajaCuentaFiltro || m.cuentaHacia === _cajaCuentaFiltro)
-    : movs;
+    : [...movs]).sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')||((a.creadoEn||'').localeCompare(b.creadoEn||'')));
   // Re-render solo chips y tabla (KPIs no cambian)
   const cuentasContainer = document.getElementById('caja-chips');
   if(cuentasContainer) {
@@ -8226,7 +8235,7 @@ function _ccfgRenderCuentas(cuentas, cuentasConMovs) {
       ${_ccfgTipoBadgeHtml(c.tipo||'efectivo')}
       <div class="ccfg-actions">
         <button class="ccfg-icon-btn" title="Editar"
-          onclick="ccfgAbrirEditarCuenta('${c.id}','${nombreSafe}','${tipoSafe}','${bancoSafe}')">
+          onclick="ccfgAbrirEditarCuenta('${c.id}','${nombreSafe}','${tipoSafe}','${bancoSafe}',${c.saldo||0})">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
         </button>
         <button class="ccfg-icon-btn danger" title="${cuentasConMovs.has(c.nombre)?'Tiene movimientos asociados':'Desactivar'}"
@@ -8265,7 +8274,7 @@ function _ccfgRenderConceptos(conceptos, tipo, conceptosConMovs) {
 }
 
 // ── Cuenta: helpers de apertura de modal ──
-function _ccfgAbrirModalCuenta({id='', nombre='', tipo='efectivo', banco=''}) {
+function _ccfgAbrirModalCuenta({id='', nombre='', tipo='efectivo', banco='', saldo=0, tieneMovimientos=false}) {
   _ccfgCuentaTipoSel = tipo;
   document.getElementById('ccfg-cuenta-id').value = id;
   document.getElementById('ccfg-cuenta-nombre').value = nombre;
@@ -8273,8 +8282,22 @@ function _ccfgAbrirModalCuenta({id='', nombre='', tipo='efectivo', banco=''}) {
   document.querySelectorAll('.ccfg-tipo-btn').forEach(b=>b.classList.toggle('active', b.dataset.tipo===tipo));
   document.getElementById('ccfg-banco-field').style.display = tipo==='banco' ? 'block' : 'none';
   const esEdicion = !!id;
-  document.getElementById('ccfg-saldo-field').style.display = esEdicion ? 'none' : 'block';
-  if(!esEdicion) document.getElementById('ccfg-cuenta-saldo').value = '0';
+  document.getElementById('ccfg-saldo-field').style.display = 'block';
+  const saldoEl = document.getElementById('ccfg-cuenta-saldo');
+  const saldoLabel = document.querySelector('#ccfg-saldo-field .cj-slabel');
+  if(esEdicion && tieneMovimientos) {
+    // Cuenta con movimientos: mostrar saldo en modo lectura
+    saldoEl.value = saldo > 0 ? saldo.toLocaleString('es-AR') : '0';
+    saldoEl.readOnly = true;
+    saldoEl.style.cssText = 'background:#f5f4f0;color:#999;cursor:not-allowed;';
+    if(saldoLabel) saldoLabel.textContent = 'SALDO INICIAL (solo lectura)';
+  } else {
+    saldoEl.value = saldo > 0 ? saldo.toLocaleString('es-AR') : '';
+    saldoEl.readOnly = false;
+    saldoEl.style.cssText = '';
+    if(saldoLabel) saldoLabel.textContent = 'SALDO INICIAL';
+    saldoEl.placeholder = esEdicion ? 'Saldo actual' : '0';
+  }
   document.getElementById('ccfg-cuenta-modal-title').textContent = esEdicion ? 'Editar cuenta' : 'Agregar cuenta';
   const saveBtn = document.getElementById('ccfg-cuenta-save');
   saveBtn.textContent = esEdicion ? 'Guardar cambios' : 'Agregar cuenta';
@@ -8288,8 +8311,15 @@ window.cajaConfigAgregarCuenta = function() {
   _ccfgAbrirModalCuenta({});
 };
 
-window.ccfgAbrirEditarCuenta = function(id, nombre, tipo, banco) {
-  _ccfgAbrirModalCuenta({id, nombre, tipo, banco});
+window.ccfgAbrirEditarCuenta = async function(id, nombre, tipo, banco, saldo) {
+  let tieneMovimientos = false;
+  if(id && currentClientUID) {
+    try {
+      const snap = await getDocs(query(collection(db,'libroCaja'),where('uid','==',currentClientUID)));
+      snap.forEach(d => { if(!d.data().eliminado && d.data().cuenta === nombre) tieneMovimientos = true; });
+    } catch(e) {}
+  }
+  _ccfgAbrirModalCuenta({id, nombre, tipo, banco, saldo: parseFloat(saldo)||0, tieneMovimientos});
 };
 
 window.ccfgCuentaTipo = function(btn) {
@@ -8312,7 +8342,7 @@ window.ccfgCuentaGuardar = async function() {
   if(!nombre) { document.getElementById('ccfg-cuenta-nombre').focus(); return; }
   const tipo = _ccfgCuentaTipoSel;
   const banco = tipo==='banco' ? document.getElementById('ccfg-cuenta-banco').value.trim() : '';
-  const saldo = esEdicion ? 0 : (parseFloat(document.getElementById('ccfg-cuenta-saldo').value)||0);
+  const saldo = esEdicion ? (_mvmParseMonto('ccfg-cuenta-saldo')||0) : (_mvmParseMonto('ccfg-cuenta-saldo')||0);
 
   const btn = document.getElementById('ccfg-cuenta-save');
   btn.disabled = true; btn.textContent = 'Guardando...';
@@ -8320,7 +8350,7 @@ window.ccfgCuentaGuardar = async function() {
     if(esEdicion) {
       // Editar cuenta existente
       await updateDoc(doc(db,'clientes',currentClientUID,'cuentas',cuentaId), {
-        nombre, tipo, ...(banco?{banco}:{banco:''}),
+        nombre, tipo, ...(banco?{banco}:{banco:''}), ...(saldo>0?{saldo}:{}),
       });
     } else {
       // Agregar nueva cuenta
@@ -8588,7 +8618,7 @@ window.mvmActualizarCierre = function() {
   if(!ctEl||!diffEl) return;
   const val = ctEl.value.trim();
   if(!val){diffEl.style.display='none';return;}
-  const diff = (parseFloat(val)||0) - _mvmEfectivoSaldo;
+  const diff = (_mvmParseMonto('mvm-contado')) - _mvmEfectivoSaldo;
   diffEl.style.display = '';
   diffEl.className = 'cj-cdf ' + (diff>=0 ? 'sobrante' : 'faltante');
   diffEl.textContent = diff>=0
@@ -8605,7 +8635,7 @@ window.mvmGuardar = async function() {
   try {
     if(_mvmTipo==='transferencia') {
       const fecha = document.getElementById('mvm-tr-fecha')?.value||hoy;
-      const monto = parseFloat(document.getElementById('mvm-tr-monto')?.value)||0;
+      const monto = _mvmParseMonto('mvm-tr-monto');
       const desde = document.getElementById('mvm-tr-desde')?.value;
       const hacia = document.getElementById('mvm-tr-hacia')?.value;
       const detalle = document.getElementById('mvm-tr-detalle')?.value||'';
@@ -8618,7 +8648,7 @@ window.mvmGuardar = async function() {
       const detalle = document.getElementById('mvm-detalle')?.value||'';
       const mesFecha = mkMes(fecha);
       if(_mvmConceptoSel==='Cierre de caja') {
-        const contado = parseFloat(document.getElementById('mvm-contado')?.value)||0;
+        const contado = _mvmParseMonto('mvm-contado');
         if(!contado) return;
         const diff = contado - _mvmEfectivoSaldo;
         docs.push({fecha,tipo:'egreso',concepto:'Cierre de caja',cuenta,monto:contado,montoContado:contado,saldoEsperado:_mvmEfectivoSaldo,detalle,mes:mesFecha,origen:'manual',eliminado:false,creadoEn:new Date().toISOString()});
@@ -8627,7 +8657,7 @@ window.mvmGuardar = async function() {
           else docs.push({fecha,tipo:'egreso',concepto:'Faltante',cuenta,monto:Math.round(Math.abs(diff)*100)/100,detalle:'Auto-generado por cierre de caja',mes:mesFecha,origen:'manual',eliminado:false,creadoEn:new Date().toISOString()});
         }
       } else {
-        const monto = parseFloat(document.getElementById('mvm-monto')?.value)||0;
+        const monto = _mvmParseMonto('mvm-monto');
         if(!monto||!_mvmConceptoSel) return;
         docs.push({fecha,tipo:_mvmTipo,concepto:_mvmConceptoSel,cuenta,monto,detalle,mes:mesFecha,origen:'manual',eliminado:false,creadoEn:new Date().toISOString()});
       }
@@ -8648,6 +8678,19 @@ window.mvmCerrar = function() {
   const ov = document.getElementById('mvm-overlay');
   if(ov) ov.style.display = 'none';
 };
+
+window.mvmFormatMonto = function(input) {
+  const raw = input.value.replace(/\./g, '').replace(/[^\d]/g, '');
+  if(!raw) { input.value = ''; return; }
+  const num = parseInt(raw, 10);
+  input.value = isNaN(num) ? '' : num.toLocaleString('es-AR');
+};
+
+function _mvmParseMonto(id) {
+  const el = document.getElementById(id);
+  if(!el) return 0;
+  return parseFloat(el.value.replace(/\./g, '').replace(',', '.')) || 0;
+}
 
 // ─── MODAL VENTA RÁPIDA ───
 let _vrcCarrito = {}, _vrcMetodo = null, _vrcProductos = [], _vrcCuentas = [];
@@ -8902,22 +8945,16 @@ async function loadInicio() {
     animateDiasFlip(document.getElementById('inicio-dias-num'), totalDias, diasRestantes, 1400);
   })();
 
-  // Cargar datos financieros
+  // Cargar datos financieros desde libroCaja
   try {
-    const [ingSnap, egSnap, cobrosSnap] = await Promise.all([
-      getDocs(collection(db,'clientes',currentClientUID,'ingresos')),
-      getDocs(collection(db,'clientes',currentClientUID,'egresos')),
-      getDocs(collection(db,'clientes',currentClientUID,'cobros'))
-    ]);
-    const ingManuales = []; ingSnap.forEach(d=>{ const data=d.data(); if(!data.eliminado) ingManuales.push({id:d.id,...data,origen:'manual'}); });
-    const egresos = []; egSnap.forEach(d=>{ const data=d.data(); if(!data.eliminado) egresos.push({id:d.id,...data}); });
-    const cobrosComoIng = [];
-    cobrosSnap.forEach(d=>{
+    const cajSnap = await getDocs(query(collection(db,'libroCaja'),where('uid','==',currentClientUID)));
+    const ingresos = [], egresos = [];
+    cajSnap.forEach(d => {
       const data = d.data();
       if(data.eliminado) return;
-      cobrosComoIng.push({id:d.id,concepto:data.concepto||'Cobro',monto:parseFloat(data.monto)||0,mes:data.fecha?new Date(data.fecha+'T12:00:00').toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase()):'',fecha:data.fecha||'',origen:'comercial',...data});
+      if(data.tipo==='ingreso') ingresos.push({id:d.id,...data});
+      else if(data.tipo==='egreso') egresos.push({id:d.id,...data});
     });
-    const ingresos = [...ingManuales,...cobrosComoIng];
 
     // Mes actual — usar mismo formato que poblarMeses ("Marzo 2026") para que coincida con el campo mes guardado
     const hoy = new Date();
@@ -9232,7 +9269,29 @@ window.checkOnboardingStatus = function() {
 async function renderOnboardingChecklist() {
   const el = document.getElementById('onboarding-checklist');
   if(!el) return;
-  const s = checkOnboardingStatus();
+  // Build status from libroCaja (new system) instead of legacy _clientIngresos/_clientEgresos
+  const d = currentClientData || {};
+  let hasIngreso = false, hasEgreso = false;
+  if(currentClientUID) {
+    try {
+      let cajMovs = window._cajaMovimientos;
+      if(!cajMovs) {
+        const snap = await getDocs(query(collection(db,'libroCaja'),where('uid','==',currentClientUID)));
+        cajMovs = [];
+        snap.forEach(doc => { const m = doc.data(); if(!m.eliminado) cajMovs.push(m); });
+      }
+      hasIngreso = cajMovs.some(m => m.tipo === 'ingreso');
+      hasEgreso = cajMovs.some(m => m.tipo === 'egreso');
+    } catch(e) {}
+    if(!window._clientPresupuestos) { try { await loadClientPresupuestos(); } catch(e) {} }
+  }
+  const s = {
+    nombre: !!(d.negocioNombre && d.negocioNombre.trim()),
+    logo: !!d.logoNegocio,
+    ingreso: hasIngreso,
+    egreso: hasEgreso,
+    presupuesto: (window._clientPresupuestos||[]).length > 0
+  };
   const done = Object.values(s).filter(Boolean).length;
   if(done === 5) {
     el.style.display = 'none';
@@ -10449,6 +10508,8 @@ window.createMcPresup = async function() {
   const desc = document.getElementById('mcp-presup-desc').value.trim();
   if(!clienteNombre||clienteNombre==='—'){alert('Error: cliente no definido');return;}
   if(_mcPresupItems.length===0){alert('Agregá al menos un ítem al presupuesto');return;}
+  const _mcpBtn = document.getElementById('btn-save-mc-presup');
+  if(_mcpBtn){_mcpBtn.disabled=true;_mcpBtn.textContent='Guardando...';}
   const total = _mcPresupItems.reduce((s,it)=>s+(it.cant*it.precio),0);
   const data = {
     cliente:clienteNombre, clienteId: clienteId||null,
@@ -10478,7 +10539,7 @@ window.createMcPresup = async function() {
       await loadMcModule();
       if(_currentMcClienteId) openMcDetalle(_currentMcClienteId);
     },1500);
-  }catch(e){alert('Error: '+e.message);}
+  }catch(e){alert('Error: '+e.message);if(_mcpBtn){_mcpBtn.disabled=false;_mcpBtn.textContent='Guardar';}}
 };
 
 window.createMcCliente = async function() {
@@ -11133,6 +11194,7 @@ window.createClientPresup = async function() {
   const errEl = document.getElementById('cp-error');
   const showErr = msg => { if(errEl){ errEl.textContent=msg; errEl.style.display='block'; setTimeout(()=>errEl.style.display='none', 4000); } };
   if(errEl) errEl.style.display='none';
+  const _cpBtn = document.getElementById('btn-save-client-presup');
   const sel = document.getElementById('cp-cliente-sel');
   const clienteId = sel?.value || null;
   const clienteNombre = clienteId
@@ -11141,6 +11203,7 @@ window.createClientPresup = async function() {
   if(!clienteNombre) { showErr('Ingresá el nombre del prospecto o seleccioná un cliente'); return; }
   const _items = window._cpItems || _cpItems || [];
   if(_items.length === 0) { showErr('Agregá al menos un ítem al presupuesto'); return; }
+  if(_cpBtn){_cpBtn.disabled=true;_cpBtn.textContent='Guardando...';}
   const total = _items.reduce((s,it)=>s+(it.cant*it.precio),0);
   const data = {
     cliente: clienteNombre,
@@ -11173,7 +11236,7 @@ window.createClientPresup = async function() {
       todos.sort((a,b)=>new Date(b.creadoEn||0)-new Date(a.creadoEn||0));
       if(todos[0]) exportarPresupuestoPDF(todos[0].id);
     }, 1500);
-  } catch(e){ showErr('Error al guardar: '+e.message); }
+  } catch(e){ showErr('Error al guardar: '+e.message); if(_cpBtn){_cpBtn.disabled=false;_cpBtn.textContent='Guardar';} }
 };
 
 // ===== MÓDULO PROVEEDORES =====
@@ -11892,7 +11955,7 @@ window.filtrarProdsNecesidad = function(q) {
   lista.innerHTML = prods.map(p=>{
     const checked=checkedIds.includes(p.id);
     const cant=cantidades[p.id]||'';
-    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:.5px solid var(--cream-d);" onmousedown="event.preventDefault()">
+    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:.5px solid var(--cream-d);">
     <input type="checkbox" id="ncp-${p.id}" value="${p.id}" style="accent-color:var(--sage-dark);" ${checked?'checked':''} onchange="toggleProdNC('${p.id}','${p.nombre}','${p.unidad}')"/>
     <label for="ncp-${p.id}" style="flex:1;font-size:12px;color:var(--text);cursor:pointer;">${p.nombre} <span style="color:var(--text-l);">(${p.unidad})</span></label>
     <input type="number" id="ncq-${p.id}" placeholder="Cant." min="1" value="${cant}" style="width:60px;padding:4px 6px;border:.5px solid var(--cream-d);border-radius:7px;font-size:12px;" ${checked?'':'disabled'}/>
@@ -11916,12 +11979,14 @@ window.saveNecesidad = async function() {
     cantidad:parseFloat(document.getElementById('ncq-'+p.id)?.value)||1
   }));
   if(items.length===0){alert('Seleccioná al menos un producto');return;}
+  const btn = document.getElementById('btn-save-necesidad');
+  if(btn){btn.disabled=true;btn.textContent='Guardando...';}
   const data={categoria:cat,estado:document.getElementById('nc-estado').value,periodicidad:document.getElementById('nc-periodicidad').value,items,cotizaciones:[],creadoEn:new Date().toISOString()};
   try{
     await addDoc(collection(db,'clientes',currentClientUID,'necesidades'),data);
     const s=document.getElementById('nc-saved');if(s)s.style.display='block';
     setTimeout(async()=>{if(s)s.style.display='none';closeModal('newNecesidadModal');await loadNecesidades();},1500);
-  }catch(e){alert('Error: '+e.message);}
+  }catch(e){alert('Error: '+e.message);if(btn){btn.disabled=false;btn.textContent='Guardar';}}
 };
 
 window.deleteNecesidad = function(id) {
@@ -12247,6 +12312,8 @@ window.cotPaso3 = function() {
   document.getElementById('cot-ahorro').innerHTML=`<span>${ocsAEmitir.length} OC a emitir · Total optimizado</span><span style="font-weight:500;">$${ahorro.toLocaleString('es-AR')} de ahorro vs opción más cara</span>`;
 
   document.getElementById('cot-paso2').style.display='none';
+  const btnOC = document.getElementById('btn-confirmar-oc');
+  if(btnOC){btnOC.disabled=false;btnOC.textContent='Confirmar y emitir OC';}
   document.getElementById('cot-paso3').style.display='block';
 };
 
@@ -12260,6 +12327,8 @@ window.confirmarOC = async function() {
   const nc = _necesidades.find(n=>n.id===_cotNcId);
   const ocsAEmitir = window._ocsAEmitir||[];
   if(ocsAEmitir.length===0){ alert('No hay ítems con precio para emitir.'); return; }
+  const btn = document.getElementById('btn-confirmar-oc');
+  if(btn){ btn.disabled=true; btn.textContent='Emitiendo...'; }
   const hoy = new Date().toISOString().split('T')[0];
   try {
     for(const oc of ocsAEmitir) {
@@ -12286,7 +12355,7 @@ window.confirmarOC = async function() {
         if(primera) setTimeout(()=>abrirDetalleOC(primera.id), 200);
       }
     },1500);
-  }catch(e){alert('Error: '+e.message);}
+  }catch(e){alert('Error: '+e.message);if(btn){btn.disabled=false;btn.textContent='Confirmar y emitir OC';}}
 };
 
 window.generarPDFNecesidad = async function(ncId) {
@@ -13193,6 +13262,16 @@ window.openModal_newPagoProvModal_extra = async function() {
   if(montoLibre) montoLibre.value = '';
   const concepto = document.getElementById('npp-concepto');
   if(concepto) concepto.value = '';
+  // Cargar cuentas disponibles
+  try {
+    const cuentasSnap = await getDocs(collection(db,'clientes',currentClientUID,'cuentas'));
+    const cuentasSel = document.getElementById('npp-cuenta');
+    if(cuentasSel) {
+      const cuentas = [];
+      cuentasSnap.forEach(d => { const c = d.data(); if(c.activa !== false && c.nombre) cuentas.push(c.nombre); });
+      cuentasSel.innerHTML = cuentas.map(n=>`<option value="${n}">${n}</option>`).join('') || '<option value="">Sin cuentas</option>';
+    }
+  } catch(e) {}
   try {
     const snap = await getDoc(doc(db,'clientes',currentClientUID));
     const data = snap.data() || {};
@@ -13265,11 +13344,14 @@ window.recalcularTotalOP = function() {
 window.savePagoProveedor = async function() {
   if(window._savingPago) return;
   window._savingPago = true;
-  if(!window._ccProvId || !currentClientUID) { window._savingPago = false; return; }
+  const _nppBtn = document.getElementById('btn-save-pago-prov');
+  if(_nppBtn){_nppBtn.disabled=true;_nppBtn.textContent='Registrando...';}
+  if(!window._ccProvId || !currentClientUID) { window._savingPago = false; if(_nppBtn){_nppBtn.disabled=false;_nppBtn.textContent='Registrar pago';} return; }
   const errEl = document.getElementById('npp-error');
   const showErr = (msg) => { if(errEl){ errEl.textContent=msg; errEl.style.display='block'; } };
   const fecha = document.getElementById('npp-fecha')?.value;
   const medio = document.getElementById('npp-medio')?.value || 'transferencia';
+  const cuentaPago = document.getElementById('npp-cuenta')?.value || medio;
   const concepto = document.getElementById('npp-concepto')?.value?.trim() || '';
   const montoLibre = parseFloat(document.getElementById('npp-monto-libre')?.value) || 0;
   const total = window._totalOP || 0;
@@ -13335,7 +13417,7 @@ window.savePagoProveedor = async function() {
       fecha      : fecha || new Date().toISOString().split('T')[0],
       tipo       : 'egreso',
       concepto   : 'Proveedor',
-      cuenta     : medio,
+      cuenta     : cuentaPago,
       monto      : total,
       origen     : 'proveedor',
       referenciaId: opRef.id,
@@ -13350,6 +13432,7 @@ window.savePagoProveedor = async function() {
   } catch(e) {
     console.error(e);
     showErr('Error al registrar el pago: ' + e.message);
+    if(_nppBtn){_nppBtn.disabled=false;_nppBtn.textContent='Registrar pago';}
   } finally {
     window._savingPago = false;
   }
@@ -16105,13 +16188,13 @@ window.doResetPassword = async function(){
       <div id="mvm-campos-normal">
         <div class="cj-row2">
           <div class="cj-field"><label>FECHA</label><input type="date" id="mvm-fecha"></div>
-          <div class="cj-field"><label>MONTO ($)</label><input type="number" id="mvm-monto" min="0" placeholder="0"></div>
+          <div class="cj-field"><label>MONTO ($)</label><input type="text" id="mvm-monto" inputmode="numeric" placeholder="0" oninput="mvmFormatMonto(this)"></div>
         </div>
         <div class="cj-field" style="margin-top:12px;"><label>CUENTA</label><select id="mvm-cuenta"></select></div>
         <div class="cj-field" style="margin-top:12px;"><label>DETALLE (opcional)</label><textarea id="mvm-detalle" placeholder="Descripción adicional..."></textarea></div>
         <div id="mvm-cierre-sec" style="display:none;margin-top:12px;">
           <div class="cj-row2">
-            <div class="cj-field"><label>MONTO CONTADO ($)</label><input type="number" id="mvm-contado" min="0" placeholder="0" oninput="mvmActualizarCierre()"></div>
+            <div class="cj-field"><label>MONTO CONTADO ($)</label><input type="text" id="mvm-contado" inputmode="numeric" placeholder="0" oninput="mvmFormatMonto(this);mvmActualizarCierre()"></div>
             <div class="cj-field"><label>SALDO ESPERADO</label>
               <div style="padding:10px 13px;border:1.5px solid #e8e8e4;border-radius:8px;font-size:13px;color:#888;background:#fafafa;min-height:40px;display:flex;align-items:center;"><span id="mvm-saldo-esp">—</span></div>
             </div>
@@ -16122,7 +16205,7 @@ window.doResetPassword = async function(){
       <div id="mvm-campos-transfer" style="display:none;">
         <div class="cj-row2">
           <div class="cj-field"><label>FECHA</label><input type="date" id="mvm-tr-fecha"></div>
-          <div class="cj-field"><label>MONTO ($)</label><input type="number" id="mvm-tr-monto" min="0" placeholder="0"></div>
+          <div class="cj-field"><label>MONTO ($)</label><input type="text" id="mvm-tr-monto" inputmode="numeric" placeholder="0" oninput="mvmFormatMonto(this)"></div>
         </div>
         <div style="display:flex;align-items:flex-end;gap:10px;margin-top:12px;">
           <div class="cj-field" style="flex:1;margin:0;"><label>DESDE</label><select id="mvm-tr-desde"></select></div>
@@ -16195,7 +16278,7 @@ window.doResetPassword = async function(){
 <div class="cj-overlay" id="mdv-overlay" onclick="if(event.target===this)mdvCerrar()" style="display:none;">
   <div class="cj-modal" style="max-width:440px;" onclick="event.stopPropagation()">
     <!-- Header -->
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;padding:20px 22px 0;flex-shrink:0;">
       <div style="flex:1;min-width:0;">
         <div class="mdv-eyebrow" id="mdv-eyebrow">—</div>
         <div class="mdv-title" id="mdv-title">—</div>
@@ -16215,7 +16298,7 @@ window.doResetPassword = async function(){
     </div>
 
     <!-- Body -->
-    <div id="mdv-body" style="margin-bottom:4px;"></div>
+    <div id="mdv-body" style="overflow-y:auto;flex:1;padding:0 22px 20px;"></div>
 
     <!-- Footer (edit mode only) -->
     <div class="cj-mfooter" id="mdv-footer" style="display:none;">
@@ -16252,7 +16335,7 @@ window.doResetPassword = async function(){
       </div>
       <div id="ccfg-saldo-field">
         <label class="cj-slabel">SALDO INICIAL</label>
-        <input type="number" class="cj-input" id="ccfg-cuenta-saldo" value="0" min="0">
+        <input type="text" inputmode="numeric" class="cj-input" id="ccfg-cuenta-saldo" placeholder="0" oninput="mvmFormatMonto(this)">
       </div>
     </div>
     <div class="cj-mfooter" style="display:flex;gap:8px;">
