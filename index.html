@@ -3022,16 +3022,18 @@ textarea.cj-input{resize:none;}
     <div class="mt">Nuevo cliente</div>
     <div class="fg"><label class="fl">Nombre / Negocio</label><input type="text" class="fi" id="nc-nombre" placeholder="Ej: Marcelo — La Playa en Tu Casa"/></div>
     <div class="fg"><label class="fl">Género</label><select class="fi" id="nc-genero" style="margin-top:0;"><option value="F">Femenino — Bienvenida</option><option value="M">Masculino — Bienvenido</option><option value="N">Neutro — ¡Hola!</option></select></div>
-    <div class="fg"><label class="fl">Rubro</label><input type="text" class="fi" id="nc-rubro" placeholder="Ej: Piletas, Salud, Retail..."/></div>
+    <div class="fg"><label class="fl">Rubro / Nombre del negocio</label><input type="text" class="fi" id="nc-rubro" placeholder="Ej: Piletas, Salud, Retail..."/></div>
     <div class="fg"><label class="fl">Programa</label><select class="fi" id="nc-prog" style="margin-top:0;"><option value="30D">Programa 30D — Orden Operativo</option><option value="90D">Programa 90D — Gestión Estratégica</option></select></div>
+    <div class="fg"><label class="fl">Plan</label><select class="fi" id="nc-plan" style="margin-top:0;"><option value="base">Base</option><option value="pro">Pro</option><option value="business">Business</option></select></div>
     <div class="fg"><label class="fl">Precio acordado (USD)</label><input type="number" class="fi" id="nc-precio" placeholder="Ingresá el precio"/></div>
     <div class="fg"><label class="fl">Email del cliente</label><input type="email" class="fi" id="nc-email" placeholder="cliente@email.com"/></div>
+    <div class="fg"><label class="fl">UID Firebase Auth <span style="font-size:11px;color:#999;">(del usuario creado en Authentication)</span></label><input type="text" class="fi" id="nc-uid" placeholder="Ej: abc123XYZ..."/></div>
     <div class="fg"><label class="fl">Notas iniciales (opcional)</label><textarea class="na" id="nc-notas" style="min-height:60px;" placeholder="Contexto, dolores, situacion actual..."></textarea></div>
     <div class="br2">
       <button class="bp" onclick="createClient()">Crear cliente</button>
       <button class="bs" onclick="closeModal('newClientModal')">Cancelar</button>
     </div>
-    <div class="saved-msg" id="client-saved">✓ Cliente creado. Recordá crear su usuario en Firebase Authentication.</div>
+    <div class="saved-msg" id="client-saved">✓ Cliente creado correctamente.</div>
   </div>
 </div>
 
@@ -5049,16 +5051,37 @@ window.deleteCliente = function(id, nombre, event) {
 };
 
 window.createClient = async function() {
-  const nombre = document.getElementById('nc-nombre').value;
-  const rubro = document.getElementById('nc-rubro').value;
-  const prog = document.getElementById('nc-prog').value;
-  const precio = document.getElementById('nc-precio').value;
-  const email = document.getElementById('nc-email').value;
-  const notas = document.getElementById('nc-notas').value;
-  const genero = document.getElementById('nc-genero').value;
+  const nombre  = document.getElementById('nc-nombre').value.trim();
+  const rubro   = document.getElementById('nc-rubro').value.trim();
+  const prog    = document.getElementById('nc-prog').value;
+  const plan    = document.getElementById('nc-plan').value;
+  const precio  = document.getElementById('nc-precio').value;
+  const email   = document.getElementById('nc-email').value.trim();
+  const uid     = document.getElementById('nc-uid').value.trim();
+  const notas   = document.getElementById('nc-notas').value;
+  const genero  = document.getElementById('nc-genero').value;
   if (!nombre || !email) { alert('Nombre y email son obligatorios'); return; }
+  if (!uid) { alert('El UID de Firebase Auth es obligatorio'); return; }
   try {
-    await addDoc(collection(db,'clientes'), {nombre,rubro,programa:prog,precio,email,notas,genero,semanaActual:1,creadoEn:new Date().toISOString()});
+    await setDoc(doc(db,'clientes',uid), {
+      uid,
+      nombre,
+      email,
+      genero,
+      rubro,
+      negocioNombre: nombre,
+      negocioRubro:  rubro,
+      programa:      prog,
+      plan,
+      precio,
+      notas,
+      activo:             true,
+      eliminado:          false,
+      suscripcionEstado:  'active',
+      productos:          { academia: false, sistema: true, embi: 'explicativo' },
+      semanaActual:       1,
+      creadoEn:           new Date().toISOString()
+    });
     const s = document.getElementById('client-saved');
     s.style.display = 'block';
     setTimeout(async () => { s.style.display='none'; closeModal('newClientModal'); await loadAdminData(); }, 2500);
@@ -7124,14 +7147,15 @@ function renderCajaTable(movs) {
     const entradaHtml = m.tipo==='ingreso'
       ? `<span style="font-size:13px;font-weight:600;color:#3B6D11;display:block;text-align:right;">$${Math.round(monto).toLocaleString('es-AR')}</span>`
       : `<span style="font-size:13px;color:#e0e0e0;display:block;text-align:right;">—</span>`;
-    const salidaHtml = m.tipo==='egreso'
+    const salidaHtml = (m.tipo==='egreso'||m.tipo==='transferencia')
       ? `<span style="font-size:13px;font-weight:600;color:#993C1D;display:block;text-align:right;">$${Math.round(monto).toLocaleString('es-AR')}</span>`
       : `<span style="font-size:13px;color:#e0e0e0;display:block;text-align:right;">—</span>`;
+    const cuentaLabel = m.tipo==='transferencia' ? (m.cuentaOrigen||'—') : (m.cuenta||'—');
     return `<tr style="opacity:0;animation:fadeUp .3s ease both;animation-delay:${80+i*50}ms;" onclick="cajaMostrarMovimiento('${m.id}')">
       <td><span style="font-size:12px;color:#bbb;">${fechaStr}</span></td>
       <td><span style="font-size:13px;font-weight:500;color:#1a1a1a;white-space:nowrap;">${m.concepto||'—'}</span></td>
       <td><span class="${badgeClass}">${badgeText}</span></td>
-      <td><span style="font-size:12px;color:#aaa;">${m.cuenta||'—'}</span></td>
+      <td><span style="font-size:12px;color:#aaa;">${cuentaLabel}</span></td>
       <td class="r">${entradaHtml}</td>
       <td class="r">${salidaHtml}</td>
       <td class="r"><span style="font-size:13px;font-weight:650;color:#1a1a1a;display:block;text-align:right;">$${Math.round(saldo).toLocaleString('es-AR')}</span></td>
@@ -7696,6 +7720,16 @@ let _cierreManualCompromisos = [];    // compromisos manuales agregados en esta 
 async function loadCierrePeriodo() {
   if(!currentClientUID) return;
   const uid = currentClientUID;
+  // Limpiar estado bloqueado de un cierre previo en esta sesión
+  window._cierreDocCerrado = null;
+  const prevBanner = document.getElementById('cierre-cerrado-banner');
+  if(prevBanner) prevBanner.remove();
+  const btnsEl = document.querySelector('#ct-cierre-periodo .cierre-footer-btns');
+  if(btnsEl) btnsEl.innerHTML =
+    '<button class="cierre-btn-discard" onclick="cierreDescartar()">Descartar</button>'+
+    '<button class="cierre-btn-draft" onclick="cierreGuardarBorrador()">Guardar borrador</button>'+
+    '<button class="cierre-btn-main" id="cierre-btn-main" onclick="cierreAccionPrincipal()">Guardar proyección</button>';
+  document.querySelectorAll('#ct-cierre-periodo .cierre-tab-btn, #ct-cierre-periodo .cierre-freq-btn, #cierre-fecha-inicio, #cierre-fecha-fin').forEach(el => { el.disabled = false; });
   try {
     // 1. Cargar configuración
     const cfgSnap = await getDocs(query(collection(db,'configuracionCierre'),where('uid','==',uid)));
@@ -8045,10 +8079,10 @@ async function _cierreCerrarPeriodo() {
     const mes   = new Date(fecha+'T12:00:00').toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase());
     const movs  = _cierreDistribucion.filter(d=>d.monto>0).map(d=>({
       uid, fecha, mes,
-      tipo: 'transfer',
+      tipo: 'transferencia',
       concepto: d.tipo==='reserva' ? 'Reserva '+d.nombre : 'Retiro '+d.nombre,
-      cuentaDesde: cuentaOrigen,
-      cuentaHacia: d.tipo==='reserva' ? d.nombre : 'Retiros '+d.nombre,
+      cuentaOrigen: cuentaOrigen,
+      cuentaDestino: d.tipo==='reserva' ? d.nombre : 'Retiros '+d.nombre,
       monto: Math.round(d.monto),
       origen: 'cierre',
       referenciaId: cierreRef.id,
@@ -8056,9 +8090,33 @@ async function _cierreCerrarPeriodo() {
       creadoEn: new Date().toISOString()
     }));
     await Promise.all(movs.map(m=>addDoc(collection(db,'libroCaja'),m)));
+    // Bloquear panel y mostrar estado cerrado
+    window._cierreDocCerrado = doc_;
+    _cierreRenderBloqueado(doc_);
+    // Generar PDF después de actualizar UI (el alert previo bloqueaba la descarga)
     cierreGenerarPDF(doc_);
-    alert('Período cerrado correctamente.');
   } catch(e) { alert('Error al cerrar: '+e.message); console.log(e); }
+}
+
+function _cierreRenderBloqueado(doc_) {
+  // 1. Banner de éxito antes del primer step card
+  const prev = document.getElementById('cierre-cerrado-banner');
+  if(prev) prev.remove();
+  const firstCard = document.querySelector('#ct-cierre-periodo .cierre-step-card');
+  if(firstCard) {
+    const banner = document.createElement('div');
+    banner.id = 'cierre-cerrado-banner';
+    banner.style.cssText = 'background:#4a5e4d;color:white;border-radius:12px;padding:14px 18px;margin-bottom:14px;display:flex;align-items:center;gap:12px;';
+    banner.innerHTML = '<span style="font-size:20px;flex-shrink:0;">✓</span><div><div style="font-weight:700;font-size:14px;">Período cerrado correctamente</div><div style="font-size:12px;opacity:.8;margin-top:2px;">'+(doc_.fechaInicio||'')+(doc_.fechaFin?' → '+doc_.fechaFin:'')+'</div></div>';
+    firstCard.parentNode.insertBefore(banner, firstCard);
+  }
+  // 2. Reemplazar botones del footer: solo "Nuevo cierre" + "Ver PDF"
+  const btnsEl = document.querySelector('#ct-cierre-periodo .cierre-footer-btns');
+  if(btnsEl) btnsEl.innerHTML =
+    '<button class="cierre-btn-draft" onclick="loadCierrePeriodo()">Nuevo cierre</button>'+
+    '<button class="cierre-btn-main" onclick="cierreGenerarPDF(window._cierreDocCerrado)">Ver PDF</button>';
+  // 3. Deshabilitar controles editables del panel
+  document.querySelectorAll('#ct-cierre-periodo .cierre-tab-btn, #ct-cierre-periodo .cierre-freq-btn, #cierre-fecha-inicio, #cierre-fecha-fin, #ct-cierre-periodo .cierre-comp-cb, #ct-cierre-periodo .cierre-dist-row input').forEach(el => { el.disabled = true; });
 }
 
 function _cierreBuildDoc(estado) {
