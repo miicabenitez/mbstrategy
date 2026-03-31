@@ -8062,22 +8062,23 @@ async function _cierreCerrarPeriodo() {
 }
 
 function _cierreBuildDoc(estado) {
+  const su = obj => Object.fromEntries(Object.entries(obj).filter(([,v]) => v !== undefined));
   const fechaInicio = document.getElementById('cierre-fecha-inicio')?.value||'';
   const fechaFin    = document.getElementById('cierre-fecha-fin')?.value||'';
-  return {
+  return su({
     uid: currentClientUID,
     tipo: _cierreModo==='real' ? 'cierre' : _cierreModo,
     frecuencia: _cierreFrec,
     fechaInicio, fechaFin,
     disponibleTotal: _cierreDisponibleTotal,
-    cuentasSnapshot: _cierreCuentas.map(c=>({nombre:c.nombre,tipo:c.tipo,saldo:c.saldoReal||0})),
-    compromisos: _cierreCompromisosLista.map(c=>({...c})),
-    distribucion: _cierreDistribucion.map(d=>({...d})),
+    cuentasSnapshot: _cierreCuentas.map(c=>su({nombre:c.nombre,tipo:c.tipo,saldo:c.saldoReal||0})),
+    compromisos: _cierreCompromisosLista.map(c=>su({...c})),
+    distribucion: _cierreDistribucion.map(d=>su({...d})),
     remanente: Math.max(0, _cierreDisponibleTotal - _cierreCompromisosSeleccionados - _cierreDistribucion.reduce((a,d)=>a+d.monto,0)),
     estado,
     eliminado: false,
     creadoEn: new Date().toISOString()
-  };
+  });
 }
 
 // ─── PDF del cierre ───────────────────────────────────────────
