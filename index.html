@@ -1116,9 +1116,7 @@ textarea.cj-input{resize:none;}
                 <button class="presup-fil active" onclick="filterPresup('todos',this)">Todos</button>
                 <button class="presup-fil" data-estado="Pendiente de enviar" onclick="filterPresup('Pendiente de enviar',this)">Por enviar</button>
                 <button class="presup-fil" data-estado="Enviado" onclick="filterPresup('Enviado',this)">Enviados</button>
-                <button class="presup-fil" data-estado="Consultado" onclick="filterPresup('Consultado',this)">Consultados</button>
                 <button class="presup-fil" data-estado="Aprobado" onclick="filterPresup('Aprobado',this)">Aprobados</button>
-                <button class="presup-fil" data-estado="Denegado" onclick="filterPresup('Denegado',this)">Denegados</button>
                 <button class="presup-fil" data-estado="Cobrado" onclick="filterPresup('Cobrado',this)">Cobrados</button>
               </div>
               <div id="cli-presupuestos"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin presupuestos cargados.</div></div>
@@ -1725,10 +1723,8 @@ textarea.cj-input{resize:none;}
           </div>
 
           <!-- Selector de período -->
-          <div style="display:flex;align-items:center;gap:8px;margin-top:12px;margin-bottom:2px;">
-            <button onclick="dashCambiarMes(-1)" style="width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,.15);border:.5px solid rgba(255,255,255,.2);color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">&#8249;</button>
-            <span id="inicio-mes-sel" style="font-size:12px;font-weight:500;color:rgba(255,255,255,.8);min-width:110px;text-align:center;"></span>
-            <button onclick="dashCambiarMes(1)" id="dash-mes-sig-btn" style="width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,.15);border:.5px solid rgba(255,255,255,.2);color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">&#8250;</button>
+          <div style="margin-top:12px;margin-bottom:2px;">
+            <select id="dash-mes-select" onchange="loadInicio()" style="background:rgba(255,255,255,.15);border:.5px solid rgba(255,255,255,.3);color:#fff;font-size:12px;font-weight:500;border-radius:8px;padding:5px 10px;cursor:pointer;font-family:'DM Sans',sans-serif;outline:none;min-width:150px;"></select>
           </div>
           <!-- KPIs dentro del banner -->
           <div id="inicio-kpis" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px;margin-top:8px;">
@@ -2287,9 +2283,7 @@ textarea.cj-input{resize:none;}
           <button class="presup-fil active" onclick="filterClientPresup('todos',this)" id="cp-fil-todos">Todos <span id="cp-tot" style="font-size:11px;opacity:.7;">(0)</span></button>
           <button class="presup-fil" onclick="filterClientPresup('Pendiente de enviar',this)">Por enviar <span id="cp-penv" style="font-size:11px;opacity:.7;">(0)</span></button>
           <button class="presup-fil" onclick="filterClientPresup('Enviado',this)">Enviados <span id="cp-env" style="font-size:11px;opacity:.7;">(0)</span></button>
-          <button class="presup-fil" onclick="filterClientPresup('Consultado',this)">Consultados <span id="cp-cons" style="font-size:11px;opacity:.7;">(0)</span></button>
           <button class="presup-fil" onclick="filterClientPresup('Aprobado',this)">Aprobados <span id="cp-apr" style="font-size:11px;opacity:.7;">(0)</span></button>
-          <button class="presup-fil" onclick="filterClientPresup('Denegado',this)">Denegados <span id="cp-den" style="font-size:11px;opacity:.7;">(0)</span></button>
           <button class="presup-fil" onclick="filterClientPresup('Cobrado',this)">Cobrados <span id="cp-cob" style="font-size:11px;opacity:.7;">(0)</span></button>
         </div>
 
@@ -3204,7 +3198,7 @@ textarea.cj-input{resize:none;}
     <div class="mt">Nuevo presupuesto</div>
     <div class="fg" style="position:relative;">
       <label class="fl">Cliente</label>
-      <input type="text" class="fi" id="cp-cliente-search" placeholder="Buscar cliente o escribir nombre..." autocomplete="off" style="margin-top:0;" oninput="cpFiltrarClientes(this.value)" onfocus="cpFiltrarClientes(this.value)"/>
+      <input type="text" class="fi" id="cp-cliente-search" placeholder="Buscar cliente o escribir nombre..." autocomplete="off" style="margin-top:0;" oninput="cpFiltrarClientes(this.value)" onfocus="cpFiltrarClientes(this.value)" onkeydown="cpClienteKeydown(event)"/>
       <input type="hidden" id="cp-cliente-id"/>
       <div id="cp-cliente-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:.5px solid var(--cream-d);border-radius:9px;box-shadow:0 4px 16px rgba(0,0,0,.1);z-index:200;max-height:200px;overflow-y:auto;margin-top:4px;"></div>
     </div>
@@ -7197,11 +7191,11 @@ function renderCajaTable(movs) {
   const tfoot = document.getElementById('caja-tfoot');
   if(tfoot) {
     const saldoColor = saldo >= 0 ? '#3B6D11' : '#993C1D';
-    tfoot.innerHTML = `<tr style="border-top:1.5px solid #e8e6e0;">
+    tfoot.innerHTML = `<tr style="border-top:1.5px solid #e8e6e0;background:#d8d5ce;">
       <td colspan="4" style="padding:10px 0;font-size:11px;font-weight:600;color:#aaa;text-transform:uppercase;letter-spacing:.06em;">Totales del período</td>
-      <td class="r" style="padding:10px 0;"><span style="font-size:13px;font-weight:700;color:#3B6D11;">$${Math.round(totalEntradas).toLocaleString('es-AR')}</span></td>
-      <td class="r" style="padding:10px 0;"><span style="font-size:13px;font-weight:700;color:#993C1D;">$${Math.round(totalSalidas).toLocaleString('es-AR')}</span></td>
-      <td class="r" style="padding:10px 0;"><span style="font-size:14px;font-weight:700;color:${saldoColor};">$${Math.round(saldo).toLocaleString('es-AR')}</span></td>
+      <td class="r" style="padding:10px 0;"><span style="font-size:13px;font-weight:700;color:#1a1f1b;">$${Math.round(totalEntradas).toLocaleString('es-AR')}</span></td>
+      <td class="r" style="padding:10px 0;"><span style="font-size:13px;font-weight:700;color:#1a1f1b;">$${Math.round(totalSalidas).toLocaleString('es-AR')}</span></td>
+      <td class="r" style="padding:10px 0;"><span style="font-size:14px;font-weight:700;color:#1a1f1b;">$${Math.round(saldo).toLocaleString('es-AR')}</span></td>
     </tr>`;
   }
 }
@@ -8990,19 +8984,30 @@ async function loadInicio() {
       else if(data.tipo==='egreso') egresos.push({id:d.id,...data});
     });
 
-    // Mes seleccionado — usar offset de window._dashMesOffset
+    // Mes seleccionado — usar dropdown
     const hoy = new Date();
     const MESES_DASH = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-    const offset = window._dashMesOffset || 0;
-    const selDate = new Date(hoy.getFullYear(), hoy.getMonth() + offset, 1);
-    const mesActual = `${MESES_DASH[selDate.getMonth()]} ${selDate.getFullYear()}`;
-    const antDate = new Date(selDate.getFullYear(), selDate.getMonth() - 1, 1);
-    const mesAnterior = `${MESES_DASH[antDate.getMonth()]} ${antDate.getFullYear()}`;
-    // Update UI selector label
-    const mesSelEl = document.getElementById('inicio-mes-sel');
-    if(mesSelEl) mesSelEl.textContent = mesActual;
-    const dashSigBtn = document.getElementById('dash-mes-sig-btn');
-    if(dashSigBtn) dashSigBtn.style.opacity = offset >= 0 ? '.3' : '1';
+    // Poblar selector si está vacío
+    const dashSel = document.getElementById('dash-mes-select');
+    if(dashSel && dashSel.options.length === 0) {
+      const optTodo = document.createElement('option'); optTodo.value='todo'; optTodo.textContent='Todo el año'; dashSel.appendChild(optTodo);
+      for(let m=0; m<=hoy.getMonth(); m++) {
+        const opt = document.createElement('option'); opt.value=m+'-'+hoy.getFullYear(); opt.textContent=MESES_DASH[m]+' '+hoy.getFullYear(); dashSel.appendChild(opt);
+      }
+      dashSel.value = hoy.getMonth()+'-'+hoy.getFullYear();
+    }
+    const selVal = dashSel ? dashSel.value : (hoy.getMonth()+'-'+hoy.getFullYear());
+    const isTodoAnio = selVal === 'todo';
+    let mesActual, mesAnterior, selDate, antDate;
+    if(isTodoAnio) {
+      mesActual = 'Todo el año '+hoy.getFullYear(); mesAnterior = null; selDate = null; antDate = null;
+    } else {
+      const [mesIdx, anio] = selVal.split('-').map(Number);
+      selDate = new Date(anio, mesIdx, 1);
+      mesActual = `${MESES_DASH[selDate.getMonth()]} ${selDate.getFullYear()}`;
+      antDate = new Date(selDate.getFullYear(), selDate.getMonth()-1, 1);
+      mesAnterior = `${MESES_DASH[antDate.getMonth()]} ${antDate.getFullYear()}`;
+    }
 
     // Filtro por mes: incluye "Marzo 2026" y "Marzo de 2026" (formato varía por browser/locale)
     const mesFiltro = (storedMes, target) => {
@@ -9012,10 +9017,10 @@ async function loadInicio() {
       const anio = parts[parts.length - 1];
       return storedMes.toLowerCase().includes(nombre) && storedMes.includes(anio);
     };
-    const ingMes = ingresos.filter(i=>mesFiltro(i.mes, mesActual));
-    const egMes  = egresos.filter(e=>mesFiltro(e.mes, mesActual));
-    const ingAnt = ingresos.filter(i=>mesFiltro(i.mes, mesAnterior));
-    const egAnt  = egresos.filter(e=>mesFiltro(e.mes, mesAnterior));
+    const ingMes = isTodoAnio ? ingresos : ingresos.filter(i=>mesFiltro(i.mes, mesActual));
+    const egMes  = isTodoAnio ? egresos  : egresos.filter(e=>mesFiltro(e.mes, mesActual));
+    const ingAnt = isTodoAnio ? [] : ingresos.filter(i=>mesFiltro(i.mes, mesAnterior));
+    const egAnt  = isTodoAnio ? [] : egresos.filter(e=>mesFiltro(e.mes, mesAnterior));
 
     const totalIngMes = ingMes.reduce((a,i)=>a+(parseFloat(i.monto)||0),0);
     const totalEgMes = egMes.reduce((a,e)=>a+(parseFloat(e.monto)||0),0);
@@ -9265,13 +9270,6 @@ async function loadInicio() {
 }
 window.loadInicio = loadInicio;
 
-window._dashMesOffset = 0;
-window.dashCambiarMes = function(dir) {
-  const nuevoOffset = (window._dashMesOffset||0) + dir;
-  if(nuevoOffset > 0) return; // no ir al futuro
-  window._dashMesOffset = nuevoOffset;
-  loadInicio();
-};
 
 window.dismissAlerta = function(elId, key, days) {
   const raw = localStorage.getItem('mb_dismissed_alertas_'+(currentClientUID||''));
@@ -11068,9 +11066,7 @@ async function loadClientPresupuestos() {
     setEl('cp-tot',  `(${list.length})`);
     setEl('cp-penv', `(${list.filter(p=>p.estado==='Pendiente de enviar').length})`);
     setEl('cp-env',  `(${list.filter(p=>p.estado==='Enviado').length})`);
-    setEl('cp-cons', `(${list.filter(p=>p.estado==='Consultado').length})`);
     setEl('cp-apr',  `(${list.filter(p=>p.estado==='Aprobado').length})`);
-    setEl('cp-den',  `(${list.filter(p=>p.estado==='Denegado').length})`);
     setEl('cp-cob',  `(${list.filter(p=>p.estado==='Cobrado').length})`);
     // Banner KPIs
     const aprobados=list.filter(p=>p.estado==='Aprobado');
@@ -11097,6 +11093,7 @@ function renderClientPresup(list) {
     const m  = parseFloat(p.monto)||0;
     const bc = badge[p.estado]||{bg:'var(--cream)',color:'var(--text-l)'};
     const dc = dot[p.estado]||'#888';
+    const cobrado = p.estado === 'Cobrado';
     const fecha = p.fecha ? new Date(p.fecha+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'}) : '';
     const alerta = p.estado==='Enviado'&&p.fecha&&Math.floor((new Date()-new Date(p.fecha+'T12:00:00'))/(1000*60*60*24))>=7
       ? `<span style="font-size:11px;color:var(--warn);">⚠ seguimiento pendiente</span>` : '';
@@ -11115,9 +11112,12 @@ function renderClientPresup(list) {
           ${p.link?`<button onclick="verPresupuestoPDF('${p.id}')" style="font-size:11px;color:var(--topbar);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;padding:0;">Ver PDF →</button>`:''}
           <button onclick="exportarPresupuestoPDF('${p.id}')" style="font-size:11px;padding:2px 9px;border-radius:20px;border:.5px solid var(--sage-light);background:var(--sage-xl);color:var(--sage-dark);cursor:pointer;font-family:'DM Sans',sans-serif;">↓ Ver / PDF</button>
         </div>
-        <div style="display:flex;gap:4px;margin-top:7px;flex-wrap:wrap;">
-          <button onclick="editClientPresup('${p.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-          ${['Pendiente de enviar','Enviado','Consultado','Aprobado','Denegado'].map(s=>s!==p.estado?`<button onclick="updateClientPresupEstado('${p.id}','${s}')" style="font-size:11px;padding:2px 8px;border-radius:20px;border:.5px solid var(--cream-d);background:var(--white);color:var(--text-m);cursor:pointer;font-family:'DM Sans',sans-serif;">${s}</button>`:'').join('')}
+        <div style="display:flex;gap:4px;margin-top:7px;flex-wrap:wrap;align-items:center;">
+          ${cobrado
+            ? `<span style="font-size:11px;color:#1A6637;font-weight:500;">✓ Cobrado — presupuesto cerrado</span>`
+            : `<button onclick="editClientPresup('${p.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              ${['Pendiente de enviar','Enviado','Aprobado','Cobrado'].map(s=>s!==p.estado?`<button onclick="updateClientPresupEstado('${p.id}','${s}')" style="font-size:11px;padding:2px 8px;border-radius:20px;border:.5px solid var(--cream-d);background:var(--white);color:var(--text-m);cursor:pointer;font-family:'DM Sans',sans-serif;">${s}</button>`:'').join('')}`
+          }
           <button onclick="deleteClientPresup('${p.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
         </div>
       </div>
@@ -11222,6 +11222,7 @@ window.cpFiltrarClientes = function(q) {
   if(!dropdown) return;
   // Clear selected ID when typing
   if(hiddenId) hiddenId.value = '';
+  window._cpDropdownIdx = -1;
   const clientes = window._mcClientes || [];
   const filtered = q
     ? clientes.filter(c=>(c.nombre||'').toLowerCase().includes(q.toLowerCase())).slice(0,8)
@@ -11229,12 +11230,14 @@ window.cpFiltrarClientes = function(q) {
   if(filtered.length === 0 && !q) { dropdown.style.display='none'; return; }
   let html = '';
   if(filtered.length > 0) {
-    filtered.forEach(c=>{
-      html += `<div onclick="cpSeleccionarCliente('${c.id}','${(c.nombre||'').replace(/'/g,'&#39;')}')" style="padding:10px 14px;font-size:13px;color:var(--text);cursor:pointer;border-bottom:.5px solid var(--cream);" onmouseover="this.style.background='var(--cream)'" onmouseout="this.style.background=''">${c.nombre||'Sin nombre'}${c.ciudad?`<span style="font-size:11px;color:var(--text-l);margin-left:6px;">${c.ciudad}</span>`:''}</div>`;
+    filtered.forEach((c,i)=>{
+      html += `<div data-idx="${i}" data-id="${c.id}" data-nombre="${(c.nombre||'').replace(/"/g,'&quot;')}" onclick="cpSeleccionarCliente('${c.id}','${(c.nombre||'').replace(/'/g,'&#39;')}')" style="padding:10px 14px;font-size:13px;color:var(--text);cursor:pointer;border-bottom:.5px solid var(--cream);" onmouseover="this.style.background='var(--cream)'" onmouseout="this.style.background=''">${c.nombre||'Sin nombre'}${c.ciudad?`<span style="font-size:11px;color:var(--text-l);margin-left:6px;">${c.ciudad}</span>`:''}</div>`;
     });
   }
+  window._cpDropdownCount = filtered.length;
   if(q) {
-    html += `<div onclick="cpSeleccionarProspecto('${q.replace(/'/g,'&#39;')}')" style="padding:10px 14px;font-size:13px;color:var(--text-m);cursor:pointer;border-top:.5px solid var(--cream-d);" onmouseover="this.style.background='var(--cream)'" onmouseout="this.style.background=''">Usar "<strong>${q}</strong>" como prospecto</div>`;
+    html += `<div data-idx="${filtered.length}" data-prospecto="${q.replace(/"/g,'&quot;')}" onclick="cpSeleccionarProspecto('${q.replace(/'/g,'&#39;')}')" style="padding:10px 14px;font-size:13px;color:var(--text-m);cursor:pointer;border-top:.5px solid var(--cream-d);" onmouseover="this.style.background='var(--cream)'" onmouseout="this.style.background=''">Usar "<strong>${q}</strong>" como prospecto</div>`;
+    window._cpDropdownCount = filtered.length + 1;
   }
   dropdown.innerHTML = html;
   dropdown.style.display = 'block';
@@ -11243,6 +11246,32 @@ window.cpFiltrarClientes = function(q) {
     const hide = e=>{ if(!dropdown.contains(e.target) && e.target.id!=='cp-cliente-search'){ dropdown.style.display='none'; document.removeEventListener('click',hide); } };
     document.addEventListener('click', hide);
   }, 0);
+};
+
+window.cpClienteKeydown = function(e) {
+  const dropdown = document.getElementById('cp-cliente-dropdown');
+  if(!dropdown || dropdown.style.display==='none') return;
+  const items = dropdown.querySelectorAll('[data-idx]');
+  if(!items.length) return;
+  const total = items.length;
+  let idx = window._cpDropdownIdx ?? -1;
+  if(e.key === 'ArrowDown') {
+    e.preventDefault();
+    idx = (idx + 1) % total;
+  } else if(e.key === 'ArrowUp') {
+    e.preventDefault();
+    idx = idx <= 0 ? total - 1 : idx - 1;
+  } else if(e.key === 'Enter') {
+    e.preventDefault();
+    if(idx >= 0 && items[idx]) items[idx].click();
+    return;
+  } else if(e.key === 'Escape') {
+    dropdown.style.display = 'none';
+    return;
+  } else { return; }
+  window._cpDropdownIdx = idx;
+  items.forEach((el,i) => { el.style.background = i===idx ? 'var(--cream)' : ''; });
+  items[idx]?.scrollIntoView({block:'nearest'});
 };
 
 window.cpSeleccionarCliente = function(id, nombre) {
