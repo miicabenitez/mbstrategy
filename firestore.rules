@@ -1,0 +1,55 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helpers ────────────────────────────────────────────────
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function isOwner(resource) {
+      return isAuthenticated() &&
+        resource.data.uid == request.auth.uid;
+    }
+
+    function isOwnerWrite() {
+      return isAuthenticated() &&
+        request.resource.data.uid == request.auth.uid;
+    }
+
+    // ── Reglas existentes ──────────────────────────────────────
+    match /clientes/{clienteId} {
+      allow read, write: if isAdmin() ||
+        (isAuthenticated() && request.auth.uid == clienteId);
+
+      match /{subcollection}/{docId} {
+        allow read, write: if isAdmin() ||
+          (isAuthenticated() && request.auth.uid == clienteId);
+      }
+    }
+
+    match /libroCaja/{docId} {
+      allow read: if isAuthenticated() && (isAdmin() || isOwner(resource));
+      allow create: if isAuthenticated() && isOwnerWrite();
+      allow update, delete: if isAuthenticated() && (isAdmin() || isOwner(resource));
+    }
+
+    // ── BUG-002: Cierre de Período ─────────────────────────────
+    match /cierres/{docId} {
+      allow read: if isAuthenticated() && (isAdmin() || isOwner(resource));
+      allow create: if isAuthenticated() && isOwnerWrite();
+      allow update, delete: if isAuthenticated() && (isAdmin() || isOwner(resource));
+    }
+
+    match /configuracionCierre/{docId} {
+      allow read: if isAuthenticated() && (isAdmin() || isOwner(resource));
+      allow create: if isAuthenticated() && isOwnerWrite();
+      allow update, delete: if isAuthenticated() && (isAdmin() || isOwner(resource));
+    }
+  }
+}
