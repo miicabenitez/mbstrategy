@@ -848,9 +848,14 @@ textarea.cj-input{resize:none;}
           <button class="sb-subitem" data-sub="necesidades" onclick="sidebarNav('compras','necesidades')">Necesidades</button>
           <button class="sb-subitem" data-sub="proveedores" onclick="sidebarNav('compras','proveedores')">Proveedores</button>
           <button class="sb-subitem" data-sub="ordenes" onclick="sidebarNav('compras','ordenes')">Órdenes</button>
-          <div style="margin:4px 0;border-top:.5px solid rgba(255,255,255,.2);width:40%;"></div>
-          <button class="sb-subitem" data-sub="productos" onclick="sidebarNav('compras','productos')">Productos</button>
-          <button class="sb-subitem" data-sub="categorias" onclick="sidebarNav('compras','categorias')">Categorías</button>
+          <button class="sb-subitem sb-has-sub" style="display:flex;align-items:center;justify-content:space-between;" onclick="sidebarToggleComprasConfig(this)">
+            <span>Configuración</span>
+            <svg id="sb-compras-config-arrow" viewBox="0 0 16 16" width="10" height="10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none" style="transition:transform .2s;opacity:.7;"><path d="M6 4l4 4-4 4"/></svg>
+          </button>
+          <div id="sbsub-compras-config" style="display:none;">
+            <button class="sb-subitem" data-sub="productos" onclick="sidebarNav('compras','productos')" style="padding-left:26px;font-size:12px;">Productos</button>
+            <button class="sb-subitem" data-sub="categorias" onclick="sidebarNav('compras','categorias')" style="padding-left:26px;font-size:12px;">Categorías</button>
+          </div>
         </div>
       </div>
       <!-- Herramientas → Control del negocio -->
@@ -2570,20 +2575,20 @@ textarea.cj-input{resize:none;}
 
         <!-- KPIs -->
         <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px;">
-          <div class="mc" style="background:#7A8E7D;border-color:#7A8E7D;">
-            <div class="ml" style="color:rgba(255,255,255,.75);">Proveedores</div>
-            <div class="mv" style="color:#fff;" id="prov-kpi-total">0</div>
-            <div class="ms" style="color:rgba(255,255,255,.65);">registrados</div>
+          <div class="mc">
+            <div class="ml">Total proveedores</div>
+            <div class="mv" id="prov-kpi-total">0</div>
+            <div class="ms">registrados</div>
           </div>
-          <div class="mc" style="background:#C4786A;border-color:#C4786A;">
-            <div class="ml" style="color:rgba(255,255,255,.75);">Total gastado</div>
-            <div class="mv" style="color:#fff;" id="prov-kpi-gastado">$0</div>
-            <div class="ms" style="color:rgba(255,255,255,.65);">este año</div>
+          <div class="mc">
+            <div class="ml">Total gastado</div>
+            <div class="mv" id="prov-kpi-gastado">$0</div>
+            <div class="ms">en órdenes de compra</div>
           </div>
-          <div class="mc" style="background:#4A6A8A;border-color:#4A6A8A;">
-            <div class="ml" style="color:rgba(255,255,255,.75);">Gasto promedio</div>
-            <div class="mv" style="color:#fff;" id="prov-kpi-prom">$0</div>
-            <div class="ms" style="color:rgba(255,255,255,.65);">por proveedor</div>
+          <div class="mc">
+            <div class="ml">Pendiente de pago</div>
+            <div class="mv" id="prov-kpi-pendiente-cc">$0</div>
+            <div class="ms">suma CC proveedores</div>
           </div>
         </div>
 
@@ -2617,9 +2622,8 @@ textarea.cj-input{resize:none;}
               <div id="prov-ranking"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin egresos registrados.</div></div>
             </div>
             <div class="card">
-              <div class="ct">Por categoría</div>
-              <div style="position:relative;height:140px;"><canvas id="provDonutChart"></canvas></div>
-              <div id="prov-cat-legend" style="margin-top:8px;"></div>
+              <div class="ct">Mayor deuda pendiente</div>
+              <div id="prov-deuda-ranking"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin deuda registrada.</div></div>
             </div>
           </div>
         </div>
@@ -2738,7 +2742,18 @@ textarea.cj-input{resize:none;}
           <div class="mc" style="background:#5A8A62;border-color:#5A8A62;"><div class="ml" style="color:rgba(255,255,255,.75);">Programadas</div><div class="mv" style="color:#fff;" id="nc-kpi-programado">0</div><div class="ms" style="color:rgba(255,255,255,.65);">al día</div></div>
         </div>
         <!-- Barra de acciones -->
-        <div style="display:flex;justify-content:flex-end;align-items:center;margin-bottom:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+            <select id="nc-filtro-estado" class="fi" style="width:auto;min-width:130px;padding:7px 10px;margin-top:0;font-size:12px;" onchange="filtrarNecesidades()">
+              <option value="">Estado: Todos</option>
+              <option value="sin-cotizar">Sin cotizar</option>
+              <option value="en-cotizacion">En cotización</option>
+              <option value="con-oc">Con OC</option>
+            </select>
+            <select id="nc-filtro-cat" class="fi" style="width:auto;min-width:130px;padding:7px 10px;margin-top:0;font-size:12px;" onchange="filtrarNecesidades()">
+              <option value="">Categoría: Todas</option>
+            </select>
+          </div>
           <button class="bp" onclick="openModal('newNecesidadModal')">+ Nueva necesidad</button>
         </div>
         <div id="nc-lista"><div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Sin necesidades cargadas.</div></div>
@@ -2748,23 +2763,16 @@ textarea.cj-input{resize:none;}
       <div id="ct-ordenes-compra" style="display:none;">
         <div style="background:#4a5e4d;border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;"><div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;">Órdenes de compra</div></div>
         <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px;">
-          <div class="mc" style="background:#7A8E7D;border-color:#7A8E7D;"><div class="ml" style="color:rgba(255,255,255,.75);">Total OC</div><div class="mv" style="color:#fff;" id="oc-kpi-total">0</div><div class="ms" style="color:rgba(255,255,255,.65);">emitidas</div></div>
-          <div class="mc" style="background:#C4786A;border-color:#C4786A;"><div class="ml" style="color:rgba(255,255,255,.75);">Pendiente pago</div><div class="mv" style="color:#fff;" id="oc-kpi-pendiente">$0</div><div class="ms" style="color:rgba(255,255,255,.65);">a pagar</div></div>
-          <div class="mc" style="background:#5A8A62;border-color:#5A8A62;"><div class="ml" style="color:rgba(255,255,255,.75);">Pagado</div><div class="mv" style="color:#fff;" id="oc-kpi-pagado">$0</div><div class="ms" style="color:rgba(255,255,255,.65);">este año</div></div>
+          <div class="mc"><div class="ml">Total OC</div><div class="mv" id="oc-kpi-total">0</div><div class="ms">emitidas</div></div>
+          <div class="mc"><div class="ml">Recibidas</div><div class="mv" id="oc-kpi-recibidas">0</div><div class="ms">confirmadas</div></div>
+          <div class="mc"><div class="ml">Pendientes de recibir</div><div class="mv" id="oc-kpi-pend-recibir">0</div><div class="ms">aún no recibidas</div></div>
         </div>
         <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center;">
           <input type="text" id="oc-search" class="fi" placeholder="Buscar por N° o proveedor..." style="flex:1;min-width:160px;max-width:260px;padding:8px 12px;margin-top:0;" oninput="filtrarOCsLista()"/>
-          <select id="oc-filtro-recepcion" class="fi" style="width:auto;min-width:120px;padding:8px 10px;margin-top:0;" onchange="filtrarOCsLista()">
+          <select id="oc-filtro-recepcion" class="fi" style="width:auto;min-width:150px;padding:8px 10px;margin-top:0;" onchange="filtrarOCsLista()">
             <option value="">Recepción: Todas</option>
-            <option value="emitida">Emitida</option>
-            <option value="recibida">Recibida</option>
-            <option value="parcial">Parcial</option>
-          </select>
-          <select id="oc-filtro-pago" class="fi" style="width:auto;min-width:120px;padding:8px 10px;margin-top:0;" onchange="filtrarOCsLista()">
-            <option value="">Pago: Todas</option>
-            <option value="pendiente">Pendiente</option>
-            <option value="pagada">Pagada</option>
-            <option value="parcial">Parcial</option>
+            <option value="emitida">Pendientes de recibir</option>
+            <option value="recibida">Recibidas</option>
           </select>
         </div>
         <div class="card">
@@ -11963,7 +11971,16 @@ async function loadNecesidades() {
     const snap = await getDocs(collection(db,'clientes',currentClientUID,'necesidades'));
     _necesidades = [];
     snap.forEach(d => { const data=d.data(); if(!data.eliminado) _necesidades.push({id:d.id,...data}); });
-    _necesidades.sort((a,b)=>{const ord={urgente:0,proximo:1,programado:2};return (ord[a.estado]||1)-(ord[b.estado]||1);});
+    // Sort: sin cotizar first, then en cotización, then con OC; secondary by urgencia
+    const urgOrd={urgente:0,proximo:1,programado:2};
+    const cotOrd = n => n.cotizaciones&&n.cotizaciones.length>0 ? (n.estadoCotizacion==='cotizada' ? 2 : 1) : 0;
+    _necesidades.sort((a,b)=>(cotOrd(a)-cotOrd(b))||((urgOrd[a.estado]||1)-(urgOrd[b.estado]||1)));
+    // Populate category filter
+    const catSel = document.getElementById('nc-filtro-cat');
+    if(catSel) {
+      const cats = [...new Set(_necesidades.map(n=>n.categoria).filter(Boolean))].sort();
+      catSel.innerHTML = '<option value="">Categoría: Todas</option>' + cats.map(c=>`<option value="${c}">${c}</option>`).join('');
+    }
     renderNecesidades();
   }catch(e){console.log(e);}
 }
@@ -11980,12 +11997,21 @@ function renderNecesidades() {
   setEl('bn-nc-prog',_necesidades.filter(n=>n.estado==='programado').length);
   const el=document.getElementById('nc-lista');if(!el)return;
   if(_necesidades.length===0){el.innerHTML=createEmptyState('lista-check','Sin necesidades de compra','Creá necesidades para organizar lo que tu negocio necesita comprar','+ Nueva necesidad',"openModal('newNecesidadModal')");return;}
+  // Aplicar filtros
+  const filtroEstado = document.getElementById('nc-filtro-estado')?.value||'';
+  const filtroCat = document.getElementById('nc-filtro-cat')?.value||'';
+  let lista = _necesidades;
+  if(filtroEstado==='sin-cotizar') lista=lista.filter(n=>!n.cotizaciones||n.cotizaciones.length===0);
+  else if(filtroEstado==='en-cotizacion') lista=lista.filter(n=>n.cotizaciones&&n.cotizaciones.length>0&&n.estadoCotizacion==='cotizada');
+  else if(filtroEstado==='con-oc') lista=lista.filter(n=>n.estadoCotizacion==='cotizada');
+  if(filtroCat) lista=lista.filter(n=>n.categoria===filtroCat);
+  if(lista.length===0){el.innerHTML='<div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Sin necesidades que coincidan con los filtros.</div>';return;}
   const estadoConfig={
     urgente:{label:'Urgente',bg:'var(--err-bg)',tc:'var(--err)',bc:'#C4786A'},
     proximo:{label:'Próxima',bg:'var(--warn-bg)',tc:'var(--warn)',bc:'#B08A42'},
     programado:{label:'Programada',bg:'var(--ok-bg)',tc:'var(--ok)',bc:'#5A8A62'},
   };
-  el.innerHTML = _necesidades.map(n=>{
+  el.innerHTML = lista.map(n=>{
     const ec=estadoConfig[n.estado]||estadoConfig.programado;
     const prods=(n.items||[]).map(i=>`${i.nombre} × ${i.cantidad} ${i.unidad}`).join(', ');
     const cotStatus = (n.cotizaciones&&n.cotizaciones.length>0) ? `<span style="background:#E6EEF5;color:#2A4A6A;font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;">En cotización</span>` : `<span style="background:var(--cream);color:var(--text-l);font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;">Sin cotizar</span>`;
@@ -12012,6 +12038,8 @@ function renderNecesidades() {
     </div>`;
   }).join('');
 }
+
+window.filtrarNecesidades = function() { renderNecesidades(); };
 
 window.verOCsDeNecesidad = function(ncId) {
   // Buscar las OCs que corresponden a esta necesidad
@@ -12678,25 +12706,25 @@ window.loadOrdenesCompra = loadOrdenesCompra;
 
 function renderOrdenesCompra() {
   const setEl=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  const recibidas=_ordenesCompra.filter(o=>(o.estadoRecepcion||'emitida')==='recibida').length;
+  const pendRec=_ordenesCompra.filter(o=>(o.estadoRecepcion||'emitida')==='emitida').length;
   setEl('oc-kpi-total',_ordenesCompra.length);
-  const pendiente=_ordenesCompra.filter(o=>o.estadoPago!=='pagada').reduce((a,o)=>a+(parseFloat(o.total)||0),0);
+  setEl('oc-kpi-recibidas',recibidas);
+  setEl('oc-kpi-pend-recibir',pendRec);
+  // Banner KPIs (keep existing banner IDs for compatibility)
+  const pendientePago=_ordenesCompra.filter(o=>o.estadoPago!=='pagada').reduce((a,o)=>a+(parseFloat(o.total)||0),0);
   const pagado=_ordenesCompra.filter(o=>o.estadoPago==='pagada').reduce((a,o)=>a+(parseFloat(o.total)||0),0);
-  setEl('oc-kpi-pendiente','$'+pendiente.toLocaleString('es-AR'));
-  setEl('oc-kpi-pagado','$'+pagado.toLocaleString('es-AR'));
-  // Banner KPIs
   setEl('bn-oc-total',_ordenesCompra.length);
-  setEl('bn-oc-pend','$'+pendiente.toLocaleString('es-AR'));
+  setEl('bn-oc-pend','$'+pendientePago.toLocaleString('es-AR'));
   setEl('bn-oc-pagado','$'+pagado.toLocaleString('es-AR'));
   const el=document.getElementById('oc-lista');if(!el)return;
   if(_ordenesCompra.length===0){el.innerHTML=createEmptyState('documento-sello','Sin órdenes de compra','Las órdenes se generan automáticamente al cotizar una necesidad');return;}
   // Aplicar filtros
   const searchQ=(document.getElementById('oc-search')?.value||'').toLowerCase();
   const filtroRec=document.getElementById('oc-filtro-recepcion')?.value||'';
-  const filtroPago=document.getElementById('oc-filtro-pago')?.value||'';
   let ocsFiltered=_ordenesCompra.filter(o=>{
     if(searchQ){const num='OC-'+String(o.numero||0).padStart(3,'0');if(!num.toLowerCase().includes(searchQ)&&!(o.proveedor||'').toLowerCase().includes(searchQ))return false;}
     if(filtroRec&&(o.estadoRecepcion||'emitida')!==filtroRec)return false;
-    if(filtroPago&&(o.estadoPago||'pendiente')!==filtroPago)return false;
     return true;
   });
   if(ocsFiltered.length===0){el.innerHTML='<div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Sin resultados.</div>';return;}
@@ -12704,11 +12732,12 @@ function renderOrdenesCompra() {
     const estadoPago=o.estadoPago||'pendiente';
     const estadoRec=o.estadoRecepcion||'emitida';
     const badgeCfg={pagada:{bg:'var(--ok-bg)',tc:'var(--ok)',label:'Pagada'},pendiente:{bg:'var(--err-bg)',tc:'var(--err)',label:'Pendiente pago'},parcial:{bg:'var(--warn-bg)',tc:'var(--warn)',label:'Pago parcial'}};
-    const recCfg={emitida:{bg:'#E6EEF5',tc:'#2A4A6A',label:'Emitida'},recibida:{bg:'var(--ok-bg)',tc:'var(--ok)',label:'✓ Recibida'},parcial:{bg:'var(--warn-bg)',tc:'var(--warn)',label:'Parcial'}};
+    const recCfg={emitida:{bg:'#E6EEF5',tc:'#2A4A6A',label:'Por recibir'},recibida:{bg:'var(--ok-bg)',tc:'var(--ok)',label:'✓ Recibida'}};
     const bc=badgeCfg[estadoPago]||badgeCfg.pendiente;
     const rc=recCfg[estadoRec]||recCfg.emitida;
+    // Botón recibida: solo si está emitida (no recibida aún)
     const btnRecibir = estadoRec==='emitida'
-      ? `<button onclick="event.stopPropagation();marcarOCRecibida('${o.id}')" style="background:var(--sage-xl);border:.5px solid var(--sage-light);border-radius:20px;padding:5px 12px;cursor:pointer;font-size:11px;color:var(--sage-dark);font-family:'DM Sans',sans-serif;font-weight:500;white-space:nowrap;">✓ Recibida</button>`
+      ? `<button onclick="event.stopPropagation();marcarOCRecibida('${o.id}')" style="background:var(--sage-xl);border:.5px solid var(--sage-light);border-radius:20px;padding:5px 12px;cursor:pointer;font-size:11px;color:var(--sage-dark);font-family:'DM Sans',sans-serif;font-weight:500;white-space:nowrap;">Marcar recibida</button>`
       : `<span style="background:${rc.bg};color:${rc.tc};font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px;white-space:nowrap;">${rc.label}</span>`;
     return `<div onclick="abrirDetalleOC('${o.id}')" style="display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:.5px solid var(--cream-d);cursor:pointer;position:relative;" onmouseenter="this.querySelector('.oc-actions').style.opacity='1'" onmouseleave="this.querySelector('.oc-actions').style.opacity='0'">
       <div style="width:42px;height:42px;background:var(--sage-xl);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:var(--sage-dark);flex-shrink:0;">OC-${String(o.numero||0).padStart(3,'0')}</div>
@@ -12767,9 +12796,9 @@ window.abrirDetalleOC = function(ocId) {
     parcial:{bg:'var(--warn-bg)',tc:'var(--warn)',label:'Pago parcial'}
   };
   const recCfg={
-    emitida:{bg:'#E6EEF5',tc:'#2A4A6A',label:'Emitida'},
-    recibida:{bg:'var(--ok-bg)',tc:'var(--ok)',label:'Recibida'},
-    parcial:{bg:'var(--warn-bg)',tc:'var(--warn)',label:'Recepción parcial'}
+    emitida:{bg:'#E6EEF5',tc:'#2A4A6A',label:'Por recibir'},
+    recibida:{bg:'var(--ok-bg)',tc:'var(--ok)',label:'✓ Recibida'},
+    parcial:{bg:'var(--warn-bg)',tc:'var(--warn)',label:'Recep. parcial'} // legacy
   };
   const bc=badgeCfg[estadoPago]||badgeCfg.pendiente;
   const rc=recCfg[estadoRec]||recCfg.emitida;
@@ -12813,8 +12842,9 @@ window.marcarOCRecibida = async function(ocId) {
     try {
       const oc = _ordenesCompra.find(o=>o.id===ocId);
       if(!oc) return;
-      if(oc.estadoRecepcion === 'recibida') { alert('Esta OC ya fue marcada como recibida.'); return; }
       if(oc.eliminado) return;
+      if(oc.estadoRecepcion === 'recibida') { alert('Esta OC ya fue marcada como recibida.'); return; }
+      if((oc.estadoRecepcion||'emitida') !== 'emitida') { alert('Solo se puede marcar como recibida una OC que esté emitida.'); return; }
       const hoy = new Date().toISOString().split('T')[0];
 
       // 1. Actualizar estado de recepción en la OC
@@ -13961,10 +13991,10 @@ function renderProveedoresModule() {
   });
 
   const totalGastado = Object.values(gastosPorProv).reduce((a,v)=>a+v,0);
-  const prom = _proveedores.length>0 ? Math.round(totalGastado/_proveedores.length) : 0;
+  const deudaTotalCC = _proveedores.reduce((a,p)=>a+(parseFloat(p._saldo)||0),0);
   setEl('prov-kpi-total', _proveedores.length);
   setEl('prov-kpi-gastado', '$'+totalGastado.toLocaleString('es-AR'));
-  setEl('prov-kpi-prom', '$'+prom.toLocaleString('es-AR'));
+  setEl('prov-kpi-pendiente-cc', '$'+deudaTotalCC.toLocaleString('es-AR'));
   // Banner KPIs
   setEl('bn-prov-activos', _proveedores.length);
   const deudaTotal = _proveedores.reduce((a,p)=>a+(p._saldo||0),0);
@@ -13991,7 +14021,25 @@ function renderProveedoresModule() {
         </div>`).join('');
     }
   }
-  initProvDonutChart(egresosConProv);
+  // Ranking deuda pendiente por proveedor (CC saldos)
+  const deudaRanking = document.getElementById('prov-deuda-ranking');
+  if(deudaRanking) {
+    const conDeuda = _proveedores.filter(p=>p._saldo>0).sort((a,b)=>(b._saldo||0)-(a._saldo||0)).slice(0,6);
+    if(conDeuda.length===0) {
+      deudaRanking.innerHTML='<div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin deuda pendiente con proveedores.</div>';
+    } else {
+      const maxDeuda=conDeuda[0]._saldo||1;
+      const dColors=['#C4786A','#B08A42','#4A6A8A','#7A8E7D','#5A8A62','#6B7A60'];
+      deudaRanking.innerHTML=conDeuda.map((p,i)=>`
+        <div style="margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+            <span style="font-size:12px;color:var(--text-m);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60%;cursor:pointer;text-decoration:underline;text-decoration-color:var(--cream-d);" onclick="abrirCuentaCorriente('${p.id}')">${p.nombre}</span>
+            <span style="font-size:12px;font-weight:600;color:#C4786A;flex-shrink:0;">$${(p._saldo||0).toLocaleString('es-AR')}</span>
+          </div>
+          <div style="height:5px;background:var(--cream-d);border-radius:3px;"><div style="height:100%;width:${Math.round(((p._saldo||0)/maxDeuda)*100)}%;background:${dColors[i]};border-radius:3px;"></div></div>
+        </div>`).join('');
+    }
+  }
   if(window.renderCatPanel) window.renderCatPanel();
 }
 
@@ -16122,10 +16170,11 @@ window.sidebarNav=function(mod,sub){
       if(sub==='presupuestos')window.showCTab('presupuestos',null);
       else if(sub==='catalogo')window.showCTab('productos',null);
     }else if(mod==='compras'){
-      if(sub==='proveedores')window.showCTab('proveedores',null);
+      if(sub==='necesidades')window.showCTab('necesidades',null);
+      else if(sub==='proveedores')window.showCTab('proveedores',null);
       else if(sub==='ordenes')window.showCTab('ordenes-compra',null);
-      else if(sub==='productos')window.showCTab('prod-compra',null);
-      else if(sub==='categorias')window.showCTab('categorias-compra',null);
+      else if(sub==='productos'){window.showCTab('prod-compra',null);sidebarOpenComprasConfig();}
+      else if(sub==='categorias'){window.showCTab('categorias-compra',null);sidebarOpenComprasConfig();}
     }else if(mod==='herramientas'){
       if(sub==='indicadores')window.showCTab('kpis',null);
       else if(sub==='calculador')window.showCTab('calculador',null);
@@ -16137,6 +16186,20 @@ window.sidebarNav=function(mod,sub){
     }
   });
 };
+window.sidebarToggleComprasConfig = function(btn) {
+  const sub = document.getElementById('sbsub-compras-config');
+  const arrow = document.getElementById('sb-compras-config-arrow');
+  if(!sub) return;
+  const open = sub.style.display === 'none' || !sub.style.display;
+  sub.style.display = open ? 'block' : 'none';
+  if(arrow) arrow.style.transform = open ? 'rotate(90deg)' : '';
+};
+function sidebarOpenComprasConfig() {
+  const sub = document.getElementById('sbsub-compras-config');
+  const arrow = document.getElementById('sb-compras-config-arrow');
+  if(sub) sub.style.display = 'block';
+  if(arrow) arrow.style.transform = 'rotate(90deg)';
+}
 // Patch showClientMod to sync sidebar when called from bottom nav or other sources
 (function(){
   var orig=window.showClientMod;
