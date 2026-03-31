@@ -12031,8 +12031,8 @@ function renderNecesidades() {
   const filtroCat = document.getElementById('nc-filtro-cat')?.value||'';
   let lista = _necesidades;
   if(filtroEstado==='sin-cotizar') lista=lista.filter(n=>!n.cotizaciones||n.cotizaciones.length===0);
-  else if(filtroEstado==='en-cotizacion') lista=lista.filter(n=>n.cotizaciones&&n.cotizaciones.length>0&&n.estadoCotizacion==='cotizada');
-  else if(filtroEstado==='con-oc') lista=lista.filter(n=>n.estadoCotizacion==='cotizada');
+  else if(filtroEstado==='en-cotizacion') lista=lista.filter(n=>n.estadoCotizacion==='cotizada');
+  else if(filtroEstado==='con-oc') lista=lista.filter(n=>n.estadoCotizacion==='con-oc');
   if(filtroCat) lista=lista.filter(n=>n.categoria===filtroCat);
   if(lista.length===0){el.innerHTML='<div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Sin necesidades que coincidan con los filtros.</div>';return;}
   const estadoConfig={
@@ -12043,7 +12043,11 @@ function renderNecesidades() {
   el.innerHTML = lista.map(n=>{
     const ec=estadoConfig[n.estado]||estadoConfig.programado;
     const prods=(n.items||[]).map(i=>`${i.nombre} × ${i.cantidad} ${i.unidad}`).join(', ');
-    const cotStatus = (n.cotizaciones&&n.cotizaciones.length>0) ? `<span style="background:#E6EEF5;color:#2A4A6A;font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;">En cotización</span>` : `<span style="background:var(--cream);color:var(--text-l);font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;">Sin cotizar</span>`;
+    const cotStatus = n.estadoCotizacion==='con-oc'
+      ? `<span style="background:#D6F0E0;color:#1A6637;font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;">Con OC</span>`
+      : (n.estadoCotizacion==='cotizada'||n.cotizaciones?.length>0)
+        ? `<span style="background:#E6EEF5;color:#2A4A6A;font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;">En cotización</span>`
+        : `<span style="background:var(--cream);color:var(--text-l);font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;">Sin cotizar</span>`;
     return `<div style="border:.5px solid ${ec.bc};border-radius:12px;padding:14px;margin-bottom:10px;">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
         <div style="flex:1;">
@@ -12056,7 +12060,7 @@ function renderNecesidades() {
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0;align-items:center;">
           <button onclick="generarPDFNecesidad('${n.id}')" style="background:none;border:.5px solid var(--cream-d);border-radius:20px;padding:6px 12px;font-size:11px;color:var(--text-m);cursor:pointer;font-family:'DM Sans',sans-serif;">PDF</button>
-          ${(n.cotizaciones&&n.cotizaciones.length>0)
+          ${n.estadoCotizacion==='con-oc'
             ? `<button onclick="verOCsDeNecesidad('${n.id}')" class="bp" style="font-size:11px;padding:6px 12px;">Ver OC</button>`
             : `<button onclick="abrirCotizacion('${n.id}')" class="bp" style="font-size:11px;padding:6px 12px;">Cotizar</button>`
           }
@@ -12513,7 +12517,7 @@ window.confirmarOC = async function() {
     // Marcar NC como cotizada
     await updateDoc(doc(db,'clientes',currentClientUID,'necesidades',_cotNcId),{
       cotizaciones: ocsAEmitir.map(o=>({proveedorId:o.prov.id,proveedor:o.prov.nombre,total:o.total})),
-      estadoCotizacion:'cotizada'
+      estadoCotizacion:'con-oc'
     });
     const s=document.getElementById('cot-saved');if(s)s.style.display='block';
     setTimeout(async()=>{
@@ -12758,22 +12762,15 @@ function renderOrdenesCompra() {
   });
   if(ocsFiltered.length===0){el.innerHTML='<div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Sin resultados.</div>';return;}
   el.innerHTML=ocsFiltered.map(o=>{
-    const estadoPago=o.estadoPago||'pendiente';
     const estadoRec=o.estadoRecepcion||'emitida';
-    const badgeCfg={pagada:{bg:'var(--ok-bg)',tc:'var(--ok)',label:'Pagada'},pendiente:{bg:'var(--err-bg)',tc:'var(--err)',label:'Pendiente pago'},parcial:{bg:'var(--warn-bg)',tc:'var(--warn)',label:'Pago parcial'}};
-    const recCfg={emitida:{bg:'#E6EEF5',tc:'#2A4A6A',label:'Por recibir'},recibida:{bg:'var(--ok-bg)',tc:'var(--ok)',label:'✓ Recibida'}};
-    const bc=badgeCfg[estadoPago]||badgeCfg.pendiente;
-    const rc=recCfg[estadoRec]||recCfg.emitida;
-    // Botón recibida: solo si está emitida (no recibida aún)
-    const btnRecibir = estadoRec==='emitida'
-      ? `<button onclick="event.stopPropagation();marcarOCRecibida('${o.id}')" style="background:var(--sage-xl);border:.5px solid var(--sage-light);border-radius:20px;padding:5px 12px;cursor:pointer;font-size:11px;color:var(--sage-dark);font-family:'DM Sans',sans-serif;font-weight:500;white-space:nowrap;">Marcar recibida</button>`
-      : `<span style="background:${rc.bg};color:${rc.tc};font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px;white-space:nowrap;">${rc.label}</span>`;
+    const toggleRecibida = estadoRec==='recibida'
+      ? `<button class="cprd-toggle on" onclick="event.stopPropagation();" title="Recibida" style="cursor:default;flex-shrink:0;"></button>`
+      : `<button class="cprd-toggle" onclick="event.stopPropagation();marcarOCRecibida('${o.id}')" title="Por recibir — clic para marcar como recibida" style="flex-shrink:0;"></button>`;
     return `<div onclick="abrirDetalleOC('${o.id}')" style="display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:.5px solid var(--cream-d);cursor:pointer;position:relative;" onmouseenter="this.querySelector('.oc-actions').style.opacity='1'" onmouseleave="this.querySelector('.oc-actions').style.opacity='0'">
       <div style="width:42px;height:42px;background:var(--sage-xl);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:var(--sage-dark);flex-shrink:0;">OC-${String(o.numero||0).padStart(3,'0')}</div>
       <div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:500;color:var(--text);">${o.proveedor||'—'}</div><div style="font-size:11px;color:var(--text-l);">${(o.items||[]).length} ítem${(o.items||[]).length!==1?'s':''} · ${o.fecha||'—'}</div></div>
       <div style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:500;color:var(--text);white-space:nowrap;">$${(parseFloat(o.total)||0).toLocaleString('es-AR')}</div>
-      <span style="background:${bc.bg};color:${bc.tc};font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px;white-space:nowrap;">${bc.label}</span>
-      ${btnRecibir}
+      ${toggleRecibida}
       <div class="oc-actions" style="display:flex;gap:3px;opacity:0;transition:opacity .15s;" onclick="event.stopPropagation()">
         <button onclick="abrirDetalleOC('${o.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <button onclick="eliminarOC('${o.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
