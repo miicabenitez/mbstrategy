@@ -7782,25 +7782,49 @@ async function _cierreSugerirFechas(uid) {
 
 async function _cierreCargarCompromisos(uid) {
   _cierreCompromisosLista = [..._cierreManualCompromisos];
+
+  // 1. CC Proveedores: saldo real = facturas - pagos (igual que renderCuentaCorriente)
+  // Antes leía de 'movimientos' (colección vacía/legacy); la deuda real está en 'facturas'+'pagos'
   try {
-    // CC Proveedores: deudas pendientes
     const provSnap = await getDocs(collection(db,'clientes',uid,'proveedores'));
-    const provs = []; provSnap.forEach(d=>provs.push({id:d.id,...d.data()}));
+    const provs = [];
+    provSnap.forEach(d=>{ const data=d.data(); if(!data.eliminado) provs.push({id:d.id,...data}); });
     for(const prov of provs) {
-      const movSnap = await getDocs(collection(db,'clientes',uid,'proveedores',prov.id,'movimientos'));
-      movSnap.forEach(d=>{
-        const m = d.data();
-        if(m.eliminado||m.tipo==='pago') return;
-        const pendiente = (parseFloat(m.monto)||0) - (parseFloat(m.montoPagado)||0);
-        if(pendiente > 0) {
-          _cierreCompromisosLista.push({
-            id:'prov-'+d.id, nombre:prov.nombre+' — '+(m.numero||m.descripcion||'Factura'),
-            monto: pendiente, origen:'proveedor', origenLabel:'CC Proveedor', pagado:false
-          });
-        }
-      });
+      const [facSnap, pagSnap] = await Promise.all([
+        getDocs(collection(db,'clientes',uid,'proveedores',prov.id,'facturas')),
+        getDocs(collection(db,'clientes',uid,'proveedores',prov.id,'pagos'))
+      ]);
+      let totalFac = 0;
+      facSnap.forEach(d=>{ const f=d.data(); if(!f.eliminado) totalFac += parseFloat(f.monto)||0; });
+      let totalPag = 0;
+      pagSnap.forEach(d=>{ const p=d.data(); if(!p.eliminado) totalPag += parseFloat(p.monto)||0; });
+      const saldo = totalFac - totalPag;
+      if(saldo > 0) {
+        _cierreCompromisosLista.push({
+          id:'prov-'+prov.id, nombre:prov.nombre+' — CC Proveedor',
+          monto: saldo, origen:'proveedor', origenLabel:'CC Proveedor', pagado:false
+        });
+      }
     }
-  } catch(e) {}
+  } catch(e) { console.error('[compromisos CC]', e); }
+
+  // 2. OC Compras: órdenes emitidas aún no recibidas (las recibidas ya aparecen en CC como factura esOC)
+  try {
+    const ocSnap = await getDocs(collection(db,'clientes',uid,'ordenesCompra'));
+    ocSnap.forEach(d=>{
+      const o = d.data();
+      if(o.eliminado || o.estadoPago==='pagada') return;
+      if(o.estadoRecepcion==='recibida') return; // ya está en CC del proveedor
+      const monto = parseFloat(o.total)||0;
+      if(monto > 0) {
+        _cierreCompromisosLista.push({
+          id:'oc-'+d.id,
+          nombre:'OC-'+String(o.numero||0).padStart(3,'0')+' — '+(o.proveedor||'Sin proveedor'),
+          monto, origen:'oc', origenLabel:'OC Compras', pagado:false
+        });
+      }
+    });
+  } catch(e) { console.error('[compromisos OC]', e); }
 }
 
 function _cierreRenderTodo() {
