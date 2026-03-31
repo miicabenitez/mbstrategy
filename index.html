@@ -2264,30 +2264,27 @@ textarea.cj-input{resize:none;}
       <!-- PRESUPUESTOS CLIENTE -->
       <div id="ct-presupuestos" style="display:none;">
 
-        <!-- Header banner -->
-        <div style="background:#4a5e4d;border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;"><div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;">Presupuestos</div></div>
-
-        <!-- KPIs presupuestos -->
-        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px;">
-          <div class="mc" style="background:#7A8E7D;border-color:#7A8E7D;">
-            <div class="ml" style="color:rgba(255,255,255,.75);">Total</div>
-            <div class="mv" style="color:#fff;" id="bn-pre-monto">$0</div>
-            <div class="ms" style="color:rgba(255,255,255,.65);">presupuestado</div>
-          </div>
-          <div class="mc" style="background:#C4786A;border-color:#C4786A;">
-            <div class="ml" style="color:rgba(255,255,255,.75);">Por cobrar</div>
-            <div class="mv" style="color:#fff;" id="bn-pre-porcobrar">$0</div>
-            <div class="ms" style="color:rgba(255,255,255,.65);">aprobado sin cobrar</div>
-          </div>
-          <div class="mc" style="background:#5A7A4E;border-color:#5A7A4E;">
-            <div class="ml" style="color:rgba(255,255,255,.75);">Aprobados</div>
-            <div class="mv" style="color:#fff;" id="bn-pre-aprob">0</div>
-            <div class="ms" style="color:rgba(255,255,255,.65);">presupuestos</div>
-          </div>
-          <div class="mc" style="background:#3d6644;border-color:#3d6644;">
-            <div class="ml" style="color:rgba(255,255,255,.75);">Cobrados</div>
-            <div class="mv" style="color:#fff;" id="bn-pre-cobrados">0</div>
-            <div class="ms" style="color:rgba(255,255,255,.65);">presupuestos</div>
+        <!-- Header banner con KPIs -->
+        <div style="background:#4a5e4d;border-radius:16px;padding:20px 24px 22px;margin:0 0 14px;color:#fff;position:relative;overflow:hidden;">
+          <div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:22px;margin-bottom:16px;">Presupuestos</div>
+          <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;">
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
+              <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Total presupuestado</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#fff;line-height:1;" id="bn-pre-monto">$0</div>
+            </div>
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
+              <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Por cobrar</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#fff;line-height:1;" id="bn-pre-porcobrar">$0</div>
+            </div>
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
+              <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Aprobados</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#fff;line-height:1;" id="bn-pre-aprob">0</div>
+            </div>
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
+              <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Cobrados</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#fff;line-height:1;" id="bn-pre-cobrados">0</div>
+            </div>
           </div>
         </div>
 
@@ -10274,17 +10271,23 @@ window.createMcCobro = async function() {
     const clienteNombre = cLocal?.nombre || '';
     if (cLocal) { cLocal.totalCobrado = nuevoTotal; cLocal.ultimoContacto = new Date().toISOString(); }
 
-    // 3b. Si hay presupuesto asociado, marcarlo como Cobrado automáticamente
+    // 3b. Si hay presupuesto asociado, actualizar cobradoPorPresup y marcar Cobrado solo cuando el saldo llega a 0
     const presupId2 = document.getElementById('mcc-cobro-presup-id')?.value || '';
     if(presupId2) {
       try {
-        await updateDoc(doc(db,'clientes',currentClientUID,'presupuestos',presupId2),{estado:'Cobrado'});
+        const pCache = (_mcPresupuestos||[]).find(x=>x.id===presupId2) || (window._clientPresupuestos||[]).find(x=>x.id===presupId2);
+        const montoPresup = pCache ? getPresupMonto(pCache) : 0;
+        const cobradoAnterior = parseFloat(pCache?.cobradoPorPresup || 0);
+        const nuevoCobrado = cobradoAnterior + (parseFloat(monto) || 0);
+        const updatePresup = { cobradoPorPresup: nuevoCobrado };
+        if(montoPresup > 0 && nuevoCobrado >= montoPresup) updatePresup.estado = 'Cobrado';
+        await updateDoc(doc(db,'clientes',currentClientUID,'presupuestos',presupId2), updatePresup);
         // Actualizar cache local
         const pLocal = (_mcPresupuestos||[]).find(x=>x.id===presupId2);
-        if(pLocal) pLocal.estado = 'Cobrado';
+        if(pLocal) { pLocal.cobradoPorPresup = nuevoCobrado; if(updatePresup.estado) pLocal.estado = 'Cobrado'; }
         const pLocal2 = (window._clientPresupuestos||[]).find(x=>x.id===presupId2);
-        if(pLocal2) pLocal2.estado = 'Cobrado';
-      } catch(e){ console.log('Error actualizando estado presupuesto:', e); }
+        if(pLocal2) { pLocal2.cobradoPorPresup = nuevoCobrado; if(updatePresup.estado) pLocal2.estado = 'Cobrado'; }
+      } catch(e){ console.log('Error actualizando cobradoPorPresup:', e); }
     }
 
     // 4. DISPARAR INGRESO en contabilidad automáticamente
@@ -10739,12 +10742,17 @@ function renderMcVentas(presups, clienteId) {
   }
   el.innerHTML = aprobados.map(p => {
     const monto = getPresupMonto(p);
-    const cobradoCliente = parseFloat((_mcClientes.find(c=>c.id===p.clienteId||c.nombre===p.cliente))?.totalCobrado||0);
-    // Saldo pendiente = monto presupuesto − lo ya cobrado del cliente
-    // Usamos el pendiente por presupuesto si hay múltiples, sino el total
-    const pendiente = Math.max(0, monto - cobradoCliente);
+    // Saldo pendiente = monto del presupuesto − cobros ya registrados para este presupuesto específico
+    const cobradoPresup = parseFloat(p.cobradoPorPresup || 0);
+    const pendiente = Math.max(0, monto - cobradoPresup);
     const montoSugerido = pendiente > 0 ? pendiente : monto;
     const fecha = p.fecha ? new Date(p.fecha+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'}) : '—';
+    const btnCobro = pendiente > 0
+      ? `<button onclick="openMcCobroModal('${clienteId}','${p.id}','${(p.descripcion||'Venta').replace(/'/g,"\\'")}',${montoSugerido})"
+          style="width:100%;padding:7px;background:var(--ok-bg);border:.5px solid var(--ok);border-radius:8px;font-size:12px;font-weight:500;color:var(--ok);cursor:pointer;font-family:'DM Sans',sans-serif;">
+          $ Registrar cobro${cobradoPresup > 0 ? ' — Saldo: $'+pendiente.toLocaleString('es-AR') : ''}
+        </button>`
+      : `<div style="font-size:11px;color:var(--ok);font-weight:500;padding:4px 0;">✓ Presupuesto completamente cobrado</div>`;
     return `<div style="background:var(--cream);border-radius:10px;padding:13px 14px;margin-bottom:8px;">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px;">
         <div style="flex:1;">
@@ -10756,10 +10764,7 @@ function renderMcVentas(presups, clienteId) {
           <span style="font-size:11px;font-weight:500;padding:1px 8px;border-radius:20px;background:var(--ok-bg);color:var(--ok);">Aprobado</span>
         </div>
       </div>
-      <button onclick="openMcCobroModal('${clienteId}','${p.id}','${(p.descripcion||'Venta').replace(/'/g,"\\'")}',${montoSugerido})"
-        style="width:100%;padding:7px;background:var(--ok-bg);border:.5px solid var(--ok);border-radius:8px;font-size:12px;font-weight:500;color:var(--ok);cursor:pointer;font-family:'DM Sans',sans-serif;">
-        $ Registrar cobro${pendiente < monto && pendiente > 0 ? ' — Saldo: $'+pendiente.toLocaleString('es-AR') : ''}
-      </button>
+      ${btnCobro}
     </div>`;
   }).join('');
 }
@@ -11091,9 +11096,8 @@ async function loadClientPresupuestos() {
     const aprobados=list.filter(p=>p.estado==='Aprobado');
     const cobrados=list.filter(p=>p.estado==='Cobrado');
     const montoTotal=list.reduce((a,p)=>a+getPresupMonto(p),0);
-    const montoAprobado=aprobados.reduce((a,p)=>a+getPresupMonto(p),0);
-    const montoCobrado=cobrados.reduce((a,p)=>a+getPresupMonto(p),0);
-    const porCobrarBn=Math.max(0,montoAprobado-montoCobrado);
+    // Por cobrar: saldo restante de cada presupuesto aprobado (considerando cobros parciales ya registrados)
+    const porCobrarBn=aprobados.reduce((a,p)=>a+Math.max(0,getPresupMonto(p)-(parseFloat(p.cobradoPorPresup)||0)),0);
     setEl('bn-pre-monto', '$'+montoTotal.toLocaleString('es-AR'));
     setEl('bn-pre-porcobrar', '$'+porCobrarBn.toLocaleString('es-AR'));
     setEl('bn-pre-aprob', aprobados.length);
@@ -12783,15 +12787,24 @@ function renderOrdenesCompra() {
     return true;
   });
   if(ocsFiltered.length===0){el.innerHTML='<div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Sin resultados.</div>';return;}
-  el.innerHTML=ocsFiltered.map(o=>{
+  const ocHeader = `<div style="display:flex;align-items:center;gap:10px;padding:6px 0 8px;border-bottom:1.5px solid var(--sage-light);">
+    <div style="width:44px;flex-shrink:0;font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Nº OC</div>
+    <div style="flex:1;font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Proveedor</div>
+    <div style="width:90px;text-align:right;font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;flex-shrink:0;">Monto</div>
+    <div style="width:96px;font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;flex-shrink:0;">Recepción</div>
+  </div>`;
+  el.innerHTML=ocHeader+ocsFiltered.map(o=>{
     const estadoRec=o.estadoRecepcion||'emitida';
     const toggleRecibida = estadoRec==='recibida'
-      ? `<div style="display:flex;align-items:center;gap:6px;flex-shrink:0;" onclick="event.stopPropagation()"><button class="cprd-toggle on" title="Recibida" style="cursor:default;flex-shrink:0;"></button><span style="font-size:12px;color:var(--ok);font-weight:500;white-space:nowrap;">Recibida</span></div>`
-      : `<div style="display:flex;align-items:center;gap:6px;flex-shrink:0;" onclick="event.stopPropagation()"><button class="cprd-toggle" onclick="marcarOCRecibida('${o.id}')" title="Por recibir — clic para marcar como recibida" style="flex-shrink:0;"></button><span style="font-size:12px;color:var(--text-l);white-space:nowrap;">Recibida</span></div>`;
-    return `<div onclick="abrirDetalleOC('${o.id}')" style="display:flex;align-items:center;gap:10px;padding:13px 0;border-bottom:.5px solid var(--cream-d);cursor:pointer;position:relative;" onmouseenter="this.querySelector('.oc-actions').style.opacity='1'" onmouseleave="this.querySelector('.oc-actions').style.opacity='0'">
-      <div style="width:44px;height:44px;background:var(--sage-xl);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--sage-dark);flex-shrink:0;">OC-${String(o.numero||0).padStart(3,'0')}</div>
-      <div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:500;color:var(--text);">${o.proveedor||'—'}</div><div style="font-size:12px;color:var(--text-l);margin-top:2px;">${(o.items||[]).length} ítem${(o.items||[]).length!==1?'s':''} · ${o.fecha||'—'}</div></div>
-      <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:500;color:var(--text);white-space:nowrap;">$${(parseFloat(o.total)||0).toLocaleString('es-AR')}</div>
+      ? `<div style="display:flex;align-items:center;gap:5px;flex-shrink:0;width:96px;" onclick="event.stopPropagation()"><button class="cprd-toggle on" title="Recibida" style="cursor:default;flex-shrink:0;"></button><span style="font-size:12px;color:var(--ok);font-weight:500;white-space:nowrap;">Recibida</span></div>`
+      : `<div style="display:flex;align-items:center;gap:5px;flex-shrink:0;width:96px;" onclick="event.stopPropagation()"><button class="cprd-toggle" onclick="marcarOCRecibida('${o.id}')" title="Por recibir — clic para marcar como recibida" style="flex-shrink:0;"></button><span style="font-size:12px;color:var(--text-l);white-space:nowrap;">Pendiente</span></div>`;
+    return `<div onclick="abrirDetalleOC('${o.id}')" style="display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:.5px solid var(--cream-d);cursor:pointer;position:relative;" onmouseenter="this.querySelector('.oc-actions').style.opacity='1'" onmouseleave="this.querySelector('.oc-actions').style.opacity='0'">
+      <div style="width:44px;height:40px;background:var(--sage-xl);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--sage-dark);flex-shrink:0;text-align:center;line-height:1.2;">OC-<br>${String(o.numero||0).padStart(3,'0')}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:500;color:var(--text);">${o.proveedor||'—'}</div>
+        <div style="font-size:11px;color:var(--text-l);margin-top:2px;">${(o.items||[]).length} ítem${(o.items||[]).length!==1?'s':''}${o.fecha?' · '+o.fecha:''}</div>
+      </div>
+      <div style="width:90px;text-align:right;flex-shrink:0;"><div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:500;color:var(--text);white-space:nowrap;">$${(parseFloat(o.total)||0).toLocaleString('es-AR')}</div></div>
       ${toggleRecibida}
       <div class="oc-actions" style="display:flex;gap:3px;opacity:0;transition:opacity .15s;" onclick="event.stopPropagation()">
         <button onclick="abrirDetalleOC('${o.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
