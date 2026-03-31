@@ -7720,11 +7720,13 @@ async function loadCierrePeriodo() {
       _cierreCuentas.push({id:d.id,...c});
     });
     // 4. Calcular saldo real de cada cuenta desde libroCaja
-    const movsSnap = await getDocs(query(collection(db,'libroCaja'),where('uid','==',uid),where('eliminado','==',false)));
+    // Nota: se filtra eliminado en cliente (igual que Caja) para evitar requerir índice compuesto en Firestore
+    const movsSnap = await getDocs(query(collection(db,'libroCaja'),where('uid','==',uid)));
     const saldos = {};
     _cierreCuentas.forEach(c=>{ saldos[c.nombre] = 0; });
     movsSnap.forEach(d=>{
       const m = d.data();
+      if(m.eliminado) return;
       if(m.tipo==='ingreso' && saldos[m.cuenta]!==undefined)  saldos[m.cuenta] += parseFloat(m.monto)||0;
       if(m.tipo==='egreso'  && saldos[m.cuenta]!==undefined)  saldos[m.cuenta] -= parseFloat(m.monto)||0;
       if(m.tipo==='transfer'){
@@ -7748,13 +7750,13 @@ async function loadCierrePeriodo() {
 
 async function _cierreSugerirFechas(uid) {
   try {
+    // Filtra estado='cerrado' en cliente para evitar índice compuesto en Firestore
     const cierresSnap = await getDocs(query(
       collection(db,'cierres'),
-      where('uid','==',uid),
-      where('estado','==','cerrado')
+      where('uid','==',uid)
     ));
     let ultimaFin = null;
-    cierresSnap.forEach(d=>{ const f=d.data().fechaFin; if(!ultimaFin||f>ultimaFin) ultimaFin=f; });
+    cierresSnap.forEach(d=>{ const fd=d.data(); if(fd.estado!=='cerrado') return; const f=fd.fechaFin; if(!ultimaFin||f>ultimaFin) ultimaFin=f; });
     const hoy = new Date();
     let inicio, fin;
     if(ultimaFin) {
