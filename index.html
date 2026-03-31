@@ -617,7 +617,7 @@ textarea.cj-input{resize:none;}
 .cierre-footer-btns{display:flex;gap:8px;}
 .cierre-btn-discard{padding:8px 16px;border-radius:9px;border:1.5px solid #ddd;background:white;font-size:13px;font-weight:600;color:#666;cursor:pointer;font-family:inherit;}
 .cierre-btn-draft{padding:8px 16px;border-radius:9px;border:1.5px solid #c8d5c9;background:white;font-size:13px;font-weight:600;color:#4a5e4d;cursor:pointer;font-family:inherit;}
-.cierre-btn-main{padding:8px 18px;border-radius:9px;border:none;background:#4a5e4d;font-size:13px;font-weight:600;color:white;cursor:pointer;font-family:inherit;transition:background .15s;}
+.cierre-btn-main{padding:8px 18px;border-radius:9px;border:none;background:#4a5e4d;font-size:13px;font-weight:600;color:white;cursor:pointer;font-family:inherit;transition:background .15s;white-space:nowrap;}
 .cierre-btn-main:hover{background:#3d4f40;}
 .cierre-btn-main:disabled{opacity:.5;cursor:not-allowed;}
 @keyframes cierreCardIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
@@ -9573,6 +9573,7 @@ function renderClientTareas(tareas) {
   _s('bn-tar-curso',tareas.filter(t=>t.estado==='doing').length);
   _s('bn-tar-comp',tareas.filter(t=>t.estado==='done').length);
   ['pend','doing','done'].forEach(col=>{ const el=document.getElementById('clt-tasks-'+col); if(el) el.innerHTML=''; });
+  const EMPTY_LABEL = {pend:'Sin pendientes',doing:'Nada en curso',done:'Sin completadas'};
   tareas.forEach(t=>{
     const el=document.createElement('div');
     el.className='tk'+(t.estado==='done'?' done':'');
@@ -9582,6 +9583,11 @@ function renderClientTareas(tareas) {
     el.onclick=()=>moveClientTask(el);
     const col=document.getElementById('clt-tasks-'+(t.estado||'pend'));
     if(col) col.appendChild(el);
+  });
+  // UI-005: empty states por columna
+  ['pend','doing','done'].forEach(col=>{
+    const el=document.getElementById('clt-tasks-'+col);
+    if(el && !el.children.length) el.innerHTML=`<div style="padding:16px 8px;text-align:center;color:var(--text-l);font-size:12px;">${EMPTY_LABEL[col]}</div>`;
   });
 }
 
@@ -11782,7 +11788,7 @@ window.filtrarProdsNecesidad = function(q) {
   lista.innerHTML = prods.map(p=>{
     const checked=checkedIds.includes(p.id);
     const cant=cantidades[p.id]||'';
-    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:.5px solid var(--cream-d);">
+    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:.5px solid var(--cream-d);" onmousedown="event.preventDefault()">
     <input type="checkbox" id="ncp-${p.id}" value="${p.id}" style="accent-color:var(--sage-dark);" ${checked?'checked':''} onchange="toggleProdNC('${p.id}','${p.nombre}','${p.unidad}')"/>
     <label for="ncp-${p.id}" style="flex:1;font-size:12px;color:var(--text);cursor:pointer;">${p.nombre} <span style="color:var(--text-l);">(${p.unidad})</span></label>
     <input type="number" id="ncq-${p.id}" placeholder="Cant." min="1" value="${cant}" style="width:60px;padding:4px 6px;border:.5px solid var(--cream-d);border-radius:7px;font-size:12px;" ${checked?'':'disabled'}/>
@@ -11870,7 +11876,9 @@ window.verCotizacionExistente = function(ncId) {
   openModal('verCotModal');
 };
 
-window.abrirCotizacion = function(ncId) {
+window.abrirCotizacion = async function(ncId) {
+  // BUG-005: asegurar proveedores cargados antes de abrir el modal
+  if(!_proveedores.length) await loadProveedores();
   const nc = _necesidades.find(n=>n.id===ncId);
   if(!nc) return;
   _cotNcId = ncId;
@@ -14399,7 +14407,10 @@ function onMcPresupProdSelect() {
   var descEl = document.getElementById('mcp-item-desc');
   var precioEl = document.getElementById('mcp-item-precio');
   if(descEl && !descEl.value) descEl.value = nombre;
-  if(precioEl) precioEl.value = precio;
+  if(precioEl) {
+    precioEl.value = precio;
+    precioEl.dispatchEvent(new Event('input', { bubbles: true }));
+  }
 }
 
 function onCpItemProdSelect() {
@@ -14417,7 +14428,10 @@ function onCpItemProdSelect() {
   var d = document.getElementById('cp-item-desc');
   var pr = document.getElementById('cp-item-precio');
   if(d && !d.value) d.value = nombre;
-  if(pr) pr.value = precio;
+  if(pr) {
+    pr.value = precio;
+    pr.dispatchEvent(new Event('input', { bubbles: true }));
+  }
 }
 
 let currentAdminTab = 'dash';
@@ -14934,7 +14948,16 @@ window.openModal = function(id) {
     if(fechaEl&&!fechaEl.value) fechaEl.value=new Date().toISOString().split('T')[0];
   }
   if(id === 'newProveedorModal') { renderCatSelect(); loadCatsProveedor(); document.getElementById('nueva-cat-form').style.display='none'; }
-  if(id === 'newNecesidadModal') { renderCatSelect(); loadCatsProveedor(); const s=document.getElementById('nc-prod-search');if(s)s.value=''; }
+  if(id === 'newNecesidadModal') {
+    // BUG-004: resetear formulario antes de abrir para que no retenga valores anteriores
+    const editId = document.getElementById('nc-edit-id'); if(editId) editId.value='';
+    const catSel = document.getElementById('nc-cat'); if(catSel) catSel.value='';
+    const estadoSel = document.getElementById('nc-estado'); if(estadoSel) estadoSel.value='urgente';
+    const periSel = document.getElementById('nc-periodicidad'); if(periSel) periSel.selectedIndex=0;
+    const searchEl = document.getElementById('nc-prod-search'); if(searchEl) searchEl.value='';
+    const listaEl = document.getElementById('nc-productos-lista'); if(listaEl) listaEl.innerHTML='<div style="font-size:12px;color:var(--text-l);">Seleccioná una categoría primero</div>';
+    renderCatSelect(); loadCatsProveedor();
+  }
   if(id === 'newProdCompraModal') { renderCatSelect(); loadCatsProveedor(); }
   if(id === 'newMcReunionModal') {
     // Populate client selector
