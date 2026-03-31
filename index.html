@@ -1722,10 +1722,6 @@ textarea.cj-input{resize:none;}
             </div>
           </div>
 
-          <!-- Selector de período -->
-          <div style="margin-top:12px;margin-bottom:2px;">
-            <select id="dash-mes-select" onchange="loadInicio()" style="background:rgba(255,255,255,.15);border:.5px solid rgba(255,255,255,.3);color:#fff;font-size:12px;font-weight:500;border-radius:8px;padding:5px 10px;cursor:pointer;font-family:'DM Sans',sans-serif;outline:none;min-width:150px;"></select>
-          </div>
           <!-- KPIs dentro del banner -->
           <div id="inicio-kpis" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px;margin-top:8px;">
             <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:14px;animation:fadeUp .5s ease both;animation-delay:0ms;">
@@ -2270,6 +2266,30 @@ textarea.cj-input{resize:none;}
 
         <!-- Header banner -->
         <div style="background:#4a5e4d;border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;"><div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;">Presupuestos</div></div>
+
+        <!-- KPIs presupuestos -->
+        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px;">
+          <div class="mc" style="background:#7A8E7D;border-color:#7A8E7D;">
+            <div class="ml" style="color:rgba(255,255,255,.75);">Total</div>
+            <div class="mv" style="color:#fff;" id="bn-pre-monto">$0</div>
+            <div class="ms" style="color:rgba(255,255,255,.65);">presupuestado</div>
+          </div>
+          <div class="mc" style="background:#C4786A;border-color:#C4786A;">
+            <div class="ml" style="color:rgba(255,255,255,.75);">Por cobrar</div>
+            <div class="mv" style="color:#fff;" id="bn-pre-porcobrar">$0</div>
+            <div class="ms" style="color:rgba(255,255,255,.65);">aprobado sin cobrar</div>
+          </div>
+          <div class="mc" style="background:#5A7A4E;border-color:#5A7A4E;">
+            <div class="ml" style="color:rgba(255,255,255,.75);">Aprobados</div>
+            <div class="mv" style="color:#fff;" id="bn-pre-aprob">0</div>
+            <div class="ms" style="color:rgba(255,255,255,.65);">presupuestos</div>
+          </div>
+          <div class="mc" style="background:#3d6644;border-color:#3d6644;">
+            <div class="ml" style="color:rgba(255,255,255,.75);">Cobrados</div>
+            <div class="mv" style="color:#fff;" id="bn-pre-cobrados">0</div>
+            <div class="ms" style="color:rgba(255,255,255,.65);">presupuestos</div>
+          </div>
+        </div>
 
         <!-- Acciones -->
         <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:14px;">
@@ -8984,30 +9004,13 @@ async function loadInicio() {
       else if(data.tipo==='egreso') egresos.push({id:d.id,...data});
     });
 
-    // Mes seleccionado — usar dropdown
+    // Mes seleccionado — siempre el mes actual
     const hoy = new Date();
     const MESES_DASH = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-    // Poblar selector si está vacío
-    const dashSel = document.getElementById('dash-mes-select');
-    if(dashSel && dashSel.options.length === 0) {
-      const optTodo = document.createElement('option'); optTodo.value='todo'; optTodo.textContent='Todo el año'; dashSel.appendChild(optTodo);
-      for(let m=0; m<=hoy.getMonth(); m++) {
-        const opt = document.createElement('option'); opt.value=m+'-'+hoy.getFullYear(); opt.textContent=MESES_DASH[m]+' '+hoy.getFullYear(); dashSel.appendChild(opt);
-      }
-      dashSel.value = hoy.getMonth()+'-'+hoy.getFullYear();
-    }
-    const selVal = dashSel ? dashSel.value : (hoy.getMonth()+'-'+hoy.getFullYear());
-    const isTodoAnio = selVal === 'todo';
-    let mesActual, mesAnterior, selDate, antDate;
-    if(isTodoAnio) {
-      mesActual = 'Todo el año '+hoy.getFullYear(); mesAnterior = null; selDate = null; antDate = null;
-    } else {
-      const [mesIdx, anio] = selVal.split('-').map(Number);
-      selDate = new Date(anio, mesIdx, 1);
-      mesActual = `${MESES_DASH[selDate.getMonth()]} ${selDate.getFullYear()}`;
-      antDate = new Date(selDate.getFullYear(), selDate.getMonth()-1, 1);
-      mesAnterior = `${MESES_DASH[antDate.getMonth()]} ${antDate.getFullYear()}`;
-    }
+    const selDate = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+    const mesActual = `${MESES_DASH[selDate.getMonth()]} ${selDate.getFullYear()}`;
+    const antDate = new Date(selDate.getFullYear(), selDate.getMonth()-1, 1);
+    const mesAnterior = `${MESES_DASH[antDate.getMonth()]} ${antDate.getFullYear()}`;
 
     // Filtro por mes: incluye "Marzo 2026" y "Marzo de 2026" (formato varía por browser/locale)
     const mesFiltro = (storedMes, target) => {
@@ -9017,10 +9020,10 @@ async function loadInicio() {
       const anio = parts[parts.length - 1];
       return storedMes.toLowerCase().includes(nombre) && storedMes.includes(anio);
     };
-    const ingMes = isTodoAnio ? ingresos : ingresos.filter(i=>mesFiltro(i.mes, mesActual));
-    const egMes  = isTodoAnio ? egresos  : egresos.filter(e=>mesFiltro(e.mes, mesActual));
-    const ingAnt = isTodoAnio ? [] : ingresos.filter(i=>mesFiltro(i.mes, mesAnterior));
-    const egAnt  = isTodoAnio ? [] : egresos.filter(e=>mesFiltro(e.mes, mesAnterior));
+    const ingMes = ingresos.filter(i=>mesFiltro(i.mes, mesActual));
+    const egMes  = egresos.filter(e=>mesFiltro(e.mes, mesActual));
+    const ingAnt = ingresos.filter(i=>mesFiltro(i.mes, mesAnterior));
+    const egAnt  = egresos.filter(e=>mesFiltro(e.mes, mesAnterior));
 
     const totalIngMes = ingMes.reduce((a,i)=>a+(parseFloat(i.monto)||0),0);
     const totalEgMes = egMes.reduce((a,e)=>a+(parseFloat(e.monto)||0),0);
@@ -9099,6 +9102,9 @@ async function loadInicio() {
       saludCard.style.cssText = 'display:block;border-radius:13px;padding:11px 16px;margin-bottom:10px;background:'+sBg+';border:.5px solid '+sBorder+';transition:background .4s,border-color .4s;';
       saludInner.innerHTML = sSvg+'<span style="color:'+sColor+';font-size:13px;font-weight:500;">'+sMsg+'</span>';
     }
+
+    // Asegurar presupuestos actualizados para alertas
+    try { await loadClientPresupuestos(); } catch(e) {}
 
     // ── Alertas inteligentes ──
     const alertasEl = document.getElementById('inicio-alertas');
@@ -11070,12 +11076,15 @@ async function loadClientPresupuestos() {
     setEl('cp-cob',  `(${list.filter(p=>p.estado==='Cobrado').length})`);
     // Banner KPIs
     const aprobados=list.filter(p=>p.estado==='Aprobado');
-    const pendientes=list.filter(p=>p.estado==='Pendiente de enviar'||p.estado==='Enviado'||p.estado==='Consultado');
+    const cobrados=list.filter(p=>p.estado==='Cobrado');
     const montoTotal=list.reduce((a,p)=>a+getPresupMonto(p),0);
-    setEl('bn-pre-total', list.length);
-    setEl('bn-pre-aprob', aprobados.length);
-    setEl('bn-pre-pend', pendientes.length);
+    const montoAprobado=aprobados.reduce((a,p)=>a+getPresupMonto(p),0);
+    const montoCobrado=cobrados.reduce((a,p)=>a+getPresupMonto(p),0);
+    const porCobrarBn=Math.max(0,montoAprobado-montoCobrado);
     setEl('bn-pre-monto', '$'+montoTotal.toLocaleString('es-AR'));
+    setEl('bn-pre-porcobrar', '$'+porCobrarBn.toLocaleString('es-AR'));
+    setEl('bn-pre-aprob', aprobados.length);
+    setEl('bn-pre-cobrados', cobrados.length);
     renderClientPresup(list);
   } catch(e){ console.log(e); }
 }
@@ -11087,8 +11096,8 @@ function renderClientPresup(list) {
     el.innerHTML=createEmptyState('documento-plus','Aún no tenés presupuestos','Creá tu primer presupuesto para profesionalizar tus propuestas comerciales','+ Crear presupuesto',"openModal('newClientPresupModal')");
     return;
   }
-  const dot  = {'Pendiente de enviar':'#B08A42','Enviado':'#4A6A8A','Consultado':'#856404','Aprobado':'#5A7A4E','Denegado':'#8A4A4A'};
-  const badge = {'Pendiente de enviar':{bg:'#F5ECD8',color:'#8A6A3A'},'Enviado':{bg:'#E6EEF5',color:'#4A6A8A'},'Consultado':{bg:'#FFF3CD',color:'#856404'},'Aprobado':{bg:'#EAF0E6',color:'#5A7A4E'},'Denegado':{bg:'#F5E8E8',color:'#8A4A4A'}};
+  const dot  = {'Pendiente de enviar':'#B08A42','Enviado':'#4A6A8A','Consultado':'#856404','Aprobado':'#5A7A4E','Denegado':'#8A4A4A','Cobrado':'#1A6637'};
+  const badge = {'Pendiente de enviar':{bg:'#F5ECD8',color:'#8A6A3A'},'Enviado':{bg:'#E6EEF5',color:'#4A6A8A'},'Consultado':{bg:'#FFF3CD',color:'#856404'},'Aprobado':{bg:'#EAF0E6',color:'#5A7A4E'},'Denegado':{bg:'#F5E8E8',color:'#8A4A4A'},'Cobrado':{bg:'#D6F0E0',color:'#1A6637'}};
   el.innerHTML = list.map(p => {
     const m  = parseFloat(p.monto)||0;
     const bc = badge[p.estado]||{bg:'var(--cream)',color:'var(--text-l)'};
@@ -15541,13 +15550,21 @@ async function loadProductos() {
     // Footer
     const footer = document.getElementById('prod-footer-guardar');
     if(footer) footer.style.display = prods.length > 0 ? 'flex' : 'none';
-    // Ítem más rentable — cruzar con ingresos del módulo
-    const ingresos = window._clientIngresos||[];
+    // Ítem más rentable — cruzar con libroCaja
+    const cajMovs = window._cajaMovimientos||[];
     const rentabilidad = {};
-    ingresos.forEach(function(ing){
-      if(!ing.concepto) return;
-      var p = prods.find(function(x){return x.nombre===ing.concepto;});
-      if(p) rentabilidad[p.id]=(rentabilidad[p.id]||0)+(parseFloat(ing.monto)||0);
+    cajMovs.forEach(function(m){
+      if(m.eliminado) return;
+      if(m.origen==='venta_caja' && m.productos && m.productos.length) {
+        m.productos.forEach(function(prod){
+          var p = prods.find(function(x){return x.nombre===prod.nombre;});
+          if(p) rentabilidad[p.id]=(rentabilidad[p.id]||0)+(parseFloat(prod.subtotal||0)||(parseFloat(prod.precioUnitario||0)*(prod.qty||1)));
+        });
+      }
+      if(m.tipo==='ingreso' && m.concepto) {
+        var p2 = prods.find(function(x){return x.nombre===m.concepto;});
+        if(p2) rentabilidad[p2.id]=(rentabilidad[p2.id]||0)+(parseFloat(m.monto)||0);
+      }
     });
     const topId = Object.keys(rentabilidad).sort(function(a,b){return rentabilidad[b]-rentabilidad[a];})[0];
     const topProd = topId ? prods.find(function(x){return x.id===topId;}) : null;
