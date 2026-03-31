@@ -11333,6 +11333,9 @@ window.uploadMcLogo = function(input) {
       // Actualizar también en Finanzas
       const wrap2 = document.getElementById('negocio-logo-wrap');
       if(wrap2) wrap2.innerHTML = `<img src="${base64}" style="width:100%;height:100%;object-fit:cover;"/>`;
+      // Actualizar cache y checklist de onboarding
+      if(currentClientData) currentClientData.logoNegocio = base64;
+      if(window.renderOnboardingChecklist) await window.renderOnboardingChecklist();
     } catch(e){ console.log(e); }
   };
   reader.readAsDataURL(file);
@@ -11563,6 +11566,9 @@ window.uploadMicuentaLogo = function(input) {
       if(wrap2) wrap2.innerHTML = '<img src="'+base64+'" style="width:100%;height:100%;object-fit:cover;"/>';
       const wrap3 = document.getElementById('inicio-logo-wrap');
       if(wrap3) wrap3.innerHTML = '<img src="'+base64+'" style="width:100%;height:100%;object-fit:cover;"/>';
+      // Actualizar cache y checklist de onboarding
+      if(currentClientData) currentClientData.logoNegocio = base64;
+      if(window.renderOnboardingChecklist) await window.renderOnboardingChecklist();
     } catch(e){ console.log(e); }
   };
   reader.readAsDataURL(file);
