@@ -7124,14 +7124,15 @@ function renderCajaTable(movs) {
     const entradaHtml = m.tipo==='ingreso'
       ? `<span style="font-size:13px;font-weight:600;color:#3B6D11;display:block;text-align:right;">$${Math.round(monto).toLocaleString('es-AR')}</span>`
       : `<span style="font-size:13px;color:#e0e0e0;display:block;text-align:right;">—</span>`;
-    const salidaHtml = m.tipo==='egreso'
+    const salidaHtml = (m.tipo==='egreso'||m.tipo==='transferencia')
       ? `<span style="font-size:13px;font-weight:600;color:#993C1D;display:block;text-align:right;">$${Math.round(monto).toLocaleString('es-AR')}</span>`
       : `<span style="font-size:13px;color:#e0e0e0;display:block;text-align:right;">—</span>`;
+    const cuentaLabel = m.tipo==='transferencia' ? (m.cuentaOrigen||'—') : (m.cuenta||'—');
     return `<tr style="opacity:0;animation:fadeUp .3s ease both;animation-delay:${80+i*50}ms;" onclick="cajaMostrarMovimiento('${m.id}')">
       <td><span style="font-size:12px;color:#bbb;">${fechaStr}</span></td>
       <td><span style="font-size:13px;font-weight:500;color:#1a1a1a;white-space:nowrap;">${m.concepto||'—'}</span></td>
       <td><span class="${badgeClass}">${badgeText}</span></td>
-      <td><span style="font-size:12px;color:#aaa;">${m.cuenta||'—'}</span></td>
+      <td><span style="font-size:12px;color:#aaa;">${cuentaLabel}</span></td>
       <td class="r">${entradaHtml}</td>
       <td class="r">${salidaHtml}</td>
       <td class="r"><span style="font-size:13px;font-weight:650;color:#1a1a1a;display:block;text-align:right;">$${Math.round(saldo).toLocaleString('es-AR')}</span></td>
@@ -8055,10 +8056,10 @@ async function _cierreCerrarPeriodo() {
     const mes   = new Date(fecha+'T12:00:00').toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase());
     const movs  = _cierreDistribucion.filter(d=>d.monto>0).map(d=>({
       uid, fecha, mes,
-      tipo: 'transfer',
+      tipo: 'transferencia',
       concepto: d.tipo==='reserva' ? 'Reserva '+d.nombre : 'Retiro '+d.nombre,
-      cuentaDesde: cuentaOrigen,
-      cuentaHacia: d.tipo==='reserva' ? d.nombre : 'Retiros '+d.nombre,
+      cuentaOrigen: cuentaOrigen,
+      cuentaDestino: d.tipo==='reserva' ? d.nombre : 'Retiros '+d.nombre,
       monto: Math.round(d.monto),
       origen: 'cierre',
       referenciaId: cierreRef.id,
