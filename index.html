@@ -10274,6 +10274,19 @@ window.createMcCobro = async function() {
     const clienteNombre = cLocal?.nombre || '';
     if (cLocal) { cLocal.totalCobrado = nuevoTotal; cLocal.ultimoContacto = new Date().toISOString(); }
 
+    // 3b. Si hay presupuesto asociado, marcarlo como Cobrado automáticamente
+    const presupId2 = document.getElementById('mcc-cobro-presup-id')?.value || '';
+    if(presupId2) {
+      try {
+        await updateDoc(doc(db,'clientes',currentClientUID,'presupuestos',presupId2),{estado:'Cobrado'});
+        // Actualizar cache local
+        const pLocal = (_mcPresupuestos||[]).find(x=>x.id===presupId2);
+        if(pLocal) pLocal.estado = 'Cobrado';
+        const pLocal2 = (window._clientPresupuestos||[]).find(x=>x.id===presupId2);
+        if(pLocal2) pLocal2.estado = 'Cobrado';
+      } catch(e){ console.log('Error actualizando estado presupuesto:', e); }
+    }
+
     // 4. DISPARAR INGRESO en contabilidad automáticamente
     const mesIngreso = fecha
       ? new Date(fecha+'T12:00:00').toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,ch=>ch.toUpperCase())
@@ -12773,12 +12786,12 @@ function renderOrdenesCompra() {
   el.innerHTML=ocsFiltered.map(o=>{
     const estadoRec=o.estadoRecepcion||'emitida';
     const toggleRecibida = estadoRec==='recibida'
-      ? `<button class="cprd-toggle on" onclick="event.stopPropagation();" title="Recibida" style="cursor:default;flex-shrink:0;"></button>`
-      : `<button class="cprd-toggle" onclick="event.stopPropagation();marcarOCRecibida('${o.id}')" title="Por recibir — clic para marcar como recibida" style="flex-shrink:0;"></button>`;
-    return `<div onclick="abrirDetalleOC('${o.id}')" style="display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:.5px solid var(--cream-d);cursor:pointer;position:relative;" onmouseenter="this.querySelector('.oc-actions').style.opacity='1'" onmouseleave="this.querySelector('.oc-actions').style.opacity='0'">
-      <div style="width:42px;height:42px;background:var(--sage-xl);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:var(--sage-dark);flex-shrink:0;">OC-${String(o.numero||0).padStart(3,'0')}</div>
-      <div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:500;color:var(--text);">${o.proveedor||'—'}</div><div style="font-size:11px;color:var(--text-l);">${(o.items||[]).length} ítem${(o.items||[]).length!==1?'s':''} · ${o.fecha||'—'}</div></div>
-      <div style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:500;color:var(--text);white-space:nowrap;">$${(parseFloat(o.total)||0).toLocaleString('es-AR')}</div>
+      ? `<div style="display:flex;align-items:center;gap:6px;flex-shrink:0;" onclick="event.stopPropagation()"><button class="cprd-toggle on" title="Recibida" style="cursor:default;flex-shrink:0;"></button><span style="font-size:12px;color:var(--ok);font-weight:500;white-space:nowrap;">Recibida</span></div>`
+      : `<div style="display:flex;align-items:center;gap:6px;flex-shrink:0;" onclick="event.stopPropagation()"><button class="cprd-toggle" onclick="marcarOCRecibida('${o.id}')" title="Por recibir — clic para marcar como recibida" style="flex-shrink:0;"></button><span style="font-size:12px;color:var(--text-l);white-space:nowrap;">Recibida</span></div>`;
+    return `<div onclick="abrirDetalleOC('${o.id}')" style="display:flex;align-items:center;gap:10px;padding:13px 0;border-bottom:.5px solid var(--cream-d);cursor:pointer;position:relative;" onmouseenter="this.querySelector('.oc-actions').style.opacity='1'" onmouseleave="this.querySelector('.oc-actions').style.opacity='0'">
+      <div style="width:44px;height:44px;background:var(--sage-xl);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--sage-dark);flex-shrink:0;">OC-${String(o.numero||0).padStart(3,'0')}</div>
+      <div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:500;color:var(--text);">${o.proveedor||'—'}</div><div style="font-size:12px;color:var(--text-l);margin-top:2px;">${(o.items||[]).length} ítem${(o.items||[]).length!==1?'s':''} · ${o.fecha||'—'}</div></div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:500;color:var(--text);white-space:nowrap;">$${(parseFloat(o.total)||0).toLocaleString('es-AR')}</div>
       ${toggleRecibida}
       <div class="oc-actions" style="display:flex;gap:3px;opacity:0;transition:opacity .15s;" onclick="event.stopPropagation()">
         <button onclick="abrirDetalleOC('${o.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
@@ -12847,25 +12860,19 @@ window.abrirDetalleOC = function(ocId) {
   setEl('oc-det-estado-txt', `<span style="color:${bc.tc};">${bc.label}</span>`);
   setEl('oc-det-estado-badge', `<span style="background:rgba(255,255,255,.2);color:#fff;font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px;">${bc.label}</span>`);
 
-  // Botón recepción
+  // Estado recepción en modal (sin botón — se usa el toggle del listado)
   const btnRec = document.getElementById('oc-det-btn-recepcion');
-  if(btnRec){
-    if(estadoRec==='emitida'){
-      btnRec.innerHTML=`<button onclick="marcarOCRecibida('${oc.id}')" style="background:var(--sage-dark);color:#fff;border:none;border-radius:20px;padding:7px 16px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;">✓ Marcar como recibida</button>`;
-    } else {
-      btnRec.innerHTML=`<span style="background:${rc.bg};color:${rc.tc};font-size:11px;font-weight:500;padding:4px 12px;border-radius:20px;">${rc.label}</span>`;
-    }
-  }
+  if(btnRec) btnRec.innerHTML = '';
 
   const items=oc.items||[];
   setEl('oc-det-items-list', items.length===0
     ? '<div style="padding:14px;text-align:center;color:var(--text-l);font-size:12px;">Sin ítems.</div>'
     : items.map(it=>`
-      <div style="display:grid;grid-template-columns:1fr 60px 70px 80px;gap:0;padding:10px 12px;border-bottom:.5px solid var(--cream-d);">
-        <div><div style="font-size:12px;font-weight:500;color:var(--text);">${it.nombre||'—'}</div><div style="font-size:11px;color:var(--text-l);">${it.unidad||''}</div></div>
-        <div style="font-size:12px;color:var(--text-m);text-align:center;align-self:center;">${it.cantidad||0}</div>
-        <div style="font-size:12px;color:var(--text-m);text-align:right;align-self:center;">$${(parseFloat(it.precioUnit)||0).toLocaleString('es-AR')}</div>
-        <div style="font-size:13px;font-weight:500;color:var(--text);text-align:right;align-self:center;">$${(parseFloat(it.total)||0).toLocaleString('es-AR')}</div>
+      <div style="display:grid;grid-template-columns:1fr 60px 80px 90px;gap:0;padding:11px 12px;border-bottom:.5px solid var(--cream-d);">
+        <div><div style="font-size:13px;font-weight:500;color:var(--text);">${it.nombre||'—'}</div>${it.unidad?`<div style="font-size:11px;color:var(--text-l);margin-top:1px;">${it.unidad}</div>`:''}</div>
+        <div style="font-size:13px;color:var(--text-m);text-align:center;align-self:center;">${it.cantidad||0}</div>
+        <div style="font-size:13px;color:var(--text-m);text-align:right;align-self:center;">$${(parseFloat(it.precioUnit)||0).toLocaleString('es-AR')}</div>
+        <div style="font-size:13px;font-weight:600;color:var(--text);text-align:right;align-self:center;">$${(parseFloat(it.total)||0).toLocaleString('es-AR')}</div>
       </div>`).join(''));
 
   openModal('ocDetalleModal');
@@ -15550,22 +15557,25 @@ async function loadProductos() {
     // Footer
     const footer = document.getElementById('prod-footer-guardar');
     if(footer) footer.style.display = prods.length > 0 ? 'flex' : 'none';
-    // Ítem más rentable — cruzar con libroCaja
-    const cajMovs = window._cajaMovimientos||[];
+    // Ítem más rentable — leer directamente de libroCaja
     const rentabilidad = {};
-    cajMovs.forEach(function(m){
-      if(m.eliminado) return;
-      if(m.origen==='venta_caja' && m.productos && m.productos.length) {
-        m.productos.forEach(function(prod){
-          var p = prods.find(function(x){return x.nombre===prod.nombre;});
-          if(p) rentabilidad[p.id]=(rentabilidad[p.id]||0)+(parseFloat(prod.subtotal||0)||(parseFloat(prod.precioUnitario||0)*(prod.qty||1)));
-        });
-      }
-      if(m.tipo==='ingreso' && m.concepto) {
-        var p2 = prods.find(function(x){return x.nombre===m.concepto;});
-        if(p2) rentabilidad[p2.id]=(rentabilidad[p2.id]||0)+(parseFloat(m.monto)||0);
-      }
-    });
+    try {
+      const cajSnap = await fsi.getDocs(fsi.query(fsi.collection(fdb,'libroCaja'), fsi.where('uid','==',uid)));
+      cajSnap.forEach(function(d){
+        const m = d.data();
+        if(m.eliminado) return;
+        if(m.origen==='venta_caja' && m.productos && m.productos.length) {
+          m.productos.forEach(function(prod){
+            var p = prods.find(function(x){return x.nombre===prod.nombre;});
+            if(p) rentabilidad[p.id]=(rentabilidad[p.id]||0)+(parseFloat(prod.subtotal||0)||(parseFloat(prod.precioUnitario||0)*(prod.qty||1)));
+          });
+        }
+        if(m.tipo==='ingreso' && m.concepto) {
+          var p2 = prods.find(function(x){return x.nombre===m.concepto;});
+          if(p2) rentabilidad[p2.id]=(rentabilidad[p2.id]||0)+(parseFloat(m.monto)||0);
+        }
+      });
+    } catch(e){ console.log('libroCaja rentable:', e); }
     const topId = Object.keys(rentabilidad).sort(function(a,b){return rentabilidad[b]-rentabilidad[a];})[0];
     const topProd = topId ? prods.find(function(x){return x.id===topId;}) : null;
     setEl('prod-kpi-rentable', topProd ? topProd.nombre : '—');
