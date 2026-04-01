@@ -11994,11 +11994,22 @@ window.cancelarMembresia = function() {
     '¿Confirmás que querés cancelar tu suscripción? Perderás el acceso al finalizar el período.',
     async () => {
       if(!currentClientUID) return;
+      const btn = document.querySelector('#memb-activo button[onclick="cancelarMembresia()"]');
+      if(btn) { btn.textContent = 'Cancelando...'; btn.disabled = true; }
       try {
-        await updateDoc(doc(db,'clientes',currentClientUID), { 'membresia.estado': 'cancelado', 'membresia.canceladoEn': new Date() });
+        const res = await fetch('/.netlify/functions/mp-cancel', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ clienteId: currentClientUID })
+        });
+        const data = await res.json();
+        if(!res.ok) throw new Error(data.error || 'Error al cancelar la suscripción');
         alert('Suscripción cancelada. Tu acceso se mantendrá hasta fin del período.');
         loadMembresiaSection();
-      } catch(e) { console.error(e); }
+      } catch(e) {
+        alert('No se pudo cancelar: ' + e.message);
+        if(btn) { btn.textContent = 'Cancelar suscripción'; btn.disabled = false; }
+      }
     },
     'Cancelar suscripción'
   );
