@@ -38,6 +38,7 @@ async function crearSuscripcionMP(plan, planData, email, externalRef, freeTrial)
       external_reference: externalRef,
       payer_email: email,
       auto_recurring: autoRecurring,
+      notification_url: 'https://sistema.mbstrategy.com.ar/.netlify/functions/mp-webhook',
       back_url: 'https://sistema.mbstrategy.com.ar',
       status: 'pending'
     })
