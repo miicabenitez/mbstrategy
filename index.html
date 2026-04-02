@@ -635,6 +635,32 @@ input[type=number]{-moz-appearance:textfield;}
 .toast.success{background:#EEF5EF;color:#3B6D11;border:.5px solid #5A8A62;}
 .toast.error{background:#fdf0ec;color:#993C1D;border:.5px solid #C4786A;}
 .toast.info{background:#f5f4f0;color:#555;border:.5px solid #d5d3cc;}
+/* Plan de acción redesign */
+.pa-kpi{background:rgba(255,255,255,.12);border-radius:10px;padding:10px 14px;text-align:center;}
+.pa-kpi-val{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;color:#fff;line-height:1;}
+.pa-kpi-val.pa-bump{animation:paBump .4s ease;}
+.pa-kpi-lbl{font-size:11px;color:rgba(255,255,255,.7);margin-top:3px;}
+@keyframes paBump{0%{transform:scale(1);}40%{transform:scale(1.3);}100%{transform:scale(1);}}
+.pa-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.pa-filter-btn{font-size:12px;font-weight:500;padding:6px 14px;border-radius:20px;border:.5px solid var(--cream-d);background:var(--cream);color:var(--text-m);cursor:pointer;transition:all .15s;}
+.pa-filter-btn.active{background:#4a5e4d;color:#fff;border-color:#4a5e4d;}
+.pa-tag{display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;margin-bottom:5px;letter-spacing:.3px;}
+.pa-tag-alta{background:#fde8e8;color:#a33;}
+.pa-tag-media{background:#fef6e0;color:#7a5c1a;}
+.pa-tag-baja{background:#e8f5e8;color:#2e6b2e;}
+.pa-date{display:inline-flex;align-items:center;gap:3px;font-size:10px;color:var(--text-l);margin-top:3px;}
+.pa-date.vence-hoy{color:#c0392b;font-weight:600;}
+.pa-date.vencida{color:#c0392b;font-weight:600;}
+.pa-inline-wrap{margin-top:8px;border-top:.5px solid var(--cream-d);padding-top:8px;}
+.pa-inline-trigger{width:100%;text-align:left;font-size:12px;color:var(--text-l);padding:5px 4px;background:transparent;border:none;cursor:pointer;border-radius:6px;transition:color .15s;}
+.pa-inline-trigger:hover{color:var(--sage);}
+.pa-inline-input{width:100%;font-size:13px;padding:7px 10px;border-radius:8px;border:.5px solid var(--cream-d);background:var(--white);color:var(--text);outline:none;box-sizing:border-box;}
+.pa-inline-input:focus{border-color:var(--sage);}
+.pa-inline-ok{font-size:11px;font-weight:500;padding:4px 10px;border-radius:6px;background:#4a5e4d;color:#fff;border:none;cursor:pointer;}
+.pa-inline-cancel{font-size:11px;padding:4px 8px;border-radius:6px;background:var(--cream);color:var(--text-l);border:.5px solid var(--cream-d);cursor:pointer;}
+.tc.pa-drag-over{background:rgba(74,94,77,.08);border-color:var(--sage);}
+.pa-confetti-piece{position:fixed;width:8px;height:8px;border-radius:2px;pointer-events:none;z-index:9998;animation:paConfettiFall 1.2s ease-in forwards;}
+@keyframes paConfettiFall{0%{opacity:1;transform:translateY(0) rotate(0deg);}100%{opacity:0;transform:translateY(350px) rotate(720deg);}}
 </style>
 </head>
 <body>
@@ -2135,22 +2161,74 @@ input[type=number]{-moz-appearance:textfield;}
 
       <!-- TAREAS CLIENTE -->
       <div id="ct-tareas" style="display:none;">
-        <div style="background:#4a5e4d;border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;"><div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;">Plan de acción</div></div>
-        <div style="display:flex;justify-content:flex-end;align-items:center;margin-bottom:14px;">
-          <button class="bp" onclick="openModal('newClientTaskModal')">+ Nueva tarea</button>
+        <!-- Banner con KPIs + barra de progreso -->
+        <div style="background:#4a5e4d;border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:22px;margin-bottom:14px;">Plan de acción</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;">
+            <div class="pa-kpi">
+              <div class="pa-kpi-val" id="pa-kpi-pend">0</div>
+              <div class="pa-kpi-lbl">Pendientes</div>
+            </div>
+            <div class="pa-kpi">
+              <div class="pa-kpi-val" id="pa-kpi-curso">0</div>
+              <div class="pa-kpi-lbl">En curso</div>
+            </div>
+            <div class="pa-kpi">
+              <div class="pa-kpi-val" id="pa-kpi-comp">0</div>
+              <div class="pa-kpi-lbl">Completadas</div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+            <div style="font-size:11px;color:rgba(255,255,255,.7);">Progreso general</div>
+            <div id="pa-prog-label" style="font-size:11px;color:rgba(255,255,255,.85);font-weight:500;">0%</div>
+          </div>
+          <div style="height:5px;background:rgba(255,255,255,.2);border-radius:3px;">
+            <div id="pa-prog-fill" style="height:100%;width:0%;background:#a8c5a0;border-radius:3px;transition:width .6s ease;"></div>
+          </div>
         </div>
+        <!-- Toolbar -->
+        <div class="pa-toolbar">
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <button class="pa-filter-btn active" data-filter="todas" onclick="paSetFilter('todas',this)">Todas</button>
+            <button class="pa-filter-btn" data-filter="alta" onclick="paSetFilter('alta',this)">Alta prioridad</button>
+            <button class="pa-filter-btn" data-filter="hoy" onclick="paSetFilter('hoy',this)">Vencen hoy</button>
+          </div>
+          <input type="search" class="fi" id="pa-search" placeholder="Buscar tarea..." oninput="paApplyFilter()" style="width:180px;margin:0;height:34px;font-size:13px;">
+        </div>
+        <!-- Tablero -->
         <div class="tasks-board">
           <div class="tc" id="clt-col-pend">
             <div class="tct"><div class="tcd" style="background:var(--err);"></div>Pendiente</div>
             <div id="clt-tasks-pend"></div>
+            <div class="pa-inline-wrap">
+              <div class="pa-inline-form" id="pa-form-pend" style="display:none;">
+                <input type="text" class="pa-inline-input" id="pa-inp-pend" placeholder="Nueva tarea..." onkeydown="paInlineKeydown(event,'pend')">
+                <div style="display:flex;gap:4px;margin-top:5px;"><button class="pa-inline-ok" onclick="paInlineAdd('pend')">+ Agregar</button><button class="pa-inline-cancel" onclick="paInlineCancel('pend')">✕</button></div>
+              </div>
+              <button class="pa-inline-trigger" id="pa-trigger-pend" onclick="paInlineOpen('pend')">+ Agregar tarea</button>
+            </div>
           </div>
           <div class="tc" id="clt-col-doing">
             <div class="tct"><div class="tcd" style="background:var(--warn);"></div>En curso</div>
             <div id="clt-tasks-doing"></div>
+            <div class="pa-inline-wrap">
+              <div class="pa-inline-form" id="pa-form-doing" style="display:none;">
+                <input type="text" class="pa-inline-input" id="pa-inp-doing" placeholder="Nueva tarea..." onkeydown="paInlineKeydown(event,'doing')">
+                <div style="display:flex;gap:4px;margin-top:5px;"><button class="pa-inline-ok" onclick="paInlineAdd('doing')">+ Agregar</button><button class="pa-inline-cancel" onclick="paInlineCancel('doing')">✕</button></div>
+              </div>
+              <button class="pa-inline-trigger" id="pa-trigger-doing" onclick="paInlineOpen('doing')">+ Agregar tarea</button>
+            </div>
           </div>
           <div class="tc" id="clt-col-done">
             <div class="tct"><div class="tcd" style="background:var(--ok);"></div>Completado</div>
             <div id="clt-tasks-done"></div>
+            <div class="pa-inline-wrap">
+              <div class="pa-inline-form" id="pa-form-done" style="display:none;">
+                <input type="text" class="pa-inline-input" id="pa-inp-done" placeholder="Nueva tarea..." onkeydown="paInlineKeydown(event,'done')">
+                <div style="display:flex;gap:4px;margin-top:5px;"><button class="pa-inline-ok" onclick="paInlineAdd('done')">+ Agregar</button><button class="pa-inline-cancel" onclick="paInlineCancel('done')">✕</button></div>
+              </div>
+              <button class="pa-inline-trigger" id="pa-trigger-done" onclick="paInlineOpen('done')">+ Agregar tarea</button>
+            </div>
           </div>
         </div>
       </div>
@@ -3381,7 +3459,11 @@ input[type=number]{-moz-appearance:textfield;}
     <div class="mt">Nueva tarea</div>
     <div class="fg"><label class="fl">Tarea</label><input type="text" class="fi" id="clt-titulo" placeholder="Descripción de la tarea"/></div>
     <div class="fg"><label class="fl">Contexto</label><input type="text" class="fi" id="clt-meta" placeholder="Ej: Casa Rodriguez · Esta semana"/></div>
-    <div class="fg"><label class="fl">Estado</label><select class="fi" id="clt-estado" style="margin-top:0;"><option value="pend">Pendiente</option><option value="doing">En curso</option><option value="done">Completado</option></select></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="fg"><label class="fl">Estado</label><select class="fi" id="clt-estado" style="margin-top:0;"><option value="pend">Pendiente</option><option value="doing">En curso</option><option value="done">Completado</option></select></div>
+      <div class="fg"><label class="fl">Prioridad</label><select class="fi" id="clt-prioridad" style="margin-top:0;"><option value="Media">Media</option><option value="Alta">Alta</option><option value="Baja">Baja</option></select></div>
+    </div>
+    <div class="fg"><label class="fl">Fecha límite <span style="color:var(--text-l);font-weight:400;">(opcional)</span></label><input type="date" class="fi" id="clt-fecha-venc"/></div>
     <div class="br2"><button class="bp" onclick="createClientTask()">Agregar</button><button class="bs" onclick="closeModal('newClientTaskModal')">Cancelar</button></div>
   </div>
 </div>
@@ -10113,45 +10195,193 @@ async function loadClientTareas() {
   } catch(e){ console.log(e); }
 }
 
+let _paTareas = [];
+let _paFilter = 'todas';
+
+function paKpiSet(id, val) {
+  const el = document.getElementById(id);
+  if(!el) return;
+  const old = parseInt(el.textContent) || 0;
+  el.textContent = val;
+  if(val !== old) {
+    el.classList.remove('pa-bump');
+    requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('pa-bump')));
+  }
+}
+
+function paUpdateProgress(tareas) {
+  const total = tareas.length;
+  const done = tareas.filter(t=>t.estado==='done').length;
+  const pct = total === 0 ? 0 : Math.round(done/total*100);
+  const fill = document.getElementById('pa-prog-fill');
+  const label = document.getElementById('pa-prog-label');
+  if(fill) fill.style.width = pct + '%';
+  if(label) label.textContent = pct + '%';
+}
+
+function paBuildCard(t) {
+  const el = document.createElement('div');
+  el.className = 'tk' + (t.estado==='done' ? ' done' : '');
+  el.dataset.estado = t.estado || 'pend';
+  el.dataset.id = t.id || '';
+  el.dataset.titulo = (t.titulo||'').toLowerCase();
+  el.dataset.prioridad = (t.prioridad||'Media').toLowerCase();
+  el.draggable = true;
+
+  const prioridad = t.prioridad || 'Media';
+  const tagClass = prioridad === 'Alta' ? 'pa-tag-alta' : prioridad === 'Baja' ? 'pa-tag-baja' : 'pa-tag-media';
+  const tagHtml = `<span class="pa-tag ${tagClass}">${prioridad}</span>`;
+
+  let dateHtml = '';
+  if(t.fechaVenc) {
+    const hoy = new Date(); hoy.setHours(0,0,0,0);
+    const fv = new Date(t.fechaVenc + 'T00:00:00');
+    const esHoy = fv.getTime() === hoy.getTime();
+    const vencida = fv < hoy;
+    const cls = esHoy ? 'vence-hoy' : vencida ? 'vencida' : '';
+    const icon = (esHoy || vencida) ? '⚠ ' : '📅 ';
+    const partes = t.fechaVenc.split('-');
+    const fechaStr = `${partes[2]}/${partes[1]}/${partes[0]}`;
+    dateHtml = `<div class="pa-date ${cls}">${icon}${esHoy ? 'Vence hoy' : vencida ? 'Venció '+fechaStr : fechaStr}</div>`;
+  }
+
+  el.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px;">
+    <div style="flex:1;">
+      ${tagHtml}
+      <div class="tkt">${t.titulo}</div>
+      <div class="tkm">${t.meta||''}</div>
+      ${dateHtml}
+    </div>
+    <div style="display:flex;gap:3px;flex-shrink:0;" onclick="event.stopPropagation()">
+      <button onclick="deleteClientTask(this.closest('.tk'))" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
+    </div>
+  </div>`;
+
+  el.onclick = () => moveClientTask(el);
+  el.addEventListener('dragstart', paDragStart);
+  el.addEventListener('dragend', paDragEnd);
+  return el;
+}
+
 function renderClientTareas(tareas) {
-  const _s=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
-  _s('bn-tar-pend',tareas.filter(t=>t.estado==='pend').length);
-  _s('bn-tar-curso',tareas.filter(t=>t.estado==='doing').length);
-  _s('bn-tar-comp',tareas.filter(t=>t.estado==='done').length);
+  _paTareas = tareas;
+  paKpiSet('pa-kpi-pend', tareas.filter(t=>t.estado==='pend').length);
+  paKpiSet('pa-kpi-curso', tareas.filter(t=>t.estado==='doing').length);
+  paKpiSet('pa-kpi-comp', tareas.filter(t=>t.estado==='done').length);
+  paUpdateProgress(tareas);
   ['pend','doing','done'].forEach(col=>{ const el=document.getElementById('clt-tasks-'+col); if(el) el.innerHTML=''; });
-  const EMPTY_LABEL = {pend:'Sin pendientes',doing:'Nada en curso',done:'Sin completadas'};
   tareas.forEach(t=>{
-    const el=document.createElement('div');
-    el.className='tk'+(t.estado==='done'?' done':'');
-    el.dataset.estado=t.estado||'pend';
-    el.dataset.id=t.id||'';
-    el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px;"><div style="flex:1;"><div class="tkt">${t.titulo}</div><div class="tkm">${t.meta||''}</div></div><div style="display:flex;gap:3px;" onclick="event.stopPropagation()"><button onclick="deleteClientTask(this.closest('.tk'))" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button></div></div>`;
-    el.onclick=()=>moveClientTask(el);
-    const col=document.getElementById('clt-tasks-'+(t.estado||'pend'));
+    const el = paBuildCard(t);
+    const col = document.getElementById('clt-tasks-'+(t.estado||'pend'));
     if(col) col.appendChild(el);
   });
-  // UI-005: empty states por columna
+  paApplyFilter();
+  paInitDrop();
+}
+
+function paApplyFilter() {
+  const q = (document.getElementById('pa-search')?.value||'').toLowerCase();
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  document.querySelectorAll('#ct-tareas .tk').forEach(el=>{
+    const titulo = el.dataset.titulo || '';
+    const prioridad = el.dataset.prioridad || '';
+    let show = true;
+    if(_paFilter === 'alta') show = prioridad === 'alta';
+    if(_paFilter === 'hoy') {
+      const t = _paTareas.find(x=>x.id===el.dataset.id);
+      if(t && t.fechaVenc) {
+        const fv = new Date(t.fechaVenc+'T00:00:00');
+        show = fv.getTime() === hoy.getTime();
+      } else show = false;
+    }
+    if(show && q) show = titulo.includes(q);
+    el.style.display = show ? '' : 'none';
+  });
+  const EMPTY_LABEL = {pend:'Sin pendientes',doing:'Nada en curso',done:'Sin completadas'};
   ['pend','doing','done'].forEach(col=>{
-    const el=document.getElementById('clt-tasks-'+col);
-    if(el && !el.children.length) el.innerHTML=`<div style="padding:16px 8px;text-align:center;color:var(--text-l);font-size:12px;">${EMPTY_LABEL[col]}</div>`;
+    const el = document.getElementById('clt-tasks-'+col);
+    if(!el) return;
+    const visible = [...el.children].filter(c=>c.classList.contains('tk') && c.style.display!=='none');
+    const existing = el.querySelector('.pa-empty');
+    if(visible.length === 0) {
+      if(!existing) { const d=document.createElement('div'); d.className='pa-empty'; d.style.cssText='padding:16px 8px;text-align:center;color:var(--text-l);font-size:12px;'; d.textContent=EMPTY_LABEL[col]; el.appendChild(d); }
+    } else { if(existing) existing.remove(); }
   });
 }
 
-window.createClientTask = async function() {
+window.paSetFilter = function(filter, btn) {
+  _paFilter = filter;
+  document.querySelectorAll('.pa-filter-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  paApplyFilter();
+};
+
+window.paInlineOpen = function(col) {
+  document.getElementById('pa-form-'+col).style.display='';
+  document.getElementById('pa-trigger-'+col).style.display='none';
+  setTimeout(()=>document.getElementById('pa-inp-'+col).focus(), 50);
+};
+
+window.paInlineCancel = function(col) {
+  document.getElementById('pa-inp-'+col).value='';
+  document.getElementById('pa-form-'+col).style.display='none';
+  document.getElementById('pa-trigger-'+col).style.display='';
+};
+
+window.paInlineKeydown = function(event, col) {
+  if(event.key==='Enter') paInlineAdd(col);
+  if(event.key==='Escape') paInlineCancel(col);
+};
+
+window.paInlineAdd = async function(col) {
   if(!currentClientUID) return;
-  const titulo=document.getElementById('clt-titulo').value;
-  const meta=document.getElementById('clt-meta').value;
-  const estado=document.getElementById('clt-estado').value;
+  const inp = document.getElementById('pa-inp-'+col);
+  const titulo = inp.value.trim();
   if(!titulo) return;
   try {
-    const ref=await addDoc(collection(db,'clientes',currentClientUID,'tareas'),{titulo,meta,estado,creadoEn:new Date().toISOString()});
-    const el=document.createElement('div');
-    el.className='tk'+(estado==='done'?' done':'');
-    el.dataset.estado=estado; el.dataset.id=ref.id;
-    el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px;"><div style="flex:1;"><div class="tkt">${titulo}</div><div class="tkm">${meta||''}</div></div><div style="display:flex;gap:3px;" onclick="event.stopPropagation()"><button onclick="deleteClientTask(this.closest('.tk'))" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button></div></div>`;
-    el.onclick=()=>moveClientTask(el);
-    const col=document.getElementById('clt-tasks-'+estado); if(col) col.appendChild(el);
-    document.getElementById('clt-titulo').value=''; document.getElementById('clt-meta').value='';
+    const taskData = { titulo, meta:'', estado:col, prioridad:'Media', creadoEn:new Date().toISOString() };
+    const ref = await addDoc(collection(db,'clientes',currentClientUID,'tareas'), taskData);
+    taskData.id = ref.id;
+    _paTareas.push(taskData);
+    const el = paBuildCard(taskData);
+    const colEl = document.getElementById('clt-tasks-'+col);
+    const empty = colEl?.querySelector('.pa-empty');
+    if(empty) empty.remove();
+    if(colEl) colEl.appendChild(el);
+    paKpiSet('pa-kpi-pend', _paTareas.filter(t=>t.estado==='pend').length);
+    paKpiSet('pa-kpi-curso', _paTareas.filter(t=>t.estado==='doing').length);
+    paKpiSet('pa-kpi-comp', _paTareas.filter(t=>t.estado==='done').length);
+    paUpdateProgress(_paTareas);
+    paInlineCancel(col);
+  } catch(e){ showToast('Error: '+e.message,'error'); }
+};
+
+window.createClientTask = async function() {
+  if(!currentClientUID) return;
+  const titulo = document.getElementById('clt-titulo').value.trim();
+  const meta = document.getElementById('clt-meta').value.trim();
+  const estado = document.getElementById('clt-estado').value;
+  const prioridad = document.getElementById('clt-prioridad').value;
+  const fechaVenc = document.getElementById('clt-fecha-venc').value || null;
+  if(!titulo) return;
+  try {
+    const taskData = { titulo, meta, estado, prioridad, creadoEn: new Date().toISOString() };
+    if(fechaVenc) taskData.fechaVenc = fechaVenc;
+    const ref = await addDoc(collection(db,'clientes',currentClientUID,'tareas'), taskData);
+    taskData.id = ref.id;
+    _paTareas.push(taskData);
+    const el = paBuildCard(taskData);
+    const colEl = document.getElementById('clt-tasks-'+estado);
+    const empty = colEl?.querySelector('.pa-empty');
+    if(empty) empty.remove();
+    if(colEl) colEl.appendChild(el);
+    paKpiSet('pa-kpi-pend', _paTareas.filter(t=>t.estado==='pend').length);
+    paKpiSet('pa-kpi-curso', _paTareas.filter(t=>t.estado==='doing').length);
+    paKpiSet('pa-kpi-comp', _paTareas.filter(t=>t.estado==='done').length);
+    paUpdateProgress(_paTareas);
+    document.getElementById('clt-titulo').value='';
+    document.getElementById('clt-meta').value='';
+    document.getElementById('clt-fecha-venc').value='';
     closeModal('newClientTaskModal');
   } catch(e){ showToast('Error: '+e.message, 'error'); }
 };
@@ -10162,8 +10392,21 @@ window.moveClientTask = async function(el) {
   const next=order[(order.indexOf(current)+1)%3];
   el.dataset.estado=next;
   el.classList.toggle('done',next==='done');
-  const col=document.getElementById('clt-tasks-'+next); if(col) col.appendChild(el);
+  const col=document.getElementById('clt-tasks-'+next);
+  if(col) {
+    const empty = col.querySelector('.pa-empty');
+    if(empty) empty.remove();
+    col.appendChild(el);
+  }
   const id=el.dataset.id;
+  const cached = _paTareas.find(t=>t.id===id);
+  if(cached) cached.estado = next;
+  paKpiSet('pa-kpi-pend', _paTareas.filter(t=>t.estado==='pend').length);
+  paKpiSet('pa-kpi-curso', _paTareas.filter(t=>t.estado==='doing').length);
+  paKpiSet('pa-kpi-comp', _paTareas.filter(t=>t.estado==='done').length);
+  paUpdateProgress(_paTareas);
+  paApplyFilter();
+  if(next==='done') paConfetti(el);
   if(id && currentClientUID) { try{ await updateDoc(doc(db,'clientes',currentClientUID,'tareas',id),{estado:next}); }catch(e){} }
 };
 
@@ -10171,9 +10414,80 @@ window.deleteClientTask = function(el) {
   showConfirm('¿Eliminar esta tarea?', async()=>{
     const id=el.dataset.id;
     if(id && currentClientUID) { try{ await updateDoc(doc(db,'clientes',currentClientUID,'tareas',id), {eliminado:true, eliminadoEn:new Date().toISOString()}); }catch(e){} }
+    _paTareas = _paTareas.filter(t=>t.id!==id);
     el.remove();
+    paKpiSet('pa-kpi-pend', _paTareas.filter(t=>t.estado==='pend').length);
+    paKpiSet('pa-kpi-curso', _paTareas.filter(t=>t.estado==='doing').length);
+    paKpiSet('pa-kpi-comp', _paTareas.filter(t=>t.estado==='done').length);
+    paUpdateProgress(_paTareas);
+    paApplyFilter();
   },'Eliminar tarea');
 };
+
+// ── Plan de acción: confetti + drag & drop ──
+function paConfetti(originEl) {
+  const colors = ['#4a5e4d','#7a9e7e','#a8c5a0','#d4e8d4','#ffffff'];
+  const rect = originEl ? originEl.getBoundingClientRect() : {left:window.innerWidth/2, top:window.innerHeight/2, width:0, height:0};
+  const cx = rect.left + rect.width/2;
+  const cy = rect.top + rect.height/2;
+  for(let i=0; i<28; i++){
+    const piece = document.createElement('div');
+    piece.className = 'pa-confetti-piece';
+    piece.style.left = (cx + (Math.random()-0.5)*120) + 'px';
+    piece.style.top = (cy + (Math.random()-0.5)*40) + 'px';
+    piece.style.background = colors[Math.floor(Math.random()*colors.length)];
+    piece.style.animationDelay = (Math.random()*0.3)+'s';
+    piece.style.animationDuration = (0.9+Math.random()*0.6)+'s';
+    document.body.appendChild(piece);
+    piece.addEventListener('animationend',()=>piece.remove());
+  }
+}
+
+let _paDragId = null;
+function paDragStart(e) {
+  _paDragId = this.dataset.id;
+  e.dataTransfer.effectAllowed = 'move';
+  this.style.opacity = '0.4';
+}
+function paDragEnd() {
+  this.style.opacity = '';
+  document.querySelectorAll('.tc').forEach(c=>c.classList.remove('pa-drag-over'));
+}
+function paInitDrop() {
+  document.querySelectorAll('#ct-tareas .tc').forEach(col=>{
+    col.addEventListener('dragover', e=>{
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      col.classList.add('pa-drag-over');
+    });
+    col.addEventListener('dragleave', ()=>col.classList.remove('pa-drag-over'));
+    col.addEventListener('drop', async e=>{
+      e.preventDefault();
+      col.classList.remove('pa-drag-over');
+      if(!_paDragId) return;
+      const targetCol = col.id.replace('clt-col-','');
+      const el = document.querySelector(`#ct-tareas .tk[data-id="${_paDragId}"]`);
+      if(!el || el.dataset.estado === targetCol) return;
+      const prev = el.dataset.estado;
+      el.dataset.estado = targetCol;
+      el.classList.toggle('done', targetCol==='done');
+      const tasksEl = document.getElementById('clt-tasks-'+targetCol);
+      const empty = tasksEl?.querySelector('.pa-empty');
+      if(empty) empty.remove();
+      if(tasksEl) tasksEl.appendChild(el);
+      const cached = _paTareas.find(t=>t.id===_paDragId);
+      if(cached) cached.estado = targetCol;
+      paKpiSet('pa-kpi-pend', _paTareas.filter(t=>t.estado==='pend').length);
+      paKpiSet('pa-kpi-curso', _paTareas.filter(t=>t.estado==='doing').length);
+      paKpiSet('pa-kpi-comp', _paTareas.filter(t=>t.estado==='done').length);
+      paUpdateProgress(_paTareas);
+      paApplyFilter();
+      if(targetCol==='done' && prev!=='done') paConfetti(el);
+      if(currentClientUID) { try{ await updateDoc(doc(db,'clientes',currentClientUID,'tareas',_paDragId),{estado:targetCol}); }catch(e){} }
+      _paDragId = null;
+    });
+  });
+}
 
 // Presupuestos cliente
 // ===== MIS CLIENTES (módulo cliente) =====
