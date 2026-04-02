@@ -78,7 +78,9 @@ exports.handler = async (event) => {
         plan, estado: 'pendiente',
         creadoEn: FieldValue.serverTimestamp()
       });
-      const freeTrial = plan === 'base';
+      const clientesSnap = await db.collection('clientes').where('email', '==', email).get();
+      const tuvoTrial = !clientesSnap.empty && clientesSnap.docs.some(d => d.data().membresia?.activoDesde);
+      const freeTrial = plan === 'base' && !tuvoTrial;
       const mpRes = await crearSuscripcionMP(plan, planData, email, pendienteRef.id, freeTrial);
       const mpData = await mpRes.json();
       if (!mpRes.ok || !mpData.init_point) {
