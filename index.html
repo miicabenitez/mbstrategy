@@ -4753,7 +4753,8 @@ function renderClientList(clients) {
     ? '<div style="text-align:center;padding:20px;color:var(--text-l);font-size:13px;">Sin clientes aún. Creá el primero.</div>'
     : clients.map((c, i) => {
         const col = avatarColors[i % avatarColors.length];
-        const init = c.nombre.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+        const nombre = c.nombre || c.negocioNombre || c.email || '?';
+        const init = nombre.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
         const total = c.programa === '90D' ? 12 : 4;
         const sem = c.semanaActual || 1;
         const pct = Math.round((sem/total)*100);
@@ -4761,22 +4762,26 @@ function renderClientList(clients) {
           const idx = total <= 4 ? j : Math.floor(j*(total/4));
           return `<div class="wd ${idx < sem-1 ? 'done' : idx === sem-1 ? 'active' : ''}"></div>`;
         }).join('');
+        const subtitulo = c.rubro
+          ? `${c.rubro} · Programa ${c.programa} · $${c.precio} USD`
+          : c.membresia?.plan ? `Plan ${c.membresia.plan} · Suscripción` : '—';
+        const badge = c.programa ? `Sem. ${sem}` : (c.membresia?.estado || 'Activo');
         return `<div style="padding:12px 0;border-bottom:.5px solid var(--cream-d);">
           <div style="display:flex;align-items:center;gap:11px;">
             <div class="av" style="background:${col};color:#fff;width:38px;height:38px;font-size:12px;flex-shrink:0;cursor:pointer;" onclick="openClientDetail('${c.id}')">${init}</div>
             <div style="flex:1;min-width:0;cursor:pointer;" onclick="openClientDetail('${c.id}')">
-              <div style="font-size:13px;font-weight:500;color:var(--text);">${c.nombre}</div>
-              <div style="font-size:11px;color:var(--text-l);margin-top:1px;">${c.rubro} · Programa ${c.programa} · $${c.precio} USD</div>
+              <div style="font-size:13px;font-weight:500;color:var(--text);">${nombre}</div>
+              <div style="font-size:11px;color:var(--text-l);margin-top:1px;">${subtitulo}</div>
               <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
                 <div class="wb" style="flex:1;">${dots}</div>
                 <span style="font-size:11px;color:var(--text-l);">${pct}%</span>
               </div>
             </div>
             <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;">
-              <div class="badge bg" style="cursor:pointer;" onclick="openClientDetail('${c.id}')">Sem. ${sem}</div>
+              <div class="badge bg" style="cursor:pointer;" onclick="openClientDetail('${c.id}')">${badge}</div>
               <div style="display:flex;gap:4px;">
                 <button onclick="editCliente('${c.id}',event)" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-                <button onclick="deleteCliente(this,event)" data-id="${c.id}" data-nombre="${c.nombre}" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
+                <button onclick="deleteCliente(this,event)" data-id="${c.id}" data-nombre="${nombre}" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
               </div>
             </div>
           </div>
@@ -4786,14 +4791,16 @@ function renderClientList(clients) {
   document.getElementById('full-clients').innerHTML = html;
   document.getElementById('dash-clients').innerHTML = clients.map((c,i) => {
     const col = avatarColors[i%avatarColors.length];
-    const init = c.nombre.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const nombre = c.nombre || c.negocioNombre || c.email || '?';
+    const init = nombre.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     const total = c.programa==='90D'?12:4;
     const sem = c.semanaActual||1;
     const dots = Array(4).fill(0).map((_,j)=>`<div class="wd ${j<sem-1?'done':j===sem-1?'active':''}"></div>`).join('');
+    const subtitulo = c.rubro ? `${c.rubro} · Programa ${c.programa}` : c.membresia?.plan ? `Plan ${c.membresia.plan} · Suscripción` : '—';
     return `<div class="cr" onclick="openClientDetail('${c.id}')">
       <div class="av" style="background:${col};color:#fff;">${init}</div>
-      <div class="ci"><div class="cn">${c.nombre}</div><div class="cs">${c.rubro} · Programa ${c.programa}</div><div class="wb">${dots}</div></div>
-      <div class="badge bg">Sem. ${sem}</div>
+      <div class="ci"><div class="cn">${nombre}</div><div class="cs">${subtitulo}</div><div class="wb">${dots}</div></div>
+      <div class="badge bg">${c.programa ? 'Sem. '+sem : (c.membresia?.estado || 'Activo')}</div>
     </div>`;
   }).join('');
 
