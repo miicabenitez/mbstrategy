@@ -4048,6 +4048,16 @@ input[type=number]{-moz-appearance:textfield;}
   </div>
 </div>
 
+<div class="mo" id="primerLoginModal">
+  <div class="md" style="max-width:380px;">
+    <div class="mt" style="color:var(--sage-dark);">Elegí tu contraseña</div>
+    <p style="font-size:13px;color:var(--text-m);margin-bottom:20px;line-height:1.6;">Antes de continuar, elegí una contraseña personal para tu cuenta. Mínimo 8 caracteres.</p>
+    <div class="fg"><label class="fl">Nueva contraseña</label><input type="password" class="fi" id="pl-nueva" placeholder="Mínimo 8 caracteres"/></div>
+    <div class="fg"><label class="fl">Confirmá la contraseña</label><input type="password" class="fi" id="pl-confirm" placeholder="Repetí la contraseña"/></div>
+    <div id="pl-error" style="display:none;background:var(--err-bg);color:var(--err);border-radius:8px;padding:10px;font-size:12px;margin-bottom:12px;"></div>
+    <button class="bp" id="pl-btn" onclick="confirmarPrimerLogin()" style="width:100%;">Guardar contraseña</button>
+  </div>
+</div>
 <div class="mo" id="confirmModal">
   <div class="md" style="max-width:380px;">
     <div class="mt" id="confirmTitle">¿Confirmar acción?</div>
@@ -4519,6 +4529,8 @@ window.showClientUI = async function(email, clientData) {
       if(negNombre) negNombre.textContent = clientData.negocioNombre || clientData.nombre || 'Mi negocio';
     }
     if(clientData && clientData.primerLogin === true) {
+      setTimeout(() => openModal('primerLoginModal'), 300);
+    } else if(clientData && clientData.onboardingCompletado !== true) {
       setTimeout(() => window.showWelcomeScreen(clientData), 500);
     }
     if(window.embiShow) window.embiShow(true);
@@ -12138,6 +12150,32 @@ window.guardarMiCuentaPage = async function() {
     if(errEl) errEl.style.display='none';
   } catch(e) {
     if(errEl){ errEl.textContent='Error: '+e.message; errEl.style.display='block'; }
+  }
+};
+
+window.confirmarPrimerLogin = async function() {
+  const nueva = document.getElementById('pl-nueva').value;
+  const confirm = document.getElementById('pl-confirm').value;
+  const errEl = document.getElementById('pl-error');
+  const btn = document.getElementById('pl-btn');
+  const showErr = (msg) => { errEl.textContent = msg; errEl.style.display = 'block'; };
+  errEl.style.display = 'none';
+  if(nueva.length < 8) { showErr('La contraseña debe tener al menos 8 caracteres'); return; }
+  if(nueva !== confirm) { showErr('Las contraseñas no coinciden'); return; }
+  btn.textContent = 'Guardando...'; btn.disabled = true;
+  try {
+    const { updatePassword } = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js');
+    await updatePassword(currentUser, nueva);
+    await updateDoc(doc(db, 'clientes', currentClientUID), { primerLogin: false });
+    closeModal('primerLoginModal');
+    document.getElementById('pl-nueva').value = '';
+    document.getElementById('pl-confirm').value = '';
+    if(currentClientData && currentClientData.onboardingCompletado !== true) {
+      setTimeout(() => window.showWelcomeScreen(currentClientData), 300);
+    }
+  } catch(e) {
+    showErr('Error al guardar: ' + e.message);
+    btn.textContent = 'Guardar contraseña'; btn.disabled = false;
   }
 };
 
