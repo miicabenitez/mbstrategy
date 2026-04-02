@@ -119,6 +119,7 @@ exports.handler = async (event) => {
       headers: { 'Authorization': `Bearer ${process.env.MP_ACCESS_TOKEN}` }
     });
     const sub = await mpRes.json();
+    console.log('SUB COMPLETO:', JSON.stringify(sub));
     if (!mpRes.ok) {
       console.error('MP fetch error:', sub);
       return { statusCode: 502, headers: HEADERS, body: JSON.stringify({ error: 'Error consultando MP' }) };
@@ -140,7 +141,8 @@ exports.handler = async (event) => {
     // ── Verificar si es flujo público (pendientes_suscripcion) ──
     const pendienteSnap = await db.collection('pendientes_suscripcion').doc(externalRef).get();
 
-    if (pendienteSnap.exists && ['authorized', 'pending'].includes(sub.status)) {
+    const tieneMetodoPago = sub.payment_method_id || sub.card_id;
+    if (pendienteSnap.exists && ['authorized', 'pending'].includes(sub.status) && tieneMetodoPago) {
       // ── FLUJO PÚBLICO: crear cuenta nueva ──
       const pendiente = pendienteSnap.data();
       if (pendiente.estado === 'completado') {
