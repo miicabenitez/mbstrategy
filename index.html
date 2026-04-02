@@ -629,6 +629,12 @@ textarea.cj-input{resize:none;}
 *,*:focus{outline:none !important;box-shadow:none !important;}
 input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
 input[type=number]{-moz-appearance:textfield;}
+#toast-container{position:fixed;bottom:100px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;align-items:flex-end;pointer-events:none;}
+.toast{font-family:'DM Sans',sans-serif;font-size:13px;padding:11px 16px;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.12);opacity:0;transform:translateY(8px);transition:opacity .22s ease,transform .22s ease;pointer-events:none;max-width:320px;line-height:1.4;}
+.toast.show{opacity:1;transform:translateY(0);}
+.toast.success{background:#EEF5EF;color:#3B6D11;border:.5px solid #5A8A62;}
+.toast.error{background:#fdf0ec;color:#993C1D;border:.5px solid #C4786A;}
+.toast.info{background:#f5f4f0;color:#555;border:.5px solid #d5d3cc;}
 </style>
 </head>
 <body>
@@ -5166,7 +5172,7 @@ window.guardarReunion = async function() {
   const fecha = document.getElementById('reunion-fecha').value;
   const hora  = document.getElementById('reunion-hora').value;
   const link  = document.getElementById('reunion-link').value.trim();
-  if (!fecha) { alert('Seleccioná una fecha'); return; }
+  if (!fecha) { showToast('Seleccioná una fecha', 'info'); return; }
   try {
     await updateDoc(doc(db,'clientes',currentClientId), {proximaReunion: {fecha, hora, link}});
     const d = await getDoc(doc(db,'clientes',currentClientId));
@@ -5176,7 +5182,7 @@ window.guardarReunion = async function() {
     s.textContent = '✓ Reunión guardada — ' + new Date(fecha+'T12:00:00').toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'}) + ' a las ' + hora + 'hs';
     s.style.display = 'block';
     setTimeout(() => { s.style.display='none'; s.textContent='✓ Guardado'; }, 3000);
-  } catch(e) { alert('Error: '+e.message); }
+  } catch(e) { showToast('Error: '+e.message, 'error'); }
 };
 
 window.editCliente = async function(id, event) {
@@ -5194,7 +5200,7 @@ window.editCliente = async function(id, event) {
     document.getElementById('ecl-email').value = c.email||'';
     document.getElementById('ecl-notas').value = c.notas||'';
     openModal('editClienteModal');
-  } catch(e) { alert('Error al cargar cliente'); }
+  } catch(e) { showToast('Error al cargar cliente', 'error'); }
 };
 
 window.saveEditCliente = async function() {
@@ -5214,7 +5220,7 @@ window.saveEditCliente = async function() {
     const s = document.getElementById('ecl-saved');
     s.style.display='block';
     setTimeout(async()=>{s.style.display='none';closeModal('editClienteModal');await loadAdminData();},1500);
-  } catch(e) { alert('Error: '+e.message); }
+  } catch(e) { showToast('Error: '+e.message, 'error'); }
 };
 
 window.deleteCliente = function(id, nombre, event) {
@@ -5225,7 +5231,7 @@ window.deleteCliente = function(id, nombre, event) {
       try {
         await updateDoc(doc(db,'clientes',id), {eliminado:true, eliminadoEn:new Date().toISOString()});
         await loadAdminData();
-      } catch(e) { alert('Error: '+e.message); }
+      } catch(e) { showToast('Error: '+e.message, 'error'); }
     },
     'Eliminar cliente'
   );
@@ -5241,8 +5247,8 @@ window.createClient = async function() {
   const uid     = document.getElementById('nc-uid').value.trim();
   const notas   = document.getElementById('nc-notas').value;
   const genero  = document.getElementById('nc-genero').value;
-  if (!nombre || !email) { alert('Nombre y email son obligatorios'); return; }
-  if (!uid) { alert('El UID de Firebase Auth es obligatorio'); return; }
+  if (!nombre || !email) { showToast('Nombre y email son obligatorios', 'info'); return; }
+  if (!uid) { showToast('El UID de Firebase Auth es obligatorio', 'info'); return; }
   try {
     await setDoc(doc(db,'clientes',uid), {
       uid,
@@ -5266,7 +5272,7 @@ window.createClient = async function() {
     const s = document.getElementById('client-saved');
     s.style.display = 'block';
     setTimeout(async () => { s.style.display='none'; closeModal('newClientModal'); await loadAdminData(); }, 2500);
-  } catch(e) { alert('Error: ' + e.message); }
+  } catch(e) { showToast('Error: ' + e.message, 'error'); }
 };
 
 let _editingTaskEl = null;
@@ -5351,7 +5357,7 @@ window.createTask = async function() {
     document.getElementById('nt-titulo').value = '';
     document.getElementById('nt-meta').value = '';
     closeModal('newTaskModal');
-  } catch(e) { alert('Error: '+e.message); }
+  } catch(e) { showToast('Error: '+e.message, 'error'); }
 };
 
 window.moveTask = async function(el) {
@@ -5408,7 +5414,7 @@ window.saveEditCobro = async function() {
     const s = document.getElementById('ec-saved');
     s.style.display='block';
     setTimeout(async()=>{s.style.display='none';closeModal('editCobroModal');await loadAdminData();},1500);
-  } catch(e) { alert('Error: '+e.message); }
+  } catch(e) { showToast('Error: '+e.message, 'error'); }
 };
 
 window.deleteCobro = function(id) {
@@ -5426,7 +5432,7 @@ window.createCobro = async function() {
   const monto = document.getElementById('cob-monto').value;
   const estado = document.getElementById('cob-estado').value;
   const fecha = document.getElementById('cob-fecha').value;
-  if (!clienteId || !monto) { alert('Seleccioná un cliente y el monto'); return; }
+  if (!clienteId || !monto) { showToast('Seleccioná un cliente y el monto', 'info'); return; }
   const clienteNombre = document.getElementById('cob-cliente').options[document.getElementById('cob-cliente').selectedIndex].text;
   try {
     await addDoc(collection(db,'cobros'), {clienteId,cliente:clienteNombre,concepto,monto,estado,fecha,creadoEn:new Date().toISOString()});
@@ -5435,7 +5441,7 @@ window.createCobro = async function() {
     const s = document.getElementById('cobro-saved');
     s.style.display='block';
     setTimeout(async()=>{s.style.display='none';closeModal('newCobroModal');await loadAdminData();},1500);
-  } catch(e) { alert('Error: '+e.message); }
+  } catch(e) { showToast('Error: '+e.message, 'error'); }
 };
 
 window.editGasto = function(id) {
@@ -5463,7 +5469,7 @@ window.saveEditGasto = async function() {
     const s = document.getElementById('eg-saved');
     s.style.display='block';
     setTimeout(async()=>{s.style.display='none';closeModal('editGastoModal');await loadGastos();},1500);
-  } catch(e) { alert('Error: '+e.message); }
+  } catch(e) { showToast('Error: '+e.message, 'error'); }
 };
 
 window.deleteGasto = function(id) {
@@ -5610,8 +5616,8 @@ window.createCobroCliente = async function() {
   const monto = parseFloat(document.getElementById('cc-monto').value)||0;
   const concepto = document.getElementById('cc-concepto').value;
   const fecha = document.getElementById('cc-fecha').value;
-  if(!monto) { alert('Ingresá un monto'); return; }
-  if(!fecha) { alert('Ingresá la fecha del pago'); return; }
+  if(!monto) { showToast('Ingresá un monto', 'info'); return; }
+  if(!fecha) { showToast('Ingresá la fecha del pago', 'info'); return; }
 
   // Calcular estado automáticamente
   const precioTotal = window._ccPrecioTotal||parseFloat(currentClientData?.precio)||0;
@@ -5653,7 +5659,7 @@ window.createCobroCliente = async function() {
       await loadCobrosCliente(currentClientId);
       await loadAdminData();
     },2000);
-  } catch(e) { alert('Error: '+e.message); }
+  } catch(e) { showToast('Error: '+e.message, 'error'); }
 };
 
 window.createContent = async function() {
@@ -5661,10 +5667,10 @@ window.createContent = async function() {
   const semana = document.getElementById('cont-semana').value;
   const tipo = document.getElementById('cont-tipo').value;
   const titulo = document.getElementById('cont-titulo').value;
-  if (!titulo) { alert('Ingresá un título.'); return; }
+  if (!titulo) { showToast('Ingresá un título.', 'info'); return; }
 
-  if (tipo === 'pdf' && _pdfUploading) { alert('El archivo todavía se está subiendo. Esperá un momento.'); return; }
-  if (tipo === 'pdf' && !_pdfUploadedUrl) { alert('Seleccioná un archivo PDF para subir.'); return; }
+  if (tipo === 'pdf' && _pdfUploading) { showToast('El archivo todavía se está subiendo. Esperá un momento.', 'info'); return; }
+  if (tipo === 'pdf' && !_pdfUploadedUrl) { showToast('Seleccioná un archivo PDF para subir.', 'info'); return; }
 
   const descripcion = document.getElementById('cont-desc') ? document.getElementById('cont-desc').value : '';
   const url = document.getElementById('cont-url') ? document.getElementById('cont-url').value : '';
@@ -5678,7 +5684,7 @@ window.createContent = async function() {
     const s = document.getElementById('cont-saved');
     s.style.display='block';
     setTimeout(async()=>{s.style.display='none';closeModal('newContentModal');await loadContentAdmin(currentClientId);},1500);
-  } catch(e) { alert('Error: '+e.message); }
+  } catch(e) { showToast('Error: '+e.message, 'error'); }
 };
 
 async function loadClientContent(clientId, semActual) {
@@ -6310,7 +6316,7 @@ window.recalcCalc = function() {
 window.saveCalc = async function() {
   if(!currentClientId) return;
   const nombre = (document.getElementById('calcf-nombre')?.value||'').trim();
-  if(!nombre) { alert('Ingresá un nombre'); return; }
+  if(!nombre) { showToast('Ingresá un nombre', 'info'); return; }
   const margen = parseFloat(document.getElementById('calcf-margen')?.value)||30;
   const id = document.getElementById('calcf-id')?.value||'';
   let data = {nombre, margen, tipo:_calcMode, creadoEn:new Date().toISOString()};
@@ -6340,7 +6346,7 @@ window.saveCalc = async function() {
     const s = document.getElementById('calcf-saved');
     if(s) { s.style.display='block'; setTimeout(()=>s.style.display='none',2000); }
     renderCalcList();
-  } catch(e) { alert('Error: '+e.message); }
+  } catch(e) { showToast('Error: '+e.message, 'error'); }
 };
 
 window.uploadNegocioLogo = function(input) {
@@ -6508,7 +6514,7 @@ window.createPendiente = async function() {
     const s = document.getElementById('pe-saved');
     s.style.display='block';
     setTimeout(async()=>{s.style.display='none';closeModal('newPendienteModal');await loadPendientes();},1500);
-  } catch(e) { alert('Error: '+e.message); }
+  } catch(e) { showToast('Error: '+e.message, 'error'); }
 };
 
 let _allPendientes = [];
@@ -6628,7 +6634,7 @@ window.saveEditPendiente = async function() {
     const s = document.getElementById('ep2-saved');
     s.style.display='block';
     setTimeout(async()=>{s.style.display='none';closeModal('editPendienteModal');await loadPendientes();},1500);
-  } catch(e) { alert('Error: '+e.message); }
+  } catch(e) { showToast('Error: '+e.message, 'error'); }
 };
 
 window.deletePendiente = function(id) {
@@ -6656,13 +6662,13 @@ window.createPresupGlobal = async function() {
   const estado = document.getElementById('pg-estado').value;
   const fecha = document.getElementById('pg-fecha').value;
   const notas = document.getElementById('pg-notas').value;
-  if (!cliente || !monto) { alert('Cliente y monto son obligatorios'); return; }
+  if (!cliente || !monto) { showToast('Cliente y monto son obligatorios', 'info'); return; }
   try {
     await addDoc(collection(db,'presupuestos'), {cliente,descripcion:desc,link,monto,moneda,estado,fecha,notas,creadoEn:new Date().toISOString()});
     const s = document.getElementById('pg-saved');
     s.style.display = 'block';
     setTimeout(async()=>{s.style.display='none';closeModal('newPresupGlobalModal');await loadPresupuestosGlobal();},1500);
-  } catch(e) { alert('Error: '+e.message); }
+  } catch(e) { showToast('Error: '+e.message, 'error'); }
 };
 
 let _allPresupuestos = [];
@@ -6799,8 +6805,8 @@ window.editClientPresup = function(id) {
 window.onEditPresupPDFSelected = function(input) {
   const file = input.files[0];
   if(!file) return;
-  if(file.type !== 'application/pdf') { alert('Solo PDF'); return; }
-  if(file.size > 500*1024) { alert('Máximo 500KB'); return; }
+  if(file.type !== 'application/pdf') { showToast('Solo PDF', 'info'); return; }
+  if(file.size > 500*1024) { showToast('Máximo 500KB', 'info'); return; }
   document.getElementById('ep-pdf-nombre').textContent = file.name;
   document.getElementById('ep-pdf-progress').style.display = 'block';
   document.getElementById('ep-pdf-bar').style.width = '30%';
@@ -6855,7 +6861,7 @@ window.saveEditPresup = async function() {
     const s = document.getElementById('ep-saved');
     s.style.display = 'block';
     setTimeout(()=>{ s.style.display='none'; closeModal('editPresupModal'); window._editPresupPdfUrl = null; }, 1500);
-  } catch(e) { alert('Error: '+e.message); }
+  } catch(e) { showToast('Error: '+e.message, 'error'); }
 };
 
 window.updatePresupEstado = async function(id, nuevoEstado) {
@@ -7717,7 +7723,7 @@ window.mdvEliminar = async function() {
     window.mdvCerrar();
     loadCajaModule();
   } catch(e) {
-    alert('Error al eliminar: '+(e?.message||e));
+    showToast('Error al eliminar: '+(e?.message||e, 'error'));
   }
 };
 window.mdvGuardar = async function() {
@@ -7765,7 +7771,7 @@ window.mdvGuardar = async function() {
     window.mdvCerrar();
     loadCajaModule();
   } catch(e) {
-    alert('Error al guardar: '+(e?.message||e));
+    showToast('Error al guardar: '+(e?.message||e, 'error'));
     if(btnGuardar) { btnGuardar.disabled=false; btnGuardar.textContent='Guardar cambios'; }
   }
 };
@@ -8002,7 +8008,7 @@ function _cprdRenderDistBar() {
 window.cprdGuardarConfig = async function() {
   if(!currentClientUID) return;
   const total = _cprdReservas.reduce((a,r)=>a+(+r.pct||0),0) + _cprdParticipantes.reduce((a,p)=>a+(+p.pct||0),0);
-  if(total > 100) { alert('El total de porcentajes supera el 100%. Ajustá antes de guardar.'); return; }
+  if(total > 100) { showToast('El total de porcentajes supera el 100%. Ajustá antes de guardar.', 'info'); return; }
   const btn = document.getElementById('cprd-save-btn');
   if(btn) { btn.textContent='Guardando...'; btn.disabled=true; }
   try {
@@ -8371,7 +8377,7 @@ window.cierreGuardarBorrador = async function() {
     await addDoc(collection(db,'cierres'), doc_);
     const el=document.getElementById('cierre-btn-main');
     if(el){ const prev=el.textContent; el.textContent='✓ Borrador guardado'; setTimeout(()=>el.textContent=prev,2000); }
-  } catch(e) { alert('Error al guardar: '+e.message); }
+  } catch(e) { showToast('Error al guardar: '+e.message, 'error'); }
 };
 
 window.cierreDescartar = function() {
@@ -8393,7 +8399,7 @@ async function _cierreGuardarProyeccion() {
   try {
     await addDoc(collection(db,'cierres'), doc_);
     const el=document.getElementById('cierre-btn-main'); if(el){const p=el.textContent;el.textContent='✓ Proyección guardada';setTimeout(()=>el.textContent=p,2000);}
-  } catch(e) { alert('Error: '+e.message); }
+  } catch(e) { showToast('Error: '+e.message, 'error'); }
 }
 
 async function _cierreCerrarPeriodo() {
@@ -8427,7 +8433,7 @@ async function _cierreCerrarPeriodo() {
     _cierreRenderBloqueado(doc_);
     // Generar PDF después de actualizar UI (el alert previo bloqueaba la descarga)
     cierreGenerarPDF(doc_);
-  } catch(e) { alert('Error al cerrar: '+e.message); console.log(e); }
+  } catch(e) { showToast('Error al cerrar: '+e.message, 'error'); console.log(e); }
 }
 
 function _cierreRenderBloqueado(doc_) {
@@ -8704,17 +8710,17 @@ window.ccfgCuentaGuardar = async function() {
     window.ccfgCuentaCerrar();
     loadCajaConfig();
   } catch(e) {
-    alert('Error: '+(e?.message||e));
+    showToast('Error: '+(e?.message||e, 'error'));
     btn.disabled=false; btn.textContent = esEdicion ? 'Guardar cambios' : 'Agregar cuenta';
   }
 };
 
 window.ccfgDesactivarCuenta = function(id, nombre, tieneMov) {
-  if(tieneMov) { alert(`"${nombre}" tiene movimientos asociados y no puede desactivarse.`); return; }
+  if(tieneMov) { showToast(`"${nombre}" tiene movimientos asociados y no puede desactivarse.`, 'info'); return; }
   if(!confirm(`¿Desactivar la cuenta "${nombre}"?`)) return;
   deleteDoc(doc(db,'clientes',currentClientUID,'cuentas',id))
     .then(()=>loadCajaConfig())
-    .catch(e=>alert('Error: '+(e?.message||e)));
+    .catch(e=>showToast('Error: '+(e?.message||e, 'error')));
 };
 
 // ── Concepto: nuevo inline ──
@@ -8743,7 +8749,7 @@ window.cajaConfigConfirmarConcepto = async function(tipo) {
     window.cajaConfigCancelarConcepto(tipo);
     loadCajaConfig();
   } catch(e) {
-    alert('Error: '+(e?.message||e));
+    showToast('Error: '+(e?.message||e, 'error'));
   }
 };
 
@@ -8775,18 +8781,18 @@ window.ccfgConfirmarEdicionConcepto = async function(id, tipo) {
     await updateDoc(doc(db,'clientes',currentClientUID,'conceptos',id), {nombre});
     loadCajaConfig();
   } catch(e) {
-    alert('Error: '+(e?.message||e));
+    showToast('Error: '+(e?.message||e, 'error'));
     loadCajaConfig();
   }
 };
 
 // ── Concepto: eliminar ──
 window.ccfgEliminarConcepto = function(id, nombre, tieneMov) {
-  if(tieneMov) { alert(`"${nombre}" tiene movimientos asociados y no puede eliminarse.`); return; }
+  if(tieneMov) { showToast(`"${nombre}" tiene movimientos asociados y no puede eliminarse.`, 'info'); return; }
   if(!confirm(`¿Eliminar el concepto "${nombre}"?`)) return;
   deleteDoc(doc(db,'clientes',currentClientUID,'conceptos',id))
     .then(()=>loadCajaConfig())
-    .catch(e=>alert('Error: '+(e?.message||e)));
+    .catch(e=>showToast('Error: '+(e?.message||e, 'error')));
 };
 
 // ─── MODAL NUEVO MOVIMIENTO ───
@@ -8963,7 +8969,7 @@ window.mvmGuardar = async function() {
       const hacia = document.getElementById('mvm-tr-hacia')?.value;
       const detalle = document.getElementById('mvm-tr-detalle')?.value||'';
       if(!monto) return;
-      if(desde===hacia){alert('Las cuentas no pueden ser iguales.');return;}
+      if(desde===hacia){showToast('Las cuentas no pueden ser iguales.', 'info');return;}
       docs.push({fecha,tipo:'transferencia',concepto:'Transferencia entre cuentas',cuentaOrigen:desde,cuentaDestino:hacia,monto,detalle,mes:mkMes(fecha),origen:'manual',eliminado:false,creadoEn:new Date().toISOString()});
     } else {
       const fecha = document.getElementById('mvm-fecha')?.value||hoy;
@@ -10104,7 +10110,7 @@ window.createClientTask = async function() {
     const col=document.getElementById('clt-tasks-'+estado); if(col) col.appendChild(el);
     document.getElementById('clt-titulo').value=''; document.getElementById('clt-meta').value='';
     closeModal('newClientTaskModal');
-  } catch(e){ alert('Error: '+e.message); }
+  } catch(e){ showToast('Error: '+e.message, 'error'); }
 };
 
 window.moveClientTask = async function(el) {
@@ -10466,7 +10472,7 @@ window.cambiarEstadoMcCliente = async function(btn, nuevoEstado) {
     if (c) { c.estado = nuevoEstado; c.ultimoContacto = new Date().toISOString(); }
     await addHistorialEntry(_currentMcClienteId, `Estado cambiado a "${nuevoEstado}"`);
     renderMcHistorial(_currentMcClienteId);
-  } catch(e) { alert('Error: ' + e.message); }
+  } catch(e) { showToast('Error: ' + e.message, 'error'); }
 };
 
 // --- Historial de actividad ---
@@ -10525,7 +10531,7 @@ window.createMcCobro = async function() {
   if (!currentClientUID) return;
   const clienteId  = document.getElementById('mcc-cobro-cliente-id').value;
   const monto      = document.getElementById('mcc-cobro-monto').value;
-  if (!monto) { alert('Ingresá el monto'); return; }
+  if (!monto) { showToast('Ingresá el monto', 'info'); return; }
   const fecha      = document.getElementById('mcc-cobro-fecha').value;
   const concepto   = document.getElementById('mcc-cobro-concepto').value;
   const formaPago  = document.getElementById('mcc-cobro-forma').value;
@@ -10630,7 +10636,7 @@ window.createMcCobro = async function() {
         await loadMcModule();
       }
     }, 1500);
-  } catch(e) { alert('Error: ' + e.message); }
+  } catch(e) { showToast('Error: ' + e.message, 'error'); }
 };
 
 async function loadMcCobrosList(clienteId) {
@@ -10687,7 +10693,7 @@ window.eliminarCobro = function(clienteId, cobroId, monto) {
       await loadMcCobrosList(clienteId);
       await loadMcModule();
       openMcDetalle(clienteId);
-    } catch(e){ alert('Error: '+e.message); }
+    } catch(e){ showToast('Error: '+e.message, 'error'); }
   }, 'Eliminar cobro');
 };
 
@@ -10773,7 +10779,7 @@ window.guardarNotaMcCliente = async function(clienteId) {
     await addHistorialEntry(clienteId, 'Nota interna agregada');
     renderMcHistorial(clienteId);
     await renderMcDetalleNotas(clienteId);
-  } catch(e) { alert('Error: '+e.message); }
+  } catch(e) { showToast('Error: '+e.message, 'error'); }
 };
 
 
@@ -10814,7 +10820,7 @@ window.addMcPresupItem = function() {
   const prod   = allProds.find(p=>p.id===sel?.value);
   const descInput = document.getElementById('mcp-item-desc').value.trim();
   const desc = descInput || prod?.nombre || 'Ítem';
-  if(!precio) { alert('Ingresá el precio del ítem'); return; }
+  if(!precio) { showToast('Ingresá el precio del ítem', 'info'); return; }
   _mcPresupItems.push({desc, cant, precio, productoId: sel?.value||''});
   renderMcPresupItems();
   document.getElementById('mcp-item-cant').value = '1';
@@ -10882,8 +10888,8 @@ window.createMcPresup = async function() {
   const clienteId     = document.getElementById('mcp-presup-cliente-id').value;
   const clienteNombre = document.getElementById('mcp-presup-cliente-display')?.textContent||'';
   const desc = document.getElementById('mcp-presup-desc').value.trim();
-  if(!clienteNombre||clienteNombre==='—'){alert('Error: cliente no definido');return;}
-  if(_mcPresupItems.length===0){alert('Agregá al menos un ítem al presupuesto');return;}
+  if(!clienteNombre||clienteNombre==='—'){showToast('Error: cliente no definido', 'error');return;}
+  if(_mcPresupItems.length===0){showToast('Agregá al menos un ítem al presupuesto', 'info');return;}
   const _mcpBtn = document.getElementById('btn-save-mc-presup');
   if(_mcpBtn){_mcpBtn.disabled=true;_mcpBtn.textContent='Guardando...';}
   const total = _mcPresupItems.reduce((s,it)=>s+(it.cant*it.precio),0);
@@ -10915,7 +10921,7 @@ window.createMcPresup = async function() {
       await loadMcModule();
       if(_currentMcClienteId) openMcDetalle(_currentMcClienteId);
     },1500);
-  }catch(e){alert('Error: '+e.message);if(_mcpBtn){_mcpBtn.disabled=false;_mcpBtn.textContent='Guardar';}}
+  }catch(e){showToast('Error: '+e.message, 'error');if(_mcpBtn){_mcpBtn.disabled=false;_mcpBtn.textContent='Guardar';}}
 };
 
 window.createMcCliente = async function() {
@@ -10956,7 +10962,7 @@ window.createMcCliente = async function() {
       ['mcc-nombre','mcc-apellido','mcc-dni','mcc-cuit','mcc-direccion','mcc-ciudad','mcc-tel','mcc-email','mcc-notas'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
       await loadMcModule();
     }, 1500);
-  } catch(e) { alert('Error: '+e.message); }
+  } catch(e) { showToast('Error: '+e.message, 'error'); }
 };
 
 window.editMcCliente = function(id, event) {
@@ -11008,7 +11014,7 @@ window.saveMcCliente = async function(id) {
       await loadMcModule();
       if (_currentMcClienteId === id) openMcDetalle(id);
     }, 1500);
-  }catch(e){alert('Error: '+e.message);}
+  }catch(e){showToast('Error: '+e.message, 'error');}
 };
 
 window.deleteMcCliente = function(id, event) {
@@ -11079,7 +11085,7 @@ window.createMcPendiente = async function() {
     await addDoc(collection(db,'clientes',currentClientUID,'mcPendientes'),data);
     const s=document.getElementById('mcp-saved');if(s)s.style.display='block';
     setTimeout(async()=>{if(s)s.style.display='none';closeModal('newMcPendienteModal');['mcp-texto','mcp-cliente','mcp-fecha'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});await loadMcModule();},1500);
-  }catch(e){alert('Error: '+e.message);}
+  }catch(e){showToast('Error: '+e.message, 'error');}
 };
 
 window.completarMcPendiente = async function(id) {
@@ -11097,8 +11103,8 @@ window.deleteMcPendiente = function(id) {
 window.onPresupPDFSelected = function(input) {
   const file = input.files[0];
   if(!file) return;
-  if(file.type !== 'application/pdf') { alert('Solo se permiten archivos PDF.'); return; }
-  if(file.size > 500*1024) { alert('El archivo supera 500KB. Comprimilo antes de subir.'); return; }
+  if(file.type !== 'application/pdf') { showToast('Solo se permiten archivos PDF.', 'info'); return; }
+  if(file.size > 500*1024) { showToast('El archivo supera 500KB. Comprimilo antes de subir.', 'info'); return; }
   document.getElementById('cp-pdf-nombre').textContent = file.name;
   document.getElementById('cp-pdf-progress').style.display = 'block';
   document.getElementById('cp-pdf-bar').style.width = '30%';
@@ -11118,8 +11124,8 @@ window.onPresupPDFSelected = function(input) {
 window.onMcPresupPDFSelected = function(input) {
   const file = input.files[0];
   if(!file) return;
-  if(file.type !== 'application/pdf') { alert('Solo se permiten archivos PDF.'); return; }
-  if(file.size > 500*1024) { alert('El archivo supera 500KB. Comprimilo antes de subir.'); return; }
+  if(file.type !== 'application/pdf') { showToast('Solo se permiten archivos PDF.', 'info'); return; }
+  if(file.size > 500*1024) { showToast('El archivo supera 500KB. Comprimilo antes de subir.', 'info'); return; }
   document.getElementById('mcp-pdf-nombre').textContent = file.name;
   document.getElementById('mcp-pdf-progress').style.display = 'block';
   document.getElementById('mcp-pdf-bar').style.width = '30%';
@@ -11191,7 +11197,7 @@ window.updateMcPresupEstado = async function(id, estado) {
 };
 
 window.exportarPresupuestoPDF = async function(presupId) {
-  if(!currentClientUID) { alert('Error: no se pudo identificar el cliente.'); return; }
+  if(!currentClientUID) { showToast('Error: no se pudo identificar el cliente.', 'error'); return; }
   // Buscar en memoria primero, luego en Firestore si no se encuentra
   let p = [...(_mcPresupuestos||[]), ...(window._clientPresupuestos||[])].find(x=>x.id===presupId);
   if(!p) {
@@ -11200,7 +11206,7 @@ window.exportarPresupuestoPDF = async function(presupId) {
       if(snap.exists()) p = {id:snap.id,...snap.data()};
     } catch(e){}
   }
-  if(!p) { alert('Presupuesto no encontrado'); return; }
+  if(!p) { showToast('Presupuesto no encontrado', 'info'); return; }
 
   let negocio = {};
   try {
@@ -11863,7 +11869,7 @@ window.openModal_miCuentaModal_extra = async function() {
 window.uploadMcLogo = function(input) {
   const file = input.files[0];
   if(!file) return;
-  if(file.size > 200*1024){ alert('Máximo 200KB'); return; }
+  if(file.size > 200*1024){ showToast('Máximo 200KB', 'info'); return; }
   const reader = new FileReader();
   reader.onload = async e => {
     const base64 = e.target.result;
@@ -12021,10 +12027,10 @@ window.cancelarMembresia = function() {
         });
         const data = await res.json();
         if(!res.ok) throw new Error(data.error || 'Error al cancelar la suscripción');
-        alert('Suscripción cancelada. Tu acceso se mantendrá hasta fin del período.');
+        showToast('Suscripción cancelada. Tu acceso se mantendrá hasta fin del período.', 'success');
         loadMembresiaSection();
       } catch(e) {
-        alert('No se pudo cancelar: ' + e.message);
+        showToast('No se pudo cancelar: ' + e.message, 'error');
         if(btn) { btn.textContent = 'Cancelar suscripción'; btn.disabled = false; }
       }
     },
@@ -12054,7 +12060,7 @@ window.cambiarPlan = async function(nuevoPlan) {
       try {
         await updateDoc(doc(db,'clientes',currentClientUID), { 'membresia.estado': 'cancelado', 'membresia.canceladoEn': new Date() });
         await window.suscribirseMP(nuevoPlan);
-      } catch(e) { console.error(e); alert('Error al cambiar de plan: ' + e.message); }
+      } catch(e) { console.error(e); showToast('Error al cambiar de plan: ' + e.message, 'error'); }
     },
     `Cambiar a ${nuevoPlan === 'pro' ? 'Pro' : 'Base'}`
   );
@@ -12107,7 +12113,7 @@ async function loadMiCuentaPage() {
 window.uploadMicuentaLogo = function(input) {
   const file = input.files[0];
   if(!file) return;
-  if(file.size > 200*1024){ alert('Máximo 200KB'); return; }
+  if(file.size > 200*1024){ showToast('Máximo 200KB', 'info'); return; }
   const reader = new FileReader();
   reader.onload = async e => {
     const base64 = e.target.result;
@@ -12225,7 +12231,7 @@ window.accederComoCliente = async function() {
       body: JSON.stringify({ uid: currentClientId, idToken })
     });
     const json = await res.json();
-    if(!json.token){ alert('Error al generar acceso: '+(json.error||'desconocido')); return; }
+    if(!json.token){ showToast('Error al generar acceso: '+(json.error||'desconocido', 'error')); return; }
 
     // Marcar que es impersonation ANTES del signIn
     window._impersonating = clienteData;
@@ -12236,7 +12242,7 @@ window.accederComoCliente = async function() {
 
   } catch(e) {
     window._impersonating = null;
-    alert('Error: '+e.message);
+    showToast('Error: '+e.message, 'error');
   }
 };
 
@@ -12318,9 +12324,9 @@ window.saveProdCompra = async function() {
   if(!currentClientUID) return;
   const id = document.getElementById('pc-edit-id').value;
   const nombre = document.getElementById('pc-nombre').value.trim();
-  if(!nombre){alert('Ingresá un nombre');return;}
+  if(!nombre){showToast('Ingresá un nombre', 'info');return;}
   const catVal = document.getElementById('pc-cat').value;
-  if(!catVal){alert('Seleccioná una categoría');return;}
+  if(!catVal){showToast('Seleccioná una categoría', 'info');return;}
   const data = { nombre, categoria:catVal, unidad:document.getElementById('pc-unidad').value, descripcion:document.getElementById('pc-desc').value, creadoEn:new Date().toISOString() };
   try {
     if(id) await updateDoc(doc(db,'clientes',currentClientUID,'prodCompra',id),data);
@@ -12330,7 +12336,7 @@ window.saveProdCompra = async function() {
       // Si veníamos desde NC, recargar el selector
       if(window._prodDesdeNC){ window._prodDesdeNC=false; cargarProductosPorCat(); }
     },1500);
-  }catch(e){alert('Error: '+e.message);}
+  }catch(e){showToast('Error: '+e.message, 'error');}
 };
 
 window.editProdCompra = function(id) {
@@ -12440,7 +12446,7 @@ window.verOCsDeNecesidad = function(ncId) {
     loadOrdenesCompra().then(()=>{
       const ocs2=_ordenesCompra.filter(o=>o.ncId===ncId);
       if(ocs2.length>0) abrirDetalleOC(ocs2[0].id);
-      else alert('No se encontraron órdenes de compra para esta necesidad.');
+      else showToast('No se encontraron órdenes de compra para esta necesidad.', 'error');
     });
     return;
   }
@@ -12507,12 +12513,12 @@ window.toggleProdNC = function(id, nombre, unidad) {
 window.saveNecesidad = async function() {
   if(!currentClientUID) return;
   const cat = document.getElementById('nc-cat').value;
-  if(!cat){alert('Seleccioná una categoría');return;}
+  if(!cat){showToast('Seleccioná una categoría', 'info');return;}
   const items = _prodCompra.filter(p=>{const cb=document.getElementById('ncp-'+p.id);return cb&&cb.checked;}).map(p=>({
     id:p.id, nombre:p.nombre, unidad:p.unidad,
     cantidad:parseFloat(document.getElementById('ncq-'+p.id)?.value)||1
   }));
-  if(items.length===0){alert('Seleccioná al menos un producto');return;}
+  if(items.length===0){showToast('Seleccioná al menos un producto', 'info');return;}
   const btn = document.getElementById('btn-save-necesidad');
   if(btn){btn.disabled=true;btn.textContent='Guardando...';}
   const data={categoria:cat,estado:document.getElementById('nc-estado').value,periodicidad:document.getElementById('nc-periodicidad').value,items,cotizaciones:[],creadoEn:new Date().toISOString()};
@@ -12520,7 +12526,7 @@ window.saveNecesidad = async function() {
     await addDoc(collection(db,'clientes',currentClientUID,'necesidades'),data);
     const s=document.getElementById('nc-saved');if(s)s.style.display='block';
     setTimeout(async()=>{if(s)s.style.display='none';closeModal('newNecesidadModal');await loadNecesidades();},1500);
-  }catch(e){alert('Error: '+e.message);if(btn){btn.disabled=false;btn.textContent='Guardar';}}
+  }catch(e){showToast('Error: '+e.message, 'error');if(btn){btn.disabled=false;btn.textContent='Guardar';}}
 };
 
 window.deleteNecesidad = function(id) {
@@ -12528,7 +12534,7 @@ window.deleteNecesidad = function(id) {
     try{
       await updateDoc(doc(db,'clientes',currentClientUID,'necesidades',id), {eliminado:true, eliminadoEn:new Date().toISOString()});
       await loadNecesidades();
-    }catch(e){alert('Error: '+e.message);}
+    }catch(e){showToast('Error: '+e.message, 'error');}
   },'Eliminar necesidad');
 };
 
@@ -12816,7 +12822,7 @@ window.cotPaso3 = function() {
 
   const ocsAEmitir = Object.values(ocPorProv).filter(x=>x.items.length>0);
   if(ocsAEmitir.length===0){
-    alert('Ingresá al menos un precio para poder generar las órdenes de compra.');
+    showToast('Ingresá al menos un precio para poder generar las órdenes de compra.', 'info');
     return;
   }
   window._ocsAEmitir = ocsAEmitir;
@@ -12860,7 +12866,7 @@ window.confirmarOC = async function() {
   if(!currentClientUID||!_cotNcId) return;
   const nc = _necesidades.find(n=>n.id===_cotNcId);
   const ocsAEmitir = window._ocsAEmitir||[];
-  if(ocsAEmitir.length===0){ alert('No hay ítems con precio para emitir.'); return; }
+  if(ocsAEmitir.length===0){ showToast('No hay ítems con precio para emitir.', 'info'); return; }
   const btn = document.getElementById('btn-confirmar-oc');
   if(btn){ btn.disabled=true; btn.textContent='Emitiendo...'; }
   const hoy = new Date().toISOString().split('T')[0];
@@ -12889,7 +12895,7 @@ window.confirmarOC = async function() {
         if(primera) setTimeout(()=>abrirDetalleOC(primera.id), 200);
       }
     },1500);
-  }catch(e){alert('Error: '+e.message);if(btn){btn.disabled=false;btn.textContent='Confirmar y emitir OC';}}
+  }catch(e){showToast('Error: '+e.message, 'error');if(btn){btn.disabled=false;btn.textContent='Confirmar y emitir OC';}}
 };
 
 window.generarPDFNecesidad = async function(ncId) {
@@ -13168,7 +13174,7 @@ window.eliminarOC = function(ocId) {
       } catch(e) { console.error('Error eliminando factura esOC:', e); }
       _ordenesCompra = _ordenesCompra.filter(o=>o.id!==ocId);
       renderOrdenesCompra();
-    } catch(e) { alert('Error: '+e.message); }
+    } catch(e) { showToast('Error: '+e.message, 'error'); }
   }, 'Eliminar orden de compra');
 };
 
@@ -13230,8 +13236,8 @@ window.marcarOCRecibida = async function(ocId) {
       const oc = _ordenesCompra.find(o=>o.id===ocId);
       if(!oc) return;
       if(oc.eliminado) return;
-      if(oc.estadoRecepcion === 'recibida') { alert('Esta OC ya fue marcada como recibida.'); return; }
-      if((oc.estadoRecepcion||'emitida') !== 'emitida') { alert('Solo se puede marcar como recibida una OC que esté emitida.'); return; }
+      if(oc.estadoRecepcion === 'recibida') { showToast('Esta OC ya fue marcada como recibida.', 'info'); return; }
+      if((oc.estadoRecepcion||'emitida') !== 'emitida') { showToast('Solo se puede marcar como recibida una OC que esté emitida.', 'info'); return; }
       const hoy = new Date().toISOString().split('T')[0];
 
       // 1. Actualizar estado de recepción en la OC
@@ -13270,13 +13276,13 @@ window.marcarOCRecibida = async function(ocId) {
       if(_ccProvId && oc.proveedorId===_ccProvId) {
         await abrirCuentaCorriente(_ccProvId);
       }
-    }catch(e){alert('Error: '+e.message);}
+    }catch(e){showToast('Error: '+e.message, 'error');}
   },'Marcar como recibida');
 };
 
 window.generarPDFOrdenCompra = async function() {
   const oc = _ocDetalleActual;
-  if(!oc) { alert('No se pudo cargar la OC para generar el PDF.'); return; }
+  if(!oc) { showToast('No se pudo cargar la OC para generar el PDF.', 'error'); return; }
 
   if(!window.jspdf) {
     await new Promise((res,rej)=>{
@@ -13729,9 +13735,9 @@ window.saveFactura = async function() {
   const numero = document.getElementById('fac-numero').value.trim();
   const monto = parseFloat(document.getElementById('fac-monto').value)||0;
   const fecha = document.getElementById('fac-fecha').value;
-  if(!numero){alert('Ingresá el número de factura');return;}
-  if(!monto){alert('Ingresá el monto');return;}
-  if(!fecha){alert('Ingresá la fecha');return;}
+  if(!numero){showToast('Ingresá el número de factura', 'info');return;}
+  if(!monto){showToast('Ingresá el monto', 'info');return;}
+  if(!fecha){showToast('Ingresá la fecha', 'info');return;}
   const data = {
     numero, monto, fecha,
     ocId: document.getElementById('fac-oc').value||'',
@@ -13776,7 +13782,7 @@ window.saveFactura = async function() {
       ['fac-numero','fac-monto','fac-fecha','fac-desc'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
       await abrirCuentaCorriente(_ccProvId);
     },1500);
-  }catch(e){alert('Error: '+e.message);}
+  }catch(e){showToast('Error: '+e.message, 'error');}
 };
 
 window.openModal_newPagoProvModal_extra = async function() {
@@ -13970,7 +13976,7 @@ window.savePagoProveedor = async function() {
   }
 };
 window.generarPDFOrdenPago = function() {
-  if(!window._ultimaOP) { alert('No hay datos de la orden de pago.'); return; }
+  if(!window._ultimaOP) { showToast('No hay datos de la orden de pago.', 'info'); return; }
   const op = window._ultimaOP;
   const prov = document.getElementById('npp-prov-nombre')?.textContent || 'Proveedor';
   const negocio = document.getElementById('negocio-nombre-display')?.textContent || '';
@@ -14253,7 +14259,7 @@ window.guardarCatDesdePanel = async function() {
     const saved = document.getElementById('prov-nueva-cat-saved');
     if(saved) { saved.textContent='✓ Categoría agregada'; saved.style.color='var(--ok)'; saved.style.display='block'; setTimeout(()=>{saved.style.display='none'; document.getElementById('prov-nueva-cat-form').style.display='none';},1500); }
     if(inp) inp.value='';
-  } catch(e){ alert('Error: '+e.message); }
+  } catch(e){ showToast('Error: '+e.message, 'error'); }
 };
 
 window.deleteCatCustom = async function(nombre) {
@@ -14271,7 +14277,7 @@ window.deleteCatCustom = async function(nombre) {
       window._catsProv = _catsProv;
       renderCatSelect();
       renderCatPanel();
-    } catch(e){ alert('Error: '+e.message); }
+    } catch(e){ showToast('Error: '+e.message, 'error'); }
   },'Eliminar categoría');
 };
 
@@ -14323,7 +14329,7 @@ window.guardarNuevaCat = async function() {
     const saved = document.getElementById('nueva-cat-saved');
     if(saved) { saved.style.display='block'; setTimeout(()=>{saved.style.display='none';},2000); }
     setTimeout(()=>{ document.getElementById('nueva-cat-form').style.display='none'; },1500);
-  } catch(e) { alert('Error al guardar: '+e.message); }
+  } catch(e) { showToast('Error al guardar: '+e.message, 'error'); }
 };
 
 async function loadProveedores() {
@@ -14500,13 +14506,13 @@ function initProvDonutChart(egresos) {
 window.createProveedor = async function() {
   if(!currentClientUID) return;
   const nombre=document.getElementById('nprov-nombre').value.trim();
-  if(!nombre){alert('Ingresá un nombre');return;}
+  if(!nombre){showToast('Ingresá un nombre', 'info');return;}
   const data={nombre,categoria:document.getElementById('nprov-cat').value,tel:document.getElementById('nprov-tel').value,costoFijo:document.getElementById('nprov-costo-fijo').value||0,notas:document.getElementById('nprov-notas').value,creadoEn:new Date().toISOString()};
   try {
     await addDoc(collection(db,'clientes',currentClientUID,'proveedores'),data);
     const s=document.getElementById('nprov-saved');if(s)s.style.display='block';
     setTimeout(async()=>{if(s)s.style.display='none';closeModal('newProveedorModal');['nprov-nombre','nprov-tel','nprov-costo-fijo','nprov-notas'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});await loadProveedores();},1500);
-  }catch(e){alert('Error: '+e.message);}
+  }catch(e){showToast('Error: '+e.message, 'error');}
 };
 
 window.editProveedor = function(id) {
@@ -14529,7 +14535,7 @@ window.saveProveedor = async function(id) {
     await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',id),data);
     const s=document.getElementById('nprov-saved');if(s)s.style.display='block';
     setTimeout(async()=>{if(s)s.style.display='none';closeModal('newProveedorModal');const btn=document.querySelector('#newProveedorModal .bp');if(btn){btn.textContent='Guardar';btn.onclick=createProveedor;}await loadProveedores();},1500);
-  }catch(e){alert('Error: '+e.message);}
+  }catch(e){showToast('Error: '+e.message, 'error');}
 };
 
 window.deleteProveedor = function(id) {
@@ -15111,7 +15117,7 @@ window.restaurarItem = async function(pathSegments, docId) {
     await updateDoc(ref, { eliminado: deleteField(), eliminadoEn: deleteField() });
     _papeleraItems = _papeleraItems.filter(i => !(i.docId===docId && JSON.stringify(i.pathSegments)===JSON.stringify(pathSegments)));
     renderPapelera();
-  } catch(e) { alert('Error al restaurar: '+e.message); }
+  } catch(e) { showToast('Error al restaurar: '+e.message, 'error'); }
 };
 
 window.eliminarPermanente = function(pathSegments, docId) {
@@ -15121,7 +15127,7 @@ window.eliminarPermanente = function(pathSegments, docId) {
       await deleteDoc(ref);
       _papeleraItems = _papeleraItems.filter(i => !(i.docId===docId && JSON.stringify(i.pathSegments)===JSON.stringify(pathSegments)));
       renderPapelera();
-    } catch(e) { alert('Error: '+e.message); }
+    } catch(e) { showToast('Error: '+e.message, 'error'); }
   }, 'Eliminar permanentemente');
 };
 
@@ -15227,6 +15233,21 @@ window.guardarNuevaPass = async function() {
   }
 };
 
+window.showToast = function(mensaje, tipo) {
+  tipo = tipo || 'info';
+  const container = document.getElementById('toast-container');
+  if(!container) return;
+  const t = document.createElement('div');
+  t.className = 'toast ' + tipo;
+  t.textContent = mensaje;
+  container.appendChild(t);
+  requestAnimationFrame(() => { requestAnimationFrame(() => { t.classList.add('show'); }); });
+  setTimeout(() => {
+    t.classList.remove('show');
+    setTimeout(() => { if(t.parentNode) t.parentNode.removeChild(t); }, 250);
+  }, 3000);
+};
+
 window.showConfirm = function(msg, onOk, title='¿Confirmar acción?') {
   document.getElementById('confirmTitle').textContent = title;
   document.getElementById('confirmMsg').textContent = msg;
@@ -15329,7 +15350,7 @@ window.embiUpdateEstado = async function(id, estado) {
     const r = _embiReports.find(x=>x.id===id);
     if(r) r.estado = estado;
     renderEmbiReports();
-  } catch(e){ alert('Error: '+e.message); }
+  } catch(e){ showToast('Error: '+e.message, 'error'); }
 };
 
 window.embiDeleteReport = function(id) {
@@ -15338,7 +15359,7 @@ window.embiDeleteReport = function(id) {
       await updateDoc(doc(db,'embiReports',id), {eliminado:true, eliminadoEn:new Date().toISOString()});
       _embiReports = _embiReports.filter(r=>r.id!==id);
       renderEmbiReports();
-    } catch(e){ alert('Error: '+e.message); }
+    } catch(e){ showToast('Error: '+e.message, 'error'); }
   },'Eliminar reporte');
 };
 
@@ -15492,8 +15513,8 @@ window.toggleEditContDesc = function() {
 window.onEditPDFSelected = function(input) {
   const file = input.files[0];
   if(!file) return;
-  if(file.type !== 'application/pdf') { alert('Solo PDF.'); return; }
-  if(file.size > 500*1024) { alert('Máximo 500KB.'); return; }
+  if(file.type !== 'application/pdf') { showToast('Solo PDF.', 'info'); return; }
+  if(file.size > 500*1024) { showToast('Máximo 500KB.', 'info'); return; }
   document.getElementById('ec-pdf-nombre').textContent = file.name;
   const reader = new FileReader();
   reader.onload = e => { _editPDFBase64 = e.target.result; };
@@ -15505,7 +15526,7 @@ window.saveEditContent = async function() {
   if(!id||!currentClientId) return;
   const tipo = document.getElementById('ec-cont-tipo').value;
   const titulo = document.getElementById('ec-cont-titulo').value.trim();
-  if(!titulo) { alert('Ingresá un título.'); return; }
+  if(!titulo) { showToast('Ingresá un título.', 'info'); return; }
   let descripcion = '';
   if(tipo === 'texto') descripcion = document.getElementById('ec-cont-desc').value;
   else if(tipo === 'link') descripcion = document.getElementById('ec-cont-url').value;
@@ -15525,7 +15546,7 @@ window.saveEditContent = async function() {
     const s = document.getElementById('ec-cont-saved');
     s.style.display = 'block';
     setTimeout(async()=>{ s.style.display='none'; closeModal('editContentModal'); await loadContentAdmin(currentClientId); _editPDFBase64=''; }, 1500);
-  } catch(e) { alert('Error: '+e.message); }
+  } catch(e) { showToast('Error: '+e.message, 'error'); }
 };
 
 window.abrirPDFBase64 = async function(contentId) {
@@ -15538,12 +15559,12 @@ window.abrirPDFBase64 = async function(contentId) {
     } else {
       // Fallback: buscar en Firestore
       const clientId = currentClientUID || currentClientId;
-      if(!clientId) { alert('No se pudo identificar el cliente.'); return; }
+      if(!clientId) { showToast('No se pudo identificar el cliente.', 'error'); return; }
       const snap = await getDocs(collection(db,'clientes',clientId,'contenido'));
       snap.forEach(d => { if(d.id === contentId) base64 = d.data().descripcion; });
     }
     if(!base64 || !base64.startsWith('data:application/pdf')) {
-      alert('No se encontró el archivo PDF.');
+      showToast('No se encontró el archivo PDF.', 'error');
       return;
     }
     const byteStr = atob(base64.split(',')[1]);
@@ -15553,7 +15574,7 @@ window.abrirPDFBase64 = async function(contentId) {
     const blob = new Blob([ab],{type:'application/pdf'});
     const blobUrl = URL.createObjectURL(blob);
     window.open(blobUrl,'_blank');
-  } catch(e){ console.log(e); alert('No se pudo abrir el PDF: '+e.message); }
+  } catch(e){ console.log(e); showToast('No se pudo abrir el PDF: '+e.message, 'error'); }
 };
 
 window.toggleContDesc = function() {
@@ -15571,8 +15592,8 @@ let _pdfUploading = false;
 window.onPDFSelected = function(input) {
   const file = input.files[0];
   if (!file) return;
-  if (file.type !== 'application/pdf') { alert('Solo se permiten archivos PDF.'); return; }
-  if (file.size > 500 * 1024) { alert('El archivo supera el límite de 500KB. Comprimilo antes de subir.'); return; }
+  if (file.type !== 'application/pdf') { showToast('Solo se permiten archivos PDF.', 'info'); return; }
+  if (file.size > 500 * 1024) { showToast('El archivo supera el límite de 500KB. Comprimilo antes de subir.', 'info'); return; }
 
   document.getElementById('cont-pdf-nombre').textContent = file.name;
   document.getElementById('cont-pdf-progress').style.display = 'block';
@@ -15719,9 +15740,9 @@ let _mcrTipo = 'cliente';
 function _agregarNuevoProdInline(prefix, selId, descId, precioId, wrapId, npNombreId, npPrecioId) {
   var nombre = document.getElementById(npNombreId).value.trim();
   var precio = parseFloat(document.getElementById(npPrecioId).value) || 0;
-  if(!nombre) { alert('Ingresá un nombre para el producto'); return; }
+  if(!nombre) { showToast('Ingresá un nombre para el producto', 'info'); return; }
   var uid = window.currentClientUID;
-  if(!uid) { alert('Sesión no iniciada'); return; }
+  if(!uid) { showToast('Sesión no iniciada', 'info'); return; }
   var btn = document.querySelector('#'+wrapId+' button');
   if(btn) { btn.textContent = 'Guardando...'; btn.disabled = true; }
   var data = { nombre: nombre, precio: precio, activo: true, creadoEn: new Date().toISOString(), updatedAt: new Date().toISOString() };
@@ -15754,7 +15775,7 @@ function _agregarNuevoProdInline(prefix, selId, descId, precioId, wrapId, npNomb
     document.getElementById(npPrecioId).value = '';
     if(btn) { btn.textContent = 'Guardar y agregar'; btn.disabled = false; }
   }).catch(function(e) {
-    alert('Error al guardar: ' + (e.message||e));
+    showToast('Error al guardar: ' + (e.message||e, 'error'));
     if(btn) { btn.textContent = 'Guardar y agregar'; btn.disabled = false; }
   });
 }
@@ -15795,7 +15816,7 @@ window.createMcReunion = async function() {
   if (!currentClientUID) return;
   const fecha = document.getElementById('mcr-fecha').value;
   const hora  = document.getElementById('mcr-hora').value || '10:00';
-  if (!fecha) { alert('Seleccioná una fecha'); return; }
+  if (!fecha) { showToast('Seleccioná una fecha', 'info'); return; }
   const notas = document.getElementById('mcr-notas').value;
 
   try {
@@ -15803,7 +15824,7 @@ window.createMcReunion = async function() {
       // Guardar en el doc del cliente
       const sel = document.getElementById('mcr-cliente-sel');
       const clienteId = sel?.value;
-      if (!clienteId) { alert('Seleccioná un cliente'); return; }
+      if (!clienteId) { showToast('Seleccioná un cliente', 'info'); return; }
       await updateDoc(doc(db, 'clientes', currentClientUID, 'misClientes', clienteId), {
         proximaReunion: { fecha, hora, notas },
         ultimoContacto: new Date().toISOString()
@@ -15816,7 +15837,7 @@ window.createMcReunion = async function() {
       const nombre   = document.getElementById('mcr-ext-nombre').value.trim();
       const contexto = document.getElementById('mcr-ext-contexto').value.trim();
       const tel      = document.getElementById('mcr-ext-tel').value.trim();
-      if (!nombre) { alert('Ingresá un nombre'); return; }
+      if (!nombre) { showToast('Ingresá un nombre', 'info'); return; }
       await addDoc(collection(db, 'clientes', currentClientUID, 'reunionesExternas'), {
         nombre, contexto, tel, fecha, hora, notas, creadoEn: new Date().toISOString()
       });
@@ -15829,7 +15850,7 @@ window.createMcReunion = async function() {
       closeModal('newMcReunionModal');
       await loadMcModule();
     }, 1400);
-  } catch(e) { alert('Error: ' + e.message); }
+  } catch(e) { showToast('Error: ' + e.message, 'error'); }
 };
 
 async function loadMcReunionesExternas() {
@@ -15939,10 +15960,10 @@ async function loadProductos() {
 
 async function createProducto() {
   const uid = window.currentClientUID;
-  if(!uid) { alert('Error: sesión no iniciada. Recargá la página.'); return; }
+  if(!uid) { showToast('Error: sesión no iniciada. Recargá la página.', 'error'); return; }
   const id     = document.getElementById('prod-edit-id').value;
   const nombre = document.getElementById('prod-nombre').value.trim();
-  if(!nombre){ alert('Ingresá un nombre'); return; }
+  if(!nombre){ showToast('Ingresá un nombre', 'info'); return; }
   const data = {
     nombre,
     precio:      _mvmParseMonto('prod-precio'),
@@ -15971,7 +15992,7 @@ async function createProducto() {
       var btn=document.getElementById('prod-modal-btn');
       if(btn){btn.textContent='Guardar';}
     }, 1500);
-  } catch(e){ alert('Error al guardar: '+e.message); }
+  } catch(e){ showToast('Error al guardar: '+e.message, 'error'); }
 }
 
 // editProducto y deleteProducto usan window._productosData (seteado por loadProductos plain)
@@ -15997,7 +16018,7 @@ window.deleteProducto = function(id) {
     try {
       await updateDoc(doc(db,'clientes',uid,'productos',id), {eliminado:true, eliminadoEn:new Date().toISOString()});
       await loadProductos();
-    } catch(e){ alert('Error: '+e.message); }
+    } catch(e){ showToast('Error: '+e.message, 'error'); }
   }, 'Eliminar producto');
 };
 
@@ -16031,7 +16052,7 @@ window.guardarPrecios = async function() {
       }
     }
     await loadProductos();
-  } catch(e){ alert('Error: '+e.message); }
+  } catch(e){ showToast('Error: '+e.message, 'error'); }
 };
 
 window.marcarCambioPrecio = function() {
@@ -16916,6 +16937,8 @@ window.doResetPassword = async function(){
     </div>
   </div>
 </div>
+
+<div id="toast-container"></div>
 
 </body>
 </html>
