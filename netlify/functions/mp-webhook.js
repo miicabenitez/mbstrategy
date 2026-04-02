@@ -140,7 +140,8 @@ exports.handler = async (event) => {
     // ── Verificar si es flujo público (pendientes_suscripcion) ──
     const pendienteSnap = await db.collection('pendientes_suscripcion').doc(externalRef).get();
 
-    if (pendienteSnap.exists && ['authorized', 'pending'].includes(sub.status)) {
+    const tieneMetodoPago = sub.payment_method_id || sub.card_id;
+    if (pendienteSnap.exists && ['authorized', 'pending'].includes(sub.status) && tieneMetodoPago) {
       // ── FLUJO PÚBLICO: crear cuenta nueva ──
       const pendiente = pendienteSnap.data();
       if (pendiente.estado === 'completado') {
