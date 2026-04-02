@@ -202,10 +202,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 .tc{background:var(--cream);border:.5px solid var(--cream-d);border-radius:12px;padding:12px;min-height:200px;max-height:70vh;overflow-y:auto;}
 .tct{font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
 .tcd{width:6px;height:6px;border-radius:50%;}
-.tk{background:var(--white);border:.5px solid var(--cream-d);border-radius:9px;padding:10px 12px;margin-bottom:7px;cursor:pointer;transition:all .15s;}
-.tk:hover{border-color:var(--sage);}
-.tk.done{opacity:.5;}
+.tk{background:rgba(255,255,255,.75);border:none;border-left:3px solid var(--cream-d);border-radius:0 8px 8px 0;padding:10px 12px;margin-bottom:7px;cursor:pointer;position:relative;transition:transform .15s ease,background .15s ease;animation:tkSlideIn .2s ease both;}
+@keyframes tkSlideIn{from{transform:translateX(-6px);opacity:0;}to{transform:translateX(0);opacity:1;}}
+.tk:hover{transform:translateX(3px);background:rgba(255,255,255,.95);}
+.tk:hover .tk-arrow{opacity:1;}
+.tk.done{opacity:.55;}
 .tk.done .tkt{text-decoration:line-through;}
+.tk.done .tk-arrow{display:none;}
+#clt-col-pend .tk{border-left-color:#C4786A;}
+#clt-col-doing .tk{border-left-color:#BA7517;}
+#clt-col-done .tk{border-left-color:#3B6D11;}
+.tk.tk-vencida{background:rgba(250,236,231,.5);border-left-color:#993C1D;}
+.tk.tk-vence-hoy{background:rgba(250,238,218,.4);border-left-color:#BA7517;}
+.tk-arrow{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--text-l);opacity:0;transition:opacity .15s;pointer-events:none;}
 .tkt{font-size:13px;font-weight:500;color:var(--text);}
 .tkm{font-size:11px;color:var(--text-l);margin-top:2px;}
 .kc{background:var(--cream);border:.5px solid var(--cream-d);border-radius:11px;padding:14px;}
@@ -10216,8 +10225,20 @@ function paUpdateProgress(tareas) {
 }
 
 function paBuildCard(t) {
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  let esVencida = false, esHoy = false;
+  if(t.fechaVenc) {
+    const fv = new Date(t.fechaVenc + 'T00:00:00');
+    esHoy = fv.getTime() === hoy.getTime();
+    esVencida = fv < hoy && !esHoy;
+  }
+
   const el = document.createElement('div');
-  el.className = 'tk' + (t.estado==='done' ? ' done' : '');
+  let cls = 'tk';
+  if(t.estado==='done') cls += ' done';
+  if(esVencida && t.estado!=='done') cls += ' tk-vencida';
+  else if(esHoy && t.estado!=='done') cls += ' tk-vence-hoy';
+  el.className = cls;
   el.dataset.estado = t.estado || 'pend';
   el.dataset.id = t.id || '';
   el.dataset.titulo = (t.titulo||'').toLowerCase();
@@ -10230,19 +10251,16 @@ function paBuildCard(t) {
 
   let dateHtml = '';
   if(t.fechaVenc) {
-    const hoy = new Date(); hoy.setHours(0,0,0,0);
-    const fv = new Date(t.fechaVenc + 'T00:00:00');
-    const esHoy = fv.getTime() === hoy.getTime();
-    const vencida = fv < hoy;
-    const cls = esHoy ? 'vence-hoy' : vencida ? 'vencida' : '';
-    const icon = (esHoy || vencida) ? '⚠ ' : '📅 ';
+    const icon = (esHoy || esVencida) ? '⚠ ' : '📅 ';
     const partes = t.fechaVenc.split('-');
     const fechaStr = `${partes[2]}/${partes[1]}/${partes[0]}`;
-    dateHtml = `<div class="pa-date ${cls}">${icon}${esHoy ? 'Vence hoy' : vencida ? 'Venció '+fechaStr : fechaStr}</div>`;
+    const dateCls = esHoy ? 'vence-hoy' : esVencida ? 'vencida' : '';
+    const label = esHoy ? 'Vence hoy' : esVencida ? 'Venció '+fechaStr : fechaStr;
+    dateHtml = `<div class="pa-date ${dateCls}">${icon}${label}</div>`;
   }
 
   el.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px;">
-    <div style="flex:1;">
+    <div style="flex:1;padding-right:18px;">
       ${tagHtml}
       <div class="tkt">${t.titulo}</div>
       <div class="tkm">${t.meta||''}</div>
@@ -10251,7 +10269,8 @@ function paBuildCard(t) {
     <div style="display:flex;gap:3px;flex-shrink:0;" onclick="event.stopPropagation()">
       <button onclick="deleteClientTask(this.closest('.tk'))" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
     </div>
-  </div>`;
+  </div>
+  <span class="tk-arrow">›</span>`;
 
   el.onclick = () => moveClientTask(el);
   el.addEventListener('dragstart', paDragStart);
