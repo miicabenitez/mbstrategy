@@ -119,6 +119,15 @@ exports.handler = async (event) => {
       headers: { 'Authorization': `Bearer ${process.env.MP_ACCESS_TOKEN}` }
     });
     const sub = await mpRes.json();
+    console.log('MP WEBHOOK PAYLOAD:', JSON.stringify({
+      status: sub.status,
+      payment_method_id: sub.payment_method_id,
+      card_id: sub.card_id,
+      summarized: sub.summarized,
+      payer_email: sub.payer_email,
+      next_payment_date: sub.next_payment_date,
+      charged_quantity: sub.summarized?.charged_quantity
+    }, null, 2));
     if (!mpRes.ok) {
       console.error('MP fetch error:', sub);
       return { statusCode: 502, headers: HEADERS, body: JSON.stringify({ error: 'Error consultando MP' }) };
