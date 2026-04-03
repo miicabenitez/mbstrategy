@@ -2242,7 +2242,7 @@ input[type=number]{-moz-appearance:textfield;}
         <!-- Fila 2: operacionales -->
         <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:14px;">
           <div class="kc" style="background:#4A6A8A;border-color:#4A6A8A;">
-            <div class="ml" style="color:rgba(255,255,255,.75);">Clientes nuevos</div>
+            <div class="ml" style="color:rgba(255,255,255,.75);">Ventas del período</div>
             <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;color:#fff;" id="ck-clientes-nuevos">0</div>
             <div style="font-size:11px;color:rgba(255,255,255,.65);margin-top:2px;">este período</div>
           </div>
@@ -2258,7 +2258,7 @@ input[type=number]{-moz-appearance:textfield;}
           <div class="kc" style="background:#7A8E7D;border-color:#7A8E7D;">
             <div class="ml" style="color:rgba(255,255,255,.75);">Ticket promedio</div>
             <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;color:#fff;" id="ck-tick">$0</div>
-            <div style="font-size:11px;color:rgba(255,255,255,.65);margin-top:2px;">por presupuesto aprobado</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.65);margin-top:2px;">promedio por ingreso</div>
           </div>
           <div class="kc" style="background:#4A6A8A;border-color:#4A6A8A;">
             <div class="ml" style="color:rgba(255,255,255,.75);">Margen neto</div>
@@ -7416,23 +7416,20 @@ function checkMembresiaBadge(semActual, totalSemanas) {
 async function loadClientContabilidad() {
   if(!currentClientUID) return;
   try {
-    const [ingSnap, egSnap, cobrosSnap] = await Promise.all([
-      getDocs(collection(db,'clientes',currentClientUID,'ingresos')),
-      getDocs(collection(db,'clientes',currentClientUID,'egresos')),
-      getDocs(collection(db,'clientes',currentClientUID,'cobros'))
-    ]);
-    const ingresosManuales = []; ingSnap.forEach(d=>{ const data=d.data(); if(!data.eliminado) ingresosManuales.push({id:d.id,...data,origen:'manual'}); });
-    const egresos = []; egSnap.forEach(d=>{ const data=d.data(); if(!data.eliminado) egresos.push({id:d.id,...data}); });
-    const cobrosComoIngresos = [];
-    cobrosSnap.forEach(d=>{
+    const snap = await getDocs(
+      query(collection(db,'libroCaja'), where('uid','==',currentClientUID))
+    );
+    const ingresos = [], egresos = [];
+    snap.forEach(d => {
       const data = d.data();
       if(data.eliminado) return;
-      cobrosComoIngresos.push({id:d.id,concepto:data.concepto||'Cobro',monto:parseFloat(data.monto)||0,mes:data.fecha?new Date(data.fecha+'T12:00:00').toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase()):'',fecha:data.fecha||'',origen:'comercial',...data});
+      const doc = {id: d.id, ...data, categoria: data.concepto || 'Otros'};
+      if(data.tipo === 'ingreso') ingresos.push(doc);
+      else if(data.tipo === 'egreso') egresos.push(doc);
     });
-    const ingresos = [...ingresosManuales, ...cobrosComoIngresos];
     window._clientIngresos = ingresos;
-    window._clientEgresos = egresos;
-  } catch(e) { console.log(e); }
+    window._clientEgresos  = egresos;
+  } catch(e) { console.error('loadClientContabilidad:', e); }
 }
 
 // ─── CAJA MODULE ───
@@ -10142,15 +10139,16 @@ function renderCkKpis(ingresos, egresos, presupuestos, mcClientes) {
   const mesSel = document.getElementById('ck-mes-sel')?.value || 'todo';
   setEl('ck-ing-sub', mesSel === 'todo' ? 'año completo' : mesSel);
 
-  // Ticket promedio
-  const aprobados=presupuestos.filter(p=>p.estado==='Aprobado');
-  const tickProm=aprobados.length>0?Math.round(aprobados.reduce((a,p)=>a+getPresupMonto(p),0)/aprobados.length):0;
-  setEl('ck-tick','$'+tickProm.toLocaleString('es-AR'));
+  // Ticket promedio — promedio de ingresos del período
+  const ticketProm = ingresos.length > 0
+    ? ingresos.reduce((a,i) => a + (parseFloat(i.monto)||0), 0) / ingresos.length
+    : 0;
+  setEl('ck-tick', '$' + Math.round(ticketProm).toLocaleString('es-AR'));
   // Banner KPIs
   setEl('bn-kpi-ing','$'+totalIng.toLocaleString('es-AR'));
   setEl('bn-kpi-eg','$'+totalEg.toLocaleString('es-AR'));
   setEl('bn-kpi-margen',margen+'%');
-  setEl('bn-kpi-tick','$'+tickProm.toLocaleString('es-AR'));
+  setEl('bn-kpi-tick','$'+Math.round(ticketProm).toLocaleString('es-AR'));
 
   // Cobros pendientes: presupuestos aprobados creados hasta el mes seleccionado − total cobrado
   // En "todo el año" muestra el pendiente total actual
@@ -10171,24 +10169,9 @@ function renderCkKpis(ingresos, egresos, presupuestos, mcClientes) {
   const cobrosPend    = Math.max(0, totalAprobado - totalCobrado);
   setEl('ck-cobros-pend','$'+cobrosPend.toLocaleString('es-AR'));
 
-  // Clientes nuevos: respetar mes del selector
-  const mcsAll = mcClientes||[];
-  let nuevos = 0;
-  if(mesSel === 'todo') {
-    // año en curso
-    const anioActual = new Date().getFullYear();
-    nuevos = mcsAll.filter(c => c.creadoEn && new Date(c.creadoEn).getFullYear() === anioActual).length;
-  } else {
-    // mes específico — comparar mes+año exacto
-    const [mesNombre, anioStr] = mesSel.split(' ');
-    nuevos = mcsAll.filter(c => {
-      if(!c.creadoEn) return false;
-      const d = new Date(c.creadoEn);
-      const mesCliente = d.toLocaleString('es-AR',{month:'long'}).replace(/^\w/,ch=>ch.toUpperCase());
-      return mesCliente.startsWith(mesNombre) && String(d.getFullYear()) === anioStr;
-    }).length;
-  }
-  setEl('ck-clientes-nuevos', nuevos);
+  // Ventas del período — cantidad de ingresos en el período seleccionado
+  const ventasMes = ingresos.length;
+  setEl('ck-clientes-nuevos', ventasMes);
 
   // Ranking clientes
   renderCkRankingClientes(ingresos);
