@@ -2219,117 +2219,118 @@ input[type=number]{-moz-appearance:textfield;}
 
       <!-- KPIs CLIENTE -->
       <div id="ct-kpis" style="display:none;">
-        <div style="background:#4a5e4d;border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;"><div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;">Indicadores</div></div>
 
-        <!-- Fila 1: financieros -->
-        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:10px;">
-          <div class="kc" style="background:#5A8A62;border-color:#5A8A62;">
-            <div class="ml" style="color:rgba(255,255,255,.75);">Ingresos del mes</div>
-            <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;color:#fff;" id="ck-ing">$0</div>
-            <div style="font-size:11px;color:rgba(255,255,255,.65);margin-top:2px;" id="ck-ing-sub">—</div>
-          </div>
-          <div class="kc" style="background:#C4786A;border-color:#C4786A;">
-            <div class="ml" style="color:rgba(255,255,255,.75);">Egresos del mes</div>
-            <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;color:#fff;" id="ck-eg">$0</div>
-          </div>
-          <div class="kc" style="background:#7A8E7D;border-color:#7A8E7D;">
-            <div class="ml" style="color:rgba(255,255,255,.75);">Ganancia neta</div>
-            <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;color:#fff;" id="ck-gan">$0</div>
-            <div style="font-size:11px;color:rgba(255,255,255,.65);margin-top:2px;" id="ck-margen-sub">— margen</div>
-          </div>
-        </div>
+  <!-- Banner verde con KPIs integrados -->
+  <div style="background:#4a5e4d;border-radius:16px;padding:22px 26px 24px;margin:0 0 14px;color:#fff;border:0.5px solid rgba(191,160,90,.2);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;">Indicadores</div>
+      <select id="ck-mes-sel" onchange="filterCkByMes(this.value)" style="background:rgba(255,255,255,.1);border:0.5px solid rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:6px 12px;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;">
+        <option value="todo">Todo el año</option>
+      </select>
+    </div>
+    <!-- Fila 1: financieros principales -->
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:10px;">
+      <div style="background:rgba(255,255,255,.08);border-radius:12px;padding:14px 16px;border:0.5px solid rgba(255,255,255,.1);">
+        <div style="font-size:9px;font-weight:500;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Ingresos</div>
+        <div id="ck-ing" style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:#fff;line-height:1;">$0</div>
+        <div id="ck-ing-sub" style="font-size:10px;color:rgba(255,255,255,.4);margin-top:4px;">este período</div>
+      </div>
+      <div style="background:rgba(255,255,255,.08);border-radius:12px;padding:14px 16px;border:0.5px solid rgba(255,255,255,.1);">
+        <div style="font-size:9px;font-weight:500;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Egresos</div>
+        <div id="ck-eg" style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:#fff;line-height:1;">$0</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:4px;">costos del período</div>
+      </div>
+      <div style="background:rgba(191,160,90,.12);border-radius:12px;padding:14px 16px;border:0.5px solid rgba(191,160,90,.4);">
+        <div style="font-size:9px;font-weight:500;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Ganancia neta</div>
+        <div id="ck-gan" style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:#d4a853;line-height:1;">$0</div>
+        <div id="ck-margen-sub" style="font-size:10px;color:rgba(255,255,255,.4);margin-top:4px;">0% margen neto</div>
+        <div style="height:2px;background:rgba(255,255,255,.15);border-radius:1px;margin-top:8px;"><div id="ck-margen-barra" style="height:100%;border-radius:1px;background:#d4a853;width:0%;transition:width .6s;"></div></div>
+      </div>
+    </div>
+    <!-- Fila 2: operacionales -->
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;">
+      <div style="background:rgba(255,255,255,.08);border-radius:12px;padding:14px 16px;border:0.5px solid rgba(255,255,255,.1);">
+        <div style="font-size:9px;font-weight:500;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Ventas del período</div>
+        <div id="ck-clientes-nuevos" style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;color:#fff;line-height:1;">0</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:4px;">transacciones</div>
+      </div>
+      <div style="background:rgba(255,255,255,.08);border-radius:12px;padding:14px 16px;border:0.5px solid rgba(255,255,255,.1);">
+        <div style="font-size:9px;font-weight:500;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Ticket promedio</div>
+        <div id="ck-tick" style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;color:#fff;line-height:1;">$0</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:4px;">promedio por ingreso</div>
+      </div>
+      <div style="background:rgba(186,117,23,.12);border-radius:12px;padding:14px 16px;border:0.5px solid rgba(186,117,23,.4);">
+        <div style="font-size:9px;font-weight:500;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Por cobrar</div>
+        <div id="ck-cobros-pend" style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;color:#EF9F27;line-height:1;">$0</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:4px;">presupuestos aprobados</div>
+      </div>
+    </div>
+    <!-- ck-margen oculto para compatibilidad JS -->
+    <span id="ck-margen" style="display:none;"></span>
+  </div>
 
-        <!-- Fila 2: operacionales -->
-        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:14px;">
-          <div class="kc" style="background:#4A6A8A;border-color:#4A6A8A;">
-            <div class="ml" style="color:rgba(255,255,255,.75);">Ventas del período</div>
-            <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;color:#fff;" id="ck-clientes-nuevos">0</div>
-            <div style="font-size:11px;color:rgba(255,255,255,.65);margin-top:2px;">este período</div>
-          </div>
-          <div class="kc" style="background:#B08A42;border-color:#B08A42;">
-            <div class="ml" style="color:rgba(255,255,255,.75);">Cobros pendientes</div>
-            <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;color:#fff;" id="ck-cobros-pend">$0</div>
-            <div style="font-size:11px;color:rgba(255,255,255,.65);margin-top:2px;">aprobado sin cobrar</div>
-          </div>
-        </div>
+  <!-- Resumen del período -->
+  <div id="ck-resumen-card" style="background:var(--white);border:0.5px solid var(--cream-d);border-radius:14px;padding:18px 22px;margin-bottom:14px;border-left:3px solid #4a5e4d;display:none;">
+    <div style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;">Resumen del período</div>
+    <div id="ck-resumen-lineas" style="display:flex;flex-direction:column;gap:8px;"></div>
+  </div>
 
-        <!-- Fila 3: más métricas -->
-        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:14px;">
-          <div class="kc" style="background:#7A8E7D;border-color:#7A8E7D;">
-            <div class="ml" style="color:rgba(255,255,255,.75);">Ticket promedio</div>
-            <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;color:#fff;" id="ck-tick">$0</div>
-            <div style="font-size:11px;color:rgba(255,255,255,.65);margin-top:2px;">promedio por ingreso</div>
-          </div>
-          <div class="kc" style="background:#4A6A8A;border-color:#4A6A8A;">
-            <div class="ml" style="color:rgba(255,255,255,.75);">Margen neto</div>
-            <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;color:#fff;" id="ck-margen">0%</div>
-            <div style="height:3px;background:rgba(255,255,255,.2);border-radius:2px;margin-top:6px;"><div id="ck-margen-barra" style="height:100%;width:0%;background:#fff;border-radius:2px;transition:width .5s;"></div></div>
-          </div>
-        </div>
+  <!-- Alertas automáticas -->
+  <div id="ck-alertas-wrap" style="display:none;margin-bottom:14px;">
+    <div id="ck-alertas-grid" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;"></div>
+  </div>
 
-        <!-- Barra de acciones -->
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-          <div>
-            <select id="ck-mes-sel" style="width:auto;padding:8px 14px;font-size:12px;margin-top:0;border-radius:20px;border:.5px solid var(--cream-d);" onchange="filterCkByMes(this.value)">
-              <option value="todo">Todo el año</option>
-              <option>Enero 2026</option><option>Febrero 2026</option><option selected>Marzo 2026</option>
-              <option>Abril 2026</option><option>Mayo 2026</option><option>Junio 2026</option>
-              <option>Julio 2026</option><option>Agosto 2026</option><option>Septiembre 2026</option>
-              <option>Octubre 2026</option><option>Noviembre 2026</option><option>Diciembre 2026</option>
-            </select>
-          </div>
-          <div></div>
-        </div>
+  <!-- Embi análisis -->
+  <div style="background:#4a5e4d;border-radius:12px;padding:16px 20px;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:14px;border:0.5px solid rgba(191,160,90,.25);">
+    <div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:#d4a853;margin-bottom:2px;">Analizar con Embi</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.6);">Recomendaciones estratégicas personalizadas para tu negocio</div>
+    </div>
+    <button onclick="embiAnalizarIndicadores()" style="background:#d4a853;color:#3a2e00;border:none;border-radius:8px;padding:10px 20px;font-size:12px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;">Analizar ahora</button>
+  </div>
 
-        <!-- Gráficos — fila 1: evolución anual + mes seleccionado -->
-        <div class="g2" style="margin-bottom:12px;">
-          <!-- Izq: Evolución anual -->
-          <div class="card">
-            <div class="ct">Evolución anual</div>
-            <div style="position:relative;height:160px;"><canvas id="ckChart"></canvas></div>
-            <div style="display:flex;gap:14px;margin-top:8px;flex-wrap:wrap;">
-              <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-l);"><span style="width:9px;height:9px;border-radius:2px;background:var(--sage);display:inline-block;"></span>Ingresos</span>
-              <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-l);"><span style="width:9px;height:9px;border-radius:2px;background:#F5C4BE;display:inline-block;"></span>Egresos</span>
-              <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-l);"><span style="width:9px;height:9px;border-radius:50%;background:var(--sage-dark);display:inline-block;"></span>Ganancia</span>
-            </div>
-          </div>
-          <!-- Der: Mes seleccionado -->
-          <div class="card">
-            <div class="ct" id="ck-mes-chart-title">Mes seleccionado</div>
-            <div id="ck-mes-chart-empty" style="text-align:center;padding:40px 20px;color:var(--text-l);font-size:12px;">Seleccioná un mes para ver el detalle</div>
-            <div id="ck-mes-chart-wrap" style="display:none;">
-              <div style="position:relative;height:160px;"><canvas id="ckMesChart"></canvas></div>
-              <div style="display:flex;gap:14px;margin-top:8px;flex-wrap:wrap;">
-                <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-l);"><span style="width:9px;height:9px;border-radius:2px;background:var(--sage);display:inline-block;"></span>Ingresos</span>
-                <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-l);"><span style="width:9px;height:9px;border-radius:2px;background:#F5C4BE;display:inline-block;"></span>Egresos</span>
-              </div>
-            </div>
-          </div>
-        </div>
+  <!-- Gráficos -->
+  <div class="g2" style="margin-bottom:14px;">
+    <div class="card">
+      <div class="ct">Evolución anual</div>
+      <div style="position:relative;height:180px;"><canvas id="ckChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div id="ck-mes-chart-title" class="ct">Mes seleccionado</div>
+      <div id="ck-mes-chart-empty" style="text-align:center;padding:40px 0;color:var(--text-l);font-size:13px;">Seleccioná un mes para ver el detalle</div>
+      <div id="ck-mes-chart-wrap" style="display:none;position:relative;height:180px;"><canvas id="ckMesChart"></canvas></div>
+    </div>
+  </div>
 
-        <!-- Gráficos — fila 2: egresos anuales + egresos del mes -->
-        <div class="g2" style="margin-bottom:12px;">
-          <!-- Izq: Egresos anuales por categoría -->
-          <div class="card">
-            <div class="ct">Egresos anuales por categoría</div>
-            <div id="ck-eg-anual-empty" style="display:none;text-align:center;padding:20px;color:var(--text-l);font-size:12px;">Sin egresos registrados.</div>
-            <div style="position:relative;height:180px;"><canvas id="ckEgAnualChart"></canvas></div>
-          </div>
-          <!-- Der: Egresos del mes por categoría -->
-          <div class="card">
-            <div class="ct" id="ck-eg-mes-title">Egresos del mes por categoría</div>
-            <div id="ck-eg-mes-empty" style="text-align:center;padding:40px 20px;color:var(--text-l);font-size:12px;">Seleccioná un mes para ver el detalle</div>
-            <div id="ck-eg-mes-wrap" style="display:none;position:relative;height:180px;"><canvas id="ckEgMesChart"></canvas></div>
-          </div>
-        </div>
+  <div class="g2" style="margin-bottom:14px;">
+    <div class="card">
+      <div class="ct">Egresos anuales por concepto</div>
+      <div id="ck-eg-anual-empty" style="text-align:center;padding:40px 0;color:var(--text-l);font-size:13px;">Sin egresos registrados.</div>
+      <canvas id="ckEgAnualChart" style="display:none;max-height:200px;"></canvas>
+    </div>
+    <div class="card">
+      <div id="ck-eg-mes-title" class="ct">Egresos del mes por concepto</div>
+      <div id="ck-eg-mes-empty" style="text-align:center;padding:40px 0;color:var(--text-l);font-size:13px;">Seleccioná un mes para ver el detalle</div>
+      <div id="ck-eg-mes-wrap" style="display:none;"><canvas id="ckEgMesChart" style="max-height:200px;"></canvas></div>
+    </div>
+  </div>
 
-        <!-- Gráficos — fila 3: funnel -->
-        <div class="g2">
-          <div class="card">
-            <div class="ct">Funnel de presupuestos</div>
-            <div id="ck-funnel" style="padding:4px 0;"></div>
-          </div>
-        </div>
+  <!-- Sankey -->
+  <div class="card" style="margin-bottom:14px;">
+    <div class="ct">Flujo de dinero</div>
+    <div id="ck-sankey" style="padding:8px 0;"></div>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="ct">Funnel de presupuestos</div>
+      <div id="ck-funnel"></div>
+    </div>
+    <div class="card">
+      <div class="ct">Ranking de clientes</div>
+      <div id="ck-ranking-clientes"></div>
+    </div>
+  </div>
 
       </div>
 
@@ -10157,6 +10158,11 @@ function renderCkKpis(ingresos, egresos, presupuestos, mcClientes) {
 
   // Ranking clientes
   renderCkRankingClientes(ingresos);
+
+  // Resumen, alertas y sankey
+  renderCkResumen(ingresos, egresos);
+  renderCkAlertas(ingresos, egresos);
+  renderCkSankey(ingresos, egresos);
 }
 
 function renderCkRankingClientes(ingresos) {
@@ -10215,6 +10221,101 @@ function renderCkRankingClientes(ingresos) {
   </div>`;
 }
 
+function renderCkResumen(ingresos, egresos) {
+  const card = document.getElementById('ck-resumen-card');
+  const cont = document.getElementById('ck-resumen-lineas');
+  if(!card || !cont) return;
+  const totalIng = ingresos.reduce((a,i)=>a+(parseFloat(i.monto)||0),0);
+  const totalEg = egresos.reduce((a,e)=>a+(parseFloat(e.monto)||0),0);
+  const margen = totalIng > 0 ? Math.round((totalIng-totalEg)/totalIng*100) : 0;
+  const lineas = [];
+  if(margen >= 70) lineas.push({color:'#3B6D11', texto:`Margen neto del ${margen}% — excelente rentabilidad.`});
+  else if(margen >= 40) lineas.push({color:'#BA7517', texto:`Margen neto del ${margen}% — dentro de lo esperado.`});
+  else lineas.push({color:'#993C1D', texto:`Margen neto del ${margen}% — revisá tus costos.`});
+  if(totalEg > 0) {
+    const cats = {};
+    egresos.forEach(e => { const c = e.concepto||'Otros'; cats[c]=(cats[c]||0)+(parseFloat(e.monto)||0); });
+    const topCat = Object.entries(cats).sort((a,b)=>b[1]-a[1])[0];
+    if(topCat) lineas.push({color:'#BA7517', texto:`Mayor egreso: ${topCat[0]} — $${Math.round(topCat[1]).toLocaleString('es-AR')}.`});
+  }
+  const pend = (window._clientPresupuestos||[]).filter(p=>p.estado==='Aprobado');
+  if(pend.length > 0) {
+    const montoPend = pend.reduce((a,p)=>a+getPresupMonto(p),0);
+    lineas.push({color:'#BA7517', texto:`$${Math.round(montoPend).toLocaleString('es-AR')} en presupuestos aprobados sin cobrar.`});
+  }
+  if(ingresos.length > 0) lineas.push({color:'#185FA5', texto:`Ticket promedio: $${Math.round(totalIng/ingresos.length).toLocaleString('es-AR')} por transacción.`});
+  cont.innerHTML = lineas.map(l=>`<div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text);">
+    <div style="width:6px;height:6px;border-radius:50%;background:${l.color};flex-shrink:0;"></div>${l.texto}</div>`).join('');
+  card.style.display = lineas.length ? 'block' : 'none';
+}
+
+function renderCkAlertas(ingresos, egresos) {
+  const wrap = document.getElementById('ck-alertas-wrap');
+  const grid = document.getElementById('ck-alertas-grid');
+  if(!wrap || !grid) return;
+  const alertas = [];
+  const pend = (window._clientPresupuestos||[]).filter(p=>p.estado==='Aprobado');
+  if(pend.length > 0) {
+    const monto = pend.reduce((a,p)=>a+getPresupMonto(p),0);
+    alertas.push({tipo:'warn', titulo:`$${Math.round(monto).toLocaleString('es-AR')} sin cobrar`, desc:`${pend.length} presupuesto${pend.length>1?'s':''} aprobado${pend.length>1?'s':''} pendiente${pend.length>1?'s':''} de cobro.`});
+  }
+  const totalIng = ingresos.reduce((a,i)=>a+(parseFloat(i.monto)||0),0);
+  const totalEg = egresos.reduce((a,e)=>a+(parseFloat(e.monto)||0),0);
+  const margen = totalIng > 0 ? Math.round((totalIng-totalEg)/totalIng*100) : 0;
+  if(margen >= 70) alertas.push({tipo:'ok', titulo:`Margen excelente — ${margen}%`, desc:'Tu rentabilidad está en un nivel óptimo.'});
+  else if(margen < 40 && totalIng > 0) alertas.push({tipo:'danger', titulo:`Margen bajo — ${margen}%`, desc:'Revisá tus costos fijos y precios de venta.'});
+  if(ingresos.length < 3 && totalIng > 0) alertas.push({tipo:'warn', titulo:'Pocas transacciones este mes', desc:'Considerá activar más presupuestos pendientes.'});
+  const colores = {warn:{border:'#BA7517',dot:'#BA7517',title:'#633806'}, danger:{border:'#993C1D',dot:'#993C1D',title:'#712B13'}, ok:{border:'#3B6D11',dot:'#3B6D11',title:'#27500A'}};
+  grid.innerHTML = alertas.map(a=>{const c=colores[a.tipo];return `<div style="background:var(--white);border:0.5px solid var(--cream-d);border-left:3px solid ${c.border};border-radius:12px;padding:13px 16px;display:flex;align-items:flex-start;gap:10px;">
+    <div style="width:8px;height:8px;border-radius:50%;background:${c.dot};flex-shrink:0;margin-top:4px;"></div>
+    <div><div style="font-size:12px;font-weight:500;color:${c.title};margin-bottom:2px;">${a.titulo}</div>
+    <div style="font-size:11px;color:var(--text-l);line-height:1.4;">${a.desc}</div></div></div>`;}).join('');
+  wrap.style.display = alertas.length ? 'block' : 'none';
+}
+
+function renderCkSankey(ingresos, egresos) {
+  const el = document.getElementById('ck-sankey');
+  if(!el) return;
+  const totalIng = ingresos.reduce((a,i)=>a+(parseFloat(i.monto)||0),0);
+  const totalEg = egresos.reduce((a,e)=>a+(parseFloat(e.monto)||0),0);
+  const ganancia = Math.max(0, totalIng - totalEg);
+  if(totalIng === 0) { el.innerHTML='<div style="text-align:center;padding:30px;color:var(--text-l);font-size:13px;">Sin datos para mostrar.</div>'; return; }
+  const cats = {};
+  egresos.forEach(e=>{ const c=e.concepto||'Otros'; cats[c]=(cats[c]||0)+(parseFloat(e.monto)||0); });
+  const catArr = Object.entries(cats).sort((a,b)=>b[1]-a[1]).slice(0,4);
+  const H = 40 + Math.max(catArr.length, 1) * 36 + 40;
+  const fmt = v => '$'+Math.round(v).toLocaleString('es-AR');
+  const pctGan = ganancia/totalIng;
+  const ganH = Math.max(pctGan * (H-80), 20);
+  let egY = 40, egPaths = '', egLabels = '';
+  catArr.forEach(([cat, monto]) => {
+    const h = Math.max((monto/totalIng)*(H-80), 16);
+    const midY = egY + h/2;
+    egPaths += `<path d="M 120 ${40 + (ganH/2)} C 260 ${40+(ganH/2)} 260 ${midY} 320 ${midY}" stroke="#C4786A" stroke-width="${Math.max(h*0.7,4)}" fill="none" opacity="0.35"/>`;
+    egLabels += `<rect x="322" y="${egY}" width="12" height="${h}" rx="3" fill="#C4786A" opacity="0.7"/>
+      <text x="342" y="${midY}" font-size="11" fill="var(--text)" font-family="DM Sans" dominant-baseline="central">${cat} ${fmt(monto)}</text>`;
+    egY += h + 8;
+  });
+  el.innerHTML = `<svg width="100%" viewBox="0 0 560 ${H}" style="overflow:visible;">
+    <rect x="10" y="40" width="14" height="${H-80}" rx="4" fill="#4a5e4d"/>
+    <text x="30" y="${H/2}" font-size="12" fill="var(--text)" font-family="DM Sans" dominant-baseline="central" font-weight="500">Ingresos ${fmt(totalIng)}</text>
+    <path d="M 24 ${40+(H-80)/2} C 160 ${40+(H-80)/2} 160 ${40+ganH/2} 280 ${40+ganH/2}" stroke="#d4a853" stroke-width="${Math.max(ganH*0.7,6)}" fill="none" opacity="0.5"/>
+    ${egPaths}
+    <rect x="282" y="40" width="14" height="${ganH}" rx="3" fill="#d4a853"/>
+    <text x="302" y="${40+ganH/2}" font-size="12" fill="#633806" font-family="DM Sans" dominant-baseline="central" font-weight="500">Ganancia ${fmt(ganancia)}</text>
+    ${egLabels}
+  </svg>`;
+}
+
+window.embiAnalizarIndicadores = async function() {
+  const btn = document.querySelector('[onclick="embiAnalizarIndicadores()"]');
+  if(btn) { btn.textContent = 'Analizando...'; btn.disabled = true; }
+  if(window.embiShow) window.embiShow(true);
+  setTimeout(() => {
+    if(window.embiSendMessage) window.embiSendMessage('Analizá mis indicadores del período actual y dame recomendaciones concretas para mejorar mi rentabilidad y reducir costos.');
+    if(btn) { btn.textContent = 'Analizar ahora'; btn.disabled = false; }
+  }, 500);
+};
 
 
 async function loadClientTareas() {
