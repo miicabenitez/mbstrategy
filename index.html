@@ -9944,8 +9944,8 @@ function initCkChart(ingresos, egresos) {
   egresos.forEach(e=>{ const idx=MESES.findIndex(m=>(e.mes||'').startsWith(m)); if(idx>=0) eg[idx]+=parseFloat(e.monto)||0; });
   const gan=ing.map((v,i)=>Math.max(0,v-eg[i]));
   ckChart = new Chart(canvas.getContext('2d'),{
-    type:'bar', data:{labels:MESES_SHORT, datasets:[{label:'Ingresos',data:ing,backgroundColor:'#A1B1A4',borderRadius:4},{label:'Egresos',data:eg,backgroundColor:'#C4786A',borderRadius:4},{label:'Ganancia',data:gan,type:'line',borderColor:'#7A8E7D',borderWidth:2,pointRadius:3,fill:false,backgroundColor:'#7A8E7D'}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'#D0CFC9'},ticks:{font:{family:'DM Sans',size:10},color:'#4A5A4E',callback:v=>'$'+v.toLocaleString('es-AR')}},x:{grid:{display:false},ticks:{font:{family:'DM Sans',size:10},color:'#4A5A4E'}}}}
+    type:'bar', data:{labels:MESES_SHORT, datasets:[{label:'Ingresos',data:ing,backgroundColor:'#4a5e4d',borderRadius:4},{label:'Egresos',data:eg,backgroundColor:'#b05a42',borderRadius:4},{label:'Ganancia',data:gan,type:'line',borderColor:'#7aab7e',borderWidth:2,pointRadius:3,fill:false,backgroundColor:'#7aab7e'}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'rgba(0,0,0,.06)'},ticks:{font:{family:'DM Sans',size:10},color:'#888780',callback:v=>'$'+v.toLocaleString('es-AR')}},x:{grid:{display:false},ticks:{font:{family:'DM Sans',size:10},color:'#888780'}}}}
   });
 }
 window.initClientCashflow = initClientCashflow;
@@ -10015,10 +10015,10 @@ function initCkEgAnualChart(egresos) {
   if(emptyEl) emptyEl.style.display='none';
   canvas.style.display='block';
   const cats={};
-  egresos.forEach(e=>{const c=e.categoria||'Otros'; cats[c]=(cats[c]||0)+(parseFloat(e.monto)||0);});
+  egresos.forEach(e=>{const c=e.concepto||'Otros'; cats[c]=(cats[c]||0)+(parseFloat(e.monto)||0);});
   const sorted=Object.entries(cats).sort((a,b)=>b[1]-a[1]);
   const labels=sorted.map(([k])=>k), data=sorted.map(([,v])=>v);
-  const colors=['#7A8E7D','#5A8A62','#4A6A8A','#B08A42','#C4786A','#6B7A60','#8A9E8D','#D0CFC9'];
+  const colors=['#4a5e4d','#5a7a5e','#6b8f6e','#7aab7e','#3a4e3d','#b05a42','#c4786a','#8a3a28'];
   ckEgAnualChart = new Chart(canvas.getContext('2d'),{
     type:'bar',
     data:{labels,datasets:[{data,backgroundColor:colors.slice(0,labels.length),borderRadius:4}]},
@@ -10027,8 +10027,8 @@ function initCkEgAnualChart(egresos) {
       responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:false}},
       scales:{
-        x:{grid:{color:'#D0CFC9'},ticks:{font:{family:'DM Sans',size:10},color:'#4A5A4E',callback:v=>'$'+v.toLocaleString('es-AR')}},
-        y:{grid:{display:false},ticks:{font:{family:'DM Sans',size:10},color:'#4A5A4E'}}
+        x:{grid:{color:'rgba(0,0,0,.06)'},ticks:{font:{family:'DM Sans',size:10},color:'#888780',callback:v=>'$'+v.toLocaleString('es-AR')}},
+        y:{grid:{display:false},ticks:{font:{family:'DM Sans',size:10},color:'#888780'}}
       }
     }
   });
@@ -10056,10 +10056,10 @@ function initCkEgMesChart(egresos, mes) {
   const canvas = document.getElementById('ckEgMesChart');
   if(!canvas) return;
   const cats={};
-  egresos.forEach(e=>{const c=e.categoria||'Otros'; cats[c]=(cats[c]||0)+(parseFloat(e.monto)||0);});
+  egresos.forEach(e=>{const c=e.concepto||'Otros'; cats[c]=(cats[c]||0)+(parseFloat(e.monto)||0);});
   const sorted=Object.entries(cats).sort((a,b)=>b[1]-a[1]);
   const labels=sorted.map(([k])=>k), data=sorted.map(([,v])=>v);
-  const colors=['#7A8E7D','#5A8A62','#4A6A8A','#B08A42','#C4786A','#6B7A60','#8A9E8D','#D0CFC9'];
+  const colors=['#4a5e4d','#5a7a5e','#6b8f6e','#7aab7e','#3a4e3d','#b05a42','#c4786a','#8a3a28'];
   ckEgMesChart = new Chart(canvas.getContext('2d'),{
     type:'bar',
     data:{labels,datasets:[{data,backgroundColor:colors.slice(0,labels.length),borderRadius:4}]},
@@ -10068,8 +10068,8 @@ function initCkEgMesChart(egresos, mes) {
       responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:false}},
       scales:{
-        x:{grid:{color:'#D0CFC9'},ticks:{font:{family:'DM Sans',size:10},color:'#4A5A4E',callback:v=>'$'+v.toLocaleString('es-AR')}},
-        y:{grid:{display:false},ticks:{font:{family:'DM Sans',size:10},color:'#4A5A4E'}}
+        x:{grid:{color:'rgba(0,0,0,.06)'},ticks:{font:{family:'DM Sans',size:10},color:'#888780',callback:v=>'$'+v.toLocaleString('es-AR')}},
+        y:{grid:{display:false},ticks:{font:{family:'DM Sans',size:10},color:'#888780'}}
       }
     }
   });
