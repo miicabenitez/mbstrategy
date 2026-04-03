@@ -248,6 +248,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 .presup-card{background:var(--cream);border:.5px solid var(--cream-d);border-radius:11px;padding:14px;margin-bottom:8px;}
 .presup-fil{font-size:11px;padding:5px 13px;border-radius:20px;border:.5px solid var(--cream-d);background:var(--white);color:var(--text-m);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;font-weight:400;}
 .presup-fil.active{background:var(--topbar);color:#fff;border-color:var(--topbar);font-weight:500;box-shadow:0 2px 8px rgba(122,142,125,.3);}
+.cli-fil{font-size:11px;padding:5px 13px;border-radius:20px;border:.5px solid var(--cream-d);background:var(--white);color:var(--text-m);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;font-weight:400;}
+.cli-fil.active{background:var(--topbar);color:#fff;border-color:var(--topbar);font-weight:500;box-shadow:0 2px 8px rgba(122,142,125,.3);}
 .presup-fil[data-estado="Pendiente de enviar"]{background:#FCEFD8;border-color:#B08A42;color:#7A5020;}
 .presup-fil[data-estado="Enviado"]{background:#D8E8F5;border-color:var(--blue);color:#2A4A6A;}
 .presup-fil[data-estado="Consultado"]{background:#FFF0C0;border-color:#8A6A3A;color:#5A4010;}
@@ -1066,28 +1068,49 @@ input[type=number]{-moz-appearance:textfield;}
       <!-- CLIENTES -->
       <div class="view" id="av-clientes">
 
-        <!-- Header + métricas rápidas -->
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-          <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:500;">Clientes</div>
-          <button class="bp" onclick="openModal('newClientModal')">+ Nuevo cliente</button>
+        <!-- Banner verde con KPIs -->
+        <div style="background:#4a5e4d;border-radius:16px;padding:20px 24px 22px;margin:0 0 14px;color:#fff;position:relative;overflow:hidden;">
+          <div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:22px;">Clientes</div>
+            <button onclick="openModal('newClientModal')" style="padding:7px 16px;background:rgba(255,255,255,.15);border:.5px solid rgba(255,255,255,.3);color:#fff;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">+ Nuevo cliente</button>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;">
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
+              <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Academia</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#fff;line-height:1;" id="adm-kpi-academia">0</div>
+            </div>
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
+              <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Sistema activo</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#fff;line-height:1;" id="adm-kpi-sistema">0</div>
+            </div>
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
+              <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Trial</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#fff;line-height:1;" id="adm-kpi-trial">0</div>
+            </div>
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
+              <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Fin programa</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#fff;line-height:1;" id="adm-kpi-fin">0</div>
+            </div>
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
+              <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Sin actividad</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#fff;line-height:1;" id="adm-kpi-inactivos">0</div>
+            </div>
+          </div>
         </div>
 
-        <!-- Segmentos / métricas -->
-        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:18px;">
-          <div class="mc accent">
-            <div class="ml" style="color:rgba(255,255,255,.6);">Total clientes</div>
-            <div class="mv" style="color:#fff;" id="seg-total">0</div>
-            <div class="ms" style="color:rgba(255,255,255,.7);">en el sistema</div>
-          </div>
-          <div class="mc">
-            <div class="ml">Programa 30D</div>
-            <div class="mv" id="seg-30d">0</div>
-            <div class="ms">activos</div>
-          </div>
-          <div class="mc">
-            <div class="ml">Programa 90D</div>
-            <div class="mv" id="seg-90d">0</div>
-            <div class="ms">activos</div>
+        <!-- Toolbar de filtros -->
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+          <button class="cli-fil active" onclick="filterClientes('todos',this)">Todos</button>
+          <button class="cli-fil" onclick="filterClientes('academia',this)">Academia</button>
+          <button class="cli-fil" onclick="filterClientes('sistema',this)">Sistema</button>
+          <button class="cli-fil" onclick="filterClientes('trial',this)">Trial</button>
+          <button class="cli-fil" onclick="filterClientes('fin',this)">Fin programa</button>
+          <button class="cli-fil" onclick="filterClientes('cancelado',this)">Cancelados</button>
+          <button class="cli-fil" onclick="filterClientes('pendiente',this)">Pendiente pago</button>
+          <div style="margin-left:auto;position:relative;">
+            <input id="cli-search" type="text" placeholder="Buscar cliente..." oninput="filterClientes('search',null,this.value)" style="padding:7px 12px 7px 30px;border-radius:20px;border:.5px solid var(--cream-d);background:var(--white);font-size:12px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;width:160px;">
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);pointer-events:none;"><circle cx="6" cy="6" r="4.5" stroke="var(--text-l)" stroke-width="1.3"/><path d="M9.5 9.5l2.5 2.5" stroke="var(--text-l)" stroke-width="1.3" stroke-linecap="round"/></svg>
           </div>
         </div>
 
@@ -1114,57 +1137,9 @@ input[type=number]{-moz-appearance:textfield;}
 
           <div>
             <!-- Calendario de reuniones -->
-            <div class="card" style="margin-bottom:12px;">
+            <div class="card">
               <div class="ct">Calendario de reuniones</div>
               <div id="cli-reuniones"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin reuniones agendadas.</div></div>
-            </div>
-
-            <!-- Presupuestos -->
-            <div class="card">
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-                <div>
-                  <div style="font-size:13px;font-weight:500;color:var(--text);">Presupuestos</div>
-                  <div style="font-size:11px;color:var(--text-l);margin-top:1px;" id="ps-monto-sub">—</div>
-                </div>
-                <button class="bp" onclick="openModal('newPresupGlobalModal')">+ Nuevo</button>
-              </div>
-
-              <!-- KPI cards -->
-              <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-bottom:14px;">
-                <div onclick="filterPresup('todos',document.querySelector('.presup-fil'))" style="background:var(--white);border:1.5px solid var(--topbar);border-radius:11px;padding:12px 8px;text-align:center;cursor:pointer;transition:all .15s;">
-                  <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;color:var(--text);line-height:1;" id="ps-tot">0</div>
-                  <div style="font-size:9px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-top:4px;">Total</div>
-                </div>
-                <div onclick="filterPresup('Pendiente de enviar',document.querySelectorAll('.presup-fil')[1])" style="background:#FCEFD8;border:.5px solid var(--cream-d);border-radius:11px;padding:12px 8px;text-align:center;cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='#B08A42'" onmouseout="this.style.borderColor='var(--cream-d)'">
-                  <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;color:var(--warn);line-height:1;" id="ps-penv">0</div>
-                  <div style="font-size:9px;font-weight:500;color:var(--warn);text-transform:uppercase;letter-spacing:.5px;margin-top:4px;">Por enviar</div>
-                  <div style="height:3px;background:var(--warn-bg);border-radius:2px;margin-top:6px;"><div class="ps-bar-penv" style="height:100%;width:0%;background:var(--warn);border-radius:2px;transition:width .5s;"></div></div>
-                </div>
-                <div onclick="filterPresup('Consultado',document.querySelectorAll('.presup-fil')[3])" style="background:#FFF0C0;border:.5px solid var(--cream-d);border-radius:11px;padding:12px 8px;text-align:center;cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='#8A6A3A'" onmouseout="this.style.borderColor='var(--cream-d)'">
-                  <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;color:#8A6A3A;line-height:1;" id="ps-cons">0</div>
-                  <div style="font-size:9px;font-weight:500;color:#8A6A3A;text-transform:uppercase;letter-spacing:.5px;margin-top:4px;">Consultados</div>
-                  <div style="height:3px;background:#FFF3CD;border-radius:2px;margin-top:6px;"><div class="ps-bar-cons" style="height:100%;width:0%;background:#8A6A3A;border-radius:2px;transition:width .5s;"></div></div>
-                </div>
-                <div onclick="filterPresup('Aprobado',document.querySelectorAll('.presup-fil')[4])" style="background:#D5EDDA;border:.5px solid var(--cream-d);border-radius:11px;padding:12px 8px;text-align:center;cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='var(--ok)'" onmouseout="this.style.borderColor='var(--cream-d)'">
-                  <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;color:var(--ok);line-height:1;" id="ps-apr">0</div>
-                  <div style="font-size:9px;font-weight:500;color:var(--ok);text-transform:uppercase;letter-spacing:.5px;margin-top:4px;">Aprobados</div>
-                  <div style="height:3px;background:#C8DEC9;border-radius:2px;margin-top:6px;"><div class="ps-bar-apr" style="height:100%;width:0%;background:var(--ok);border-radius:2px;transition:width .5s;"></div></div>
-                </div>
-                <div onclick="filterPresup('Denegado',document.querySelectorAll('.presup-fil')[5])" style="background:#F0D8D5;border:.5px solid var(--cream-d);border-radius:11px;padding:12px 8px;text-align:center;cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='var(--err)'" onmouseout="this.style.borderColor='var(--cream-d)'">
-                  <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;color:var(--err);line-height:1;" id="ps-den">0</div>
-                  <div style="font-size:9px;font-weight:500;color:var(--err);text-transform:uppercase;letter-spacing:.5px;margin-top:4px;">Denegados</div>
-                  <div style="height:3px;background:#F5DCDA;border-radius:2px;margin-top:6px;"><div class="ps-bar-den" style="height:100%;width:0%;background:var(--err);border-radius:2px;transition:width .5s;"></div></div>
-                </div>
-              </div>
-
-              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;" id="presup-filtros">
-                <button class="presup-fil active" onclick="filterPresup('todos',this)">Todos</button>
-                <button class="presup-fil" data-estado="Pendiente de enviar" onclick="filterPresup('Pendiente de enviar',this)">Por enviar</button>
-                <button class="presup-fil" data-estado="Enviado" onclick="filterPresup('Enviado',this)">Enviados</button>
-                <button class="presup-fil" data-estado="Aprobado" onclick="filterPresup('Aprobado',this)">Aprobados</button>
-                <button class="presup-fil" data-estado="Cobrado" onclick="filterPresup('Cobrado',this)">Cobrados</button>
-              </div>
-              <div id="cli-presupuestos"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin presupuestos cargados.</div></div>
             </div>
           </div>
         </div>
@@ -4748,45 +4723,91 @@ function renderClientList(clients) {
   setEl('seg-prosp', '0');
   setEl('dm-c', segT);
 
-  // Client cards — estilo mejorado
-  const html = clients.length === 0
-    ? '<div style="text-align:center;padding:20px;color:var(--text-l);font-size:13px;">Sin clientes aún. Creá el primero.</div>'
-    : clients.map((c, i) => {
-        const col = avatarColors[i % avatarColors.length];
-        const nombre = c.nombre || c.negocioNombre || c.email || '?';
-        const init = nombre.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-        const total = c.programa === '90D' ? 12 : 4;
-        const sem = c.semanaActual || 1;
-        const pct = Math.round((sem/total)*100);
-        const dots = Array(total <= 4 ? total : 4).fill(0).map((_,j) => {
-          const idx = total <= 4 ? j : Math.floor(j*(total/4));
-          return `<div class="wd ${idx < sem-1 ? 'done' : idx === sem-1 ? 'active' : ''}"></div>`;
-        }).join('');
-        const subtitulo = c.rubro
-          ? `${c.rubro} · Programa ${c.programa} · $${c.precio} USD`
-          : c.membresia?.plan ? `Plan ${c.membresia.plan} · Suscripción` : '—';
-        const badge = c.programa ? `Sem. ${sem}` : (c.membresia?.estado || 'Activo');
-        return `<div style="padding:12px 0;border-bottom:.5px solid var(--cream-d);">
-          <div style="display:flex;align-items:center;gap:11px;">
-            <div class="av" style="background:${col};color:#fff;width:38px;height:38px;font-size:12px;flex-shrink:0;cursor:pointer;" onclick="openClientDetail('${c.id}')">${init}</div>
-            <div style="flex:1;min-width:0;cursor:pointer;" onclick="openClientDetail('${c.id}')">
-              <div style="font-size:13px;font-weight:500;color:var(--text);">${nombre}</div>
-              <div style="font-size:11px;color:var(--text-l);margin-top:1px;">${subtitulo}</div>
-              <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
-                <div class="wb" style="flex:1;">${dots}</div>
-                <span style="font-size:11px;color:var(--text-l);">${pct}%</span>
-              </div>
-            </div>
-            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;">
-              <div class="badge bg" style="cursor:pointer;" onclick="openClientDetail('${c.id}')">${badge}</div>
-              <div style="display:flex;gap:4px;">
-                <button onclick="editCliente('${c.id}',event)" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-                <button onclick="deleteCliente(this,event)" data-id="${c.id}" data-nombre="${nombre}" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
-              </div>
-            </div>
+  // KPIs del banner verde
+  setEl('adm-kpi-academia', clients.filter(c => c.productos?.academia === true).length);
+  setEl('adm-kpi-sistema',  clients.filter(c => c.membresia?.estado === 'activo' && !c.productos?.academia).length);
+  setEl('adm-kpi-trial',    clients.filter(c => c.membresia?.estado === 'trial').length);
+  setEl('adm-kpi-fin',      clients.filter(c => c.programa && c.membresia?.estado !== 'activo').length);
+  // adm-kpi-inactivos: 0 fijo hasta implementar campo lastLogin
+
+  // Client cards — agrupados por segmento
+  const getTipo = c => c.productos?.academia ? 'academia'
+                     : c.membresia?.estado === 'activo' ? 'sistema'
+                     : c.membresia?.estado === 'trial' ? 'trial'
+                     : c.programa ? 'fin'
+                     : c.membresia?.estado === 'cancelado' ? 'cancelado'
+                     : c.membresia?.estado === 'pending' ? 'pendiente'
+                     : 'otros';
+  const secLabels = { academia:'Academia activa', sistema:'Sistema activo', trial:'Trial', fin:'Fin de programa', cancelado:'Cancelados', pendiente:'Pendiente de pago', otros:'Sin clasificar' };
+  const ordenGrupos = ['academia','sistema','trial','fin','pendiente','cancelado','otros'];
+  const grupos = {};
+  ordenGrupos.forEach(t => { grupos[t] = []; });
+  clients.forEach(c => { grupos[getTipo(c)].push(c); });
+
+  const renderCard = (c, i) => {
+    const col = avatarColors[i % avatarColors.length];
+    const nombre = c.nombre || c.negocioNombre || c.email || '?';
+    const init = nombre.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const total = c.programa === '90D' ? 12 : 4;
+    const sem = c.semanaActual || 1;
+    const pct = Math.round((sem/total)*100);
+    const dots = Array(total <= 4 ? total : 4).fill(0).map((_,j) => {
+      const idx = total <= 4 ? j : Math.floor(j*(total/4));
+      return `<div class="wd ${idx < sem-1 ? 'done' : idx === sem-1 ? 'active' : ''}"></div>`;
+    }).join('');
+    const subtitulo = c.rubro
+      ? `${c.rubro} · Programa ${c.programa} · $${c.precio} USD`
+      : c.membresia?.plan ? `Plan ${c.membresia.plan} · Suscripción` : '—';
+    const badge = c.programa ? `Sem. ${sem}` : (c.membresia?.estado || 'Activo');
+    const diasInactivo = c.lastLogin ? Math.floor((Date.now()-new Date(c.lastLogin).getTime())/(1000*60*60*24)) : -1;
+    const alertaHtml = diasInactivo > 7
+      ? `<div class="badge br" style="font-size:10px;margin-top:4px;display:inline-block;">${diasInactivo} días sin ingresar</div>` : '';
+    const tipo = getTipo(c);
+    const acaActiva = !!(c.productos?.academia);
+    const toggleHtml = c.membresia ? `
+      <div onclick="toggleAcademia('${c.id}',${acaActiva},event)" title="${acaActiva ? 'Desactivar Academia' : 'Activar Academia'}" style="display:flex;align-items:center;gap:4px;cursor:pointer;margin-top:2px;">
+        <div style="width:26px;height:14px;border-radius:20px;background:${acaActiva ? 'var(--ok)' : 'var(--cream-d)'};position:relative;transition:background .2s;flex-shrink:0;">
+          <div style="position:absolute;top:2px;${acaActiva ? 'left:13px' : 'left:2px'};width:10px;height:10px;border-radius:50%;background:#fff;transition:left .2s;"></div>
+        </div>
+        <span style="font-size:10px;color:var(--text-l);">Ac</span>
+      </div>` : '';
+    return `<div style="padding:12px 0;border-bottom:.5px solid var(--cream-d);" data-tipo="${tipo}" data-nombre="${nombre.toLowerCase()}">
+      <div style="display:flex;align-items:center;gap:11px;">
+        <div class="av" style="background:${col};color:#fff;width:38px;height:38px;font-size:12px;flex-shrink:0;cursor:pointer;" onclick="openClientDetail('${c.id}')">${init}</div>
+        <div style="flex:1;min-width:0;cursor:pointer;" onclick="openClientDetail('${c.id}')">
+          <div style="font-size:13px;font-weight:500;color:var(--text);">${nombre}</div>
+          <div style="font-size:11px;color:var(--text-l);margin-top:1px;">${subtitulo}</div>
+          ${alertaHtml}
+          <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+            <div class="wb" style="flex:1;">${dots}</div>
+            <span style="font-size:11px;color:var(--text-l);">${pct}%</span>
           </div>
-        </div>`;
-      }).join('');
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;">
+          <div class="badge bg" style="cursor:pointer;" onclick="openClientDetail('${c.id}')">${badge}</div>
+          <div style="display:flex;gap:4px;">
+            <button onclick="editCliente('${c.id}',event)" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <button onclick="deleteCliente(this,event)" data-id="${c.id}" data-nombre="${nombre}" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
+          </div>
+          ${toggleHtml}
+        </div>
+      </div>
+    </div>`;
+  };
+
+  let html;
+  if (clients.length === 0) {
+    html = '<div style="text-align:center;padding:20px;color:var(--text-l);font-size:13px;">Sin clientes aún. Creá el primero.</div>';
+  } else {
+    html = '';
+    let gIdx = 0;
+    ordenGrupos.forEach(tipo => {
+      const items = grupos[tipo];
+      if (!items || items.length === 0) return;
+      html += `<div class="cli-sec-label" data-seccion="${tipo}" style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;padding:10px 0 4px;">${secLabels[tipo]}</div>`;
+      items.forEach(c => { html += renderCard(c, gIdx++); });
+    });
+  }
 
   document.getElementById('full-clients').innerHTML = html;
   document.getElementById('dash-clients').innerHTML = clients.map((c,i) => {
@@ -5376,6 +5397,35 @@ window.deleteCliente = function(id, nombre, event) {
     },
     'Eliminar cliente'
   );
+};
+
+window.toggleAcademia = async function(clienteId, valorActual, event) {
+  if(event) event.stopPropagation();
+  try {
+    await updateDoc(doc(db,'clientes',clienteId), {'productos.academia': !valorActual});
+    await loadAdminData();
+  } catch(e) { showToast('Error al actualizar Academia: '+e.message, 'error'); }
+};
+
+window.filterClientes = function(tipo, btn, texto) {
+  if (btn) {
+    document.querySelectorAll('.cli-fil').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const search = document.getElementById('cli-search');
+    if(search) search.value = '';
+  }
+  const cards = document.querySelectorAll('#full-clients [data-tipo]');
+  if (tipo === 'search') {
+    const q = (texto||'').toLowerCase().trim();
+    cards.forEach(el => { el.style.display = (!q || el.dataset.nombre?.includes(q)) ? '' : 'none'; });
+  } else {
+    cards.forEach(el => { el.style.display = (tipo === 'todos' || el.dataset.tipo === tipo) ? '' : 'none'; });
+  }
+  // Ocultar labels de sección si su grupo quedó sin cards visibles
+  document.querySelectorAll('#full-clients .cli-sec-label').forEach(label => {
+    const hayVisible = [...document.querySelectorAll(`#full-clients [data-tipo="${label.dataset.seccion}"]`)].some(el => el.style.display !== 'none');
+    label.style.display = hayVisible ? '' : 'none';
+  });
 };
 
 window.createClient = async function() {
