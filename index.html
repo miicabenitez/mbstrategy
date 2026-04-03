@@ -2224,7 +2224,7 @@ input[type=number]{-moz-appearance:textfield;}
   <div style="background:#4a5e4d;border-radius:16px;padding:22px 26px 24px;margin:0 0 14px;color:#fff;border:0.5px solid rgba(191,160,90,.2);">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
       <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;">Indicadores</div>
-      <select id="ck-mes-sel" onchange="filterCkByMes(this.value)" style="background:rgba(255,255,255,.1);border:0.5px solid rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:6px 12px;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;">
+      <select id="ck-mes-sel" onchange="filterCkByMes(this.value)" style="background:rgba(255,255,255,.1);border:0.5px solid rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:3px 8px;font-size:10px;max-width:100px;font-family:'DM Sans',sans-serif;cursor:pointer;">
         <option value="todo">Todo el año</option>
       </select>
     </div>
@@ -2281,12 +2281,18 @@ input[type=number]{-moz-appearance:textfield;}
   </div>
 
   <!-- Embi análisis -->
-  <div style="background:#4a5e4d;border-radius:12px;padding:16px 20px;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:14px;border:0.5px solid rgba(191,160,90,.25);">
-    <div>
-      <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:#d4a853;margin-bottom:2px;">Analizar con Embi</div>
-      <div style="font-size:12px;color:rgba(255,255,255,.6);">Recomendaciones estratégicas personalizadas para tu negocio</div>
+  <div style="border-radius:16px;padding:28px 32px;display:flex;align-items:center;justify-content:space-between;gap:28px;background:#1e2d20;border-top:1px solid rgba(168,212,172,.35);border-left:1px solid rgba(168,212,172,.15);border-right:1px solid rgba(40,60,42,.8);border-bottom:1px solid rgba(20,30,22,.9);position:relative;overflow:hidden;margin-bottom:14px;">
+    <div style="position:absolute;top:0;left:20%;right:20%;height:1px;background:linear-gradient(90deg,transparent,rgba(200,230,200,.15),rgba(255,255,255,.35),rgba(200,230,200,.15),transparent);"></div>
+    <div style="position:absolute;top:-80px;left:-60px;width:250px;height:250px;border-radius:50%;background:radial-gradient(circle,rgba(74,94,77,.2) 0%,transparent 65%);"></div>
+    <div style="position:absolute;bottom:-60px;right:100px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(100,140,104,.1) 0%,transparent 65%);"></div>
+    <div style="flex:1;position:relative;z-index:1;">
+      <div style="font-size:10px;font-weight:500;color:rgba(168,212,172,.5);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;display:flex;align-items:center;gap:8px;"><span style="display:block;width:20px;height:1px;background:rgba(168,212,172,.4);"></span>Embi · análisis en tiempo real</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:300;color:#edf5ed;line-height:1.15;margin-bottom:10px;">Embi ya tiene<br>tu análisis <em>listo.</em></div>
+      <div style="font-size:12px;color:rgba(160,200,164,.45);line-height:1.6;max-width:360px;">Tus números del período, interpretados. Con recomendaciones concretas para actuar hoy.</div>
     </div>
-    <button onclick="embiAnalizarIndicadores()" style="background:#d4a853;color:#3a2e00;border:none;border-radius:8px;padding:10px 20px;font-size:12px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;">Analizar ahora</button>
+    <div style="flex-shrink:0;position:relative;z-index:1;">
+      <button onclick="embiAnalizarIndicadores()" style="background:#2a3d2c;border-top:1px solid rgba(168,212,172,.5);border-left:1px solid rgba(168,212,172,.25);border-right:1px solid rgba(40,60,42,.8);border-bottom:1px solid rgba(20,40,22,.9);color:#c8e8c8;border-radius:12px;padding:16px 36px;font-size:14px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;min-width:180px;text-align:center;letter-spacing:.3px;">Ver análisis →</button>
+    </div>
   </div>
 
   <!-- Gráficos -->
@@ -10283,28 +10289,51 @@ function renderCkSankey(ingresos, egresos) {
   const cats = {};
   egresos.forEach(e=>{ const c=e.concepto||'Otros'; cats[c]=(cats[c]||0)+(parseFloat(e.monto)||0); });
   const catArr = Object.entries(cats).sort((a,b)=>b[1]-a[1]).slice(0,4);
-  const H = 40 + Math.max(catArr.length, 1) * 36 + 40;
   const fmt = v => '$'+Math.round(v).toLocaleString('es-AR');
-  const pctGan = ganancia/totalIng;
-  const ganH = Math.max(pctGan * (H-80), 20);
-  let egY = 40, egPaths = '', egLabels = '';
-  catArr.forEach(([cat, monto]) => {
-    const h = Math.max((monto/totalIng)*(H-80), 16);
-    const midY = egY + h/2;
-    egPaths += `<path d="M 120 ${40 + (ganH/2)} C 260 ${40+(ganH/2)} 260 ${midY} 320 ${midY}" stroke="#C4786A" stroke-width="${Math.max(h*0.7,4)}" fill="none" opacity="0.35"/>`;
-    egLabels += `<rect x="322" y="${egY}" width="12" height="${h}" rx="3" fill="#C4786A" opacity="0.7"/>
-      <text x="342" y="${midY}" font-size="11" fill="var(--text)" font-family="DM Sans" dominant-baseline="central">${cat} ${fmt(monto)}</text>`;
-    egY += h + 8;
-  });
-  el.innerHTML = `<svg width="100%" viewBox="0 0 560 ${H}" style="overflow:visible;">
-    <rect x="10" y="40" width="14" height="${H-80}" rx="4" fill="#4a5e4d"/>
-    <text x="30" y="${H/2}" font-size="12" fill="var(--text)" font-family="DM Sans" dominant-baseline="central" font-weight="500">Ingresos ${fmt(totalIng)}</text>
-    <path d="M 24 ${40+(H-80)/2} C 160 ${40+(H-80)/2} 160 ${40+ganH/2} 280 ${40+ganH/2}" stroke="#d4a853" stroke-width="${Math.max(ganH*0.7,6)}" fill="none" opacity="0.5"/>
-    ${egPaths}
-    <rect x="282" y="40" width="14" height="${ganH}" rx="3" fill="#d4a853"/>
-    <text x="302" y="${40+ganH/2}" font-size="12" fill="#633806" font-family="DM Sans" dominant-baseline="central" font-weight="500">Ganancia ${fmt(ganancia)}</text>
-    ${egLabels}
-  </svg>`;
+  const pctGan = Math.round(ganancia/totalIng*100);
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.7px;">Flujo de dinero</div>
+      <div style="font-size:11px;color:var(--text-l);">Egresos totales ${fmt(totalEg)} · ${100-pctGan}% del ingreso</div>
+    </div>
+    <svg width="100%" viewBox="0 0 680 240" style="overflow:visible;">
+      <defs>
+        <linearGradient id="sk-i" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#5a7a5d"/><stop offset="100%" stop-color="#3a4e3d"/></linearGradient>
+        <linearGradient id="sk-g" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6b9e70"/><stop offset="100%" stop-color="#2d4a30"/></linearGradient>
+        <linearGradient id="sk-r" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7aab7e"/><stop offset="100%" stop-color="#3a5e3e"/></linearGradient>
+        <linearGradient id="sk-e1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#c4786a"/><stop offset="100%" stop-color="#8a3a28"/></linearGradient>
+        <linearGradient id="sk-fl1" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#4a5e4d" stop-opacity=".5"/><stop offset="100%" stop-color="#4a7a50" stop-opacity=".35"/></linearGradient>
+        <linearGradient id="sk-fl2" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#5a6e5d" stop-opacity=".35"/><stop offset="100%" stop-color="#c4786a" stop-opacity=".5"/></linearGradient>
+        <linearGradient id="sk-fl3" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#4a7a50" stop-opacity=".4"/><stop offset="100%" stop-color="#5a9060" stop-opacity=".3"/></linearGradient>
+      </defs>
+      <rect x="20" y="20" width="22" height="200" rx="6" fill="url(#sk-i)"/>
+      <text x="52" y="88" font-family="DM Sans" font-size="10" fill="var(--text-l)" dominant-baseline="central" letter-spacing=".5">INGRESOS</text>
+      <text x="52" y="116" font-family="Cormorant Garamond" font-size="36" font-weight="400" fill="var(--text)" dominant-baseline="central">${fmt(totalIng)}</text>
+      <path d="M 42 28 C 200 28 200 26 290 26 L 290 184 C 200 184 200 196 42 196 Z" fill="url(#sk-fl1)"/>
+      ${catArr.map(([cat,monto],i) => {
+        const y = 196 + i*24;
+        return `<path d="M 42 ${y} C 200 ${y} 200 ${y+4} 290 ${y+4} L 290 ${y+16} C 200 ${y+16} 200 ${y+12} 42 ${y+12} Z" fill="url(#sk-fl2)"/>`;
+      }).join('')}
+      <rect x="292" y="18" width="32" height="168" rx="6" fill="url(#sk-g)"/>
+      <text x="336" y="70" font-family="DM Sans" font-size="10" fill="var(--text-l)" dominant-baseline="central" letter-spacing=".5">GANANCIA NETA</text>
+      <text x="336" y="100" font-family="Cormorant Garamond" font-size="42" font-weight="500" fill="var(--text)" dominant-baseline="central">${fmt(ganancia)}</text>
+      <text x="336" y="128" font-family="DM Sans" font-size="13" font-weight="500" fill="#3B6D11" dominant-baseline="central">${pctGan}% del ingreso</text>
+      ${catArr.map(([cat,monto],i) => {
+        const y = 190 + i*24;
+        return `<rect x="292" y="${y}" width="32" height="20" rx="4" fill="url(#sk-e1)" opacity="${1-i*0.2}"/>
+        <text x="336" y="${y+7}" font-family="DM Sans" font-size="11" font-weight="500" fill="var(--text)" dominant-baseline="central">${cat}</text>
+        <text x="336" y="${y+17}" font-family="DM Sans" font-size="12" font-weight="500" fill="#993C1D" dominant-baseline="central">${fmt(monto)}</text>`;
+      }).join('')}
+      <path d="M 324 95 C 450 95 450 100 520 100 L 520 122 C 450 122 450 117 324 117 Z" fill="url(#sk-fl3)"/>
+      <rect x="522" y="18" width="28" height="168" rx="6" fill="url(#sk-r)"/>
+      <text x="562" y="70" font-family="DM Sans" font-size="10" fill="var(--text-l)" dominant-baseline="central" letter-spacing=".5">RESULTADO FINAL</text>
+      <text x="562" y="105" font-family="Cormorant Garamond" font-size="44" font-weight="500" fill="var(--text)" dominant-baseline="central">${fmt(ganancia)}</text>
+      <text x="562" y="136" font-family="DM Sans" font-size="12" fill="#3B6D11" dominant-baseline="central">neto del período</text>
+    </svg>
+    <div style="display:flex;gap:16px;margin-top:8px;padding-top:12px;border-top:.5px solid var(--cream-d);">
+      <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-l);"><div style="width:10px;height:10px;border-radius:2px;background:#4a5e4d;"></div>Ganancia</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-l);"><div style="width:10px;height:10px;border-radius:2px;background:#c4786a;"></div>Egresos</div>
+    </div>`;
 }
 
 window.embiAnalizarIndicadores = async function() {
