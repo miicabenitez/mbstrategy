@@ -7247,8 +7247,8 @@ window.filterKpiByMes = function(mes) { loadAdminData(); };
 window.filterCkByMes = function(mes) {
   const ing = window._clientIngresos || [];
   const eg  = window._clientEgresos  || [];
-  const filtIng = mes === 'todo' ? ing : ing.filter(i => (i.mes||'').toLowerCase().includes(mes.split(' ')[0].toLowerCase()));
-  const filtEg  = mes === 'todo' ? eg  : eg.filter(e => (e.mes||'').toLowerCase().includes(mes.split(' ')[0].toLowerCase()));
+  const filtIng = mes === 'todo' ? ing : ing.filter(i => { const m=(i.mes||'').replace(' de ',' '); return m.toLowerCase().includes(mes.split(' ')[0].toLowerCase()) && m.includes(mes.split(' ')[1]); });
+  const filtEg  = mes === 'todo' ? eg  : eg.filter(e => { const m=(e.mes||'').replace(' de ',' '); return m.toLowerCase().includes(mes.split(' ')[0].toLowerCase()) && m.includes(mes.split(' ')[1]); });
   const presups = window._clientPresupuestos||[], mcs = window._mcClientes||_mcClientes||[];
   renderClientContabilidad(filtIng, filtEg);
   renderCkKpis(filtIng, filtEg, presups, mcs);
@@ -15861,13 +15861,28 @@ window.showCTab = function(tab, btn) {
     setTimeout(()=>{ const ing=window._clientIngresos||[]; const eg=window._clientEgresos||[]; initClientCashflow(ing,eg); initClientGastosDonut(eg); },200);
   }
   if(tab==='kpis') setTimeout(async()=>{
+    const selMes = document.getElementById('ck-mes-sel');
+    if(selMes && selMes.options.length <= 13) {
+      const hoy = new Date();
+      const mesActual = hoy.toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase()).replace(' de ',' ');
+      selMes.innerHTML = '<option value="todo">Todo el año</option>';
+      const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+      const anio = hoy.getFullYear();
+      MESES.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = `${m} ${anio}`;
+        opt.textContent = `${m} ${anio}`;
+        if(`${m} ${anio}` === mesActual) opt.selected = true;
+        selMes.appendChild(opt);
+      });
+    }
     if(!window._clientIngresos || window._clientIngresos.length===0) await loadClientContabilidad();
     if(!window._clientPresupuestos || window._clientPresupuestos.length===0) await loadClientPresupuestos();
     if(!window._mcClientes || window._mcClientes.length===0) await loadMcModule();
     const mes = document.getElementById('ck-mes-sel')?.value || 'todo';
     const ing = window._clientIngresos||[], eg = window._clientEgresos||[];
-    const filtIng = mes === 'todo' ? ing : ing.filter(i => (i.mes||'').toLowerCase().includes(mes.split(' ')[0].toLowerCase()));
-    const filtEg  = mes === 'todo' ? eg  : eg.filter(e => (e.mes||'').toLowerCase().includes(mes.split(' ')[0].toLowerCase()));
+    const filtIng = mes === 'todo' ? ing : ing.filter(i => { const m=(i.mes||'').replace(' de ',' '); return m.toLowerCase().includes(mes.split(' ')[0].toLowerCase()) && m.includes(mes.split(' ')[1]); });
+    const filtEg  = mes === 'todo' ? eg  : eg.filter(e => { const m=(e.mes||'').replace(' de ',' '); return m.toLowerCase().includes(mes.split(' ')[0].toLowerCase()) && m.includes(mes.split(' ')[1]); });
     const presups = window._clientPresupuestos||[], mcs = window._mcClientes||_mcClientes||[];
     initCkChart(ing, eg);
     initCkMesChart(filtIng, filtEg, mes);
