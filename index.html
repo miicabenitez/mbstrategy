@@ -15861,6 +15861,7 @@ window.showCTab = function(tab, btn) {
     setTimeout(()=>{ const ing=window._clientIngresos||[]; const eg=window._clientEgresos||[]; initClientCashflow(ing,eg); initClientGastosDonut(eg); },200);
   }
   if(tab==='kpis') setTimeout(async()=>{
+    if(!window._clientIngresos || window._clientIngresos.length===0) await loadClientContabilidad();
     if(!window._clientPresupuestos || window._clientPresupuestos.length===0) await loadClientPresupuestos();
     if(!window._mcClientes || window._mcClientes.length===0) await loadMcModule();
     const mes = document.getElementById('ck-mes-sel')?.value || 'todo';
