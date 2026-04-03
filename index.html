@@ -9533,16 +9533,12 @@ async function loadInicio() {
     const ceEl = document.getElementById('inicio-comp-egresos'); if(ceEl) ceEl.innerHTML = compHtml(totalEgMes, totalEgAnt, false);
     const cmEl = document.getElementById('inicio-comp-margen'); if(cmEl) cmEl.innerHTML = compHtml(margen, margenAnt, true);
 
-    // Por cobrar: presupuestos aprobados - cobros recibidos de esos presupuestos
+    // Por cobrar: presupuestos aprobados pendientes de cobro
     let porCobrar = 0;
     try {
       if(!window._clientPresupuestos || window._clientPresupuestos.length === 0) await loadClientPresupuestos();
       const aprobados = (window._clientPresupuestos||[]).filter(p=>p.estado==='Aprobado');
-      const totalAprobado = aprobados.reduce((s,p)=>s+getPresupMonto(p),0);
-      // Alineado con renderCkKpis: usar totalCobrado de mcClientes
-      if(!window._mcClientes || window._mcClientes.length===0) { try { await loadMcModule(); } catch(e){} }
-      const totalCobrado = (window._mcClientes||[]).reduce((a,c)=>a+(parseFloat(c.totalCobrado)||0),0);
-      porCobrar = Math.max(0, totalAprobado - totalCobrado);
+      porCobrar = aprobados.reduce((s,p)=>s+getPresupMonto(p),0);
     } catch(e) { console.log(e); }
     animateCounter(document.getElementById('inicio-por-cobrar'), porCobrar, 800, v=>'$'+v.toLocaleString('es-AR'));
 
