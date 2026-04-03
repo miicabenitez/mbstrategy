@@ -10359,8 +10359,9 @@ window.embiAnalizarIndicadores = async function() {
   if(btn) { btn.textContent = 'Analizando...'; btn.disabled = true; }
   if(window.embiShow) window.embiShow(true);
   setTimeout(() => {
-    if(window.embiSendMessage) window.embiSendMessage('Analizá mis indicadores del período actual y dame recomendaciones concretas para mejorar mi rentabilidad y reducir costos.');
-    if(btn) { btn.textContent = 'Analizar ahora'; btn.disabled = false; }
+    const input = document.getElementById('embiInput');
+    if(input) { input.value = 'Analizá mis indicadores del período actual y dame recomendaciones concretas para mejorar mi rentabilidad y reducir costos.'; embiSend(); }
+    if(btn) { btn.textContent = 'Ver análisis →'; btn.disabled = false; }
   }, 500);
 };
 
