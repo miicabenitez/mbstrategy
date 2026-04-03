@@ -16570,8 +16570,9 @@ function embiGetFinancialContext(){
     ingresos.forEach(i=>{var d=new Date(i.fecha||i.creadoEn);if(d.getMonth()===mes&&d.getFullYear()===anio)ingMes+=(parseFloat(i.monto)||0);if(d.getMonth()===mesAnt&&d.getFullYear()===anioAnt)ingAnt+=(parseFloat(i.monto)||0);});
     egresos.forEach(e=>{var d=new Date(e.fecha||e.creadoEn);if(d.getMonth()===mes&&d.getFullYear()===anio)egrMes+=(parseFloat(e.monto)||0);if(d.getMonth()===mesAnt&&d.getFullYear()===anioAnt)egrAnt+=(parseFloat(e.monto)||0);});
     var ganancia=ingMes-egrMes,margen=ingMes>0?Math.round((ganancia/ingMes)*100):0;
-    var cobros=window._clientCobros||[];
-    var cobPend=cobros.filter(c=>!c.pagado).reduce((a,c)=>a+(parseFloat(c.monto)||0),0);
+    var cobPend=(window._clientPresupuestos||[])
+      .filter(p=>p.estado==='Aprobado')
+      .reduce((a,p)=>a+getPresupMonto(p),0);
     var clientes=window._mcClientes||[];
     var ocs=window._ordenesCompra||[];
     var ocsPend=ocs.filter(o=>o.estadoPago!=='pagada');
@@ -16585,11 +16586,9 @@ function embiGetFinancialContext(){
     var proyIngreso=Math.round(ritmoIngDiario*diasEnMes);
     var proyGanancia=proyIngreso-egrMes;
     var varVsMesAnt=ingAnt>0?Math.round(((proyIngreso-ingAnt)/ingAnt)*100):0;
-    var presupAprobados=(window._mcPresupuestos||[]).filter(function(p){return p.estado==='Aprobado';});
+    var presupAprobados=(window._clientPresupuestos||[]).filter(function(p){return p.estado==='Aprobado';});
     var montoSinCobrar=presupAprobados.reduce(function(s,p){
-      var monto=typeof getPresupMonto==='function'?getPresupMonto(p):0;
-      var cobrado=parseFloat(p.totalCobrado||0);
-      return s+Math.max(0,monto-cobrado);
+      return s+(typeof getPresupMonto==='function'?getPresupMonto(p):0);
     },0);
     return '\n\nDATA FINANCIERA ('+hoy.toLocaleDateString('es-AR',{month:'long',year:'numeric'})+'):\n- Ingresos mes: $'+Math.round(ingMes).toLocaleString('es-AR')+'\n- Egresos mes: $'+Math.round(egrMes).toLocaleString('es-AR')+'\n- Ganancia: $'+Math.round(ganancia).toLocaleString('es-AR')+' | Margen: '+margen+'%\n- Cobros pendientes: $'+Math.round(cobPend).toLocaleString('es-AR')+'\n- Clientes: '+clientes.length+'\n- OC pendientes: '+ocsPend.length+'\n- Egresos por categoría: '+(catDetalle||'sin datos')+'\n\nPROYECCIÓN MENSUAL:\n- Día '+diaDelMes+' de '+diasEnMes+' del mes ('+diasRestantes+' días restantes)\n- Ingresos acumulados: $'+Math.round(ingMes).toLocaleString('es-AR')+'\n- Egresos acumulados: $'+Math.round(egrMes).toLocaleString('es-AR')+'\n- Ritmo diario de ingresos: $'+Math.round(ritmoIngDiario).toLocaleString('es-AR')+'/día\n- Proyección de ingresos al cierre: $'+proyIngreso.toLocaleString('es-AR')+'\n- Proyección de ganancia al cierre: $'+proyGanancia.toLocaleString('es-AR')+'\n- Mes anterior cerró en: $'+Math.round(ingAnt).toLocaleString('es-AR')+'\n- Variación proyectada vs mes anterior: '+(varVsMesAnt>0?'+':'')+varVsMesAnt+'%\n- Presupuestos aprobados sin cobrar: $'+Math.round(montoSinCobrar).toLocaleString('es-AR')+' (ingreso probable adicional)\nCuando el cliente pregunte sobre proyección, cierre del mes, o cómo va el negocio, usá estos datos para dar una respuesta clara y motivadora. Si la proyección es positiva respecto al mes anterior, felicitalo. Si es negativa, sugerí acciones concretas.';
   }catch(e){return '';}
