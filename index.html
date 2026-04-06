@@ -418,8 +418,8 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
 .caja-badge-ingreso{background:#edf7ed;color:#3B6D11;font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;display:inline-block;}
 .caja-badge-egreso{background:#fdf0ec;color:#993C1D;font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;display:inline-block;}
 .caja-badge-transfer{background:#e6f1fb;color:#185FA5;font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;display:inline-block;}
-.caja-chip{display:flex;align-items:center;gap:8px;background:var(--white);border:1px solid var(--cream-d);border-radius:20px;padding:6px 14px 6px 10px;font-size:12px;transition:all .15s;user-select:none;color:var(--text);}
-.caja-chip:hover{border-color:#c8d0c9;background:#f5f5f2;}
+.caja-chip{display:flex;align-items:center;gap:8px;background:#f5f4f0;border:1px solid #ddd9d2;border-radius:20px;padding:6px 14px 6px 10px;font-size:12px;transition:all .15s;user-select:none;color:#3a3a3a;}
+.caja-chip:hover{border-color:#c8d0c9;background:#eceae4;}
 .caja-chip-activo{background:#4a5e4d !important;border-color:#4a5e4d !important;}
 .caja-chip-activo:hover{background:#3d4f40 !important;border-color:#3d4f40 !important;}
 .caja-nav-btn{width:28px;height:28px;border-radius:8px;border:1.5px solid #ece9e3;background:white;cursor:pointer;font-size:16px;color:#888;display:flex;align-items:center;justify-content:center;font-family:inherit;transition:all .12s;}
@@ -7633,7 +7633,7 @@ function renderCajaChips(cuentas, movs) {
     const nombreSafe = (c.nombre||'Sin nombre').replace(/'/g,'&#39;');
     return `<div class="caja-chip${sel?' caja-chip-activo':''}" style="cursor:pointer;animation:fadeUp .3s ease both;animation-delay:${(i+1)*60}ms;" data-cuenta="${nombreSafe}" onclick="cajaFiltrarCuenta(this.dataset.cuenta,this)">
       <div style="width:8px;height:8px;border-radius:50%;background:${sel?'white':color};flex-shrink:0;"></div>
-      <span style="color:${sel?'white':'var(--text-l)'};">${c.nombre||'Sin nombre'}</span>
+      <span style="color:${sel?'white':'#666'};">${c.nombre||'Sin nombre'}</span>
       <span style="font-weight:650;color:${sel?'white':'#1a1a1a'};">$${Math.round(s).toLocaleString('es-AR')}</span>
     </div>`;
   }).join('');
