@@ -16729,6 +16729,8 @@ function embiGetFinancialContext(){
     var mesAnt=mes===0?11:mes-1,anioAnt=mes===0?anio-1:anio;
     var ingMes=0,egrMes=0,ingAnt=0,egrAnt=0;
     var MESES_CTX=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    console.log('MES CTX:', mes, MESES_CTX[mes], anio);
+    console.log('PRIMER MES DOC:', (ingresos[0]?.mes||'').replace(' de ',' '));
     ingresos.forEach(i=>{
       var mesDoc=(i.mes||'').replace(' de ',' ');
       if(mesDoc.toLowerCase().includes(MESES_CTX[mes].toLowerCase())&&mesDoc.includes(String(anio)))ingMes+=(parseFloat(i.monto)||0);
