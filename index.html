@@ -7667,12 +7667,13 @@ window.cajaFiltrarCuenta = function(nombre, _el) {
         const color = dot.dataset.origColor || dotOrigColor;
         if(!dot.dataset.origColor && !sel) dot.dataset.origColor = dot.style.background;
         dot.style.background = sel ? 'white' : (dot.dataset.origColor || '#888');
-        spans[0].style.color = sel ? 'white' : '#888';
+        spans[0].style.color = sel ? 'white' : '#666';
         spans[1].style.color = sel ? 'white' : '#1a1a1a';
         spans[1].style.fontWeight = sel ? '650' : '650';
       } else if(!chipNombre && spans.length) {
         const isTodas = _cajaCuentaFiltro === null;
         spans[0].style.fontWeight = isTodas ? '650' : '500';
+        spans[0].style.color = isTodas ? 'white' : '#666';
       }
     });
   }
