@@ -10043,38 +10043,56 @@ function initCkMesChart(ingresos, egresos, mes) {
 function initCkEgAnualChart(egresos) {
   const emptyEl = document.getElementById('ck-eg-anual-empty');
   const el = document.getElementById('ckEgAnualChart');
-  if (!el) return;
-  if (egresos.length === 0) {
-    if (emptyEl) emptyEl.style.display = 'block';
-    el.innerHTML = '';
-    return;
+  if(!el) return;
+  if(!egresos.length) {
+    if(emptyEl) emptyEl.style.display='block';
+    el.innerHTML=''; return;
   }
-  if (emptyEl) emptyEl.style.display = 'none';
-  const cats = {};
-  egresos.forEach(e => { const c = e.concepto||'Otros'; cats[c] = (cats[c]||0) + (parseFloat(e.monto)||0); });
-  const sorted = Object.entries(cats).sort((a,b) => b[1]-a[1]);
-  const colors = ['#4a5e4d','#5a7a5e','#6b8f6e','#7aab7e','#3a4e3d','#b05a42','#c4786a','#8a3a28'];
-  const rowH = 26, padL = 90, padR = 60, padT = 8, padB = 8;
-  const H = padT + sorted.length * rowH + padB;
-  const W = el.offsetWidth || 400;
-  const maxVal = sorted[0][1] || 1;
-  const chartW = W - padL - padR;
-
-  let rows = '';
-  sorted.forEach(([label, val], i) => {
-    const bw = (val / maxVal) * chartW;
-    const y = padT + i * rowH;
-    const color = colors[i % colors.length];
-    const shortLabel = label.length > 12 ? label.slice(0,11)+'…' : label;
-    rows += `
-      <text x="${padL - 5}" y="${y + rowH/2 + 4}" text-anchor="end" font-size="10" fill="#888780" font-family="DM Sans">${shortLabel}</text>
-      <rect x="${padL}" y="${y + 4}" width="${bw}" height="${rowH - 10}" rx="3" fill="${color}"/>
-      <text x="${padL + bw + 4}" y="${y + rowH/2 + 4}" font-size="9" fill="#888780" font-family="DM Sans">$${val >= 1000 ? (val/1000).toFixed(1)+'k' : Math.round(val)}</text>`;
+  if(emptyEl) emptyEl.style.display='none';
+  const cats={};
+  egresos.forEach(e=>{ const c=e.concepto||'Otros'; cats[c]=(cats[c]||0)+(parseFloat(e.monto)||0); });
+  const total=Object.values(cats).reduce((a,v)=>a+v,0);
+  const sorted=Object.entries(cats).sort((a,b)=>b[1]-a[1]);
+  const fmt=v=>'$'+Math.round(v).toLocaleString('es-AR');
+  const COLS=[['#d4856a','#7a2e18'],['#e8a090','#c4786a'],['#c4786a','#a05040'],['#b05a42','#8a3020']];
+  const R=54, IR=34, CX=70, CY=70;
+  let offset=0, slices='', gradDefs='';
+  sorted.forEach(([cat,val],i)=>{
+    const pct=val/total;
+    const deg=pct*360;
+    const start=offset*Math.PI/180;
+    const end=(offset+deg)*Math.PI/180;
+    const x1=CX+R*Math.sin(start), y1=CY-R*Math.cos(start);
+    const x2=CX+R*Math.sin(end), y2=CY-R*Math.cos(end);
+    const ix1=CX+IR*Math.sin(start), iy1=CY-IR*Math.cos(start);
+    const ix2=CX+IR*Math.sin(end), iy2=CY-IR*Math.cos(end);
+    const large=deg>180?1:0;
+    const gid=`dg${i}`;
+    gradDefs+=`<linearGradient id="${gid}" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${COLS[i%4][0]}"/><stop offset="100%" stop-color="${COLS[i%4][1]}"/></linearGradient>`;
+    slices+=`<path d="M ${ix1} ${iy1} L ${x1} ${y1} A ${R} ${R} 0 ${large} 1 ${x2} ${y2} L ${ix2} ${iy2} A ${IR} ${IR} 0 ${large} 0 ${ix1} ${iy1} Z" fill="url(#${gid})" stroke="var(--color-background-primary)" stroke-width="2"/>`;
+    offset+=deg;
   });
-
-  el.innerHTML = `<svg width="100%" height="${H}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
-    ${rows}
-  </svg>`;
+  const leyRows=sorted.map(([cat,val],i)=>{
+    const pct=val/total;
+    return `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+      <div style="width:10px;height:10px;border-radius:2px;background:${COLS[i%4][0]};flex-shrink:0;"></div>
+      <span style="font-size:12px;color:var(--color-text-primary);flex:1;">${cat}</span>
+      <span style="font-size:12px;font-weight:500;color:var(--color-text-primary);">${fmt(val)}</span>
+      <span style="font-size:10px;color:var(--color-text-tertiary);min-width:32px;text-align:right;">${Math.round(pct*100)}%</span>
+    </div>`;
+  }).join('');
+  el.innerHTML=`<div style="display:flex;align-items:center;gap:20px;">
+    <div style="flex-shrink:0;">
+      <svg width="140" height="140" viewBox="0 0 140 140">
+        <defs>${gradDefs}</defs>
+        ${slices}
+        <text x="${CX}" y="${CY-4}" font-size="13" font-family="Cormorant Garamond,serif" fill="var(--color-text-primary)" text-anchor="middle">${fmt(total)}</text>
+        <text x="${CX}" y="${CY+10}" font-size="8" font-family="DM Sans,sans-serif" fill="var(--color-text-tertiary)" text-anchor="middle">total egresos</text>
+      </svg>
+    </div>
+    <div style="flex:1;">${leyRows}</div>
+  </div>`;
 }
 
 function initCkEgMesChart(egresos, mes) {
