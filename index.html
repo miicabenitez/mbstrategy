@@ -1820,9 +1820,15 @@ input[type=number]{-moz-appearance:textfield;}
         <!-- Header: mes nav + botón nuevo -->
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
           <div style="display:flex;align-items:center;gap:6px;">
-            <button class="caja-nav-btn" onclick="cajaMesAnterior()">&#8249;</button>
-            <span id="caja-mes-label" style="font-size:14px;font-weight:650;color:#1a1a1a;min-width:128px;text-align:center;">—</span>
-            <button class="caja-nav-btn" id="caja-mes-sig" onclick="cajaMesSiguiente()" style="opacity:.3;">&#8250;</button>
+            <div style="position:relative;z-index:100;">
+              <button id="caja-mes-btn" onclick="toggleCajaMesDrop()" style="background:rgba(255,255,255,.12);border:0.5px solid rgba(255,255,255,.25);color:#fff;border-radius:6px;padding:5px 12px;font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px;white-space:nowrap;">
+                <span id="caja-mes-label">—</span>
+                <svg width="8" height="5" viewBox="0 0 8 5" fill="none"><path d="M0 0l4 5 4-5z" fill="rgba(255,255,255,.6)"/></svg>
+              </button>
+              <div id="caja-mes-drop" style="display:none;position:absolute;left:0;top:calc(100% + 4px);background:#2d3d2f;border:0.5px solid rgba(168,212,172,.2);border-radius:8px;padding:4px;min-width:130px;box-shadow:0 4px 16px rgba(0,0,0,.3);">
+                <div id="caja-mes-options"></div>
+              </div>
+            </div>
           </div>
           <div style="display:flex;gap:6px;">
             <button onclick="cajaVentaRapida()" style="height:32px;padding:0 14px;background:#4a5e4d;color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;">
@@ -7511,6 +7517,8 @@ async function loadCajaModule() {
   const tbody = document.getElementById('caja-tbody');
   if(tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:28px;color:#bbb;font-size:13px;">Cargando...</td></tr>';
 
+  initCajaMesDrop();
+
   // Actualizar mes ANTES de cualquier await para que no quede "—"
   const mes = cajaMesDesde(window._cajaMesOffset||0);
   const mesLabel = document.getElementById('caja-mes-label');
@@ -7714,6 +7722,33 @@ window.cajaMesSiguiente = function() {
   _cajaCuentaFiltro = null;
   window._cajaMesOffset = (window._cajaMesOffset||0) + 1;
   loadCajaModule();
+};
+
+window.toggleCajaMesDrop = function() {
+  const drop = document.getElementById('caja-mes-drop');
+  if(drop) drop.style.display = drop.style.display==='none' ? 'block' : 'none';
+};
+
+window.selectCajaMes = function(offset) {
+  window._cajaMesOffset = offset;
+  document.getElementById('caja-mes-drop').style.display = 'none';
+  loadCajaModule();
+};
+
+window.initCajaMesDrop = function() {
+  const container = document.getElementById('caja-mes-options');
+  if(!container) return;
+  const hoy = new Date();
+  const opts = [];
+  for(let i=0; i>=-11; i--) {
+    const d = new Date(hoy.getFullYear(), hoy.getMonth()+i, 1);
+    const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    const label = `${MESES[d.getMonth()]} ${d.getFullYear()}`;
+    opts.push({offset:i, label});
+  }
+  container.innerHTML = opts.map(o=>`
+    <div onclick="selectCajaMes(${o.offset})" style="padding:7px 12px;font-size:11px;color:rgba(255,255,255,.85);cursor:pointer;border-radius:5px;font-family:'DM Sans',sans-serif;"
+    onmouseover="this.style.background='rgba(168,212,172,.1)'" onmouseout="this.style.background=''">${o.label}</div>`).join('');
 };
 // ─── MODAL DETALLE MOVIMIENTO ───
 let _mdvMovimiento = null, _mdvEditing = false, _mdvOverlayCuentas = [], _mdvOverlayConceptos = [];
