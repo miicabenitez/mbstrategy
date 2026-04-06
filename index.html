@@ -10364,6 +10364,8 @@ window.embiAnalizarIndicadores = async function() {
   if(!window._clientPresupuestos || window._clientPresupuestos.length === 0) await loadClientPresupuestos();
   if(!window._mcClientes || window._mcClientes.length === 0) await loadMcModule();
 
+  console.log('INGRESOS COUNT:', window._clientIngresos?.length);
+  console.log('PRIMER INGRESO:', JSON.stringify(window._clientIngresos?.[0]));
   const ctx = typeof embiGetFinancialContext === 'function' ? embiGetFinancialContext() : '';
   console.log('CTX LENGTH:', ctx.length, '| CTX PREVIEW:', ctx.substring(0, 200));
   const msg = ctx
