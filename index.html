@@ -10355,25 +10355,33 @@ function renderCkSankey(ingresos, egresos) {
 
 window.embiAnalizarIndicadores = async function() {
   const btn = document.querySelector('[onclick="embiAnalizarIndicadores()"]');
-  if(btn) { btn.textContent = 'Analizando...'; btn.disabled = true; }
-  if(window.embiShow) window.embiShow(true);
+  if(btn) { btn.textContent = 'Analizando...'; btn.disabled = true; btn.style.opacity = '0.7'; }
 
-  // Asegurar que los datos estén cargados
   if(!window._clientIngresos || window._clientIngresos.length === 0) await loadClientContabilidad();
   if(!window._clientPresupuestos || window._clientPresupuestos.length === 0) await loadClientPresupuestos();
   if(!window._mcClientes || window._mcClientes.length === 0) await loadMcModule();
 
-  console.log('INGRESOS COUNT:', window._clientIngresos?.length);
-  console.log('PRIMER INGRESO:', JSON.stringify(window._clientIngresos?.[0]));
   const ctx = typeof embiGetFinancialContext === 'function' ? embiGetFinancialContext() : '';
-  console.log('CTX LENGTH:', ctx.length, '| CTX PREVIEW:', ctx.substring(0, 200));
   const msg = ctx
     ? `Analizá mis indicadores del período actual y dame recomendaciones concretas para mejorar mi rentabilidad y reducir costos.\n\n${ctx}`
     : 'Analizá mis indicadores del período actual y dame recomendaciones concretas.';
 
+  // Limpiar historial de Embi y ocultar saludo antes de abrir
+  const embiMessages = document.getElementById('embiMessages');
+  if(embiMessages) embiMessages.innerHTML = '';
+
+  if(window.embiShow) window.embiShow(true);
+
   const input = document.getElementById('embiInput');
   if(input) { input.value = msg; embiSend(); }
-  if(btn) { btn.textContent = 'Ver análisis →'; btn.disabled = false; }
+
+  if(btn) {
+    setTimeout(() => {
+      btn.textContent = 'Ver análisis →';
+      btn.disabled = false;
+      btn.style.opacity = '1';
+    }, 2000);
+  }
 };
 
 
