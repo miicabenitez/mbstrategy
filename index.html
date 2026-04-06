@@ -10366,16 +10366,28 @@ window.embiAnalizarIndicadores = async function() {
     ? `Analizá mis indicadores del período actual y dame recomendaciones concretas para mejorar mi rentabilidad y reducir costos.\n\n${ctx}`
     : 'Analizá mis indicadores del período actual y dame recomendaciones concretas.';
 
-  if(window.embiShow) window.embiShow(true);
   const input = document.getElementById('embiInput');
   if(input) { input.value = msg; embiSend(); }
 
+  // Estado 3: botón cambia a "Ver en Embi →" y abre Embi al hacer click
   if(btn) {
     setTimeout(() => {
-      btn.textContent = 'Ver análisis';
+      btn.textContent = 'Ver en Embi →';
       btn.disabled = false;
       btn.style.opacity = '1';
-    }, 1000);
+      btn.style.background = '#2a3d2c';
+      btn.style.borderTopColor = 'rgba(168,212,172,.5)';
+      btn.onclick = function() {
+        if(window.embiShow) window.embiShow(true);
+        // Resetear botón después de abrir
+        setTimeout(() => {
+          btn.textContent = 'Ver análisis';
+          btn.style.background = '';
+          btn.style.borderTopColor = '';
+          btn.onclick = function() { window.embiAnalizarIndicadores(); };
+        }, 500);
+      };
+    }, 3000);
   }
 };
 
