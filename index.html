@@ -16743,6 +16743,7 @@ function embiGetFinancialContext(){
       if(mesDoc.toLowerCase().includes(MESES_CTX[mes].toLowerCase())&&mesDoc.includes(String(anio)))egrMes+=(parseFloat(e.monto)||0);
       if(mesDoc.toLowerCase().includes(MESES_CTX[mesAnt].toLowerCase())&&mesDoc.includes(String(anioAnt)))egrAnt+=(parseFloat(e.monto)||0);
     });
+    console.log('ingMes:', ingMes, 'egrMes:', egrMes);
     var ganancia=ingMes-egrMes,margen=ingMes>0?Math.round((ganancia/ingMes)*100):0;
     var cobPend=(window._clientPresupuestos||[])
       .filter(p=>p.estado==='Aprobado')
