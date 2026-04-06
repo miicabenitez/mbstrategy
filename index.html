@@ -7634,7 +7634,7 @@ function renderCajaChips(cuentas, movs) {
     const sel = activo === c.nombre;
     const nombreSafe = (c.nombre||'Sin nombre').replace(/'/g,'&#39;');
     return `<div class="caja-chip${sel?' caja-chip-activo':''}" style="cursor:pointer;animation:fadeUp .3s ease both;animation-delay:${(i+1)*60}ms;" data-cuenta="${nombreSafe}" onclick="cajaFiltrarCuenta(this.dataset.cuenta,this)">
-      <div style="width:8px;height:8px;border-radius:50%;background:${sel?'white':color};flex-shrink:0;"></div>
+      <div style="width:8px;height:8px;border-radius:50%;background:${sel?'white':color};flex-shrink:0;" data-color="${color}"></div>
       <span style="color:${sel?'white':'#666'};">${c.nombre||'Sin nombre'}</span>
       <span style="font-weight:650;color:${sel?'white':'#1a1a1a'};">$${Math.round(s).toLocaleString('es-AR')}</span>
     </div>`;
@@ -7663,12 +7663,7 @@ window.cajaFiltrarCuenta = function(nombre, _el) {
       const dot = ch.querySelector('div[style*="border-radius:50%"]');
       const spans = ch.querySelectorAll('span');
       if(chipNombre && dot && spans.length >= 2) {
-        const tipoColorMap = {efectivo:'#4a5e4d', mp:'#185FA5', banco:'#B45309'};
-        const dotOrigColor = dot.dataset.color || dot.style.background;
-        // Restore original color from data attribute if available, else keep current
-        const color = dot.dataset.origColor || dotOrigColor;
-        if(!dot.dataset.origColor && !sel) dot.dataset.origColor = dot.style.background;
-        dot.style.background = sel ? 'white' : (dot.dataset.origColor || '#888');
+        dot.style.background = sel ? 'white' : (dot.dataset.color || '#888');
         spans[0].style.color = sel ? 'white' : '#666';
         spans[1].style.color = sel ? 'white' : '#1a1a1a';
         spans[1].style.fontWeight = sel ? '650' : '650';
