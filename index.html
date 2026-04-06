@@ -10362,25 +10362,13 @@ window.embiAnalizarIndicadores = async function() {
   if(!window._mcClientes || window._mcClientes.length === 0) await loadMcModule();
 
   const ctx = typeof embiGetFinancialContext === 'function' ? embiGetFinancialContext() : '';
-  const msgParaAPI = ctx
+  const msg = ctx
     ? `Analizá mis indicadores del período actual y dame recomendaciones concretas para mejorar mi rentabilidad y reducir costos.\n\n${ctx}`
     : 'Analizá mis indicadores del período actual y dame recomendaciones concretas.';
 
-  // Limpiar historial y abrir Embi automáticamente
-  const embiMessages = document.getElementById('embiMessages');
-  if(embiMessages) embiMessages.innerHTML = '';
   if(window.embiShow) window.embiShow(true);
-
-  // Mostrar mensaje visible limpio al usuario
-  if(typeof embiAddMsg === 'function') {
-    embiAddMsg('user', '📊 Analizando mis indicadores de este período...');
-  }
-
-  // Mandar el contexto completo al API sin mostrarlo
-  if(typeof embiCallAPI === 'function') {
-    embiShowTyping && embiShowTyping();
-    await embiCallAPI(msgParaAPI);
-  }
+  const input = document.getElementById('embiInput');
+  if(input) { input.value = msg; embiSend(); }
 
   if(btn) {
     setTimeout(() => {
