@@ -10365,6 +10365,7 @@ window.embiAnalizarIndicadores = async function() {
   if(!window._mcClientes || window._mcClientes.length === 0) await loadMcModule();
 
   const ctx = typeof embiGetFinancialContext === 'function' ? embiGetFinancialContext() : '';
+  console.log('CTX LENGTH:', ctx.length, '| CTX PREVIEW:', ctx.substring(0, 200));
   const msg = ctx
     ? `Analizá mis indicadores del período actual y dame recomendaciones concretas para mejorar mi rentabilidad y reducir costos.\n\n${ctx}`
     : 'Analizá mis indicadores del período actual y dame recomendaciones concretas.';
