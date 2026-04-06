@@ -2291,7 +2291,7 @@ input[type=number]{-moz-appearance:textfield;}
       <div style="font-size:12px;color:rgba(160,200,164,.45);line-height:1.6;max-width:360px;">Tus números del período, interpretados. Con recomendaciones concretas para actuar hoy.</div>
     </div>
     <div style="flex-shrink:0;position:relative;z-index:1;">
-      <button onclick="embiAnalizarIndicadores()" style="background:#2a3d2c;border-top:1px solid rgba(168,212,172,.5);border-left:1px solid rgba(168,212,172,.25);border-right:1px solid rgba(40,60,42,.8);border-bottom:1px solid rgba(20,40,22,.9);color:#c8e8c8;border-radius:12px;padding:16px 36px;font-size:14px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;min-width:180px;text-align:center;letter-spacing:.3px;">Ver análisis →</button>
+      <button onclick="embiAnalizarIndicadores()" style="background:#2a3d2c;border-top:1px solid rgba(168,212,172,.5);border-left:1px solid rgba(168,212,172,.25);border-right:1px solid rgba(40,60,42,.8);border-bottom:1px solid rgba(20,40,22,.9);color:#c8e8c8;border-radius:12px;padding:16px 36px;font-size:14px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;min-width:180px;text-align:center;letter-spacing:.3px;">Ver análisis</button>
     </div>
   </div>
 
@@ -10372,7 +10372,7 @@ window.embiAnalizarIndicadores = async function() {
 
   if(btn) {
     setTimeout(() => {
-      btn.textContent = 'Ver análisis →';
+      btn.textContent = 'Ver análisis';
       btn.disabled = false;
       btn.style.opacity = '1';
     }, 1000);
@@ -16822,7 +16822,8 @@ function embiRenderMd(text){
 function embiAddMsg(role,text){
   var msgs=document.getElementById('embiMsgs');if(!msgs)return;
   var now=new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
-  var content=role==='bot'?embiRenderMd(text):text.replace(/\[REPORT:[^\]]+\]/g,'').trim().replace(/\n/g,'<br/>');
+  var displayText = (role !== 'bot' && text.length > 100) ? '📊 Analizando mis indicadores...' : text;
+  var content=role==='bot'?embiRenderMd(text):displayText.replace(/\[REPORT:[^\]]+\]/g,'').trim().replace(/\n/g,'<br/>');
   var div=document.createElement('div');div.className='embi-msg '+role;
   div.innerHTML='<div class="embi-bubble">'+content+'</div><div class="embi-time">'+now+'</div>';
   msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;
