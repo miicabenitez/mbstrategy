@@ -7789,16 +7789,19 @@ window.initCajaMesDrop = function() {
   const container = document.getElementById('caja-mes-options');
   if(!container) return;
   const hoy = new Date();
-  const opts = [];
-  for(let i=0; i>=-11; i--) {
-    const d = new Date(hoy.getFullYear(), hoy.getMonth()+i, 1);
-    const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-    const label = `${MESES[d.getMonth()]} ${d.getFullYear()}`;
-    opts.push({offset:i, label});
-  }
-  container.innerHTML = opts.map(o=>`
+  const anio = hoy.getFullYear();
+  const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const opts = [
+    { label: 'Todo el año', offset: null },
+    ...MESES.map((m, i) => ({ label: `${m} ${anio}`, offset: i - hoy.getMonth() }))
+  ];
+  container.innerHTML = opts.map(o => `
     <div onclick="selectCajaMes(${o.offset})" style="padding:7px 12px;font-size:11px;color:rgba(255,255,255,.85);cursor:pointer;border-radius:5px;font-family:'DM Sans',sans-serif;"
-    onmouseover="this.style.background='rgba(168,212,172,.1)'" onmouseout="this.style.background=''">${o.label}</div>`).join('');
+    onmouseover="this.style.background='rgba(168,212,172,.1)'" onmouseout="this.style.background=''">${o.label}</div>
+  `).join('');
+  const mesActual = `${MESES[hoy.getMonth()]} ${anio}`;
+  const labelEl = document.getElementById('caja-mes-label');
+  if(labelEl) labelEl.textContent = mesActual;
 };
 // ─── MODAL DETALLE MOVIMIENTO ───
 let _mdvMovimiento = null, _mdvEditing = false, _mdvOverlayCuentas = [], _mdvOverlayConceptos = [];
