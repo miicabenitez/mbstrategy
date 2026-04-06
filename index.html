@@ -16734,7 +16734,7 @@ function embiGetFinancialContext(){
       var mesDoc=(i.mes||'').replace(' de ',' ');
       var matchMes = mesDoc.toLowerCase().includes(MESES_CTX[mes].toLowerCase());
       var matchAnio = mesDoc.includes(String(anio));
-      console.log('DOC:', mesDoc, '| matchMes:', matchMes, '| matchAnio:', matchAnio, '| monto:', i.monto);
+      console.log('DOC:', mesDoc, '| matchMes:', matchMes, '| matchAnio:', matchAnio, '| monto raw:', i.monto, '| parseFloat:', parseFloat(i.monto));
       if(matchMes && matchAnio) ingMes+=(parseFloat(i.monto)||0);
       if(mesDoc.toLowerCase().includes(MESES_CTX[mesAnt].toLowerCase())&&mesDoc.includes(String(anioAnt)))ingAnt+=(parseFloat(i.monto)||0);
     });
@@ -16772,7 +16772,7 @@ function embiGetFinancialContext(){
       return s+(typeof getPresupMonto==='function'?getPresupMonto(p):0);
     },0);
     return '\n\nDATA FINANCIERA ('+hoy.toLocaleDateString('es-AR',{month:'long',year:'numeric'})+'):\n- Ingresos mes: $'+Math.round(ingMes).toLocaleString('es-AR')+'\n- Egresos mes: $'+Math.round(egrMes).toLocaleString('es-AR')+'\n- Ganancia: $'+Math.round(ganancia).toLocaleString('es-AR')+' | Margen: '+margen+'%\n- Cobros pendientes: $'+Math.round(cobPend).toLocaleString('es-AR')+'\n- Clientes: '+clientes.length+'\n- OC pendientes: '+ocsPend.length+'\n- Egresos por categoría: '+(catDetalle||'sin datos')+'\n\nPROYECCIÓN MENSUAL:\n- Día '+diaDelMes+' de '+diasEnMes+' del mes ('+diasRestantes+' días restantes)\n- Ingresos acumulados: $'+Math.round(ingMes).toLocaleString('es-AR')+'\n- Egresos acumulados: $'+Math.round(egrMes).toLocaleString('es-AR')+'\n- Ritmo diario de ingresos: $'+Math.round(ritmoIngDiario).toLocaleString('es-AR')+'/día\n- Proyección de ingresos al cierre: $'+proyIngreso.toLocaleString('es-AR')+'\n- Proyección de ganancia al cierre: $'+proyGanancia.toLocaleString('es-AR')+'\n- Mes anterior cerró en: $'+Math.round(ingAnt).toLocaleString('es-AR')+'\n- Variación proyectada vs mes anterior: '+(varVsMesAnt>0?'+':'')+varVsMesAnt+'%\n- Presupuestos aprobados sin cobrar: $'+Math.round(montoSinCobrar).toLocaleString('es-AR')+' (ingreso probable adicional)\nCuando el cliente pregunte sobre proyección, cierre del mes, o cómo va el negocio, usá estos datos para dar una respuesta clara y motivadora. Si la proyección es positiva respecto al mes anterior, felicitalo. Si es negativa, sugerí acciones concretas.';
-  }catch(e){return '';}
+  }catch(e){console.error('embiGetFinancialContext ERROR:', e); return '';}
 }
 
 // System prompts viven en el servidor (embi.js). El cliente solo envía modo + contextStr.
