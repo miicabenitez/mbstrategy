@@ -10358,15 +10358,20 @@ window.embiAnalizarIndicadores = async function() {
   const btn = document.querySelector('[onclick="embiAnalizarIndicadores()"]');
   if(btn) { btn.textContent = 'Analizando...'; btn.disabled = true; }
   if(window.embiShow) window.embiShow(true);
-  setTimeout(() => {
-    const ctx = typeof embiGetFinancialContext === 'function' ? embiGetFinancialContext() : '';
-    const msg = ctx
-      ? `Analizá mis indicadores del período actual y dame recomendaciones concretas para mejorar mi rentabilidad y reducir costos.\n\n${ctx}`
-      : 'Analizá mis indicadores del período actual y dame recomendaciones concretas para mejorar mi rentabilidad y reducir costos.';
-    const input = document.getElementById('embiInput');
-    if(input) { input.value = msg; embiSend(); }
-    if(btn) { btn.textContent = 'Ver análisis →'; btn.disabled = false; }
-  }, 500);
+
+  // Asegurar que los datos estén cargados
+  if(!window._clientIngresos || window._clientIngresos.length === 0) await loadClientContabilidad();
+  if(!window._clientPresupuestos || window._clientPresupuestos.length === 0) await loadClientPresupuestos();
+  if(!window._mcClientes || window._mcClientes.length === 0) await loadMcModule();
+
+  const ctx = typeof embiGetFinancialContext === 'function' ? embiGetFinancialContext() : '';
+  const msg = ctx
+    ? `Analizá mis indicadores del período actual y dame recomendaciones concretas para mejorar mi rentabilidad y reducir costos.\n\n${ctx}`
+    : 'Analizá mis indicadores del período actual y dame recomendaciones concretas.';
+
+  const input = document.getElementById('embiInput');
+  if(input) { input.value = msg; embiSend(); }
+  if(btn) { btn.textContent = 'Ver análisis →'; btn.disabled = false; }
 };
 
 
