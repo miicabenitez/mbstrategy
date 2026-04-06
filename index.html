@@ -16733,7 +16733,10 @@ function embiGetFinancialContext(){
     console.log('PRIMER MES DOC:', (ingresos[0]?.mes||'').replace(' de ',' '));
     ingresos.forEach(i=>{
       var mesDoc=(i.mes||'').replace(' de ',' ');
-      if(mesDoc.toLowerCase().includes(MESES_CTX[mes].toLowerCase())&&mesDoc.includes(String(anio)))ingMes+=(parseFloat(i.monto)||0);
+      var matchMes = mesDoc.toLowerCase().includes(MESES_CTX[mes].toLowerCase());
+      var matchAnio = mesDoc.includes(String(anio));
+      console.log('DOC:', mesDoc, '| matchMes:', matchMes, '| matchAnio:', matchAnio, '| monto:', i.monto);
+      if(matchMes && matchAnio) ingMes+=(parseFloat(i.monto)||0);
       if(mesDoc.toLowerCase().includes(MESES_CTX[mesAnt].toLowerCase())&&mesDoc.includes(String(anioAnt)))ingAnt+=(parseFloat(i.monto)||0);
     });
     egresos.forEach(e=>{
