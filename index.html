@@ -2224,9 +2224,18 @@ input[type=number]{-moz-appearance:textfield;}
   <div style="background:#4a5e4d;border-radius:16px;padding:22px 26px 24px;margin:0 0 14px;color:#fff;border:0.5px solid rgba(191,160,90,.2);">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
       <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;">Indicadores</div>
-      <select id="ck-mes-sel" onchange="filterCkByMes(this.value)" style="background:rgba(255,255,255,.12);border:0.5px solid rgba(255,255,255,.25);color:#fff;border-radius:6px;padding:5px 10px;font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;-webkit-appearance:none;appearance:none;background-image:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2210%22 height=%226%22 viewBox=%220 0 10 6%22><path d=%22M0 0l5 6 5-6z%22 fill=%22rgba(255,255,255,.5)%22/></svg>');background-repeat:no-repeat;background-position:right 8px center;padding-right:24px;">
-        <option value="todo">Todo el año</option>
-      </select>
+      <div style="position:relative;z-index:100;">
+        <button id="ck-mes-btn" onclick="toggleCkMesDrop()" style="background:rgba(255,255,255,.12);border:0.5px solid rgba(255,255,255,.25);color:#fff;border-radius:6px;padding:5px 12px;font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px;white-space:nowrap;">
+          <span id="ck-mes-label">Abril 2026</span>
+          <svg width="8" height="5" viewBox="0 0 8 5" fill="none"><path d="M0 0l4 5 4-5z" fill="rgba(255,255,255,.6)"/></svg>
+        </button>
+        <div id="ck-mes-drop" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:#2d3d2f;border:0.5px solid rgba(168,212,172,.2);border-radius:8px;padding:4px;min-width:130px;box-shadow:0 4px 16px rgba(0,0,0,.3);">
+          <div id="ck-mes-options"></div>
+        </div>
+        <select id="ck-mes-sel" style="display:none;" onchange="filterCkByMes(this.value)">
+          <option value="todo">Todo el año</option>
+        </select>
+      </div>
     </div>
     <!-- Fila 1: financieros principales -->
     <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:10px;">
@@ -9993,6 +10002,18 @@ window.loadClientPresupuestos = loadClientPresupuestos;
 window.loadMcModule = loadMcModule;
 window.loadContentAdmin = loadContentAdmin;
 
+window.toggleCkMesDrop = function() {
+  const drop = document.getElementById('ck-mes-drop');
+  if(drop) drop.style.display = drop.style.display==='none' ? 'block' : 'none';
+};
+
+window.selectCkMes = function(val, label) {
+  document.getElementById('ck-mes-label').textContent = label;
+  document.getElementById('ck-mes-drop').style.display = 'none';
+  const sel = document.getElementById('ck-mes-sel');
+  if(sel) { sel.value = val; filterCkByMes(val); }
+};
+
 function initCkMesChart(ingresos, egresos, mes) {
   const emptyEl = document.getElementById('ck-mes-chart-empty');
   const wrapEl  = document.getElementById('ck-mes-chart-wrap');
@@ -16100,6 +16121,15 @@ window.showCTab = function(tab, btn) {
         if(`${m} ${anio}` === mesActual) opt.selected = true;
         selMes.appendChild(opt);
       });
+      const optContainer = document.getElementById('ck-mes-options');
+      if(optContainer) {
+        const allOpts = [{ val:'todo', label:'Todo el año' }, ...MESES.map(m=>({ val:`${m} ${anio}`, label:`${m} ${anio}` }))];
+        optContainer.innerHTML = allOpts.map(o=>`
+          <div onclick="selectCkMes('${o.val}','${o.label}')" style="padding:7px 12px;font-size:11px;color:rgba(255,255,255,.85);cursor:pointer;border-radius:5px;font-family:'DM Sans',sans-serif;"
+          onmouseover="this.style.background='rgba(168,212,172,.1)'" onmouseout="this.style.background=''">${o.label}</div>`).join('');
+        const current = `${MESES[hoy.getMonth()]} ${anio}`;
+        document.getElementById('ck-mes-label').textContent = current;
+      }
     }
     if(!window._clientIngresos || window._clientIngresos.length===0) await loadClientContabilidad();
     if(!window._clientPresupuestos || window._clientPresupuestos.length===0) await loadClientPresupuestos();
