@@ -10170,8 +10170,18 @@ function renderCkKpis(ingresos, egresos, presupuestos, mcClientes) {
   setEl('bn-kpi-margen',margen+'%');
   setEl('bn-kpi-tick','$'+Math.round(ticketProm).toLocaleString('es-AR'));
 
-  // Cobros pendientes = presupuestos Aprobados sin cobrar aún
-  const pendientes = presupuestos.filter(p => p.estado === 'Aprobado');
+  // Cobros pendientes = presupuestos Aprobados creados hasta fin del mes seleccionado
+  const mesSel = document.getElementById('ck-mes-sel')?.value || 'todo';
+  const pendientes = presupuestos.filter(p => {
+    if(p.estado !== 'Aprobado') return false;
+    if(mesSel === 'todo') return true;
+    if(!p.creadoEn) return true;
+    const [mesNombre, anioStr] = mesSel.split(' ');
+    const MESES_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    const mesIdx = MESES_ES.findIndex(m => m === mesNombre);
+    const limiteMs = new Date(parseInt(anioStr), mesIdx + 1, 0, 23, 59, 59).getTime();
+    return new Date(p.creadoEn).getTime() <= limiteMs;
+  });
   const cobrosPend = pendientes.reduce((a,p) => a + getPresupMonto(p), 0);
   setEl('ck-cobros-pend', '$' + cobrosPend.toLocaleString('es-AR'));
 
@@ -16738,6 +16748,7 @@ function embiGetFinancialContext(){
       if(matchMes && matchAnio) ingMes+=(parseFloat(i.monto)||0);
       if(mesDoc.toLowerCase().includes(MESES_CTX[mesAnt].toLowerCase())&&mesDoc.includes(String(anioAnt)))ingAnt+=(parseFloat(i.monto)||0);
     });
+    console.log('ingMes resultado:', ingMes);
     egresos.forEach(e=>{
       var mesDoc=(e.mes||'').replace(' de ',' ');
       if(mesDoc.toLowerCase().includes(MESES_CTX[mes].toLowerCase())&&mesDoc.includes(String(anio)))egrMes+=(parseFloat(e.monto)||0);
