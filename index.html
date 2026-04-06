@@ -1871,9 +1871,11 @@ input[type=number]{-moz-appearance:textfield;}
     <div style="width:0.5px;height:20px;background:var(--cream-d);"></div>
     <input id="caja-filter-buscar" oninput="cajaFiltrar()" placeholder="Buscar concepto..." style="flex:1;min-width:120px;border:0.5px solid var(--cream-d);border-radius:6px;padding:5px 10px;font-size:11px;font-family:inherit;color:var(--text);background:var(--white);outline:none;"/>
     <div style="width:0.5px;height:20px;background:var(--cream-d);"></div>
-    <input id="caja-filter-desde" type="date" onchange="cajaFiltrar()" style="border:0.5px solid var(--cream-d);border-radius:6px;padding:5px 10px;font-size:11px;font-family:inherit;color:var(--text-l);background:var(--white);"/>
-    <span style="font-size:11px;color:var(--text-l);">→</span>
-    <input id="caja-filter-hasta" type="date" onchange="cajaFiltrar()" style="border:0.5px solid var(--cream-d);border-radius:6px;padding:5px 10px;font-size:11px;font-family:inherit;color:var(--text-l);background:var(--white);"/>
+    <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+      <input id="caja-filter-desde" type="date" onchange="cajaFiltrar()" style="border:0.5px solid var(--cream-d);border-radius:6px;padding:5px 8px;font-size:11px;font-family:inherit;color:var(--text-l);background:var(--white);width:130px;"/>
+      <span style="font-size:11px;color:var(--text-l);">→</span>
+      <input id="caja-filter-hasta" type="date" onchange="cajaFiltrar()" style="border:0.5px solid var(--cream-d);border-radius:6px;padding:5px 8px;font-size:11px;font-family:inherit;color:var(--text-l);background:var(--white);width:130px;"/>
+    </div>
   </div>
 
   <!-- Chips saldo por cuenta -->
@@ -7592,9 +7594,9 @@ function renderCajaKPIs(movs) {
   if(kpiS) animateCounter(kpiS, salidas, 600, fmt);
   if(kpiR) {
     animateCounter(kpiR, Math.abs(resultado), 600, fmt);
-    kpiR.style.color = resultado >= 0 ? '#3B6D11' : '#993C1D';
+    kpiR.style.color = resultado >= 0 ? '#a8d4ac' : '#e8a090';
   }
-  if(kpiRS) kpiRS.style.color = resultado < 0 ? '#993C1D' : 'transparent';
+  if(kpiRS) kpiRS.style.color = resultado < 0 ? '#e8a090' : 'transparent';
   if(kpiRS) kpiRS.textContent = resultado < 0 ? '−' : '';
 }
 
