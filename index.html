@@ -7257,7 +7257,6 @@ window.filterCkByMes = function(mes) {
   const filtIng = mes === 'todo' ? ing : ing.filter(i => { const m=(i.mes||'').replace(' de ',' '); return m.toLowerCase().includes(mes.split(' ')[0].toLowerCase()) && m.includes(mes.split(' ')[1]); });
   const filtEg  = mes === 'todo' ? eg  : eg.filter(e => { const m=(e.mes||'').replace(' de ',' '); return m.toLowerCase().includes(mes.split(' ')[0].toLowerCase()) && m.includes(mes.split(' ')[1]); });
   const presups = window._clientPresupuestos||[], mcs = window._mcClientes||_mcClientes||[];
-  renderClientContabilidad(filtIng, filtEg);
   renderCkKpis(filtIng, filtEg, presups, mcs);
   initCkChart(ing, eg);                   // siempre año completo
   initCkMesChart(filtIng, filtEg, mes);   // mes seleccionado
