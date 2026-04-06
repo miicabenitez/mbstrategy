@@ -16728,8 +16728,17 @@ function embiGetFinancialContext(){
     var mes=hoy.getMonth(),anio=hoy.getFullYear();
     var mesAnt=mes===0?11:mes-1,anioAnt=mes===0?anio-1:anio;
     var ingMes=0,egrMes=0,ingAnt=0,egrAnt=0;
-    ingresos.forEach(i=>{var d=new Date(i.fecha||i.creadoEn);if(d.getMonth()===mes&&d.getFullYear()===anio)ingMes+=(parseFloat(i.monto)||0);if(d.getMonth()===mesAnt&&d.getFullYear()===anioAnt)ingAnt+=(parseFloat(i.monto)||0);});
-    egresos.forEach(e=>{var d=new Date(e.fecha||e.creadoEn);if(d.getMonth()===mes&&d.getFullYear()===anio)egrMes+=(parseFloat(e.monto)||0);if(d.getMonth()===mesAnt&&d.getFullYear()===anioAnt)egrAnt+=(parseFloat(e.monto)||0);});
+    var MESES_CTX=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    ingresos.forEach(i=>{
+      var mesDoc=(i.mes||'').replace(' de ',' ');
+      if(mesDoc.toLowerCase().includes(MESES_CTX[mes].toLowerCase())&&mesDoc.includes(String(anio)))ingMes+=(parseFloat(i.monto)||0);
+      if(mesDoc.toLowerCase().includes(MESES_CTX[mesAnt].toLowerCase())&&mesDoc.includes(String(anioAnt)))ingAnt+=(parseFloat(i.monto)||0);
+    });
+    egresos.forEach(e=>{
+      var mesDoc=(e.mes||'').replace(' de ',' ');
+      if(mesDoc.toLowerCase().includes(MESES_CTX[mes].toLowerCase())&&mesDoc.includes(String(anio)))egrMes+=(parseFloat(e.monto)||0);
+      if(mesDoc.toLowerCase().includes(MESES_CTX[mesAnt].toLowerCase())&&mesDoc.includes(String(anioAnt)))egrAnt+=(parseFloat(e.monto)||0);
+    });
     var ganancia=ingMes-egrMes,margen=ingMes>0?Math.round((ganancia/ingMes)*100):0;
     var cobPend=(window._clientPresupuestos||[])
       .filter(p=>p.estado==='Aprobado')
