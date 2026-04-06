@@ -16747,7 +16747,13 @@ function embiGetFinancialContext(){
     var ocs=window._ordenesCompra||[];
     var ocsPend=ocs.filter(o=>o.estadoPago!=='pagada');
     var catEgr={};
-    egresos.forEach(e=>{var d=new Date(e.fecha||e.creadoEn);if(d.getMonth()===mes&&d.getFullYear()===anio){var c=e.categoria||'Sin categoría';catEgr[c]=(catEgr[c]||0)+(parseFloat(e.monto)||0);}});
+    egresos.forEach(e=>{
+      var mesDoc=(e.mes||'').replace(' de ',' ');
+      if(mesDoc.toLowerCase().includes(MESES_CTX[mes].toLowerCase())&&mesDoc.includes(String(anio))){
+        var cat=e.concepto||'Otros';
+        catEgr[cat]=(catEgr[cat]||0)+(parseFloat(e.monto)||0);
+      }
+    });
     var catDetalle=Object.entries(catEgr).sort((a,b)=>b[1]-a[1]).map(([c,m])=>c+': $'+Math.round(m).toLocaleString('es-AR')).join(', ');
     var diaDelMes=hoy.getDate();
     var diasEnMes=new Date(anio,mes+1,0).getDate();
