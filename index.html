@@ -2299,12 +2299,12 @@ input[type=number]{-moz-appearance:textfield;}
   <div class="g2" style="margin-bottom:14px;">
     <div class="card">
       <div class="ct">Evolución anual</div>
-      <div style="position:relative;height:180px;"><canvas id="ckChart"></canvas></div>
+      <div id="ckChart" style="width:100%;min-height:180px;"></div>
     </div>
     <div class="card">
       <div id="ck-mes-chart-title" class="ct">Mes seleccionado</div>
       <div id="ck-mes-chart-empty" style="text-align:center;padding:40px 0;color:var(--text-l);font-size:13px;">Seleccioná un mes para ver el detalle</div>
-      <div id="ck-mes-chart-wrap" style="display:none;position:relative;height:180px;"><canvas id="ckMesChart"></canvas></div>
+      <div id="ck-mes-chart-wrap" style="display:none;position:relative;height:180px;"><div id="ckMesChart" style="width:100%;min-height:180px;"></div></div>
     </div>
   </div>
 
@@ -2312,12 +2312,12 @@ input[type=number]{-moz-appearance:textfield;}
     <div class="card">
       <div class="ct">Egresos anuales por concepto</div>
       <div id="ck-eg-anual-empty" style="text-align:center;padding:40px 0;color:var(--text-l);font-size:13px;">Sin egresos registrados.</div>
-      <canvas id="ckEgAnualChart" style="display:none;max-height:200px;"></canvas>
+      <div id="ckEgAnualChart" style="width:100%;"></div>
     </div>
     <div class="card">
       <div id="ck-eg-mes-title" class="ct">Egresos del mes por concepto</div>
       <div id="ck-eg-mes-empty" style="text-align:center;padding:40px 0;color:var(--text-l);font-size:13px;">Seleccioná un mes para ver el detalle</div>
-      <div id="ck-eg-mes-wrap" style="display:none;"><canvas id="ckEgMesChart" style="max-height:200px;"></canvas></div>
+      <div id="ck-eg-mes-wrap" style="display:none;"><div id="ckEgMesChart" style="width:100%;"></div></div>
     </div>
   </div>
 
@@ -9900,7 +9900,7 @@ function renderClientProveedores() {
   }).join('');
 }
 
-let ccCashflowChart=null, ccGastosDonut=null, ckChart=null;
+let ccCashflowChart=null, ccGastosDonut=null;
 
 function initClientCashflow(ingresos, egresos) {
   if(ccCashflowChart){try{ccCashflowChart.destroy();}catch(e){} ccCashflowChart=null;}
@@ -9933,19 +9933,51 @@ function initClientGastosDonut(egresos) {
 }
 
 function initCkChart(ingresos, egresos) {
-  if(ckChart){try{ckChart.destroy();}catch(e){} ckChart=null;}
-  const canvas = document.getElementById('ckChart');
-  if(!canvas) return;
-  const MESES_SHORT=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-  const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-  const ing=new Array(12).fill(0), eg=new Array(12).fill(0);
-  ingresos.forEach(i=>{ const idx=MESES.findIndex(m=>(i.mes||'').startsWith(m)); if(idx>=0) ing[idx]+=parseFloat(i.monto)||0; });
-  egresos.forEach(e=>{ const idx=MESES.findIndex(m=>(e.mes||'').startsWith(m)); if(idx>=0) eg[idx]+=parseFloat(e.monto)||0; });
-  const gan=ing.map((v,i)=>Math.max(0,v-eg[i]));
-  ckChart = new Chart(canvas.getContext('2d'),{
-    type:'bar', data:{labels:MESES_SHORT, datasets:[{label:'Ingresos',data:ing,backgroundColor:'#4a5e4d',borderRadius:4},{label:'Egresos',data:eg,backgroundColor:'#b05a42',borderRadius:4},{label:'Ganancia',data:gan,type:'line',borderColor:'#7aab7e',borderWidth:2,pointRadius:3,fill:false,backgroundColor:'#7aab7e'}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'rgba(0,0,0,.06)'},ticks:{font:{family:'DM Sans',size:10},color:'#888780',callback:v=>'$'+v.toLocaleString('es-AR')}},x:{grid:{display:false},ticks:{font:{family:'DM Sans',size:10},color:'#888780'}}}}
+  const el = document.getElementById('ckChart');
+  if (!el) return;
+  const MESES_SHORT = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const ing = new Array(12).fill(0), eg = new Array(12).fill(0);
+  ingresos.forEach(i => { const idx = MESES.findIndex(m => (i.mes||'').startsWith(m)); if (idx >= 0) ing[idx] += parseFloat(i.monto)||0; });
+  egresos.forEach(e => { const idx = MESES.findIndex(m => (e.mes||'').startsWith(m)); if (idx >= 0) eg[idx] += parseFloat(e.monto)||0; });
+  const gan = ing.map((v,i) => Math.max(0, v - eg[i]));
+  const maxVal = Math.max(...ing, ...eg, 1);
+  const W = el.offsetWidth || 500, H = 180;
+  const padL = 52, padR = 8, padT = 12, padB = 28;
+  const chartW = W - padL - padR, chartH = H - padT - padB;
+  const barGroupW = chartW / 12;
+  const barW = Math.max(4, Math.floor(barGroupW * 0.28));
+
+  const yTicks = 4;
+  let gridLines = '', yLabels = '';
+  for (let t = 0; t <= yTicks; t++) {
+    const v = (maxVal / yTicks) * t;
+    const y = padT + chartH - (v / maxVal) * chartH;
+    gridLines += `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" stroke="rgba(0,0,0,.06)" stroke-width="1"/>`;
+    yLabels += `<text x="${padL - 4}" y="${y + 4}" text-anchor="end" font-size="9" fill="#888780" font-family="DM Sans">$${v >= 1000 ? Math.round(v/1000)+'k' : Math.round(v)}</text>`;
+  }
+
+  let bars = '', linePts = '', xLabels = '';
+  gan.forEach((g, i) => {
+    const cx = padL + i * barGroupW + barGroupW / 2;
+    const x1 = cx - barW - 1, x2 = cx + 1;
+    const hIng = (ing[i] / maxVal) * chartH, hEg = (eg[i] / maxVal) * chartH;
+    bars += `<rect x="${x1}" y="${padT + chartH - hIng}" width="${barW}" height="${hIng}" rx="2" fill="#4a5e4d"/>`;
+    bars += `<rect x="${x2}" y="${padT + chartH - hEg}" width="${barW}" height="${hEg}" rx="2" fill="#b05a42"/>`;
+    const py = padT + chartH - (g / maxVal) * chartH;
+    linePts += (i === 0 ? `M${cx},${py}` : `L${cx},${py}`);
+    xLabels += `<text x="${cx}" y="${H - 4}" text-anchor="middle" font-size="9" fill="#888780" font-family="DM Sans">${MESES_SHORT[i]}</text>`;
   });
+
+  // Legend
+  const legend = `<rect x="${padL}" y="2" width="8" height="8" rx="1" fill="#4a5e4d"/><text x="${padL+11}" y="10" font-size="9" fill="#888780" font-family="DM Sans">Ingresos</text><rect x="${padL+58}" y="2" width="8" height="8" rx="1" fill="#b05a42"/><text x="${padL+71}" y="10" font-size="9" fill="#888780" font-family="DM Sans">Egresos</text><line x1="${padL+120}" y1="6" x2="${padL+130}" y2="6" stroke="#7aab7e" stroke-width="2"/><text x="${padL+133}" y="10" font-size="9" fill="#888780" font-family="DM Sans">Ganancia</text>`;
+
+  el.innerHTML = `<svg width="100%" height="${H}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+    ${gridLines}${yLabels}${bars}
+    <path d="${linePts}" fill="none" stroke="#7aab7e" stroke-width="2"/>
+    ${gan.map((g,i)=>{ const cx=padL+i*barGroupW+barGroupW/2; const py=padT+chartH-(g/maxVal)*chartH; return `<circle cx="${cx}" cy="${py}" r="3" fill="#7aab7e"/>`; }).join('')}
+    ${xLabels}${legend}
+  </svg>`;
 }
 window.initClientCashflow = initClientCashflow;
 window.initClientGastosDonut = initClientGastosDonut;
@@ -9961,117 +9993,135 @@ window.loadClientPresupuestos = loadClientPresupuestos;
 window.loadMcModule = loadMcModule;
 window.loadContentAdmin = loadContentAdmin;
 
-let ckMesChart=null;
-
 function initCkMesChart(ingresos, egresos, mes) {
-  if(ckMesChart){try{ckMesChart.destroy();}catch(e){} ckMesChart=null;}
-  const emptyEl  = document.getElementById('ck-mes-chart-empty');
-  const wrapEl   = document.getElementById('ck-mes-chart-wrap');
-  const titleEl  = document.getElementById('ck-mes-chart-title');
-  if(mes === 'todo') {
-    if(emptyEl) emptyEl.style.display = 'block';
-    if(wrapEl)  wrapEl.style.display  = 'none';
-    if(titleEl) titleEl.textContent   = 'Mes seleccionado';
+  const emptyEl = document.getElementById('ck-mes-chart-empty');
+  const wrapEl  = document.getElementById('ck-mes-chart-wrap');
+  const titleEl = document.getElementById('ck-mes-chart-title');
+  if (mes === 'todo') {
+    if (emptyEl) emptyEl.style.display = 'block';
+    if (wrapEl)  wrapEl.style.display  = 'none';
+    if (titleEl) titleEl.textContent   = 'Mes seleccionado';
     return;
   }
-  if(emptyEl) emptyEl.style.display = 'none';
-  if(wrapEl)  wrapEl.style.display  = 'block';
-  if(titleEl) titleEl.textContent   = mes;
-  const canvas = document.getElementById('ckMesChart');
-  if(!canvas) return;
-  const totalIng = ingresos.reduce((a,i)=>a+(parseFloat(i.monto)||0),0);
-  const totalEg  = egresos.reduce((a,e)=>a+(parseFloat(e.monto)||0),0);
-  ckMesChart = new Chart(canvas.getContext('2d'),{
-    type:'bar',
-    data:{
-      labels:['Ingresos','Egresos'],
-      datasets:[{data:[totalIng,totalEg],backgroundColor:['#4a5e4d','#b05a42'],borderRadius:6,barThickness:52}]
-    },
-    options:{
-      responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false}},
-      scales:{
-        y:{grid:{color:'#D0CFC9'},ticks:{font:{family:'DM Sans',size:10},color:'#4A5A4E',callback:v=>'$'+v.toLocaleString('es-AR')}},
-        x:{grid:{display:false},ticks:{font:{family:'DM Sans',size:11},color:'#4A5A4E'}}
-      }
-    }
-  });
+  if (emptyEl) emptyEl.style.display = 'none';
+  if (wrapEl)  wrapEl.style.display  = 'block';
+  if (titleEl) titleEl.textContent   = mes;
+  const el = document.getElementById('ckMesChart');
+  if (!el) return;
+  const totalIng = ingresos.reduce((a,i) => a+(parseFloat(i.monto)||0), 0);
+  const totalEg  = egresos.reduce((a,e)  => a+(parseFloat(e.monto)||0), 0);
+  const maxVal = Math.max(totalIng, totalEg, 1);
+  const W = el.offsetWidth || 300, H = 180;
+  const padL = 52, padR = 8, padT = 12, padB = 28;
+  const chartW = W - padL - padR, chartH = H - padT - padB;
+  const barW = Math.min(60, Math.floor(chartW * 0.25));
+  const cx1 = padL + chartW * 0.3, cx2 = padL + chartW * 0.7;
+
+  const yTicks = 4;
+  let gridLines = '', yLabels = '';
+  for (let t = 0; t <= yTicks; t++) {
+    const v = (maxVal / yTicks) * t;
+    const y = padT + chartH - (v / maxVal) * chartH;
+    gridLines += `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" stroke="#D0CFC9" stroke-width="1"/>`;
+    yLabels += `<text x="${padL - 4}" y="${y + 4}" text-anchor="end" font-size="9" fill="#4A5A4E" font-family="DM Sans">$${v >= 1000 ? Math.round(v/1000)+'k' : Math.round(v)}</text>`;
+  }
+
+  const hIng = (totalIng / maxVal) * chartH, hEg = (totalEg / maxVal) * chartH;
+  const bars = `
+    <rect x="${cx1 - barW/2}" y="${padT + chartH - hIng}" width="${barW}" height="${hIng}" rx="4" fill="#4a5e4d"/>
+    <rect x="${cx2 - barW/2}" y="${padT + chartH - hEg}"  width="${barW}" height="${hEg}"  rx="4" fill="#b05a42"/>
+    <text x="${cx1}" y="${H - 4}" text-anchor="middle" font-size="10" fill="#4A5A4E" font-family="DM Sans">Ingresos</text>
+    <text x="${cx2}" y="${H - 4}" text-anchor="middle" font-size="10" fill="#4A5A4E" font-family="DM Sans">Egresos</text>
+    <text x="${cx1}" y="${padT + chartH - hIng - 4}" text-anchor="middle" font-size="9" fill="#4a5e4d" font-family="DM Sans" font-weight="600">$${totalIng.toLocaleString('es-AR')}</text>
+    <text x="${cx2}" y="${padT + chartH - hEg - 4}"  text-anchor="middle" font-size="9" fill="#b05a42" font-family="DM Sans" font-weight="600">$${totalEg.toLocaleString('es-AR')}</text>`;
+
+  el.innerHTML = `<svg width="100%" height="${H}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+    ${gridLines}${yLabels}${bars}
+  </svg>`;
 }
 
-let ckEgAnualChart=null;
-let ckEgMesChart=null;
-
 function initCkEgAnualChart(egresos) {
-  if(ckEgAnualChart){try{ckEgAnualChart.destroy();}catch(e){} ckEgAnualChart=null;}
   const emptyEl = document.getElementById('ck-eg-anual-empty');
-  const canvas  = document.getElementById('ckEgAnualChart');
-  if(!canvas) return;
-  if(egresos.length===0){
-    if(emptyEl) emptyEl.style.display='block';
-    canvas.style.display='none';
+  const el = document.getElementById('ckEgAnualChart');
+  if (!el) return;
+  if (egresos.length === 0) {
+    if (emptyEl) emptyEl.style.display = 'block';
+    el.innerHTML = '';
     return;
   }
-  if(emptyEl) emptyEl.style.display='none';
-  canvas.style.display='block';
-  const cats={};
-  egresos.forEach(e=>{const c=e.concepto||'Otros'; cats[c]=(cats[c]||0)+(parseFloat(e.monto)||0);});
-  const sorted=Object.entries(cats).sort((a,b)=>b[1]-a[1]);
-  const labels=sorted.map(([k])=>k), data=sorted.map(([,v])=>v);
-  const colors=['#4a5e4d','#5a7a5e','#6b8f6e','#7aab7e','#3a4e3d','#b05a42','#c4786a','#8a3a28'];
-  ckEgAnualChart = new Chart(canvas.getContext('2d'),{
-    type:'bar',
-    data:{labels,datasets:[{data,backgroundColor:colors.slice(0,labels.length),borderRadius:4}]},
-    options:{
-      indexAxis:'y',
-      responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false}},
-      scales:{
-        x:{grid:{color:'rgba(0,0,0,.06)'},ticks:{font:{family:'DM Sans',size:10},color:'#888780',callback:v=>'$'+v.toLocaleString('es-AR')}},
-        y:{grid:{display:false},ticks:{font:{family:'DM Sans',size:10},color:'#888780'}}
-      }
-    }
+  if (emptyEl) emptyEl.style.display = 'none';
+  const cats = {};
+  egresos.forEach(e => { const c = e.concepto||'Otros'; cats[c] = (cats[c]||0) + (parseFloat(e.monto)||0); });
+  const sorted = Object.entries(cats).sort((a,b) => b[1]-a[1]);
+  const colors = ['#4a5e4d','#5a7a5e','#6b8f6e','#7aab7e','#3a4e3d','#b05a42','#c4786a','#8a3a28'];
+  const rowH = 26, padL = 90, padR = 60, padT = 8, padB = 8;
+  const H = padT + sorted.length * rowH + padB;
+  const W = el.offsetWidth || 400;
+  const maxVal = sorted[0][1] || 1;
+  const chartW = W - padL - padR;
+
+  let rows = '';
+  sorted.forEach(([label, val], i) => {
+    const bw = (val / maxVal) * chartW;
+    const y = padT + i * rowH;
+    const color = colors[i % colors.length];
+    const shortLabel = label.length > 12 ? label.slice(0,11)+'…' : label;
+    rows += `
+      <text x="${padL - 5}" y="${y + rowH/2 + 4}" text-anchor="end" font-size="10" fill="#888780" font-family="DM Sans">${shortLabel}</text>
+      <rect x="${padL}" y="${y + 4}" width="${bw}" height="${rowH - 10}" rx="3" fill="${color}"/>
+      <text x="${padL + bw + 4}" y="${y + rowH/2 + 4}" font-size="9" fill="#888780" font-family="DM Sans">$${val >= 1000 ? (val/1000).toFixed(1)+'k' : Math.round(val)}</text>`;
   });
+
+  el.innerHTML = `<svg width="100%" height="${H}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+    ${rows}
+  </svg>`;
 }
 
 function initCkEgMesChart(egresos, mes) {
-  if(ckEgMesChart){try{ckEgMesChart.destroy();}catch(e){} ckEgMesChart=null;}
   const emptyEl = document.getElementById('ck-eg-mes-empty');
   const wrapEl  = document.getElementById('ck-eg-mes-wrap');
   const titleEl = document.getElementById('ck-eg-mes-title');
-  if(mes === 'todo') {
-    if(emptyEl) emptyEl.style.display='block';
-    if(wrapEl)  wrapEl.style.display='none';
-    if(titleEl) titleEl.textContent='Egresos del mes por categoría';
+  if (mes === 'todo') {
+    if (emptyEl) emptyEl.style.display = 'block';
+    if (wrapEl)  wrapEl.style.display  = 'none';
+    if (titleEl) titleEl.textContent   = 'Egresos del mes por categoría';
     return;
   }
-  if(titleEl) titleEl.textContent = 'Egresos · '+mes;
-  if(egresos.length===0){
-    if(emptyEl) emptyEl.style.display='block';
-    if(wrapEl)  wrapEl.style.display='none';
+  if (titleEl) titleEl.textContent = 'Egresos · ' + mes;
+  if (egresos.length === 0) {
+    if (emptyEl) emptyEl.style.display = 'block';
+    if (wrapEl)  wrapEl.style.display  = 'none';
     return;
   }
-  if(emptyEl) emptyEl.style.display='none';
-  if(wrapEl)  wrapEl.style.display='block';
-  const canvas = document.getElementById('ckEgMesChart');
-  if(!canvas) return;
-  const cats={};
-  egresos.forEach(e=>{const c=e.concepto||'Otros'; cats[c]=(cats[c]||0)+(parseFloat(e.monto)||0);});
-  const sorted=Object.entries(cats).sort((a,b)=>b[1]-a[1]);
-  const labels=sorted.map(([k])=>k), data=sorted.map(([,v])=>v);
-  const colors=['#4a5e4d','#5a7a5e','#6b8f6e','#7aab7e','#3a4e3d','#b05a42','#c4786a','#8a3a28'];
-  ckEgMesChart = new Chart(canvas.getContext('2d'),{
-    type:'bar',
-    data:{labels,datasets:[{data,backgroundColor:colors.slice(0,labels.length),borderRadius:4}]},
-    options:{
-      indexAxis:'y',
-      responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false}},
-      scales:{
-        x:{grid:{color:'rgba(0,0,0,.06)'},ticks:{font:{family:'DM Sans',size:10},color:'#888780',callback:v=>'$'+v.toLocaleString('es-AR')}},
-        y:{grid:{display:false},ticks:{font:{family:'DM Sans',size:10},color:'#888780'}}
-      }
-    }
+  if (emptyEl) emptyEl.style.display = 'none';
+  if (wrapEl)  wrapEl.style.display  = 'block';
+  const el = document.getElementById('ckEgMesChart');
+  if (!el) return;
+  const cats = {};
+  egresos.forEach(e => { const c = e.concepto||'Otros'; cats[c] = (cats[c]||0) + (parseFloat(e.monto)||0); });
+  const sorted = Object.entries(cats).sort((a,b) => b[1]-a[1]);
+  const colors = ['#4a5e4d','#5a7a5e','#6b8f6e','#7aab7e','#3a4e3d','#b05a42','#c4786a','#8a3a28'];
+  const rowH = 26, padL = 90, padR = 60, padT = 8, padB = 8;
+  const H = padT + sorted.length * rowH + padB;
+  const W = el.offsetWidth || 400;
+  const maxVal = sorted[0][1] || 1;
+  const chartW = W - padL - padR;
+
+  let rows = '';
+  sorted.forEach(([label, val], i) => {
+    const bw = (val / maxVal) * chartW;
+    const y = padT + i * rowH;
+    const color = colors[i % colors.length];
+    const shortLabel = label.length > 12 ? label.slice(0,11)+'…' : label;
+    rows += `
+      <text x="${padL - 5}" y="${y + rowH/2 + 4}" text-anchor="end" font-size="10" fill="#888780" font-family="DM Sans">${shortLabel}</text>
+      <rect x="${padL}" y="${y + 4}" width="${bw}" height="${rowH - 10}" rx="3" fill="${color}"/>
+      <text x="${padL + bw + 4}" y="${y + rowH/2 + 4}" font-size="9" fill="#888780" font-family="DM Sans">$${val >= 1000 ? (val/1000).toFixed(1)+'k' : Math.round(val)}</text>`;
   });
+
+  el.innerHTML = `<svg width="100%" height="${H}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+    ${rows}
+  </svg>`;
 }
 
 let ckDonutChart=null;
