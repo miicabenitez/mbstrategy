@@ -324,6 +324,8 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
   #ct-kpis [style*="background:#1e2d20"]{flex-direction:column !important;padding:20px 18px !important;}
   #ct-kpis [style*="background:#1e2d20"] [style*="flex-shrink:0"]{flex-shrink:unset !important;width:100%;}
   #ct-kpis [style*="background:#1e2d20"] button{width:100% !important;min-width:unset !important;box-sizing:border-box;}
+  /* ── 3b. Caja tabla — min-width para evitar columnas fusionadas ── */
+  .caja-table{min-width:580px;}
   /* ── 3. Caja KPI banner — font sizes menores ── */
   #caja-kpi-entradas,#caja-kpi-salidas{font-size:18px !important;}
   #caja-kpi-resultado{font-size:22px !important;}
@@ -14310,9 +14312,11 @@ window.abrirCuentaCorriente = async function(provId) {
     } catch(e){ window._ordenesCompra = []; }
   }
 
-  // Mostrar vista fullscreen, ocultar lista
-  document.getElementById('prov-lista-view') && (document.getElementById('prov-lista-view').style.display='none');
-  document.getElementById('prov-cc-view').style.display='block';
+  // Mostrar vista CC, ocultar lista (intercambio en flujo normal, sin z-index)
+  const _provLv = document.getElementById('prov-lista-view');
+  if(_provLv) _provLv.style.display = 'none';
+  const _ccView = document.getElementById('prov-cc-view');
+  if(_ccView) _ccView.style.display = 'block';
 
   // Datos del proveedor en header
   const setEl=(id,v)=>{const el=document.getElementById(id);if(el)el.innerHTML=v;};
