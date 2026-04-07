@@ -9590,6 +9590,11 @@ async function loadInicio() {
     animateDiasFlip(document.getElementById('inicio-dias-num'), totalDias, diasRestantes, 1400);
   })();
 
+  // Fade-in inmediato — antes del await, para que los cards no queden en opacity:0
+  document.querySelectorAll('#ct-inicio .dash-card').forEach(function(c,i){
+    setTimeout(function(){ c.classList.add('in'); }, 80*i);
+  });
+
   // Cargar datos financieros desde libroCaja
   try {
     const cajSnap = await getDocs(query(collection(db,'libroCaja'),where('uid','==',currentClientUID)));
@@ -9862,10 +9867,6 @@ async function loadInicio() {
 
   // Onboarding checklist
   try { await renderOnboardingChecklist(); } catch(e){ console.log('onboarding:',e); }
-
-  // Staggered fade-in
-  var dashCards = document.querySelectorAll('#ct-inicio .dash-card');
-  dashCards.forEach(function(c,i){setTimeout(function(){c.classList.add('in');},80*i);});
 
   } catch(e) {
     console.error('loadInicio error:', e);
