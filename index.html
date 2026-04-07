@@ -16336,10 +16336,12 @@ window.showClientMod = function(mod, btn) {
   // Activar tab en topbar
   document.querySelectorAll('#cNav .nt').forEach(b => b.classList.remove('active'));
   if(btn) btn.classList.add('active');
-  // Sincronizar bottom nav
-  document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
-  const bBtn = document.querySelector('.bnav-item[onclick*="\''+mod+'\'"]');
-  if(bBtn) bBtn.classList.add('active');
+  // Sincronizar bottom nav (no re-sincronizar si mod=herramientas — lo maneja bottomNavGestion)
+  if(mod !== 'herramientas') {
+    document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
+    const bBtn = document.querySelector('.bnav-item[onclick*="\''+mod+'\'"]');
+    if(bBtn) bBtn.classList.add('active');
+  }
   // Ocultar todos los sub-navs
   document.querySelectorAll('.mod-subnav').forEach(el => { el.style.display = 'none'; el.classList.remove('visible'); });
 
@@ -16428,6 +16430,9 @@ window.bottomNav = function(mod, btn) {
 };
 
 window.bottomNavGestion = function(btn) {
+  // Marcar activo manualmente antes de llamar bottomNav (evita que showClientMod lo sobreescriba)
+  document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
   bottomNav('herramientas', btn);
   setTimeout(() => {
     const b = document.querySelector('#subnav-herramientas .subctab:nth-child(3)');
