@@ -4684,6 +4684,12 @@ window.showClientUI = async function(email, clientData) {
   window.currentClientUID = currentClientUID;
       currentClientData = clientData;
 
+      // Mostrar módulo inicial inmediatamente, sin esperar los awaits de datos
+      const _savedMod0 = (() => { try { return localStorage.getItem('mbst_lastmod'); } catch(e) { return null; } })();
+      const _modToShow0 = _savedMod0 || 'inicio';
+      const _modBtn0 = document.querySelector('#cNav .nt[onclick*="\''+_modToShow0+'\'"]') || document.querySelector('#cNav .nt');
+      window.showClientMod(_modToShow0, _modBtn0);
+
       try {
         await loadCalcItems(clientData.id);
         await loadClientContabilidad();
@@ -4715,11 +4721,7 @@ window.showClientUI = async function(email, clientData) {
     }
     if(window.embiShow) window.embiShow(true);
     if(window.sidebarInit) window.sidebarInit();
-    // Restaurar último módulo activo (o Inicio por defecto)
-    const savedMod = (() => { try { return localStorage.getItem('mbst_lastmod'); } catch(e) { return null; } })();
-    const modToShow = savedMod || 'inicio';
-    const modBtn = document.querySelector(`#cNav .nt[onclick*="'${modToShow}'"]`) || document.querySelector('#cNav .nt');
-    window.showClientMod(modToShow, modBtn);
+    // módulo ya mostrado antes de los awaits (ver arriba)
 };
 
 async function loadAdminData() {
