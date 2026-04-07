@@ -15127,9 +15127,6 @@ window.guardarNuevaCat = async function() {
 
 async function loadProveedores() {
   if(!currentClientUID) return;
-  // Si CC está abierta, no re-renderizar — evita pisarla
-  const _ccGuard = document.getElementById('prov-cc-view');
-  if(_ccGuard && _ccGuard.style.display !== 'none') return;
   showSkeleton('prov-lista','list');
   try {
     const [provSnap, ocSnap] = await Promise.all([
