@@ -4154,13 +4154,12 @@ input[type=number]{-moz-appearance:textfield;}
         </div>
         <div style="text-align:right;">
           <div style="font-family:'Cormorant Garamond',serif;font-size:24px;color:#fff;font-weight:500;" id="oc-det-total">$0</div>
-          <div id="oc-det-estado-badge" style="margin-top:4px;"></div>
         </div>
       </div>
     </div>
     <div style="padding:20px 24px;">
       <!-- Meta -->
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;">
         <div style="background:var(--cream);border-radius:8px;padding:10px;">
           <div style="font-size:11px;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Fecha</div>
           <div style="font-size:13px;font-weight:500;color:var(--text);" id="oc-det-fecha">—</div>
@@ -4168,10 +4167,6 @@ input[type=number]{-moz-appearance:textfield;}
         <div style="background:var(--cream);border-radius:8px;padding:10px;">
           <div style="font-size:11px;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Ítems</div>
           <div style="font-size:13px;font-weight:500;color:var(--text);" id="oc-det-items-count">—</div>
-        </div>
-        <div style="background:var(--cream);border-radius:8px;padding:10px;">
-          <div style="font-size:11px;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Estado pago</div>
-          <div style="font-size:13px;font-weight:500;" id="oc-det-estado-txt">—</div>
         </div>
       </div>
       <!-- Items table -->
@@ -14277,9 +14272,6 @@ window.abrirDetalleOC = function(ocId) {
   setEl('oc-det-total-footer', `$${(parseFloat(oc.total)||0).toLocaleString('es-AR')}`);
   setEl('oc-det-fecha', oc.fecha||'—');
   setEl('oc-det-items-count', `${(oc.items||[]).length} ítem${(oc.items||[]).length!==1?'s':''}`);
-  setEl('oc-det-estado-txt', `<span style="color:${bc.tc};">${bc.label}</span>`);
-  setEl('oc-det-estado-badge', `<span style="background:rgba(255,255,255,.2);color:#fff;font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px;">${bc.label}</span>`);
-
   // Estado recepción en modal (sin botón — se usa el toggle del listado)
   const btnRec = document.getElementById('oc-det-btn-recepcion');
   if(btnRec) btnRec.innerHTML = '';
