@@ -8419,7 +8419,7 @@ async function loadCierrePeriodo() {
     '<button class="cierre-btn-discard" onclick="cierreDescartar()">Descartar</button>'+
     '<button class="cierre-btn-draft" onclick="cierreGuardarBorrador()">Guardar borrador</button>'+
     '<button class="cierre-btn-main" id="cierre-btn-main" onclick="cierreAccionPrincipal()">Guardar proyección</button>';
-  document.querySelectorAll('#ct-cierre-periodo .cierre-tab-btn, #ct-cierre-periodo .cierre-freq-btn, #cierre-fecha-inicio, #cierre-fecha-fin').forEach(el => { el.disabled = false; });
+  document.querySelectorAll('#ct-cierre-periodo .cierre-tab-btn, #ct-cierre-periodo .cierre-freq-btn, #cierre-fecha-inicio, #cierre-fecha-fin, #ct-cierre-periodo .cierre-comp-cb, #ct-cierre-periodo .cierre-dist-row input').forEach(el => { el.disabled = false; });
   try {
     // 1. Cargar configuración
     const cfgSnap = await getDocs(query(collection(db,'configuracionCierre'),where('uid','==',uid)));
@@ -8769,10 +8769,10 @@ async function _cierreCerrarPeriodo() {
     const mes   = new Date(fecha+'T12:00:00').toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase());
     const movs  = _cierreDistribucion.filter(d=>d.monto>0).map(d=>({
       uid, fecha, mes,
-      tipo: 'transferencia',
+      tipo: 'transfer',
       concepto: d.tipo==='reserva' ? 'Reserva '+d.nombre : 'Retiro '+d.nombre,
-      cuentaOrigen: cuentaOrigen,
-      cuentaDestino: d.tipo==='reserva' ? d.nombre : 'Retiros '+d.nombre,
+      cuentaDesde: cuentaOrigen,
+      cuentaHacia: d.tipo==='reserva' ? d.nombre : 'Retiros '+d.nombre,
       monto: Math.round(d.monto),
       origen: 'cierre',
       referenciaId: cierreRef.id,
@@ -8784,7 +8784,7 @@ async function _cierreCerrarPeriodo() {
     window._cierreDocCerrado = doc_;
     _cierreRenderBloqueado(doc_);
     // Generar PDF después de actualizar UI (el alert previo bloqueaba la descarga)
-    cierreGenerarPDF(doc_);
+    await cierreGenerarPDF(doc_);
   } catch(e) { showToast('Error al cerrar: '+e.message, 'error'); console.log(e); }
 }
 
@@ -8830,8 +8830,11 @@ function _cierreBuildDoc(estado) {
 }
 
 // ─── PDF del cierre ───────────────────────────────────────────
-function cierreGenerarPDF(doc_) {
+async function cierreGenerarPDF(doc_) {
   try {
+    if(!window.jspdf) {
+      await new Promise((res,rej)=>{ const s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'; s.onload=res; s.onerror=rej; document.head.appendChild(s); });
+    }
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF({ format:'a4' });
     const W=210, M=15;
