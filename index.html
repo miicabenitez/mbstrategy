@@ -15506,7 +15506,8 @@ async function loadProveedores() {
         const totalFac = facSnap.docs.reduce((a,d)=>a+(parseFloat(d.data().monto)||0),0);
         const totalPag = pagSnap.docs.reduce((a,d)=>a+(parseFloat(d.data().monto)||0),0);
         p._saldo = Math.max(0, totalFac - totalPag);
-      } catch(e){ p._saldo = 0; }
+        p._saldoFavor = Math.max(0, totalPag - totalFac);
+      } catch(e){ p._saldo = 0; p._saldoFavor = 0; }
     }));
     renderProveedoresModule();
   } catch(e){ console.log(e); }
@@ -15607,8 +15608,11 @@ function renderListaProveedores(filtro) {
     const col=avatarColors[i%avatarColors.length];
     const init=(p.nombre||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     const saldo=p._saldo||0;
+    const saldoFavor=p._saldoFavor||0;
     const saldoHtml=saldo>0
       ?`<span style="background:#C4786A;color:#fff;font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;">$${saldo.toLocaleString('es-AR')} pendiente</span>`
+      :saldoFavor>0
+      ?`<span style="background:rgba(90,138,98,.18);color:#5A8A62;font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;">Saldo a favor</span>`
       :`<span style="background:#5A8A62;color:#fff;font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;">Al día</span>`;
     return `<div style="padding:12px 0;border-bottom:.5px solid var(--cream-d);">
       <div style="display:flex;align-items:center;gap:10px;">
