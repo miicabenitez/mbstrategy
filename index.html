@@ -9537,6 +9537,7 @@ function animateCounter(el, targetNum, duration, fmt) {
 }
 async function loadInicio() {
   if(!currentClientUID) return;
+  try {
 
   // Logo y nombre
   const logoWrap = document.getElementById('inicio-logo-wrap');
@@ -9855,7 +9856,7 @@ async function loadInicio() {
       }
     }
 
-  } catch(e) { console.log('loadInicio error:',e); }
+  } catch(e) { console.error('loadInicio Firestore error:', e); }
 
   // Onboarding checklist
   try { await renderOnboardingChecklist(); } catch(e){ console.log('onboarding:',e); }
@@ -9863,6 +9864,17 @@ async function loadInicio() {
   // Staggered fade-in
   var dashCards = document.querySelectorAll('#ct-inicio .dash-card');
   dashCards.forEach(function(c,i){setTimeout(function(){c.classList.add('in');},80*i);});
+
+  } catch(e) {
+    console.error('loadInicio error:', e);
+    // Fallback: mostrar cards estáticos aunque falle Firestore
+    const diasCard = document.getElementById('inicio-dias-card');
+    if(diasCard) diasCard.style.display = 'block';
+    const nombreEl = document.getElementById('inicio-negocio-nombre');
+    if(nombreEl && !nombreEl.textContent) {
+      nombreEl.textContent = (currentClientData && (currentClientData.negocioNombre || currentClientData.nombre)) || 'Mi negocio';
+    }
+  }
 }
 window.loadInicio = loadInicio;
 
