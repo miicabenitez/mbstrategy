@@ -14720,8 +14720,8 @@ window.savePagoProveedor = async function() {
         facturasSeleccionadas.push(f);
         const montoPagadoNuevo = (f.montoPagado || 0) + f.pendiente;
         const nuevoEstado = montoPagadoNuevo >= f.monto ? 'pagada' : 'parcial';
-        await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',window._ccProvId,'movimientos',f.id), {
-          estadoPago: nuevoEstado,
+        await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',window._ccProvId,'facturas',f.id), {
+          estado: nuevoEstado,
           montoPagado: montoPagadoNuevo
         });
       }
@@ -14736,7 +14736,7 @@ window.savePagoProveedor = async function() {
       medio,
       concepto,
       facturasIds: facturasSeleccionadas.map(f => f.id),
-      facturasNombres: facturasSeleccionadas.map(f => f.numero || f.descripcion || 'Factura'),
+      facturasNombres: facturasSeleccionadas.map(f => f.numero || f.desc || f.descripcion || 'Factura'),
       creadoEn: new Date()
     };
     const opRef = await addDoc(collection(db,'clientes',currentClientUID,'proveedores',window._ccProvId,'pagos'), opData);
