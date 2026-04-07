@@ -14092,58 +14092,23 @@ function _nocRecalcTotal() {
 function _nocRenderItems() {
   const cont = document.getElementById('noc-items-container');
   if(!cont) return;
-  const prods = _prodCompra || [];
-  const prodOpts = prods.map(p =>
-    `<option value="${p.id}" data-precio="${parseFloat(p.precio)||0}">${p.nombre}${p.unidad?' ('+p.unidad+')':''}</option>`
-  ).join('');
-  cont.innerHTML = _nocItems.map((it, i) => {
-    const esOtro = it.esOtro || false;
-    const selValue = esOtro ? '__otro__' : (it.prodId || '');
-    return `<div style="display:grid;grid-template-columns:1fr 70px 90px 28px;gap:6px;margin-bottom:6px;" id="noc-item-row-${i}">
-      <div style="display:flex;flex-direction:column;gap:4px;">
-        <select class="fi" style="margin-top:0;font-size:13px;padding:7px 10px;" onchange="nocSeleccionarProducto(${i},this)">
-          <option value="">Seleccionar producto...</option>
-          ${prodOpts}
-          <option value="__otro__"${esOtro?' selected':''}>Otro (texto libre)</option>
-        </select>
-        ${esOtro ? `<input type="text" class="fi" placeholder="Nombre del ítem..." value="${(it.nombre||'').replace(/"/g,'&quot;')}" style="margin-top:0;font-size:13px;padding:6px 10px;" oninput="_nocItems[${i}].nombre=this.value">` : ''}
-      </div>
+  cont.innerHTML = _nocItems.map((it, i) => `
+    <div style="display:grid;grid-template-columns:1fr 70px 90px 28px;gap:6px;margin-bottom:6px;" id="noc-item-row-${i}">
+      <input type="text" class="fi" placeholder="Descripción del ítem..." value="${(it.nombre||'').replace(/"/g,'&quot;')}" style="margin-top:0;font-size:13px;padding:7px 10px;"
+        oninput="_nocItems[${i}].nombre=this.value">
       <input type="number" class="fi" placeholder="1" value="${it.cantidad||''}" min="0" style="margin-top:0;font-size:13px;padding:7px 8px;text-align:center;"
         oninput="_nocItems[${i}].cantidad=parseFloat(this.value)||0;_nocRecalcTotal()">
       <input type="number" class="fi" placeholder="0" value="${it.precio||''}" min="0" style="margin-top:0;font-size:13px;padding:7px 8px;text-align:right;"
         oninput="_nocItems[${i}].precio=parseFloat(this.value)||0;_nocRecalcTotal()">
       <button onclick="nocEliminarItem(${i})" style="width:28px;height:34px;border-radius:6px;border:.5px solid var(--cream-d);background:var(--cream);color:var(--text-l);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="Eliminar">×</button>
-    </div>`;
-  }).join('');
-  // Set select values after render (can't set selected in innerHTML reliably for dynamic values)
-  _nocItems.forEach((it, i) => {
-    const sel = cont.querySelector(`#noc-item-row-${i} select`);
-    if(sel && !it.esOtro && it.prodId) sel.value = it.prodId;
-  });
+    </div>`).join('');
 }
-window.nocSeleccionarProducto = function(i, sel) {
-  const val = sel.value;
-  if(val === '__otro__') {
-    _nocItems[i] = { ..._nocItems[i], esOtro: true, prodId: null, nombre: '' };
-  } else if(val) {
-    const prod = (_prodCompra||[]).find(p => p.id === val);
-    _nocItems[i] = { ..._nocItems[i], esOtro: false, prodId: val, nombre: prod?.nombre || '' };
-    // Autocompletar precio si el producto lo tiene guardado
-    if(parseFloat(prod?.precio) > 0) {
-      _nocItems[i].precio = parseFloat(prod.precio);
-    }
-  } else {
-    _nocItems[i] = { ..._nocItems[i], esOtro: false, prodId: null, nombre: '' };
-  }
-  _nocRenderItems();
-  _nocRecalcTotal();
-};
 window.nocAgregarItem = function() {
-  _nocItems.push({ esOtro: false, prodId: null, nombre: '', cantidad: 1, precio: 0 });
+  _nocItems.push({ nombre: '', cantidad: 1, precio: 0 });
   _nocRenderItems();
   setTimeout(() => {
-    const selects = document.querySelectorAll('#noc-items-container select');
-    if(selects.length) selects[selects.length-1].focus();
+    const inputs = document.querySelectorAll('#noc-items-container input[type="text"]');
+    if(inputs.length) inputs[inputs.length-1].focus();
   }, 30);
 };
 window.nocEliminarItem = function(i) {
@@ -14151,8 +14116,11 @@ window.nocEliminarItem = function(i) {
   _nocRenderItems();
   _nocRecalcTotal();
 };
-window.abrirNuevaOCDirecta = function() {
-  _nocItems = [{ esOtro: false, prodId: null, nombre: '', cantidad: 1, precio: 0 }];
+window.abrirNuevaOCDirecta = async function() {
+  if(!(_proveedores && _proveedores.length > 0)) {
+    try { await loadProveedores(); } catch(e) {}
+  }
+  _nocItems = [{ nombre: '', cantidad: 1, precio: 0 }];
   const modal = document.getElementById('modal-nueva-oc-directa');
   if(!modal) return;
   // Populate proveedor select
@@ -14188,8 +14156,8 @@ window.guardarNuevaOCDirecta = async function() {
   const provId = provSel?.value || '';
   const prov = (_proveedores||[]).find(p => p.id === provId);
   if(!prov) { showToast('Seleccioná un proveedor.', 'info'); return; }
-  const items = _nocItems.filter(it => it.prodId || (it.esOtro && (it.nombre||'').trim()));
-  if(items.length === 0) { showToast('Seleccioná al menos un producto o completá el nombre del ítem.', 'info'); return; }
+  const items = _nocItems.filter(it => (it.nombre||'').trim());
+  if(items.length === 0) { showToast('Agregá al menos un ítem con descripción.', 'info'); return; }
   const total = items.reduce((a, it) => a + (parseFloat(it.cantidad||0) * parseFloat(it.precio||0)), 0);
   const fecha = document.getElementById('noc-fecha')?.value || new Date().toISOString().split('T')[0];
   const notas = (document.getElementById('noc-notas')?.value || '').trim();
