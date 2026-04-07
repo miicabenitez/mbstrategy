@@ -2555,6 +2555,7 @@ input[type=number]{-moz-appearance:textfield;}
                 </div>
               </div>
               <div style="display:flex;gap:6px;flex-shrink:0;">
+                <button id="mcd-quick-cobro" onclick="" style="background:#4a5e4d;border:none;border-radius:9px;padding:6px 11px;font-size:11px;color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;">+ Cobro</button>
                 <button id="mcd-quick-presup" onclick="" style="background:var(--sage-xl);border:.5px solid var(--sage-light);border-radius:9px;padding:6px 11px;font-size:11px;color:var(--topbar);cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;">+ Presupuesto</button>
                 <button id="mcd-edit-btn" onclick="" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
               </div>
@@ -11219,7 +11220,7 @@ function renderMcLista(clientes) {
     const col  = avatarColors[i % avatarColors.length];
     const init = (c.nombre||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     const cobradoReal = parseFloat(c.totalCobrado)||0;
-    const presapsAprobados = _mcPresupuestos.filter(p=>(p.clienteId===c.id||p.cliente===c.nombre)&&p.estado==='Aprobado').reduce((s,p)=>s+getPresupMonto(p),0);
+    const presapsAprobados = _mcPresupuestos.filter(p=>(p.clienteId===c.id||p.cliente===c.nombre)&&(p.estado==='Aprobado'||p.estado==='Cobrado')).reduce((s,p)=>s+getPresupMonto(p),0);
     const saldo = presapsAprobados - cobradoReal;
     const saldoColor = saldo > 0 ? 'var(--err)' : saldo < 0 ? 'var(--ok)' : 'var(--text)';
     const saldoTxt = saldo > 0
@@ -11358,9 +11359,11 @@ window.openMcDetalle = async function(id) {
   }
 
   // Quick actions
+  const qCobro = document.getElementById('mcd-quick-cobro');
   const qPresup = document.getElementById('mcd-quick-presup');
   const editBtn = document.getElementById('mcd-edit-btn');
   const newPresupBtn = document.getElementById('mcd-new-presup-btn');
+  if(qCobro) qCobro.onclick = () => abrirModalCobroLibre(id, c.nombre);
   if(qPresup) qPresup.onclick = () => openMcPresupModal(id, c.nombre);
   if(editBtn) editBtn.onclick = () => editMcCliente(id, null);
   if(newPresupBtn) newPresupBtn.onclick = () => openMcPresupModal(id, c.nombre);
@@ -11619,6 +11622,108 @@ window.eliminarCobro = function(clienteId, cobroId, monto) {
       openMcDetalle(clienteId);
     } catch(e){ showToast('Error: '+e.message, 'error'); }
   }, 'Eliminar cobro');
+};
+
+// ===== COBRO LIBRE DESDE CC CLIENTE =====
+window.abrirModalCobroLibre = function(clienteId, clienteNombre) {
+  const modal = document.getElementById('modal-cobro-libre');
+  if(!modal) return;
+  document.getElementById('mcl-cobro-cliente-id').value = clienteId || '';
+  document.getElementById('mcl-cobro-cliente-nombre').value = clienteNombre || '';
+  document.getElementById('mcl-cobro-monto').value = '';
+  document.getElementById('mcl-cobro-concepto').value = '';
+  document.getElementById('mcl-cobro-fecha').value = new Date().toISOString().split('T')[0];
+  document.getElementById('mcl-cobro-forma').value = 'Transferencia';
+  // Checkbox vincular a presupuesto
+  const chk = document.getElementById('mcl-vincular-check');
+  const presupSel = document.getElementById('mcl-presup-sel');
+  if(chk) chk.checked = false;
+  if(presupSel) presupSel.style.display = 'none';
+  // Populate presupuestos pendientes
+  if(presupSel) {
+    const pendientes = (_mcPresupuestos||[]).filter(p =>
+      (p.clienteId===clienteId || p.cliente===clienteNombre) &&
+      (p.estado==='Aprobado') &&
+      (getPresupMonto(p) - (parseFloat(p.cobradoPorPresup)||0)) > 0
+    );
+    presupSel.innerHTML = '<option value="">Sin vincular</option>' +
+      pendientes.map(p => {
+        const pend = getPresupMonto(p) - (parseFloat(p.cobradoPorPresup)||0);
+        return '<option value="'+p.id+'">'+( p.descripcion||'Presupuesto')+' — $'+pend.toLocaleString('es-AR')+' pendiente</option>';
+      }).join('');
+  }
+  const btn = document.getElementById('mcl-cobro-btn');
+  if(btn) { btn.disabled=false; btn.textContent='Registrar cobro'; }
+  const saved = document.getElementById('mcl-cobro-saved');
+  if(saved) saved.style.display='none';
+  modal.style.display = 'flex';
+};
+window.mcl_togglePresup = function(chk) {
+  const sel = document.getElementById('mcl-presup-sel');
+  if(sel) sel.style.display = chk.checked ? 'block' : 'none';
+};
+window.cerrarModalCobroLibre = function() {
+  const modal = document.getElementById('modal-cobro-libre');
+  if(modal) modal.style.display = 'none';
+};
+window.guardarCobroLibre = async function() {
+  if(!currentClientUID) return;
+  const clienteId = document.getElementById('mcl-cobro-cliente-id').value;
+  const clienteNombre = document.getElementById('mcl-cobro-cliente-nombre').value;
+  const monto = parseFloat(document.getElementById('mcl-cobro-monto').value)||0;
+  if(!monto) { showToast('Ingresá el monto.', 'info'); return; }
+  const fecha = document.getElementById('mcl-cobro-fecha').value || new Date().toISOString().split('T')[0];
+  const concepto = document.getElementById('mcl-cobro-concepto').value.trim() || ('Cobro de '+clienteNombre);
+  const formaPago = document.getElementById('mcl-cobro-forma').value;
+  const presupId = (document.getElementById('mcl-vincular-check')?.checked)
+    ? (document.getElementById('mcl-presup-sel')?.value || '')
+    : '';
+  const btn = document.getElementById('mcl-cobro-btn');
+  if(btn) { btn.disabled=true; btn.textContent='Registrando...'; }
+  try {
+    const data = { concepto, formaPago, monto, moneda:'ARS', fecha, presupId: presupId||null, creadoEn: new Date().toISOString() };
+    await addDoc(collection(db,'clientes',currentClientUID,'misClientes',clienteId,'cobros'), data);
+    // Actualizar totalCobrado
+    const cLocal = _mcClientes.find(x=>x.id===clienteId);
+    const prev = parseFloat(cLocal?.totalCobrado||0);
+    const nuevo = prev + monto;
+    await updateDoc(doc(db,'clientes',currentClientUID,'misClientes',clienteId),{ totalCobrado:nuevo, ultimoContacto:new Date().toISOString() });
+    if(cLocal) { cLocal.totalCobrado=nuevo; cLocal.ultimoContacto=new Date().toISOString(); }
+    // Si vinculado a presupuesto, actualizar cobradoPorPresup
+    if(presupId) {
+      try {
+        const pCache = (_mcPresupuestos||[]).find(x=>x.id===presupId);
+        const montoPresup = pCache ? getPresupMonto(pCache) : 0;
+        if(pCache && montoPresup > 0) {
+          const cobradoAnterior = parseFloat(pCache.cobradoPorPresup||0);
+          const nuevoCobrado = cobradoAnterior + monto;
+          const upd = { cobradoPorPresup: nuevoCobrado };
+          if(nuevoCobrado >= montoPresup) upd.estado = 'Cobrado';
+          await updateDoc(doc(db,'clientes',currentClientUID,'presupuestos',presupId), upd);
+          pCache.cobradoPorPresup = nuevoCobrado;
+          if(upd.estado) pCache.estado = 'Cobrado';
+        }
+      } catch(e){ console.log('Error vinculando presupuesto:', e); }
+    }
+    // Registrar ingreso en contabilidad
+    const mesIngreso = new Date(fecha+'T12:00:00').toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,ch=>ch.toUpperCase());
+    await addDoc(collection(db,'clientes',currentClientUID,'ingresos'),{
+      concepto, categoria:'Cobro de cliente', monto, fecha, mes:mesIngreso,
+      origen:'comercial', clienteId, cliente:clienteNombre, creadoEn:new Date().toISOString()
+    });
+    if(btn) { btn.disabled=false; btn.textContent='Registrar cobro'; }
+    const saved = document.getElementById('mcl-cobro-saved');
+    if(saved) saved.style.display='block';
+    setTimeout(async () => {
+      if(saved) saved.style.display='none';
+      cerrarModalCobroLibre();
+      await loadMcModule();
+      if(_currentMcClienteId === clienteId) openMcDetalle(clienteId);
+    }, 1400);
+  } catch(e) {
+    showToast('Error: '+e.message, 'error');
+    if(btn) { btn.disabled=false; btn.textContent='Registrar cobro'; }
+  }
 };
 
 function renderMcDetallePresupuestos(list, clienteId, clienteNombre) {
@@ -11956,7 +12061,7 @@ window.deleteMcCliente = function(id, event) {
 function renderMcVentas(presups, clienteId) {
   const el = document.getElementById('mcd-ventas');
   if(!el) return;
-  const aprobados = presups.filter(p => p.estado === 'Aprobado');
+  const aprobados = presups.filter(p => p.estado === 'Aprobado' || p.estado === 'Cobrado');
   if(aprobados.length === 0) {
     el.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin ventas aún. Aprobá un presupuesto.</div>';
     return;
@@ -18312,6 +18417,47 @@ window.doResetPassword = async function(){
       <button onclick="cerrarModalNuevaOCDirecta()" style="padding:9px 18px;border-radius:8px;border:.5px solid var(--cream-d);background:var(--cream);color:var(--text-m);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;">Cancelar</button>
       <button id="noc-btn-guardar" onclick="guardarNuevaOCDirecta()" style="padding:9px 20px;border-radius:8px;border:none;background:#4a5e4d;color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;">Emitir OC</button>
     </div>
+  </div>
+</div>
+
+<!-- Modal cobro libre CC cliente -->
+<div id="modal-cobro-libre" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1200;align-items:center;justify-content:center;">
+  <input type="hidden" id="mcl-cobro-cliente-id">
+  <input type="hidden" id="mcl-cobro-cliente-nombre">
+  <div style="background:#fff;border-radius:16px;padding:24px;width:400px;max-width:96vw;box-shadow:0 8px 32px rgba(0,0,0,.18);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--text);">Registrar cobro</div>
+      <button onclick="cerrarModalCobroLibre()" style="width:28px;height:28px;border-radius:50%;border:.5px solid var(--cream-d);background:var(--cream);font-size:16px;color:var(--text-l);cursor:pointer;">×</button>
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;display:block;margin-bottom:5px;">Monto</label>
+      <input type="number" id="mcl-cobro-monto" class="fi" placeholder="0" style="margin-top:0;" min="0">
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;display:block;margin-bottom:5px;">Fecha</label>
+      <input type="date" id="mcl-cobro-fecha" class="fi" style="margin-top:0;">
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;display:block;margin-bottom:5px;">Medio de pago</label>
+      <select id="mcl-cobro-forma" class="fi" style="margin-top:0;">
+        <option>Transferencia</option><option>Efectivo</option><option>Mercado Pago</option><option>Tarjeta</option><option>QR</option>
+      </select>
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;display:block;margin-bottom:5px;">Concepto (opcional)</label>
+      <input type="text" id="mcl-cobro-concepto" class="fi" placeholder="Ej: seña, cuota 1..." style="margin-top:0;">
+    </div>
+    <div style="margin-bottom:16px;">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text-m);">
+        <input type="checkbox" id="mcl-vincular-check" onchange="mcl_togglePresup(this)"> Vincular a presupuesto pendiente
+      </label>
+      <select id="mcl-presup-sel" class="fi" style="margin-top:8px;display:none;"></select>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button onclick="cerrarModalCobroLibre()" style="padding:9px 18px;border-radius:8px;border:.5px solid var(--cream-d);background:var(--cream);color:var(--text-m);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;">Cancelar</button>
+      <button id="mcl-cobro-btn" onclick="guardarCobroLibre()" style="padding:9px 20px;border-radius:8px;border:none;background:#4a5e4d;color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;">Registrar cobro</button>
+    </div>
+    <div id="mcl-cobro-saved" class="saved-msg" style="display:none;">✓ Cobro registrado</div>
   </div>
 </div>
 
