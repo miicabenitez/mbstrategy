@@ -14315,6 +14315,7 @@ window.buscarHistorialCompra = function(q) { renderHistorialCompra(q); };
 let _ccProvId = null, _ccFacturas = [], _ccPagos = [], _ccOCsComoFactura = [];
 
 window.abrirCuentaCorriente = async function(provId) {
+  console.log('abrirCC inicio', new Date().toISOString());
   const prov = _proveedores.find(p=>p.id===provId);
   if(!prov) return;
   _ccProvId = provId;
@@ -14325,6 +14326,7 @@ window.abrirCuentaCorriente = async function(provId) {
   if(_provLv) _provLv.style.display = 'none';
   const _ccView = document.getElementById('prov-cc-view');
   if(_ccView) _ccView.style.display = 'block';
+  console.log('swap ejecutado - lista hidden, cc visible', '_provLv:', _provLv ? 'encontrado' : 'NULL', '_ccView:', _ccView ? 'encontrado' : 'NULL');
 
   // Header sincrónico (prov ya disponible sin necesidad de fetch)
   const setEl=(id,v)=>{const el=document.getElementById(id);if(el)el.innerHTML=v;};
