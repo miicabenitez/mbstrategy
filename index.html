@@ -14866,6 +14866,7 @@ window.savePagoProveedor = async function() {
       concepto,
       facturasIds: facturasSeleccionadas.map(f => f.id),
       facturasNombres: facturasSeleccionadas.map(f => f.numero || f.desc || f.descripcion || 'Factura'),
+      facturasMontos: facturasSeleccionadas.map(f => f.pendiente || parseFloat(f.monto) || 0),
       creadoEn: new Date()
     };
     const opRef = await addDoc(collection(db,'clientes',currentClientUID,'proveedores',window._ccProvId,'pagos'), opData);
@@ -15011,12 +15012,15 @@ window.generarPDFOrdenPago = async function() {
   y += 8;
 
   const facturas = op.facturasNombres || [];
+  const facturasMontos = op.facturasMontos || [];
   if(facturas.length > 0) {
     facturas.forEach((nombre, idx) => {
       const bg = idx%2===0 ? CREAM : WHITE_C;
       setFill(bg); pdf.rect(M, y, contentW, 8, 'F');
       setTC(TEXT); pdf.setFontSize(9); pdf.setFont('helvetica','normal');
       pdf.text(nombre, M+3, y+5.5);
+      const monto = facturasMontos[idx];
+      if(monto != null) pdf.text('$'+parseFloat(monto).toLocaleString('es-AR'), W-M-3, y+5.5, {align:'right'});
       y += 8;
     });
   } else {
