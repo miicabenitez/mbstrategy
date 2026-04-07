@@ -14918,8 +14918,15 @@ window.savePagoProveedor = async function() {
     window._savingPago = false;
   }
 };
-window.generarPDFOrdenPago = function() {
+window.generarPDFOrdenPago = async function() {
   if(!window._ultimaOP) { showToast('No hay datos de la orden de pago.', 'info'); return; }
+  if(!window.jspdf) {
+    await new Promise((res,rej)=>{
+      const s=document.createElement('script');
+      s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+      s.onload=res; s.onerror=rej; document.head.appendChild(s);
+    });
+  }
   const op = window._ultimaOP;
   const prov = document.getElementById('npp-prov-nombre')?.textContent || 'Proveedor';
   const negocio = document.getElementById('negocio-nombre-display')?.textContent || '';
@@ -15002,6 +15009,14 @@ window.generarPDFOrdenPago = function() {
 window.verPDFop = async function(movId) {
   if(!window._ccProvId || !currentClientUID) return;
   try {
+    // Cargar jsPDF si no está disponible
+    if(!window.jspdf) {
+      await new Promise((res,rej)=>{
+        const s=document.createElement('script');
+        s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+        s.onload=res; s.onerror=rej; document.head.appendChild(s);
+      });
+    }
     const snap = await getDoc(doc(db,'clientes',currentClientUID,'proveedores',window._ccProvId,'pagos',movId));
     if(!snap.exists()) return;
     window._ultimaOP = { ...snap.data(), id: movId };
