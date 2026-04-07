@@ -14089,6 +14089,12 @@ function _nocRecalcTotal() {
   const el = document.getElementById('noc-total-display');
   if(el) el.textContent = '$' + total.toLocaleString('es-AR');
 }
+window._nocSetVal = function(i, field, val) {
+  if(_nocItems[i]) { _nocItems[i][field] = parseFloat(val)||0; _nocRecalcTotal(); }
+};
+window._nocSetNombre = function(i, val) {
+  if(_nocItems[i]) _nocItems[i].nombre = val;
+};
 function _nocRenderItems() {
   const cont = document.getElementById('noc-items-container');
   if(!cont) return;
@@ -14102,12 +14108,12 @@ function _nocRenderItems() {
       + '<option value="__otro__"'+(it.esOtro?' selected':'')+'>Otro (texto libre)</option>'
       + '</select>';
     const textoLibre = it.esOtro
-      ? '<input type="text" class="fi" placeholder="Descripción..." value="'+(it.nombre||'').replace(/"/g,'&quot;')+'" style="margin-top:4px;font-size:13px;padding:6px 10px;" oninput="_nocItems['+i+'].nombre=this.value">'
+      ? '<input type="text" class="fi" placeholder="Descripción..." value="'+(it.nombre||'').replace(/"/g,'&quot;')+'" style="margin-top:4px;font-size:13px;padding:6px 10px;" oninput="_nocSetNombre('+i+',this.value)">'
       : '';
     return '<div style="display:grid;grid-template-columns:1fr 70px 90px 28px;gap:6px;margin-bottom:6px;" id="noc-item-row-'+i+'">'
       + '<div style="display:flex;flex-direction:column;">' + selectHtml + textoLibre + '</div>'
-      + '<input type="number" class="fi" placeholder="1" value="'+(it.cantidad||'')+'" min="0" style="margin-top:0;font-size:13px;padding:7px 8px;text-align:center;" oninput="_nocItems['+i+'].cantidad=parseFloat(this.value)||0;_nocRecalcTotal()">'
-      + '<input type="number" class="fi" placeholder="0" value="'+(it.precio||'')+'" min="0" style="margin-top:0;font-size:13px;padding:7px 8px;text-align:right;" oninput="_nocItems['+i+'].precio=parseFloat(this.value)||0;_nocRecalcTotal()">'
+      + '<input type="number" class="fi" placeholder="1" value="'+(it.cantidad||'')+'" min="0" style="margin-top:0;font-size:13px;padding:7px 8px;text-align:center;" oninput="_nocSetVal('+i+',\'cantidad\',this.value)">'
+      + '<input type="number" class="fi" placeholder="0" value="'+(it.precio||'')+'" min="0" style="margin-top:0;font-size:13px;padding:7px 8px;text-align:right;" oninput="_nocSetVal('+i+',\'precio\',this.value)">'
       + '<button onclick="nocEliminarItem('+i+')" style="width:28px;height:34px;border-radius:6px;border:.5px solid var(--cream-d);background:var(--cream);color:var(--text-l);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="Eliminar">×</button>'
       + '</div>';
   }).join('');
