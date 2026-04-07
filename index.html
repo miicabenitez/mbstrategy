@@ -14320,22 +14320,13 @@ window.abrirCuentaCorriente = async function(provId) {
   _ccProvId = provId;
   window._ccProvId = provId;
 
-  // Asegurar que _ordenesCompra esté cargado
-  if(!window._ordenesCompra || window._ordenesCompra.length===0) {
-    try {
-      const ocSnap = await getDocs(collection(db,'clientes',currentClientUID,'ordenesCompra'));
-      window._ordenesCompra = [];
-      ocSnap.forEach(d=>{ const data=d.data(); if(!data.eliminado) window._ordenesCompra.push({id:d.id,...data}); });
-    } catch(e){ window._ordenesCompra = []; }
-  }
-
-  // Mostrar vista CC, ocultar lista (intercambio en flujo normal, sin z-index)
+  // UI swap inmediato — antes de cualquier await
   const _provLv = document.getElementById('prov-lista-view');
   if(_provLv) _provLv.style.display = 'none';
   const _ccView = document.getElementById('prov-cc-view');
   if(_ccView) _ccView.style.display = 'block';
 
-  // Datos del proveedor en header
+  // Header sincrónico (prov ya disponible sin necesidad de fetch)
   const setEl=(id,v)=>{const el=document.getElementById(id);if(el)el.innerHTML=v;};
   setEl('cc-prov-nombre-full', prov.nombre);
   setEl('cc-prov-cat-full', [prov.categoria, prov.tel].filter(Boolean).join(' · '));
@@ -14344,6 +14335,18 @@ window.abrirCuentaCorriente = async function(provId) {
     prov.categoria ? `<div><span style="color:var(--text-l);">Categoría:</span> ${prov.categoria}</div>` : '',
     prov.notas ? `<div><span style="color:var(--text-l);">Notas:</span> ${prov.notas}</div>` : '',
   ].filter(Boolean).join('') || '<span style="color:var(--text-l);">Sin datos adicionales.</span>');
+  // Placeholder mientras cargan movimientos
+  const _movEl = document.getElementById('cc-movimientos-full');
+  if(_movEl) _movEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-l);font-size:13px;">Cargando...</div>';
+
+  // Asegurar que _ordenesCompra esté cargado
+  if(!window._ordenesCompra || window._ordenesCompra.length===0) {
+    try {
+      const ocSnap = await getDocs(collection(db,'clientes',currentClientUID,'ordenesCompra'));
+      window._ordenesCompra = [];
+      ocSnap.forEach(d=>{ const data=d.data(); if(!data.eliminado) window._ordenesCompra.push({id:d.id,...data}); });
+    } catch(e){ window._ordenesCompra = []; }
+  }
 
   // OC del proveedor
   const ocsDeEsteProv = _ordenesCompra.filter(o=>o.proveedorId===provId);
