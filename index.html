@@ -14928,94 +14928,132 @@ window.generarPDFOrdenPago = async function() {
     });
   }
   const op = window._ultimaOP;
-  // Cargar datos del negocio desde Firestore (igual que PDF de Presupuestos y OC)
-  let negocio = '';
+  // Datos del negocio desde Firestore
+  let negocioNombre = 'Mi negocio';
   let negocioData = {};
   try {
     const negDoc = await getDoc(doc(db,'clientes',currentClientUID));
     if(negDoc.exists()) {
       negocioData = negDoc.data();
-      negocio = negocioData.negocioNombre || negocioData.nombre || '';
+      negocioNombre = negocioData.negocioNombre || negocioData.nombre || negocioNombre;
     }
   } catch(e) {}
-  // Nombre del proveedor: primero desde _proveedores en memoria, fallback al DOM
+  const negocioTel   = negocioData.negocioTel   || '';
+  const negocioEmail = negocioData.negocioEmail  || '';
+  const negocioCuit  = negocioData.negocioCuit   || '';
+  const negocioRubro = negocioData.negocioRubro  || '';
+  const logoBase64   = negocioData.logoNegocio   || null;
+  const contactoLineas = [negocioRubro, negocioTel, negocioEmail, negocioCuit ? 'CUIT '+negocioCuit : ''].filter(Boolean);
+  // Nombre del proveedor
   const provObj = (window._proveedores||[]).find(p=>p.id===window._ccProvId);
   const prov = provObj?.nombre || document.getElementById('npp-prov-nombre')?.textContent || 'Proveedor';
+
   const { jsPDF } = window.jspdf;
-  const doc2 = new jsPDF({ format: 'a4' });
-  const W = 210, M = 15;
-  // Header
-  doc2.setFillColor(122,142,125);
-  doc2.rect(0,0,W,32,'F');
-  doc2.setTextColor(255,255,255);
-  doc2.setFont('helvetica','bold');
-  doc2.setFontSize(14);
-  doc2.text(negocio || 'MB Strategy', M, 13);
-  doc2.setFontSize(10);
-  doc2.setFont('helvetica','normal');
-  doc2.text('ORDEN DE PAGO', W-M, 13, {align:'right'});
-  doc2.setFontSize(9);
-  doc2.text(`N° ${op.numero || 'OP-0001'}`, W-M, 20, {align:'right'});
-  doc2.text(`Fecha: ${op.fecha || ''}`, W-M, 26, {align:'right'});
-  // Proveedor
-  doc2.setTextColor(60,60,58);
-  doc2.setFontSize(10);
-  doc2.setFont('helvetica','bold');
-  doc2.text('Proveedor:', M, 42);
-  doc2.setFont('helvetica','normal');
-  doc2.text(prov, M+30, 42);
-  doc2.setFont('helvetica','bold');
-  doc2.text('Medio de pago:', M, 50);
-  doc2.setFont('helvetica','normal');
-  doc2.text(op.medio || 'Transferencia', M+38, 50);
-  // Facturas
-  doc2.setFont('helvetica','bold');
-  doc2.text('Facturas canceladas:', M, 62);
-  doc2.setDrawColor(200,200,200);
-  doc2.line(M, 65, W-M, 65);
-  let y = 72;
-  doc2.setFont('helvetica','normal');
-  doc2.setFontSize(9);
-  if(op.facturasNombres && op.facturasNombres.length > 0) {
-    op.facturasNombres.forEach((nombre, i) => {
-      doc2.text(`• ${nombre}`, M+2, y);
-      y += 7;
+  const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+  const W=210, M=20, contentW=W-M*2;
+
+  const SAGE_DARK=[122,142,125];
+  const CREAM=[245,246,243], CREAM_D=[208,207,201];
+  const TEXT=[44,44,44], TEXT_L=[136,135,128], WHITE_C=[255,255,255];
+  const setFill=c=>pdf.setFillColor(...c);
+  const setDraw=c=>pdf.setDrawColor(...c);
+  const setTC=c=>pdf.setTextColor(...c);
+
+  // ── HEADER ──
+  const headerH = 34 + Math.max(0, (contactoLineas.length - 2)) * 4;
+  setFill(SAGE_DARK); pdf.rect(0, 0, W, headerH, 'F');
+
+  // Logo
+  let logoX = M;
+  if(logoBase64) {
+    try { pdf.addImage(logoBase64,'PNG',M,6,18,18,undefined,'FAST'); logoX = M+22; } catch(e){}
+  }
+
+  // Nombre negocio
+  setTC(WHITE_C); pdf.setFontSize(14); pdf.setFont('helvetica','bold');
+  pdf.text(negocioNombre, logoX, 14);
+  pdf.setFontSize(8); pdf.setFont('helvetica','normal');
+  setTC([220,230,222]);
+  contactoLineas.forEach((l,i) => pdf.text(l, logoX, 20+i*4));
+
+  // Derecha: tipo + número + fecha
+  setTC(WHITE_C); pdf.setFontSize(16); pdf.setFont('helvetica','bold');
+  pdf.text('Orden de Pago', W-M, 14, {align:'right'});
+  pdf.setFontSize(10); pdf.setFont('helvetica','normal');
+  setTC([220,230,222]);
+  pdf.text(`${op.numero || 'OP-0001'}`, W-M, 21, {align:'right'});
+  pdf.text(op.fecha || '', W-M, 27, {align:'right'});
+
+  let y = headerH + 10;
+
+  // ── META: Proveedor / Medio / Cuenta ──
+  setFill(CREAM); setDraw(CREAM_D); pdf.setLineWidth(0.3);
+  pdf.roundedRect(M, y, contentW, 20, 3, 3, 'FD');
+  setTC(TEXT_L); pdf.setFontSize(7); pdf.setFont('helvetica','bold');
+  pdf.text('PROVEEDOR', M+4, y+6);
+  pdf.text('MEDIO DE PAGO', M+90, y+6);
+  pdf.text('FECHA', M+148, y+6);
+  setTC(TEXT); pdf.setFontSize(11); pdf.setFont('helvetica','bold');
+  pdf.text(prov, M+4, y+14);
+  pdf.setFont('helvetica','normal'); pdf.setFontSize(10);
+  pdf.text(op.medio || 'Transferencia', M+90, y+14);
+  pdf.text(op.fecha || '', M+148, y+14);
+  y += 28;
+
+  // ── FACTURAS CANCELADAS ──
+  setTC(TEXT_L); pdf.setFontSize(7); pdf.setFont('helvetica','bold');
+  pdf.text('FACTURAS CANCELADAS', M, y); y += 5;
+
+  setFill(SAGE_DARK); pdf.rect(M, y, contentW, 8, 'F');
+  setTC(WHITE_C); pdf.setFontSize(8); pdf.setFont('helvetica','bold');
+  pdf.text('Factura / Concepto', M+3, y+5.5);
+  pdf.text('Monto', W-M-3, y+5.5, {align:'right'});
+  y += 8;
+
+  const facturas = op.facturasNombres || [];
+  if(facturas.length > 0) {
+    facturas.forEach((nombre, idx) => {
+      const bg = idx%2===0 ? CREAM : WHITE_C;
+      setFill(bg); pdf.rect(M, y, contentW, 8, 'F');
+      setTC(TEXT); pdf.setFontSize(9); pdf.setFont('helvetica','normal');
+      pdf.text(nombre, M+3, y+5.5);
+      y += 8;
     });
   } else {
-    doc2.text('Sin facturas asociadas', M+2, y);
-    y += 7;
+    setFill(CREAM); pdf.rect(M, y, contentW, 8, 'F');
+    setTC(TEXT_L); pdf.setFontSize(9); pdf.setFont('helvetica','italic');
+    pdf.text('Sin facturas asociadas', M+3, y+5.5);
+    y += 8;
   }
   if(op.montoLibre > 0) {
-    doc2.text(`• Monto libre: $${op.montoLibre.toLocaleString('es-AR')}`, M+2, y);
-    y += 7;
+    setFill(CREAM); pdf.rect(M, y, contentW, 8, 'F');
+    setTC(TEXT); pdf.setFontSize(9); pdf.setFont('helvetica','normal');
+    pdf.text('Monto libre', M+3, y+5.5);
+    pdf.text('$'+op.montoLibre.toLocaleString('es-AR'), W-M-3, y+5.5, {align:'right'});
+    y += 8;
   }
-  // Total
-  y += 5;
-  doc2.setDrawColor(122,142,125);
-  doc2.setLineWidth(0.5);
-  doc2.line(M, y, W-M, y);
-  y += 8;
-  doc2.setFont('helvetica','bold');
-  doc2.setFontSize(12);
-  doc2.text('TOTAL:', M, y);
-  doc2.setTextColor(122,142,125);
-  doc2.text(`$${(op.monto||0).toLocaleString('es-AR')}`, W-M, y, {align:'right'});
-  // Concepto
+  y += 6;
+
+  // ── TOTAL ──
+  setFill(SAGE_DARK); pdf.rect(M, y, contentW, 10, 'F');
+  setTC(WHITE_C); pdf.setFontSize(11); pdf.setFont('helvetica','bold');
+  pdf.text('TOTAL', M+4, y+7);
+  pdf.text('$'+(op.monto||0).toLocaleString('es-AR'), W-M-3, y+7, {align:'right'});
+  y += 18;
+
+  // ── CONCEPTO ──
   if(op.concepto) {
-    y += 12;
-    doc2.setTextColor(120,120,118);
-    doc2.setFont('helvetica','normal');
-    doc2.setFontSize(9);
-    doc2.text(`Concepto: ${op.concepto}`, M, y);
+    setTC(TEXT_L); pdf.setFontSize(8); pdf.setFont('helvetica','normal');
+    pdf.text('Concepto: '+op.concepto, M, y);
+    y += 8;
   }
-  // Footer
-  doc2.setFillColor(122,142,125);
-  doc2.rect(0,277,W,20,'F');
-  doc2.setTextColor(255,255,255);
-  doc2.setFontSize(8);
-  doc2.setFont('helvetica','normal');
-  doc2.text('MB Strategy · sistema.mbstrategy.com.ar', W/2, 287, {align:'center'});
-  doc2.save(`OP-${op.numero || '0001'}-${prov}.pdf`);
+
+  // ── FOOTER ──
+  setFill(SAGE_DARK); pdf.rect(0, 277, W, 20, 'F');
+  setTC([220,230,222]); pdf.setFontSize(8); pdf.setFont('helvetica','normal');
+  pdf.text('MB Strategy · sistema.mbstrategy.com.ar', W/2, 287, {align:'center'});
+
+  pdf.save(`OP-${op.numero||'0001'}-${prov}.pdf`);
 };
 window.verPDFop = async function(movId) {
   if(!window._ccProvId || !currentClientUID) return;
