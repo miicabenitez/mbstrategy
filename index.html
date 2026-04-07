@@ -322,8 +322,7 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
   #calc-form-grid{grid-template-columns:1fr !important;}
   /* ── Indicadores KPI banner — font-size adaptativo ── */
   #ct-kpis [style*="grid-template-columns:repeat(3"]{grid-template-columns:1fr 1fr 1fr !important;}
-  #ck-ing,#ck-eg,#ck-gan{font-size:18px !important;word-break:break-all;}
-  #ck-gan{font-size:18px !important;}
+  #ck-ing,#ck-eg,#ck-gan{font-size:16px !important;}
   /* ── 2. Embi card Indicadores — columna en mobile ── */
   #ct-kpis [style*="background:#1e2d20"]{flex-direction:column !important;padding:20px 18px !important;}
   #ct-kpis [style*="background:#1e2d20"] [style*="flex-shrink:0"]{flex-shrink:unset !important;width:100%;}
@@ -16238,7 +16237,7 @@ window.showClientMod = function(mod, btn) {
             sn.style.pointerEvents = '';
           });
         }
-      }, 1500);
+      }, 800);
     }, {passive: true});
   }
   // Init after DOM ready
@@ -16252,6 +16251,9 @@ window.showClientMod = function(mod, btn) {
 window.bottomNav = function(mod, btn) {
   document.querySelectorAll('.bottom-nav-btn').forEach(b => b.classList.remove('active'));
   if(btn) btn.classList.add('active');
+  // Cerrar CC proveedor si está abierta
+  const ccv = document.getElementById('prov-cc-view');
+  if(ccv && ccv.style.display !== 'none' && typeof cerrarCCView === 'function') cerrarCCView();
   // Sincronizar topbar tabs también
   const topBtn = document.querySelector('#cNav .nt[onclick*="\''+mod+'\'"]');
   window.showClientMod(mod, topBtn);
