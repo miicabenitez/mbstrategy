@@ -320,6 +320,10 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
   body.client-view [style*="border-radius:13px"]{overflow:hidden;word-break:break-word;max-width:100%;box-sizing:border-box;}
   /* Calculador form grid */
   #calc-form-grid{grid-template-columns:1fr !important;}
+  /* ── Indicadores KPI banner — font-size adaptativo ── */
+  #ct-kpis [style*="grid-template-columns:repeat(3"]{grid-template-columns:1fr 1fr 1fr !important;}
+  #ck-ing,#ck-eg,#ck-gan{font-size:18px !important;word-break:break-all;}
+  #ck-gan{font-size:18px !important;}
   /* ── 2. Embi card Indicadores — columna en mobile ── */
   #ct-kpis [style*="background:#1e2d20"]{flex-direction:column !important;padding:20px 18px !important;}
   #ct-kpis [style*="background:#1e2d20"] [style*="flex-shrink:0"]{flex-shrink:unset !important;width:100%;}
@@ -715,7 +719,7 @@ input[type=number]{-moz-appearance:textfield;}
     <div class="login-left-brand">MB STRATEGY</div>
     <div class="login-left-rule"></div>
     <div class="login-left-tagline">Estructura, control y decisiones claras.</div>
-    <div style="position:absolute;bottom:28px;left:0;right:0;text-align:center;font-size:11px;color:rgba(255,255,255,.3);"><a href="https://mbstrategy.com.ar" target="_blank" style="color:rgba(255,255,255,.3);text-decoration:none;">mbstrategy.com.ar</a>&nbsp;·&nbsp;<a href="/terminos.html" target="_blank" style="color:rgba(255,255,255,.3);text-decoration:none;">Términos y condiciones</a></div>
+    <div style="position:absolute;bottom:28px;left:0;right:0;text-align:center;font-size:11px;color:rgba(255,255,255,.3);"><a href="https://mbstrategy.com.ar" target="_blank" style="color:rgba(255,255,255,.3);text-decoration:none;">mbstrategy.com.ar</a></div>
   </div>
   <div class="login-right">
     <div class="login-card">
@@ -723,7 +727,7 @@ input[type=number]{-moz-appearance:textfield;}
       <div class="login-sub">Ingresá a tu cuenta para continuar.</div>
       <div class="fg"><label class="fl">Email</label><input type="email" class="fi" id="le" placeholder="tu@email.com"/></div>
       <div class="fg"><label class="fl">Contraseña</label><div style="position:relative;"><input type="password" class="fi" id="lp2" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" style="padding-right:44px;"/><button type="button" id="lp2-toggle" onclick="(function(){var i=document.getElementById('lp2'),b=document.getElementById('lp2-toggle');i.type=i.type==='password'?'text':'password';b.innerHTML=i.type==='password'?'<svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;#9ca3af&quot; stroke-width=&quot;1.8&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z&quot;/><circle cx=&quot;12&quot; cy=&quot;12&quot; r=&quot;3&quot;/></svg>':'<svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;#9ca3af&quot; stroke-width=&quot;1.8&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24&quot;/><line x1=&quot;1&quot; y1=&quot;1&quot; x2=&quot;23&quot; y2=&quot;23&quot;/></svg>';})()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;line-height:0;display:flex;align-items:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
-      <div style="text-align:right;margin:8px 0 24px;"><a href="#" onclick="resetPassword()" style="font-size:12px;color:#aaa;text-decoration:none;">¿Olvidaste tu contraseña?</a></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin:8px 0 20px;"><a href="/terminos.html" target="_blank" style="font-size:12px;color:#aaa;text-decoration:none;">Términos y condiciones</a><a href="#" onclick="resetPassword()" style="font-size:12px;color:#aaa;text-decoration:none;">¿Olvidaste tu contraseña?</a></div>
       <button class="btn-login" onclick="doLogin()">Ingresar</button>
       <div class="login-err" id="lerr"></div>
     </div>
@@ -16196,6 +16200,54 @@ window.showClientMod = function(mod, btn) {
   }
 };
 
+// ── Subnav hide-on-scroll (mobile only) ──
+(function() {
+  let _lastScrollY = 0, _scrollTimer = null, _subnavHidden = false;
+  function _initSubnavScroll() {
+    const content = document.querySelector('.content');
+    if(!content || content._subnavScrollBound) return;
+    content._subnavScrollBound = true;
+    content.addEventListener('scroll', function() {
+      if(window.innerWidth > 768) return;
+      const y = content.scrollTop;
+      const delta = y - _lastScrollY;
+      _lastScrollY = y;
+      clearTimeout(_scrollTimer);
+      if(delta > 8 && !_subnavHidden) {
+        _subnavHidden = true;
+        document.querySelectorAll('.mod-subnav.visible').forEach(sn => {
+          sn.style.transition = 'opacity .2s, transform .2s';
+          sn.style.opacity = '0';
+          sn.style.transform = 'translateY(-8px)';
+          sn.style.pointerEvents = 'none';
+        });
+      } else if(delta < -4 && _subnavHidden) {
+        _subnavHidden = false;
+        document.querySelectorAll('.mod-subnav.visible').forEach(sn => {
+          sn.style.opacity = '1';
+          sn.style.transform = '';
+          sn.style.pointerEvents = '';
+        });
+      }
+      _scrollTimer = setTimeout(function() {
+        if(_subnavHidden) {
+          _subnavHidden = false;
+          document.querySelectorAll('.mod-subnav.visible').forEach(sn => {
+            sn.style.opacity = '1';
+            sn.style.transform = '';
+            sn.style.pointerEvents = '';
+          });
+        }
+      }, 1500);
+    }, {passive: true});
+  }
+  // Init after DOM ready
+  if(document.readyState === 'complete') { _initSubnavScroll(); }
+  else { window.addEventListener('load', _initSubnavScroll); }
+  // Also re-init when client view is activated (in case .content wasn't in DOM)
+  window._initSubnavScroll = _initSubnavScroll;
+})();
+
 // Bottom nav mobile — llama a showClientMod y sincroniza botones
 window.bottomNav = function(mod, btn) {
   document.querySelectorAll('.bottom-nav-btn').forEach(b => b.classList.remove('active'));
@@ -16212,6 +16264,18 @@ window.showCTab = function(tab, btn) {
   // Activar subctab correcto
   document.querySelectorAll('.subctab').forEach(b => b.classList.remove('active'));
   if(btn) btn.classList.add('active');
+  // Cerrar CC proveedor si se navega fuera de proveedores
+  if(tab !== 'proveedores' && typeof cerrarCCView === 'function') {
+    const ccv = document.getElementById('prov-cc-view');
+    if(ccv && ccv.style.display !== 'none') cerrarCCView();
+  }
+  // Ocultar subnavs de módulos distintos al que corresponde este tab
+  const _tabToMod = {contabilidad:'finanzas','cierre-periodo':'finanzas','caja-config':'finanzas',mclientes:'ventas',presupuestos:'ventas',productos:'ventas',necesidades:'compras',proveedores:'compras','ordenes-compra':'compras','prod-compra':'compras','categorias-compra':'compras',calculador:'herramientas',kpis:'herramientas',tareas:'herramientas'};
+  const _thisMod = _tabToMod[tab];
+  document.querySelectorAll('.mod-subnav').forEach(sn => {
+    if(_thisMod && sn.id === 'subnav-'+_thisMod) return;
+    sn.style.display = 'none'; sn.classList.remove('visible');
+  });
   if(tab==='contabilidad') {
     showClientContView('home', null);
     setTimeout(()=>{ const ing=window._clientIngresos||[]; const eg=window._clientEgresos||[]; initClientCashflow(ing,eg); initClientGastosDonut(eg); },200);
