@@ -14400,8 +14400,13 @@ window.abrirCuentaCorriente = async function(provId) {
 window.cerrarCCView = function() {
   _ccProvId = null;
   window._ccProvId = null;
-  document.getElementById('prov-cc-view').style.display='none';
-  showCTab('proveedores', null);
+  // Restaurar hijos de ct-proveedores que fueron ocultados por abrirCuentaCorriente
+  document.querySelectorAll('#ct-proveedores > *').forEach(el => el.style.display = '');
+  // Ocultar CC y restaurar subnav
+  document.getElementById('prov-cc-view').style.display = 'none';
+  const subnav = document.getElementById('subnav-compras');
+  if(subnav) { subnav.style.display='flex'; subnav.classList.add('visible'); }
+  // Recargar lista
   if(typeof loadProveedores === 'function') loadProveedores();
 };
 
