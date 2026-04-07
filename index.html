@@ -709,6 +709,38 @@ input[type=number]{-moz-appearance:textfield;}
 .tc.pa-drag-over{background:rgba(74,94,77,.08);border-color:var(--sage);}
 .pa-confetti-piece{position:fixed;width:8px;height:8px;border-radius:2px;pointer-events:none;z-index:9998;animation:paConfettiFall 1.2s ease-in forwards;}
 @keyframes paConfettiFall{0%{opacity:1;transform:translateY(0) rotate(0deg);}100%{opacity:0;transform:translateY(350px) rotate(720deg);}}
+.pa-nueva-tarea-btn{width:100%;background:none;border:none;border-top:.5px solid var(--cream-d);color:#4a5e4d;font-size:12px;font-weight:500;font-family:'DM Sans',sans-serif;padding:7px 0;cursor:pointer;text-align:left;}
+.pa-nueva-tarea-btn:hover{color:#3a4e3d;}
+/* ── Mis listas ── */
+.listas-divider{display:flex;align-items:center;gap:12px;margin:24px 0 4px;}
+.listas-divider::before,.listas-divider::after{content:'';flex:1;height:.5px;background:var(--cream-d);}
+.listas-divider span{font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:1px;white-space:nowrap;}
+.listas-subtitle{font-size:12px;color:var(--text-l);margin-bottom:16px;}
+.listas-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.lista-card{border-radius:3px 14px 14px 14px;padding:16px;position:relative;min-height:180px;display:flex;flex-direction:column;}
+.lista-card::before{content:'';position:absolute;top:-4px;left:10px;width:10px;height:10px;border-radius:50%;background:inherit;filter:brightness(0.7);}
+.lista-card.gold{background:linear-gradient(145deg,#f5e6b0,#e8d080,#f0dc98);border-top:3px solid #c8a830;}
+.lista-card.silver{background:linear-gradient(145deg,#e8e8e8,#d0d0d0,#e4e4e4);border-top:3px solid #a0a0a0;}
+.lista-card.rose{background:linear-gradient(145deg,#f5d0c8,#e8b0a4,#f0c8c0);border-top:3px solid #c87868;}
+.lista-card.sage{background:linear-gradient(145deg,#c8d8b8,#a8c090,#c0d0a8);border-top:3px solid #6a9058;}
+.lista-card.blue{background:linear-gradient(145deg,#c0d4e8,#98b8d8,#b0cce0);border-top:3px solid #5888b0;}
+.lista-nombre{font-size:13px;font-weight:500;color:rgba(0,0,0,.7);margin-bottom:6px;}
+.lista-prog-txt{font-size:10px;color:rgba(0,0,0,.5);margin-bottom:4px;}
+.lista-prog-bar{height:3px;background:rgba(0,0,0,.15);border-radius:2px;margin-bottom:10px;}
+.lista-prog-fill{height:100%;background:rgba(0,0,0,.3);border-radius:2px;transition:width .3s;}
+.lista-items{flex:1;display:flex;flex-direction:column;gap:5px;margin-bottom:8px;overflow-y:auto;max-height:150px;}
+.lista-item{display:flex;align-items:center;gap:7px;font-size:12px;color:rgba(0,0,0,.7);}
+.lista-item.done{color:rgba(0,0,0,.3);text-decoration:line-through;}
+.lista-item-cb{width:13px;height:13px;border-radius:3px;border:1.5px solid rgba(0,0,0,.3);background:transparent;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.lista-item-cb.checked{background:rgba(0,0,0,.22);border-color:rgba(0,0,0,.22);}
+.lista-add-row{display:flex;align-items:center;gap:4px;margin-top:auto;border-top:.5px solid rgba(0,0,0,.1);padding-top:6px;}
+.lista-add-inp{flex:1;background:transparent;border:none;outline:none;font-size:11px;color:rgba(0,0,0,.6);font-family:'DM Sans',sans-serif;placeholder-color:rgba(0,0,0,.35);}
+.lista-add-btn{background:none;border:none;cursor:pointer;font-size:14px;color:rgba(0,0,0,.5);padding:0 2px;font-family:'DM Sans',sans-serif;}
+.lista-del-btn{position:absolute;top:8px;right:10px;background:none;border:none;cursor:pointer;opacity:0;transition:opacity .15s;padding:2px;}
+.lista-card:hover .lista-del-btn{opacity:1;}
+.lista-nueva-btn{border:1.5px dashed var(--cream-d);border-radius:14px;padding:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:none;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--text-l);min-height:80px;transition:border-color .15s,color .15s;}
+.lista-nueva-btn:hover{border-color:#4a5e4d;color:#4a5e4d;}
+@media(max-width:768px){.listas-grid{grid-template-columns:1fr;}.lista-card{min-height:auto;}}
 </style>
 </head>
 <body>
@@ -2236,8 +2268,6 @@ input[type=number]{-moz-appearance:textfield;}
         <div class="pa-toolbar">
           <div style="display:flex;gap:6px;flex-wrap:wrap;">
             <button class="pa-filter-btn active" data-filter="todas" onclick="paSetFilter('todas',this)">Todas</button>
-            <button class="pa-filter-btn" data-filter="alta" onclick="paSetFilter('alta',this)">Alta prioridad</button>
-            <button class="pa-filter-btn" data-filter="hoy" onclick="paSetFilter('hoy',this)">Vencen hoy</button>
           </div>
           <input type="search" class="fi" id="pa-search" placeholder="Buscar tarea..." oninput="paApplyFilter()" style="width:180px;margin:0;height:34px;font-size:13px;">
         </div>
@@ -2251,32 +2281,22 @@ input[type=number]{-moz-appearance:textfield;}
                 <input type="text" class="pa-inline-input" id="pa-inp-pend" placeholder="Nueva tarea..." onkeydown="paInlineKeydown(event,'pend')">
                 <div style="display:flex;gap:4px;margin-top:5px;"><button class="pa-inline-ok" onclick="paInlineAdd('pend')">+ Agregar</button><button class="pa-inline-cancel" onclick="paInlineCancel('pend')">✕</button></div>
               </div>
-              <button class="pa-inline-trigger" id="pa-trigger-pend" onclick="paInlineOpen('pend')">+ Agregar tarea</button>
+              <button class="pa-nueva-tarea-btn" onclick="openModal('newClientTaskModal')">+ Nueva tarea</button>
             </div>
           </div>
           <div class="tc" id="clt-col-doing">
             <div class="tct"><div class="tcd" style="background:var(--warn);"></div>En curso</div>
             <div id="clt-tasks-doing"></div>
-            <div class="pa-inline-wrap">
-              <div class="pa-inline-form" id="pa-form-doing" style="display:none;">
-                <input type="text" class="pa-inline-input" id="pa-inp-doing" placeholder="Nueva tarea..." onkeydown="paInlineKeydown(event,'doing')">
-                <div style="display:flex;gap:4px;margin-top:5px;"><button class="pa-inline-ok" onclick="paInlineAdd('doing')">+ Agregar</button><button class="pa-inline-cancel" onclick="paInlineCancel('doing')">✕</button></div>
-              </div>
-              <button class="pa-inline-trigger" id="pa-trigger-doing" onclick="paInlineOpen('doing')">+ Agregar tarea</button>
-            </div>
           </div>
           <div class="tc" id="clt-col-done">
             <div class="tct"><div class="tcd" style="background:var(--ok);"></div>Completado</div>
             <div id="clt-tasks-done"></div>
-            <div class="pa-inline-wrap">
-              <div class="pa-inline-form" id="pa-form-done" style="display:none;">
-                <input type="text" class="pa-inline-input" id="pa-inp-done" placeholder="Nueva tarea..." onkeydown="paInlineKeydown(event,'done')">
-                <div style="display:flex;gap:4px;margin-top:5px;"><button class="pa-inline-ok" onclick="paInlineAdd('done')">+ Agregar</button><button class="pa-inline-cancel" onclick="paInlineCancel('done')">✕</button></div>
-              </div>
-              <button class="pa-inline-trigger" id="pa-trigger-done" onclick="paInlineOpen('done')">+ Agregar tarea</button>
-            </div>
           </div>
         </div>
+        <!-- Mis listas -->
+        <div class="listas-divider"><span>Mis listas</span></div>
+        <div class="listas-subtitle">Listas rápidas para lo que necesites.</div>
+        <div class="listas-grid" id="listas-grid"></div>
       </div>
 
       <!-- KPIs CLIENTE -->
@@ -4709,6 +4729,7 @@ window.showClientUI = async function(email, clientData) {
         await loadCalcItems(clientData.id);
         await loadClientContabilidad();
         await loadClientTareas();
+        if(typeof loadListas==='function') loadListas();
         await loadClientPresupuestos();
         await loadMcModule();
         await loadProductos();
@@ -10675,10 +10696,6 @@ function paBuildCard(t) {
   el.dataset.prioridad = (t.prioridad||'Media').toLowerCase();
   el.draggable = true;
 
-  const prioridad = t.prioridad || 'Media';
-  const tagClass = prioridad === 'Alta' ? 'pa-tag-alta' : prioridad === 'Baja' ? 'pa-tag-baja' : 'pa-tag-media';
-  const tagHtml = `<span class="pa-tag ${tagClass}">${prioridad}</span>`;
-
   let dateHtml = '';
   if(t.fechaVenc) {
     const icon = (esHoy || esVencida) ? '⚠ ' : '📅 ';
@@ -10691,7 +10708,6 @@ function paBuildCard(t) {
 
   el.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px;">
     <div style="flex:1;padding-right:18px;">
-      ${tagHtml}
       <div class="tkt">${t.titulo}</div>
       <div class="tkm">${t.meta||''}</div>
       ${dateHtml}
@@ -10867,6 +10883,101 @@ window.deleteClientTask = function(el) {
     paUpdateProgress(_paTareas);
     paApplyFilter();
   },'Eliminar tarea');
+};
+
+// ===== MIS LISTAS =====
+const _LISTA_COLORS = ['gold','silver','rose','sage','blue'];
+let _listas = [];
+
+window.loadListas = async function() {
+  if(!currentClientUID) return;
+  try {
+    const snap = await getDocs(query(collection(db,'clientes',currentClientUID,'listas'), orderBy('orden','asc')));
+    _listas = [];
+    snap.forEach(d => _listas.push({id:d.id,...d.data()}));
+  } catch(e) { _listas = []; }
+  renderListas();
+};
+
+function renderListas() {
+  const grid = document.getElementById('listas-grid');
+  if(!grid) return;
+  const cards = _listas.map(l => buildListaCard(l)).join('');
+  const btnNueva = `<button class="lista-nueva-btn" onclick="crearLista()">+ Nueva lista</button>`;
+  grid.innerHTML = cards + btnNueva;
+}
+
+function buildListaCard(l) {
+  const items = l.items || [];
+  const total = items.length;
+  const comp = items.filter(i=>i.completado).length;
+  const pct = total > 0 ? Math.round((comp/total)*100) : 0;
+  const itemsHtml = items.map(i => `
+    <div class="lista-item${i.completado?' done':''}" id="li-${l.id}-${i.id}">
+      <div class="lista-item-cb${i.completado?' checked':''}" onclick="toggleItemLista('${l.id}','${i.id}')">
+        ${i.completado?'<svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5l2.5 2.5 4.5-5" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>':''}
+      </div>
+      <span>${i.texto}</span>
+    </div>`).join('');
+  return `
+    <div class="lista-card ${l.color||'gold'}" id="lc-${l.id}">
+      <button class="lista-del-btn" onclick="eliminarLista('${l.id}')" title="Eliminar lista">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="rgba(0,0,0,.5)" stroke-width="1.3" stroke-linecap="round"/></svg>
+      </button>
+      <div class="lista-nombre">${l.nombre}</div>
+      <div class="lista-prog-txt">${comp} de ${total} completados</div>
+      <div class="lista-prog-bar"><div class="lista-prog-fill" style="width:${pct}%"></div></div>
+      <div class="lista-items">${itemsHtml}</div>
+      <div class="lista-add-row">
+        <input class="lista-add-inp" id="lai-${l.id}" placeholder="Agregar ítem..." onkeydown="if(event.key==='Enter') agregarItemLista('${l.id}',this.value)">
+        <button class="lista-add-btn" onclick="agregarItemLista('${l.id}',document.getElementById('lai-${l.id}').value)">+</button>
+      </div>
+    </div>`;
+}
+
+window.crearLista = function() {
+  const nombre = prompt('Nombre de la lista:');
+  if(!nombre || !nombre.trim()) return;
+  const color = _LISTA_COLORS[_listas.length % _LISTA_COLORS.length];
+  const data = { nombre: nombre.trim(), color, items: [], creadoEn: new Date().toISOString(), orden: _listas.length };
+  addDoc(collection(db,'clientes',currentClientUID,'listas'), data).then(ref => {
+    _listas.push({id:ref.id,...data});
+    renderListas();
+  }).catch(e => showToast('Error: '+e.message,'error'));
+};
+
+window.agregarItemLista = async function(listaId, texto) {
+  if(!texto || !texto.trim()) return;
+  const lista = _listas.find(l=>l.id===listaId);
+  if(!lista) return;
+  const item = { id: Date.now().toString(36), texto: texto.trim(), completado: false };
+  lista.items = [...(lista.items||[]), item];
+  const inp = document.getElementById('lai-'+listaId);
+  if(inp) inp.value = '';
+  try {
+    await updateDoc(doc(db,'clientes',currentClientUID,'listas',listaId), { items: lista.items });
+    renderListas();
+  } catch(e) { showToast('Error: '+e.message,'error'); }
+};
+
+window.toggleItemLista = async function(listaId, itemId) {
+  const lista = _listas.find(l=>l.id===listaId);
+  if(!lista) return;
+  lista.items = (lista.items||[]).map(i => i.id===itemId ? {...i, completado:!i.completado} : i);
+  try {
+    await updateDoc(doc(db,'clientes',currentClientUID,'listas',listaId), { items: lista.items });
+    renderListas();
+  } catch(e) { showToast('Error: '+e.message,'error'); }
+};
+
+window.eliminarLista = function(listaId) {
+  showConfirm('¿Eliminar esta lista?', async () => {
+    try {
+      await updateDoc(doc(db,'clientes',currentClientUID,'listas',listaId), { eliminado: true });
+      _listas = _listas.filter(l=>l.id!==listaId);
+      renderListas();
+    } catch(e) { showToast('Error: '+e.message,'error'); }
+  }, 'Eliminar lista');
 };
 
 // ── Plan de acción: confetti + drag & drop ──
@@ -16388,6 +16499,7 @@ window.showCTab = function(tab, btn) {
   }
   if(tab==='caja-config') { loadCajaConfig(); }
   if(tab==='cierre-periodo') { loadCierrePeriodo(); }
+  if(tab==='tareas') { if(typeof loadListas==='function') loadListas(); }
 };
 
 // Abre un PDF guardado como Base64 en nueva pestaña
