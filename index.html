@@ -14641,7 +14641,7 @@ window.openModal_newPagoProvModal_extra = async function() {
     // Cargar facturas pendientes — usar _ccFacturas (ya en memoria, colección 'facturas')
     const facturasPendientes = [];
     let saldoPendiente = 0;
-    (_ccFacturas || []).forEach(f => {
+    ([...(_ccFacturas || []), ...(_ccOCsComoFactura || [])]).forEach(f => {
       if(f.eliminado) return;
       const estadoPago = f.estado || f.estadoPago || 'pendiente';
       if(estadoPago === 'pagada') return;
@@ -14779,7 +14779,8 @@ window.savePagoProveedor = async function() {
     });
 
     const saved = document.getElementById('npp-saved');
-    if(saved){ saved.style.display='block'; setTimeout(()=>{ saved.style.display='none'; closeModal('newPagoProvModal'); renderCuentaCorriente(); if(typeof loadContabilidad==='function') loadContabilidad(); }, 1500); }
+    if(_nppBtn){_nppBtn.disabled=false;_nppBtn.textContent='Registrar pago';}
+    if(saved){ saved.style.display='block'; renderCuentaCorriente(); setTimeout(()=>{ saved.style.display='none'; closeModal('newPagoProvModal'); renderCuentaCorriente(); if(typeof loadContabilidad==='function') loadContabilidad(); }, 1500); }
   } catch(e) {
     console.error(e);
     showErr('Error al registrar el pago: ' + e.message);
