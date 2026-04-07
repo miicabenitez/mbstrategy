@@ -263,11 +263,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 input[type=date],input[type=time],select{background:var(--cream);border:.5px solid var(--cream-d);border-radius:8px;padding:7px 10px;font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;width:100%;margin-top:5px;outline:none;}
 input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sage);}
 /* ── BOTTOM NAV MOBILE (cliente) ── */
-.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:.5px solid var(--cream-d);padding:6px 0 10px;z-index:150;justify-content:space-around;align-items:flex-start;}
-.bottom-nav-btn{background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 0;font-family:'DM Sans',sans-serif;color:#888780;transition:color .15s;-webkit-tap-highlight-color:transparent;}
-.bottom-nav-btn svg{width:20px;height:20px;}
-.bottom-nav-btn span{font-size:11px;line-height:1;}
-.bottom-nav-btn.active{color:var(--sage-dark);font-weight:500;}
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#4a5e4d;z-index:150;overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:nowrap;scrollbar-width:none;padding:0 8px;}
+.bottom-nav::-webkit-scrollbar{display:none;}
+.bnav-item{display:inline-block;background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;color:rgba(255,255,255,0.65);font-size:13px;font-weight:400;padding:8px 14px;margin:6px 2px;border-radius:20px;white-space:nowrap;-webkit-tap-highlight-color:transparent;transition:all .15s;}
+.bnav-item.active{background:rgba(255,255,255,0.16);color:#fff;font-weight:500;}
 @media(max-width:768px){
   .mg{grid-template-columns:1fr 1fr;}
   .g2{grid-template-columns:1fr;}
@@ -302,11 +301,11 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
   .topbar{padding:0 12px;}
   .topbar-right{gap:4px;}
   /* ── Cliente mobile: bottom nav + sub-nav grid ── */
-  body.client-view .bottom-nav{display:flex;}
+  body.client-view .bottom-nav{display:block;}
   body.client-view .mobile-menu{display:none !important;}
   body.client-view .mobile-nav{display:none !important;}
-  body.client-view .content{padding-bottom:76px;overflow-x:hidden;}
-  body.client-view .embi-fab{bottom:76px;}
+  body.client-view .content{padding-bottom:56px;overflow-x:hidden;}
+  body.client-view .embi-fab{bottom:56px;}
   body.client-view .topbar-right{display:none !important;}
   body.client-view #client-mobile-menu-wrap{display:block !important;}
   /* KPIs finanzas 2x2 en mobile */
@@ -12847,7 +12846,7 @@ window.navigateToMiCuenta = function() {
   if(el) el.style.display = 'block';
   // Desactivar todos los tabs del topbar
   document.querySelectorAll('#cNav .nt').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.bottom-nav-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
   // Ocultar sub-navs
   document.querySelectorAll('.mod-subnav').forEach(el => { el.style.display = 'none'; el.classList.remove('visible'); });
   loadMiCuentaPage();
@@ -16169,8 +16168,8 @@ window.showClientMod = function(mod, btn) {
   document.querySelectorAll('#cNav .nt').forEach(b => b.classList.remove('active'));
   if(btn) btn.classList.add('active');
   // Sincronizar bottom nav
-  document.querySelectorAll('.bottom-nav-btn').forEach(b => b.classList.remove('active'));
-  const bBtn = document.querySelector('.bottom-nav-btn[onclick*="\''+mod+'\'"]');
+  document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
+  const bBtn = document.querySelector('.bnav-item[onclick*="\''+mod+'\'"]');
   if(bBtn) bBtn.classList.add('active');
   // Ocultar todos los sub-navs
   document.querySelectorAll('.mod-subnav').forEach(el => { el.style.display = 'none'; el.classList.remove('visible'); });
@@ -16249,7 +16248,7 @@ window.showClientMod = function(mod, btn) {
 
 // Bottom nav mobile — llama a showClientMod y sincroniza botones
 window.bottomNav = function(mod, btn) {
-  document.querySelectorAll('.bottom-nav-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
   if(btn) btn.classList.add('active');
   // Cerrar CC proveedor si está abierta
   const ccv = document.getElementById('prov-cc-view');
@@ -16257,6 +16256,14 @@ window.bottomNav = function(mod, btn) {
   // Sincronizar topbar tabs también
   const topBtn = document.querySelector('#cNav .nt[onclick*="\''+mod+'\'"]');
   window.showClientMod(mod, topBtn);
+};
+
+window.bottomNavGestion = function(btn) {
+  bottomNav('herramientas', btn);
+  setTimeout(() => {
+    const b = document.querySelector('#subnav-herramientas .subctab:nth-child(3)');
+    if(b) showCTab('tareas', b);
+  }, 80);
 };
 
 window.showCTab = function(tab, btn) {
@@ -16947,57 +16954,12 @@ window.closeMasDrawer = function() {
 
 <!-- ═══════════ BOTTOM NAV MOBILE (cliente) ═══════════ -->
 <div class="bottom-nav" id="bottomNav">
-  <button class="bottom-nav-btn active" onclick="bottomNav('inicio',this)">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1z"/></svg>
-    <span>Inicio</span>
-  </button>
-  <button class="bottom-nav-btn" onclick="bottomNav('finanzas',this)">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
-    <span>Finanzas</span>
-  </button>
-  <button class="bottom-nav-btn" onclick="bottomNav('ventas',this)">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><circle cx="18" cy="8" r="2.5"/><path d="M21 21v-1.5a3 3 0 00-2-2.83"/></svg>
-    <span>Comercial</span>
-  </button>
-  <button class="bottom-nav-btn" onclick="bottomNav('compras',this)">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-    <span>Compras</span>
-  </button>
-  <button class="bottom-nav-btn" onclick="openMasDrawer()">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-    <span>Más</span>
-  </button>
-</div>
-
-<!-- ═══════════ MÁS DRAWER ═══════════ -->
-<div id="mas-overlay" onclick="closeMasDrawer()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;"></div>
-<div id="mas-drawer" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-radius:20px 20px 0 0;padding:20px 0 32px;z-index:201;transform:translateY(100%);transition:transform .28s cubic-bezier(.32,1,.23,1);">
-  <div style="width:36px;height:4px;background:#ddd;border-radius:2px;margin:0 auto 20px;"></div>
-  <div style="padding:0 20px;">
-    <div style="font-size:10px;font-weight:600;color:#aaa;letter-spacing:.8px;text-transform:uppercase;margin-bottom:10px;">Control del negocio</div>
-    <button onclick="closeMasDrawer();showClientMod('herramientas',null);" style="width:100%;text-align:left;padding:13px 16px;border:none;background:none;font-size:14px;font-family:'DM Sans',sans-serif;color:#1a1a1a;cursor:pointer;border-radius:10px;display:flex;align-items:center;gap:12px;">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4a5e4d" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="3" width="6" height="6" rx="1"/><rect x="9" y="3" width="13" height="3" rx="1"/><rect x="2" y="11" width="6" height="6" rx="1"/><rect x="9" y="11" width="13" height="3" rx="1"/><rect x="2" y="19" width="6" height="2" rx="1"/><rect x="9" y="19" width="13" height="2" rx="1"/></svg>
-      Calculador de costos
-    </button>
-    <button onclick="closeMasDrawer();showClientMod('herramientas',null);setTimeout(()=>{ const b=document.querySelector('#subnav-herramientas .subctab:nth-child(2)'); showCTab('kpis',b); },80);" style="width:100%;text-align:left;padding:13px 16px;border:none;background:none;font-size:14px;font-family:'DM Sans',sans-serif;color:#1a1a1a;cursor:pointer;border-radius:10px;display:flex;align-items:center;gap:12px;">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4a5e4d" stroke-width="1.5" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      Indicadores
-    </button>
-    <div style="font-size:10px;font-weight:600;color:#aaa;letter-spacing:.8px;text-transform:uppercase;margin:14px 0 10px;">Gestión</div>
-    <button onclick="closeMasDrawer();showClientMod('herramientas',null);setTimeout(()=>{ const b=document.querySelector('#subnav-herramientas .subctab:nth-child(3)'); showCTab('tareas',b); },80);" style="width:100%;text-align:left;padding:13px 16px;border:none;background:none;font-size:14px;font-family:'DM Sans',sans-serif;color:#1a1a1a;cursor:pointer;border-radius:10px;display:flex;align-items:center;gap:12px;">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4a5e4d" stroke-width="1.5" stroke-linecap="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-      Plan de acción
-    </button>
-    <div style="height:.5px;background:#eee;margin:14px 0;"></div>
-    <button onclick="closeMasDrawer();navigateToMiCuenta();" style="width:100%;text-align:left;padding:13px 16px;border:none;background:none;font-size:14px;font-family:'DM Sans',sans-serif;color:#1a1a1a;cursor:pointer;border-radius:10px;display:flex;align-items:center;gap:12px;">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-      Mi cuenta
-    </button>
-    <button onclick="closeMasDrawer();doLogout();" style="width:100%;text-align:left;padding:13px 16px;border:none;background:none;font-size:14px;font-family:'DM Sans',sans-serif;color:#c4786a;cursor:pointer;border-radius:10px;display:flex;align-items:center;gap:12px;">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c4786a" stroke-width="1.5" stroke-linecap="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-      Cerrar sesión
-    </button>
-  </div>
+  <button class="bnav-item active" onclick="bottomNav('inicio',this)">Inicio</button>
+  <button class="bnav-item" onclick="bottomNav('finanzas',this)">Finanzas</button>
+  <button class="bnav-item" onclick="bottomNav('ventas',this)">Comercial</button>
+  <button class="bnav-item" onclick="bottomNav('compras',this)">Compras</button>
+  <button class="bnav-item" onclick="bottomNav('herramientas',this)">Control del negocio</button>
+  <button class="bnav-item" onclick="bottomNavGestion(this)">Gestión</button>
 </div>
 
 <!-- ═══════════════ EMBI ═══════════════ -->
