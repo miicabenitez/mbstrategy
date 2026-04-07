@@ -14325,6 +14325,9 @@ window.abrirCuentaCorriente = async function(provId) {
   document.querySelectorAll('#ct-proveedores > *').forEach(el => el.style.display = 'none');
   const _ccView = document.getElementById('prov-cc-view');
   if(_ccView) _ccView.style.display = 'block';
+  // Ocultar subnav-compras mientras CC está abierta
+  const _snCC = document.getElementById('subnav-compras');
+  if(_snCC) { _snCC.style.display = 'none'; _snCC.classList.remove('visible'); }
 
   // Header sincrónico (prov ya disponible sin necesidad de fetch)
   const setEl=(id,v)=>{const el=document.getElementById(id);if(el)el.innerHTML=v;};
@@ -14401,6 +14404,9 @@ window.cerrarCCView = function() {
   const lv = document.getElementById('prov-lista-view');
   if(lv) lv.style.display='block';
   else renderProveedoresModule();
+  // Restaurar subnav-compras
+  const _snCC = document.getElementById('subnav-compras');
+  if(_snCC) { _snCC.style.display = 'flex'; _snCC.classList.add('visible'); }
   loadProveedores();
 };
 
