@@ -14401,13 +14401,8 @@ window.cerrarCCView = function() {
   _ccProvId = null;
   window._ccProvId = null;
   document.getElementById('prov-cc-view').style.display='none';
-  const lv = document.getElementById('prov-lista-view');
-  if(lv) lv.style.display='block';
-  else renderProveedoresModule();
-  // Restaurar subnav-compras
-  const _snCC = document.getElementById('subnav-compras');
-  if(_snCC) { _snCC.style.display = 'flex'; _snCC.classList.add('visible'); }
-  loadProveedores();
+  showCTab('proveedores', null);
+  if(typeof loadProveedores === 'function') loadProveedores();
 };
 
 function renderCuentaCorriente() {
