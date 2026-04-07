@@ -14928,8 +14928,19 @@ window.generarPDFOrdenPago = async function() {
     });
   }
   const op = window._ultimaOP;
-  const prov = document.getElementById('npp-prov-nombre')?.textContent || 'Proveedor';
-  const negocio = document.getElementById('negocio-nombre-display')?.textContent || '';
+  // Cargar datos del negocio desde Firestore (igual que PDF de Presupuestos y OC)
+  let negocio = '';
+  let negocioData = {};
+  try {
+    const negDoc = await getDoc(doc(db,'clientes',currentClientUID));
+    if(negDoc.exists()) {
+      negocioData = negDoc.data();
+      negocio = negocioData.negocioNombre || negocioData.nombre || '';
+    }
+  } catch(e) {}
+  // Nombre del proveedor: primero desde _proveedores en memoria, fallback al DOM
+  const provObj = (window._proveedores||[]).find(p=>p.id===window._ccProvId);
+  const prov = provObj?.nombre || document.getElementById('npp-prov-nombre')?.textContent || 'Proveedor';
   const { jsPDF } = window.jspdf;
   const doc2 = new jsPDF({ format: 'a4' });
   const W = 210, M = 15;
