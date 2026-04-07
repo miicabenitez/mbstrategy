@@ -14638,18 +14638,17 @@ window.openModal_newPagoProvModal_extra = async function() {
     const opNumEl = document.getElementById('npp-op-numero');
     if(opNumEl) opNumEl.textContent = `OP-${opNum}`;
     window._opNumero = `OP-${opNum}`;
-    // Cargar facturas pendientes
-    const movsSnap = await getDocs(collection(db,'clientes',currentClientUID,'proveedores',window._ccProvId,'movimientos'));
+    // Cargar facturas pendientes — usar _ccFacturas (ya en memoria, colección 'facturas')
     const facturasPendientes = [];
     let saldoPendiente = 0;
-    movsSnap.forEach(d => {
-      const m = d.data();
-      if(m.tipo === 'factura' && m.estadoPago !== 'pagada' && !m.eliminado) {
-        const pendiente = (m.monto || 0) - (m.montoPagado || 0);
-        if(pendiente > 0) {
-          facturasPendientes.push({ id: d.id, ...m, pendiente });
-          saldoPendiente += pendiente;
-        }
+    (_ccFacturas || []).forEach(f => {
+      if(f.eliminado) return;
+      const estadoPago = f.estado || f.estadoPago || 'pendiente';
+      if(estadoPago === 'pagada') return;
+      const pendiente = (parseFloat(f.monto) || 0) - (parseFloat(f.montoPagado) || 0);
+      if(pendiente > 0) {
+        facturasPendientes.push({ ...f, pendiente });
+        saldoPendiente += pendiente;
       }
     });
     const saldoEl = document.getElementById('npp-saldo-prov');
@@ -14670,8 +14669,8 @@ window.openModal_newPagoProvModal_extra = async function() {
         row.innerHTML = `
           <input type="checkbox" id="npp-fac-${i}" data-idx="${i}" data-monto="${f.pendiente}" onchange="recalcularTotalOP()" style="width:15px;height:15px;accent-color:#7A8E7D;cursor:pointer;flex-shrink:0;"/>
           <div style="flex:1;">
-            <div style="font-size:12px;font-weight:500;color:var(--text);">${f.numero || f.descripcion || 'Factura'}</div>
-            <div style="font-size:10px;color:var(--text-l);">${f.fecha ? 'Fecha: '+f.fecha : ''} ${f.estadoPago === 'parcial' ? '· Pago parcial' : ''}</div>
+            <div style="font-size:12px;font-weight:500;color:var(--text);">${f.numero || f.desc || f.descripcion || 'Factura'}</div>
+            <div style="font-size:10px;color:var(--text-l);">${f.fecha ? 'Fecha: '+f.fecha : ''} ${(f.estado||f.estadoPago) === 'parcial' ? '· Pago parcial' : ''}</div>
           </div>
           <div style="font-size:12px;font-weight:500;color:#C4786A;">$${f.pendiente.toLocaleString('es-AR')}</div>
         `;
