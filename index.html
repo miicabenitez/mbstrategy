@@ -14724,6 +14724,9 @@ window.savePagoProveedor = async function() {
           estado: nuevoEstado,
           montoPagado: montoPagadoNuevo
         });
+        // Actualizar en memoria para que renderCuentaCorriente refleje el cambio inmediato
+        const facInMem = (_ccFacturas || []).find(x => x.id === f.id) || (_ccOCsComoFactura || []).find(x => x.id === f.id);
+        if(facInMem) { facInMem.montoPagado = montoPagadoNuevo; facInMem.estado = nuevoEstado; }
       }
     }
     // Guardar OP como movimiento de tipo pago
