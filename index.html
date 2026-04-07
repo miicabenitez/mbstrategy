@@ -310,6 +310,9 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
   body.client-view #client-mobile-menu-wrap{display:block !important;}
   /* CC proveedor — una columna en mobile */
   #prov-cc-grid{grid-template-columns:1fr !important;}
+  /* Widget días restantes — ocultar slider, layout row */
+  #inicio-dias-slider{display:none !important;}
+  #inicio-dias-row{justify-content:space-between;}
   /* Banners KPI en mobile */
   #prov-kpi-grid{grid-template-columns:1fr 1fr 1fr !important;font-size:13px;}
   #prov-kpi-grid [style*="font-size:22px"]{font-size:16px !important;}
@@ -1734,12 +1737,12 @@ input[type=number]{-moz-appearance:textfield;}
 
         <!-- Card: días restantes del mes -->
         <div class="dash-card" id="inicio-dias-card" style="display:none;background:var(--white);border:.5px solid var(--cream-d);border-radius:13px;padding:12px 16px;margin-bottom:10px;">
-          <div style="display:flex;align-items:center;gap:12px;">
+          <div id="inicio-dias-row" style="display:flex;align-items:center;gap:12px;">
             <div style="flex-shrink:0;white-space:nowrap;display:flex;align-items:baseline;gap:5px;">
               <span id="inicio-dias-num" style="font-size:15px;font-weight:700;color:#4a5e4d;">—</span>
               <span id="inicio-dias-label" style="font-size:12px;color:var(--text-l);">días para cerrar</span>
             </div>
-            <div style="flex:1;min-width:0;">
+            <div id="inicio-dias-slider" style="flex:1;min-width:0;">
               <div style="height:4px;background:var(--cream-d);border-radius:4px;overflow:hidden;">
                 <div id="inicio-mes-bar" style="height:100%;width:0%;background:#4a5e4d;border-radius:4px;transition:width .7s ease;"></div>
               </div>
