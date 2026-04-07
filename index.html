@@ -3128,6 +3128,7 @@ input[type=number]{-moz-appearance:textfield;}
             <option value="emitida">Pendientes de recibir</option>
             <option value="recibida">Recibidas</option>
           </select>
+          <button onclick="abrirNuevaOCDirecta()" class="bp" style="flex-shrink:0;">+ Nueva OC</button>
         </div>
         <div class="card">
           <div id="oc-lista"><div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Sin órdenes de compra.</div></div>
@@ -14080,6 +14081,114 @@ function renderOrdenesCompra() {
   }).join('');
 }
 window.filtrarOCsLista = function() { renderOrdenesCompra(); };
+
+// ─ Nueva OC Directa ─
+let _nocItems = [];
+function _nocRecalcTotal() {
+  const total = _nocItems.reduce((a, it) => a + (parseFloat(it.cantidad||0) * parseFloat(it.precio||0)), 0);
+  const el = document.getElementById('noc-total-display');
+  if(el) el.textContent = '$' + total.toLocaleString('es-AR');
+}
+function _nocRenderItems() {
+  const cont = document.getElementById('noc-items-container');
+  if(!cont) return;
+  cont.innerHTML = _nocItems.map((it, i) => `
+    <div style="display:grid;grid-template-columns:1fr 70px 90px 28px;gap:6px;margin-bottom:6px;" id="noc-item-row-${i}">
+      <input type="text" class="fi" placeholder="Nombre del ítem..." value="${it.nombre||''}" style="margin-top:0;font-size:13px;padding:7px 10px;"
+        oninput="_nocItems[${i}].nombre=this.value">
+      <input type="number" class="fi" placeholder="1" value="${it.cantidad||''}" min="0" style="margin-top:0;font-size:13px;padding:7px 8px;text-align:center;"
+        oninput="_nocItems[${i}].cantidad=parseFloat(this.value)||0;_nocRecalcTotal()">
+      <input type="number" class="fi" placeholder="0" value="${it.precio||''}" min="0" style="margin-top:0;font-size:13px;padding:7px 8px;text-align:right;"
+        oninput="_nocItems[${i}].precio=parseFloat(this.value)||0;_nocRecalcTotal()">
+      <button onclick="nocEliminarItem(${i})" style="width:28px;height:34px;border-radius:6px;border:.5px solid var(--cream-d);background:var(--cream);color:var(--text-l);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="Eliminar">×</button>
+    </div>`).join('');
+}
+window.nocAgregarItem = function() {
+  _nocItems.push({ nombre:'', cantidad:1, precio:0 });
+  _nocRenderItems();
+  // focus last name input
+  setTimeout(() => {
+    const rows = document.querySelectorAll('#noc-items-container input[type="text"]');
+    if(rows.length) rows[rows.length-1].focus();
+  }, 30);
+};
+window.nocEliminarItem = function(i) {
+  _nocItems.splice(i, 1);
+  _nocRenderItems();
+  _nocRecalcTotal();
+};
+window.abrirNuevaOCDirecta = function() {
+  _nocItems = [{ nombre:'', cantidad:1, precio:0 }];
+  const modal = document.getElementById('modal-nueva-oc-directa');
+  if(!modal) return;
+  // Populate proveedor select
+  const sel = document.getElementById('noc-proveedor');
+  if(sel) {
+    sel.innerHTML = '<option value="">Seleccionar proveedor...</option>';
+    (_proveedores||[]).forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = p.nombre;
+      sel.appendChild(opt);
+    });
+  }
+  // Set today's date
+  const fechaEl = document.getElementById('noc-fecha');
+  if(fechaEl) fechaEl.value = new Date().toISOString().split('T')[0];
+  // Clear fields
+  const notasEl = document.getElementById('noc-notas');
+  if(notasEl) notasEl.value = '';
+  const btn = document.getElementById('noc-btn-guardar');
+  if(btn) { btn.disabled=false; btn.textContent='Emitir OC'; }
+  _nocRenderItems();
+  _nocRecalcTotal();
+  modal.style.display = 'flex';
+};
+window.cerrarModalNuevaOCDirecta = function() {
+  const modal = document.getElementById('modal-nueva-oc-directa');
+  if(modal) modal.style.display = 'none';
+};
+window.guardarNuevaOCDirecta = async function() {
+  if(!currentClientUID) return;
+  const provSel = document.getElementById('noc-proveedor');
+  const provId = provSel?.value || '';
+  const prov = (_proveedores||[]).find(p => p.id === provId);
+  if(!prov) { showToast('Seleccioná un proveedor.', 'info'); return; }
+  const items = _nocItems.filter(it => (it.nombre||'').trim());
+  if(items.length === 0) { showToast('Agregá al menos un ítem con nombre.', 'info'); return; }
+  const total = items.reduce((a, it) => a + (parseFloat(it.cantidad||0) * parseFloat(it.precio||0)), 0);
+  const fecha = document.getElementById('noc-fecha')?.value || new Date().toISOString().split('T')[0];
+  const notas = (document.getElementById('noc-notas')?.value || '').trim();
+  const nextNum = (_ordenesCompra.length > 0 ? Math.max(..._ordenesCompra.map(o=>o.numero||0)) : 0) + 1;
+  const btn = document.getElementById('noc-btn-guardar');
+  if(btn) { btn.disabled=true; btn.textContent='Emitiendo...'; }
+  try {
+    const ocData = {
+      numero: nextNum,
+      proveedor: prov.nombre,
+      proveedorId: prov.id,
+      items: items.map(it => ({ nombre: it.nombre.trim(), cantidad: parseFloat(it.cantidad)||0, precioUnit: parseFloat(it.precio)||0, total: (parseFloat(it.cantidad)||0)*(parseFloat(it.precio)||0) })),
+      total,
+      fecha,
+      ncId: null,
+      notas: notas || null,
+      estadoPago: 'pendiente',
+      estadoRecepcion: 'emitida',
+      creadoEn: new Date().toISOString()
+    };
+    await addDoc(collection(db,'clientes',currentClientUID,'ordenesCompra'), ocData);
+    cerrarModalNuevaOCDirecta();
+    await loadOrdenesCompra();
+    showToast(`OC-${String(nextNum).padStart(3,'0')} emitida correctamente.`, 'ok');
+    // Abrir detalle
+    const nueva = _ordenesCompra.find(o => o.numero === nextNum);
+    if(nueva) setTimeout(() => abrirDetalleOC(nueva.id), 200);
+  } catch(e) {
+    showToast('Error: ' + e.message, 'error');
+    if(btn) { btn.disabled=false; btn.textContent='Emitir OC'; }
+  }
+};
+
 window.eliminarOC = function(ocId) {
   showConfirm('¿Eliminar esta orden de compra?', async () => {
     if(!currentClientUID) return;
@@ -14565,27 +14674,44 @@ function renderCuentaCorriente() {
   const totalComprado = totalFacturas > 0 ? totalFacturas : totalDeOCs;
 
   const totalPagado = _ccPagos.reduce((a,p)=>a+(parseFloat(p.monto)||0),0);
-  const saldo = Math.max(0, totalComprado - totalPagado);
+  const saldoPendiente = Math.max(0, totalComprado - totalPagado);
+  const saldoFavor = Math.max(0, totalPagado - totalComprado);
+  const saldo = saldoPendiente; // compatibilidad con código existente
 
   // KPIs fullscreen
   setEl('cc-kpi-comprado-full','$'+totalComprado.toLocaleString('es-AR'));
   setEl('cc-kpi-pagado-full','$'+totalPagado.toLocaleString('es-AR'));
-  setEl('cc-kpi-pendiente-full','$'+saldo.toLocaleString('es-AR'));
-  setEl('cc-prov-saldo-full','$'+saldo.toLocaleString('es-AR'));
-  setEl('cc-saldo-final-full', saldo>0 ? '-$'+saldo.toLocaleString('es-AR') : 'Al día');
+  // KPI Pendiente: verde si hay saldo a favor
+  const kpiPendEl = document.getElementById('cc-kpi-pendiente-full');
+  if(kpiPendEl) {
+    if(saldoFavor > 0) {
+      kpiPendEl.textContent = 'A favor: $'+saldoFavor.toLocaleString('es-AR');
+      kpiPendEl.style.color = '#90c695';
+    } else {
+      kpiPendEl.textContent = '$'+saldoPendiente.toLocaleString('es-AR');
+      kpiPendEl.style.color = '#f0857a';
+    }
+  }
+  // Header derecho
+  const saldoLabel = document.querySelector('#prov-cc-view .cc-saldo-label');
+  if(saldoLabel) saldoLabel.textContent = saldoFavor > 0 ? 'Saldo a favor' : 'Saldo pendiente';
+  setEl('cc-prov-saldo-full', saldoFavor > 0 ? '$'+saldoFavor.toLocaleString('es-AR') : '$'+saldoPendiente.toLocaleString('es-AR'));
+  setEl('cc-saldo-final-full', saldoFavor > 0 ? 'A favor: $'+saldoFavor.toLocaleString('es-AR') : saldoPendiente > 0 ? '-$'+saldoPendiente.toLocaleString('es-AR') : 'Al día');
 
   // También mantener los del modal por compatibilidad
   setEl('cc-kpi-comprado','$'+totalComprado.toLocaleString('es-AR'));
   setEl('cc-kpi-pagado','$'+totalPagado.toLocaleString('es-AR'));
-  setEl('cc-kpi-pendiente','$'+saldo.toLocaleString('es-AR'));
-  setEl('cc-prov-saldo','$'+saldo.toLocaleString('es-AR'));
-  setEl('cc-saldo-final', saldo>0?'-$'+saldo.toLocaleString('es-AR'):'Al día');
+  setEl('cc-kpi-pendiente','$'+saldoPendiente.toLocaleString('es-AR'));
+  setEl('cc-prov-saldo','$'+saldoPendiente.toLocaleString('es-AR'));
+  setEl('cc-saldo-final', saldoPendiente>0?'-$'+saldoPendiente.toLocaleString('es-AR'):'Al día');
 
   const saldoFullEl = document.getElementById('cc-saldo-final-full');
-  if(saldoFullEl) saldoFullEl.style.color = saldo>0 ? 'var(--err)' : 'var(--ok)';
+  if(saldoFullEl) saldoFullEl.style.color = saldoFavor > 0 ? '#90c695' : saldoPendiente > 0 ? 'var(--err)' : 'var(--ok)';
 
   const saldoBadge = document.getElementById('cc-saldo-badge-full');
-  if(saldoBadge) saldoBadge.innerHTML = saldo>0
+  if(saldoBadge) saldoBadge.innerHTML = saldoFavor > 0
+    ? `<span style="background:rgba(144,198,149,.25);color:#90c695;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;">Saldo a favor</span>`
+    : saldoPendiente > 0
     ? `<span style="background:#C4786A;color:#fff;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;">Con deuda</span>`
     : `<span style="background:#5A8A62;color:#fff;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;">Al día</span>`;
 
@@ -18093,6 +18219,57 @@ window.doResetPassword = async function(){
     <div style="display:flex;gap:8px;justify-content:flex-end;">
       <button onclick="cerrarModalNuevaLista()" style="padding:8px 16px;border-radius:8px;border:.5px solid var(--cream-d);background:var(--cream);color:var(--text-m);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;">Cancelar</button>
       <button onclick="confirmarCrearLista()" style="padding:8px 18px;border-radius:8px;border:none;background:#4a5e4d;color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;">Crear</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal nueva OC directa -->
+<div id="modal-nueva-oc-directa" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1200;align-items:flex-start;justify-content:center;overflow-y:auto;padding:24px 12px;">
+  <div style="background:#fff;border-radius:16px;padding:24px;width:540px;max-width:98vw;box-shadow:0 8px 32px rgba(0,0,0,.18);margin:auto;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--text);">Nueva Orden de Compra</div>
+      <button onclick="cerrarModalNuevaOCDirecta()" style="width:28px;height:28px;border-radius:50%;border:.5px solid var(--cream-d);background:var(--cream);font-size:16px;color:var(--text-l);cursor:pointer;display:flex;align-items:center;justify-content:center;">×</button>
+    </div>
+    <!-- Proveedor -->
+    <div style="margin-bottom:14px;">
+      <label style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;display:block;margin-bottom:6px;">Proveedor</label>
+      <select id="noc-proveedor" class="fi" style="margin-top:0;">
+        <option value="">Seleccionar proveedor...</option>
+      </select>
+    </div>
+    <!-- Fecha -->
+    <div style="margin-bottom:14px;">
+      <label style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;display:block;margin-bottom:6px;">Fecha</label>
+      <input type="date" id="noc-fecha" class="fi" style="margin-top:0;">
+    </div>
+    <!-- Ítems -->
+    <div style="margin-bottom:14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <label style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;">Ítems</label>
+        <button onclick="nocAgregarItem()" style="font-size:11px;color:#4a5e4d;background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;">+ Agregar ítem</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 70px 90px 28px;gap:6px;margin-bottom:4px;padding:0 2px;">
+        <span style="font-size:10px;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Descripción</span>
+        <span style="font-size:10px;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;text-align:center;">Cant.</span>
+        <span style="font-size:10px;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;text-align:right;">Precio unit.</span>
+        <span></span>
+      </div>
+      <div id="noc-items-container"></div>
+    </div>
+    <!-- Total -->
+    <div style="display:flex;justify-content:flex-end;align-items:center;gap:8px;padding:10px 0;border-top:.5px solid var(--cream-d);margin-bottom:14px;">
+      <span style="font-size:12px;color:var(--text-l);">Total:</span>
+      <span id="noc-total-display" style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--text);">$0</span>
+    </div>
+    <!-- Notas -->
+    <div style="margin-bottom:20px;">
+      <label style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;display:block;margin-bottom:6px;">Notas / observaciones</label>
+      <textarea id="noc-notas" class="fi" placeholder="Opcional..." style="margin-top:0;min-height:64px;resize:vertical;"></textarea>
+    </div>
+    <!-- Botones -->
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button onclick="cerrarModalNuevaOCDirecta()" style="padding:9px 18px;border-radius:8px;border:.5px solid var(--cream-d);background:var(--cream);color:var(--text-m);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;">Cancelar</button>
+      <button id="noc-btn-guardar" onclick="guardarNuevaOCDirecta()" style="padding:9px 20px;border-radius:8px;border:none;background:#4a5e4d;color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;">Emitir OC</button>
     </div>
   </div>
 </div>
