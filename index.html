@@ -14839,8 +14839,21 @@ window.saveFactura = async function() {
       }
     }
     if(!reemplazado) {
-      await addDoc(collection(db,'clientes',currentClientUID,'proveedores',_ccProvId,'facturas'),data);
+      const newRef = await addDoc(collection(db,'clientes',currentClientUID,'proveedores',_ccProvId,'facturas'),data);
+      // Actualizar memoria para que renderCuentaCorriente() vea la nueva factura inmediatamente
+      _ccFacturas.unshift({id: newRef.id, ...data});
+      _ccFacturas.sort((a,b)=>(a.fecha||'')>(b.fecha||'')?-1:1);
+    } else {
+      // Reemplazado: mover de _ccOCsComoFactura a _ccFacturas en memoria
+      const idx = (_ccOCsComoFactura||[]).findIndex(f => f.ocId === data.ocId && !f.eliminado);
+      if(idx !== -1) {
+        const existing = _ccOCsComoFactura.splice(idx, 1)[0];
+        _ccFacturas.unshift({...existing, numero: data.numero, monto: data.monto, fecha: data.fecha, desc: data.desc, estado: data.estado, esOC: false});
+        _ccFacturas.sort((a,b)=>(a.fecha||'')>(b.fecha||'')?-1:1);
+      }
     }
+    // Refrescar KPIs y movimientos inmediatamente
+    if(typeof renderCuentaCorriente === 'function') renderCuentaCorriente();
     const s=document.getElementById('fac-saved');if(s)s.style.display='block';
     setTimeout(async()=>{
       if(s)s.style.display='none';
