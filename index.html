@@ -1307,8 +1307,8 @@ input[type=number]{-moz-appearance:textfield;}
             </select>
           </div>
 
-          <!-- KPI HERO: Ganancia + 4 secundarias -->
-          <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr 1fr;gap:10px;margin-bottom:16px;">
+          <!-- KPI HERO: Ganancia + 5 secundarias -->
+          <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr 1fr 1fr;gap:10px;margin-bottom:16px;">
 
             <!-- Ganancia — hero card -->
             <div style="background:var(--topbar);border-radius:14px;padding:20px;color:#fff;position:relative;overflow:hidden;">
@@ -1367,6 +1367,18 @@ input[type=number]{-moz-appearance:textfield;}
               </div>
               <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;" id="cont-margen-pct">0%</div>
               <div style="font-size:10px;color:var(--text-l);margin-top:3px;">sobre ingresos</div>
+            </div>
+
+            <!-- Disponible en caja -->
+            <div style="background:var(--white);border:.5px solid var(--cream-d);border-radius:14px;padding:18px;">
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+                <div style="width:28px;height:28px;border-radius:8px;background:var(--sage-xl);display:flex;align-items:center;justify-content:center;">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="4" width="10" height="7" rx="1.5" stroke="#6B7A60" stroke-width="1.5"/><path d="M5 4V3a2 2 0 014 0v1" stroke="#6B7A60" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </div>
+                <div style="font-size:10px;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;font-weight:500;">Disponible</div>
+              </div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;" id="cont-disponible">—</div>
+              <div style="font-size:10px;color:var(--text-l);margin-top:3px;">en caja</div>
             </div>
           </div>
 
@@ -7251,6 +7263,7 @@ function renderContabilidadHome(ingresos, egresos, pendiente, gastos) {
   setEl('cob-pend', '$'+pendiente.toLocaleString('es-AR'));
   setEl('cont-margen', margen+'% margen neto');
   setEl('cont-margen-pct', margen+'%');
+  setEl('cont-disponible', window._cajaSaldoTotal!=null ? '$'+Math.round(window._cajaSaldoTotal).toLocaleString('es-AR') : '—');
   // Margen bar en hero card
   const mBar = document.getElementById('cont-margen-bar');
   if(mBar) mBar.style.width = Math.min(margen,100)+'%';
@@ -7744,6 +7757,9 @@ function renderCajaChips(cuentas, movs) {
     </div>`;
   }).join('');
 
+  window._cajaSaldoTotal = cuentasUnicas
+    .filter(c => c.tipo !== 'retiros')
+    .reduce((a,c) => a + (saldos[c.nombre]||0), 0);
   container.innerHTML = chipTodas + chipsCuentas;
 }
 
