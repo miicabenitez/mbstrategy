@@ -4857,6 +4857,7 @@ async function loadAdminData() {
     const gastos = [];
     gastosSnap.forEach(d => { const data=d.data(); if(!data.eliminado) gastos.push({id:d.id,...data}); });
     updateMetrics(clients, cobros, gastos);
+    preloadCajaSaldo(user.uid).catch(()=>{});
     renderGastosData(gastos);
     await loadPresupuestosGlobal();
     await loadPendientes();
@@ -7760,7 +7761,36 @@ function renderCajaChips(cuentas, movs) {
   window._cajaSaldoTotal = cuentasUnicas
     .filter(c => c.tipo !== 'retiros')
     .reduce((a,c) => a + (saldos[c.nombre]||0), 0);
+  const dispEl = document.getElementById('cont-disponible');
+  if(dispEl) dispEl.textContent = '$'+Math.round(window._cajaSaldoTotal).toLocaleString('es-AR');
   container.innerHTML = chipTodas + chipsCuentas;
+}
+
+async function preloadCajaSaldo(uid) {
+  try {
+    const cuentasSnap = await getDocs(collection(db,'clientes',uid,'cuentas'));
+    const cuentas = [];
+    cuentasSnap.forEach(d => cuentas.push({id:d.id,...d.data()}));
+    const seen = new Set();
+    const cuentasUnicas = cuentas.filter(c => { if(seen.has(c.nombre)) return false; seen.add(c.nombre); return true; });
+    const movsSnap = await getDocs(query(collection(db,'libroCaja'), where('uid','==',uid)));
+    const saldos = {};
+    cuentasUnicas.forEach(c => { saldos[c.nombre] = 0; });
+    movsSnap.forEach(d => {
+      const m = d.data(); if(m.eliminado) return;
+      if(m.tipo==='ingreso') { if(m.cuenta) saldos[m.cuenta] = (saldos[m.cuenta]||0)+(parseFloat(m.monto)||0); }
+      else if(m.tipo==='egreso') { if(m.cuenta) saldos[m.cuenta] = (saldos[m.cuenta]||0)-(parseFloat(m.monto)||0); }
+      else if(m.tipo==='transfer') {
+        if(m.cuentaDesde) saldos[m.cuentaDesde] = (saldos[m.cuentaDesde]||0)-(parseFloat(m.monto)||0);
+        if(m.cuentaHacia) saldos[m.cuentaHacia] = (saldos[m.cuentaHacia]||0)+(parseFloat(m.monto)||0);
+      }
+    });
+    window._cajaSaldoTotal = cuentasUnicas
+      .filter(c => c.tipo !== 'retiros')
+      .reduce((a,c) => a + (saldos[c.nombre]||0), 0);
+    const el = document.getElementById('cont-disponible');
+    if(el) el.textContent = '$'+Math.round(window._cajaSaldoTotal).toLocaleString('es-AR');
+  } catch(e) { /* silencioso, KPI queda en "—" */ }
 }
 
 window.cajaFiltrarCuenta = function(nombre, _el) {
