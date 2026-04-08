@@ -7688,6 +7688,7 @@ function renderCajaKPIs(movs) {
     const monto = parseFloat(m.monto)||0;
     if(m.tipo==='ingreso') entradas += monto;
     else if(m.tipo==='egreso') salidas += monto;
+    else if(m.tipo==='transfer' && (m.cuentaHacia||'').startsWith('Retiros ')) salidas += monto;
   });
   const resultado = entradas - salidas;
   const fmt = v => '$'+Math.round(Math.abs(v)).toLocaleString('es-AR');
