@@ -7798,7 +7798,8 @@ function renderCajaTable(movs) {
     else if(m.tipo==='transferencia') { totalSalidas += monto; }
     else if(m.tipo==='transfer') {
       if(_cajaCuentaFiltro===m.cuentaHacia) saldo += monto;
-      else saldo -= monto;
+      else if(_cajaCuentaFiltro!==null) saldo -= monto;
+      else if((m.cuentaHacia||'').startsWith('Retiros ')) saldo -= monto;
       if((m.cuentaHacia||'').startsWith('Retiros ')) totalSalidas += monto;
     }
     let fechaStr = '—';
