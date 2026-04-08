@@ -7806,7 +7806,11 @@ function renderCajaTable(movs) {
     }
     let badgeClass='caja-badge-ingreso', badgeText='Ingreso';
     if(m.tipo==='egreso'){badgeClass='caja-badge-egreso';badgeText='Egreso';}
-    else if(m.tipo==='transferencia'||m.tipo==='transfer'){badgeClass='caja-badge-transfer';badgeText='Entre cuentas';}
+    else if(m.tipo==='transferencia'){badgeClass='caja-badge-transfer';badgeText='Entre cuentas';}
+    else if(m.tipo==='transfer'){
+      if((m.cuentaHacia||'').startsWith('Retiros ')){badgeClass='caja-badge-egreso';badgeText='Egreso';}
+      else{badgeClass='caja-badge-transfer';badgeText='Entre cuentas';}
+    }
     const esTransferEntrada = m.tipo==='transfer' && _cajaCuentaFiltro===m.cuentaHacia;
     const esTransferSalida  = m.tipo==='transfer' && !esTransferEntrada;
     const entradaHtml = (m.tipo==='ingreso'||esTransferEntrada)
