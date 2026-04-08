@@ -7795,6 +7795,10 @@ function renderCajaTable(movs) {
     if(m.tipo==='ingreso') { saldo += monto; totalEntradas += monto; }
     else if(m.tipo==='egreso') { saldo -= monto; totalSalidas += monto; }
     else if(m.tipo==='transferencia') { totalSalidas += monto; }
+    else if(m.tipo==='transfer') {
+      if(_cajaCuentaFiltro && _cajaCuentaFiltro===m.cuentaHacia) totalEntradas+=monto;
+      else totalSalidas+=monto;
+    }
     let fechaStr = '—';
     if(m.fecha) {
       const p = m.fecha.split('-');
@@ -7802,14 +7806,18 @@ function renderCajaTable(movs) {
     }
     let badgeClass='caja-badge-ingreso', badgeText='Ingreso';
     if(m.tipo==='egreso'){badgeClass='caja-badge-egreso';badgeText='Egreso';}
-    else if(m.tipo==='transferencia'){badgeClass='caja-badge-transfer';badgeText='Entre cuentas';}
-    const entradaHtml = m.tipo==='ingreso'
+    else if(m.tipo==='transferencia'||m.tipo==='transfer'){badgeClass='caja-badge-transfer';badgeText='Entre cuentas';}
+    const esTransferEntrada = m.tipo==='transfer' && _cajaCuentaFiltro===m.cuentaHacia;
+    const esTransferSalida  = m.tipo==='transfer' && !esTransferEntrada;
+    const entradaHtml = (m.tipo==='ingreso'||esTransferEntrada)
       ? `<span style="font-size:13px;font-weight:600;color:#3B6D11;display:block;text-align:right;">$${Math.round(monto).toLocaleString('es-AR')}</span>`
       : `<span style="font-size:13px;color:#e0e0e0;display:block;text-align:right;">—</span>`;
-    const salidaHtml = (m.tipo==='egreso'||m.tipo==='transferencia')
+    const salidaHtml = (m.tipo==='egreso'||m.tipo==='transferencia'||esTransferSalida)
       ? `<span style="font-size:13px;font-weight:600;color:#993C1D;display:block;text-align:right;">$${Math.round(monto).toLocaleString('es-AR')}</span>`
       : `<span style="font-size:13px;color:#e0e0e0;display:block;text-align:right;">—</span>`;
-    const cuentaLabel = m.tipo==='transferencia' ? (m.cuentaOrigen||'—') : (m.cuenta||'—');
+    const cuentaLabel = m.tipo==='transfer'
+      ? `${m.cuentaDesde||'?'} → ${m.cuentaHacia||'?'}`
+      : m.tipo==='transferencia' ? (m.cuentaOrigen||'—') : (m.cuenta||'—');
     return `<tr data-tipo="${m.tipo||''}" data-concepto="${(m.concepto||'').toLowerCase()}" data-fecha="${m.fecha||''}" style="opacity:0;animation:fadeUp .3s ease both;animation-delay:${80+i*50}ms;" onclick="cajaMostrarMovimiento('${m.id}')">
       <td><span style="font-size:12px;color:#bbb;">${fechaStr}</span></td>
       <td><span style="font-size:13px;font-weight:500;color:#1a1a1a;white-space:nowrap;">${m.concepto||'—'}</span></td>
