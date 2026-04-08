@@ -8922,7 +8922,7 @@ function _cierreRevRenderOverlay() {
     const cuentasHtml = _cierreCuentas.map(c=>`
       <div class="cierre-rev-cuenta-row">
         <label>${c.nombre}</label>
-        <input type="text" inputmode="numeric" value="${item.cuentas[c.nombre]?Math.round(item.cuentas[c.nombre]).toLocaleString('es-AR'):''}" data-item="${i}" data-cuenta="${c.nombre}" onfocus="this.value=this.value.replace(/\./g,'')" oninput="this.value=this.value.replace(/[^0-9]/g,'');_cierreRevRecalc()" onblur="var n=parseInt((this.value||'').replace(/\./g,''))||0;this.value=n?n.toLocaleString('es-AR'):'';_cierreRevRecalc()">
+        <input type="number" min="0" value="${item.cuentas[c.nombre]||''}" data-item="${i}" data-cuenta="${c.nombre}" oninput="_cierreRevRecalc()">
       </div>`).join('');
     return `<div class="cierre-rev-item">
       <div class="cierre-rev-item-header">
@@ -8958,7 +8958,7 @@ function _cierreRevRenderOverlay() {
 window._cierreRevRecalc = function() {
   document.querySelectorAll('#cierre-rev-overlay input[data-item]').forEach(inp=>{
     const i = parseInt(inp.dataset.item);
-    if(_cierreRevItems[i]) _cierreRevItems[i].cuentas[inp.dataset.cuenta] = parseInt((inp.value||'').replace(/\./g,''))||0;
+    if(_cierreRevItems[i]) _cierreRevItems[i].cuentas[inp.dataset.cuenta] = parseFloat(inp.value)||0;
   });
   const comprometido = {};
   _cierreCuentas.forEach(c=>{ comprometido[c.nombre]=0; });
