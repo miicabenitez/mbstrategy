@@ -578,6 +578,11 @@ textarea.cj-input{resize:none;}
 .cprd-participante-pct input{width:52px;padding:5px 8px;border:1.5px solid #ddd;border-radius:7px;font-size:13px;font-family:'DM Mono',monospace,inherit;text-align:right;color:#1a1a1a;outline:none;background:white;}
 .cprd-participante-pct input:focus{border-color:#4a5e4d;}
 .cprd-pct-lbl{font-size:12px;color:#888;}
+.cprd-vincular-badge{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:700;white-space:nowrap;flex-shrink:0;}
+.cprd-vincular-badge.vinculado{background:#dcfce7;color:#166534;}
+.cprd-vincular-badge.sin-vincular{background:#fef9c3;color:#854d0e;}
+.cprd-proveedor-select{font-size:12px;border:.5px solid #ddd;border-radius:7px;padding:4px 6px;font-family:inherit;outline:none;background:white;max-width:150px;flex-shrink:0;}
+@media(max-width:600px){.cprd-proveedor-select{max-width:110px;font-size:11px;}}
 .cprd-reserva-row{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;border:1.5px solid #f0efeb;background:#fafafa;margin-bottom:6px;}
 .cprd-reserva-nombre{flex:1;font-size:13px;font-weight:500;color:#1a1a1a;}
 .cprd-dist-bar{height:8px;border-radius:20px;background:#f0efeb;overflow:hidden;display:flex;margin:12px 0 6px;}
@@ -8242,6 +8247,10 @@ window.cprdShowCfgTab = function(tab, btn) {
 // ─── Config: carga desde Firestore ──────────────────────────
 async function loadCierreConfig() {
   if(!currentClientUID) return;
+  // Asegurar que _proveedores esté disponible para el dropdown de vínculo
+  if(!window._proveedores || !window._proveedores.length) {
+    try { await loadProveedores(); } catch(e) {}
+  }
   try {
     const snap = await getDocs(query(
       collection(db,'configuracionCierre'),
@@ -8252,7 +8261,7 @@ async function loadCierreConfig() {
       _cprdFrecuencia  = d.frecuencia  || 'quincenal';
       _cprdProyeccion  = d.proyeccionHabilitada !== false;
       _cprdEstructura  = d.estructura  || 'unico';
-      _cprdParticipantes = (d.participantes||[]).map((p,i)=>({id:p.id||'p'+i,nombre:p.nombre||'',pct:p.pct||0}));
+      _cprdParticipantes = (d.participantes||[]).map((p,i)=>({id:p.id||'p'+i,nombre:p.nombre||'',pct:p.pct||0,proveedorId:p.proveedorId||null}));
       _cprdReservas      = (d.reservas||[]).map((r,i)=>({id:r.id||'r'+i,nombre:r.nombre||'',pct:r.pct||15}));
     } else {
       // Defaults
@@ -8299,7 +8308,7 @@ window.cprdSelEstructura = function(btn) {
 
 window.cprdAgregarParticipante = function() {
   const id = 'p'+Date.now();
-  _cprdParticipantes.push({id,nombre:'',pct:0});
+  _cprdParticipantes.push({id,nombre:'',pct:0,proveedorId:null});
   _cprdRenderParticipantes(); _cprdRenderDistBar();
 };
 window.cprdEliminarParticipante = function(id) {
@@ -8325,6 +8334,12 @@ function _cprdRenderParticipantes() {
         <input type="number" min="0" max="100" value="${p.pct}" oninput="cprdUpdateParticipante('${p.id}','pct',+this.value)">
         <span class="cprd-pct-lbl">%</span>
       </div>
+      <select class="cprd-proveedor-select" onchange="cprdSelProveedorParticipante('${p.id}',this.value)">
+        <option value="">Sin vincular</option>
+        ${(window._proveedores||[]).map(pv=>`<option value="${pv.id}" ${p.proveedorId===pv.id?'selected':''}>${pv.nombre}</option>`).join('')}
+        <option value="__nuevo__">— Crear nuevo —</option>
+      </select>
+      <span class="cprd-vincular-badge ${p.proveedorId?'vinculado':'sin-vincular'}">${p.proveedorId?'Vinculado':'Sin vincular'}</span>
       <button class="ccfg-icon-btn danger" onclick="cprdEliminarParticipante('${p.id}')" title="Eliminar">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
       </button>
@@ -8335,6 +8350,28 @@ window.cprdUpdateParticipante = function(id, field, val) {
   const p = _cprdParticipantes.find(x=>x.id===id);
   if(p) p[field] = val;
   _cprdRenderDistBar();
+};
+window.cprdSelProveedorParticipante = function(id, val) {
+  if(val === '__nuevo__') { cprdCrearProveedorParticipante(id); return; }
+  const p = _cprdParticipantes.find(x=>x.id===id);
+  if(p) p.proveedorId = val || null;
+  _cprdRenderParticipantes();
+};
+window.cprdCrearProveedorParticipante = async function(id) {
+  const p = _cprdParticipantes.find(x=>x.id===id);
+  if(!p || !currentClientUID) return;
+  const nombre = (p.nombre||'Participante') + ' — Retiro socio';
+  try {
+    const ref = await addDoc(collection(db,'clientes',currentClientUID,'proveedores'), {
+      nombre, categoria:'Retiro socio', creadoEn:new Date().toISOString(), eliminado:false
+    });
+    p.proveedorId = ref.id;
+    if(!window._proveedores) window._proveedores = [];
+    window._proveedores.push({id:ref.id, nombre, categoria:'Retiro socio', _saldo:0});
+    window._proveedores.sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||''));
+    _cprdRenderParticipantes();
+    showToast('Proveedor creado y vinculado', 'ok');
+  } catch(e) { showToast('Error al crear proveedor: '+e.message, 'error'); }
 };
 
 window.cprdAgregarReserva = function() {
@@ -8423,7 +8460,7 @@ window.cprdGuardarConfig = async function() {
     cuentasSnap.forEach(d=>cuentasExistentes.add(d.data().nombre));
     const nuevas = [];
     _cprdParticipantes.forEach((p,i)=>{ if(p.nombre && !cuentasExistentes.has('Retiros '+p.nombre)) nuevas.push({nombre:'Retiros '+p.nombre,tipo:'retiros',saldo:0,orden:100+i,activa:true}); });
-    _cprdReservas.forEach((r,i)=>{ if(r.nombre && !cuentasExistentes.has(r.nombre)) nuevas.push({nombre:r.nombre,tipo:'reserva',saldo:0,orden:200+i,activa:true}); });
+    _cprdReservas.forEach((r,i)=>{ if(r.nombre && !cuentasExistentes.has(r.nombre)) nuevas.push({nombre:r.nombre,tipo:'reserva',esReserva:true,saldo:0,orden:200+i,activa:true,creadoEn:new Date().toISOString()}); });
     await Promise.all(nuevas.map(c=>addDoc(collection(db,'clientes',currentClientUID,'cuentas'),c)));
     if(btn) { btn.textContent='✓ Guardado'; setTimeout(()=>{ btn.textContent='Guardar configuración'; btn.disabled=false; },2000); }
   } catch(e) {
@@ -8792,7 +8829,7 @@ async function _cierreGuardarProyeccion() {
   } catch(e) { showToast('Error: '+e.message, 'error'); }
 }
 
-async function _cierreEjecutarCierre(movimientos, provPagos) {
+async function _cierreEjecutarCierre(movimientos, provPagos, retiroPagos) {
   const uid = currentClientUID;
   const doc_ = _cierreBuildDoc('cerrado');
   doc_.cerradoEn = new Date().toISOString();
@@ -8804,7 +8841,7 @@ async function _cierreEjecutarCierre(movimientos, provPagos) {
     // Guardar movimientos en libroCaja con metadata completa
     const movsConMeta = movimientos.map(m=>({...m, uid, fecha, mes, origen:'cierre', referenciaId:cierreRef.id, eliminado:false, creadoEn}));
     await Promise.all(movsConMeta.map(m=>addDoc(collection(db,'libroCaja'),m)));
-    // Registrar pagos en CC de proveedores
+    // Registrar pagos en CC de proveedores (compromisos)
     if(provPagos && provPagos.length) {
       await Promise.all(provPagos.map(p=>addDoc(
         collection(db,'clientes',uid,'proveedores',p.provId,'pagos'),
@@ -8812,6 +8849,17 @@ async function _cierreEjecutarCierre(movimientos, provPagos) {
          concepto:'Pago desde cierre de período', facturasIds:[], facturasNombres:[], facturasMontos:[],
          creadoEn, eliminado:false}
       )));
+    }
+    // Registrar factura + pago en CC de participantes (retiros vinculados)
+    if(retiroPagos && retiroPagos.length) {
+      await Promise.all(retiroPagos.flatMap(r=>{
+        const facRef = collection(db,'clientes',uid,'proveedores',r.provId,'facturas');
+        const pagRef = collection(db,'clientes',uid,'proveedores',r.provId,'pagos');
+        return [
+          addDoc(facRef, {numero:'Retiro '+mes, desc:'Retiro de socio - '+mes, monto:r.monto, montoPagado:r.monto, estado:'pagada', fecha, esOC:false, creadoEn, eliminado:false}),
+          addDoc(pagRef, {tipo:'pago', monto:r.monto, montoLibre:r.monto, fecha, medio:'cierre', concepto:'Pago desde cierre de período', facturasIds:[], facturasNombres:[], facturasMontos:[], creadoEn, eliminado:false})
+        ];
+      }));
     }
     window._cierreDocCerrado = doc_;
     _cierreRenderBloqueado(doc_);
@@ -8948,18 +8996,22 @@ window.cierreConfirmarRevision = async function() {
   let todosOk = true;
   _cierreRevItems.forEach(item=>{ const s=Object.values(item.cuentas).reduce((a,v)=>a+v,0); if(Math.abs(item.monto-s)>=0.5) todosOk=false; });
   if(!todosOk){ showToast('Revisá que todos los ítems sumen correctamente','error'); return; }
-  const movimientos = [], provPagos = [];
+  const movimientos = [], provPagos = [], retiroPagos = [];
   _cierreRevItems.forEach(item=>{
     if(item.tipo==='compromiso'){
       _cierreCuentas.forEach(c=>{ const m=Math.round(item.cuentas[c.nombre]||0); if(m>0) movimientos.push({tipo:'egreso',cuenta:c.nombre,monto:m,concepto:item.nombre}); });
       if(item.origen==='proveedor') provPagos.push({provId:item.rawId.replace('prov-',''), monto:Math.round(item.monto)});
+    } else if(item.tipo==='reserva'){
+      _cierreCuentas.forEach(c=>{ const m=Math.round(item.cuentas[c.nombre]||0); if(m>0) movimientos.push({tipo:'transfer',cuentaDesde:c.nombre,cuentaHacia:item.nombre,monto:m,concepto:item.nombre}); });
     } else {
-      const cuentaHacia = item.tipo==='reserva' ? item.nombre : 'Retiros '+item.nombre;
-      _cierreCuentas.forEach(c=>{ const m=Math.round(item.cuentas[c.nombre]||0); if(m>0) movimientos.push({tipo:'transfer',cuentaDesde:c.nombre,cuentaHacia,monto:m,concepto:item.nombre}); });
+      // retiro
+      _cierreCuentas.forEach(c=>{ const m=Math.round(item.cuentas[c.nombre]||0); if(m>0) movimientos.push({tipo:'transfer',cuentaDesde:c.nombre,cuentaHacia:'Retiros '+item.nombre,monto:m,concepto:item.nombre}); });
+      const part = _cprdParticipantes.find(p=>p.nombre===item.nombre);
+      if(part?.proveedorId) retiroPagos.push({provId:part.proveedorId, monto:Math.round(item.monto), nombre:item.nombre});
     }
   });
   _cierreRevCerrar();
-  await _cierreEjecutarCierre(movimientos, provPagos);
+  await _cierreEjecutarCierre(movimientos, provPagos, retiroPagos);
 };
 
 window._cierreRevCerrar = function() {
