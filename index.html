@@ -673,6 +673,43 @@ textarea.cj-input{resize:none;}
 .cierre-step-card{animation:cierreCardIn .25s ease both;}
 .cierre-step-card:nth-child(2){animation-delay:.05s;}
 .cierre-step-card:nth-child(3){animation-delay:.1s;}
+/* ── Revisión pre-cierre ── */
+#cierre-rev-overlay{position:fixed;inset:0;background:rgba(26,42,30,.65);z-index:2000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px);}
+.cierre-rev-panel{background:#fff;border-radius:18px;width:92%;max-width:600px;max-height:92vh;overflow-y:auto;display:flex;flex-direction:column;}
+.cierre-rev-header{padding:20px 20px 0;display:flex;justify-content:space-between;align-items:center;}
+.cierre-rev-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:500;color:#1a1f1b;}
+.cierre-rev-close{background:none;border:none;font-size:22px;cursor:pointer;color:#aaa;line-height:1;padding:0;}
+.cierre-rev-banner{display:flex;gap:8px;flex-wrap:wrap;padding:14px 20px 8px;}
+.cierre-rev-chip{background:#edf2ed;border-radius:8px;padding:9px 13px;font-size:12px;color:#2d3d2e;transition:background .2s,color .2s;}
+.cierre-rev-chip strong{display:block;font-size:13px;font-family:'DM Mono',monospace,inherit;}
+.cierre-rev-chip.negativo{background:#fdecea;color:#c0392b;}
+.cierre-rev-section-label{font-size:10px;font-weight:700;color:#888;letter-spacing:.06em;text-transform:uppercase;padding:4px 20px 6px;}
+.cierre-rev-item{border:.5px solid #e4ebe4;border-radius:10px;padding:12px 14px;margin:0 20px 10px;}
+.cierre-rev-item-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.cierre-rev-item-name{font-size:13px;font-weight:600;color:#1a1f1b;}
+.cierre-rev-item-total{font-size:13px;font-weight:700;font-family:'DM Mono',monospace,inherit;color:#4a5e4d;}
+.cierre-rev-badge{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:700;margin-right:6px;}
+.cierre-rev-badge.compromiso{background:#fef3c7;color:#92400e;}
+.cierre-rev-badge.reserva{background:#eff6ff;color:#1d4ed8;}
+.cierre-rev-badge.retiro{background:#f0fdf4;color:#166534;}
+.cierre-rev-cuenta-row{display:flex;align-items:center;gap:8px;margin-top:6px;}
+.cierre-rev-cuenta-row label{font-size:12px;color:#666;flex:1;min-width:0;}
+.cierre-rev-cuenta-row input{width:100px;border:.5px solid #dde;border-radius:6px;padding:5px 8px;font-size:13px;text-align:right;font-family:'DM Mono',monospace,inherit;outline:none;}
+.cierre-rev-cuenta-row input:focus{border-color:#4a5e4d;}
+.cierre-rev-status{font-size:11px;margin-top:6px;font-weight:600;}
+.cierre-rev-status.ok{color:#27ae60;}
+.cierre-rev-status.error{color:#c0392b;}
+.cierre-rev-remanente{background:#f5f5f1;margin:4px 20px 14px;border-radius:10px;padding:12px 14px;}
+.cierre-rev-rem-title{font-size:10px;font-weight:700;color:#888;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;}
+.cierre-rev-rem-row{display:flex;justify-content:space-between;font-size:13px;margin-top:4px;}
+.cierre-rev-rem-row.negativo{color:#c0392b;font-weight:600;}
+.cierre-rev-tip{font-size:12px;color:#888;padding:0 20px 14px;line-height:1.6;}
+.cierre-rev-footer{display:flex;gap:10px;padding:14px 20px;border-top:.5px solid #eee;flex-shrink:0;}
+.cierre-rev-footer button:first-child{flex:1;padding:9px;border-radius:9px;border:1.5px solid #c8d5c9;background:white;font-size:13px;font-weight:600;color:#4a5e4d;cursor:pointer;font-family:inherit;}
+.cierre-rev-footer button:last-child{flex:2;padding:9px 16px;border-radius:9px;border:none;background:#4a5e4d;font-size:13px;font-weight:600;color:white;cursor:pointer;font-family:inherit;transition:background .15s;}
+.cierre-rev-footer button:last-child:hover:not(:disabled){background:#3d4f40;}
+.cierre-rev-footer button:last-child:disabled{opacity:.45;cursor:not-allowed;}
+@media(max-width:600px){#cierre-rev-overlay{align-items:flex-end;}.cierre-rev-panel{width:100%;max-height:96vh;border-radius:18px 18px 0 0;}.cierre-rev-cuenta-row input{width:80px;}}
 /* Calculador — reset globales */
 *,*:focus{outline:none !important;box-shadow:none !important;}
 input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
@@ -8406,6 +8443,7 @@ let _cierreDistribucion = [];         // [{tipo,nombre,pct,monto,cuentaId}]
 let _cierreCompromisosLista = [];     // [{id,nombre,monto,origen,origenLabel,pagado}]
 let _cierreCuentas = [];              // [{id,nombre,tipo,saldo}]
 let _cierreManualCompromisos = [];    // compromisos manuales agregados en esta sesión
+let _cierreRevItems = [];             // [{tipo,nombre,monto,origen,origenId,cuentas:{[nombre]:0}}]
 
 async function loadCierrePeriodo() {
   if(!currentClientUID) return;
@@ -8742,7 +8780,7 @@ window.cierreAccionPrincipal = async function() {
   if(_cierreModo==='proyeccion') {
     await _cierreGuardarProyeccion();
   } else {
-    await _cierreCerrarPeriodo();
+    _cierreAbrirRevision();
   }
 };
 
@@ -8754,36 +8792,29 @@ async function _cierreGuardarProyeccion() {
   } catch(e) { showToast('Error: '+e.message, 'error'); }
 }
 
-async function _cierreCerrarPeriodo() {
-  if(!confirm('¿Confirmás el cierre del período? Se generarán los movimientos en Caja.')) return;
+async function _cierreEjecutarCierre(movimientos, provPagos) {
   const uid = currentClientUID;
   const doc_ = _cierreBuildDoc('cerrado');
   doc_.cerradoEn = new Date().toISOString();
   try {
     const cierreRef = await addDoc(collection(db,'cierres'), doc_);
-    // Generar movimientos en libroCaja
-    const aDistribuir = Math.max(0, _cierreDisponibleTotal - _cierreCompromisosSeleccionados);
-    // Cuenta origen = cuenta operativa con mayor saldo
-    const cuentaOrigen = _cierreCuentas.sort((a,b)=>(b.saldoReal||0)-(a.saldoReal||0))[0]?.nombre || 'Efectivo';
     const fecha = document.getElementById('cierre-fecha-fin')?.value || new Date().toISOString().split('T')[0];
     const mes   = new Date(fecha+'T12:00:00').toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase());
-    const movs  = _cierreDistribucion.filter(d=>d.monto>0).map(d=>({
-      uid, fecha, mes,
-      tipo: 'transfer',
-      concepto: d.tipo==='reserva' ? 'Reserva '+d.nombre : 'Retiro '+d.nombre,
-      cuentaDesde: cuentaOrigen,
-      cuentaHacia: d.tipo==='reserva' ? d.nombre : 'Retiros '+d.nombre,
-      monto: Math.round(d.monto),
-      origen: 'cierre',
-      referenciaId: cierreRef.id,
-      eliminado: false,
-      creadoEn: new Date().toISOString()
-    }));
-    await Promise.all(movs.map(m=>addDoc(collection(db,'libroCaja'),m)));
-    // Bloquear panel y mostrar estado cerrado
+    const creadoEn = new Date().toISOString();
+    // Guardar movimientos en libroCaja con metadata completa
+    const movsConMeta = movimientos.map(m=>({...m, uid, fecha, mes, origen:'cierre', referenciaId:cierreRef.id, eliminado:false, creadoEn}));
+    await Promise.all(movsConMeta.map(m=>addDoc(collection(db,'libroCaja'),m)));
+    // Registrar pagos en CC de proveedores
+    if(provPagos && provPagos.length) {
+      await Promise.all(provPagos.map(p=>addDoc(
+        collection(db,'clientes',uid,'proveedores',p.provId,'pagos'),
+        {tipo:'pago', monto:p.monto, montoLibre:p.monto, fecha, medio:'cierre',
+         concepto:'Pago desde cierre de período', facturasIds:[], facturasNombres:[], facturasMontos:[],
+         creadoEn, eliminado:false}
+      )));
+    }
     window._cierreDocCerrado = doc_;
     _cierreRenderBloqueado(doc_);
-    // Generar PDF después de actualizar UI (el alert previo bloqueaba la descarga)
     await cierreGenerarPDF(doc_);
   } catch(e) { showToast('Error al cerrar: '+e.message, 'error'); console.log(e); }
 }
@@ -8808,6 +8839,133 @@ function _cierreRenderBloqueado(doc_) {
   // 3. Deshabilitar controles editables del panel
   document.querySelectorAll('#ct-cierre-periodo .cierre-tab-btn, #ct-cierre-periodo .cierre-freq-btn, #cierre-fecha-inicio, #cierre-fecha-fin, #ct-cierre-periodo .cierre-comp-cb, #ct-cierre-periodo .cierre-dist-row input').forEach(el => { el.disabled = true; });
 }
+
+// ─── Pantalla de revisión pre-cierre ─────────────────────────
+function _cierreAbrirRevision() {
+  _cierreRevItems = [];
+  const precargar = _cierreCuentas.length === 1;
+  _cierreCompromisosLista.filter(c=>c.pagado).forEach(c=>{
+    const cuentas = {};
+    _cierreCuentas.forEach(cu=>{ cuentas[cu.nombre]=0; });
+    if(precargar) cuentas[_cierreCuentas[0].nombre] = c.monto;
+    _cierreRevItems.push({tipo:'compromiso', nombre:c.nombre, monto:c.monto, origen:c.origen, rawId:c.id, cuentas});
+  });
+  _cierreDistribucion.filter(d=>d.monto>0).forEach(d=>{
+    const cuentas = {};
+    _cierreCuentas.forEach(cu=>{ cuentas[cu.nombre]=0; });
+    if(precargar) cuentas[_cierreCuentas[0].nombre] = d.monto;
+    const tipoRev = d.tipo==='reserva' ? 'reserva' : 'retiro';
+    _cierreRevItems.push({tipo:tipoRev, nombre:d.nombre, monto:d.monto, rawId:null, cuentas});
+  });
+  _cierreRevRenderOverlay();
+}
+
+function _cierreRevRenderOverlay() {
+  const prev = document.getElementById('cierre-rev-overlay');
+  if(prev) prev.remove();
+  const ol = document.createElement('div');
+  ol.id = 'cierre-rev-overlay';
+  const bannerHtml = _cierreCuentas.map(c=>
+    `<div class="cierre-rev-chip" id="crchip-${c.nombre.replace(/\s+/g,'_')}"><strong>${_moneyFmt(c.saldoReal||0)}</strong>${c.nombre}</div>`
+  ).join('');
+  const itemsHtml = _cierreRevItems.map((item,i)=>{
+    const bc = item.tipo==='compromiso'?'compromiso':item.tipo==='reserva'?'reserva':'retiro';
+    const bl = item.tipo==='compromiso'?'Compromiso':item.tipo==='reserva'?'Reserva':'Retiro';
+    const cuentasHtml = _cierreCuentas.map(c=>`
+      <div class="cierre-rev-cuenta-row">
+        <label>${c.nombre}</label>
+        <input type="number" min="0" step="1" value="${item.cuentas[c.nombre]||0}" data-item="${i}" data-cuenta="${c.nombre}" oninput="_cierreRevRecalc()">
+      </div>`).join('');
+    return `<div class="cierre-rev-item">
+      <div class="cierre-rev-item-header">
+        <span><span class="cierre-rev-badge ${bc}">${bl}</span><span class="cierre-rev-item-name">${item.nombre}</span></span>
+        <span class="cierre-rev-item-total">${_moneyFmt(item.monto)}</span>
+      </div>${cuentasHtml}
+      <div class="cierre-rev-status" id="crstatus-${i}"></div>
+    </div>`;
+  }).join('');
+  const remHtml = _cierreCuentas.map(c=>
+    `<div class="cierre-rev-rem-row" id="crrem-${c.nombre.replace(/\s+/g,'_')}"><span>${c.nombre}</span><span>${_moneyFmt(c.saldoReal||0)}</span></div>`
+  ).join('');
+  ol.innerHTML = `<div class="cierre-rev-panel">
+    <div class="cierre-rev-header">
+      <span class="cierre-rev-title">Revisión antes de cerrar</span>
+      <button class="cierre-rev-close" onclick="_cierreRevCerrar()">×</button>
+    </div>
+    <div class="cierre-rev-banner">${bannerHtml}</div>
+    ${_cierreRevItems.length?'<div class="cierre-rev-section-label">Ítems a distribuir</div>'+itemsHtml:''}
+    <div class="cierre-rev-remanente">
+      <div class="cierre-rev-rem-title">Remanente por cuenta</div>${remHtml}
+    </div>
+    <div class="cierre-rev-tip">El remanente pasa como saldo inicial del próximo período. Se recomienda registrar una apertura de caja.</div>
+    <div class="cierre-rev-footer">
+      <button onclick="_cierreRevCerrar()">Volver</button>
+      <button id="cierre-rev-confirm" onclick="cierreConfirmarRevision()" disabled>Confirmar y generar PDF</button>
+    </div>
+  </div>`;
+  document.body.appendChild(ol);
+  _cierreRevRecalc();
+}
+
+window._cierreRevRecalc = function() {
+  document.querySelectorAll('#cierre-rev-overlay input[data-item]').forEach(inp=>{
+    const i = parseInt(inp.dataset.item);
+    if(_cierreRevItems[i]) _cierreRevItems[i].cuentas[inp.dataset.cuenta] = parseFloat(inp.value)||0;
+  });
+  const comprometido = {};
+  _cierreCuentas.forEach(c=>{ comprometido[c.nombre]=0; });
+  _cierreRevItems.forEach(item=>{ _cierreCuentas.forEach(c=>{ comprometido[c.nombre]+=(item.cuentas[c.nombre]||0); }); });
+  _cierreCuentas.forEach(c=>{
+    const chip = document.getElementById('crchip-'+c.nombre.replace(/\s+/g,'_'));
+    if(!chip) return;
+    const disp = (c.saldoReal||0)-(comprometido[c.nombre]||0);
+    chip.querySelector('strong').textContent = _moneyFmt(disp);
+    chip.classList.toggle('negativo', disp < -0.5);
+  });
+  let todosOk = true;
+  _cierreRevItems.forEach((item,i)=>{
+    const suma = Object.values(item.cuentas).reduce((a,v)=>a+v,0);
+    const diff = Math.round((item.monto-suma)*100)/100;
+    const el = document.getElementById('crstatus-'+i);
+    if(!el) return;
+    if(Math.abs(diff)<0.5){ el.textContent='✓ OK'; el.className='cierre-rev-status ok'; }
+    else if(diff>0){ el.textContent='Falta '+_moneyFmt(diff); el.className='cierre-rev-status error'; todosOk=false; }
+    else{ el.textContent='Excede '+_moneyFmt(-diff); el.className='cierre-rev-status error'; todosOk=false; }
+  });
+  _cierreCuentas.forEach(c=>{
+    const el = document.getElementById('crrem-'+c.nombre.replace(/\s+/g,'_'));
+    if(!el) return;
+    const rem = (c.saldoReal||0)-(comprometido[c.nombre]||0);
+    el.querySelector('span:last-child').textContent = _moneyFmt(rem);
+    el.classList.toggle('negativo', rem < -0.5);
+  });
+  const algunaNegativa = _cierreCuentas.some(c=>(c.saldoReal||0)-(comprometido[c.nombre]||0)<-0.5);
+  const btn = document.getElementById('cierre-rev-confirm');
+  if(btn) btn.disabled = !todosOk || algunaNegativa;
+};
+
+window.cierreConfirmarRevision = async function() {
+  let todosOk = true;
+  _cierreRevItems.forEach(item=>{ const s=Object.values(item.cuentas).reduce((a,v)=>a+v,0); if(Math.abs(item.monto-s)>=0.5) todosOk=false; });
+  if(!todosOk){ showToast('Revisá que todos los ítems sumen correctamente','error'); return; }
+  const movimientos = [], provPagos = [];
+  _cierreRevItems.forEach(item=>{
+    if(item.tipo==='compromiso'){
+      _cierreCuentas.forEach(c=>{ const m=Math.round(item.cuentas[c.nombre]||0); if(m>0) movimientos.push({tipo:'egreso',cuenta:c.nombre,monto:m,concepto:item.nombre}); });
+      if(item.origen==='proveedor') provPagos.push({provId:item.rawId.replace('prov-',''), monto:Math.round(item.monto)});
+    } else {
+      const cuentaHacia = item.tipo==='reserva' ? item.nombre : 'Retiros '+item.nombre;
+      _cierreCuentas.forEach(c=>{ const m=Math.round(item.cuentas[c.nombre]||0); if(m>0) movimientos.push({tipo:'transfer',cuentaDesde:c.nombre,cuentaHacia,monto:m,concepto:item.nombre}); });
+    }
+  });
+  _cierreRevCerrar();
+  await _cierreEjecutarCierre(movimientos, provPagos);
+};
+
+window._cierreRevCerrar = function() {
+  const ol = document.getElementById('cierre-rev-overlay');
+  if(ol) ol.remove();
+};
 
 function _cierreBuildDoc(estado) {
   const su = obj => Object.fromEntries(Object.entries(obj).filter(([,v]) => v !== undefined));
