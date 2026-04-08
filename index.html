@@ -7796,8 +7796,8 @@ function renderCajaTable(movs) {
     else if(m.tipo==='egreso') { saldo -= monto; totalSalidas += monto; }
     else if(m.tipo==='transferencia') { totalSalidas += monto; }
     else if(m.tipo==='transfer') {
-      if(_cajaCuentaFiltro && _cajaCuentaFiltro===m.cuentaHacia) totalEntradas+=monto;
-      else totalSalidas+=monto;
+      if(_cajaCuentaFiltro===m.cuentaHacia) saldo += monto;
+      else saldo -= monto;
     }
     let fechaStr = '—';
     if(m.fecha) {
