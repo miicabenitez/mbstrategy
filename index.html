@@ -7788,8 +7788,10 @@ async function preloadCajaSaldo(uid) {
     window._cajaSaldoTotal = cuentasUnicas
       .filter(c => c.tipo !== 'retiros')
       .reduce((a,c) => a + (saldos[c.nombre]||0), 0);
-    const el = document.getElementById('cont-disponible');
-    if(el) el.textContent = '$'+Math.round(window._cajaSaldoTotal).toLocaleString('es-AR');
+    setTimeout(() => {
+      const el = document.getElementById('cont-disponible');
+      if(el) el.textContent = '$'+Math.round(window._cajaSaldoTotal).toLocaleString('es-AR');
+    }, 500);
   } catch(e) { /* silencioso, KPI queda en "—" */ }
 }
 
