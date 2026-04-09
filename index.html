@@ -2915,7 +2915,7 @@ input[type=number]{-moz-appearance:textfield;}
 
         <!-- Barra de acciones -->
         <div style="display:flex;justify-content:flex-end;align-items:center;margin-bottom:14px;">
-          <button class="bp" onclick="openModal('newProductoModal')">+ Agregar</button>
+          <button class="bp" onclick="abrirNuevoProducto()">+ Agregar</button>
         </div>
 
         <!-- Tabla -->
@@ -13157,7 +13157,7 @@ function renderProductosModule() {
   const lista = document.getElementById('prod-lista');
   if(!lista) return;
   if(_productos.length===0){
-    lista.innerHTML=createEmptyState('etiqueta','Sin productos en el catálogo','Agregá tus productos y servicios con sus precios','+ Agregar producto',"openModal('newProductoModal')");
+    lista.innerHTML=createEmptyState('etiqueta','Sin productos en el catálogo','Agregá tus productos y servicios con sus precios','+ Agregar producto',"abrirNuevoProducto()");
     const footer=document.getElementById('prod-footer-guardar');
     if(footer)footer.style.display='none';
     return;
@@ -17727,6 +17727,18 @@ async function createProducto() {
 }
 
 // editProducto y deleteProducto usan window._productosData (seteado por loadProductos plain)
+window.abrirNuevoProducto = function() {
+  document.getElementById('prod-edit-id').value = '';
+  document.getElementById('prod-nombre').value = '';
+  const precioEl = document.getElementById('prod-precio');
+  if(precioEl) precioEl.value = '';
+  document.getElementById('prod-desc').value = '';
+  document.getElementById('prod-modal-titulo').textContent = 'Agregar al catálogo';
+  const btn = document.getElementById('prod-modal-btn');
+  if(btn){ btn.textContent='Guardar'; btn.onclick=createProducto; }
+  openModal('newProductoModal');
+};
+
 window.editProducto = function(id) {
   var prods = window._productosData || [];
   var p = prods.find(function(x){return x.id===id;});
