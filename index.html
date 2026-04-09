@@ -10693,10 +10693,11 @@ function renderCkFunnel(presupuestos) {
   const el = document.getElementById('ck-funnel');
   if(!el) return;
   const total = presupuestos.length;
-  const enviados = presupuestos.filter(p=>['Enviado','Consultado','Aprobado','Cobrado'].includes(p.estado)).length;
-  const aprobados = presupuestos.filter(p=>['Aprobado','Cobrado'].includes(p.estado)).length;
+  const enviados = presupuestos.filter(p=>p.estado==='Enviado').length;
+  const aprobados = presupuestos.filter(p=>p.estado==='Aprobado').length;
+  const cobrados = presupuestos.filter(p=>p.estado==='Cobrado').length;
   const sinCobrar = presupuestos.filter(p=>p.estado==='Aprobado').reduce((a,p)=>a+getPresupMonto(p),0);
-  const conv = enviados > 0 ? Math.round(aprobados/enviados*100) : 0;
+  const conv = (enviados+aprobados+cobrados) > 0 ? Math.round((aprobados+cobrados)/(enviados+aprobados+cobrados)*100) : 0;
   const fmt = v => '$'+Math.round(v).toLocaleString('es-AR');
 
   if(total === 0) {
@@ -10712,19 +10713,20 @@ function renderCkFunnel(presupuestos) {
       </div>
       <div style="width:0.5px;background:var(--cream-d);margin:8px 0;"></div>
       <div style="flex:1;text-align:center;padding:0 8px;">
-        <div style="font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:300;line-height:1;color:#3B6D11;">${aprobados}</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:300;line-height:1;color:#BA7517;">${aprobados}</div>
         <div style="font-size:11px;color:var(--text-l);margin-top:4px;">Aprobados</div>
+        ${sinCobrar>0?`<div style="font-size:11px;color:#BA7517;margin-top:2px;">${fmt(sinCobrar)} sin cobrar</div>`:''}
       </div>
       <div style="width:0.5px;background:var(--cream-d);margin:8px 0;"></div>
       <div style="flex:1;text-align:center;padding:0 8px;">
-        <div style="font-family:'Cormorant Garamond',serif;font-size:${sinCobrar>0?'28':'38'}px;font-weight:300;line-height:1;color:${sinCobrar>0?'#BA7517':'var(--text)'};">${sinCobrar>0?fmt(sinCobrar):'$0'}</div>
-        <div style="font-size:11px;color:var(--text-l);margin-top:4px;">Sin cobrar</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:300;line-height:1;color:#3B6D11;">${cobrados}</div>
+        <div style="font-size:11px;color:var(--text-l);margin-top:4px;">Cobrados</div>
       </div>
     </div>
     <div style="background:var(--cream);border-radius:6px;overflow:hidden;height:7px;margin-bottom:6px;">
       <div style="width:${conv}%;height:100%;background:linear-gradient(90deg,#4a5e4d,#7aab7e);border-radius:6px;transition:width .6s;"></div>
     </div>
-    <div style="font-size:11px;color:${conv>=80?'#3B6D11':'#BA7517'};">${conv}% de conversión — ${aprobados} de ${enviados} presupuestos aprobados</div>
+    <div style="font-size:11px;color:${conv>=80?'#3B6D11':'#BA7517'};">${conv}% de conversión — ${aprobados+cobrados} de ${enviados+aprobados+cobrados} presupuestos aprobados o cobrados</div>
   `;
 }
 
@@ -10844,10 +10846,8 @@ function renderCkResumen(ingresos, egresos) {
   else if(margen >= 40) lineas.push({color:'#BA7517', texto:`Margen neto del ${margen}% — dentro de lo esperado.`});
   else lineas.push({color:'#993C1D', texto:`Margen neto del ${margen}% — revisá tus costos.`});
   if(totalEg > 0) {
-    const cats = {};
-    egresos.forEach(e => { const c = e.concepto||'Otros'; cats[c]=(cats[c]||0)+(parseFloat(e.monto)||0); });
-    const topCat = Object.entries(cats).sort((a,b)=>b[1]-a[1])[0];
-    if(topCat) lineas.push({color:'#BA7517', texto:`Mayor egreso: ${topCat[0]} — $${Math.round(topCat[1]).toLocaleString('es-AR')}.`});
+    const topEg = egresos.reduce((top, e) => (parseFloat(e.monto)||0) > (parseFloat(top.monto)||0) ? e : top, egresos[0]);
+    if(topEg) lineas.push({color:'#BA7517', texto:`Mayor egreso: ${topEg.concepto||'Sin concepto'} — $${Math.round(parseFloat(topEg.monto)||0).toLocaleString('es-AR')}.`});
   }
   const pend = (window._clientPresupuestos||[]).filter(p=>p.estado==='Aprobado');
   if(pend.length > 0) {
