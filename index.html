@@ -7788,7 +7788,10 @@ async function preloadCajaSaldo(uid) {
     window._cajaSaldoTotal = cuentasUnicas
       .filter(c => c.tipo !== 'retiros')
       .reduce((a,c) => a + (saldos[c.nombre]||0), 0);
-  } catch(e) { /* silencioso, KPI queda en "—" */ }
+    console.log('[preload] _cajaSaldoTotal=', window._cajaSaldoTotal);
+    const _diagEl = document.getElementById('cont-disponible');
+    console.log('[preload] cont-disponible el=', _diagEl);
+  } catch(e) { console.log('[preload] ERROR:', e); }
 }
 
 window.cajaFiltrarCuenta = function(nombre, _el) {
