@@ -10891,9 +10891,7 @@ function renderCkSankey(ingresos, egresos) {
   const totalEg = egresos.reduce((a,e)=>a+(parseFloat(e.monto)||0),0);
   const ganancia = Math.max(0, totalIng - totalEg);
   if(totalIng === 0) { el.innerHTML='<div style="text-align:center;padding:30px;color:var(--text-l);font-size:13px;">Sin datos para mostrar.</div>'; return; }
-  const cats = {};
-  egresos.forEach(e=>{ const c=e.concepto||'Otros'; cats[c]=(cats[c]||0)+(parseFloat(e.monto)||0); });
-  const catArr = Object.entries(cats).sort((a,b)=>b[1]-a[1]).slice(0,4);
+  const catArr = egresos.map(e=>([e.concepto||'Otros', parseFloat(e.monto)||0])).sort((a,b)=>b[1]-a[1]).slice(0,4);
   const fmt = v => '$'+Math.round(v).toLocaleString('es-AR');
   const pctGan = Math.round(ganancia/totalIng*100);
   el.innerHTML = `
