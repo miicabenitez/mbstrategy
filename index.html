@@ -14517,7 +14517,7 @@ function renderOrdenesCompra() {
       <div style="width:90px;text-align:right;flex-shrink:0;"><div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:500;color:var(--text);white-space:nowrap;">$${(parseFloat(o.total)||0).toLocaleString('es-AR')}</div></div>
       ${toggleRecibida}
       <div class="oc-actions" style="display:flex;gap:3px;opacity:0;transition:opacity .15s;" onclick="event.stopPropagation()">
-        <button onclick="abrirDetalleOC('${o.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button onclick="abrirDetalleOC('${o.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Ver detalle"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#888780" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
         <button onclick="eliminarOC('${o.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
       </div>
     </div>`;
@@ -14631,6 +14631,7 @@ window.guardarNuevaOCDirecta = async function() {
   if(!prov) { showToast('Seleccioná un proveedor.', 'info'); return; }
   const items = _nocItems.filter(it => it.prodId || (it.esOtro && (it.nombre||'').trim()));
   if(items.length === 0) { showToast('Seleccioná al menos un producto o completá el ítem libre.', 'info'); return; }
+  if(items.some(it => !(parseFloat(it.precio)||0))) { showToast('Todos los productos deben tener un precio mayor a $0.', 'info'); return; }
   const total = items.reduce((a, it) => a + (parseFloat(it.cantidad||0) * parseFloat(it.precio||0)), 0);
   const fecha = document.getElementById('noc-fecha')?.value || new Date().toISOString().split('T')[0];
   const notas = (document.getElementById('noc-notas')?.value || '').trim();
@@ -15865,7 +15866,7 @@ window.mostrarFormNuevaCat = function() {
 window.guardarCatDesdePanel = async function() {
   const inp = document.getElementById('prov-nueva-cat-input');
   const nombre = inp ? inp.value.trim() : '';
-  if(!nombre) return;
+  if(!nombre) { showToast('Ingresá un nombre para la categoría', 'info'); return; }
   if(_catsProv.includes(nombre)) {
     const saved = document.getElementById('prov-nueva-cat-saved');
     if(saved) { saved.textContent='Ya existe esa categoría'; saved.style.color='var(--warn)'; saved.style.display='block'; setTimeout(()=>saved.style.display='none',2000); }
@@ -15935,7 +15936,7 @@ window.mostrarNuevaCat = function() {
 window.guardarNuevaCat = async function() {
   const input = document.getElementById('nueva-cat-input');
   const nombre = input ? input.value.trim() : '';
-  if(!nombre) return;
+  if(!nombre) { showToast('Ingresá un nombre para la categoría', 'info'); return; }
   if(_catsProv.includes(nombre)) {
     // Ya existe — solo seleccionarla
     renderCatSelect(nombre);
@@ -16150,6 +16151,8 @@ window.editProveedor = function(id) {
   loadCatsProveedor().then(()=>renderCatSelect(p.categoria||'Materiales'));
   const btn=document.querySelector('#newProveedorModal .bp');
   if(btn){btn.textContent='Guardar cambios';btn.onclick=()=>saveProveedor(id);}
+  const titulo=document.querySelector('#newProveedorModal .mt');
+  if(titulo) titulo.textContent='Editar proveedor';
   openModal('newProveedorModal');
 };
 
@@ -17428,7 +17431,7 @@ window.openModal = function(id) {
     const fechaEl=document.getElementById('fac-fecha');
     if(fechaEl&&!fechaEl.value) fechaEl.value=new Date().toISOString().split('T')[0];
   }
-  if(id === 'newProveedorModal') { renderCatSelect(); loadCatsProveedor(); document.getElementById('nueva-cat-form').style.display='none'; }
+  if(id === 'newProveedorModal') { renderCatSelect(); loadCatsProveedor(); document.getElementById('nueva-cat-form').style.display='none'; const t=document.querySelector('#newProveedorModal .mt'); if(t) t.textContent='Nuevo proveedor'; }
   if(id === 'newNecesidadModal') {
     // BUG-004: resetear formulario antes de abrir para que no retenga valores anteriores
     const editId = document.getElementById('nc-edit-id'); if(editId) editId.value='';
