@@ -10891,7 +10891,7 @@ function renderCkSankey(ingresos, egresos) {
   const totalEg = egresos.reduce((a,e)=>a+(parseFloat(e.monto)||0),0);
   const ganancia = Math.max(0, totalIng - totalEg);
   if(totalIng === 0) { el.innerHTML='<div style="text-align:center;padding:30px;color:var(--text-l);font-size:13px;">Sin datos para mostrar.</div>'; return; }
-  const catArr = egresos.map(e=>([e.concepto||'Otros', parseFloat(e.monto)||0])).sort((a,b)=>b[1]-a[1]).slice(0,4);
+  const catArr = egresos.map(e=>([e.concepto||'Otros', parseFloat(e.monto)||0])).sort((a,b)=>b[1]-a[1]).slice(0,5);
   const fmt = v => '$'+Math.round(v).toLocaleString('es-AR');
   const pctGan = Math.round(ganancia/totalIng*100);
   el.innerHTML = `
@@ -10899,7 +10899,7 @@ function renderCkSankey(ingresos, egresos) {
       <div style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.7px;">Flujo de dinero</div>
       <div style="font-size:11px;color:var(--text-l);">Egresos totales ${fmt(totalEg)} · ${100-pctGan}% del ingreso</div>
     </div>
-    <svg width="100%" viewBox="0 0 680 240" style="overflow:visible;">
+    <svg width="100%" viewBox="0 0 680 ${Math.max(240, 190 + catArr.length * 24 + 20)}" style="overflow:visible;">
       <defs>
         <linearGradient id="sk-i" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#5a7a5d"/><stop offset="100%" stop-color="#3a4e3d"/></linearGradient>
         <linearGradient id="sk-g" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6b9e70"/><stop offset="100%" stop-color="#2d4a30"/></linearGradient>
