@@ -15943,7 +15943,13 @@ window.editarOP = function(pago) {
   if(!pago) return;
   const contenido = document.getElementById('detalle-mov-cc-content');
   if(!contenido) return;
-  const todasFacturas = [...(_ccFacturas||[]), ...(_ccOCsComoFactura||[])].filter(f => !f.eliminado);
+  const todasFacturas = [...(_ccFacturas||[]), ...(_ccOCsComoFactura||[])].filter(f => {
+    if(f.eliminado) return false;
+    const estaImputadaAqui = (pago.facturasIds||[]).includes(f.id);
+    if(estaImputadaAqui) return true;
+    const pendiente = (parseFloat(f.monto)||0) - (parseFloat(f.montoPagado)||0);
+    return pendiente > 0;
+  });
   const medios = ['transferencia','efectivo','cheque','tarjeta','debito'];
   contenido.innerHTML = `
     <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:12px;">Editar pago ${pago.numero||''}</div>
