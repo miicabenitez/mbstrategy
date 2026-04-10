@@ -15116,6 +15116,7 @@ window.abrirCuentaCorriente = async function(provId) {
     _ccPagos = [];
     pagSnap.forEach(d=>{ const data=d.data(); if(!data.eliminado) _ccPagos.push({id:d.id,...data}); });
     _ccPagos.sort((a,b)=>(a.fecha||'')>(b.fecha||'')?-1:1);
+    console.log('[ccPagos] total:', _ccPagos.length, _ccPagos.map(p=>({id:p.id, monto:p.monto, eliminado:p.eliminado, facturasIds:p.facturasIds})));
     renderCuentaCorriente();
   }catch(e){console.log(e);}
 };
