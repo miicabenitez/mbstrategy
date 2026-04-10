@@ -15116,9 +15116,6 @@ window.abrirCuentaCorriente = async function(provId) {
     _ccPagos = [];
     pagSnap.forEach(d=>{ const data=d.data(); if(!data.eliminado) _ccPagos.push({id:d.id,...data}); });
     _ccPagos.sort((a,b)=>(a.fecha||'')>(b.fecha||'')?-1:1);
-    console.log('[ccPagos] total:', _ccPagos.length, _ccPagos.map(p=>({id:p.id, monto:p.monto, eliminado:p.eliminado, facturasIds:p.facturasIds})));
-    console.log('[ccPagos] pago $15:', _ccPagos.find(p=>p.monto===15)?.facturasIds);
-    console.log('[ccFacturas] ids:', _ccFacturas.map(f=>f.id));
     renderCuentaCorriente();
   }catch(e){console.log(e);}
 };
@@ -15246,7 +15243,15 @@ function renderCuentaCorriente() {
     window['_ccMov'+gi] = m;
 
     if(m.tipo==='oc_recibida'){
-      html += `<div style="display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:.5px solid var(--cream-d);cursor:pointer;" onclick="verDetalleMovCC('oc_recibida',window['_ccMov${gi}'])">
+      const pagosDeEstaOC = pagosPorFactura[m.id] || [];
+      const totalPagadoOC = pagosDeEstaOC.reduce((a,p)=>a+(parseFloat(p.monto)||0),0);
+      const montoOC = parseFloat(m.monto)||0;
+      const ocBadge = pagosDeEstaOC.length===0
+        ? `<span style="background:var(--warn-bg);color:var(--warn);font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;">Pend. factura</span>`
+        : totalPagadoOC >= montoOC
+          ? `<span style="background:var(--ok-bg);color:var(--ok);font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;">Pagada</span>`
+          : `<span style="background:var(--warn-bg);color:var(--warn);font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;">Pago parcial</span>`;
+      html += `<div style="display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:${pagosDeEstaOC.length?'none':'.5px solid var(--cream-d)'};cursor:pointer;" onclick="verDetalleMovCC('oc_recibida',window['_ccMov${gi}'])">
         <div style="width:40px;height:40px;background:var(--sage-xl);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="12" rx="2" stroke="var(--sage-dark)" stroke-width="1.2"/><path d="M4 7h8M4 10h5" stroke="var(--sage-dark)" stroke-width="1.2" stroke-linecap="round"/></svg>
         </div>
@@ -15255,10 +15260,29 @@ function renderCuentaCorriente() {
           <div style="font-size:11px;color:var(--text-l);margin-top:2px;">${m.fecha||'—'} · Sin factura aún</div>
         </div>
         <div style="text-align:right;">
-          <div style="font-family:'Cormorant Garamond',serif;font-size:19px;color:var(--err);font-weight:500;">-$${(parseFloat(m.monto)||0).toLocaleString('es-AR')}</div>
-          <span style="background:var(--warn-bg);color:var(--warn);font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;">Pend. factura</span>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:19px;color:var(--err);font-weight:500;">-$${montoOC.toLocaleString('es-AR')}</div>
+          ${ocBadge}
         </div>
       </div>`;
+      // Pagos anidados bajo esta OC
+      pagosDeEstaOC.sort((a,b)=>(a.fecha||'')>(b.fecha||'')?-1:1).forEach((p, pi) => {
+        const pgi = globalIdx++;
+        window['_ccMov'+pgi] = {...p, tipo:'pago'};
+        const isLast = pi === pagosDeEstaOC.length - 1;
+        html += `<div style="display:flex;align-items:center;gap:12px;padding:10px 0 10px 52px;border-bottom:${isLast?'.5px solid var(--cream-d)':'none'};cursor:pointer;" onclick="verDetalleMovCC('pago',window['_ccMov${pgi}'])">
+          <div style="width:32px;height:32px;background:var(--ok-bg);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-6" stroke="var(--ok)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:12px;font-weight:500;color:var(--text);">Pago registrado</div>
+            <div style="font-size:11px;color:var(--text-l);margin-top:1px;">${p.fecha||''}${p.concepto?' · '+p.concepto:''}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--ok);font-weight:500;">+$${(parseFloat(p.monto)||0).toLocaleString('es-AR')}</div>
+            ${p.id ? `<button onclick="event.stopPropagation();verPDFop('${p.id}')" style="font-size:10px;background:none;border:.5px solid #7A8E7D;color:#7A8E7D;border-radius:5px;padding:2px 7px;cursor:pointer;font-family:'DM Sans',sans-serif;">PDF</button>` : ''}
+          </div>
+        </div>`;
+      });
     } else {
       // Factura
       const estadoFac = m.estado||'pendiente';
