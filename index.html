@@ -15142,9 +15142,12 @@ function renderCuentaCorriente() {
   );
   const totalDeOCs = ocsRecibidas.reduce((a,o)=>a+(parseFloat(o.totalRecibido||o.total)||0),0);
 
-  // Facturas (si las cargaron, tienen prioridad sobre OC para el total comprado)
+  // totalComprado = facturas reales + facturas esOC (OC recibidas con pago directo)
+  // Si no existe ninguna factura de ningún tipo, usar totalDeOCs como fallback
   const totalFacturas = _ccFacturas.reduce((a,f)=>a+(parseFloat(f.monto)||0),0);
-  const totalComprado = totalFacturas > 0 ? totalFacturas : totalDeOCs;
+  const totalOCsComoFactura = _ccOCsComoFactura.reduce((a,f)=>a+(parseFloat(f.monto)||0),0);
+  const hayFacturas = totalFacturas > 0 || _ccOCsComoFactura.length > 0;
+  const totalComprado = hayFacturas ? totalFacturas + totalOCsComoFactura : totalDeOCs;
 
   const totalPagado = _ccPagos.reduce((a,p)=>a+(parseFloat(p.monto)||0),0);
   const saldoPendiente = Math.max(0, totalComprado - totalPagado);
