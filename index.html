@@ -17315,7 +17315,7 @@ window.loadEmbiReports = async function() {
   const aArea = document.getElementById('aArea');
   if(!aArea || aArea.style.display === 'none') return;
   try {
-    const snap = await getDocs(collection(db,'embiReports'));
+    const snap = await window._getDocs(collection(db,'embiReports'));
     _embiReports = [];
     snap.forEach(d => { const data=d.data(); if(!data.eliminado) _embiReports.push({id:d.id,...data}); });
     _embiReports.sort((a,b)=>(b.creadoEn||'').localeCompare(a.creadoEn||''));
