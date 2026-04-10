@@ -3199,9 +3199,23 @@ input[type=number]{-moz-appearance:textfield;}
 
       <!-- HISTORIAL DE COMPRAS -->
       <div id="ct-historial-compra" style="display:none;">
-        <div style="background:var(--sage-dark);border-radius:13px;padding:22px 24px;margin-bottom:14px;">
-          <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:#fff;">Historial de compras</div>
+        <div style="background:#4a5e4d;border-radius:16px;padding:20px 24px;margin:0 0 14px;color:#fff;position:relative;overflow:hidden;">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;">Historial de compras</div>
           <div style="font-size:11px;color:rgba(255,255,255,.75);margin-top:4px;">Todos los productos comprados a través de órdenes de compra</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px;">
+            <div style="text-align:center;">
+              <div style="font-size:10px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Órdenes emitidas</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:22px;" id="hc-kpi-ocs">—</div>
+            </div>
+            <div style="text-align:center;">
+              <div style="font-size:10px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Productos distintos</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:22px;" id="hc-kpi-prods">—</div>
+            </div>
+            <div style="text-align:center;">
+              <div style="font-size:10px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Total comprado</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:22px;" id="hc-kpi-total">—</div>
+            </div>
+          </div>
         </div>
         <div style="margin-bottom:14px;position:relative;">
           <input type="text" id="hc-search" class="fi" placeholder="Filtrar por nombre de producto..." style="border-radius:20px;padding-left:36px;" oninput="buscarHistorialCompra(this.value)"/>
@@ -14980,22 +14994,15 @@ function renderHistorialCompra(q) {
   })()).length;
   const totalGastado=_ordenesCompra.reduce((a,o)=>a+(parseFloat(o.total)||0),0);
 
-  const kpiHtml=filtro?'':`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;">
-    <div style="background:var(--cream);border-radius:10px;padding:12px;text-align:center;">
-      <div style="font-size:11px;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Órdenes emitidas</div>
-      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--text);">${totalOCs}</div>
-    </div>
-    <div style="background:var(--cream);border-radius:10px;padding:12px;text-align:center;">
-      <div style="font-size:11px;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Productos distintos</div>
-      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--text);">${totalProductos}</div>
-    </div>
-    <div style="background:var(--cream);border-radius:10px;padding:12px;text-align:center;">
-      <div style="font-size:11px;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Total comprado</div>
-      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--text);">$${totalGastado.toLocaleString('es-AR')}</div>
-    </div>
-  </div>`;
+  // Update banner KPIs
+  const kpiOcsEl=document.getElementById('hc-kpi-ocs');
+  const kpiProdsEl=document.getElementById('hc-kpi-prods');
+  const kpiTotalEl=document.getElementById('hc-kpi-total');
+  if(kpiOcsEl) kpiOcsEl.textContent=totalOCs;
+  if(kpiProdsEl) kpiProdsEl.textContent=totalProductos;
+  if(kpiTotalEl) kpiTotalEl.textContent='$'+totalGastado.toLocaleString('es-AR');
 
-  el.innerHTML = kpiHtml + productos.map(nombre=>{
+  el.innerHTML = productos.map(nombre=>{
     const lineas=porProducto[nombre].sort((a,b)=>(a.fecha||'')>(b.fecha||'')?-1:1);
     const precios=lineas.map(l=>parseFloat(l.precioUnit)||0).filter(p=>p>0);
     const min=Math.min(...precios),max=Math.max(...precios);
