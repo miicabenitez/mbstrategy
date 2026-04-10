@@ -810,6 +810,9 @@ body.admin-micaela *{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:
 body.admin-micaela{--ok:#c9a898;--warn:#d4a574;--err:#c47070;--text:#e8e0dc;--text-m:#d4c8c4;--text-l:#a89898;--cream:rgba(255,255,255,.06);--cream-d:rgba(255,255,255,.08);--white:#2c2c2e;}
 body.admin-micaela [style*="background:white"]{background:#2c2c2e !important;}
 body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,body.admin-micaela p,body.admin-micaela div,body.admin-micaela span{-webkit-font-smoothing:antialiased !important;-moz-osx-font-smoothing:grayscale !important;}
+.adm-dash-4col{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;}
+.adm-dash-3col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;}
+@media(max-width:768px){.adm-dash-4col{grid-template-columns:1fr 1fr;}.adm-dash-3col{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
@@ -1093,7 +1096,13 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
     </div>
     <nav class="sb-nav">
       <div class="sb-group">
-        <button class="sb-btn active" id="asb-clientes" onclick="showATabSb('clientes',this)">
+        <button class="sb-btn active" id="asb-inicio" onclick="showATabSb('inicio',this)">
+          <svg class="sb-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <span class="sb-label">Inicio</span>
+        </button>
+      </div>
+      <div class="sb-group">
+        <button class="sb-btn" id="asb-clientes" onclick="showATabSb('clientes',this)">
           <svg class="sb-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><circle cx="19" cy="7" r="3"/><path d="M19 21v-1a3 3 0 00-3-3"/></svg>
           <span class="sb-label">Clientes</span>
         </button>
@@ -1132,6 +1141,11 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
   <div class="content">
     <!-- ADMIN -->
     <div id="aArea" style="display:none;">
+
+      <!-- INICIO - Dashboard Micaela -->
+      <div class="view" id="av-inicio">
+        <div id="admin-dashboard-container" style="padding-bottom:20px;"></div>
+      </div>
 
       <!-- DASHBOARD -->
       <div class="view active" id="av-dash">
@@ -4928,7 +4942,7 @@ function _mostrarSeccionAdmin() {
   section.innerHTML = `
     <div style="margin:12px 16px 6px;border-top:.5px solid rgba(255,255,255,.15);padding-top:12px;">
       <div style="font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.4);padding:0 4px;margin-bottom:6px;">Administración</div>
-      <button class="sb-btn" onclick="_irAAdminTab('clientes')" style="width:100%;">
+      <button class="sb-btn" onclick="_irAAdminTab('inicio')" style="width:100%;">
         <svg class="sb-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><circle cx="19" cy="7" r="3"/><path d="M19 21v-1a3 3 0 00-3-3"/></svg>
         <span class="sb-label">Clientes</span>
       </button>
@@ -4943,6 +4957,74 @@ function _mostrarSeccionAdmin() {
     </div>
   `;
   nav.appendChild(section);
+}
+
+function renderAdminDashboard() {
+  const container = document.getElementById('admin-dashboard-container');
+  if(!container) return;
+  const clients = window._allClients || [];
+  const now = new Date();
+  const todayStr = now.toISOString().slice(0,10);
+  const activos = clients.filter(c => c.membresia?.estado==='activo' || c.programa);
+  const mrr = activos.reduce((a,c)=>a+(parseFloat(c.precio)||0), 0);
+  const cobrado = window._totalRealCobrado || 0;
+  const pendiente = Math.max(0, mrr - cobrado);
+  const h = now.getHours();
+  const saludo = h<12?'Buenos días':h<19?'Buenas tardes':'Buenas noches';
+  const reuniones = clients
+    .filter(c=>c.proximaReunion?.fecha && c.proximaReunion.fecha>=todayStr)
+    .map(c=>({nombre:c.nombre||c.email||'?',fecha:c.proximaReunion.fecha,hora:c.proximaReunion.hora||'',link:c.proximaReunion.link||''}))
+    .sort((a,b)=>a.fecha.localeCompare(b.fecha)).slice(0,3);
+  const proxReu = reuniones[0];
+  const proxReuLabel = proxReu
+    ? new Date(proxReu.fecha+'T12:00:00').toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'short'})+(proxReu.hora?' · '+proxReu.hora:'')
+    : null;
+  const sinActividad = clients.filter(c=>c.lastLogin && Math.floor((Date.now()-new Date(c.lastLogin).getTime())/(1000*60*60*24))>7);
+  const trials = clients.filter(c=>c.membresia?.estado==='trial');
+  const conAcademia = clients.filter(c=>c.productos?.academia);
+  const semProm = conAcademia.length>0 ? Math.round(conAcademia.reduce((a,c)=>a+(c.semanaActual||1),0)/conAcademia.length) : 0;
+  const fmt = n=>'$'+Math.round(n).toLocaleString('es-AR');
+
+  container.innerHTML = `
+<div style="background:linear-gradient(135deg,#b09088 0%,#bfa098 40%,#ccb0a8 60%,#b09088 100%);border-radius:16px;padding:24px;margin-bottom:16px;color:#fff;position:relative;overflow:hidden;">
+  <div style="position:absolute;right:-20px;bottom:-40px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.06);pointer-events:none;"></div>
+  <div style="font-size:10px;opacity:.65;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px;">Panel de Micaela</div>
+  <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:400;line-height:1.2;margin-bottom:2px;-webkit-font-smoothing:antialiased;">${saludo}, Micaela</div>
+  <div style="font-size:11px;opacity:.75;margin-bottom:20px;">${proxReuLabel?'Próxima reunión: '+proxReuLabel:'Sin reuniones próximas agendadas'}</div>
+  <div class="adm-dash-4col">
+    <div style="background:rgba(255,255,255,.15);border-radius:10px;padding:12px;"><div style="font-size:9px;opacity:.75;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Clientes activos</div><div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;line-height:1;">${activos.length}</div></div>
+    <div style="background:rgba(255,255,255,.15);border-radius:10px;padding:12px;"><div style="font-size:9px;opacity:.75;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">MRR teórico</div><div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;line-height:1;">${fmt(mrr)}</div></div>
+    <div style="background:rgba(255,255,255,.15);border-radius:10px;padding:12px;"><div style="font-size:9px;opacity:.75;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Cobrado</div><div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;line-height:1;">${fmt(cobrado)}</div></div>
+    <div style="background:rgba(255,255,255,.15);border-radius:10px;padding:12px;"><div style="font-size:9px;opacity:.75;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Por cobrar</div><div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;line-height:1;">${fmt(pendiente)}</div></div>
+  </div>
+</div>
+<div class="adm-dash-3col">
+  <div style="background:#2c2c2e;border-radius:12px;border:.5px solid rgba(255,255,255,.08);padding:16px;">
+    <div style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">Alertas</div>
+    ${sinActividad.length===0&&trials.length===0
+      ?`<div style="font-size:12px;color:var(--text-l);">Todo en orden ✓</div>`
+      :`${sinActividad.length>0?`<div style="margin-bottom:10px;"><div style="font-size:10px;color:var(--warn);margin-bottom:6px;">Sin actividad +7d (${sinActividad.length})</div>${sinActividad.slice(0,3).map(c=>{const d=Math.floor((Date.now()-new Date(c.lastLogin).getTime())/(1000*60*60*24));return\`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:.5px solid rgba(255,255,255,.05);"><span style="font-size:11px;color:var(--text);">\${(c.nombre||c.email||'?').split(' ')[0]}</span><span style="font-size:10px;color:var(--warn);">\${d}d</span></div>\`;}).join('')}${sinActividad.length>3?`<div style="font-size:10px;color:var(--text-l);margin-top:4px;">+${sinActividad.length-3} más</div>`:''}</div>`:''}`+`${trials.length>0?`<div><div style="font-size:10px;color:var(--ok);margin-bottom:6px;">Trials activos (${trials.length})</div>${trials.slice(0,3).map(c=>`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:.5px solid rgba(255,255,255,.05);"><span style="font-size:11px;color:var(--text);">${(c.nombre||c.email||'?').split(' ')[0]}</span><span style="font-size:10px;color:var(--ok);">trial</span></div>`).join('')}</div>`:''}`}
+  </div>
+  <div style="background:#2c2c2e;border-radius:12px;border:.5px solid rgba(255,255,255,.08);padding:16px;">
+    <div style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">Próximas reuniones</div>
+    ${reuniones.length===0?`<div style="font-size:12px;color:var(--text-l);">Sin reuniones agendadas</div>`:reuniones.map(r=>{const d=new Date(r.fecha+'T12:00:00');const lb=d.toLocaleDateString('es-AR',{weekday:'short',day:'numeric',month:'short'});return\`<div style="padding:8px 0;border-bottom:.5px solid rgba(255,255,255,.05);"><div style="font-size:12px;font-weight:500;color:var(--text);">\${r.nombre.split(' ')[0]}</div><div style="font-size:10px;color:var(--text-l);margin-top:2px;">\${lb}\${r.hora?' · '+r.hora:''}</div>\${r.link?\`<a href="\${r.link}" target="_blank" style="font-size:10px;color:var(--ok);text-decoration:none;">Abrir link</a>\`:''}</div>\`;}).join('')}
+  </div>
+  <div style="background:#2c2c2e;border-radius:12px;border:.5px solid rgba(255,255,255,.08);padding:16px;">
+    <div style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">Academia</div>
+    <div style="margin-bottom:12px;"><div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;color:var(--text);line-height:1;">${conAcademia.length}</div><div style="font-size:10px;color:var(--text-l);margin-top:2px;">con academia activa</div></div>
+    ${conAcademia.length>0?`<div style="font-size:10px;color:var(--text-l);margin-bottom:8px;">Sem. promedio: ${semProm}</div>${conAcademia.slice(0,4).map(c=>`<div style="display:flex;justify-content:space-between;padding:3px 0;"><span style="font-size:11px;color:var(--text);">${(c.nombre||c.email||'?').split(' ')[0]}</span><span style="font-size:10px;color:var(--ok);">Sem. ${c.semanaActual||1}</span></div>`).join('')}${conAcademia.length>4?`<div style="font-size:10px;color:var(--text-l);margin-top:4px;">+${conAcademia.length-4} más</div>`:''}`:
+    `<div style="font-size:12px;color:var(--text-l);">Sin clientes en academia</div>`}
+  </div>
+</div>
+<div style="background:#2c2c2e;border-radius:12px;border:.5px solid rgba(255,255,255,.08);padding:20px;">
+  <div style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px;">Money del mes</div>
+  <div class="adm-dash-4col">
+    <div style="background:rgba(255,255,255,.04);border-radius:10px;padding:14px;"><div style="font-size:9px;color:var(--text-l);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">MRR teórico</div><div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;color:var(--text);">${fmt(mrr)}</div></div>
+    <div style="background:rgba(255,255,255,.04);border-radius:10px;padding:14px;"><div style="font-size:9px;color:var(--text-l);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">Cobrado</div><div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;color:var(--ok);">${fmt(cobrado)}</div></div>
+    <div style="background:rgba(255,255,255,.04);border-radius:10px;padding:14px;"><div style="font-size:9px;color:var(--text-l);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">Por cobrar</div><div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;color:var(--warn);">${fmt(pendiente)}</div></div>
+    <div style="background:rgba(255,255,255,.04);border-radius:10px;padding:14px;"><div style="font-size:9px;color:var(--text-l);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">Clientes activos</div><div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;color:var(--text);">${activos.length}</div></div>
+  </div>
+</div>`;
 }
 
 async function loadAdminData() {
@@ -4995,6 +5077,7 @@ async function loadAdminData() {
     if (peCliente) {
       peCliente.innerHTML = '<option value="">Sin cliente especifico</option>' + clients.map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('');
     }
+    if(currentAdminTab === 'inicio') renderAdminDashboard();
   } catch(e) { console.log('Error loading admin data:', e); }
 }
 
@@ -17364,6 +17447,14 @@ window.showATab = function(tab, btn) {
   if (tab === 'cobros') setTimeout(() => { initCashflowCharts(); }, 100);
   if (tab === 'embi') setTimeout(() => { loadEmbiReports(); }, 100);
   if (tab === 'papelera') setTimeout(() => { loadPapelera(); }, 100);
+  if (tab === 'inicio') {
+    if(window._allClients?.length && window.renderAdminDashboard) {
+      setTimeout(()=>{ window.renderAdminDashboard(); }, 50);
+    } else {
+      const c = document.getElementById('admin-dashboard-container');
+      if(c) c.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-l);font-size:13px;">Cargando...</div>';
+    }
+  }
 };
 
 window.showATabSb = function(tab, btn) {
