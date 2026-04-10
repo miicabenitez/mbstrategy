@@ -15907,7 +15907,8 @@ window.imputarPagoAFactura = function(pagoId) {
   if(!contenido) return;
   const todasFacturas = [...(_ccFacturas||[]), ...(_ccOCsComoFactura||[])].filter(f => {
     if(f.eliminado) return false;
-    return (f.estado||'pendiente') !== 'pagada';
+    const pendiente = (parseFloat(f.monto)||0) - (parseFloat(f.montoPagado)||0);
+    return pendiente > 0;
   });
   if(todasFacturas.length === 0) {
     contenido.innerHTML += `<div style="margin-top:12px;padding:10px;background:var(--warn-bg);color:var(--warn);border-radius:8px;font-size:12px;text-align:center;">No hay facturas pendientes para imputar.</div>`;
