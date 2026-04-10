@@ -15007,34 +15007,36 @@ function renderHistorialCompra(q) {
     const min=Math.min(...precios),max=Math.max(...precios);
     const variacion=precios.length>1&&min>0?Math.round(((max-min)/min)*100):0;
     const ultimoPrecio=precios[0]||0;
-    return `<div class="card" style="margin-bottom:12px;">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+    return `<div style="border-radius:14px;overflow:hidden;margin-bottom:12px;border:.5px solid rgba(0,0,0,.07);">
+      <div style="background:#4a5e4d;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">
         <div>
-          <div style="font-size:14px;font-weight:500;color:var(--text);">${nombre}</div>
-          <div style="font-size:11px;color:var(--text-l);margin-top:2px;">${lineas.length} compra${lineas.length!==1?'s':''} · Último precio: <b style="color:var(--text);">$${ultimoPrecio.toLocaleString('es-AR')}</b></div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:300;color:#fff;">${nombre}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.7);margin-top:2px;">${lineas.length} compra${lineas.length!==1?'s':''} · Último: <b style="color:#fff;">$${ultimoPrecio.toLocaleString('es-AR')}</b></div>
         </div>
         ${variacion>0
-          ?`<span style="background:var(--warn-bg);color:var(--warn);font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;border:.5px solid var(--warn);">+${variacion}% variación</span>`
-          :`<span style="background:var(--ok-bg);color:var(--ok);font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;">Precio estable</span>`}
+          ?`<span style="background:rgba(0,0,0,.2);color:#fff;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;">+${variacion}% variación</span>`
+          :`<span style="background:rgba(255,255,255,.15);color:#fff;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;">Precio estable</span>`}
       </div>
-      <div style="display:grid;grid-template-columns:70px 1fr 80px 80px 70px;gap:6px;padding:6px 0;border-bottom:.5px solid var(--cream-d);margin-bottom:4px;">
-        <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;">OC</span>
-        <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;">Proveedor</span>
-        <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;">Fecha</span>
-        <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;text-align:right;">P. Unit.</span>
-        <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;text-align:right;">Total</span>
+      <div style="background:#fff;padding:0 16px;">
+        <div style="display:grid;grid-template-columns:70px 1fr 80px 80px 70px;gap:6px;padding:8px 0;border-bottom:.5px solid var(--cream-d);">
+          <span style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.4px;">OC</span>
+          <span style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.4px;">Proveedor</span>
+          <span style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.4px;">Fecha</span>
+          <span style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.4px;text-align:right;">P. Unit.</span>
+          <span style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.4px;text-align:right;">Total</span>
+        </div>
+        ${lineas.map(l=>{
+          const esMax=parseFloat(l.precioUnit)===max&&variacion>0;
+          const esMin=parseFloat(l.precioUnit)===min&&variacion>0;
+          return `<div style="display:grid;grid-template-columns:70px 1fr 80px 80px 70px;gap:6px;padding:8px 0;border-bottom:.5px solid var(--cream-d);align-items:center;">
+            <div style="font-size:11px;font-weight:500;color:var(--text);">OC-${String(l.ocNum||0).padStart(3,'0')}</div>
+            <div style="font-size:12px;color:var(--text-m);">${l.proveedor||'—'}</div>
+            <div style="font-size:11px;color:var(--text-l);">${l.fecha||'—'}</div>
+            <div style="font-size:13px;font-weight:500;color:${esMax?'var(--err)':esMin?'var(--ok)':'var(--text)'};text-align:right;">$${(parseFloat(l.precioUnit)||0).toLocaleString('es-AR')}</div>
+            <div style="font-size:12px;color:var(--text-m);text-align:right;">$${(parseFloat(l.total)||0).toLocaleString('es-AR')}</div>
+          </div>`;
+        }).join('')}
       </div>
-      ${lineas.map(l=>{
-        const esMax=parseFloat(l.precioUnit)===max&&variacion>0;
-        const esMin=parseFloat(l.precioUnit)===min&&variacion>0;
-        return `<div style="display:grid;grid-template-columns:70px 1fr 80px 80px 70px;gap:6px;padding:8px 0;border-bottom:.5px solid var(--cream-d);align-items:center;">
-          <div style="font-size:11px;font-weight:500;color:var(--text);">OC-${String(l.ocNum||0).padStart(3,'0')}</div>
-          <div style="font-size:12px;color:var(--text-m);">${l.proveedor||'—'}</div>
-          <div style="font-size:11px;color:var(--text-l);">${l.fecha||'—'}</div>
-          <div style="font-size:13px;font-weight:500;color:${esMax?'var(--err)':esMin?'var(--ok)':'var(--text)'};text-align:right;">$${(parseFloat(l.precioUnit)||0).toLocaleString('es-AR')}</div>
-          <div style="font-size:12px;color:var(--text-m);text-align:right;">$${(parseFloat(l.total)||0).toLocaleString('es-AR')}</div>
-        </div>`;
-      }).join('')}
     </div>`;
   }).join('');
 }
