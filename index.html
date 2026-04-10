@@ -4963,29 +4963,33 @@ function renderAdminDashboard() {
   const container = document.getElementById('admin-dashboard-container');
   if(!container) return;
   const clients = window._allClients || [];
-  const now = new Date();
+  const cobros  = window._cobrosSubcollection || [];
+  const now     = new Date();
   const todayStr = now.toISOString().slice(0,10);
-  const activos = clients.filter(c => c.membresia?.estado==='activo' || c.programa);
-  const mrr = activos.reduce((a,c)=>a+(parseFloat(c.precio)||0), 0);
-  const cobrado = window._totalRealCobrado || 0;
+
+  // — KPIs —
+  const activos   = clients.filter(c => c.membresia?.estado==='activo' || c.programa);
+  const mrr       = activos.reduce((a,c)=>a+(parseFloat(c.precio)||0), 0);
+  const cobrado   = window._totalRealCobrado || 0;
   const pendiente = Math.max(0, mrr - cobrado);
-  const h = now.getHours();
-  const saludo = h<12?'Buenos días':h<19?'Buenas tardes':'Buenas noches';
+
+  // — Próximas reuniones —
   const reuniones = clients
     .filter(c=>c.proximaReunion?.fecha && c.proximaReunion.fecha>=todayStr)
     .map(c=>({nombre:c.nombre||c.email||'?',fecha:c.proximaReunion.fecha,hora:c.proximaReunion.hora||'',link:c.proximaReunion.link||''}))
     .sort((a,b)=>a.fecha.localeCompare(b.fecha)).slice(0,3);
-  const proxReu = reuniones[0];
-  const proxReuLabel = proxReu
-    ? new Date(proxReu.fecha+'T12:00:00').toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'short'})+(proxReu.hora?' · '+proxReu.hora:'')
-    : null;
-  const sinActividad = clients.filter(c=>c.lastLogin && Math.floor((Date.now()-new Date(c.lastLogin).getTime())/(1000*60*60*24))>7);
-  const trials = clients.filter(c=>c.membresia?.estado==='trial');
-  const conAcademia = clients.filter(c=>c.productos?.academia);
-  const semProm = conAcademia.length>0 ? Math.round(conAcademia.reduce((a,c)=>a+(c.semanaActual||1),0)/conAcademia.length) : 0;
-  const fmt = n=>'$'+Math.round(n).toLocaleString('es-AR');
 
-  // Pre-build complex sections to avoid nested backticks
+  // — Alertas —
+  const sinActividad = clients.filter(c=>c.lastLogin &&
+    Math.floor((Date.now()-new Date(c.lastLogin).getTime())/(1000*60*60*24))>7);
+  const trials = clients.filter(c=>c.membresia?.estado==='trial');
+
+  // — Academia —
+  const conAcademia = clients.filter(c=>c.productos?.academia);
+  const semProm = conAcademia.length>0
+    ? Math.round(conAcademia.reduce((a,c)=>a+(c.semanaActual||1),0)/conAcademia.length) : 0;
+
+  // — Build alertasHTML —
   let alertasHTML = '';
   if(sinActividad.length===0 && trials.length===0) {
     alertasHTML = '<div style="font-size:12px;color:var(--text-l);">Todo en orden \u2713</div>';
@@ -4993,7 +4997,7 @@ function renderAdminDashboard() {
     if(sinActividad.length>0) {
       alertasHTML += '<div style="margin-bottom:10px;"><div style="font-size:10px;color:var(--warn);margin-bottom:6px;">Sin actividad +7d ('+sinActividad.length+')</div>';
       sinActividad.slice(0,3).forEach(function(c) {
-        const d = Math.floor((Date.now()-new Date(c.lastLogin).getTime())/(1000*60*60*24));
+        var d = Math.floor((Date.now()-new Date(c.lastLogin).getTime())/(1000*60*60*24));
         alertasHTML += '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:.5px solid rgba(255,255,255,.05);"><span style="font-size:11px;color:var(--text);">'+(c.nombre||c.email||'?').split(' ')[0]+'</span><span style="font-size:10px;color:var(--warn);">'+d+'d</span></div>';
       });
       if(sinActividad.length>3) alertasHTML += '<div style="font-size:10px;color:var(--text-l);margin-top:4px;">+'+(sinActividad.length-3)+' m\u00e1s</div>';
@@ -5008,13 +5012,14 @@ function renderAdminDashboard() {
     }
   }
 
-  let reunionesHTML = '';
+  // — Build reunionesHTML —
+  var reunionesHTML = '';
   if(reuniones.length===0) {
     reunionesHTML = '<div style="font-size:12px;color:var(--text-l);">Sin reuniones agendadas</div>';
   } else {
     reuniones.forEach(function(r) {
-      const d = new Date(r.fecha+'T12:00:00');
-      const lb = d.toLocaleDateString('es-AR',{weekday:'short',day:'numeric',month:'short'});
+      var d = new Date(r.fecha+'T12:00:00');
+      var lb = d.toLocaleDateString('es-AR',{weekday:'short',day:'numeric',month:'short'});
       reunionesHTML += '<div style="padding:8px 0;border-bottom:.5px solid rgba(255,255,255,.05);">';
       reunionesHTML += '<div style="font-size:12px;font-weight:500;color:var(--text);">'+r.nombre.split(' ')[0]+'</div>';
       reunionesHTML += '<div style="font-size:10px;color:var(--text-l);margin-top:2px;">'+lb+(r.hora?' \u00b7 '+r.hora:'')+'</div>';
@@ -5023,7 +5028,8 @@ function renderAdminDashboard() {
     });
   }
 
-  let academiaHTML = '';
+  // — Build academiaHTML —
+  var academiaHTML = '';
   if(conAcademia.length>0) {
     academiaHTML += '<div style="font-size:10px;color:var(--text-l);margin-bottom:8px;">Sem. promedio: '+semProm+'</div>';
     conAcademia.slice(0,4).forEach(function(c) {
@@ -5034,30 +5040,157 @@ function renderAdminDashboard() {
     academiaHTML = '<div style="font-size:12px;color:var(--text-l);">Sin clientes en academia</div>';
   }
 
-  container.innerHTML = '<div style="background:linear-gradient(135deg,#b09088 0%,#bfa098 40%,#ccb0a8 60%,#b09088 100%);border-radius:16px;padding:24px;margin-bottom:16px;color:#fff;position:relative;overflow:hidden;">'
-    + '<div style="position:absolute;right:-20px;bottom:-40px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.06);pointer-events:none;"></div>'
-    + '<div style="font-size:10px;opacity:.65;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px;">Panel de Micaela</div>'
-    + '<div style="font-family:\'Cormorant Garamond\',serif;font-size:26px;font-weight:400;line-height:1.2;margin-bottom:2px;-webkit-font-smoothing:antialiased;">'+saludo+', Micaela</div>'
-    + '<div style="font-size:11px;opacity:.75;margin-bottom:20px;">'+(proxReuLabel?'Pr\u00f3xima reuni\u00f3n: '+proxReuLabel:'Sin reuniones pr\u00f3ximas agendadas')+'</div>'
-    + '<div class="adm-dash-4col">'
-    + '<div style="background:rgba(255,255,255,.15);border-radius:10px;padding:12px;"><div style="font-size:9px;opacity:.75;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Clientes activos</div><div style="font-family:\'Cormorant Garamond\',serif;font-size:24px;font-weight:400;line-height:1;">'+activos.length+'</div></div>'
-    + '<div style="background:rgba(255,255,255,.15);border-radius:10px;padding:12px;"><div style="font-size:9px;opacity:.75;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">MRR te\u00f3rico</div><div style="font-family:\'Cormorant Garamond\',serif;font-size:24px;font-weight:400;line-height:1;">'+fmt(mrr)+'</div></div>'
-    + '<div style="background:rgba(255,255,255,.15);border-radius:10px;padding:12px;"><div style="font-size:9px;opacity:.75;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Cobrado</div><div style="font-family:\'Cormorant Garamond\',serif;font-size:24px;font-weight:400;line-height:1;">'+fmt(cobrado)+'</div></div>'
-    + '<div style="background:rgba(255,255,255,.15);border-radius:10px;padding:12px;"><div style="font-size:9px;opacity:.75;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Por cobrar</div><div style="font-family:\'Cormorant Garamond\',serif;font-size:24px;font-weight:400;line-height:1;">'+fmt(pendiente)+'</div></div>'
-    + '</div></div>'
-    + '<div class="adm-dash-3col">'
-    + '<div style="background:#2c2c2e;border-radius:12px;border:.5px solid rgba(255,255,255,.08);padding:16px;"><div style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">Alertas</div>'+alertasHTML+'</div>'
-    + '<div style="background:#2c2c2e;border-radius:12px;border:.5px solid rgba(255,255,255,.08);padding:16px;"><div style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">Pr\u00f3ximas reuniones</div>'+reunionesHTML+'</div>'
-    + '<div style="background:#2c2c2e;border-radius:12px;border:.5px solid rgba(255,255,255,.08);padding:16px;"><div style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">Academia</div><div style="margin-bottom:12px;"><div style="font-family:\'Cormorant Garamond\',serif;font-size:28px;font-weight:400;color:var(--text);line-height:1;">'+conAcademia.length+'</div><div style="font-size:10px;color:var(--text-l);margin-top:2px;">con academia activa</div></div>'+academiaHTML+'</div>'
-    + '</div>'
-    + '<div style="background:#2c2c2e;border-radius:12px;border:.5px solid rgba(255,255,255,.08);padding:20px;">'
-    + '<div style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px;">Money del mes</div>'
-    + '<div class="adm-dash-4col">'
-    + '<div style="background:rgba(255,255,255,.04);border-radius:10px;padding:14px;"><div style="font-size:9px;color:var(--text-l);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">MRR te\u00f3rico</div><div style="font-family:\'Cormorant Garamond\',serif;font-size:20px;font-weight:400;color:var(--text);">'+fmt(mrr)+'</div></div>'
-    + '<div style="background:rgba(255,255,255,.04);border-radius:10px;padding:14px;"><div style="font-size:9px;color:var(--text-l);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">Cobrado</div><div style="font-family:\'Cormorant Garamond\',serif;font-size:20px;font-weight:400;color:var(--ok);">'+fmt(cobrado)+'</div></div>'
-    + '<div style="background:rgba(255,255,255,.04);border-radius:10px;padding:14px;"><div style="font-size:9px;color:var(--text-l);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">Por cobrar</div><div style="font-family:\'Cormorant Garamond\',serif;font-size:20px;font-weight:400;color:var(--warn);">'+fmt(pendiente)+'</div></div>'
-    + '<div style="background:rgba(255,255,255,.04);border-radius:10px;padding:14px;"><div style="font-size:9px;color:var(--text-l);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">Clientes activos</div><div style="font-family:\'Cormorant Garamond\',serif;font-size:20px;font-weight:400;color:var(--text);">'+activos.length+'</div></div>'
-    + '</div></div>';
+  // — MRR line chart (últimos 12 meses, solo cobros estado==='cobrado') —
+  var mrrMonths = [];
+  for(var i=11;i>=0;i--) {
+    var md = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    mrrMonths.push({
+      key: md.getFullYear()+'-'+String(md.getMonth()+1).padStart(2,'0'),
+      label: md.toLocaleDateString('es-AR',{month:'short'})
+    });
+  }
+  var byMonth = {};
+  cobros.forEach(function(c) {
+    if(c.estado !== 'cobrado') return;
+    var f = (c.fecha||c.creadoEn||'').slice(0,7);
+    if(f) byMonth[f] = (byMonth[f]||0)+(parseFloat(c.monto)||0);
+  });
+  var mrrVals = mrrMonths.map(function(m){return byMonth[m.key]||0;});
+  var mrrMax  = Math.max.apply(null, mrrVals.concat([1]));
+  var CW=360, CH=72, pL=5, pR=5, pT=6, pB=16;
+  var cW2=CW-pL-pR, cH2=CH-pT-pB, xSt=cW2/11;
+  var pts = mrrVals.map(function(v,i){
+    return {x:(pL+i*xSt).toFixed(1), y:(pT+cH2-(v/mrrMax)*cH2).toFixed(1)};
+  });
+  var lPath = pts.map(function(p,i){return(i===0?'M':'L')+p.x+','+p.y;}).join(' ');
+  var aPath = lPath+' L'+pts[11].x+','+(pT+cH2)+' L'+pL+','+(pT+cH2)+' Z';
+  var dotsSVG = '';
+  pts.forEach(function(p){dotsSVG+='<circle cx="'+p.x+'" cy="'+p.y+'" r="2.5" fill="#ccb0a8"/>';});
+  var lblSVG = '';
+  mrrMonths.forEach(function(m,i){
+    if(i%3===0||i===11) lblSVG+='<text x="'+(pL+i*xSt).toFixed(1)+'" y="'+(CH-3)+'" text-anchor="middle" font-size="7" fill="rgba(255,255,255,.4)" font-family="DM Sans,sans-serif">'+m.label+'</text>';
+  });
+  var mrrChartHTML = '<svg viewBox="0 0 '+CW+' '+CH+'" style="width:100%;height:'+CH+'px;" preserveAspectRatio="none">'
+    +'<defs><linearGradient id="mrrG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ccb0a8" stop-opacity=".2"/><stop offset="100%" stop-color="#ccb0a8" stop-opacity="0"/></linearGradient></defs>'
+    +'<path d="'+aPath+'" fill="url(#mrrG)"/>'
+    +'<path d="'+lPath+'" fill="none" stroke="#ccb0a8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>'
+    +dotsSVG+lblSVG+'</svg>';
+
+  // — Donut: composición de cartera —
+  var cAca = clients.filter(function(c){return c.productos?.academia&&(c.membresia?.estado==='activo'||c.programa);}).length;
+  var cSis = clients.filter(function(c){return !c.productos?.academia&&(c.membresia?.estado==='activo'||c.programa);}).length;
+  var cTri = trials.length;
+  var dTotal = cAca+cSis+cTri;
+  var donutHTML = '';
+  if(dTotal===0) {
+    donutHTML = '<div style="font-size:11px;color:var(--text-l);padding:8px 0;">Sin datos</div>';
+  } else {
+    var dr=32, dcx=40, dcy=40, dsw=13;
+    var DC = 2*Math.PI*dr;
+    var dSegs = [{n:cAca,col:'#b09088',lbl:'Academia'},{n:cSis,col:'#d4a574',lbl:'Sistema'},{n:cTri,col:'#a89898',lbl:'Trial'}].filter(function(s){return s.n>0;});
+    var rings='', legend='', cum=0;
+    dSegs.forEach(function(s) {
+      var frac=s.n/dTotal;
+      var dash=(DC*frac).toFixed(2);
+      var rot=(-90+cum*360).toFixed(1);
+      rings += '<circle cx="'+dcx+'" cy="'+dcy+'" r="'+dr+'" fill="none" stroke="'+s.col+'" stroke-width="'+dsw+'" stroke-dasharray="'+dash+' '+DC.toFixed(2)+'" stroke-dashoffset="'+(DC/4).toFixed(2)+'" transform="rotate('+rot+','+dcx+','+dcy+')" stroke-linecap="butt"/>';
+      legend += '<div style="display:flex;align-items:center;gap:5px;margin-bottom:4px;"><div style="width:7px;height:7px;border-radius:1px;background:'+s.col+';flex-shrink:0;"></div><span style="font-size:10px;color:var(--text-l);">'+s.lbl+'</span><span style="font-size:10px;color:var(--text);margin-left:auto;">'+s.n+'</span></div>';
+      cum+=frac;
+    });
+    donutHTML = '<div style="display:flex;align-items:center;gap:10px;">'
+      +'<svg viewBox="0 0 80 80" style="width:70px;height:70px;flex-shrink:0;">'
+      +'<circle cx="'+dcx+'" cy="'+dcy+'" r="'+dr+'" fill="none" stroke="rgba(255,255,255,.05)" stroke-width="'+dsw+'"/>'
+      +rings
+      +'<text x="'+dcx+'" y="'+(dcy+5)+'" text-anchor="middle" font-size="12" fill="var(--text)" font-family="Cormorant Garamond,serif">'+dTotal+'</text>'
+      +'</svg><div style="flex:1;">'+legend+'</div></div>';
+  }
+
+  // — Sparkline: logins por día de la semana actual —
+  var dow = now.getDay();
+  var daysFromMon = dow===0?6:dow-1;
+  var monday = new Date(now.getFullYear(),now.getMonth(),now.getDate()-daysFromMon);
+  var wCounts = [0,0,0,0,0,0,0];
+  clients.forEach(function(c) {
+    if(!c.lastLogin) return;
+    var lg = new Date(c.lastLogin);
+    var lgD = new Date(lg.getFullYear(),lg.getMonth(),lg.getDate());
+    var diff = Math.round((lgD-monday)/86400000);
+    if(diff>=0&&diff<=6) wCounts[diff]++;
+  });
+  var spMax = Math.max.apply(null,wCounts.concat([1]));
+  var bW=16,bG=5,bHH=36,bLH=12;
+  var dayLbls=['L','M','X','J','V','S','D'];
+  var spBars='';
+  wCounts.forEach(function(c,i){
+    var h2=Math.max(2,Math.round((c/spMax)*bHH));
+    var x2=i*(bW+bG);
+    var y2=bHH-h2;
+    var col2=i===daysFromMon?'#b09088':'rgba(255,255,255,.18)';
+    spBars+='<rect x="'+x2+'" y="'+y2+'" width="'+bW+'" height="'+h2+'" rx="2" fill="'+col2+'"/>';
+    spBars+='<text x="'+(x2+bW/2)+'" y="'+(bHH+bLH-1)+'" text-anchor="middle" font-size="7" fill="rgba(255,255,255,.4)" font-family="DM Sans,sans-serif">'+dayLbls[i]+'</text>';
+  });
+  var spW=7*(bW+bG)-bG;
+  var sparklineHTML='<svg viewBox="0 0 '+spW+' '+(bHH+bLH)+'" style="width:100%;height:'+(bHH+bLH)+'px;">'+spBars+'</svg>';
+
+  // — Render HTML —
+  container.innerHTML =
+    // Banner: solo 4 KPIs, sin texto ni burbuja
+    '<div style="background:linear-gradient(135deg,#b09088 0%,#bfa098 40%,#ccb0a8 60%,#b09088 100%);border-radius:16px;padding:20px 24px;margin-bottom:16px;">'
+    +'<div class="adm-dash-4col">'
+    +'<div style="background:rgba(255,255,255,.15);border-radius:10px;padding:12px 14px;"><div style="font-size:9px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Clientes activos</div><div id="adash-activos" style="font-family:\'Cormorant Garamond\',serif;font-size:26px;font-weight:400;color:#fff;line-height:1;">0</div></div>'
+    +'<div style="background:rgba(255,255,255,.15);border-radius:10px;padding:12px 14px;"><div style="font-size:9px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">MRR te\u00f3rico</div><div id="adash-mrr" style="font-family:\'Cormorant Garamond\',serif;font-size:26px;font-weight:400;color:#fff;line-height:1;">$0</div></div>'
+    +'<div style="background:rgba(255,255,255,.15);border-radius:10px;padding:12px 14px;"><div style="font-size:9px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Cobrado</div><div id="adash-cobrado" style="font-family:\'Cormorant Garamond\',serif;font-size:26px;font-weight:400;color:#fff;line-height:1;">$0</div></div>'
+    +'<div style="background:rgba(255,255,255,.15);border-radius:10px;padding:12px 14px;"><div style="font-size:9px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Por cobrar</div><div id="adash-pendiente" style="font-family:\'Cormorant Garamond\',serif;font-size:26px;font-weight:400;color:#fff;line-height:1;">$0</div></div>'
+    +'</div></div>'
+    // 3-col: alertas / reuniones / academia
+    +'<div class="adm-dash-3col">'
+    +'<div style="background:#2c2c2e;border-radius:12px;border:.5px solid rgba(255,255,255,.08);padding:16px;"><div style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">Alertas</div>'+alertasHTML+'</div>'
+    +'<div style="background:#2c2c2e;border-radius:12px;border:.5px solid rgba(255,255,255,.08);padding:16px;"><div style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">Pr\u00f3ximas reuniones</div>'+reunionesHTML+'</div>'
+    +'<div style="background:#2c2c2e;border-radius:12px;border:.5px solid rgba(255,255,255,.08);padding:16px;"><div style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">Academia</div>'
+    +'<div style="margin-bottom:12px;"><div id="adash-academia" style="font-family:\'Cormorant Garamond\',serif;font-size:28px;font-weight:400;color:var(--text);line-height:1;">0</div><div style="font-size:10px;color:var(--text-l);margin-top:2px;">con academia activa</div></div>'+academiaHTML+'</div>'
+    +'</div>'
+    // Facturación del mes
+    +'<div style="background:#2c2c2e;border-radius:12px;border:.5px solid rgba(255,255,255,.08);padding:20px;margin-bottom:16px;">'
+    +'<div style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px;">Facturaci\u00f3n del mes</div>'
+    +'<div class="adm-dash-4col">'
+    +'<div style="background:rgba(255,255,255,.04);border-radius:10px;padding:14px;"><div style="font-size:9px;color:var(--text-l);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">MRR te\u00f3rico</div><div id="adash-mrr2" style="font-family:\'Cormorant Garamond\',serif;font-size:20px;font-weight:400;color:var(--text);">$0</div></div>'
+    +'<div style="background:rgba(255,255,255,.04);border-radius:10px;padding:14px;"><div style="font-size:9px;color:var(--text-l);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">Cobrado</div><div id="adash-cobrado2" style="font-family:\'Cormorant Garamond\',serif;font-size:20px;font-weight:400;color:var(--ok);">$0</div></div>'
+    +'<div style="background:rgba(255,255,255,.04);border-radius:10px;padding:14px;"><div style="font-size:9px;color:var(--text-l);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">Por cobrar</div><div id="adash-pendiente2" style="font-family:\'Cormorant Garamond\',serif;font-size:20px;font-weight:400;color:var(--warn);">$0</div></div>'
+    +'<div style="background:rgba(255,255,255,.04);border-radius:10px;padding:14px;"><div style="font-size:9px;color:var(--text-l);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">Clientes activos</div><div id="adash-activos2" style="font-family:\'Cormorant Garamond\',serif;font-size:20px;font-weight:400;color:var(--text);">0</div></div>'
+    +'</div></div>'
+    // Gráficos 2fr / 1fr
+    +'<div style="display:grid;grid-template-columns:2fr 1fr;gap:12px;">'
+    +'<div style="background:#2c2c2e;border-radius:12px;border:.5px solid rgba(255,255,255,.08);padding:16px;">'
+    +'<div style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">Evoluci\u00f3n MRR \u2014 12 meses</div>'
+    +mrrChartHTML+'</div>'
+    +'<div style="background:#2c2c2e;border-radius:12px;border:.5px solid rgba(255,255,255,.08);padding:16px;display:flex;flex-direction:column;gap:16px;">'
+    +'<div><div style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Composici\u00f3n cartera</div>'+donutHTML+'</div>'
+    +'<div><div style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Actividad esta semana</div>'+sparklineHTML+'</div>'
+    +'</div></div>';
+
+  // — CountUp —
+  function countUp(id, target, pfx, ms) {
+    var el = document.getElementById(id);
+    if(!el) return;
+    var t0 = Date.now();
+    (function step() {
+      var p = Math.min((Date.now()-t0)/ms, 1);
+      var e = 1-Math.pow(1-p,3);
+      el.textContent = (pfx||'')+(Math.round(e*target)).toLocaleString('es-AR');
+      if(p<1) requestAnimationFrame(step);
+    })();
+  }
+  setTimeout(function(){
+    countUp('adash-activos',   activos.length,    '',  700);
+    countUp('adash-mrr',       mrr,               '$', 900);
+    countUp('adash-cobrado',   cobrado,           '$', 900);
+    countUp('adash-pendiente', pendiente,         '$', 800);
+    countUp('adash-academia',  conAcademia.length,'',  700);
+    countUp('adash-mrr2',      mrr,               '$', 900);
+    countUp('adash-cobrado2',  cobrado,           '$', 900);
+    countUp('adash-pendiente2',pendiente,         '$', 800);
+    countUp('adash-activos2',  activos.length,    '',  700);
+  }, 60);
 }
 
 async function loadAdminData() {
