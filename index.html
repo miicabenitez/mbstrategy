@@ -15862,6 +15862,7 @@ window.verDetalleMovCC = async function(tipo, m) {
     `;
   } else if(tipo === 'pago') {
     const sinImputar = !m.facturasIds || m.facturasIds.length === 0;
+    window._ccOpActual = m;
     contenido.innerHTML = `
       <div style="background:#5A8A62;border-radius:10px;padding:14px 16px;margin-bottom:16px;">
         <div style="font-size:10px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Orden de Pago</div>
@@ -15883,6 +15884,10 @@ window.verDetalleMovCC = async function(tipo, m) {
       <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px;">
         <button id="detalle-pago-pdf-btn" style="width:100%;background:#5A8A62;color:#fff;border:none;border-radius:8px;padding:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;">Descargar PDF</button>
         ${sinImputar ? `<button onclick="imputarPagoAFactura('${m.id}')" style="width:100%;background:#EEF2EF;color:#5A8A62;border:.5px solid #5A8A62;border-radius:8px;padding:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;">Imputar a factura</button>` : ''}
+        <div style="display:flex;gap:8px;">
+          <button onclick="editarOP(window._ccOpActual)" style="flex:1;background:#F5F6F3;border:.5px solid rgba(0,0,0,.1);border-radius:8px;padding:9px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;color:#3d3d3a;cursor:pointer;">Editar</button>
+          <button id="btn-eliminar-op" style="display:flex;align-items:center;justify-content:center;gap:6px;background:#FDF2F0;border:.5px solid #C4786A;border-radius:8px;padding:9px 14px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;color:#C4786A;cursor:pointer;">Eliminar</button>
+        </div>
       </div>
     `;
     setTimeout(()=>{
@@ -15893,6 +15898,8 @@ window.verDetalleMovCC = async function(tipo, m) {
         if(provEl) { const prov=(window._proveedores||[]).find(p=>p.id===window._ccProvId); if(prov) provEl.textContent=prov.nombre; }
         generarPDFOrdenPago();
       };
+      const btnElim = document.getElementById('btn-eliminar-op');
+      if(btnElim) btnElim.onclick = () => eliminarOP(m.id);
     }, 100);
   }
   openModal('detalleMovCCModal');
@@ -15900,6 +15907,118 @@ window.verDetalleMovCC = async function(tipo, m) {
     const btnEl = document.getElementById('btn-eliminar-factura-cc');
     if(btnEl) btnEl.onclick = () => eliminarFacturaCC(btnEl.dataset.movid);
   }, 100);
+};
+
+window.eliminarOP = async function(pagoId) {
+  if(!confirm('¿Eliminar este pago? Se revertirán los efectos en las facturas.')) return;
+  const pago = (_ccPagos||[]).find(p=>p.id===pagoId);
+  if(!pago) return;
+  try {
+    await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',_ccProvId,'pagos',pagoId), { eliminado:true, eliminadoEn:new Date() });
+    const ids = Array.isArray(pago.facturasIds) ? pago.facturasIds : [];
+    for(let i=0; i<ids.length; i++){
+      const fid = ids[i];
+      const montoARevertir = (pago.facturasMontos||[])[i] ?? (parseFloat(pago.monto)||0);
+      const fac = (_ccFacturas||[]).find(f=>f.id===fid)||(_ccOCsComoFactura||[]).find(f=>f.id===fid);
+      if(!fac) continue;
+      const nuevoMontoPagado = Math.max(0,(parseFloat(fac.montoPagado)||0)-montoARevertir);
+      const nuevoEstado = nuevoMontoPagado<=0?'pendiente':nuevoMontoPagado<parseFloat(fac.monto)?'parcial':'pagada';
+      await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',_ccProvId,'facturas',fid),{montoPagado:nuevoMontoPagado,estado:nuevoEstado});
+      fac.montoPagado=nuevoMontoPagado; fac.estado=nuevoEstado;
+      if(fac.esOC&&fac.ocId){try{await updateDoc(doc(db,'clientes',currentClientUID,'ordenesCompra',fac.ocId),{estadoPago:nuevoEstado});const oc=(_ordenesCompra||window._ordenesCompra||[]).find(o=>o.id===fac.ocId);if(oc)oc.estadoPago=nuevoEstado;}catch(e){}}
+    }
+    try{
+      const lbSnap=await getDocs(query(collection(db,'libroCaja'),where('referenciaId','==',pagoId)));
+      for(const d of lbSnap.docs) await updateDoc(doc(db,'libroCaja',d.id),{eliminado:true});
+    }catch(e){}
+    const idx=(_ccPagos||[]).findIndex(p=>p.id===pagoId);
+    if(idx>=0) _ccPagos.splice(idx,1);
+    closeModal('detalleMovCCModal');
+    showToast('Pago eliminado','ok');
+    renderCuentaCorriente();
+  } catch(e){ showToast('Error al eliminar: '+e.message,'error'); }
+};
+
+window.editarOP = function(pago) {
+  if(!pago) return;
+  const contenido = document.getElementById('detalle-mov-cc-content');
+  if(!contenido) return;
+  const todasFacturas = [...(_ccFacturas||[]), ...(_ccOCsComoFactura||[])].filter(f => !f.eliminado);
+  const medios = ['transferencia','efectivo','cheque','tarjeta','debito'];
+  contenido.innerHTML = `
+    <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:12px;">Editar pago ${pago.numero||''}</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
+      <div>
+        <label style="font-size:11px;color:var(--text-l);">Fecha</label>
+        <input id="edit-op-fecha" type="date" class="fi" value="${pago.fecha||''}" style="margin-top:4px;"/>
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--text-l);">Monto</label>
+        <input id="edit-op-monto" type="number" class="fi" value="${pago.monto||''}" step="0.01" style="margin-top:4px;"/>
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--text-l);">Medio de pago</label>
+        <select id="edit-op-medio" class="fi" style="margin-top:4px;">
+          ${medios.map(med=>`<option value="${med}" ${pago.medio===med?'selected':''}>${med.charAt(0).toUpperCase()+med.slice(1)}</option>`).join('')}
+        </select>
+      </div>
+      ${todasFacturas.length ? `<div><label style="font-size:11px;color:var(--text-l);">Factura imputada (opcional)</label><div style="display:flex;flex-direction:column;gap:4px;margin-top:6px;"><label style="display:flex;align-items:center;gap:8px;font-size:12px;padding:6px 8px;background:var(--cream);border-radius:6px;cursor:pointer;"><input type="radio" name="edit-op-fac" value="" ${(!pago.facturasIds||!pago.facturasIds.length)?'checked':''}/> Sin imputar</label>${todasFacturas.map(f=>{const pend=Math.max(0,(parseFloat(f.monto)||0)-(parseFloat(f.montoPagado)||0));const lbl=f.numero||f.desc||'Factura';const chk=(pago.facturasIds||[]).includes(f.id)?'checked':'';return '<label style="display:flex;align-items:center;gap:8px;font-size:12px;padding:6px 8px;background:var(--cream);border-radius:6px;cursor:pointer;"><input type="radio" name="edit-op-fac" value="'+f.id+'" '+chk+'/> '+lbl+' \u2014 Pendiente: $'+pend.toLocaleString('es-AR')+'</label>';}).join('')}</div></div>` : ''}
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="verDetalleMovCC('pago',window._ccOpActual)" style="flex:1;background:var(--cream);border:.5px solid var(--cream-d);border-radius:8px;padding:10px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;">Cancelar</button>
+      <button onclick="guardarEdicionOP('${pago.id}')" style="flex:1;background:#5A8A62;color:#fff;border:none;border-radius:8px;padding:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;">Guardar</button>
+    </div>
+  `;
+};
+
+window.guardarEdicionOP = async function(pagoId) {
+  const pago = (_ccPagos||[]).find(p=>p.id===pagoId);
+  if(!pago) return;
+  const nuevaFecha = document.getElementById('edit-op-fecha')?.value;
+  const nuevoMonto = parseFloat(document.getElementById('edit-op-monto')?.value)||0;
+  const nuevoMedio = document.getElementById('edit-op-medio')?.value||'transferencia';
+  const selectedFac = document.querySelector('input[name="edit-op-fac"]:checked')?.value||'';
+  if(!nuevaFecha){ showToast('Ingresá la fecha','info'); return; }
+  if(nuevoMonto<=0){ showToast('El monto debe ser mayor a $0','info'); return; }
+  try{
+    const oldIds = Array.isArray(pago.facturasIds)?pago.facturasIds:[];
+    for(let i=0;i<oldIds.length;i++){
+      const fid=oldIds[i];
+      const montoViejo=(pago.facturasMontos||[])[i] ?? (parseFloat(pago.monto)||0);
+      const fac=(_ccFacturas||[]).find(f=>f.id===fid)||(_ccOCsComoFactura||[]).find(f=>f.id===fid);
+      if(!fac) continue;
+      const nuevoMontoPagado=Math.max(0,(parseFloat(fac.montoPagado)||0)-montoViejo);
+      const nuevoEstado=nuevoMontoPagado<=0?'pendiente':nuevoMontoPagado<parseFloat(fac.monto)?'parcial':'pagada';
+      await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',_ccProvId,'facturas',fid),{montoPagado:nuevoMontoPagado,estado:nuevoEstado});
+      fac.montoPagado=nuevoMontoPagado; fac.estado=nuevoEstado;
+      if(fac.esOC&&fac.ocId){try{await updateDoc(doc(db,'clientes',currentClientUID,'ordenesCompra',fac.ocId),{estadoPago:nuevoEstado});const oc=(_ordenesCompra||window._ordenesCompra||[]).find(o=>o.id===fac.ocId);if(oc)oc.estadoPago=nuevoEstado;}catch(e){}}
+    }
+    let newFacturasIds=[],newFacturasNombres=[],newFacturasMontos=[];
+    if(selectedFac){
+      const fac=(_ccFacturas||[]).find(f=>f.id===selectedFac)||(_ccOCsComoFactura||[]).find(f=>f.id===selectedFac);
+      if(fac){
+        const nuevoMontoPagado=(parseFloat(fac.montoPagado)||0)+nuevoMonto;
+        const nuevoEstado=nuevoMontoPagado>=parseFloat(fac.monto)?'pagada':nuevoMontoPagado>0?'parcial':'pendiente';
+        await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',_ccProvId,'facturas',selectedFac),{montoPagado:nuevoMontoPagado,estado:nuevoEstado});
+        fac.montoPagado=nuevoMontoPagado; fac.estado=nuevoEstado;
+        if(fac.esOC&&fac.ocId){try{await updateDoc(doc(db,'clientes',currentClientUID,'ordenesCompra',fac.ocId),{estadoPago:nuevoEstado});const oc=(_ordenesCompra||window._ordenesCompra||[]).find(o=>o.id===fac.ocId);if(oc)oc.estadoPago=nuevoEstado;}catch(e){}}
+        newFacturasIds=[selectedFac]; newFacturasNombres=[fac.numero||fac.desc||'Factura']; newFacturasMontos=[nuevoMonto];
+      }
+    }
+    await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',_ccProvId,'pagos',pagoId),{
+      monto:nuevoMonto,medio:nuevoMedio,fecha:nuevaFecha,
+      facturasIds:newFacturasIds,facturasNombres:newFacturasNombres,facturasMontos:newFacturasMontos
+    });
+    try{
+      const lbSnap=await getDocs(query(collection(db,'libroCaja'),where('referenciaId','==',pagoId)));
+      for(const d of lbSnap.docs) await updateDoc(doc(db,'libroCaja',d.id),{monto:nuevoMonto,fecha:nuevaFecha});
+    }catch(e){}
+    Object.assign(pago,{monto:nuevoMonto,medio:nuevoMedio,fecha:nuevaFecha,facturasIds:newFacturasIds,facturasNombres:newFacturasNombres,facturasMontos:newFacturasMontos});
+    window._ccOpActual={...pago};
+    closeModal('detalleMovCCModal');
+    showToast('Pago actualizado','ok');
+    renderCuentaCorriente();
+  }catch(e){ showToast('Error al guardar: '+e.message,'error'); }
 };
 
 window.imputarPagoAFactura = function(pagoId) {
