@@ -791,6 +791,8 @@ body.admin-micaela #aArea div[style*="background:#4a5e4d"]{background:linear-gra
 body.admin-micaela #aNav [onclick="showATab('dash',this)"],body.admin-micaela #aNav [onclick="showATab('cobros',this)"],body.admin-micaela #aNav [onclick="showATab('kpis',this)"]{display:none !important;}
 body.admin-micaela #av-embi div[style*="background:var(--sage-dark)"]{background:linear-gradient(135deg,#b09088 0%,#bfa098 40%,#ccb0a8 60%,#b09088 100%) !important;}
 body.admin-micaela #av-embi .mc.accent{background:linear-gradient(135deg,#b09088 0%,#bfa098 40%,#ccb0a8 60%,#b09088 100%) !important;border-color:#b09088 !important;}
+body.cliente-micaela .sidebar{background:linear-gradient(135deg,#b09088 0%,#bfa098 40%,#ccb0a8 60%,#b09088 100%) !important;}
+body.cliente-micaela .topbar{background:linear-gradient(135deg,#b09088 0%,#bfa098 40%,#ccb0a8 60%,#b09088 100%) !important;}
 </style>
 </head>
 <body>
@@ -4666,6 +4668,7 @@ onAuthStateChanged(auth, async (user) => {
           window._micaelaClientData = clientData;
           window._currentUser = user;
           await showClientUI(user.email, clientData);
+          document.body.classList.add('cliente-micaela');
           _mostrarSeccionAdmin();
         } else {
           await showAdminUI(user.email);
@@ -4834,6 +4837,7 @@ window._volverAClienteView = async function() {
   const clientData = window._micaelaClientData;
   if(!clientData) return;
   document.body.classList.remove('admin-micaela');
+  document.body.classList.add('cliente-micaela');
   await showClientUI(email, clientData);
 };
 
@@ -4843,6 +4847,7 @@ window._irAAdminTab = function(tab) {
   document.getElementById('aNav').style.display = 'flex';
   document.getElementById('cNav').style.display = 'none';
   document.body.classList.remove('client-view');
+  document.body.classList.remove('cliente-micaela');
   document.body.classList.add('admin-micaela');
   let btnVolver = document.getElementById('btn-volver-cliente');
   if(!btnVolver) {
