@@ -15861,6 +15861,7 @@ window.verDetalleMovCC = async function(tipo, m) {
       </div>
     `;
   } else if(tipo === 'pago') {
+    const sinImputar = !m.facturasIds || m.facturasIds.length === 0;
     contenido.innerHTML = `
       <div style="background:#5A8A62;border-radius:10px;padding:14px 16px;margin-bottom:16px;">
         <div style="font-size:10px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Orden de Pago</div>
@@ -15879,8 +15880,9 @@ window.verDetalleMovCC = async function(tipo, m) {
         ${m.facturasNombres?.length ? `<div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid var(--cream-d);"><span style="color:var(--text-l);">Facturas canceladas</span><span style="font-weight:500;text-align:right;">${m.facturasNombres.join(', ')}</span></div>` : ''}
         ${m.concepto ? `<div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;"><span style="color:var(--text-l);">Concepto</span><span style="font-weight:500;">${m.concepto}</span></div>` : ''}
       </div>
-      <div style="margin-top:16px;">
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px;">
         <button id="detalle-pago-pdf-btn" style="width:100%;background:#5A8A62;color:#fff;border:none;border-radius:8px;padding:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;">Descargar PDF</button>
+        ${sinImputar ? `<button onclick="imputarPagoAFactura('${m.id}')" style="width:100%;background:#EEF2EF;color:#5A8A62;border:.5px solid #5A8A62;border-radius:8px;padding:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;">Imputar a factura</button>` : ''}
       </div>
     `;
     setTimeout(()=>{
@@ -15898,6 +15900,78 @@ window.verDetalleMovCC = async function(tipo, m) {
     const btnEl = document.getElementById('btn-eliminar-factura-cc');
     if(btnEl) btnEl.onclick = () => eliminarFacturaCC(btnEl.dataset.movid);
   }, 100);
+};
+
+window.imputarPagoAFactura = function(pagoId) {
+  const contenido = document.getElementById('detalle-mov-cc-content');
+  if(!contenido) return;
+  const todasFacturas = [...(_ccFacturas||[]), ...(_ccOCsComoFactura||[])].filter(f => {
+    if(f.eliminado) return false;
+    return (f.estado||'pendiente') !== 'pagada';
+  });
+  if(todasFacturas.length === 0) {
+    contenido.innerHTML += `<div style="margin-top:12px;padding:10px;background:var(--warn-bg);color:var(--warn);border-radius:8px;font-size:12px;text-align:center;">No hay facturas pendientes para imputar.</div>`;
+    return;
+  }
+  window._ccPagoImputar = (_ccPagos||[]).find(p=>p.id===pagoId);
+  contenido.innerHTML = `
+    <div style="margin-bottom:12px;">
+      <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:4px;">Seleccioná la factura a imputar</div>
+      <div style="font-size:11px;color:var(--text-l);">El pago quedará asociado a la factura seleccionada.</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px;">
+      ${todasFacturas.map(f => {
+        const pendiente = (parseFloat(f.monto)||0) - (parseFloat(f.montoPagado)||0);
+        const label = f.numero || f.desc || f.descripcion || 'Factura';
+        return `<label style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--cream);border-radius:8px;cursor:pointer;border:.5px solid var(--cream-d);">
+          <input type="radio" name="imputar-fac" value="${f.id}" style="accent-color:#5A8A62;width:15px;height:15px;flex-shrink:0;"/>
+          <div style="flex:1;">
+            <div style="font-size:12px;font-weight:500;color:var(--text);">${label}</div>
+            <div style="font-size:11px;color:var(--text-l);">Pendiente: $${pendiente.toLocaleString('es-AR')}</div>
+          </div>
+        </label>`;
+      }).join('')}
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="verDetalleMovCC('pago',window._ccPagoImputar)" style="flex:1;background:var(--cream);border:.5px solid var(--cream-d);border-radius:8px;padding:10px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;">Cancelar</button>
+      <button onclick="confirmarImputacion('${pagoId}')" style="flex:1;background:#5A8A62;color:#fff;border:none;border-radius:8px;padding:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;">Confirmar</button>
+    </div>
+  `;
+};
+
+window.confirmarImputacion = async function(pagoId) {
+  const selected = document.querySelector('input[name="imputar-fac"]:checked');
+  if(!selected) { showToast('Seleccioná una factura', 'info'); return; }
+  const facturaId = selected.value;
+  const pago = (_ccPagos||[]).find(p=>p.id===pagoId);
+  const factura = [...(_ccFacturas||[]), ...(_ccOCsComoFactura||[])].find(f=>f.id===facturaId);
+  if(!pago || !factura) return;
+  try {
+    const montoPagadoNuevo = (parseFloat(factura.montoPagado)||0) + (parseFloat(pago.monto)||0);
+    const nuevoEstado = montoPagadoNuevo >= parseFloat(factura.monto) ? 'pagada' : 'parcial';
+    await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',_ccProvId,'pagos',pagoId), {
+      facturasIds: [facturaId],
+      facturasNombres: [factura.numero||factura.desc||factura.descripcion||'Factura'],
+      facturasMontos: [parseFloat(pago.monto)||0]
+    });
+    await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',_ccProvId,'facturas',facturaId), {
+      estado: nuevoEstado, montoPagado: montoPagadoNuevo
+    });
+    const pagoInMem = (_ccPagos||[]).find(p=>p.id===pagoId);
+    if(pagoInMem) { pagoInMem.facturasIds=[facturaId]; pagoInMem.facturasNombres=[factura.numero||factura.desc||'Factura']; pagoInMem.facturasMontos=[parseFloat(pago.monto)||0]; }
+    const facInMem = (_ccFacturas||[]).find(f=>f.id===facturaId)||(_ccOCsComoFactura||[]).find(f=>f.id===facturaId);
+    if(facInMem) { facInMem.montoPagado=montoPagadoNuevo; facInMem.estado=nuevoEstado; }
+    if(facInMem?.esOC && facInMem?.ocId) {
+      try {
+        await updateDoc(doc(db,'clientes',currentClientUID,'ordenesCompra',facInMem.ocId), { estadoPago: nuevoEstado });
+        const ocInMem = (_ordenesCompra||window._ordenesCompra||[]).find(o=>o.id===facInMem.ocId);
+        if(ocInMem) ocInMem.estadoPago = nuevoEstado;
+      } catch(e) {}
+    }
+    closeModal('detalleMovCCModal');
+    showToast('Pago imputado correctamente', 'ok');
+    renderCuentaCorriente();
+  } catch(e) { showToast('Error al imputar: ' + e.message, 'error'); }
 };
 
 window.eliminarFacturaCC = async function(movId) {
