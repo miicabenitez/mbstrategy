@@ -17451,7 +17451,8 @@ window.showCTab = function(tab, btn) {
   if(el) el.style.display = 'block';
   // Activar subctab correcto
   document.querySelectorAll('.subctab').forEach(b => b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
+  const _activeBtn = btn || document.querySelector(`.subctab[onclick*="'${tab}'"]`);
+  if(_activeBtn) _activeBtn.classList.add('active');
   // Cerrar CC proveedor al navegar a cualquier tab (incluida proveedores para resetear a lista)
   if(typeof cerrarCCView === 'function') {
     const ccv = document.getElementById('prov-cc-view');
