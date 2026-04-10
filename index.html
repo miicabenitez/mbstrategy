@@ -15619,6 +15619,34 @@ window.savePagoProveedor = async function() {
     window._savingPago = false;
   }
 };
+window.backfillEstadoPagoOCs = async function() {
+  const uid = currentClientUID;
+  if(!uid) return console.error('[backfill] No hay usuario autenticado');
+  const ocsSnap = await getDocs(collection(db,'clientes',uid,'ordenesCompra'));
+  const ocs = [];
+  ocsSnap.forEach(d => { const data = d.data(); if(!data.eliminado) ocs.push({id:d.id,...data}); });
+  const candidatas = ocs.filter(o => !o.estadoPago || o.estadoPago === 'pendiente');
+  console.log(`[backfill] Total OCs: ${ocs.length}, candidatas sin estadoPago: ${candidatas.length}`);
+  let updated = 0;
+  for(const oc of candidatas) {
+    if(!oc.proveedorId) continue;
+    const facSnap = await getDocs(collection(db,'clientes',uid,'proveedores',oc.proveedorId,'facturas'));
+    let factura = null;
+    facSnap.forEach(d => {
+      const data = d.data();
+      if(data.esOC === true && data.ocId === oc.id && !data.eliminado) factura = data;
+    });
+    if(!factura) { console.log(`[backfill] OC-${String(oc.numero||0).padStart(3,'0')} sin factura esOC — skip`); continue; }
+    if(factura.estado === 'pagada' || factura.estado === 'parcial') {
+      await updateDoc(doc(db,'clientes',uid,'ordenesCompra',oc.id), { estadoPago: factura.estado });
+      console.log(`[backfill] OC-${String(oc.numero||0).padStart(3,'0')} → estadoPago: ${factura.estado}`);
+      updated++;
+    } else {
+      console.log(`[backfill] OC-${String(oc.numero||0).padStart(3,'0')} — factura estado: ${factura.estado||'pendiente'} — sin cambio`);
+    }
+  }
+  console.log(`[backfill] Completado. ${updated} OCs actualizadas.`);
+};
 window.generarPDFOrdenPago = async function() {
   if(!window._ultimaOP) { showToast('No hay datos de la orden de pago.', 'info'); return; }
   if(!window.jspdf) {
