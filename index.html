@@ -4686,6 +4686,7 @@ onAuthStateChanged(auth, async (user) => {
         if(esMicaela) {
           const clientData = await getClientByAuth(user);
           window._micaelaClientData = clientData;
+          window._currentUser = user;
           await showClientUI(user.email, clientData);
           _mostrarSeccionAdmin();
         } else {
@@ -4949,7 +4950,7 @@ async function loadAdminData() {
     const gastosSnap = await getDocs(collection(db, 'gastos'));
     const gastos = [];
     gastosSnap.forEach(d => { const data=d.data(); if(!data.eliminado) gastos.push({id:d.id,...data}); });
-    await preloadCajaSaldo(user.uid).catch(()=>{});
+    await preloadCajaSaldo((window._currentUser||user).uid).catch(()=>{});
     updateMetrics(clients, cobros, gastos);
     renderGastosData(gastos);
     await loadPresupuestosGlobal();
