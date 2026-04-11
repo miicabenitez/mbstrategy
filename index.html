@@ -4967,6 +4967,12 @@ function renderAdminDashboard() {
   const now     = new Date();
   const todayStr = now.toISOString().slice(0,10);
 
+  // — Saludo dinámico —
+  var hora = now.getHours();
+  var saludo = hora < 12 ? 'Buenos días' : hora < 19 ? 'Buenas tardes' : 'Buenas noches';
+  var fechaStr = now.toLocaleDateString('es-AR', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+  fechaStr = fechaStr.charAt(0).toUpperCase() + fechaStr.slice(1);
+
   // — KPIs —
   const activos   = clients.filter(c => c.membresia?.estado==='activo' || c.programa);
   const mrr       = activos.reduce((a,c)=>a+(parseFloat(c.precio)||0), 0);
@@ -4979,10 +4985,26 @@ function renderAdminDashboard() {
     .map(c=>({nombre:c.nombre||c.email||'?',fecha:c.proximaReunion.fecha,hora:c.proximaReunion.hora||'',link:c.proximaReunion.link||''}))
     .sort((a,b)=>a.fecha.localeCompare(b.fecha)).slice(0,3);
 
-  // — Alertas —
-  const sinActividad = clients.filter(c=>c.lastLogin &&
-    Math.floor((Date.now()-new Date(c.lastLogin).getTime())/(1000*60*60*24))>7);
+  // — Alertas priorizadas —
   const trials = clients.filter(c=>c.membresia?.estado==='trial');
+  // P1: trials que vencen en ≤3 días
+  const trialsVencen = trials.filter(function(c) {
+    if(!c.membresia?.fin) return false;
+    var dias = Math.ceil((new Date(c.membresia.fin)-now)/(1000*60*60*24));
+    return dias>=0 && dias<=3;
+  }).map(function(c) {
+    var dias = Math.ceil((new Date(c.membresia.fin)-now)/(1000*60*60*24));
+    return {c:c, dias:dias};
+  }).sort(function(a,b){return a.dias-b.dias;});
+  // P2: sin actividad >7d (activos)
+  const sinActividad = clients.filter(c=>(c.membresia?.estado==='activo'||c.programa) && c.lastLogin &&
+    Math.floor((Date.now()-new Date(c.lastLogin).getTime())/(1000*60*60*24))>7);
+  // P3: trials activos (resto)
+  const trialsActivos = trials.filter(function(c) {
+    if(!c.membresia?.fin) return true;
+    var dias = Math.ceil((new Date(c.membresia.fin)-now)/(1000*60*60*24));
+    return dias>3;
+  });
 
   // — Academia —
   const conAcademia = clients.filter(c=>c.productos?.academia);
@@ -4991,9 +5013,18 @@ function renderAdminDashboard() {
 
   // — Build alertasHTML —
   let alertasHTML = '';
-  if(sinActividad.length===0 && trials.length===0) {
+  var hayAlertas = trialsVencen.length>0 || sinActividad.length>0 || trialsActivos.length>0;
+  if(!hayAlertas) {
     alertasHTML = '<div style="font-size:12px;color:var(--text-l);">Todo en orden \u2713</div>';
   } else {
+    if(trialsVencen.length>0) {
+      alertasHTML += '<div style="margin-bottom:10px;"><div style="font-size:10px;color:var(--err);font-weight:500;margin-bottom:6px;">\u26a0 Trial vence pronto ('+trialsVencen.length+')</div>';
+      trialsVencen.forEach(function(t) {
+        var lbl = t.dias===0 ? 'hoy' : 'en '+t.dias+'d';
+        alertasHTML += '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:.5px solid rgba(255,255,255,.05);"><span style="font-size:11px;color:var(--text);">'+(t.c.nombre||t.c.email||'?').split(' ')[0]+'</span><span style="font-size:10px;color:var(--err);">'+lbl+'</span></div>';
+      });
+      alertasHTML += '</div>';
+    }
     if(sinActividad.length>0) {
       alertasHTML += '<div style="margin-bottom:10px;"><div style="font-size:10px;color:var(--warn);margin-bottom:6px;">Sin actividad +7d ('+sinActividad.length+')</div>';
       sinActividad.slice(0,3).forEach(function(c) {
@@ -5003,9 +5034,9 @@ function renderAdminDashboard() {
       if(sinActividad.length>3) alertasHTML += '<div style="font-size:10px;color:var(--text-l);margin-top:4px;">+'+(sinActividad.length-3)+' m\u00e1s</div>';
       alertasHTML += '</div>';
     }
-    if(trials.length>0) {
-      alertasHTML += '<div><div style="font-size:10px;color:var(--ok);margin-bottom:6px;">Trials activos ('+trials.length+')</div>';
-      trials.slice(0,3).forEach(function(c) {
+    if(trialsActivos.length>0) {
+      alertasHTML += '<div><div style="font-size:10px;color:var(--ok);margin-bottom:6px;">Trials activos ('+trialsActivos.length+')</div>';
+      trialsActivos.slice(0,3).forEach(function(c) {
         alertasHTML += '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:.5px solid rgba(255,255,255,.05);"><span style="font-size:11px;color:var(--text);">'+(c.nombre||c.email||'?').split(' ')[0]+'</span><span style="font-size:10px;color:var(--ok);">trial</span></div>';
       });
       alertasHTML += '</div>';
@@ -5134,13 +5165,18 @@ function renderAdminDashboard() {
 
   // — Render HTML —
   container.innerHTML =
-    // Banner: solo 4 KPIs, sin texto ni burbuja
-    '<div style="background:linear-gradient(135deg,#b09088 0%,#bfa098 40%,#ccb0a8 60%,#b09088 100%);border-radius:16px;padding:20px 24px;margin-bottom:16px;">'
+    // Saludo dinámico + fecha
+    '<div style="margin-bottom:20px;">'
+    +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:28px;font-weight:400;color:var(--text);line-height:1.2;">'+saludo+', Micaela</div>'
+    +'<div style="font-size:12px;color:var(--text-l);margin-top:4px;">'+fechaStr+'</div>'
+    +'</div>'
+    // Banner: 4 KPIs (activos, en trial, MRR, cobrado del mes)
+    +'<div style="background:linear-gradient(135deg,#b09088 0%,#bfa098 40%,#ccb0a8 60%,#b09088 100%);border-radius:16px;padding:20px 24px;margin-bottom:16px;">'
     +'<div class="adm-dash-4col">'
     +'<div style="background:rgba(255,255,255,.15);border-radius:10px;padding:12px 14px;"><div style="font-size:9px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Clientes activos</div><div id="adash-activos" style="font-family:\'Cormorant Garamond\',serif;font-size:26px;font-weight:400;color:#fff;line-height:1;">0</div></div>'
-    +'<div style="background:rgba(255,255,255,.15);border-radius:10px;padding:12px 14px;"><div style="font-size:9px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">MRR te\u00f3rico</div><div id="adash-mrr" style="font-family:\'Cormorant Garamond\',serif;font-size:26px;font-weight:400;color:#fff;line-height:1;">$0</div></div>'
-    +'<div style="background:rgba(255,255,255,.15);border-radius:10px;padding:12px 14px;"><div style="font-size:9px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Cobrado</div><div id="adash-cobrado" style="font-family:\'Cormorant Garamond\',serif;font-size:26px;font-weight:400;color:#fff;line-height:1;">$0</div></div>'
-    +'<div style="background:rgba(255,255,255,.15);border-radius:10px;padding:12px 14px;"><div style="font-size:9px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Por cobrar</div><div id="adash-pendiente" style="font-family:\'Cormorant Garamond\',serif;font-size:26px;font-weight:400;color:#fff;line-height:1;">$0</div></div>'
+    +'<div style="background:rgba(255,255,255,.15);border-radius:10px;padding:12px 14px;"><div style="font-size:9px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">En trial</div><div id="adash-trial" style="font-family:\'Cormorant Garamond\',serif;font-size:26px;font-weight:400;color:#fff;line-height:1;">0</div></div>'
+    +'<div style="background:rgba(255,255,255,.15);border-radius:10px;padding:12px 14px;"><div style="font-size:9px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">MRR</div><div id="adash-mrr" style="font-family:\'Cormorant Garamond\',serif;font-size:26px;font-weight:400;color:#fff;line-height:1;">$0</div></div>'
+    +'<div style="background:rgba(255,255,255,.15);border-radius:10px;padding:12px 14px;"><div style="font-size:9px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Cobrado del mes</div><div id="adash-cobrado" style="font-family:\'Cormorant Garamond\',serif;font-size:26px;font-weight:400;color:#fff;line-height:1;">$0</div></div>'
     +'</div></div>'
     // 3-col: alertas / reuniones / academia
     +'<div class="adm-dash-3col">'
@@ -5182,9 +5218,9 @@ function renderAdminDashboard() {
   }
   setTimeout(function(){
     countUp('adash-activos',   activos.length,    '',  700);
+    countUp('adash-trial',     trials.length,     '',  700);
     countUp('adash-mrr',       mrr,               '$', 900);
     countUp('adash-cobrado',   cobrado,           '$', 900);
-    countUp('adash-pendiente', pendiente,         '$', 800);
     countUp('adash-academia',  conAcademia.length,'',  700);
     countUp('adash-mrr2',      mrr,               '$', 900);
     countUp('adash-cobrado2',  cobrado,           '$', 900);
