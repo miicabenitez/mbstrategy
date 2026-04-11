@@ -12,7 +12,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,600&family=DM+Sans:wght@300;400;500&family=Playfair+Display:ital,wght@1,700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
 html,body{background:#f4f0ea;color:#1a1a18;font-family:'DM Sans',sans-serif;-webkit-font-smoothing:antialiased;}
+.section-inner{max-width:1200px;margin:0 auto;}
 @keyframes fadeDown{from{opacity:0;transform:translateY(-12px);}to{opacity:1;transform:translateY(0);}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(22px);}to{opacity:1;transform:translateY(0);}}
 @keyframes shimmer{0%{background-position:-200% center;}100%{background-position:200% center;}}
@@ -23,7 +25,7 @@ html,body{background:#f4f0ea;color:#1a1a18;font-family:'DM Sans',sans-serif;-web
 .rv.on{opacity:1;transform:none;}
 .d1{transition-delay:.08s;}.d2{transition-delay:.18s;}.d3{transition-delay:.28s;}.d4{transition-delay:.38s;}
 
-nav{position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:16px 48px;border-bottom:1px solid rgba(0,0,0,.07);background:rgba(244,240,234,.95);backdrop-filter:blur(12px);opacity:0;animation:fadeDown .6s ease .1s forwards;}
+nav{position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:16px calc((100% - 1200px) / 2 + 48px);border-bottom:1px solid rgba(0,0,0,.07);background:rgba(244,240,234,.95);backdrop-filter:blur(12px);opacity:0;animation:fadeDown .6s ease .1s forwards;}
 .logo{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;letter-spacing:.03em;color:#1a1a18;display:flex;align-items:center;gap:8px;}
 .logo-mb{font-style:italic;color:#4a5e4d;}
 .nav-links{display:flex;gap:24px;align-items:center;}
@@ -31,6 +33,7 @@ nav{position:sticky;top:0;z-index:100;display:flex;justify-content:space-between
 .nav-cta{background:#4a5e4d;color:#f4f0ea;font-size:12px;font-weight:500;padding:10px 24px;border-radius:3px;cursor:pointer;letter-spacing:.02em;}
 
 .hero{padding:88px 48px 80px;border-bottom:1px solid rgba(0,0,0,.06);background:#f4f0ea;position:relative;overflow:hidden;}
+.hero > *{max-width:1200px;margin-left:auto;margin-right:auto;}
 .hero::before{content:'';position:absolute;top:-150px;right:-100px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(74,94,77,.06) 0%,transparent 65%);pointer-events:none;}
 .h-badge{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(74,94,77,.2);border-radius:2px;padding:5px 14px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#4a5e4d;background:rgba(74,94,77,.05);margin-bottom:24px;opacity:0;animation:fadeUp .6s ease .2s forwards;}
 .h-bdot{width:5px;height:5px;border-radius:50%;background:#4a5e4d;animation:dotPulse 2s infinite;}
@@ -227,18 +230,97 @@ footer{padding:24px 48px;border-top:1px solid rgba(0,0,0,.06);display:flex;justi
 .footer-copy{font-size:11px;color:#aaa9a0;}
 
 @media(max-width:768px){
-  nav{padding:14px 20px;}
+  .pl-badge-area{height:auto !important;min-height:24px;}
+  .pl-price-block{height:auto !important;min-height:0;}
+  .pl-psub{height:auto !important;min-height:0;margin-bottom:14px;}
+  .pl-body{padding:20px 18px 22px;}
+  .pl-name{height:auto !important;}
+  .pl-spacer{display:none;}
+  /* NAV */
+  nav{padding:14px 20px !important;}
   .nav-link{display:none;}
-  .hero{padding:56px 20px 52px;}
+  .nav-cta{font-size:11px;padding:8px 16px;}
+
+  /* HERO */
+  .hero{padding:48px 20px 44px !important;}
   .h-layout{grid-template-columns:1fr;}
   .h-stats{display:none;}
-  .h1{font-size:52px;}
-  .dolor-grid,.t-grid,.comercial-grid,.dif-grid,.planes-grid{grid-template-columns:1fr;}
-  .demo-in,.mica-in,.conmica-in{grid-template-columns:1fr;}
-  .mica-av{display:none;}
-  .cta-h2{font-size:44px;}
-  .transf,.demo,.mica,.dif,.planes,.conmica,.cta,.dolor,.comercial{padding:56px 20px;}
-  footer{padding:20px;}
+  .h1{font-size:44px;}
+  .h-hook{font-size:16px;}
+  .h-p{font-size:14px;max-width:100%;}
+  .h-btns{flex-direction:column;align-items:flex-start;gap:16px;}
+  .h-btn-main{width:100%;text-align:center;padding:15px 24px;}
+  .h-badge{font-size:9px;}
+
+  /* SECCIONES — padding mobile */
+  .dolor,.transf,.demo,.comercial,.mica,.dif,.planes,.conmica,.cta{
+    padding:48px 20px !important;
+  }
+
+  /* DOLOR */
+  .dolor-grid{grid-template-columns:1fr !important;}
+  .dolor-item{padding:24px 20px;}
+
+  /* LO QUE VAS A LOGRAR */
+  .t-grid{grid-template-columns:1fr !important;}
+
+  /* DEMO */
+  .demo-in{grid-template-columns:1fr !important;gap:32px;}
+  .demo-imgs{flex-direction:column !important;}
+  .demo-imgs > div:last-child{grid-template-columns:1fr !important;}
+  .demo-h2{font-size:36px;}
+  .demo-feats{gap:12px;}
+
+  /* COMERCIAL */
+  .com-grid-new{grid-template-columns:1fr !important;}
+
+  /* MICAELA */
+  .mica-in{grid-template-columns:1fr !important;gap:24px;}
+  .mica-av-wrap{width:72px;height:72px;}
+  .mica-h2{font-size:22px;}
+  .mica-chips{gap:6px;}
+  .mica-chip{font-size:9px;padding:4px 8px;}
+
+  /* DIFERENCIALES */
+  .dif-grid{grid-template-columns:1fr !important;}
+  .dif-h2{font-size:36px;}
+
+  /* PLANES */
+  .pl-grid{grid-template-columns:1fr !important;}
+  .planes-h2{font-size:38px;}
+
+  /* CON MICAELA */
+  .conmica-in{grid-template-columns:1fr !important;gap:32px;}
+  .conmica-h2{font-size:32px;}
+  .conmica-right{padding:24px 20px;}
+  .conmica-btn{width:100%;justify-content:center;}
+
+  /* CTA */
+  .cta-h2{font-size:40px;}
+  .cta-btn{padding:16px 36px;font-size:13px;}
+
+  /* S HEADINGS */
+  .s-h2{font-size:34px;}
+  .comercial-h2{font-size:34px;}
+
+  /* FOOTER */
+  footer{padding:20px;flex-direction:column;gap:12px;text-align:center;}
+
+  /* COMERCIAL CARDS */
+  .com-card-new{padding:24px 20px;}
+  .com-n{font-size:40px;}
+
+  /* TRANSF CARDS mobile */
+  section .transf > div > div{padding:24px 20px !important;}
+}
+
+/* TABLET */
+@media(min-width:769px) and (max-width:1024px){
+  .h1{font-size:60px;}
+  .h-stats{display:none;}
+  .pl-grid{grid-template-columns:1fr 1fr !important;max-width:100% !important;}
+  .pl-grid .pl-card:last-child{grid-column:1/-1;}
+  nav{padding:16px 32px !important;}
 }
 </style>
 </head>
@@ -247,9 +329,9 @@ footer{padding:24px 48px;border-top:1px solid rgba(0,0,0,.06);display:flex;justi
 <nav>
   <div class="logo"><span class="logo-mb">MB</span>Strategy</div>
   <div class="nav-links">
-    <div class="nav-link">Sistema</div>
-    <div class="nav-link">Academia</div>
-    <div class="nav-link">Planes</div>
+    <a href="#demo" style="text-decoration:none;"><div class="nav-link">Sistema</div></a>
+    <a href="#micaela" style="text-decoration:none;"><div class="nav-link">Academia</div></a>
+    <a href="#planes" style="text-decoration:none;"><div class="nav-link">Planes</div></a>
     <a href="https://sistema.mbstrategy.com.ar/planes.html" style="text-decoration:none;"><div class="nav-cta">Empezar gratis</div></a>
   </div>
 </nav>
@@ -410,7 +492,7 @@ footer{padding:24px 48px;border-top:1px solid rgba(0,0,0,.06);display:flex;justi
   </div>
 </section>
 
-<section class="mica rv">
+<section class="mica rv" id="micaela" style="padding-left:max(48px, calc((100% - 1200px) / 2 + 48px));padding-right:max(48px, calc((100% - 1200px) / 2 + 48px));">
   <div class="mica-in">
     <div class="mica-av-wrap"><div class="mica-av-ring"></div><div class="mica-av"><div class="mica-mb">MB</div></div></div>
     <div>
@@ -432,7 +514,7 @@ footer{padding:24px 48px;border-top:1px solid rgba(0,0,0,.06);display:flex;justi
   </div>
 </section>
 
-<section class="dif rv">
+<section class="dif rv" style="padding-left:max(48px, calc((100% - 1200px) / 2 + 48px));padding-right:max(48px, calc((100% - 1200px) / 2 + 48px));">
   <div class="s-ey">Por qué MB Strategy</div>
   <div class="dif-h2">Lo que ningún otro<br>sistema <em>tiene</em></div>
   <div class="dif-grid">
@@ -442,7 +524,7 @@ footer{padding:24px 48px;border-top:1px solid rgba(0,0,0,.06);display:flex;justi
   </div>
 </section>
 
-<section class="planes rv">
+<section class="planes rv" id="planes">
   <div class="planes-hdr">
     <div class="s-ey">Planes</div>
     <div class="planes-h2">Elegí cómo<br><em>empezar</em></div>
@@ -548,8 +630,8 @@ footer{padding:24px 48px;border-top:1px solid rgba(0,0,0,.06);display:flex;justi
           <li class="pl-li soft"><div class="pl-ck soft"><svg viewBox="0 0 8 8"><path d="M1.5 4l2 2 3-3" stroke="#4a5e78" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Multi-usuarios con roles</li>
           <li class="pl-li soft"><div class="pl-ck soft"><svg viewBox="0 0 8 8"><path d="M1.5 4l2 2 3-3" stroke="#4a5e78" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Facturación integrada con AFIP</li>
           <li class="pl-li soft"><div class="pl-ck soft"><svg viewBox="0 0 8 8"><path d="M1.5 4l2 2 3-3" stroke="#4a5e78" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Soporte prioritario dedicado</li>
-          <li class="pl-li"><div class="pl-ck hidden"></div>&nbsp;</li>
-          <li class="pl-li"><div class="pl-ck hidden"></div>&nbsp;</li>
+          <li class="pl-li" style="display:none;"></li>
+          <li class="pl-li" style="display:none;"></li>
         </ul>
         <div class="pl-btn-area">
           <a href="https://sistema.mbstrategy.com.ar/planes.html#waitlist" style="text-decoration:none;display:block;"><div class="pl-btn pl-btn-slate">Avisame</div></a>
@@ -561,7 +643,7 @@ footer{padding:24px 48px;border-top:1px solid rgba(0,0,0,.06);display:flex;justi
   </div>
 </section>
 
-<section class="conmica rv">
+<section class="conmica rv" style="padding-left:max(48px, calc((100% - 1200px) / 2 + 48px));padding-right:max(48px, calc((100% - 1200px) / 2 + 48px));">
   <div class="conmica-in">
     <div>
       <div class="conmica-tag">El camino más rápido</div>
@@ -587,7 +669,7 @@ footer{padding:24px 48px;border-top:1px solid rgba(0,0,0,.06);display:flex;justi
   </div>
 </section>
 
-<section class="cta rv">
+<section class="cta rv" style="padding-left:max(48px, calc((100% - 1200px) / 2 + 48px));padding-right:max(48px, calc((100% - 1200px) / 2 + 48px));">
   <div class="cta-h2">Tu negocio<br>te está<br><em>esperando.</em></div>
   <p class="cta-sub">Cada mes que pasa sin sistema es un mes de decisiones a ciegas.<br>Empezá hoy. Los primeros 7 días son gratis.</p>
   <a href="https://sistema.mbstrategy.com.ar/planes.html" style="text-decoration:none;"><div class="cta-btn">Quiero empezar ahora</div></a>
