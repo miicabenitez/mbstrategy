@@ -6,7 +6,7 @@
 <title>Planes — MB Strategy</title>
 <meta name="description" content="Elegí el plan perfecto para tu negocio. Sistema de gestión + Embi, tu asistente IA.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%237A8E7D'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='serif' font-size='18' fill='white'%3EM%3C/text%3E%3C/svg%3E">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=DM+Sans:wght@400;500&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'DM Sans',sans-serif;background:#F5F4EF;color:#2C2C2C;min-height:100vh;}
@@ -17,11 +17,14 @@ body{font-family:'DM Sans',sans-serif;background:#F5F4EF;color:#2C2C2C;min-heigh
 .hero{text-align:center;padding:48px 24px 32px;}
 .hero h1{font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:400;color:#2C2C2C;line-height:1.15;margin-bottom:12px;}
 .hero p{font-size:15px;color:#4A5A4E;max-width:500px;margin:0 auto;}
-.plans{display:flex;gap:16px;max-width:960px;margin:0 auto 40px;padding:0 24px;align-items:stretch;}
+.plans{display:flex;gap:16px;max-width:960px;margin:0 auto 40px;padding:20px 24px 0;align-items:stretch;}
 .plan-card{flex:1;background:#fff;border-radius:12px;padding:28px 24px;border:.5px solid rgba(0,0,0,.08);position:relative;display:flex;flex-direction:column;}
 .plan-card.featured-pro{border:2px solid #b09088;box-shadow:0 4px 20px rgba(176,144,136,.2);}
 .plan-card.business{opacity:.85;}
-.badge-rec{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:#b09088;color:#fff;font-size:12px;font-weight:500;padding:4px 14px;border-radius:20px;letter-spacing:.8px;text-transform:uppercase;}
+.badge-top{position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:500;padding:4px 16px;border-radius:20px;letter-spacing:.8px;text-transform:uppercase;white-space:nowrap;color:#fff;}
+.badge-base{background:#4a5e4d;}
+.badge-pro{background:linear-gradient(90deg,#7a5855,#b09088,#d4b0a8,#b09088,#7a5855);background-size:300% auto;animation:shimmer 3s linear infinite;}
+.badge-biz{background:#b5b0a8;}
 .plan-name{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#2C2C2C;margin-bottom:8px;}
 .plan-badge{display:inline-block;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;margin-bottom:14px;}
 .plan-price-row{margin-bottom:20px;}
@@ -34,11 +37,11 @@ body{font-family:'DM Sans',sans-serif;background:#F5F4EF;color:#2C2C2C;min-heigh
 .plan-features.blue li::before{color:#b09088;}
 .plan-features.gray li{color:#9c9a92;}
 .plan-features.gray li::before{color:#9c9a92;}
-.btn-base,.btn-pro,.btn-biz{width:100%;height:44px;border-radius:10px;font-size:14px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;}
-.btn-base{background:#fff;color:#4a5e4d;border:1px solid #4a5e4d;}
-.btn-base:hover{background:#4a5e4d;color:#fff;}
-.btn-pro{background:#b09088;color:#fff;border:none;}
-.btn-pro:hover{background:#9a7870;}
+.btn-base,.btn-pro,.btn-biz{width:100%;height:46px;border-radius:10px;font-size:14px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;border:none;}
+.btn-base{background:linear-gradient(90deg,#354e3c,#4a5e4d,#6b8a6e,#4a5e4d,#354e3c);background-size:300% auto;animation:shimmer 4s linear infinite;color:#fff;}
+.btn-base:hover{opacity:.88;}
+.btn-pro{background:linear-gradient(90deg,#7a5855,#b09088,#d4b0a8,#b09088,#7a5855);background-size:300% auto;animation:shimmer 4s linear infinite;color:#fff;}
+.btn-pro:hover{opacity:.88;}
 .btn-biz{background:#E0DFDA;color:#9c9a92;border:none;cursor:pointer;}
 .waitlist-row{display:flex;gap:8px;margin-bottom:10px;}
 .waitlist-row input{flex:1;padding:10px 12px;border:.5px solid #D0CFC9;border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;}
@@ -88,14 +91,17 @@ body{font-family:'DM Sans',sans-serif;background:#F5F4EF;color:#2C2C2C;min-heigh
   .hero{padding:32px 16px 24px;}
   .hero h1{font-size:24px;}
   .hero p{font-size:13px;}
-  .plans{padding:0 16px;}
+  .plans{padding:20px 16px 0;}
   .plan-card{padding:22px 18px;}
-  .academia-section{padding:0 16px;}
-  .academia-card{padding:24px 20px;}
   .footer-section{padding:0 16px 32px;}
   .md{padding:22px;max-width:95%;}
   .waitlist-row{flex-direction:column;}
 }
+@keyframes shimmer{0%{background-position:-200% center;}100%{background-position:200% center;}}
+.plan-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0;pointer-events:none;}
+.card-base::before{background:#4a5e4d;}
+.featured-pro::before{background:linear-gradient(90deg,#7a5855,#b09088,#d4b0a8,#b09088,#7a5855);background-size:300% auto;animation:shimmer 4s linear infinite;}
+.business::before{background:#c0bbb4;}
 </style>
 </head>
 <body>
@@ -111,12 +117,13 @@ body{font-family:'DM Sans',sans-serif;background:#F5F4EF;color:#2C2C2C;min-heigh
 
 <div class="plans">
   <!-- BASE -->
-  <div class="plan-card">
+  <div class="plan-card card-base">
+    <div class="badge-top badge-base">Prueba gratuita</div>
     <div class="plan-content">
       <div class="plan-name">Base</div>
       <div class="plan-badge" style="background:#EBF0EC;color:#4a5e4d;">7 días gratis</div>
       <div class="plan-price-row">
-        <span style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:500;">$105.000</span><span style="font-size:14px;color:#73726c;">/mes</span>
+        <span style="font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:300;">$105.000</span><span style="font-size:14px;color:#73726c;">/mes</span>
       </div>
       <ul class="plan-features green">
         <li>Sistema de gestión completo</li>
@@ -128,18 +135,18 @@ body{font-family:'DM Sans',sans-serif;background:#F5F4EF;color:#2C2C2C;min-heigh
       </ul>
     </div>
     <div class="plan-bottom">
-      <button class="btn-base" onclick="openCheckout('base')">Empezar prueba gratis</button>
+      <button class="btn-base" onclick="openCheckout('base')">Suscribirme al Base</button>
     </div>
   </div>
 
   <!-- PRO -->
   <div class="plan-card featured-pro">
-    <div class="badge-rec">Recomendado</div>
+    <div class="badge-top badge-pro">Recomendado</div>
     <div class="plan-content">
       <div class="plan-name">Pro</div>
-      <div class="plan-badge" style="background:#F0F4F8;color:#b09088;">Embi operativo + voz</div>
+      <div class="plan-badge" style="background:#F5EDEA;color:#b09088;">Embi operativo + voz</div>
       <div class="plan-price-row">
-        <span style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:500;">$157.000</span><span style="font-size:14px;color:#73726c;">/mes</span>
+        <span style="font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:300;">$157.000</span><span style="font-size:14px;color:#73726c;">/mes</span>
       </div>
       <ul class="plan-features blue">
         <li style="color:#73726c;">Todo lo del plan Base</li>
@@ -152,16 +159,16 @@ body{font-family:'DM Sans',sans-serif;background:#F5F4EF;color:#2C2C2C;min-heigh
       </ul>
     </div>
     <div class="plan-bottom">
-      <button class="btn-pro" onclick="openCheckout('pro')">Suscribirme</button>
+      <button class="btn-pro" onclick="openCheckout('pro')">Suscribirme al Pro</button>
     </div>
   </div>
 
   <!-- BUSINESS -->
   <div class="plan-card business">
+    <div class="badge-top badge-biz">Próximamente</div>
     <div class="plan-content">
       <div class="plan-name">Business</div>
-      <div class="plan-badge" style="background:#F5F4EF;color:#9c9a92;">Próximamente</div>
-      <ul class="plan-features gray" style="margin-top:20px;">
+      <ul class="plan-features gray" style="margin-top:8px;">
         <li>Todo lo del plan Pro</li>
         <li><strong>Multi-usuario con roles</strong></li>
         <li>Ideal para equipos</li>
@@ -173,26 +180,6 @@ body{font-family:'DM Sans',sans-serif;background:#F5F4EF;color:#2C2C2C;min-heigh
       </div>
       <div class="waitlist-msg" id="wl-msg">Listo, te avisamos cuando esté disponible.</div>
       <button class="btn-biz" id="wl-btn" onclick="joinWaitlist()">Avisame cuando esté</button>
-    </div>
-  </div>
-</div>
-
-<!-- ACADEMIA -->
-<div class="academia-section">
-  <div class="academia-card">
-    <div class="academia-icon">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/><path d="M8 7h8M8 11h6"/></svg>
-    </div>
-    <div class="academia-content">
-      <div class="academia-title">Academia MB</div>
-      <div class="academia-text">¿Sentís que tu negocio te maneja a vos en vez de vos a él? La Academia MB te da el método para salir del caos: dominás MB Gestión de punta a punta y te convertís en quien lidera, no en quien apaga incendios. Un equipo que te acompaña hasta que lo logres.</div>
-      <div class="academia-actions">
-        <a href="https://wa.me/5491176553318?text=Hola%20%F0%9F%91%8B%20Vi%20la%20Academia%20MB%20en%20la%20p%C3%A1gina%20de%20planes%20y%20me%20interesa.%20%C2%BFMe%20cont%C3%A1s%20m%C3%A1s%3F" target="_blank" class="btn-academia">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492l4.625-1.466A11.96 11.96 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818c-2.168 0-4.19-.578-5.937-1.588l-.425-.253-2.744.87.873-2.688-.276-.44A9.77 9.77 0 012.182 12c0-5.418 4.4-9.818 9.818-9.818S21.818 6.582 21.818 12 17.418 21.818 12 21.818z"/></svg>
-          Quiero saber más
-        </a>
-        <span class="academia-pref">Precio preferencial para clientes del sistema</span>
-      </div>
     </div>
   </div>
 </div>
