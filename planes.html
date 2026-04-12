@@ -302,9 +302,11 @@ window.joinWaitlist = async function() {
 };
 
 (function() {
-  var plan = new URLSearchParams(window.location.search).get('plan');
-  if(plan === 'base') document.querySelector('.btn-base')?.click();
-  else if(plan === 'pro') document.querySelector('.btn-pro')?.click();
+  window.addEventListener('load', function() {
+    var plan = new URLSearchParams(window.location.search).get('plan');
+    if(plan === 'base' && window.openCheckout) window.openCheckout('base');
+    else if(plan === 'pro' && window.openCheckout) window.openCheckout('pro');
+  });
 })();
 </script>
 </body>
