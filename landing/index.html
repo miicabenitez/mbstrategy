@@ -640,7 +640,8 @@ footer{padding:24px 48px;border-top:1px solid rgba(0,0,0,.06);display:flex;justi
           <li class="pl-li" style="display:none;"></li>
         </ul>
         <div class="pl-btn-area">
-          <a href="https://sistema.mbstrategy.com.ar/planes.html#waitlist" style="text-decoration:none;display:block;"><div class="pl-btn pl-btn-slate">Avisame</div></a>
+          <input type="email" id="biz-email" placeholder="tu@email.com" style="width:100%;padding:11px 14px;border:1px solid rgba(0,0,0,.12);border-radius:5px;font-size:12px;font-family:'DM Sans',sans-serif;background:#fff;color:#1a1a18;margin-bottom:8px;outline:none;" />
+          <div class="pl-btn pl-btn-slate" id="biz-waitlist-btn" onclick="joinBizWaitlist()" style="cursor:pointer;">Avisame</div>
           <div class="pl-spacer"></div>
         </div>
       </div>
@@ -701,6 +702,31 @@ const obs=new IntersectionObserver(entries=>{
   entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('on');});
 },{threshold:0.08});
 document.querySelectorAll('.rv').forEach(el=>obs.observe(el));
+
+async function joinBizWaitlist(){
+  const email = document.getElementById('biz-email').value.trim();
+  const btn = document.getElementById('biz-waitlist-btn');
+  if(!email || !email.includes('@')){
+    document.getElementById('biz-email').style.borderColor='#b09088';
+    return;
+  }
+  btn.textContent = 'Enviando...';
+  btn.style.opacity = '.7';
+  try {
+    await fetch('https://sistema.mbstrategy.com.ar/.netlify/functions/waitlist', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({email, origen:'landing-business'})
+    });
+    btn.textContent = '¡Listo! Te avisamos';
+    btn.style.background = 'linear-gradient(135deg,#4a5e4d,#6a8e6d)';
+    btn.style.opacity = '1';
+    document.getElementById('biz-email').value = '';
+  } catch(e){
+    btn.textContent = 'Avisame';
+    btn.style.opacity = '1';
+  }
+}
 </script>
 </body>
 </html>
