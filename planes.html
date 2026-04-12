@@ -300,6 +300,12 @@ window.joinWaitlist = async function() {
     if(btn) { btn.textContent='✓ Te avisamos cuando esté'; btn.disabled=true; btn.style.background='#EBF0EC'; btn.style.color='#5A8A62'; btn.style.cursor='default'; }
   } catch(e) { console.error(e); }
 };
+
+(function() {
+  var plan = new URLSearchParams(window.location.search).get('plan');
+  if(plan === 'base') document.querySelector('.btn-base')?.click();
+  else if(plan === 'pro') document.querySelector('.btn-pro')?.click();
+})();
 </script>
 </body>
 </html>
