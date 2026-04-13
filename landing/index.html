@@ -649,6 +649,12 @@ footer{padding:24px 48px;border-top:1px solid rgba(0,0,0,.06);display:flex;justi
   </div>
 </section>
 
+<div style="padding:40px max(48px, calc((100% - 960px) / 2 + 48px));display:flex;align-items:center;gap:20px;background:#f4f0ea;">
+  <div style="flex:1;height:1px;background:rgba(0,0,0,.12);"></div>
+  <em style="font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(16px,2vw,20px);font-weight:400;color:#5a5a52;white-space:nowrap;text-align:center;">Con menos de lo que perdés en un mes tomando decisiones a ciegas.</em>
+  <div style="flex:1;height:1px;background:rgba(0,0,0,.12);"></div>
+</div>
+
 <section class="conmica rv" id="acompanado" style="padding-left:max(48px, calc((100% - 1200px) / 2 + 48px));padding-right:max(48px, calc((100% - 1200px) / 2 + 48px));">
   <div class="conmica-in">
     <div>
@@ -673,6 +679,67 @@ footer{padding:24px 48px;border-top:1px solid rgba(0,0,0,.06);display:flex;justi
       </div>
     </div>
   </div>
+</section>
+
+<section class="faq rv" style="background:#ede8e0;padding:80px max(48px, calc((100% - 800px) / 2 + 48px));border-bottom:1px solid rgba(0,0,0,.06);">
+  <style>
+    .faq-title{font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(28px,4vw,42px);font-weight:400;color:#1a1a18;margin-bottom:40px;text-align:center;}
+    .faq-item{border-bottom:1px solid rgba(0,0,0,.1);overflow:hidden;}
+    .faq-q{display:flex;justify-content:space-between;align-items:center;padding:20px 0;cursor:pointer;gap:16px;}
+    .faq-q-text{font-size:15px;font-weight:500;color:#1a1a18;line-height:1.4;}
+    .faq-icon{width:28px;height:28px;border-radius:50%;border:1.5px solid #4a5e4d;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .3s,background .3s,border-color .3s;}
+    .faq-icon svg{transition:transform .3s;}
+    .faq-item.open .faq-icon{background:#4a5e4d;border-color:#4a5e4d;transform:rotate(45deg);}
+    .faq-a{max-height:0;overflow:hidden;transition:max-height .35s ease,padding .35s ease;}
+    .faq-item.open .faq-a{max-height:200px;}
+    .faq-a-inner{font-size:14px;color:#5a5a52;line-height:1.75;padding-bottom:18px;}
+  </style>
+  <div class="faq-title">Preguntas frecuentes</div>
+  <div id="faq-list">
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span class="faq-q-text">¿Qué pasa después de los 7 días gratis?</span>
+        <div class="faq-icon"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><line x1="6" y1="1" x2="6" y2="11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="1" y1="6" x2="11" y2="6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+      </div>
+      <div class="faq-a"><div class="faq-a-inner">Se activa tu suscripción con el plan elegido. Podés cancelar antes sin trámites.</div></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span class="faq-q-text">¿Necesito saber de sistemas o contabilidad?</span>
+        <div class="faq-icon"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><line x1="6" y1="1" x2="6" y2="11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="1" y1="6" x2="11" y2="6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+      </div>
+      <div class="faq-a"><div class="faq-a-inner">No. Pensado para dueños, no contadores. La Academia acompaña.</div></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span class="faq-q-text">¿Puedo cancelar cuando quiera?</span>
+        <div class="faq-icon"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><line x1="6" y1="1" x2="6" y2="11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="1" y1="6" x2="11" y2="6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+      </div>
+      <div class="faq-a"><div class="faq-a-inner">Sí, desde tu cuenta, sin formularios ni llamadas.</div></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span class="faq-q-text">¿Funciona para cualquier tipo de negocio?</span>
+        <div class="faq-icon"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><line x1="6" y1="1" x2="6" y2="11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="1" y1="6" x2="11" y2="6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+      </div>
+      <div class="faq-a"><div class="faq-a-inner">Sí. Gastronomía, comercios, servicios, construcción, salud.</div></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span class="faq-q-text">¿Qué incluye la Academia?</span>
+        <div class="faq-icon"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><line x1="6" y1="1" x2="6" y2="11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="1" y1="6" x2="11" y2="6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+      </div>
+      <div class="faq-a"><div class="faq-a-inner">4 semanas de acompañamiento — diagnóstico, configuración, capacitación y seguimiento.</div></div>
+    </div>
+  </div>
+  <script>
+  function toggleFaq(btn) {
+    var item = btn.parentElement;
+    var isOpen = item.classList.contains('open');
+    document.querySelectorAll('#faq-list .faq-item.open').forEach(function(el){ el.classList.remove('open'); });
+    if(!isOpen) item.classList.add('open');
+  }
+  </script>
 </section>
 
 <section class="cta rv" style="padding-left:max(48px, calc((100% - 1200px) / 2 + 48px));padding-right:max(48px, calc((100% - 1200px) / 2 + 48px));">
