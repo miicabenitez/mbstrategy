@@ -257,7 +257,7 @@ body{font-family:'DM Sans',sans-serif;background:#F5F4EF;color:#2C2C2C;min-heigh
         <div class="wl-cedit ph" id="wlEmailA" contenteditable="true">tu@email.com</div>
         <div class="wl-cbtn wl-cbtn-g" onclick="joinWaitlistModal('a')">Anotarme</div>
       </div>
-      <div class="wl-ok" id="wlOkA">Listo, te avisamos cuando abra 🌿</div>
+      <div class="wl-ok" id="wlOkA">Listo, te avisamos cuando abra.</div>
       <div class="wl-err" id="wlErrA">Ingresá un email válido.</div>
       <p class="wl-note">Sin spam. Solo el aviso de lanzamiento.</p>
     </div>
@@ -276,7 +276,7 @@ body{font-family:'DM Sans',sans-serif;background:#F5F4EF;color:#2C2C2C;min-heigh
         <div class="wl-cedit ph" id="wlEmailB" contenteditable="true">tu@email.com</div>
         <div class="wl-cbtn wl-cbtn-t" onclick="joinWaitlistModal('b')">Avisarme</div>
       </div>
-      <div class="wl-ok" id="wlOkB">Anotado, te avisamos cuando abra 🌿</div>
+      <div class="wl-ok" id="wlOkB">Anotado, te avisamos cuando abra.</div>
       <div class="wl-err" id="wlErrB">Ingresá un email válido.</div>
       <p class="wl-note">Sin spam. Solo el aviso de lanzamiento.</p>
     </div>
@@ -456,6 +456,10 @@ window.joinWaitlist = async function() {
 
 (function() {
   window.addEventListener('load', function() {
+    if (LAUNCH_DATE !== 'launched') {
+      openWlModal();
+      return;
+    }
     var plan = new URLSearchParams(window.location.search).get('plan');
     if(plan === 'base' && window.checkLaunch) window.checkLaunch('base');
     else if(plan === 'pro' && window.checkLaunch) window.checkLaunch('pro');
