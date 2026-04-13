@@ -6,11 +6,30 @@ if (!getApps().length) {
   initializeApp({ credential: cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)) });
 }
 const db = getFirestore();
+
 const HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'Content-Type',
   'Content-Type': 'application/json'
 };
+
+async function notificarPushover(email) {
+  try {
+    await fetch('https://api.pushover.net/1/messages.json', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        token: process.env.PUSHOVER_TOKEN,
+        user: process.env.PUSHOVER_USER,
+        title: '🚀 Waitlist',
+        message: `🚀 Nueva anotación waitlist: ${email}`,
+        priority: 0
+      })
+    });
+  } catch (e) {
+    console.error('Error notificando Pushover:', e);
+  }
+}
 
 exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers: HEADERS, body: '' };
@@ -32,9 +51,10 @@ exports.handler = async (event) => {
   try {
     await db.collection('waitlist').add({
       email: email.trim().toLowerCase(),
-      fecha: FieldValue.serverTimestamp(),
+      creadoEn: FieldValue.serverTimestamp(),
       origen: 'planes.html'
     });
+    await notificarPushover(email.trim().toLowerCase());
     return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ ok: true }) };
   } catch (err) {
     console.error('Error waitlist:', err);
