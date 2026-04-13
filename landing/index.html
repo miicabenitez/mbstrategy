@@ -1005,6 +1005,11 @@ footer{padding:24px 48px;border-top:1px solid rgba(0,0,0,.06);display:flex;justi
   <div class="planes-hdr">
     <div class="s-ey">Planes</div>
     <div class="planes-h2">Elegí cómo<br><em>empezar</em></div>
+    <div style="display:flex;align-items:center;gap:16px;justify-content:center;margin-top:20px;">
+      <div style="flex:1;max-width:80px;height:1px;background:rgba(0,0,0,.1);"></div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:clamp(14px,1.8vw,19px);font-weight:300;font-style:italic;color:#6a6a60;text-align:center;">Menos de lo que perdés en un mes tomando decisiones a ciegas.</div>
+      <div style="flex:1;max-width:80px;height:1px;background:rgba(0,0,0,.1);"></div>
+    </div>
   </div>
 
   <style>
@@ -1312,6 +1317,38 @@ async function joinBizWaitlist(){
     btn.style.opacity = '1';
   }
 }
+</script>
+
+<script>
+(function(){
+  const sections = [
+    {id:'demo', link:'Sistema'},
+    {id:'acompanado', link:'Academia'},
+    {id:'planes', link:'Planes'}
+  ];
+  const links = document.querySelectorAll('.nav-link');
+  
+  function getActiveSection(){
+    const scrollY = window.scrollY + 100;
+    let active = null;
+    sections.forEach(s => {
+      const el = document.getElementById(s.id);
+      if(el && el.offsetTop <= scrollY) active = s.link;
+    });
+    return active;
+  }
+
+  window.addEventListener('scroll', function(){
+    const active = getActiveSection();
+    links.forEach(l => {
+      if(active && l.textContent.trim() === active){
+        l.classList.add('active');
+      } else {
+        l.classList.remove('active');
+      }
+    });
+  }, {passive:true});
+})();
 </script>
 
 <div id="sticky-cta" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:999;background:rgba(244,240,234,.96);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:10px 16px;border-top:1px solid rgba(0,0,0,.08);">
