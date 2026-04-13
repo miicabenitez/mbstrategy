@@ -236,8 +236,6 @@ footer{padding:24px 48px;border-top:1px solid rgba(0,0,0,.06);display:flex;justi
 .footer-copy{font-size:11px;color:#aaa9a0;}
 
 @media(max-width:768px){
-  html{scroll-snap-type:y mandatory;}
-  section, nav, footer{scroll-snap-align:start;scroll-snap-stop:always;}
   .pl-badge-area{height:auto !important;min-height:24px;}
   .pl-price-block{height:auto !important;min-height:0;}
   .pl-psub{height:auto !important;min-height:0;margin-bottom:14px;}
@@ -352,7 +350,7 @@ footer{padding:24px 48px;border-top:1px solid rgba(0,0,0,.06);display:flex;justi
   </div>
 </nav>
 
-<section class="hero" id="hero-section" style="min-height:100vh;background:#f4f0ea;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 48px 0;position:relative;overflow:hidden;border-bottom:none;">
+<section class="hero" id="hero-section" style="min-height:94vh;background:#f4f0ea;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 48px 0;position:relative;overflow:hidden;border-bottom:none;">
 
 <style>
 @keyframes lightBurst{0%{opacity:0;transform:translate(-50%,-50%) scale(.6);}30%{opacity:1;}100%{opacity:.8;transform:translate(-50%,-50%) scale(1);}}
@@ -1270,32 +1268,7 @@ const obs=new IntersectionObserver(entries=>{
 },{threshold:0.08});
 document.querySelectorAll('.rv').forEach(el=>obs.observe(el));
 
-// MOBILE FULL-PAGE SCROLL
-(function(){
-  if(window.innerWidth > 768) return;
-  
-  const sections = document.querySelectorAll('section, nav, footer');
-  let isScrolling = false;
-  let currentIdx = 0;
 
-  function scrollToSection(idx){
-    if(idx < 0 || idx >= sections.length) return;
-    isScrolling = true;
-    currentIdx = idx;
-    sections[idx].scrollIntoView({behavior:'smooth', block:'start'});
-    setTimeout(()=>{ isScrolling = false; }, 800);
-  }
-
-  // Add snap CSS only on mobile
-  if(window.innerWidth <= 768){
-    document.documentElement.style.scrollSnapType = 'y mandatory';
-    document.documentElement.style.overflowY = 'scroll';
-    sections.forEach(s => {
-      s.style.scrollSnapAlign = 'start';
-      s.style.scrollSnapStop = 'always';
-    });
-  }
-})();
 
 // Dolor section animations on scroll
 const dolorEl = document.querySelector('.dolor-new');
@@ -1339,6 +1312,26 @@ async function joinBizWaitlist(){
     btn.style.opacity = '1';
   }
 }
+</script>
+
+<div id="sticky-cta" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:999;background:rgba(244,240,234,.96);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:10px 16px;border-top:1px solid rgba(0,0,0,.08);">
+  <a href="https://sistema.mbstrategy.com.ar/planes.html?plan=base" style="text-decoration:none;display:block;">
+    <div style="background:#4a5e4d;color:#f4f0ea;font-size:13px;font-weight:500;text-align:center;padding:13px;border-radius:100px;letter-spacing:.02em;">Empezar 7 días gratis</div>
+  </a>
+</div>
+
+<script>
+(function(){
+  if(window.innerWidth > 768) return;
+  const sticky = document.getElementById('sticky-cta');
+  const hero = document.getElementById('hero-section');
+  sticky.style.display = 'block';
+  window.addEventListener('scroll', function(){
+    const heroBottom = hero.getBoundingClientRect().bottom;
+    sticky.style.opacity = heroBottom < 0 ? '1' : '0';
+    sticky.style.pointerEvents = heroBottom < 0 ? 'auto' : 'none';
+  }, {passive:true});
+})();
 </script>
 </body>
 </html>
