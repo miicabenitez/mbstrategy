@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Planes — MB Strategy</title>
 <meta name="description" content="Elegí el plan perfecto para tu negocio. Sistema de gestión + Embi, tu asistente IA.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%237A8E7D'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='serif' font-size='18' fill='white'%3EM%3C/text%3E%3C/svg%3E">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%234a5e4d'/><text y='0.9em' x='50%' text-anchor='middle' font-family='Georgia,serif' font-size='52' fill='%23f4f0ea' dy='0.1em'>M</text><text y='0.9em' x='72%' text-anchor='middle' font-family='Georgia,serif' font-size='52' fill='%23b09088' dy='0.1em'>B</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=DM+Sans:wght@400;500&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -102,6 +102,34 @@ body{font-family:'DM Sans',sans-serif;background:#F5F4EF;color:#2C2C2C;min-heigh
 .card-base::before{background:#4a5e4d;}
 .featured-pro::before{background:linear-gradient(90deg,#7a5855,#b09088,#d4b0a8,#b09088,#7a5855);background-size:300% auto;animation:shimmer 4s linear infinite;}
 .business::before{background:#c0bbb4;}
+/* ─── Waitlist Modal ─────────────────────────────────────────────── */
+@keyframes wlFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-7px);}}
+@keyframes wlSpin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+@keyframes wlBounceIn{0%{transform:translateY(-60px) scale(.85);opacity:0;}60%{transform:translateY(6px) scale(1.04);opacity:1;}80%{transform:translateY(-3px) scale(.98);}100%{transform:translateY(0) scale(1);}}
+#wlModal{position:fixed;inset:0;background:rgba(26,42,30,.62);display:none;align-items:center;justify-content:center;z-index:600;backdrop-filter:blur(4px);}
+#wlModal.open{display:flex;}
+#wlBox{background:#f4f0ea;border-radius:22px;padding:36px 32px 28px;width:90%;max-width:380px;position:relative;text-align:center;}
+#wlClose{position:absolute;top:14px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:#aaa9a0;line-height:1;}
+.wl-rocket-wrap{position:relative;width:80px;height:80px;margin:0 auto 20px;animation:wlFloat 3s ease-in-out infinite;}
+.wl-rocket-ring{position:absolute;inset:0;border-radius:50%;border:2px dashed #b09088;animation:wlSpin 6s linear infinite;opacity:.7;}
+.wl-rocket-circle{width:80px;height:80px;border-radius:50%;background:#b09088;display:flex;align-items:center;justify-content:center;}
+.wl-title{font-family:'Cormorant Garamond',serif;font-size:40px;font-weight:300;color:#2C2C2C;line-height:1.1;margin-bottom:12px;}
+.wl-divider{width:44px;height:2px;background:#b09088;margin:0 auto 14px;border-radius:2px;}
+.wl-desc{font-size:13px;color:#73726c;line-height:1.65;margin-bottom:18px;max-width:280px;margin-left:auto;margin-right:auto;}
+.wl-capsule{display:flex;align-items:center;background:#ede8e0;border-radius:50px;padding:5px 5px 5px 16px;margin-bottom:8px;}
+.wl-cedit{flex:1;outline:none;font-size:13px;font-family:'DM Sans',sans-serif;color:#2C2C2C;background:transparent;min-height:20px;line-height:20px;white-space:nowrap;overflow:hidden;}
+.wl-cedit.ph{color:#aaa9a0;}
+.wl-cbtn{border-radius:50px;padding:9px 18px;font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;line-height:1;user-select:none;}
+.wl-cbtn-g{background:#4a5e4d;color:#fff;}
+.wl-cbtn-t{background:#b09088;color:#fff;}
+.wl-note{font-size:11px;color:#aaa9a0;margin-top:6px;}
+.wl-ok{font-size:12px;color:#4a5e4d;margin-top:8px;display:none;}
+.wl-err{font-size:12px;color:#C4786A;margin-top:8px;display:none;}
+.wl-countdown{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:18px;}
+.wl-cd-box{background:#4a5e4d;color:#fff;border-radius:10px;padding:10px 14px;min-width:54px;}
+.wl-cd-num{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:300;line-height:1;}
+.wl-cd-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.8px;opacity:.75;margin-top:2px;}
+.wl-cd-sep{font-family:'Cormorant Garamond',serif;font-size:30px;color:#4a5e4d;font-weight:300;margin-bottom:18px;}
 </style>
 </head>
 <body>
@@ -135,7 +163,7 @@ body{font-family:'DM Sans',sans-serif;background:#F5F4EF;color:#2C2C2C;min-heigh
       </ul>
     </div>
     <div class="plan-bottom">
-      <button class="btn-base" onclick="openCheckout('base')">Suscribirme al Base</button>
+      <button class="btn-base" onclick="checkLaunch('base')">Suscribirme al Base</button>
     </div>
   </div>
 
@@ -159,7 +187,7 @@ body{font-family:'DM Sans',sans-serif;background:#F5F4EF;color:#2C2C2C;min-heigh
       </ul>
     </div>
     <div class="plan-bottom">
-      <button class="btn-pro" onclick="openCheckout('pro')">Suscribirme al Pro</button>
+      <button class="btn-pro" onclick="checkLaunch('pro')">Suscribirme al Pro</button>
     </div>
   </div>
 
@@ -203,6 +231,58 @@ body{font-family:'DM Sans',sans-serif;background:#F5F4EF;color:#2C2C2C;min-heigh
   </div>
 </div>
 
+<!-- Modal Waitlist "Próximamente" -->
+<div id="wlModal">
+  <div id="wlBox">
+    <button id="wlClose" onclick="closeWlModal()">×</button>
+    <div class="wl-rocket-wrap">
+      <div class="wl-rocket-ring"></div>
+      <div class="wl-rocket-circle">
+        <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M19 5C19 5 26 9.5 26 19.5C26 23.5 24 27 21.5 29H16.5C14 27 12 23.5 12 19.5C12 9.5 19 5 19 5Z" fill="white" opacity=".95"/>
+          <circle cx="19" cy="18.5" r="3.2" fill="#b09088"/>
+          <path d="M13.5 28L10 34L16.5 31L13.5 28Z" fill="white" opacity=".8"/>
+          <path d="M24.5 28L28 34L21.5 31L24.5 28Z" fill="white" opacity=".8"/>
+          <path d="M12.5 19.5C10 22 9 26 10.5 29L13.5 28C12.5 25.5 12.5 22.5 12.5 19.5Z" fill="white" opacity=".55"/>
+          <path d="M25.5 19.5C28 22 29 26 27.5 29L24.5 28C25.5 25.5 25.5 22.5 25.5 19.5Z" fill="white" opacity=".55"/>
+        </svg>
+      </div>
+    </div>
+    <!-- Estado null: Ya está llegando -->
+    <div id="wlStateLlegando">
+      <div class="wl-title">Ya está<br>llegando.</div>
+      <div class="wl-divider"></div>
+      <p class="wl-desc">Dejá tu email y te avisamos en el momento en que abra.</p>
+      <div class="wl-capsule">
+        <div class="wl-cedit ph" id="wlEmailA" contenteditable="true">tu@email.com</div>
+        <div class="wl-cbtn wl-cbtn-g" onclick="joinWaitlistModal('a')">Anotarme</div>
+      </div>
+      <div class="wl-ok" id="wlOkA">Listo, te avisamos cuando abra.</div>
+      <div class="wl-err" id="wlErrA">Ingresá un email válido.</div>
+      <p class="wl-note">Sin spam. Solo el aviso de lanzamiento.</p>
+    </div>
+    <!-- Estado Date: Es ¡HOY! -->
+    <div id="wlStateHoy" style="display:none">
+      <div class="wl-title">Es<br>¡HOY!</div>
+      <div class="wl-divider"></div>
+      <div class="wl-countdown">
+        <div class="wl-cd-box"><div class="wl-cd-num" id="wlH">00</div><div class="wl-cd-lbl">horas</div></div>
+        <div class="wl-cd-sep">:</div>
+        <div class="wl-cd-box"><div class="wl-cd-num" id="wlM">00</div><div class="wl-cd-lbl">min</div></div>
+        <div class="wl-cd-sep">:</div>
+        <div class="wl-cd-box"><div class="wl-cd-num" id="wlS">00</div><div class="wl-cd-lbl">seg</div></div>
+      </div>
+      <div class="wl-capsule">
+        <div class="wl-cedit ph" id="wlEmailB" contenteditable="true">tu@email.com</div>
+        <div class="wl-cbtn wl-cbtn-t" onclick="joinWaitlistModal('b')">Avisarme</div>
+      </div>
+      <div class="wl-ok" id="wlOkB">Anotado, te avisamos cuando abra.</div>
+      <div class="wl-err" id="wlErrB">Ingresá un email válido.</div>
+      <p class="wl-note">Sin spam. Solo el aviso de lanzamiento.</p>
+    </div>
+  </div>
+</div>
+
 <!-- Modal pre-checkout -->
 <div class="mo" id="checkoutModal">
   <div class="md">
@@ -221,6 +301,80 @@ body{font-family:'DM Sans',sans-serif;background:#F5F4EF;color:#2C2C2C;min-heigh
 </div>
 
 <script>
+// ─── Launch gate ──────────────────────────────────────────────────────────
+// null = próximamente | new Date('2025-06-01T10:00:00-03:00') = countdown | 'launched' = abierto
+const LAUNCH_DATE = null;
+
+window.checkLaunch = function(plan) {
+  if (LAUNCH_DATE === 'launched') { window.openCheckout(plan); return; }
+  openWlModal();
+};
+
+let _wlTimer = null;
+
+function openWlModal() {
+  var box = document.getElementById('wlBox');
+  document.getElementById('wlStateLlegando').style.display = LAUNCH_DATE instanceof Date ? 'none' : 'block';
+  document.getElementById('wlStateHoy').style.display      = LAUNCH_DATE instanceof Date ? 'block' : 'none';
+  ['wlOkA','wlErrA','wlOkB','wlErrB'].forEach(function(id){ document.getElementById(id).style.display='none'; });
+  if (LAUNCH_DATE instanceof Date) startWlCountdown(LAUNCH_DATE);
+  box.style.animation = 'none';
+  void box.offsetWidth;
+  box.style.animation = 'wlBounceIn .55s cubic-bezier(.22,.68,0,1.2) forwards';
+  document.getElementById('wlModal').classList.add('open');
+}
+
+window.closeWlModal = function() {
+  document.getElementById('wlModal').classList.remove('open');
+  if (_wlTimer) { clearInterval(_wlTimer); _wlTimer = null; }
+  window.history.back();
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('wlModal').addEventListener('click', function(e) {
+    if (e.target === this) closeWlModal();
+  });
+  ['wlEmailA','wlEmailB'].forEach(function(id) {
+    var el = document.getElementById(id);
+    el.addEventListener('focus', function(){ if(this.classList.contains('ph')){ this.textContent=''; this.classList.remove('ph'); } });
+    el.addEventListener('blur',  function(){ if(!this.textContent.trim()){ this.textContent='tu@email.com'; this.classList.add('ph'); } });
+    el.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); this.nextElementSibling && this.nextElementSibling.click(); } });
+  });
+});
+
+function startWlCountdown(target) {
+  if (_wlTimer) clearInterval(_wlTimer);
+  function tick() {
+    var diff = target - Date.now();
+    if (diff <= 0) { clearInterval(_wlTimer); return; }
+    document.getElementById('wlH').textContent = String(Math.floor(diff/3600000)).padStart(2,'0');
+    document.getElementById('wlM').textContent = String(Math.floor(diff%3600000/60000)).padStart(2,'0');
+    document.getElementById('wlS').textContent = String(Math.floor(diff%60000/1000)).padStart(2,'0');
+  }
+  tick();
+  _wlTimer = setInterval(tick, 1000);
+}
+
+window.joinWaitlistModal = async function(slot) {
+  var emailEl = document.getElementById(slot==='b' ? 'wlEmailB' : 'wlEmailA');
+  var okEl    = document.getElementById(slot==='b' ? 'wlOkB'    : 'wlOkA');
+  var errEl   = document.getElementById(slot==='b' ? 'wlErrB'   : 'wlErrA');
+  var email   = (emailEl.textContent||'').trim();
+  okEl.style.display='none'; errEl.style.display='none';
+  if (!email || emailEl.classList.contains('ph') || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    errEl.textContent='Ingresá un email válido.'; errEl.style.display='block'; return;
+  }
+  try {
+    var res = await fetch('/.netlify/functions/waitlist',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email})});
+    if (!res.ok) throw new Error();
+    emailEl.textContent='tu@email.com'; emailEl.classList.add('ph');
+    okEl.style.display='block';
+  } catch(e) {
+    errEl.textContent='Algo falló, intentá de nuevo.'; errEl.style.display='block';
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
 let selectedPlan = 'base';
 
 window.openCheckout = function(plan) {
@@ -303,9 +457,13 @@ window.joinWaitlist = async function() {
 
 (function() {
   window.addEventListener('load', function() {
+    if (LAUNCH_DATE !== 'launched') {
+      openWlModal();
+      return;
+    }
     var plan = new URLSearchParams(window.location.search).get('plan');
-    if(plan === 'base' && window.openCheckout) window.openCheckout('base');
-    else if(plan === 'pro' && window.openCheckout) window.openCheckout('pro');
+    if(plan === 'base' && window.checkLaunch) window.checkLaunch('base');
+    else if(plan === 'pro' && window.checkLaunch) window.checkLaunch('pro');
   });
 })();
 </script>
