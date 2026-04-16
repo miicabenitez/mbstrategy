@@ -8178,8 +8178,11 @@ function renderCajaChips(cuentas, movs) {
   const tipoColor = {efectivo:'#4a5e4d', mp:'#185FA5', banco:'#B45309'};
   const activo = _cajaCuentaFiltro;
 
-  const chipTodas = `<div class="caja-chip${activo===null?' caja-chip-activo':''}" style="cursor:pointer;animation:fadeUp .3s ease both;" onclick="cajaFiltrarCuenta(null,this)">
-    <span style="font-size:12px;font-weight:${activo===null?'650':'500'};">Todas</span>
+  const chipTodasStyle = activo===null
+    ? 'padding:5px 12px;border-radius:20px;font-size:11px;cursor:pointer;border:0.5px solid #4a5e4d;color:#fff;background:#4a5e4d;'
+    : 'padding:5px 12px;border-radius:20px;font-size:11px;cursor:pointer;border:0.5px solid var(--cream-d);color:var(--text-l);background:var(--white);';
+  const chipTodas = `<div class="caja-chip${activo===null?' caja-chip-activo':''}" style="${chipTodasStyle}animation:fadeUp .3s ease both;" onclick="cajaFiltrarCuenta(null,this)">
+    <span>Todas</span>
   </div>`;
 
   const chipsCuentas = cuentasUnicas.map((c,i) => {
@@ -8194,7 +8197,6 @@ function renderCajaChips(cuentas, movs) {
     return `<div class="caja-chip${sel?' caja-chip-activo':''}" style="${chipStyle}display:flex;align-items:center;gap:6px;animation:fadeUp .3s ease both;animation-delay:${(i+1)*60}ms;" data-cuenta="${nombreSafe}" onclick="cajaFiltrarCuenta(this.dataset.cuenta,this)">
       <div style="width:7px;height:7px;border-radius:50%;background:${dotColor};flex-shrink:0;" data-color="${color}"></div>
       <span>${c.nombre||'Sin nombre'}</span>
-      <span style="font-weight:650;">$${Math.round(s).toLocaleString('es-AR')}</span>
     </div>`;
   }).join('');
 
