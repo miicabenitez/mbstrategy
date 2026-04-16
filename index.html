@@ -16827,17 +16827,19 @@ function renderListaProveedores(filtro) {
     return;
   }
   const avatarColors=['#7A8E7D','#5A8A62','#4A6A8A','#B08A42','#C4786A','#6B7A60'];
+  lista.style.cssText = 'display:flex;flex-direction:column;gap:6px;';
   lista.innerHTML = provsFiltrados.map((p,i)=>{
     const col=avatarColors[i%avatarColors.length];
     const init=(p.nombre||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     const saldo=p._saldo||0;
-    const saldoFavor=p._saldoFavor||0;
+    const egresosAll = window._clientEgresos || [];
+    const tieneMov = egresosAll.some(e=>e.proveedorId===p.id);
     const saldoHtml=saldo>0
-      ?`<span style="background:#C4786A;color:#fff;font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;">$${saldo.toLocaleString('es-AR')} pendiente</span>`
-      :saldoFavor>0
-      ?`<span style="background:rgba(90,138,98,.18);color:#5A8A62;font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;">Saldo a favor</span>`
-      :`<span style="background:#5A8A62;color:#fff;font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;">Al día</span>`;
-    return `<div style="padding:12px 0;border-bottom:.5px solid var(--cream-d);">
+      ?`<span style="background:#f5eeec;color:#7a4e46;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;">Con deuda</span>`
+      :tieneMov
+      ?`<span style="background:#e8f0e9;color:#2e4d31;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;">Al día</span>`
+      :`<span style="background:#f0f0ee;color:#666666;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;">Sin actividad</span>`;
+    return `<div style="background:#fafafa;border:1px solid rgba(0,0,0,0.06);border-radius:10px;padding:12px;">
       <div style="display:flex;align-items:center;gap:10px;">
         <div style="width:38px;height:38px;border-radius:10px;background:${col};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:#fff;flex-shrink:0;">${init}</div>
         <div style="flex:1;min-width:0;">
