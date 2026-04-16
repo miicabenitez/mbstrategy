@@ -120,6 +120,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 .sb-nav{flex:1;overflow-y:auto;overflow-x:hidden;padding:8px 0;}
 .sb-nav::-webkit-scrollbar{width:3px;}
 .sb-nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:2px;}
+#prov-lista::-webkit-scrollbar{width:4px;}
+#prov-lista::-webkit-scrollbar-track{background:transparent;}
+#prov-lista::-webkit-scrollbar-thumb{background:rgba(74,94,77,0.25);border-radius:2px;}
 .sb-group{margin-bottom:1px;}
 .sb-btn{width:100%;display:flex;align-items:center;gap:9px;padding:9px 14px;background:transparent;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;color:rgba(255,255,255,.65);text-align:left;transition:background .15s,color .15s;}
 .sb-btn:hover{background:rgba(255,255,255,.08);color:#fff;}
@@ -16730,6 +16733,7 @@ async function loadProveedores() {
         const totalPag = pagSnap.docs.reduce((a,d)=>a+(parseFloat(d.data().monto)||0),0);
         p._saldo = Math.max(0, totalFac - totalPag);
         p._saldoFavor = Math.max(0, totalPag - totalFac);
+        p._totalFac = totalFac;
       } catch(e){ p._saldo = 0; p._saldoFavor = 0; }
     }));
     renderProveedoresModule();
@@ -16826,14 +16830,20 @@ function renderListaProveedores(filtro) {
     lista.innerHTML=`<div style="text-align:center;padding:20px;color:var(--text-l);font-size:13px;">Sin resultados para "${filtro}"</div>`;
     return;
   }
-  const avatarColors=['#7A8E7D','#5A8A62','#4A6A8A','#B08A42','#C4786A','#6B7A60'];
-  lista.style.cssText = 'display:flex;flex-direction:column;gap:6px;';
+  const avatarGrads=[
+    'linear-gradient(135deg,#3d5240 0%,#4a5e4d 45%,#5e7562 70%,#4a5e4d 100%)',
+    'linear-gradient(135deg,#2e6460 0%,#3d7a74 45%,#52908a 70%,#3d7a74 100%)',
+    'linear-gradient(135deg,#9a7870 0%,#b09088 45%,#ccb0a8 65%,#b09088 100%)',
+    'linear-gradient(135deg,#3a5a78 0%,#4a6e8e 45%,#6084a4 70%,#4a6e8e 100%)',
+    'linear-gradient(135deg,#a87838 0%,#c8954a 45%,#dea860 70%,#c8954a 100%)',
+    'linear-gradient(135deg,#7e4458 0%,#9e5a6a 45%,#b47080 70%,#9e5a6a 100%)'
+  ];
+  lista.style.cssText = 'display:flex;flex-direction:column;gap:6px;scrollbar-width:thin;scrollbar-color:rgba(74,94,77,0.3) transparent;';
   lista.innerHTML = provsFiltrados.map((p,i)=>{
-    const col=avatarColors[i%avatarColors.length];
+    const col=avatarGrads[i%avatarGrads.length];
     const init=(p.nombre||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     const saldo=p._saldo||0;
-    const egresosAll = window._clientEgresos || [];
-    const tieneMov = egresosAll.some(e=>e.proveedorId===p.id);
+    const tieneMov = (p._totalFac||0) > 0 || (p._saldoFavor||0) > 0;
     const saldoHtml=saldo>0
       ?`<span style="background:#f5eeec;color:#7a4e46;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;">Con deuda</span>`
       :tieneMov
@@ -16841,7 +16851,7 @@ function renderListaProveedores(filtro) {
       :`<span style="background:#f0f0ee;color:#666666;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;">Sin actividad</span>`;
     return `<div style="background:#fafafa;border:1px solid rgba(0,0,0,0.06);border-radius:10px;padding:12px;">
       <div style="display:flex;align-items:center;gap:10px;">
-        <div style="width:38px;height:38px;border-radius:10px;background:${col};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:#fff;flex-shrink:0;">${init}</div>
+        <div style="width:38px;height:38px;border-radius:50%;background:${col};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:#fff;flex-shrink:0;">${init}</div>
         <div style="flex:1;min-width:0;">
           <div style="font-size:13px;font-weight:500;color:var(--text);">${p.nombre}</div>
           <div style="font-size:11px;color:var(--text-l);margin-top:1px;">${p.categoria||''}${p.tel?' · '+p.tel:''}</div>
