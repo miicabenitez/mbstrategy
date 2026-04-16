@@ -8247,26 +8247,21 @@ window.cajaFiltrarCuenta = function(nombre, _el) {
   // Re-render solo chips y tabla (KPIs no cambian)
   const cuentasContainer = document.getElementById('caja-chips');
   if(cuentasContainer) {
-    cuentasContainer.querySelectorAll('.caja-chip').forEach(ch => ch.classList.remove('caja-chip-activo'));
-    // Reconstruir chips con nuevo estado activo — usar los datos cacheados
-    // Para evitar otra query, re-render inline actualizando clases y colores
-    const chips = cuentasContainer.querySelectorAll('.caja-chip');
-    chips.forEach(ch => {
+    cuentasContainer.querySelectorAll('.caja-chip').forEach(ch => {
       const chipNombre = ch.dataset.cuenta || null;
-      const sel = _cajaCuentaFiltro === chipNombre;
-      ch.classList.toggle('caja-chip-activo', sel || (_cajaCuentaFiltro === null && chipNombre === null));
-      const dot = ch.querySelector('div[style*="border-radius:50%"]');
-      const spans = ch.querySelectorAll('span');
-      if(chipNombre && dot && spans.length >= 2) {
-        dot.style.background = sel ? 'white' : (dot.dataset.color || '#888');
-        spans[0].style.color = sel ? 'white' : '#666';
-        spans[1].style.color = sel ? 'white' : '#1a1a1a';
-        spans[1].style.fontWeight = sel ? '650' : '650';
-      } else if(!chipNombre && spans.length) {
-        const isTodas = _cajaCuentaFiltro === null;
-        spans[0].style.fontWeight = isTodas ? '650' : '500';
-        spans[0].style.color = isTodas ? 'white' : '#666';
+      const sel = (_cajaCuentaFiltro === null && chipNombre === null) || (_cajaCuentaFiltro === chipNombre);
+      ch.classList.toggle('caja-chip-activo', sel);
+      if(sel) {
+        ch.style.background = '#4a5e4d';
+        ch.style.borderColor = '#4a5e4d';
+        ch.style.color = '#fff';
+      } else {
+        ch.style.background = 'var(--white)';
+        ch.style.borderColor = 'var(--cream-d)';
+        ch.style.color = 'var(--text-l)';
       }
+      const dot = ch.querySelector('div[data-color]');
+      if(dot) dot.style.background = sel ? 'white' : (dot.dataset.color || '#888');
     });
   }
   renderCajaTable(filtrados);
