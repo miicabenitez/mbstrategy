@@ -464,12 +464,9 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
 .caja-badge-ingreso{background:#edf7ed;color:#3B6D11;font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;display:inline-block;}
 .caja-badge-egreso{background:#fdf0ec;color:#993C1D;font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;display:inline-block;}
 .caja-badge-transfer{background:#e6f1fb;color:#185FA5;font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;display:inline-block;}
-.caja-chip{display:flex;align-items:center;gap:8px;background:#f5f4f0;border:1px solid #ddd9d2;border-radius:20px;padding:6px 14px 6px 10px;font-size:12px;transition:all .15s;user-select:none;color:#3a3a3a;}
-.caja-chip:hover{border-color:#c8d0c9;background:#eceae4;}
-.caja-chip-activo{background:#4a5e4d !important;border-color:#4a5e4d !important;color:white !important;}
-.caja-chip-activo span{color:white !important;}
-.caja-chip-activo div{background:white !important;}
-.caja-chip-activo:hover{background:#3d4f40 !important;border-color:#3d4f40 !important;}
+.caja-chip{display:flex;align-items:center;gap:8px;border:1px solid;border-radius:20px;padding:6px 14px 6px 10px;font-size:12px;user-select:none;cursor:pointer;transition:opacity .15s;}
+.caja-chip:hover{opacity:0.85;}
+.caja-chip-activo{opacity:1 !important;}
 .caja-nav-btn{width:28px;height:28px;border-radius:8px;border:1.5px solid #ece9e3;background:white;cursor:pointer;font-size:16px;color:#888;display:flex;align-items:center;justify-content:center;font-family:inherit;transition:all .12s;}
 .caja-nav-btn:hover{background:#f5f4f0;color:#333;}
 .caja-table{width:100%;border-collapse:collapse;table-layout:auto;}
@@ -8192,10 +8189,14 @@ function renderCajaChips(cuentas, movs) {
     const color = tipoColor[c.tipo] || '#888';
     const sel = activo === c.nombre;
     const nombreSafe = (c.nombre||'Sin nombre').replace(/'/g,'&#39;');
-    return `<div class="caja-chip${sel?' caja-chip-activo':''}" style="cursor:pointer;animation:fadeUp .3s ease both;animation-delay:${(i+1)*60}ms;" data-cuenta="${nombreSafe}" onclick="cajaFiltrarCuenta(this.dataset.cuenta,this)">
-      <div style="width:8px;height:8px;border-radius:50%;background:${sel?'white':color};flex-shrink:0;" data-color="${color}"></div>
-      <span style="color:${sel?'white':'#666'};">${c.nombre||'Sin nombre'}</span>
-      <span style="font-weight:650;color:${sel?'white':'#1a1a1a'};">$${Math.round(s).toLocaleString('es-AR')}</span>
+    const bgColor = sel ? color : color + '18';
+    const borderColor = sel ? color : color + '55';
+    const textColor = sel ? 'white' : '#3a3a3a';
+    const dotColor = sel ? 'white' : color;
+    return `<div class="caja-chip${sel?' caja-chip-activo':''}" style="background:${bgColor};border-color:${borderColor};color:${textColor};animation:fadeUp .3s ease both;animation-delay:${(i+1)*60}ms;" data-cuenta="${nombreSafe}" onclick="cajaFiltrarCuenta(this.dataset.cuenta,this)">
+      <div style="width:8px;height:8px;border-radius:50%;background:${dotColor};flex-shrink:0;" data-color="${color}"></div>
+      <span style="color:${textColor};">${c.nombre||'Sin nombre'}</span>
+      <span style="font-weight:650;color:${textColor};">$${Math.round(s).toLocaleString('es-AR')}</span>
     </div>`;
   }).join('');
 
