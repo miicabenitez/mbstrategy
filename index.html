@@ -11659,7 +11659,7 @@ async function loadClientTareas() {
       window.showClientMod = function(mod, btn) {
         paTrackModExit();
         const result = _origSCM.call(this, mod, btn);
-        const label = {finanzas:'Caja',ventas:'Comercial',compras:'Compras',herramientas:'Gestión',gestion:'Gestión'}[mod];
+        const label = {inicio:'Inicio',finanzas:'Finanzas',ventas:'Comercial',compras:'Compras',herramientas:'Control del negocio',gestion:'Gestión'}[mod];
         if(label) paTrackModEntry(label); else _paSessionCurrentMod = null;
         return result;
       };
@@ -12060,13 +12060,14 @@ function paRenderProductividad() {
   else if(_paProdPeriod === 'mes') desde = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
   else { desde = new Date(hoy); desde.setDate(hoy.getDate() - hoy.getDay()); }
   const filtered = _paProdSesiones.filter(s => s.entrada && new Date(s.entrada) >= desde);
-  const MODS = ['Caja','Comercial','Compras','Indicadores','Gestión'];
+  const MODS = ['Inicio','Finanzas','Comercial','Compras','Control del negocio','Gestión'];
   const CONF = {
-    'Caja':        {pill:'#3d5240', grad:'linear-gradient(180deg,#6a8a6e,#4a5e4d,#3d5240)', glow:'rgba(61,82,64,0.25)',    area:'tus finanzas'},
-    'Comercial':   {pill:'#9a7870', grad:'linear-gradient(180deg,#d4beb6,#b09088,#9a7870)', glow:'rgba(154,120,112,0.25)', area:'tus ventas'},
-    'Compras':     {pill:'#3d7a74', grad:'linear-gradient(180deg,#5aa09a,#4a908a,#3d7a74)', glow:'rgba(61,122,116,0.25)', area:'tus compras'},
-    'Indicadores': {pill:'#4a6e8e', grad:'linear-gradient(180deg,#7a9abc,#5580a0,#4a6e8e)', glow:'rgba(74,110,142,0.25)', area:'tus indicadores'},
-    'Gestión':     {pill:'#c8954a', grad:'linear-gradient(180deg,#ecc07a,#d4a050,#c8954a)', glow:'rgba(200,149,74,0.25)', area:'tu gestión'}
+    'Inicio':              {pill:'#6b6b6b', grad:'linear-gradient(180deg,#9a9a9a,#7a7a7a,#6b6b6b)', glow:'rgba(107,107,107,0.25)', area:'tu panel principal'},
+    'Finanzas':            {pill:'#3d5240', grad:'linear-gradient(180deg,#6a8a6e,#4a5e4d,#3d5240)', glow:'rgba(61,82,64,0.25)',    area:'tus finanzas'},
+    'Comercial':           {pill:'#9a7870', grad:'linear-gradient(180deg,#d4beb6,#b09088,#9a7870)', glow:'rgba(154,120,112,0.25)', area:'tus ventas'},
+    'Compras':             {pill:'#3d7a74', grad:'linear-gradient(180deg,#5aa09a,#4a908a,#3d7a74)', glow:'rgba(61,122,116,0.25)', area:'tus compras'},
+    'Control del negocio': {pill:'#4a6e8e', grad:'linear-gradient(180deg,#7a9abc,#5580a0,#4a6e8e)', glow:'rgba(74,110,142,0.25)', area:'tus indicadores'},
+    'Gestión':             {pill:'#c8954a', grad:'linear-gradient(180deg,#ecc07a,#d4a050,#c8954a)', glow:'rgba(200,149,74,0.25)', area:'tu gestión'}
   };
   const totals = {}; MODS.forEach(m => totals[m] = 0);
   filtered.forEach(s => { if(s.modulo && totals[s.modulo] !== undefined) totals[s.modulo] += (s.duracion||0); });
