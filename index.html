@@ -5337,7 +5337,6 @@ function renderClientList(clients) {
     const planLabel = c.rubro
       ? `${c.rubro} · Prog. ${c.programa}`
       : c.membresia?.plan ? `Plan ${c.membresia.plan}` : '—';
-    const badge = c.programa ? `Sem. ${sem}` : (c.membresia?.estado || 'Activo');
     const tipo = getTipo(c);
     const acaActiva = !!(c.productos?.academia);
     const acaLabel = acaActiva ? `Sem. ${sem}` : 'Sin activar';
@@ -5349,43 +5348,60 @@ function renderClientList(clients) {
     const actividadColor = diasInactivo > 7 ? 'var(--err)' : diasInactivo < 0 ? 'var(--text-l)' : 'var(--ok)';
     const estadoLabel = c.membresia?.estado === 'activo' ? 'Activo' : c.membresia?.estado === 'trial' ? 'Trial' : c.membresia?.estado === 'cancelado' ? 'Cancelado' : c.programa ? 'Programa' : 'Sin estado';
     const estadoColor = c.membresia?.estado === 'activo' ? 'var(--ok)' : c.membresia?.estado === 'cancelado' ? 'var(--err)' : 'var(--warn)';
-    return `<div style="background:white;border-radius:12px;border:.5px solid var(--cream-d);overflow:hidden;display:flex;flex-direction:column;" data-tipo="${tipo}" data-nombre="${nombre.toLowerCase()}">
-      <div style="background:linear-gradient(135deg,#b09088 0%,#bfa098 40%,#ccb0a8 60%,#b09088 100%);padding:11px 12px;">
-        <div style="display:flex;align-items:center;gap:8px;">
-          <div class="av" style="background:rgba(255,255,255,0.22);color:#fff;font-size:12px;flex-shrink:0;">${init}</div>
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:12px;font-weight:400;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;">${nombre}</div>
-            <div style="font-size:10px;color:rgba(255,255,255,0.78);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;">${planLabel}</div>
-          </div>
-          <div style="background:rgba(255,255,255,0.2);color:#fff;font-size:9px;font-weight:400;padding:2px 7px;border-radius:20px;white-space:nowrap;flex-shrink:0;">${badge}</div>
+    const saldo = c.saldo || 0;
+    const franjaGrad = saldo > 0
+      ? 'linear-gradient(90deg,#9a7870 0%,#b09088 45%,#ccb0a8 100%)'
+      : 'linear-gradient(90deg,#3d5240 0%,#4a5e4d 45%,#5e7562 100%)';
+    const saldoColor = saldo > 0 ? '#b09088' : '#4a5e4d';
+    const badgeBg = saldo > 0 ? '#f5eeec' : '#e8f0e9';
+    const badgeColor2 = saldo > 0 ? '#7a4e46' : '#2e4d31';
+    const badgeText = saldo > 0 ? 'Con saldo pendiente' : 'Al día';
+    const avatarGrads = [
+      'linear-gradient(135deg,#3d5240 0%,#4a5e4d 45%,#5e7562 70%,#4a5e4d 100%)',
+      'linear-gradient(135deg,#2e6460 0%,#3d7a74 45%,#52908a 70%,#3d7a74 100%)',
+      'linear-gradient(135deg,#9a7870 0%,#b09088 45%,#ccb0a8 65%,#b09088 100%)',
+      'linear-gradient(135deg,#3a5a78 0%,#4a6e8e 45%,#6084a4 70%,#4a6e8e 100%)',
+      'linear-gradient(135deg,#a87838 0%,#c8954a 45%,#dea860 70%,#c8954a 100%)',
+      'linear-gradient(135deg,#7e4458 0%,#9e5a6a 45%,#b47080 70%,#9e5a6a 100%)'
+    ];
+    const avatarGrad = avatarGrads[i % avatarGrads.length];
+    return `<div style="background:#fafafa;border-radius:12px;border:1px solid rgba(0,0,0,0.06);overflow:hidden;display:flex;flex-direction:column;align-items:center;text-align:center;" data-tipo="${tipo}" data-nombre="${nombre.toLowerCase()}">
+      <div style="width:100%;height:5px;background:${franjaGrad};"></div>
+      <div style="padding:16px 12px 12px;display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;">
+        <div class="av" style="background:${avatarGrad};color:#fff;font-size:12px;border-radius:50%;">${init}</div>
+        <div>
+          <div style="font-size:13px;font-weight:500;color:var(--text);">${nombre}</div>
+          <div style="font-size:11px;color:var(--text-l);margin-top:1px;">${planLabel}</div>
         </div>
+        <div style="font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;color:${saldoColor};">$${saldo.toLocaleString('es-AR')}</div>
+        <span style="background:${badgeBg};color:${badgeColor2};font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;">${badgeText}</span>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px;flex:1;">
-        <div style="background:var(--cream);border-radius:8px;padding:10px 12px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 10px 10px;width:100%;box-sizing:border-box;">
+        <div style="background:var(--cream);border-radius:8px;padding:10px 12px;text-align:left;">
           <div style="font-size:9px;color:var(--text-m);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Academia</div>
           <div style="display:flex;align-items:center;justify-content:space-between;gap:4px;">
             <span style="font-size:11px;color:${acaActiva?'var(--ok)':'var(--text-l)'};font-weight:500;">${acaLabel}</span>
             <div onclick="toggleAcademia('${c.id}',${acaActiva},event)" style="cursor:pointer;flex-shrink:0;" title="${acaActiva?'Desactivar Academia':'Activar Academia'}">
-              <div style="width:26px;height:14px;border-radius:20px;background:${acaActiva?'var(--ok)':'rgba(255,255,255,.15)'};position:relative;transition:background .2s;">
+              <div style="width:26px;height:14px;border-radius:20px;background:${acaActiva?'var(--ok)':'rgba(0,0,0,.1)'};position:relative;transition:background .2s;">
                 <div style="position:absolute;top:2px;${acaActiva?'left:13px':'left:2px'};width:10px;height:10px;border-radius:50%;background:#fff;transition:left .2s;"></div>
               </div>
             </div>
           </div>
         </div>
-        <div style="background:var(--cream);border-radius:8px;padding:10px 12px;">
+        <div style="background:var(--cream);border-radius:8px;padding:10px 12px;text-align:left;">
           <div style="font-size:9px;color:var(--text-m);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Próxima reunión</div>
           <div style="font-size:11px;color:${c.proximaReunion?.fecha?'var(--text)':'var(--text-l)'};font-weight:500;">${reunionLabel}</div>
         </div>
-        <div style="background:var(--cream);border-radius:8px;padding:10px 12px;">
+        <div style="background:var(--cream);border-radius:8px;padding:10px 12px;text-align:left;">
           <div style="font-size:9px;color:var(--text-m);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Última actividad</div>
           <div style="font-size:11px;color:${actividadColor};font-weight:500;">${actividadLabel}</div>
         </div>
-        <div style="background:var(--cream);border-radius:8px;padding:10px 12px;">
+        <div style="background:var(--cream);border-radius:8px;padding:10px 12px;text-align:left;">
           <div style="font-size:9px;color:var(--text-m);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Sistema</div>
           <div style="font-size:11px;color:${estadoColor};font-weight:500;">${estadoLabel}</div>
         </div>
       </div>
-      <div style="display:flex;gap:6px;padding:8px 10px;border-top:.5px solid var(--cream-d);">
+      <div style="display:flex;gap:6px;padding:8px 10px;border-top:.5px solid var(--cream-d);width:100%;box-sizing:border-box;">
         <button onclick="openClientDetail('${c.id}')" style="flex:1;padding:6px 4px;border-radius:7px;background:var(--cream);border:.5px solid var(--cream-d);font-size:11px;font-weight:500;color:var(--text);cursor:pointer;font-family:'DM Sans',sans-serif;">Ver perfil</button>
         <button onclick="accederComoClienteById('${c.id}')" style="flex:1;padding:6px 4px;border-radius:7px;background:linear-gradient(135deg,#b09088,#bfa098);border:none;font-size:11px;font-weight:500;color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;">Ingresar</button>
       </div>
