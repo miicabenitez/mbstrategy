@@ -277,6 +277,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 .cont-snav:hover:not(.active){background:var(--cream);color:var(--text);}
 input[type=date],input[type=time],select{background:var(--cream);border:.5px solid var(--cream-d);border-radius:8px;padding:7px 10px;font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;width:100%;margin-top:5px;outline:none;}
 input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sage);}
+input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus{-webkit-box-shadow:0 0 0px 1000px #ffffff inset !important;box-shadow:0 0 0px 1000px #ffffff inset !important;-webkit-text-fill-color:#2d2d2d !important;}
 /* ── BOTTOM NAV MOBILE (cliente) ── */
 .bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#4a5e4d;z-index:150;overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:nowrap;scrollbar-width:none;padding:0 8px;padding-bottom:env(safe-area-inset-bottom,0px);}
 .bottom-nav::-webkit-scrollbar{display:none;}
@@ -384,6 +385,15 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
   /* ── 6. Presupuestos card — monto en segunda línea ── */
   .presup-card > div:first-child{flex-wrap:wrap !important;}
   .presup-card > div:first-child > div:last-child{width:100%;text-align:left !important;margin-top:6px;}
+  /* ── OC tabla mobile ── */
+  .oc-grid-header,.oc-grid-row{grid-template-columns:70px 1fr 90px 90px !important;}
+  .oc-col-acciones{display:none !important;}
+  /* ── HC tabla mobile ── */
+  .hc-grid-header,.hc-grid-row{grid-template-columns:60px 1fr 90px !important;}
+  .hc-col-fecha{display:none !important;}
+  /* ── PC tabla mobile ── */
+  .pc-grid-row{grid-template-columns:1fr 80px 60px !important;}
+  .pc-col-categoria{display:none !important;}
 }
 @media(max-width:480px){
   .mg{grid-template-columns:1fr 1fr;}
@@ -11424,7 +11434,7 @@ window.embiAnalizarIndicadores = async function() {
   // Estado 3: botón cambia a "Ver en Embi →" y abre Embi al hacer click
   if(btn) {
     setTimeout(() => {
-      btn.textContent = 'Ver en Embi →';
+      btn.textContent = 'Ver en Embi';
       btn.disabled = false;
       btn.style.opacity = '1';
       btn.style.background = '#2a3d2c';
@@ -12039,20 +12049,24 @@ function renderMcLista(clientes) {
     const saldoAmt = saldo !== 0 ? `$${Math.abs(saldo).toLocaleString('es-AR')}` : '$0';
     const avatarGrad = avatarGrads[i % avatarGrads.length];
     const subtitulo = [c.tel||c.dni||'', c.ciudad||''].filter(Boolean).join(' · ');
-    return `<div onclick="openMcDetalle('${c.id}')" style="background:#fafafa;border-radius:12px;border:1px solid rgba(0,0,0,0.06);overflow:hidden;display:flex;flex-direction:column;align-items:center;text-align:center;position:relative;cursor:pointer;">
+    return `<div onclick="openMcDetalle('${c.id}')" style="background:#fafafa;border-radius:12px;border:1px solid rgba(0,0,0,0.06);overflow:hidden;display:flex;flex-direction:column;align-items:center;text-align:center;position:relative;cursor:pointer;min-height:180px;">
       <div class="mc-card-actions" style="position:absolute;top:10px;right:10px;display:flex;gap:3px;z-index:1;" onclick="event.stopPropagation()">
         <button onclick="editMcCliente('${c.id}',event)" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <button onclick="deleteMcCliente('${c.id}',event)" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
       </div>
-      <div style="width:100%;height:5px;background:${franjaGrad};"></div>
-      <div style="padding:16px 12px 14px;display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;">
-        <div class="av" style="background:${avatarGrad};color:#fff;font-size:12px;border-radius:50%;">${init}</div>
-        <div>
-          <div style="font-size:13px;font-weight:500;color:var(--text);">${c.nombre}</div>
-          ${subtitulo ? `<div style="font-size:11px;color:var(--text-l);margin-top:1px;">${subtitulo}</div>` : ''}
+      <div style="width:100%;height:5px;background:${franjaGrad};flex-shrink:0;"></div>
+      <div style="padding:16px 12px 14px;display:flex;flex-direction:column;align-items:center;width:100%;flex:1;justify-content:space-between;">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;">
+          <div class="av" style="background:${avatarGrad};color:#fff;font-size:12px;border-radius:50%;">${init}</div>
+          <div>
+            <div style="font-size:13px;font-weight:500;color:var(--text);">${c.nombre}</div>
+            ${subtitulo ? `<div style="font-size:11px;color:var(--text-l);margin-top:1px;">${subtitulo}</div>` : ''}
+          </div>
         </div>
-        <div style="font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;color:${saldoDisplayColor};">${saldoAmt}</div>
-        <span style="background:${badgeBg};color:${badgeColor2};font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;">${badgeText}</span>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;width:100%;margin-top:10px;">
+          <div style="font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;color:${saldoDisplayColor};">${saldoAmt}</div>
+          <span style="background:${badgeBg};color:${badgeColor2};font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;">${badgeText}</span>
+        </div>
       </div>
     </div>`;
   }).join('');
@@ -14137,13 +14151,12 @@ function renderProductosCompra(lista) {
   if(!el) return;
   if(lista.length===0){ el.innerHTML=createEmptyState('caja','Sin productos de compra','Cargá los insumos que comprás habitualmente','+ Nuevo producto',"openModal('newProdCompraModal')"); return; }
   el.innerHTML = lista.map(p=>{
-    const [bg,tc] = CAT_COLORS[p.categoria]||['#F5F6F3','#4A5A4E'];
-    return `<div style="display:grid;grid-template-columns:1fr 130px 90px 60px;gap:10px;align-items:center;padding:12px 0;border-bottom:.5px solid var(--cream-d);">
+    return `<div class="pc-grid-row" style="display:grid;grid-template-columns:1fr 130px 90px 60px;gap:10px;align-items:center;padding:12px 0;border-bottom:.5px solid var(--cream-d);">
       <div>
         <div style="font-size:13px;font-weight:500;color:var(--text);">${esc(p.nombre)}</div>
         ${p.descripcion?`<div style="font-size:11px;color:var(--text-l);">${esc(p.descripcion)}</div>`:''}
       </div>
-      <span style="background:${bg};color:${tc};font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px;width:fit-content;">${esc(p.categoria||'')}</span>
+      <span class="pc-col-categoria" style="background:#f0f0ee;color:#666;font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;width:fit-content;">${esc(p.categoria||'')}</span>
       <span style="font-size:12px;color:var(--text-m);text-align:center;">${p.unidad||''}</span>
       <div style="display:flex;gap:4px;justify-content:flex-end;">
         <button onclick="editProdCompra('${p.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
@@ -14978,12 +14991,12 @@ function renderOrdenesCompra() {
   });
   if(ocsFiltered.length===0){el.innerHTML='<div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Sin resultados.</div>';return;}
   const fmtMonto = v => '$' + new Intl.NumberFormat('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(parseFloat(v)||0);
-  const ocHeader = `<div style="display:grid;grid-template-columns:90px 1fr 110px 130px 80px;column-gap:12px;align-items:center;padding:6px 0 8px 24px;border-bottom:1.5px solid var(--sage-light);">
+  const ocHeader = `<div class="oc-grid-header" style="display:grid;grid-template-columns:90px 1fr 110px 130px 80px;column-gap:12px;align-items:center;padding:6px 0 8px 24px;border-bottom:1.5px solid var(--sage-light);">
     <div style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Nº OC</div>
     <div style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Proveedor</div>
     <div style="text-align:right;font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Monto</div>
     <div style="text-align:right;font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Recepción</div>
-    <div style="text-align:right;font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Acciones</div>
+    <div class="oc-col-acciones" style="text-align:right;font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Acciones</div>
   </div>`;
   el.innerHTML=ocHeader+ocsFiltered.map(o=>{
     const estadoRec=o.estadoRecepcion||'emitida';
@@ -14993,7 +15006,7 @@ function renderOrdenesCompra() {
     const recPill = estadoRec==='recibida'
       ? `<div onclick="event.stopPropagation()" style="display:inline-flex;align-items:center;gap:6px;background:#e8f0e9;color:#2e4d31;font-size:11px;font-weight:600;padding:5px 11px;border-radius:20px;white-space:nowrap;font-family:'DM Sans',sans-serif;"><span style="width:6px;height:6px;border-radius:50%;background:#4a5e4d;flex-shrink:0;"></span>Recibida</div>`
       : `<div onclick="event.stopPropagation();marcarOCRecibida('${o.id}')" style="display:inline-flex;align-items:center;gap:6px;background:#f5eeec;color:#7a4e46;font-size:11px;font-weight:600;padding:5px 11px;border-radius:20px;white-space:nowrap;font-family:'DM Sans',sans-serif;cursor:pointer;" title="Por recibir — clic para marcar como recibida"><span style="width:6px;height:6px;border-radius:50%;background:#b09088;flex-shrink:0;"></span>Pendiente</div>`;
-    return `<div onclick="abrirDetalleOC('${o.id}')" style="display:grid;grid-template-columns:90px 1fr 110px 130px 80px;column-gap:12px;align-items:center;padding:12px 0 12px 20px;border-bottom:.5px solid var(--cream-d);cursor:pointer;position:relative;">
+    return `<div onclick="abrirDetalleOC('${o.id}')" class="oc-grid-row" style="display:grid;grid-template-columns:90px 1fr 110px 130px 80px;column-gap:12px;align-items:center;padding:12px 0 12px 20px;border-bottom:.5px solid var(--cream-d);cursor:pointer;position:relative;">
       <div style="position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:2px;background:${franjaGrad};"></div>
       <div><span style="background:#e8f0e9;color:#4a5e4d;font-size:11px;font-weight:700;padding:4px 8px;border-radius:6px;white-space:nowrap;font-family:'DM Sans',sans-serif;">OC-${String(o.numero||0).padStart(3,'0')}</span></div>
       <div style="min-width:0;">
@@ -15001,8 +15014,8 @@ function renderOrdenesCompra() {
         <div style="font-size:11px;color:var(--text-l);margin-top:2px;">${(o.items||[]).length} ítem${(o.items||[]).length!==1?'s':''}${o.fecha?' · '+o.fecha:''}</div>
       </div>
       <div style="text-align:right;"><span style="font-size:14px;font-weight:600;color:#2d2d2d;white-space:nowrap;">${fmtMonto(o.total)}</span></div>
-      <div style="display:flex;justify-content:flex-end;">${recPill}</div>
-      <div style="display:flex;justify-content:flex-end;gap:5px;" onclick="event.stopPropagation()">
+      <div style="display:flex;justify-content:flex-end;white-space:nowrap;">${recPill}</div>
+      <div class="oc-col-acciones" style="display:flex;justify-content:flex-end;gap:5px;" onclick="event.stopPropagation()">
         <button onclick="abrirDetalleOC('${o.id}')" style="width:26px;height:26px;border-radius:6px;background:#fff;border:1px solid rgba(0,0,0,0.09);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Ver detalle"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#888780" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
         <button onclick="eliminarOC('${o.id}')" style="width:26px;height:26px;border-radius:6px;background:#fff;border:1px solid rgba(0,0,0,0.09);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
       </div>
@@ -15491,17 +15504,17 @@ function renderHistorialCompra(q) {
           :`<span style="background:#f0f0ee;color:#666;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;">Precio estable</span>`}
       </div>
       <div style="background:#fff;padding:0 16px;">
-        <div style="display:grid;grid-template-columns:80px 1fr 120px 100px;gap:6px;padding:8px 0;border-bottom:.5px solid var(--cream-d);background:#fafafa;margin:0 -16px;padding-left:16px;padding-right:16px;">
+        <div class="hc-grid-header" style="display:grid;grid-template-columns:80px 1fr 120px 100px;gap:6px;padding:8px 0;border-bottom:.5px solid var(--cream-d);background:#fafafa;margin:0 -16px;padding-left:16px;padding-right:16px;">
           <span style="font-size:9px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.4px;">OC</span>
           <span style="font-size:9px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.4px;">Proveedor</span>
-          <span style="font-size:9px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.4px;">Fecha</span>
+          <span class="hc-col-fecha" style="font-size:9px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.4px;">Fecha</span>
           <span style="font-size:9px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.4px;text-align:right;">P. Unitario</span>
         </div>
         ${lineas.map(l=>{
-          return `<div style="display:grid;grid-template-columns:80px 1fr 120px 100px;gap:6px;padding:8px 0;border-bottom:.5px solid var(--cream-d);align-items:center;">
+          return `<div class="hc-grid-row" style="display:grid;grid-template-columns:80px 1fr 120px 100px;gap:6px;padding:8px 0;border-bottom:.5px solid var(--cream-d);align-items:center;">
             <div><span style="background:#e8f0e9;color:#4a5e4d;font-size:10px;font-weight:700;padding:3px 7px;border-radius:5px;font-family:'DM Sans',sans-serif;">OC-${String(l.ocNum||0).padStart(3,'0')}</span></div>
             <div style="font-size:12px;color:var(--text-m);">${l.proveedor||'—'}</div>
-            <div style="font-size:11px;color:var(--text-l);">${l.fecha||'—'}</div>
+            <div class="hc-col-fecha" style="font-size:11px;color:var(--text-l);">${l.fecha||'—'}</div>
             <div style="font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:#2d2d2d;text-align:right;">${fmtHC(l.precioUnit)}</div>
           </div>`;
         }).join('')}
