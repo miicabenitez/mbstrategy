@@ -799,42 +799,85 @@ input[type=number]{-moz-appearance:textfield;}
 .pa-insight-main{font-size:14px!important;font-weight:700!important;color:#2e4d31!important;margin-bottom:2px!important}
 .pa-insight-sub{font-size:12px!important;color:#4a6a4d!important;line-height:1.4!important}
 @media(max-width:768px){.pa-chart-cols{gap:12px!important;height:140px!important}.pa-bar{width:40px!important}.pa-bar-pill{font-size:9px!important;padding:2px 7px!important}.pa-prod-num{font-size:40px!important}.pa-bar-name{font-size:10px!important}}
-.pa-tasks-board{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px;}
-.pa-col{background:#f8f7f5;border-radius:12px;padding:10px;}
-.pa-col-header{display:flex;align-items:center;gap:6px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(0,0,0,0.06);}
-.pa-col-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;display:inline-block;}
-.pa-col-title{font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;color:#6b6b6b;text-transform:uppercase;letter-spacing:.5px;flex:1;}
-.pa-col-count{font-family:'DM Sans',sans-serif;font-size:11px;color:#6b6b6b;background:rgba(0,0,0,0.07);border-radius:10px;padding:1px 7px;}
-.pa-col-items{display:flex;flex-direction:column;gap:6px;min-height:80px;}
-.pa-col.pa-drag-over{background:rgba(74,94,77,.08);outline:1.5px dashed #4a5e4d;}
-#ct-tareas .tk{background:#fff;border:1px solid rgba(0,0,0,0.06);border-left:none;border-radius:8px;padding:10px 12px;margin-bottom:0;cursor:pointer;position:relative;transition:transform .15s ease,box-shadow .15s ease;}
-#ct-tareas .tk:hover{transform:translateY(-1px);box-shadow:0 3px 10px rgba(0,0,0,0.08);background:#fff;}
-#ct-tareas .tk:hover .tk-del-btn{opacity:1 !important;}
-#ct-tareas .tk.done{opacity:.55;}
-#ct-tareas .tk.done .tkt{text-decoration:line-through;}
-.pa-empty{padding:16px 8px;text-align:center;font-family:'DM Sans',sans-serif;color:#6b6b6b;font-size:12px;}
-.pa-cal-ideas-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.pa-listas-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
-.pa-lista-card{border-radius:12px;overflow:hidden;background:#fff;border:1px solid rgba(0,0,0,0.06);position:relative;display:flex;flex-direction:column;}
-.pa-lista-franja-v{height:4px;background:linear-gradient(90deg,#3d5240,#4a5e4d,#5e7562);flex-shrink:0;}
-.pa-lista-franja-t{height:4px;background:linear-gradient(90deg,#9a7870,#b09088,#ccb0a8);flex-shrink:0;}
-.pa-lista-body{padding:12px 14px;}
-.pa-lista-nombre{font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:#2d2d2d;margin-bottom:3px;}
-.pa-lista-prog-txt{font-family:'DM Sans',sans-serif;font-size:10px;color:#6b6b6b;margin-bottom:5px;}
-.pa-lista-prog-track{height:3px;background:rgba(0,0,0,0.07);border-radius:2px;margin-bottom:10px;overflow:hidden;}
-.pa-lista-prog-fill{height:100%;background:linear-gradient(90deg,#3d5240,#5e7562);border-radius:2px;transition:width .3s;}
-.pa-lista-items{display:flex;flex-direction:column;overflow-y:auto;max-height:140px;margin-bottom:8px;}
-.pa-lista-item{display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,0.04);font-family:'DM Sans',sans-serif;font-size:12px;color:#2d2d2d;}
-.pa-lista-item:last-child{border-bottom:none;}
-.pa-lista-item.done span{text-decoration:line-through;color:#6b6b6b;}
-.pa-lista-cb{width:13px;height:13px;border-radius:3px;border:1.5px solid rgba(0,0,0,0.15);background:transparent;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s;}
-.pa-lista-cb.checked{background:#4a5e4d;border-color:#4a5e4d;}
-.pa-lista-add-row{display:flex;align-items:center;gap:4px;border-top:1px solid rgba(0,0,0,0.06);padding:6px 14px;margin-top:auto;}
-.pa-lista-add-inp{flex:1;background:transparent;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:11px;color:#2d2d2d;}
-.pa-lista-add-inp::placeholder{color:#aaa;}
-.pa-lista-add-btn{background:none;border:none;cursor:pointer;font-size:16px;color:#4a5e4d;padding:0 2px;line-height:1;}
-.pa-lista-del-btn{background:none;border:none;cursor:pointer;opacity:0;transition:opacity .15s;padding:2px;position:absolute;top:8px;right:10px;}
-.pa-lista-card:hover .pa-lista-del-btn{opacity:1;}
+@keyframes btnGlow{0%{box-shadow:0 2px 8px rgba(61,82,64,0.15)}50%{box-shadow:0 4px 16px rgba(61,82,64,0.25)}100%{box-shadow:0 2px 8px rgba(61,82,64,0.15)}}
+@keyframes calPulse{0%{box-shadow:0 0 0 0 rgba(74,94,77,0.2)}50%{box-shadow:0 0 0 6px rgba(74,94,77,0)}100%{box-shadow:0 0 0 0 rgba(74,94,77,0)}}
+@keyframes bulbBreath{0%{box-shadow:0 0 8px rgba(204,176,168,0.3)}50%{box-shadow:0 0 20px rgba(204,176,168,0.5)}100%{box-shadow:0 0 8px rgba(204,176,168,0.3)}}
+@keyframes sparkle{0%{opacity:0.2;transform:scale(0.8)}50%{opacity:0.6;transform:scale(1.1)}100%{opacity:0.2;transform:scale(0.8)}}
+.pa-tasks-board{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:10px!important;margin-bottom:10px!important}
+.pa-col{border-radius:12px!important;padding:10px!important;display:flex!important;flex-direction:column!important}
+#clt-col-pend{background:linear-gradient(180deg,#f5eeec 0%,#fff 15%)!important}
+#clt-col-doing{background:linear-gradient(180deg,#e6eef5 0%,#fff 15%)!important}
+#clt-col-done{background:linear-gradient(180deg,#e8f0e9 0%,#fff 15%)!important}
+.pa-col-header{display:flex!important;align-items:center!important;gap:6px!important;margin-bottom:10px!important;padding-bottom:8px!important;border-bottom:1px solid rgba(0,0,0,0.06)!important}
+.pa-col-dot{width:7px!important;height:7px!important;border-radius:50%!important;flex-shrink:0!important;display:inline-block!important}
+.pa-col-title{font-family:'DM Sans',sans-serif!important;font-size:11px!important;font-weight:500!important;color:#6b6b6b!important;text-transform:uppercase!important;letter-spacing:.5px!important;flex:1!important}
+.pa-col-count{font-family:'DM Sans',sans-serif!important;font-size:11px!important;color:#6b6b6b!important;background:rgba(0,0,0,0.07)!important;border-radius:10px!important;padding:1px 7px!important}
+.pa-col-items{display:flex!important;flex-direction:column!important;gap:6px!important;flex:1!important;min-height:80px!important}
+.pa-col.pa-drag-over{background:rgba(74,94,77,.08)!important;outline:1.5px dashed #4a5e4d!important}
+#ct-tareas .tk{background:#fff!important;border:1px solid rgba(0,0,0,0.06)!important;border-left:none!important;border-radius:8px!important;padding:10px 12px 10px 14px!important;margin-bottom:0!important;cursor:pointer!important;position:relative!important;transition:transform .15s ease,box-shadow .15s ease!important}
+#ct-tareas .tk::before{content:''!important;position:absolute!important;left:0!important;top:0!important;bottom:0!important;width:3px!important;border-radius:3px 0 0 3px!important}
+#clt-col-pend .tk::before{background:linear-gradient(180deg,#b09088,#9a7870)!important}
+#clt-col-doing .tk::before{background:linear-gradient(180deg,#6a8eba,#4a6e8e)!important}
+#clt-col-done .tk::before{background:linear-gradient(180deg,#4a5e4d,#3d5240)!important}
+#ct-tareas .tk:hover{transform:translateY(-1px)!important;box-shadow:0 3px 10px rgba(0,0,0,0.08)!important}
+#ct-tareas .tk:hover .tk-del-btn{opacity:1!important}
+#ct-tareas .tk.done{opacity:.55!important}
+#ct-tareas .tk.done .tkt{text-decoration:line-through!important}
+.pa-empty{padding:12px!important;text-align:center!important;font-family:'DM Sans',sans-serif!important;color:#bbb!important;font-size:11px!important;font-style:italic!important}
+.pa-btn-nueva-tarea{width:100%!important;height:42px!important;border-radius:12px!important;border:none!important;background:#3d5240!important;color:#e8f0e9!important;font-family:'DM Sans',sans-serif!important;font-size:13px!important;font-weight:700!important;cursor:pointer!important;margin-bottom:20px!important;animation:btnGlow 3s ease-in-out infinite!important}
+.pa-cal-ideas-grid{display:grid!important;grid-template-columns:1fr 1fr!important;gap:12px!important}
+.pa-cal-card{background:#fff!important;border-radius:14px!important;padding:16px!important;border:1px solid rgba(0,0,0,0.06)!important}
+.pa-cal-head{display:flex!important;align-items:center!important;justify-content:space-between!important;margin-bottom:12px!important}
+.pa-cal-mes{font-family:'DM Sans',sans-serif!important;font-size:14px!important;font-weight:700!important;color:#2d2d2d!important}
+.pa-cal-ver{font-family:'DM Sans',sans-serif!important;font-size:11px!important;color:#4a5e4d!important;font-weight:600!important;cursor:pointer!important;background:none!important;border:none!important;padding:0!important}
+.pa-cal-week{display:grid!important;grid-template-columns:repeat(7,1fr)!important;gap:6px!important;margin-bottom:12px!important}
+.pa-cal-day{display:flex!important;flex-direction:column!important;align-items:center!important;gap:3px!important}
+.pa-cal-dlbl{font-family:'DM Sans',sans-serif!important;font-size:9px!important;color:#6b6b6b!important;margin-bottom:2px!important}
+.pa-cal-dnum{width:32px!important;height:32px!important;border-radius:50%!important;display:flex!important;align-items:center!important;justify-content:center!important;font-family:'DM Sans',sans-serif!important;font-size:13px!important}
+.pa-cal-today{background:#3d5240!important;color:#e8f0e9!important;font-weight:700!important;animation:calPulse 2s ease-in-out infinite!important}
+.pa-cal-hastask{background:#f5eeec!important;color:#7a4e46!important}
+.pa-cal-dot{width:5px!important;height:5px!important;border-radius:50%!important}
+.pa-cal-prox-lbl{font-family:'DM Sans',sans-serif!important;font-size:9px!important;font-weight:500!important;color:#6b6b6b!important;text-transform:uppercase!important;letter-spacing:.6px!important;margin-bottom:6px!important}
+.pa-cal-prox-item{display:flex!important;align-items:center!important;gap:8px!important;padding:4px 0!important}
+.pa-cal-pdot{width:6px!important;height:6px!important;border-radius:50%!important;flex-shrink:0!important}
+.pa-cal-pname{font-family:'DM Sans',sans-serif!important;font-size:12px!important;font-weight:500!important;color:#2d2d2d!important;flex:1!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+.pa-cal-pfecha{font-family:'DM Sans',sans-serif!important;font-size:10px!important;color:#6b6b6b!important;flex-shrink:0!important}
+.pa-ideas-card{background:linear-gradient(135deg,#2d2520 0%,#3d3530 40%,#4a3e38 70%,#3d3530 100%)!important;border-radius:16px!important;padding:18px!important;overflow:hidden!important;display:flex!important;flex-direction:column!important;position:relative!important}
+.pa-ideas-card::before{content:''!important;position:absolute!important;top:-40px!important;right:-40px!important;width:150px!important;height:150px!important;border-radius:50%!important;background:radial-gradient(circle,rgba(204,176,168,0.08) 0%,transparent 70%)!important;pointer-events:none!important}
+.pa-ideas-header{display:flex!important;align-items:center!important;gap:10px!important;margin-bottom:14px!important}
+.pa-ideas-bulb{width:30px!important;height:30px!important;border-radius:50%!important;background:linear-gradient(135deg,#9a7870,#ccb0a8)!important;display:flex!important;align-items:center!important;justify-content:center!important;flex-shrink:0!important;animation:bulbBreath 3s ease-in-out infinite!important}
+.pa-ideas-titulo{font-family:'DM Sans',sans-serif!important;font-size:14px!important;font-weight:700!important;color:#e8ddd8!important}
+.pa-ideas-count{font-family:'DM Sans',sans-serif!important;font-size:9px!important;background:rgba(255,255,255,0.06)!important;color:rgba(232,221,216,0.4)!important;padding:2px 8px!important;border-radius:10px!important;margin-left:auto!important}
+.pa-ideas-lista-wrap{overflow-y:auto!important;flex:1!important;max-height:160px!important;margin-bottom:10px!important}
+.pa-idea-item{background:rgba(255,255,255,0.06)!important;border:1px solid rgba(255,255,255,0.06)!important;border-left:3px solid #5e7562!important;border-radius:10px!important;padding:10px 12px!important;margin-bottom:6px!important;display:flex!important;align-items:flex-start!important;gap:8px!important}
+.pa-idea-txt{font-family:'DM Sans',sans-serif!important;font-size:12px!important;color:rgba(232,221,216,0.9)!important;flex:1!important;line-height:1.4!important}
+.pa-idea-fecha{font-family:'DM Sans',sans-serif!important;font-size:9px!important;color:rgba(232,221,216,0.3)!important;margin-top:3px!important}
+.pa-idea-del{background:none!important;border:none!important;cursor:pointer!important;color:rgba(232,221,216,0.2)!important;font-size:14px!important;padding:0!important;line-height:1!important;flex-shrink:0!important}
+.pa-ideas-input-row{display:flex!important;gap:6px!important;align-items:center!important;border-top:1px solid rgba(255,255,255,0.06)!important;padding-top:10px!important;margin-top:auto!important}
+.pa-ideas-inp{flex:1!important;background:rgba(255,255,255,0.04)!important;border:1px dashed rgba(255,255,255,0.08)!important;border-radius:8px!important;padding:7px 10px!important;font-family:'DM Sans',sans-serif!important;font-size:12px!important;color:rgba(232,221,216,0.9)!important;outline:none!important}
+.pa-ideas-inp::placeholder{color:rgba(232,221,216,0.25)!important;font-style:italic!important}
+.pa-ideas-btn{height:28px!important;padding:0 14px!important;border:none!important;border-radius:20px!important;background:linear-gradient(135deg,#9a7870,#b09088)!important;color:#fff!important;font-family:'DM Sans',sans-serif!important;font-size:11px!important;font-weight:700!important;cursor:pointer!important;display:flex!important;align-items:center!important;justify-content:center!important;white-space:nowrap!important;flex-shrink:0!important}
+.pa-listas-grid{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:10px!important}
+.pa-lista-card{border-radius:12px!important;overflow:hidden!important;background:#fff!important;border:1px solid rgba(0,0,0,0.06)!important;position:relative!important;display:flex!important;flex-direction:column!important;min-height:220px!important}
+.pa-lista-header{background:linear-gradient(135deg,#5e7562 0%,#6a8a6e 50%,#7a9a7e 100%)!important;padding:14px 16px 10px!important;flex-shrink:0!important}
+.pa-lista-nombre{font-family:'DM Sans',sans-serif!important;font-size:15px!important;font-weight:700!important;color:#e8f0e9!important;margin-bottom:3px!important}
+.pa-lista-prog-txt{font-family:'DM Sans',sans-serif!important;font-size:10px!important;color:rgba(232,240,233,0.6)!important;margin-bottom:5px!important}
+.pa-lista-prog-track{height:3px!important;background:rgba(255,255,255,0.15)!important;border-radius:2px!important;overflow:hidden!important}
+.pa-lista-prog-fill{height:100%!important;background:rgba(255,255,255,0.5)!important;border-radius:2px!important;transition:width .3s!important}
+.pa-lista-body{padding:12px 16px!important;flex:1!important;display:flex!important;flex-direction:column!important}
+.pa-lista-items{display:flex!important;flex-direction:column!important;gap:8px!important;overflow-y:auto!important;max-height:120px!important}
+.pa-lista-item{display:flex!important;align-items:center!important;gap:7px!important;padding-bottom:8px!important;border-bottom:1px solid rgba(0,0,0,0.04)!important;font-family:'DM Sans',sans-serif!important;font-size:12px!important;color:#2d2d2d!important}
+.pa-lista-item:last-child{border-bottom:none!important}
+.pa-lista-item.done span{text-decoration:line-through!important;color:#6b6b6b!important}
+.pa-lista-cb{width:15px!important;height:15px!important;border-radius:4px!important;border:1.5px solid rgba(0,0,0,0.12)!important;background:transparent!important;cursor:pointer!important;flex-shrink:0!important;display:flex!important;align-items:center!important;justify-content:center!important;transition:all .15s!important}
+.pa-lista-cb.checked{background:#4a5e4d!important;border-color:#4a5e4d!important}
+.pa-lista-add-row{display:flex!important;align-items:center!important;gap:4px!important;border-top:1px solid rgba(0,0,0,0.04)!important;padding:6px 16px!important;margin-top:auto!important}
+.pa-lista-add-inp{flex:1!important;background:transparent!important;border:none!important;outline:none!important;font-family:'DM Sans',sans-serif!important;font-size:11px!important;color:#aaa!important}
+.pa-lista-add-inp::placeholder{color:#aaa!important}
+.pa-lista-add-btn{background:none!important;border:none!important;cursor:pointer!important;font-size:16px!important;color:#4a5e4d!important;padding:0 2px!important;line-height:1!important}
+.pa-lista-del-btn{background:none!important;border:none!important;cursor:pointer!important;opacity:0!important;transition:opacity .15s!important;padding:2px!important;position:absolute!important;top:8px!important;right:10px!important}
+.pa-lista-card:hover .pa-lista-del-btn{opacity:1!important}
+.pa-btn-nueva-lista{width:100%!important;height:42px!important;border-radius:12px!important;border:none!important;background:#3d5240!important;color:#e8f0e9!important;font-family:'DM Sans',sans-serif!important;font-size:13px!important;font-weight:700!important;cursor:pointer!important;margin-top:10px!important;animation:btnGlow 3s ease-in-out infinite!important}
 @keyframes paPulse{0%{transform:scale(1)}50%{transform:scale(1.03)}100%{transform:scale(1)}}
 @keyframes paSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
 @keyframes paShimmer{0%{opacity:0.08}50%{opacity:0.2}100%{opacity:0.08}}
@@ -2529,7 +2572,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
           </div>
           <div class="pa-col" id="clt-col-doing">
             <div class="pa-col-header">
-              <span class="pa-col-dot" style="background:#c8954a;"></span>
+              <span class="pa-col-dot" style="background:#4a6e8e;"></span>
               <span class="pa-col-title">En curso</span>
               <span class="pa-col-count" id="pa-kpi-curso">0</span>
             </div>
@@ -2544,34 +2587,39 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
             <div class="pa-col-items" id="clt-tasks-done"></div>
           </div>
         </div>
-        <button onclick="paOpenNuevaTarea()" style="width:100%;height:36px;border-radius:10px;border:none;background:linear-gradient(135deg,#3d5240 0%,#4a5e4d 45%,#5e7562 70%,#4a5e4d 100%);color:#e8f0e9;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;margin-bottom:20px;">+ Nueva tarea</button>
+        <button class="pa-btn-nueva-tarea" onclick="paOpenNuevaTarea()">+ Nueva tarea</button>
         <!-- 6. CALENDARIO + MIS IDEAS -->
         <div class="pa-cal-ideas-grid" style="margin-bottom:20px;">
-          <div style="background:#fff;border-radius:12px;padding:14px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-              <div style="font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:#2d2d2d;" id="pa-cal-mes-label">Cargando...</div>
+          <div class="pa-cal-card">
+            <div class="pa-cal-head">
+              <div class="pa-cal-mes" id="pa-cal-mes-label">Cargando...</div>
+              <button class="pa-cal-ver">Ver mes →</button>
             </div>
-            <div id="pa-cal-semana" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:12px;"></div>
-            <div style="font-family:'DM Sans',sans-serif;font-size:10px;font-weight:500;color:#6b6b6b;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;">Próximas tareas</div>
+            <div class="pa-cal-week" id="pa-cal-semana"></div>
+            <div class="pa-cal-prox-lbl">Próximas tareas</div>
             <div id="pa-cal-proximas"></div>
           </div>
-          <div style="background:#fff;border-radius:12px;overflow:hidden;display:flex;flex-direction:column;">
-            <div style="padding:14px 14px 0;">
-              <div style="font-family:'DM Sans',sans-serif;font-size:10px;font-weight:500;color:#6b6b6b;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;">Mis ideas</div>
-              <div id="pa-ideas-lista" style="overflow-y:auto;max-height:160px;"></div>
-            </div>
-            <div style="padding:10px 14px;border-top:1px solid rgba(0,0,0,0.04);margin-top:auto;">
-              <div style="display:flex;gap:6px;align-items:center;">
-                <input id="pa-ideas-input" type="text" placeholder="Anotá una idea..." style="flex:1;background:#fafafa;border:1px solid rgba(0,0,0,0.08);border-radius:8px;padding:7px 10px;font-family:'DM Sans',sans-serif;font-size:12px;color:#2d2d2d;outline:none;font-style:italic;margin-top:0;" onkeydown="if(event.key==='Enter') paGuardarIdea()">
-                <button onclick="paGuardarIdea()" style="height:26px;padding:0 12px;border:none;border-radius:8px;background:linear-gradient(135deg,#9a7870 0%,#b09088 45%,#ccb0a8 65%,#b09088 100%);color:#fff;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;cursor:pointer;white-space:nowrap;flex-shrink:0;">Guardar</button>
+          <div class="pa-ideas-card">
+            <div class="pa-ideas-header">
+              <div class="pa-ideas-bulb">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M9 21h6M12 3a6 6 0 0 1 6 6c0 2.5-1.5 4.5-3 6H9c-1.5-1.5-3-3.5-3-6a6 6 0 0 1 6-6z"/></svg>
               </div>
+              <div class="pa-ideas-titulo">Mis ideas</div>
+              <div class="pa-ideas-count" id="pa-ideas-count">0</div>
+            </div>
+            <div class="pa-ideas-lista-wrap">
+              <div id="pa-ideas-lista"></div>
+            </div>
+            <div class="pa-ideas-input-row">
+              <input class="pa-ideas-inp" id="pa-ideas-input" type="text" placeholder="Anotá una idea..." onkeydown="if(event.key==='Enter') paGuardarIdea()">
+              <button class="pa-ideas-btn" onclick="paGuardarIdea()">Guardar</button>
             </div>
           </div>
         </div>
         <!-- 7. MIS LISTAS -->
         <div style="font-family:'DM Sans',sans-serif;font-size:10px;font-weight:500;color:#6b6b6b;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;">Mis listas</div>
         <div class="pa-listas-grid" id="listas-grid"></div>
-        <button onclick="crearLista()" style="width:100%;height:36px;border-radius:10px;border:none;background:linear-gradient(135deg,#3d5240 0%,#4a5e4d 45%,#5e7562 70%,#4a5e4d 100%);color:#e8f0e9;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;margin-top:10px;">+ Nueva lista</button>
+        <button class="pa-btn-nueva-lista" onclick="crearLista()">+ Nueva lista</button>
       </div>
 
       <!-- KPIs CLIENTE -->
@@ -11877,13 +11925,13 @@ function paRenderCalendario() {
     const isToday = d.toDateString() === now.toDateString();
     const tasks = _paTareas.filter(t => t.fechaVenc === ds);
     const hasPending = tasks.some(t => t.estado !== 'done');
-    let bg = 'transparent', color = '#2d2d2d';
-    if(isToday) { bg = 'linear-gradient(135deg,#3d5240 0%,#4a5e4d 45%,#5e7562 70%,#4a5e4d 100%)'; color = '#e8f0e9'; }
-    else if(tasks.length > 0) { bg = '#f5eeec'; color = '#7a4e46'; }
-    return `<div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
-      <div style="font-family:'DM Sans',sans-serif;font-size:9px;color:#6b6b6b;margin-bottom:2px;">${DIAS[i]}</div>
-      <div style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:${isToday?'500':'400'};background:${bg};color:${color};">${d.getDate()}</div>
-      <div style="width:5px;height:5px;border-radius:50%;background:${hasPending?'#b09088':'transparent'};"></div>
+    let numCls = 'pa-cal-dnum';
+    if(isToday) numCls += ' pa-cal-today';
+    else if(tasks.length > 0) numCls += ' pa-cal-hastask';
+    return `<div class="pa-cal-day">
+      <div class="pa-cal-dlbl">${DIAS[i]}</div>
+      <div class="${numCls}">${d.getDate()}</div>
+      <div class="pa-cal-dot" style="background:${hasPending?'#b09088':'transparent'}"></div>
     </div>`;
   }).join('');
   if(proximasEl) {
@@ -11895,16 +11943,16 @@ function paRenderCalendario() {
       .sort((a,b) => a._fv - b._fv)
       .slice(0,3);
     if(proximas.length === 0) {
-      proximasEl.innerHTML = '<div style="font-family:\'DM Sans\',sans-serif;font-size:12px;color:#6b6b6b;">Sin tareas programadas</div>';
+      proximasEl.innerHTML = '<div class="pa-cal-prox-item" style="color:#aaa;font-style:italic;font-size:11px;font-family:\'DM Sans\',sans-serif;">Sin tareas programadas</div>';
     } else {
       const PC = {Alta:'#b09088', Media:'#c8954a', Baja:'#4a5e4d'};
       proximasEl.innerHTML = proximas.map(t => {
         const dp = t.fechaVenc.split('-');
         const isHoy = t._fv.getTime() === hoy.getTime();
-        return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;">
-          <div style="width:6px;height:6px;border-radius:50%;background:${PC[t.prioridad]||'#c8954a'};flex-shrink:0;"></div>
-          <div style="font-family:'DM Sans',sans-serif;font-size:12px;color:#2d2d2d;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.titulo}</div>
-          <div style="font-family:'DM Sans',sans-serif;font-size:11px;color:${isHoy?'#c0392b':'#6b6b6b'};flex-shrink:0;">${isHoy?'Hoy':`${dp[2]}/${dp[1]}`}</div>
+        return `<div class="pa-cal-prox-item">
+          <div class="pa-cal-pdot" style="background:${PC[t.prioridad]||'#c8954a'}"></div>
+          <div class="pa-cal-pname">${t.titulo}</div>
+          <div class="pa-cal-pfecha" style="${isHoy?'color:#c0392b':''}">${isHoy?'Hoy':`${dp[2]}/${dp[1]}`}</div>
         </div>`;
       }).join('');
     }
@@ -12084,18 +12132,23 @@ async function paLoadIdeas() {
 }
 function paRenderIdeas() {
   const el = document.getElementById('pa-ideas-lista');
+  const cnt = document.getElementById('pa-ideas-count');
+  if(cnt) cnt.textContent = _paIdeas.length;
   if(!el) return;
   if(_paIdeas.length === 0) {
-    el.innerHTML = '<div style="font-family:\'DM Sans\',sans-serif;font-size:12px;color:#6b6b6b;padding:8px 0;text-align:center;">Todavía no hay ideas. ¡Anotá la primera!</div>';
+    el.innerHTML = '<div style="font-family:\'DM Sans\',sans-serif;font-size:12px;color:rgba(232,221,216,0.3);padding:8px 0;text-align:center;font-style:italic;">Todavía no hay ideas. ¡Anotá la primera!</div>';
     return;
   }
-  el.innerHTML = _paIdeas.map((idea,i) =>
-    `<div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid rgba(0,0,0,0.04);">
-      <span style="font-family:'DM Sans',sans-serif;font-size:12px;color:rgba(176,144,136,0.4);flex-shrink:0;min-width:16px;">${i+1}</span>
-      <span style="font-family:'DM Sans',sans-serif;font-size:12px;color:#2d2d2d;flex:1;line-height:1.4;">${idea.texto}</span>
-      <button onclick="paEliminarIdea('${idea.id}')" style="background:none;border:none;cursor:pointer;color:#6b6b6b;font-size:16px;padding:0;line-height:1;flex-shrink:0;">×</button>
-    </div>`
-  ).join('');
+  el.innerHTML = _paIdeas.map(idea => {
+    const fecha = idea.creadoEn ? new Date(idea.creadoEn).toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit'}) : '';
+    return `<div class="pa-idea-item">
+      <div style="flex:1">
+        <div class="pa-idea-txt">${idea.texto}</div>
+        ${fecha ? `<div class="pa-idea-fecha">${fecha}</div>` : ''}
+      </div>
+      <button class="pa-idea-del" onclick="paEliminarIdea('${idea.id}')">×</button>
+    </div>`;
+  }).join('');
 }
 window.paGuardarIdea = async function() {
   if(!currentClientUID) return;
@@ -12144,7 +12197,6 @@ function buildListaCard(l, i = 0) {
   const total = items.length;
   const comp = items.filter(it=>it.completado).length;
   const pct = total > 0 ? Math.round((comp/total)*100) : 0;
-  const isVerde = i % 2 === 0;
   const itemsHtml = items.map(item => `
     <div class="pa-lista-item${item.completado?' done':''}" id="pli-${l.id}-${item.id}">
       <div class="pa-lista-cb${item.completado?' checked':''}" onclick="toggleItemLista('${l.id}','${item.id}')">
@@ -12154,13 +12206,14 @@ function buildListaCard(l, i = 0) {
     </div>`).join('');
   return `<div class="pa-lista-card" id="lc-${l.id}">
     <button class="pa-lista-del-btn" onclick="eliminarLista('${l.id}')" title="Eliminar lista">
-      <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="rgba(0,0,0,.5)" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="rgba(255,255,255,.7)" stroke-width="1.3" stroke-linecap="round"/></svg>
     </button>
-    <div class="${isVerde?'pa-lista-franja-v':'pa-lista-franja-t'}"></div>
-    <div class="pa-lista-body">
+    <div class="pa-lista-header">
       <div class="pa-lista-nombre">${l.nombre}</div>
       <div class="pa-lista-prog-txt">${comp} de ${total} completados</div>
       <div class="pa-lista-prog-track"><div class="pa-lista-prog-fill" style="width:${pct}%;"></div></div>
+    </div>
+    <div class="pa-lista-body">
       <div class="pa-lista-items">${itemsHtml}</div>
     </div>
     <div class="pa-lista-add-row">
