@@ -5299,6 +5299,7 @@ async function loadAdminData() {
 
 function renderClientList(clients) {
   console.log('[MB] renderClientList called with', clients.length, 'clients');
+  if (clients.length > 0) console.log('[MB] primer cliente:', JSON.stringify(clients[0]));
   const avatarColors = ['#7A8E7D','#5A8A62','#4A6A8A','#B08A42','#C4786A','#6B7A60'];
 
   // Segmentos
@@ -5421,7 +5422,11 @@ function renderClientList(clients) {
       const items = grupos[tipo];
       if (!items || items.length === 0) return;
       html += `<div class="cli-sec-label" data-seccion="${tipo}" style="grid-column:1/-1;font-size:10px;font-weight:400;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;padding:10px 0 4px;">${secLabels[tipo]}</div>`;
-      items.forEach(c => { html += renderCard(c, gIdx++); });
+      items.forEach(c => {
+        console.log('[MB] renderCard para:', c.nombre || c.id);
+        try { html += renderCard(c, gIdx++); }
+        catch(err) { console.error('[MB] renderCard ERROR en cliente', c.id, err); }
+      });
     });
     html += '</div>';
   }
