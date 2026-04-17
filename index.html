@@ -16846,7 +16846,7 @@ function renderListaProveedores(filtro) {
     'linear-gradient(135deg,#a87838 0%,#c8954a 45%,#dea860 70%,#c8954a 100%)',
     'linear-gradient(135deg,#7e4458 0%,#9e5a6a 45%,#b47080 70%,#9e5a6a 100%)'
   ];
-  lista.style.cssText = 'display:flex;flex-direction:column;gap:6px;scrollbar-width:thin;scrollbar-color:rgba(74,94,77,0.3) transparent;';
+  lista.style.cssText = 'display:flex;flex-direction:column;gap:6px;overflow-y:auto;max-height:60vh;scrollbar-width:thin;scrollbar-color:rgba(74,94,77,0.3) transparent;';
   lista.innerHTML = provsFiltrados.map((p,i)=>{
     const col=avatarGrads[i%avatarGrads.length];
     const init=(p.nombre||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
