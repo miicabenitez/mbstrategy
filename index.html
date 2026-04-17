@@ -338,6 +338,10 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
   /* KPIs finanzas 2x2 en mobile */
   [style*="grid-template-columns:1.4fr"]{grid-template-columns:1fr 1fr !important;}
   #inicio-kpis{grid-template-columns:1fr 1fr !important;}
+  /* Inicio: accesos directos 1 col en mobile */
+  #inicio-accesos-grid{grid-template-columns:1fr !important;}
+  /* Inicio: barra de período ocupa ancho disponible */
+  #inicio-dias-slider{max-width:100%;}
   /* Sub-nav grid para cliente mobile */
   body.client-view .mod-subnav.visible{display:grid !important;grid-template-columns:1fr 1fr 1fr;gap:6px !important;margin-bottom:14px !important;}
   body.client-view .mod-subnav .subctab{white-space:normal !important;background:var(--white) !important;border:.5px solid var(--cream-d) !important;border-radius:10px !important;padding:10px !important;display:flex !important;align-items:center;justify-content:center;gap:6px;font-size:12px !important;text-align:center;}
@@ -1910,17 +1914,14 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
               <span id="inicio-dias-label" style="font-size:12px;color:var(--text-l);">días para cerrar</span>
             </div>
             <div id="inicio-dias-slider" style="flex:1;min-width:0;">
-              <div style="height:4px;background:var(--cream-d);border-radius:4px;overflow:hidden;">
-                <div id="inicio-mes-bar" style="height:100%;width:0%;background:#4a5e4d;border-radius:4px;transition:width .7s ease;"></div>
+              <div style="height:4px;background:rgba(0,0,0,0.06);border-radius:4px;overflow:hidden;">
+                <div id="inicio-mes-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#9a7870,#ccb0a8);border-radius:4px;transition:width .7s ease;"></div>
               </div>
               <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-l);margin-top:4px;">
                 <span id="inicio-dias-start"></span>
                 <span id="inicio-dias-hoy" style="color:#4a5e4d;font-weight:600;"></span>
                 <span id="inicio-dias-end"></span>
               </div>
-            </div>
-            <div style="flex-shrink:0;">
-              <span style="display:inline-flex;align-items:center;gap:3px;background:#FEF3C7;color:#92400E;border:.5px solid #F59E0B55;border-radius:20px;padding:4px 10px;font-size:11px;font-weight:600;white-space:nowrap;">Cierre <span id="inicio-dias-cierre"></span></span>
             </div>
           </div>
         </div>
@@ -1931,13 +1932,16 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         </div>
 
         <!-- Banner principal -->
-        <div class="dash-card" style="background:#4a5e4d;border-radius:14px;padding:22px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;">
+        <div class="dash-card" style="background:linear-gradient(135deg,#2d3d30 0%,#3d5240 50%,#4a5e4d 100%);border-radius:16px;padding:20px 22px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;">
           <div style="display:flex;align-items:center;gap:14px;">
-            <div id="inicio-logo-wrap" style="width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.12);border:.5px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="15" rx="2" stroke="#fff" stroke-width="1.5"/><path d="M8 6V5a2 2 0 014 0v1M12 6v15" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="13" r="1.5" fill="#fff"/><circle cx="16" cy="13" r="1.5" fill="#fff"/></svg>
+            <div id="inicio-logo-wrap" style="width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,#3d5240 0%,#5e7562 100%);border:2px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="15" rx="2" stroke="#fff" stroke-width="1.5"/><path d="M8 6V5a2 2 0 014 0v1M12 6v15" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="13" r="1.5" fill="#fff"/><circle cx="16" cy="13" r="1.5" fill="#fff"/></svg>
             </div>
             <div style="flex:1;min-width:0;">
-              <div id="inicio-negocio-nombre" style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;line-height:1.15;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Mi negocio</div>
+              <div style="display:flex;align-items:center;gap:8px;min-width:0;overflow:hidden;">
+                <div id="inicio-negocio-nombre" style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;line-height:1.15;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1;">Mi negocio</div>
+                <span id="inicio-salud-pill" style="display:none;align-items:center;gap:5px;font-size:10px;font-weight:700;color:#e8f0e9;background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.15);padding:4px 12px;border-radius:20px;white-space:nowrap;flex-shrink:0;"></span>
+              </div>
               <div id="inicio-fecha" style="font-size:12px;color:rgba(255,255,255,.6);margin-top:2px;"></div>
             </div>
           </div>
@@ -1974,22 +1978,18 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
               <div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:3px;">en caja</div>
             </div>
           </div>
-        </div>
-
-        <!-- Accesos directos -->
-        <div class="dash-card" style="background:var(--white);border:.5px solid var(--cream-d);border-radius:13px;padding:14px 16px;margin-bottom:14px;">
-          <div style="font-size:10px;font-weight:600;color:var(--text-l);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;">Accesos directos</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
-            <button onclick="onboardingAbrirMovimiento('ingreso')" style="display:flex;align-items:center;justify-content:center;gap:7px;padding:12px 8px;background:#E8F2E9;color:#2D5E35;border:none;border-radius:11px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+          <!-- Accesos directos dentro del banner -->
+          <div id="inicio-accesos-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px;">
+            <button onclick="onboardingAbrirMovimiento('ingreso')" style="display:flex;align-items:center;justify-content:center;gap:7px;padding:11px 8px;background:rgba(232,240,233,0.12);color:#e8f0e9;border:1px solid rgba(232,240,233,0.18);border-radius:10px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
               + Ingreso
             </button>
-            <button onclick="onboardingAbrirMovimiento('egreso')" style="display:flex;align-items:center;justify-content:center;gap:7px;padding:12px 8px;background:#FBEAE7;color:#8B3A30;border:none;border-radius:11px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+            <button onclick="onboardingAbrirMovimiento('egreso')" style="display:flex;align-items:center;justify-content:center;gap:7px;padding:11px 8px;background:rgba(176,144,136,0.18);color:#e8c4b8;border:1px solid rgba(176,144,136,0.22);border-radius:10px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
               + Egreso
             </button>
-            <button onclick="cajaVentaRapida()" style="display:flex;align-items:center;justify-content:center;gap:7px;padding:12px 8px;background:#4a5e4d;color:#fff;border:none;border-radius:11px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <button onclick="cajaVentaRapida()" style="display:flex;align-items:center;justify-content:center;gap:7px;padding:11px 8px;background:linear-gradient(135deg,#9a7870 0%,#b09088 45%,#ccb0a8 65%,#b09088 100%);color:#fff;border:none;border-radius:10px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
               + Venta caja
             </button>
           </div>
@@ -10524,6 +10524,8 @@ async function loadInicio() {
       }
       saludCard.style.cssText = 'display:block;border-radius:13px;padding:11px 16px;margin-bottom:10px;background:'+sBg+';border:.5px solid '+sBorder+';transition:background .4s,border-color .4s;';
       saludInner.innerHTML = sSvg+'<span style="color:'+sColor+';font-size:13px;font-weight:500;">'+sMsg+'</span>';
+      const saludPill = document.getElementById('inicio-salud-pill');
+      if(saludPill) { saludPill.style.display='inline-flex'; saludPill.textContent=sMsg; }
     }
 
     // Asegurar presupuestos actualizados para alertas
@@ -10616,32 +10618,33 @@ async function loadInicio() {
       }
 
       if(alertas.length === 0) {
-        alertasEl.innerHTML = '<div style="display:flex;align-items:center;gap:12px;padding:10px 0;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5A8A62" stroke-width="2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span style="font-size:13px;color:var(--text-m);">Todo al día — tu negocio está en orden</span></div>';
+        alertasEl.innerHTML = '<div style="display:flex;align-items:center;gap:12px;padding:10px 0;"><div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#3d5240 0%,#4a5e4d 50%,#5e7562 100%);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#e8f0e9" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><span style="font-size:13px;color:var(--text-m);">Todo al día — tu negocio está en orden</span></div>';
       } else {
-        const colorsMap = {urgente:{bg:'#fdf5f4',bar:'#C4786A'},atencion:{bg:'#fdf9ee',bar:'#D4A843'},positiva:{bg:'#f3f8f4',bar:'#5A8A62'}};
+        const colorsMap = {
+          urgente:{bg:'#f5eeec',bar:'#b09088',btnGrad:'linear-gradient(135deg,#9a7870 0%,#b09088 45%,#ccb0a8 65%,#b09088 100%)',btnColor:'#fff'},
+          atencion:{bg:'#fdf9ee',bar:'#D4A843',btnGrad:'linear-gradient(135deg,#9a7870 0%,#b09088 45%,#ccb0a8 65%,#b09088 100%)',btnColor:'#fff'},
+          positiva:{bg:'#e8f0e9',bar:'#4a5e4d',btnGrad:'linear-gradient(135deg,#3d5240 0%,#4a5e4d 45%,#5e7562 70%,#4a5e4d 100%)',btnColor:'#e8f0e9'}
+        };
         alertasEl.innerHTML = alertas.map((a,idx)=>{
           const cm = colorsMap[a.tipo]||colorsMap.urgente;
           const canDismiss = a.tipo !== 'urgente';
           const anim = 'animation:slideIn .35s ease both;animation-delay:'+(idx*60)+'ms;';
-          const pulse = a.tipo==='urgente' ? 'animation:alertPulse 2.5s ease infinite;' : '';
           const days = a.tipo==='positiva' ? 1 : 7;
           const dismissBtn = canDismiss ? '<button onclick="dismissAlerta(\'alerta-'+idx+'\',\''+a.key+'\','+days+')" style="background:none;border:none;cursor:pointer;padding:0;color:var(--text-l);font-size:18px;line-height:1;flex-shrink:0;" title="Descartar">×</button>' : '';
-          return '<div id="alerta-'+idx+'" style="display:flex;align-items:flex-start;gap:0;border-radius:10px;overflow:hidden;margin-bottom:8px;'+anim+pulse+'background:'+cm.bg+';border:.5px solid '+a.color+'22;">'+
-            '<div style="width:3px;min-height:100%;background:'+cm.bar+';flex-shrink:0;align-self:stretch;"></div>'+
+          return '<div id="alerta-'+idx+'" style="display:flex;align-items:flex-start;gap:0;border-radius:10px;overflow:hidden;margin-bottom:8px;'+anim+'background:'+cm.bg+';border-left:4px solid '+cm.bar+';">'+
             '<div style="padding:12px 12px 12px 14px;flex:1;min-width:0;">'+
               '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px;">'+
                 '<div style="display:flex;align-items:center;gap:8px;">'+a.svg+
                   '<span style="font-size:13px;font-weight:600;color:var(--text);">'+a.title+'</span>'+
                 '</div>'+
                 '<div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">'+
-                  (a.monto?'<span style="font-size:13px;font-weight:700;color:'+a.color+';">'+a.monto+'</span>':'')+
+                  (a.monto?'<span style="font-size:13px;font-weight:700;color:'+cm.bar+';">'+a.monto+'</span>':'')+
                   dismissBtn+
                 '</div>'+
               '</div>'+
               '<div style="font-size:12px;color:var(--text-l);margin-bottom:8px;">'+a.subtitle+'</div>'+
               '<div style="display:flex;align-items:center;gap:8px;">'+
-                '<button onclick="'+a.accionFn+'" style="font-size:11px;font-weight:500;color:'+a.color+';background:'+a.color+'15;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-family:inherit;">'+a.accionLabel+'</button>'+
-                '<span style="font-size:10px;color:var(--text-l);background:var(--cream-d);border-radius:4px;padding:2px 7px;font-weight:500;">'+a.tag+'</span>'+
+                '<button onclick="'+a.accionFn+'" style="font-size:11px;font-weight:600;color:'+cm.btnColor+';background:'+cm.btnGrad+';border:none;border-radius:6px;padding:5px 12px;cursor:pointer;font-family:inherit;">'+a.accionLabel+'</button>'+
               '</div>'+
             '</div>'+
           '</div>';
@@ -10679,8 +10682,11 @@ async function loadInicio() {
             else if(dias < 30) tiempo = 'hace '+dias+'d';
             else tiempo = new Date(m.fecha).toLocaleDateString('es-AR',{day:'numeric',month:'short'});
           }
+          const dotGrad = m.tipo==='ingreso'
+            ? 'linear-gradient(135deg,#3d5240 0%,#4a5e4d 50%,#5e7562 100%)'
+            : 'linear-gradient(135deg,#9a7870 0%,#b09088 50%,#ccb0a8 100%)';
           return '<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:.5px solid var(--cream);">'+
-            '<div style="width:32px;height:32px;border-radius:9px;background:'+color+'15;color:'+color+';display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;flex-shrink:0;">'+icon+'</div>'+
+            '<div style="width:28px;height:28px;border-radius:50%;background:'+dotGrad+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;">'+icon+'</div>'+
             '<div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+m.desc+'</div></div>'+
             '<div style="text-align:right;flex-shrink:0;"><div style="font-size:13px;font-weight:500;color:'+color+';">'+signo+'$'+(m.monto).toLocaleString('es-AR')+'</div>'+
             '<div style="font-size:11px;color:var(--text-l);">'+tiempo+'</div></div></div>';
