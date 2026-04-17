@@ -14965,26 +14965,30 @@ function renderOrdenesCompra() {
     return true;
   });
   if(ocsFiltered.length===0){el.innerHTML='<div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Sin resultados.</div>';return;}
-  const ocHeader = `<div style="display:flex;align-items:center;gap:10px;padding:6px 0 8px;border-bottom:1.5px solid var(--sage-light);">
-    <div style="width:44px;flex-shrink:0;font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Nº OC</div>
-    <div style="flex:1;font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Proveedor</div>
-    <div style="width:90px;text-align:right;font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;flex-shrink:0;">Monto</div>
-    <div style="width:96px;font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;flex-shrink:0;">Recepción</div>
+  const ocHeader = `<div style="display:grid;grid-template-columns:90px 1fr 110px 70px;align-items:center;padding:6px 0 8px 24px;border-bottom:1.5px solid var(--sage-light);">
+    <div style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Nº OC</div>
+    <div style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Proveedor</div>
+    <div style="text-align:right;font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Monto</div>
+    <div style="text-align:right;font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;"></div>
   </div>`;
   el.innerHTML=ocHeader+ocsFiltered.map(o=>{
     const estadoRec=o.estadoRecepcion||'emitida';
-    const toggleRecibida = estadoRec==='recibida'
-      ? `<div style="display:flex;align-items:center;gap:5px;flex-shrink:0;width:96px;" onclick="event.stopPropagation()"><button class="cprd-toggle on" title="Recibida" style="cursor:default;flex-shrink:0;"></button><span style="font-size:12px;color:var(--ok);font-weight:500;white-space:nowrap;">Recibida</span></div>`
-      : `<div style="display:flex;align-items:center;gap:5px;flex-shrink:0;width:96px;" onclick="event.stopPropagation()"><button class="cprd-toggle" onclick="marcarOCRecibida('${o.id}')" title="Por recibir — clic para marcar como recibida" style="flex-shrink:0;"></button><span style="font-size:12px;color:var(--text-l);white-space:nowrap;">Pendiente</span></div>`;
-    return `<div onclick="abrirDetalleOC('${o.id}')" style="display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:.5px solid var(--cream-d);cursor:pointer;position:relative;" onmouseenter="this.querySelector('.oc-actions').style.opacity='1'" onmouseleave="this.querySelector('.oc-actions').style.opacity='0'">
-      <div style="width:44px;height:40px;background:var(--sage-xl);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--sage-dark);flex-shrink:0;text-align:center;line-height:1.2;">OC-<br>${String(o.numero||0).padStart(3,'0')}</div>
-      <div style="flex:1;min-width:0;">
+    const franjaGrad = estadoRec==='recibida'
+      ? 'linear-gradient(180deg,#3d5240 0%,#4a5e4d 50%,#5e7562 100%)'
+      : 'linear-gradient(180deg,#9a7870 0%,#b09088 50%,#ccb0a8 100%)';
+    const recIcon = estadoRec==='recibida'
+      ? `<div onclick="event.stopPropagation()" style="display:flex;justify-content:flex-end;align-items:center;"><div style="width:28px;height:28px;border-radius:50%;background:#e8f0e9;display:flex;align-items:center;justify-content:center;"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><polyline points="3,9 7,13 13,3" stroke="#4a5e4d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>`
+      : `<div onclick="event.stopPropagation();marcarOCRecibida('${o.id}')" style="display:flex;justify-content:flex-end;align-items:center;cursor:pointer;" title="Por recibir — clic para marcar como recibida"><div style="width:28px;height:28px;border-radius:50%;background:#f5eeec;display:flex;align-items:center;justify-content:center;"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="4" cy="8" r="1.5" fill="#b09088"/><circle cx="8" cy="8" r="1.5" fill="#b09088"/><circle cx="12" cy="8" r="1.5" fill="#b09088"/></svg></div></div>`;
+    return `<div onclick="abrirDetalleOC('${o.id}')" style="display:grid;grid-template-columns:90px 1fr 110px 70px;align-items:center;padding:12px 0 12px 20px;border-bottom:.5px solid var(--cream-d);cursor:pointer;position:relative;" onmouseenter="this.querySelector('.oc-actions').style.opacity='1'" onmouseleave="this.querySelector('.oc-actions').style.opacity='0'">
+      <div style="position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:2px;background:${franjaGrad};"></div>
+      <div><span style="background:#e8f0e9;color:#4a5e4d;font-size:11px;font-weight:700;padding:4px 8px;border-radius:6px;white-space:nowrap;font-family:'DM Sans',sans-serif;">OC-${String(o.numero||0).padStart(3,'0')}</span></div>
+      <div style="min-width:0;">
         <div style="font-size:13px;font-weight:500;color:var(--text);">${o.proveedor||'—'}</div>
         <div style="font-size:11px;color:var(--text-l);margin-top:2px;">${(o.items||[]).length} ítem${(o.items||[]).length!==1?'s':''}${o.fecha?' · '+o.fecha:''}</div>
       </div>
-      <div style="width:90px;text-align:right;flex-shrink:0;"><div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:500;color:var(--text);white-space:nowrap;">$${(parseFloat(o.total)||0).toLocaleString('es-AR')}</div></div>
-      ${toggleRecibida}
-      <div class="oc-actions" style="display:flex;gap:3px;opacity:0;transition:opacity .15s;" onclick="event.stopPropagation()">
+      <div style="text-align:right;"><span style="font-size:14px;font-weight:600;color:#2d2d2d;white-space:nowrap;">$${(parseFloat(o.total)||0).toLocaleString('es-AR')}</span></div>
+      ${recIcon}
+      <div class="oc-actions" style="position:absolute;right:0;top:50%;transform:translateY(-50%);display:flex;gap:3px;opacity:0;transition:opacity .15s;background:var(--white);padding:4px;" onclick="event.stopPropagation()">
         <button onclick="abrirDetalleOC('${o.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Ver detalle"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#888780" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
         <button onclick="eliminarOC('${o.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
       </div>
