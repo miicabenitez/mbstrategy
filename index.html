@@ -5242,10 +5242,12 @@ function renderAdminDashboard() {
 }
 
 async function loadAdminData() {
+  console.log('[MB] loadAdminData called');
   try {
     const snap = await getDocs(collection(db, 'clientes'));
     const clients = [];
     snap.forEach(d => { const data=d.data(); if(!data.eliminado) clients.push({id:d.id,...data}); });
+    console.log('[MB] clients loaded:', clients.length);
     renderClientList(clients);
     window._allClients = clients;
     const sel = document.getElementById('cob-cliente');
@@ -5292,10 +5294,11 @@ async function loadAdminData() {
       peCliente.innerHTML = '<option value="">Sin cliente especifico</option>' + clients.map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('');
     }
     if(currentAdminTab === 'inicio') renderAdminDashboard();
-  } catch(e) { console.log('Error loading admin data:', e); }
+  } catch(e) { console.error('[MB] loadAdminData ERROR:', e); }
 }
 
 function renderClientList(clients) {
+  console.log('[MB] renderClientList called with', clients.length, 'clients');
   const avatarColors = ['#7A8E7D','#5A8A62','#4A6A8A','#B08A42','#C4786A','#6B7A60'];
 
   // Segmentos
