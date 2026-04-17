@@ -340,8 +340,12 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
   #inicio-kpis{grid-template-columns:1fr 1fr !important;}
   /* Inicio: accesos directos 1 col en mobile */
   #inicio-accesos-grid{grid-template-columns:1fr !important;}
-  /* Clientes: botones editar/eliminar debajo del nombre en mobile */
-  .mc-card-actions{position:static !important;margin-top:8px !important;display:flex !important;justify-content:flex-end !important;gap:6px !important;padding:0 8px 8px !important;}
+  /* Clientes: ocultar botones editar/eliminar en mobile */
+  .mc-card-actions{display:none !important;}
+  /* Clientes: KPIs banner 2 col en mobile */
+  #mc-kpi-clientes-grid{grid-template-columns:1fr 1fr !important;}
+  /* Caja: KPIs banner 2 col en mobile */
+  #caja-kpi-grid{grid-template-columns:1fr 1fr !important;}
   /* Inicio: pill debajo del nombre en mobile */
   #inicio-nombre-pill-wrap{flex-direction:column !important;align-items:flex-start !important;}
   #inicio-salud-pill{align-self:flex-start;}
@@ -2041,7 +2045,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         </button>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+    <div id="caja-kpi-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
       <div style="background:rgba(255,255,255,.08);border-radius:10px;padding:16px 20px;border:0.5px solid rgba(106,160,110,.4);">
         <div style="font-size:9px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px;">Entradas</div>
         <div id="caja-kpi-entradas" style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;color:#a8d4ac;">—</div>
@@ -2625,7 +2629,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
           <!-- Header banner -->
           <div style="background:#4a5e4d;border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;">
             <div style="font-family:'Cormorant Garamond',serif;font-size:22px;margin-bottom:16px;">Clientes</div>
-            <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;">
+            <div id="mc-kpi-clientes-grid" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;">
               <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
                 <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Clientes</div>
                 <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#fff;line-height:1;" id="mc-kpi-total">0</div>
