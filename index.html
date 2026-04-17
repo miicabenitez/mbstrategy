@@ -2674,50 +2674,52 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
           <button class="back-btn" onclick="closeMcDetalle()">← Volver a clientes</button>
 
           <!-- Header del cliente -->
-          <div class="card" style="margin-bottom:14px;">
-            <div style="display:flex;align-items:center;gap:14px;">
-              <div id="mcd-avatar" style="width:52px;height:52px;border-radius:14px;background:var(--sage-xl);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:500;color:var(--topbar);flex-shrink:0;">?</div>
-              <div style="flex:1;">
-                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-                  <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;" id="mcd-nombre">—</div>
-                </div>
-                <div style="display:flex;gap:20px;flex-wrap:wrap;margin-top:8px;">
-                  <div id="mcd-tel-wrap" style="display:none;"><div style="font-size:11px;color:#A1B1A4;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:1px;">Teléfono</div><div style="font-size:11px;color:var(--text);" id="mcd-tel"></div></div>
-                  <div id="mcd-email-wrap" style="display:none;"><div style="font-size:11px;color:#A1B1A4;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:1px;">Email</div><div style="font-size:11px;color:var(--text);" id="mcd-email"></div></div>
-                  <div id="mcd-dni-wrap" style="display:none;"><div style="font-size:11px;color:#A1B1A4;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:1px;">DNI</div><div style="font-size:11px;color:var(--text);" id="mcd-dni"></div></div>
-                  <div id="mcd-cuit-wrap" style="display:none;"><div style="font-size:11px;color:#A1B1A4;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:1px;">CUIT</div><div style="font-size:11px;color:var(--text);" id="mcd-cuit"></div></div>
-                  <div id="mcd-direccion-wrap" style="display:none;"><div style="font-size:11px;color:#A1B1A4;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:1px;">Dirección</div><div style="font-size:11px;color:var(--text);" id="mcd-direccion"></div></div>
-                  <span id="mcd-seguimiento-alert" style="font-size:11px;padding:2px 9px;border-radius:20px;display:none;align-self:flex-end;"></span>
+          <div class="card" style="margin-bottom:14px;overflow:hidden;padding:0;">
+            <div style="width:100%;height:5px;background:linear-gradient(90deg,#3d5240 0%,#4a5e4d 45%,#5e7562 100%);"></div>
+            <div style="padding:16px;position:relative;">
+              <button id="mcd-edit-btn" onclick="" style="position:absolute;top:12px;right:12px;width:28px;height:28px;border-radius:8px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <div style="display:flex;align-items:flex-start;gap:14px;">
+                <div id="mcd-avatar" style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#3d5240 0%,#4a5e4d 45%,#5e7562 70%,#4a5e4d 100%);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:500;color:#fff;flex-shrink:0;">?</div>
+                <div style="flex:1;padding-right:40px;">
+                  <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;margin-bottom:10px;" id="mcd-nombre">—</div>
+                  <div style="display:flex;gap:28px;flex-wrap:wrap;margin-bottom:8px;">
+                    <div id="mcd-tel-wrap" style="display:none;"><div style="font-size:9px;color:var(--text-l);font-weight:500;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;">Teléfono</div><div style="font-size:13px;color:var(--text);" id="mcd-tel"></div></div>
+                    <div id="mcd-email-wrap" style="display:none;"><div style="font-size:9px;color:var(--text-l);font-weight:500;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;">Email</div><div style="font-size:13px;color:var(--text);" id="mcd-email"></div></div>
+                    <div id="mcd-dni-wrap" style="display:none;"><div style="font-size:9px;color:var(--text-l);font-weight:500;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;">DNI</div><div style="font-size:13px;color:var(--text);" id="mcd-dni"></div></div>
+                    <div id="mcd-cuit-wrap" style="display:none;"><div style="font-size:9px;color:var(--text-l);font-weight:500;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;">CUIT</div><div style="font-size:13px;color:var(--text);" id="mcd-cuit"></div></div>
+                  </div>
+                  <div style="display:flex;gap:28px;flex-wrap:wrap;">
+                    <div id="mcd-direccion-wrap" style="display:none;"><div style="font-size:9px;color:var(--text-l);font-weight:500;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;">Dirección</div><div style="font-size:13px;color:var(--text);" id="mcd-direccion"></div></div>
+                    <span id="mcd-seguimiento-alert" style="font-size:11px;padding:2px 9px;border-radius:20px;display:none;align-self:flex-end;"></span>
+                  </div>
                 </div>
               </div>
-              <div style="display:flex;gap:6px;flex-shrink:0;">
-                <button id="mcd-quick-cobro" onclick="" style="background:#4a5e4d;border:none;border-radius:9px;padding:6px 11px;font-size:11px;color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;">+ Cobro</button>
-                <button id="mcd-quick-presup" onclick="" style="background:var(--sage-xl);border:.5px solid var(--sage-light);border-radius:9px;padding:6px 11px;font-size:11px;color:var(--topbar);cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;">+ Presupuesto</button>
-                <button id="mcd-edit-btn" onclick="" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <div id="mcd-notas-wrap" style="margin-top:12px;padding-top:12px;border-top:.5px solid var(--cream-d);display:none;">
+                <div style="font-size:11px;color:var(--text-l);margin-bottom:4px;">Descripción</div>
+                <div style="font-size:13px;color:var(--text-m);line-height:1.5;" id="mcd-notas"></div>
               </div>
-            </div>
-            <div id="mcd-notas-wrap" style="margin-top:12px;padding-top:12px;border-top:.5px solid var(--cream-d);display:none;">
-              <div style="font-size:11px;color:var(--text-l);margin-bottom:4px;">Descripción</div>
-              <div style="font-size:13px;color:var(--text-m);line-height:1.5;" id="mcd-notas"></div>
             </div>
           </div>
 
+          <!-- Barra de acciones -->
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:14px;">
+            <button id="mcd-quick-cobro" onclick="" style="background:linear-gradient(135deg,#3d5240 0%,#4a5e4d 45%,#5e7562 70%,#4a5e4d 100%);border:none;border-radius:9px;padding:0 16px;height:34px;font-size:13px;color:#e8f0e9;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;white-space:nowrap;">+ Cobro</button>
+            <button id="mcd-quick-presup" onclick="" style="background:#e8f0e9;border:none;border-radius:9px;padding:0 16px;height:34px;font-size:13px;color:#4a5e4d;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;white-space:nowrap;">+ Presupuesto</button>
+          </div>
+
           <!-- Cuenta Corriente — KPIs -->
-          <div style="background:#EDF0EA;border-radius:13px;padding:16px;margin-bottom:14px;border:.5px solid #C8D4CA;">
-            <div style="font-size:11px;font-weight:600;color:#7A9A7C;text-transform:uppercase;letter-spacing:1.8px;margin-bottom:12px;">Cuenta corriente</div>
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
-              <div style="background:#fff;border-radius:10px;padding:14px 16px;border:.5px solid #C8D4CA;">
-                <div style="font-size:11px;font-weight:600;color:#A1B1A4;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px;">Total vendido</div>
-                <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#3A4A3C;" id="mcd-total">—</div>
-              </div>
-              <div style="background:#fff;border-radius:10px;padding:14px 16px;border:.5px solid #C8D4CA;">
-                <div style="font-size:11px;font-weight:600;color:#A1B1A4;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px;">Cobrado</div>
-                <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#5A7A5E;" id="mcd-cobrado">$0</div>
-              </div>
-              <div style="background:#fff;border-radius:10px;padding:14px 16px;border:.5px solid #C8D4CA;">
-                <div style="font-size:11px;font-weight:600;color:#A1B1A4;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px;">Pendiente</div>
-                <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#B08A42;" id="mcd-pendiente">$0</div>
-              </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;">
+            <div style="background:#ffffff;border-radius:10px;padding:12px 16px;border:1px solid rgba(0,0,0,0.06);">
+              <div style="font-size:9px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Total vendido</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:#4a5e4d;" id="mcd-total">—</div>
+            </div>
+            <div style="background:#ffffff;border-radius:10px;padding:12px 16px;border:1px solid rgba(0,0,0,0.06);">
+              <div style="font-size:9px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Cobrado</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:#4a5e4d;" id="mcd-cobrado">$0</div>
+            </div>
+            <div style="background:#ffffff;border-radius:10px;padding:12px 16px;border:1px solid rgba(0,0,0,0.06);">
+              <div style="font-size:9px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Pendiente</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:#b09088;" id="mcd-pendiente">$0</div>
             </div>
           </div>
 
@@ -2725,19 +2727,19 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
             <!-- Columna izquierda: Ventas + Cobros -->
             <div>
               <!-- Ventas (presupuestos aprobados) -->
-              <div class="card" style="margin-bottom:12px;">
+              <div class="card" style="margin-bottom:12px;background:#ffffff;border:1px solid rgba(0,0,0,0.06);">
                 <div class="ct">Ventas</div>
                 <div id="mcd-ventas"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin ventas aún. Aprobá un presupuesto.</div></div>
               </div>
 
               <!-- Cobros recibidos -->
-              <div class="card" style="margin-bottom:12px;">
+              <div class="card" style="margin-bottom:12px;background:#ffffff;border:1px solid rgba(0,0,0,0.06);">
                 <div class="ct">Cobros recibidos</div>
                 <div id="mcd-cobros-list"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin cobros registrados.</div></div>
               </div>
 
               <!-- Presupuestos -->
-              <div class="card">
+              <div class="card" style="background:#ffffff;border:1px solid rgba(0,0,0,0.06);">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px;">
                   <div class="ct" style="margin:0;">Presupuestos</div>
                   <button class="bp" id="mcd-new-presup-btn" onclick="">+ Nuevo</button>
@@ -2748,18 +2750,18 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 
             <!-- Columna derecha: Historial + Notas -->
             <div>
-              <div class="card" style="margin-bottom:12px;">
+              <div class="card" style="margin-bottom:12px;background:#ffffff;border:1px solid rgba(0,0,0,0.06);">
                 <div class="ct">Historial de actividad</div>
                 <div id="mcd-historial" style="max-height:240px;overflow-y:auto;">
                   <div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin actividad registrada aún.</div>
                 </div>
               </div>
-              <div class="card">
+              <div class="card" style="background:#ffffff;border:1px solid rgba(0,0,0,0.06);">
                 <div class="ct">Notas internas</div>
-                <div id="mcd-notas-list" style="max-height:140px;overflow-y:auto;margin-bottom:10px;"></div>
-                <textarea class="na" id="mcd-nota-input" style="min-height:60px;" placeholder="Anotá algo sobre este cliente..."></textarea>
+                <div id="mcd-notas-list" style="max-height:140px;overflow-y:auto;margin-bottom:10px;border-bottom:1px solid rgba(0,0,0,0.06);padding-bottom:10px;"></div>
+                <textarea class="na" id="mcd-nota-input" style="min-height:60px;border:1px solid rgba(74,94,77,0.2);background:#fafafa;" placeholder="Anotá algo sobre este cliente..."></textarea>
                 <div style="margin-top:8px;">
-                  <button class="bp" style="font-size:12px;" id="mcd-nota-btn" onclick="">Guardar nota</button>
+                  <button style="background:linear-gradient(135deg,#3d5240 0%,#4a5e4d 45%,#5e7562 70%,#4a5e4d 100%);border:none;border-radius:6px;height:28px;padding:0 14px;font-size:11px;color:#e8f0e9;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;" id="mcd-nota-btn" onclick="">Guardar nota</button>
                 </div>
                 <div class="saved-msg" id="mcd-nota-saved">✓ Nota guardada</div>
               </div>
@@ -12137,8 +12139,8 @@ window.openMcDetalle = async function(id) {
     setEl('mcd-cobrado', fmt(cobradoReal));
     const pendEl = document.getElementById('mcd-pendiente');
     if(pendEl) {
-      if(saldo < 0) { pendEl.textContent = 'Saldo a favor: '+fmt(saldo); pendEl.style.color='#5A7A5E'; }
-      else { pendEl.textContent = fmt(saldo); pendEl.style.color='#B08A42'; }
+      if(saldo < 0) { pendEl.textContent = 'Saldo a favor: '+fmt(saldo); pendEl.style.color='#4a5e4d'; }
+      else { pendEl.textContent = fmt(saldo); pendEl.style.color='#b09088'; }
     }
   } catch(e) {
     // Fallback a totalCobrado guardado
@@ -12147,8 +12149,8 @@ window.openMcDetalle = async function(id) {
     setEl('mcd-cobrado', fmt(cobrado));
     const pendEl = document.getElementById('mcd-pendiente');
     if(pendEl) {
-      if(saldo < 0) { pendEl.textContent = 'Saldo a favor: '+fmt(saldo); pendEl.style.color='#5A7A5E'; }
-      else { pendEl.textContent = fmt(saldo); pendEl.style.color='#B08A42'; }
+      if(saldo < 0) { pendEl.textContent = 'Saldo a favor: '+fmt(saldo); pendEl.style.color='#4a5e4d'; }
+      else { pendEl.textContent = fmt(saldo); pendEl.style.color='#b09088'; }
     }
   }
 
@@ -12222,8 +12224,10 @@ async function renderMcHistorial(clienteId) {
     if (items.length === 0) { el.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin actividad registrada aún.</div>'; return; }
     el.innerHTML = items.slice(0,10).map(it => {
       const f = new Date(it.fecha).toLocaleDateString('es-AR', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
+      const txt = (it.texto||'').toLowerCase();
+      const dotColor = txt.includes('cobro') ? '#4a5e4d' : (txt.includes('presupuesto') && txt.includes('aprobado')) ? '#b09088' : txt.includes('presupuesto') ? '#ccc' : '#4a5e4d';
       return `<div style="display:flex;gap:10px;padding:8px 0;border-bottom:.5px solid var(--cream-d);">
-        <div style="width:6px;height:6px;border-radius:50%;background:var(--sage);flex-shrink:0;margin-top:5px;"></div>
+        <div style="width:6px;height:6px;border-radius:50%;background:${dotColor};flex-shrink:0;margin-top:5px;"></div>
         <div style="flex:1;">
           <div style="font-size:12px;color:var(--text-m);">${it.texto}</div>
           <div style="font-size:11px;color:var(--text-l);margin-top:2px;">${f}</div>
@@ -12385,20 +12389,20 @@ async function loadMcCobrosList(clienteId) {
     ).reduce((s,p)=>s+getPresupMonto(p),0);
     const saldoAFavor = totalPresupuestado > 0 && total > totalPresupuestado ? total - totalPresupuestado : 0;
     const formaIcon = {'Transferencia':'⇄','Efectivo':'💵','Tarjeta':'💳','QR':'◉'};
-    el.innerHTML = `<div style="background:var(--ok-bg);border-radius:9px;padding:10px 14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
-      <span style="font-size:12px;color:var(--ok);">Total cobrado</span>
+    el.innerHTML = `<div style="background:#e8f0e9;border-radius:8px;padding:10px 14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:9px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Total cobrado</span>
       <div style="text-align:right;">
-        <span style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:500;color:var(--ok);">$${total.toLocaleString('es-AR')}</span>
-        ${saldoAFavor>0?`<div style="font-size:11px;color:var(--ok);opacity:.8;">Saldo a favor: $${saldoAFavor.toLocaleString('es-AR')}</div>`:''}
+        <span style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:#4a5e4d;">$${total.toLocaleString('es-AR')}</span>
+        ${saldoAFavor>0?`<div style="font-size:11px;color:#4a5e4d;opacity:.8;">Saldo a favor: $${saldoAFavor.toLocaleString('es-AR')}</div>`:''}
       </div>
-    </div>` + cobros.map(c => `<div class="row" style="align-items:center;">
+    </div>` + cobros.map(c => `<div style="background:#fafafa;border-radius:8px;padding:10px 12px;border:1px solid rgba(0,0,0,0.05);margin-bottom:6px;display:flex;align-items:center;">
       <div style="flex:1;">
-        <div class="rn">${c.concepto||'Cobro'}</div>
-        <div class="rs">${c.fecha||''} ${c.formaPago ? '· <span style="font-size:11px;padding:1px 7px;border-radius:20px;background:var(--cream);color:var(--text-m);">'+(formaIcon[c.formaPago]||'')+' '+c.formaPago+'</span>' : ''}</div>
+        <div style="font-size:13px;font-weight:500;color:var(--text);">${c.concepto||'Cobro'}</div>
+        <div style="font-size:11px;color:var(--text-l);margin-top:2px;">${c.fecha||''} ${c.formaPago ? '· <span style="font-size:11px;padding:1px 7px;border-radius:20px;background:var(--cream);color:var(--text-m);">'+(formaIcon[c.formaPago]||'')+' '+c.formaPago+'</span>' : ''}</div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;">
-        <span style="font-size:12px;color:var(--text-m);">${c.moneda||'ARS'}</span>
-        <b style="color:var(--ok);">$${parseFloat(c.monto).toLocaleString('es-AR')}</b>
+        <span style="font-size:12px;color:var(--text-l);">${c.moneda||'ARS'}</span>
+        <span style="font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:700;color:#4a5e4d;">$${parseFloat(c.monto).toLocaleString('es-AR')}</span>
         <button onclick="eliminarCobro('${clienteId}','${c.id}',${parseFloat(c.monto)||0})" style="background:none;border:none;color:var(--err);cursor:pointer;font-size:14px;padding:2px 4px;line-height:1;" title="Eliminar cobro">×</button>
       </div>
     </div>`).join('');
@@ -12589,9 +12593,10 @@ async function renderMcDetalleNotas(clienteId) {
     snap.forEach(d => { const data=d.data(); if(!data.eliminado) notas.push({id:d.id,...data}); });
     notas.sort((a,b) => new Date(b.fecha||0) - new Date(a.fecha||0));
     if (notas.length === 0) { el.innerHTML = '<div style="font-size:12px;color:var(--text-l);padding:4px 0;">Sin notas aún.</div>'; return; }
-    el.innerHTML = notas.slice(0,5).map(n => {
+    el.innerHTML = notas.slice(0,5).map((n, i) => {
       const f = n.fecha ? new Date(n.fecha).toLocaleDateString('es-AR',{day:'numeric',month:'short'}) : '';
-      return `<div class="note-item"><div class="note-text">${n.texto}</div><div class="note-date">${f}</div></div>`;
+      const borderColor = i % 2 === 0 ? '#4a5e4d' : '#b09088';
+      return `<div style="background:#fafafa;border-radius:8px;padding:10px 12px;margin-bottom:6px;border-left:3px solid ${borderColor};"><div style="font-family:'DM Sans',sans-serif;font-size:12px;font-weight:400;color:var(--text-m);line-height:1.5;">${n.texto}</div><div style="font-size:10px;color:var(--text-l);margin-top:4px;">${f}</div></div>`;
     }).join('');
   } catch(e) {}
 }
@@ -12880,14 +12885,14 @@ function renderMcVentas(presups, clienteId) {
           $ Registrar cobro${cobradoPresup > 0 ? ' — Saldo: $'+pendiente.toLocaleString('es-AR') : ''}
         </button>`
       : `<div style="font-size:11px;color:var(--ok);font-weight:500;padding:4px 0;">✓ Presupuesto completamente cobrado</div>`;
-    return `<div style="background:var(--cream);border-radius:10px;padding:13px 14px;margin-bottom:8px;">
+    return `<div style="background:#fafafa;border-radius:8px;padding:10px 12px;border:1px solid rgba(0,0,0,0.05);margin-bottom:8px;">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px;">
         <div style="flex:1;">
           <div style="font-size:13px;font-weight:500;color:var(--text);">${p.descripcion||'Venta'}</div>
           <div style="font-size:11px;color:var(--text-l);margin-top:2px;">${fecha} ${p.moneda&&p.moneda!=='ARS'?'· '+p.moneda:''}</div>
         </div>
         <div style="text-align:right;flex-shrink:0;">
-          <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:500;color:var(--topbar);">$${monto.toLocaleString('es-AR')}</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:700;color:#4a5e4d;">$${monto.toLocaleString('es-AR')}</div>
           <span style="font-size:11px;font-weight:500;padding:1px 8px;border-radius:20px;background:var(--ok-bg);color:var(--ok);">Aprobado</span>
         </div>
       </div>
