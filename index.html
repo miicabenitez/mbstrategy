@@ -825,23 +825,40 @@ input[type=number]{-moz-appearance:textfield;}
 .pa-lista-add-btn{background:none;border:none;cursor:pointer;font-size:16px;color:#4a5e4d;padding:0 2px;line-height:1;}
 .pa-lista-del-btn{background:none;border:none;cursor:pointer;opacity:0;transition:opacity .15s;padding:2px;position:absolute;top:8px;right:10px;}
 .pa-lista-card:hover .pa-lista-del-btn{opacity:1;}
-.pom-card{background:#ffffff !important;border-radius:12px !important;border:1px solid rgba(0,0,0,0.06) !important;padding:18px 20px !important;}
-.pom-head{display:flex !important;align-items:center !important;margin-bottom:18px !important;}
-.pom-titulo{font-size:14px !important;font-weight:600 !important;color:#2d2d2d !important;flex:1 !important;font-family:'DM Sans',sans-serif !important;}
-.pom-info{display:inline-flex !important;align-items:center !important;gap:5px !important;background:#e8f0e9 !important;color:#4a5e4d !important;font-size:10px !important;font-weight:600 !important;padding:4px 11px !important;border-radius:20px !important;cursor:pointer !important;position:relative !important;}
-.pom-body{display:flex !important;align-items:center !important;gap:22px !important;}
-.pom-circ{width:110px !important;height:110px !important;border-radius:50% !important;background:#e8f0e9 !important;border:3px solid #d4e6d4 !important;flex-shrink:0 !important;position:relative !important;overflow:hidden !important;display:flex !important;align-items:center !important;justify-content:center !important;}
-.pom-arc{position:absolute !important;inset:0 !important;border-radius:50% !important;background:conic-gradient(rgba(74,94,77,0.22) 0deg 0deg,transparent 0deg) !important;}
-.pom-circ-txt{position:relative !important;z-index:1 !important;display:flex !important;flex-direction:column !important;align-items:center !important;}
-.pom-timer{font-family:'DM Sans',sans-serif !important;font-size:30px !important;font-weight:700 !important;color:#4a5e4d !important;line-height:1 !important;}
-.pom-foco{font-size:9px !important;font-weight:700 !important;letter-spacing:0.08em !important;text-transform:uppercase !important;color:#4a5e4d !important;opacity:0.65 !important;margin-top:3px !important;}
-.pom-right{flex:1 !important;display:flex !important;flex-direction:column !important;gap:12px !important;}
-.pom-lbl{font-size:9px !important;font-weight:700 !important;letter-spacing:0.08em !important;text-transform:uppercase !important;color:#6b6b6b !important;margin-bottom:3px !important;}
-.pom-task-name{font-size:13px !important;font-weight:500 !important;color:#2d2d2d !important;font-family:'DM Sans',sans-serif !important;}
-.pom-rounds{display:flex !important;align-items:center !important;gap:5px !important;}
-.pom-btns{display:flex !important;gap:8px !important;align-items:center !important;}
-.pom-btn-iniciar{height:34px !important;padding:0 18px !important;border-radius:20px !important;background:linear-gradient(135deg,#3d5240,#4a5e4d,#5e7562,#4a5e4d) !important;color:#e8f0e9 !important;font-family:'DM Sans',sans-serif !important;font-size:12px !important;font-weight:600 !important;display:inline-flex !important;align-items:center !important;gap:6px !important;border:none !important;cursor:pointer !important;}
-.pom-btn-saltar{height:34px !important;padding:0 14px !important;border-radius:20px !important;background:#fafafa !important;border:1px solid rgba(0,0,0,0.09) !important;color:#6b6b6b !important;font-family:'DM Sans',sans-serif !important;font-size:12px !important;cursor:pointer !important;}
+@keyframes paPulse{0%{transform:scale(1)}50%{transform:scale(1.03)}100%{transform:scale(1)}}
+@keyframes paSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+@keyframes paShimmer{0%{opacity:0.08}50%{opacity:0.2}100%{opacity:0.08}}
+@keyframes paGlow{0%{opacity:0.4}50%{opacity:1}100%{opacity:0.4}}
+.pom-card{background:#fff !important;border-radius:16px !important;border:1px solid rgba(0,0,0,0.06) !important;overflow:hidden !important;text-align:center !important;}
+.pom-stripe{height:5px !important;background:linear-gradient(90deg,#3d5240 0%,#4a5e4d 25%,#5e7562 40%,#9a7870 60%,#b09088 75%,#ccb0a8 100%) !important;}
+.pom-inner{padding:24px !important;}
+.pom-head{display:flex !important;align-items:center !important;justify-content:space-between !important;margin-bottom:20px !important;text-align:left !important;}
+.pom-titulo{font-size:18px !important;font-weight:700 !important;color:#2d2d2d !important;font-family:'DM Sans',sans-serif !important;}
+.pom-info{display:inline-flex !important;align-items:center !important;gap:5px !important;background:#e8f0e9 !important;color:#4a5e4d !important;font-size:10px !important;font-weight:600 !important;padding:5px 12px !important;border-radius:20px !important;position:relative !important;}
+.pom-foco-label{font-size:11px !important;font-weight:700 !important;letter-spacing:0.15em !important;text-transform:uppercase !important;margin-bottom:10px !important;transition:all 0.3s !important;}
+.pom-foco-off{color:rgba(74,94,77,0.25) !important;}
+.pom-foco-on{color:#4a5e4d !important;animation:paGlow 2s ease-in-out infinite !important;}
+.pom-circ-wrap{position:relative !important;width:160px !important;height:160px !important;margin:0 auto 22px !important;}
+.pom-circ-wrap.pom-idle{animation:paPulse 2.5s ease-in-out infinite !important;}
+.pom-idle .pom-ring-shine{animation:paShimmer 2.5s ease-in-out infinite !important;}
+.pom-circ-wrap.pom-active .pom-ring{animation:paSpin 8s linear infinite !important;}
+.pom-circ-wrap.pom-active .pom-ring-shine{animation:paSpin 6s linear infinite reverse !important;}
+.pom-ring{position:absolute !important;inset:0 !important;border-radius:50% !important;background:conic-gradient(#3d5240 0deg,#4a5e4d 60deg,#5e7562 120deg,#5e7562 180deg,#9a7870 180deg,#b09088 240deg,#ccb0a8 300deg,#ccb0a8 360deg) !important;}
+.pom-ring-shine{position:absolute !important;inset:0 !important;border-radius:50% !important;background:conic-gradient(rgba(255,255,255,0.15) 0deg,rgba(255,255,255,0) 45deg,rgba(255,255,255,0.18) 90deg,rgba(255,255,255,0) 135deg,rgba(255,255,255,0.12) 180deg,rgba(255,255,255,0) 225deg,rgba(255,255,255,0.15) 270deg,rgba(255,255,255,0) 315deg,rgba(255,255,255,0.15) 360deg) !important;}
+.pom-ring-inner{position:absolute !important;inset:9px !important;border-radius:50% !important;background:#fff !important;display:flex !important;align-items:center !important;justify-content:center !important;z-index:2 !important;}
+.pom-timer{font-size:44px !important;font-weight:700 !important;color:#2d2d2d !important;line-height:1 !important;font-family:'DM Sans',sans-serif !important;}
+.pom-task-wrap{display:flex !important;align-items:center !important;justify-content:center !important;gap:8px !important;margin-bottom:14px !important;}
+.pom-task-dot{width:8px !important;height:8px !important;border-radius:50% !important;background:#b09088 !important;}
+.pom-task-name{font-size:15px !important;font-weight:600 !important;color:#2d2d2d !important;font-family:'DM Sans',sans-serif !important;}
+.pom-rounds{display:flex !important;align-items:center !important;justify-content:center !important;gap:8px !important;margin-bottom:22px !important;}
+.pom-rd-g{width:12px !important;height:12px !important;border-radius:50% !important;background:linear-gradient(135deg,#3d5240,#5e7562) !important;}
+.pom-rd-t{width:12px !important;height:12px !important;border-radius:50% !important;background:linear-gradient(135deg,#9a7870,#ccb0a8) !important;}
+.pom-rd-e{width:12px !important;height:12px !important;border-radius:50% !important;background:rgba(0,0,0,0.06) !important;}
+.pom-rd-lbl{font-size:13px !important;color:#6b6b6b !important;font-weight:600 !important;margin-left:4px !important;}
+.pom-btns{display:flex !important;gap:10px !important;justify-content:center !important;}
+.pom-btn-start{height:44px !important;padding:0 28px !important;border-radius:22px !important;background:#3d5240 !important;color:#e8f0e9 !important;font-size:15px !important;font-weight:700 !important;display:inline-flex !important;align-items:center !important;gap:8px !important;border:none !important;cursor:pointer !important;}
+.pom-btn-pause{height:44px !important;padding:0 28px !important;border-radius:22px !important;background:#7a4e46 !important;color:#fff !important;font-size:15px !important;font-weight:700 !important;display:inline-flex !important;align-items:center !important;gap:8px !important;border:none !important;cursor:pointer !important;}
+.pom-btn-skip{height:44px !important;padding:0 22px !important;border-radius:22px !important;background:#fff !important;border:1.5px solid rgba(0,0,0,0.1) !important;color:#6b6b6b !important;font-size:15px !important;cursor:pointer !important;}
 @media(max-width:768px){
   .pa-tasks-board{grid-template-columns:1fr;}
   .pa-cal-ideas-grid{grid-template-columns:1fr;}
@@ -2454,38 +2471,35 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         </div>
         <!-- 4. POMODORO -->
         <div class="pom-card" style="margin-bottom:14px;">
-          <div class="pom-head">
-            <div class="pom-titulo">Pomodoro</div>
-            <div class="pom-info" onclick="paPomotooltipToggle()">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-              ¿Qué es esto?
-              <div id="pa-pomo-tooltip" style="display:none;position:absolute;top:calc(100% + 6px);left:0;background:#2d2d2d;color:#fff;font-family:'DM Sans',sans-serif;font-size:11px;border-radius:8px;padding:10px 12px;width:220px;z-index:100;line-height:1.5;font-weight:400;">Trabajá 25 min sin interrupciones, descansá 5 min. Repetí 4 veces para máxima productividad.</div>
-            </div>
-          </div>
-          <div class="pom-body">
-            <div class="pom-circ">
-              <div id="pa-pomo-arc" class="pom-arc"></div>
-              <div class="pom-circ-txt">
-                <span id="pa-pomo-display" class="pom-timer">25:00</span>
-                <span id="pa-pomo-mode" class="pom-foco">FOCO</span>
+          <div class="pom-stripe"></div>
+          <div class="pom-inner">
+            <div class="pom-head">
+              <div class="pom-titulo">Pomodoro</div>
+              <div class="pom-info" id="pa-pomo-info-btn" onclick="paPomotooltipToggle()">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                ¿Qué es esto?
+                <div id="pa-pomo-tooltip" style="display:none;position:absolute;top:calc(100% + 6px);right:0;background:#2d2d2d;color:#fff;font-family:'DM Sans',sans-serif;font-size:11px;border-radius:8px;padding:10px 12px;width:220px;z-index:100;line-height:1.5;font-weight:400;">Trabajá 25 min sin interrupciones, descansá 5 min. Repetí 4 veces para máxima productividad.</div>
               </div>
             </div>
-            <div class="pom-right">
-              <div>
-                <div class="pom-lbl">Tarea activa</div>
-                <div id="pa-pomo-task-name" class="pom-task-name">Sin tarea asignada</div>
+            <div class="pom-foco-label pom-foco-off" id="pa-pomo-foco">Foco</div>
+            <div class="pom-circ-wrap pom-idle" id="pa-pomo-circ">
+              <div class="pom-ring"></div>
+              <div class="pom-ring-shine"></div>
+              <div class="pom-ring-inner">
+                <div class="pom-timer" id="pa-pomo-display">25:00</div>
               </div>
-              <div>
-                <div class="pom-lbl">Rondas</div>
-                <div id="pa-pomo-rounds" class="pom-rounds"></div>
-              </div>
-              <div class="pom-btns">
-                <button id="pa-pomo-btn" class="pom-btn-iniciar" onclick="paPomoToggle()">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                  <span id="pa-pomo-btn-txt">Iniciar</span>
-                </button>
-                <button id="pa-pomo-skip" class="pom-btn-saltar" onclick="paPomoSkip()">Saltar</button>
-              </div>
+            </div>
+            <div class="pom-task-wrap">
+              <div class="pom-task-dot"></div>
+              <div class="pom-task-name" id="pa-pomo-task-name">Sin tarea asignada</div>
+            </div>
+            <div class="pom-rounds" id="pa-pomo-rounds"></div>
+            <div class="pom-btns">
+              <button class="pom-btn-start" id="pa-pomo-btn" onclick="paPomoToggle()">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                <span id="pa-pomo-btn-txt">Iniciar</span>
+              </button>
+              <button class="pom-btn-skip" id="pa-pomo-skip" onclick="paPomoSkip()">Saltar</button>
             </div>
           </div>
         </div>
@@ -11891,21 +11905,31 @@ function paPomoUpdateUI() {
   const mins = Math.floor(_pomo.remaining/60);
   const secs = _pomo.remaining%60;
   const te = document.getElementById('pa-pomo-display');
-  const me = document.getElementById('pa-pomo-mode');
-  const ae = document.getElementById('pa-pomo-arc');
+  const ce = document.getElementById('pa-pomo-circ');
+  const fe = document.getElementById('pa-pomo-foco');
   const be = document.getElementById('pa-pomo-btn');
   const re = document.getElementById('pa-pomo-rounds');
   if(te) te.textContent = `${mins}:${secs.toString().padStart(2,'0')}`;
-  if(me) me.textContent = _pomo.mode === 'focus' ? 'FOCO' : 'DESCANSO';
-  if(ae) {
-    const elapsed = _pomo.total - _pomo.remaining;
-    const deg = Math.round((elapsed / _pomo.total) * 360);
-    ae.style.background = `conic-gradient(rgba(74,94,77,0.25) 0deg,rgba(74,94,77,0.25) ${deg}deg,transparent ${deg}deg)`;
+  if(ce) { ce.classList.toggle('pom-idle', !_pomo.running); ce.classList.toggle('pom-active', !!_pomo.running); }
+  if(fe) {
+    const isFocus = _pomo.mode === 'focus';
+    fe.classList.toggle('pom-foco-off', !_pomo.running);
+    fe.classList.toggle('pom-foco-on', !!_pomo.running);
+    fe.textContent = isFocus ? 'Foco' : 'Descanso';
   }
-  if(be) { const bt = document.getElementById('pa-pomo-btn-txt'); if(bt) bt.textContent = _pomo.running ? 'Pausar' : 'Iniciar'; }
+  if(be) {
+    if(_pomo.running) {
+      be.className = 'pom-btn-pause';
+      be.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg><span id="pa-pomo-btn-txt">Pausar</span>';
+    } else {
+      be.className = 'pom-btn-start';
+      be.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg><span id="pa-pomo-btn-txt">Iniciar</span>';
+    }
+  }
   if(re) {
     const r = parseInt(localStorage.getItem('pa_pomo_rounds')||'0');
-    re.innerHTML = Array.from({length:4},(_,i) => `<div style="width:9px;height:9px;border-radius:50%;background:${i<r?'#4a5e4d':'rgba(0,0,0,0.08)'}"></div>`).join('') + `<span style="font-family:'DM Sans',sans-serif;font-size:11px;color:#6b6b6b;margin-left:4px;">${r} / 4</span>`;
+    const colors = ['pom-rd-g','pom-rd-t','pom-rd-g','pom-rd-t'];
+    re.innerHTML = Array.from({length:4},(_,i) => `<div class="${i<r?colors[i]:'pom-rd-e'}"></div>`).join('') + `<span class="pom-rd-lbl">${r} / 4</span>`;
   }
 }
 window.paPomoToggle = function() {
