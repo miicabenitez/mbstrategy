@@ -14966,7 +14966,7 @@ function renderOrdenesCompra() {
   });
   if(ocsFiltered.length===0){el.innerHTML='<div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Sin resultados.</div>';return;}
   const fmtMonto = v => '$' + new Intl.NumberFormat('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(parseFloat(v)||0);
-  const ocHeader = `<div style="display:grid;grid-template-columns:90px 1fr 110px 130px 80px;align-items:center;padding:6px 0 8px 24px;border-bottom:1.5px solid var(--sage-light);">
+  const ocHeader = `<div style="display:grid;grid-template-columns:90px 1fr 110px 130px 80px;column-gap:12px;align-items:center;padding:6px 0 8px 24px;border-bottom:1.5px solid var(--sage-light);">
     <div style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Nº OC</div>
     <div style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Proveedor</div>
     <div style="text-align:right;font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Monto</div>
@@ -14981,7 +14981,7 @@ function renderOrdenesCompra() {
     const recPill = estadoRec==='recibida'
       ? `<div onclick="event.stopPropagation()" style="display:inline-flex;align-items:center;gap:6px;background:#e8f0e9;color:#2e4d31;font-size:11px;font-weight:600;padding:5px 11px;border-radius:20px;white-space:nowrap;font-family:'DM Sans',sans-serif;"><span style="width:6px;height:6px;border-radius:50%;background:#4a5e4d;flex-shrink:0;"></span>Recibida</div>`
       : `<div onclick="event.stopPropagation();marcarOCRecibida('${o.id}')" style="display:inline-flex;align-items:center;gap:6px;background:#f5eeec;color:#7a4e46;font-size:11px;font-weight:600;padding:5px 11px;border-radius:20px;white-space:nowrap;font-family:'DM Sans',sans-serif;cursor:pointer;" title="Por recibir — clic para marcar como recibida"><span style="width:6px;height:6px;border-radius:50%;background:#b09088;flex-shrink:0;"></span>Pendiente</div>`;
-    return `<div onclick="abrirDetalleOC('${o.id}')" style="display:grid;grid-template-columns:90px 1fr 110px 130px 80px;align-items:center;padding:12px 0 12px 20px;border-bottom:.5px solid var(--cream-d);cursor:pointer;position:relative;">
+    return `<div onclick="abrirDetalleOC('${o.id}')" style="display:grid;grid-template-columns:90px 1fr 110px 130px 80px;column-gap:12px;align-items:center;padding:12px 0 12px 20px;border-bottom:.5px solid var(--cream-d);cursor:pointer;position:relative;">
       <div style="position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:2px;background:${franjaGrad};"></div>
       <div><span style="background:#e8f0e9;color:#4a5e4d;font-size:11px;font-weight:700;padding:4px 8px;border-radius:6px;white-space:nowrap;font-family:'DM Sans',sans-serif;">OC-${String(o.numero||0).padStart(3,'0')}</span></div>
       <div style="min-width:0;">
