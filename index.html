@@ -386,8 +386,8 @@ input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus
   .presup-card > div:first-child{flex-wrap:wrap !important;}
   .presup-card > div:first-child > div:last-child{width:100%;text-align:left !important;margin-top:6px;}
   /* ── OC tabla mobile ── */
-  .oc-grid-header,.oc-grid-row{grid-template-columns:70px 1fr 90px 90px !important;}
-  .oc-col-acciones{display:none !important;}
+  .oc-grid-header,.oc-grid-row{grid-template-columns:80px 1fr 110px !important;}
+  .oc-col-acciones,.oc-col-monto{display:none !important;}
   /* ── HC tabla mobile ── */
   .hc-grid-header,.hc-grid-row{grid-template-columns:60px 1fr 90px !important;}
   .hc-col-fecha{display:none !important;}
@@ -14994,7 +14994,7 @@ function renderOrdenesCompra() {
   const ocHeader = `<div class="oc-grid-header" style="display:grid;grid-template-columns:90px 1fr 110px 130px 80px;column-gap:12px;align-items:center;padding:6px 0 8px 20px;border-bottom:1.5px solid var(--sage-light);">
     <div style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Nº OC</div>
     <div style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Proveedor</div>
-    <div style="text-align:right;font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Monto</div>
+    <div class="oc-col-monto" style="text-align:right;font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Monto</div>
     <div style="text-align:right;font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Recepción</div>
     <div class="oc-col-acciones" style="text-align:right;font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Acciones</div>
   </div>`;
@@ -15013,7 +15013,7 @@ function renderOrdenesCompra() {
         <div style="font-size:13px;font-weight:500;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${o.proveedor||'—'}</div>
         <div style="font-size:11px;color:var(--text-l);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${(o.items||[]).length} ítem${(o.items||[]).length!==1?'s':''}${o.fecha?' · '+o.fecha:''}</div>
       </div>
-      <div style="text-align:right;"><span style="font-size:14px;font-weight:600;color:#2d2d2d;white-space:nowrap;">${fmtMonto(o.total)}</span></div>
+      <div class="oc-col-monto" style="text-align:right;"><span style="font-size:14px;font-weight:600;color:#2d2d2d;white-space:nowrap;">${fmtMonto(o.total)}</span></div>
       <div style="display:flex;justify-content:flex-end;white-space:nowrap;">${recPill}</div>
       <div class="oc-col-acciones" style="display:flex;justify-content:flex-end;gap:5px;" onclick="event.stopPropagation()">
         <button onclick="abrirDetalleOC('${o.id}')" style="width:26px;height:26px;border-radius:6px;background:#fff;border:1px solid rgba(0,0,0,0.09);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Ver detalle"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#888780" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
