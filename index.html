@@ -803,6 +803,22 @@ input[type=number]{-moz-appearance:textfield;}
 .pa-lista-add-btn{background:none;border:none;cursor:pointer;font-size:16px;color:#4a5e4d;padding:0 2px;line-height:1;}
 .pa-lista-del-btn{background:none;border:none;cursor:pointer;opacity:0;transition:opacity .15s;padding:2px;position:absolute;top:8px;right:10px;}
 .pa-lista-card:hover .pa-lista-del-btn{opacity:1;}
+.pom-card{background:#fff;border-radius:12px;padding:18px 20px;margin-bottom:14px;}
+.pom-header{display:flex;align-items:center;gap:8px;margin-bottom:18px;}
+.pom-title{font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:#2d2d2d;}
+.pom-info-pill{background:#e8f0e9;color:#4a5e4d;font-family:'DM Sans',sans-serif;font-size:10px;font-weight:600;padding:3px 10px;border-radius:20px;cursor:pointer;position:relative;display:inline-flex;align-items:center;gap:4px;}
+.pom-body{display:flex;align-items:center;gap:22px;}
+.pom-circle{width:110px;height:110px;border-radius:50%;background:#e8f0e9;border:3px solid #e8f0e9;flex-shrink:0;position:relative;overflow:hidden;}
+.pom-arc{position:absolute;inset:0;border-radius:50%;background:conic-gradient(rgba(74,94,77,0.25) 0deg,transparent 0deg);}
+.pom-timer-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1;}
+.pom-foco-label{font-family:'DM Sans',sans-serif;font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#4a5e4d;opacity:0.7;margin-top:2px;}
+.pom-right{flex:1;display:flex;flex-direction:column;gap:12px;}
+.pom-lbl{font-family:'DM Sans',sans-serif;font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#6b6b6b;margin-bottom:4px;}
+.pom-task-name{font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:#2d2d2d;margin-top:2px;}
+.pom-rondas{display:flex;align-items:center;gap:5px;margin-top:4px;}
+.pom-btns{display:flex;gap:8px;align-items:center;}
+.pom-btn-iniciar{height:34px;padding:0 18px;border-radius:20px;background:linear-gradient(135deg,#3d5240,#4a5e4d,#5e7562,#4a5e4d);color:#e8f0e9;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:6px;border:none;cursor:pointer;}
+.pom-btn-saltar{height:34px;padding:0 14px;border-radius:20px;background:#fafafa;border:1px solid rgba(0,0,0,0.09);color:#6b6b6b;font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;}
 @media(max-width:768px){
   .pa-tasks-board{grid-template-columns:1fr;}
   .pa-cal-ideas-grid{grid-template-columns:1fr;}
@@ -2414,38 +2430,38 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
           </div>
         </div>
         <!-- 4. POMODORO -->
-        <div style="background:#fff;border-radius:12px;padding:16px 18px;margin-bottom:14px;">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
-            <div style="font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:#2d2d2d;">Pomodoro</div>
-            <div style="background:#e8f0e9;color:#4a5e4d;font-family:'DM Sans',sans-serif;font-size:10px;padding:3px 9px;border-radius:20px;cursor:pointer;position:relative;" onclick="paPomotooltipToggle()">¿Qué es esto?
+        <div class="pom-card">
+          <div class="pom-header">
+            <div class="pom-title">Pomodoro</div>
+            <div class="pom-info-pill" onclick="paPomotooltipToggle()">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              ¿Qué es esto?
               <div id="pa-pomo-tooltip" style="display:none;position:absolute;top:calc(100% + 6px);left:0;background:#2d2d2d;color:#fff;font-family:'DM Sans',sans-serif;font-size:11px;border-radius:8px;padding:10px 12px;width:220px;z-index:100;line-height:1.5;font-weight:400;">Trabajá 25 min sin interrupciones, descansá 5 min. Repetí 4 veces para máxima productividad.</div>
             </div>
           </div>
-          <div style="display:flex;align-items:center;gap:20px;">
-            <div style="position:relative;flex-shrink:0;">
-              <svg width="110" height="110" viewBox="0 0 110 110" style="transform:rotate(-90deg);">
-                <circle cx="55" cy="55" r="48" fill="#e8f0e9" stroke="#e8f0e9" stroke-width="3"/>
-                <circle id="pa-pomo-arc" cx="55" cy="55" r="48" fill="none" stroke="url(#pomoGrad)" stroke-width="3" stroke-linecap="round" stroke-dasharray="301.6" stroke-dashoffset="301.6"/>
-                <defs><linearGradient id="pomoGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#3d5240"/><stop offset="100%" stop-color="#5e7562"/></linearGradient></defs>
-              </svg>
-              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-                <div id="pa-pomo-timer" style="font-family:'Cormorant Garamond',serif;font-size:30px;color:#4a5e4d;line-height:1;font-weight:500;">25:00</div>
-                <div id="pa-pomo-mode" style="font-family:'DM Sans',sans-serif;font-size:9px;font-weight:700;color:#4a5e4d;opacity:0.7;text-transform:uppercase;letter-spacing:0.08em;margin-top:2px;">FOCO</div>
+          <div class="pom-body">
+            <div class="pom-circle">
+              <div id="pa-pomo-arc" class="pom-arc"></div>
+              <div class="pom-timer-text">
+                <span id="pa-pomo-display" style="font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:700;color:#4a5e4d;line-height:1;">25:00</span>
+                <span id="pa-pomo-mode" class="pom-foco-label">FOCO</span>
               </div>
             </div>
-            <div style="flex:1;min-width:140px;display:flex;flex-direction:column;gap:12px;">
+            <div class="pom-right">
               <div>
-                <div style="font-family:'DM Sans',sans-serif;font-size:9px;color:#6b6b6b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Tarea activa</div>
-                <select id="pa-pomo-tarea" style="font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:#2d2d2d;background:#f8f7f5;border:1px solid rgba(0,0,0,0.1);border-radius:8px;padding:6px 10px;width:100%;cursor:pointer;outline:none;">
-                  <option value="">Sin tarea asignada</option>
-                </select>
+                <div class="pom-lbl">Tarea activa</div>
+                <div id="pa-pomo-task-name" class="pom-task-name">Sin tarea asignada</div>
               </div>
-              <div style="display:flex;align-items:center;gap:4px;">
-                <div id="pa-pomo-rondas" style="display:flex;align-items:center;gap:4px;"></div>
+              <div>
+                <div class="pom-lbl">Rondas</div>
+                <div id="pa-pomo-rounds" class="pom-rondas"></div>
               </div>
-              <div style="display:flex;gap:8px;">
-                <button id="pa-pomo-btn-iniciar" onclick="paPomoToggle()" style="flex:1;height:34px;padding:0 18px;border-radius:20px;border:none;background:linear-gradient(135deg,#3d5240 0%,#4a5e4d 45%,#5e7562 70%,#4a5e4d 100%);color:#e8f0e9;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;"><svg width="11" height="11" viewBox="0 0 11 11" fill="#e8f0e9"><polygon points="2,1 10,5.5 2,10"/></svg><span id="pa-pomo-btn-txt">Iniciar</span></button>
-                <button onclick="paPomoSkip()" style="height:34px;padding:0 14px;border-radius:20px;border:1px solid rgba(0,0,0,0.09);background:#fafafa;color:#6b6b6b;font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;">Saltar</button>
+              <div class="pom-btns">
+                <button id="pa-pomo-btn" class="pom-btn-iniciar" onclick="paPomoToggle()">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  <span id="pa-pomo-btn-txt">Iniciar</span>
+                </button>
+                <button id="pa-pomo-skip" class="pom-btn-saltar" onclick="paPomoSkip()">Saltar</button>
               </div>
             </div>
           </div>
@@ -11663,7 +11679,7 @@ function renderClientTareas(tareas) {
   });
   paApplyEmptyStates();
   paInitDrop();
-  paPomoPoblarSelector();
+  paPomoPoblarTarea();
   paPomoUpdateUI();
   paRenderNotaVencimiento();
   paRenderCalendario();
@@ -11724,7 +11740,7 @@ window.createClientTask = async function() {
     paKpiSet('pa-kpi-curso', _paTareas.filter(t=>t.estado==='doing').length);
     paKpiSet('pa-kpi-comp', _paTareas.filter(t=>t.estado==='done').length);
     paUpdateProgress(_paTareas);
-    paPomoPoblarSelector();
+    paPomoPoblarTarea();
     paRenderNotaVencimiento();
     paRenderCalendario();
     document.getElementById('clt-titulo').value='';
@@ -11751,7 +11767,7 @@ window.moveClientTask = async function(el) {
   paUpdateProgress(_paTareas);
   paApplyEmptyStates();
   if(next === 'done') paConfetti(el);
-  paPomoPoblarSelector();
+  paPomoPoblarTarea();
   if(id && currentClientUID) { try { await updateDoc(doc(db,'clientes',currentClientUID,'tareas',id),{estado:next}); } catch(e){} }
 };
 
@@ -11766,7 +11782,7 @@ window.deleteClientTask = function(el) {
     paKpiSet('pa-kpi-comp', _paTareas.filter(t=>t.estado==='done').length);
     paUpdateProgress(_paTareas);
     paApplyEmptyStates();
-    paPomoPoblarSelector();
+    paPomoPoblarTarea();
     paRenderNotaVencimiento();
     paRenderCalendario();
   },'Eliminar tarea');
@@ -11851,14 +11867,18 @@ const _pomo = {running:false, interval:null, mode:'focus', remaining:25*60, tota
 function paPomoUpdateUI() {
   const mins = Math.floor(_pomo.remaining/60);
   const secs = _pomo.remaining%60;
-  const te = document.getElementById('pa-pomo-timer');
+  const te = document.getElementById('pa-pomo-display');
   const me = document.getElementById('pa-pomo-mode');
   const ae = document.getElementById('pa-pomo-arc');
-  const be = document.getElementById('pa-pomo-btn-iniciar');
-  const re = document.getElementById('pa-pomo-rondas');
+  const be = document.getElementById('pa-pomo-btn');
+  const re = document.getElementById('pa-pomo-rounds');
   if(te) te.textContent = `${mins}:${secs.toString().padStart(2,'0')}`;
-  if(me) me.textContent = _pomo.mode === 'focus' ? 'Foco' : 'Descanso';
-  if(ae) ae.setAttribute('stroke-dashoffset', (301.6 * (_pomo.remaining / _pomo.total)).toFixed(1));
+  if(me) me.textContent = _pomo.mode === 'focus' ? 'FOCO' : 'DESCANSO';
+  if(ae) {
+    const elapsed = _pomo.total - _pomo.remaining;
+    const deg = Math.round((elapsed / _pomo.total) * 360);
+    ae.style.background = `conic-gradient(rgba(74,94,77,0.25) 0deg,rgba(74,94,77,0.25) ${deg}deg,transparent ${deg}deg)`;
+  }
   if(be) { const bt = document.getElementById('pa-pomo-btn-txt'); if(bt) bt.textContent = _pomo.running ? 'Pausar' : 'Iniciar'; }
   if(re) {
     const r = parseInt(localStorage.getItem('pa_pomo_rounds')||'0');
@@ -11899,12 +11919,11 @@ window.paPomotooltipToggle = function() {
   const tt = document.getElementById('pa-pomo-tooltip');
   if(tt) tt.style.display = tt.style.display === 'none' ? 'block' : 'none';
 };
-function paPomoPoblarSelector() {
-  const sel = document.getElementById('pa-pomo-tarea');
-  if(!sel) return;
-  const pendientes = _paTareas.filter(t => t.estado !== 'done');
-  sel.innerHTML = '<option value="">Sin tarea asignada</option>' +
-    pendientes.map(t => `<option value="${t.id}">${t.titulo}</option>`).join('');
+function paPomoPoblarTarea() {
+  const el = document.getElementById('pa-pomo-task-name');
+  if(!el) return;
+  const primera = _paTareas.find(t => t.estado === 'pend');
+  el.textContent = primera ? primera.titulo : 'Sin tarea asignada';
 }
 
 // ── Mi productividad ──
@@ -12185,7 +12204,7 @@ function paInitDrop() {
       paUpdateProgress(_paTareas);
       paApplyEmptyStates();
       if(targetCol === 'done' && prev !== 'done') paConfetti(el);
-      paPomoPoblarSelector();
+      paPomoPoblarTarea();
       if(currentClientUID) { try { await updateDoc(doc(db,'clientes',currentClientUID,'tareas',_paDragId),{estado:targetCol}); } catch(e){} }
       _paDragId = null;
     });
