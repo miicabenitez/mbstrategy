@@ -2805,7 +2805,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 
           <!-- Botón nuevo -->
           <div style="display:flex;justify-content:flex-end;margin-bottom:14px;">
-            <button onclick="showCalcForm(null)" style="padding:8px 18px;background:#A1B1A4;color:#EEF4EE;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;">+ Nuevo</button>
+            <button onclick="showCalcForm(null)" style="padding:8px 18px;background:linear-gradient(135deg,#3d5240 0%,#4a5e4d 45%,#5e7562 70%,#4a5e4d 100%);color:#e8f0e9;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;">+ Nuevo</button>
           </div>
 
           <!-- Card Mis cálculos -->
@@ -2813,10 +2813,10 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
             <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
               <div style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Mis cálculos</div>
               <div id="calc-filter-tabs" style="display:flex;gap:6px;flex-wrap:wrap;">
-                <button id="calc-fil-todos" onclick="filterCalcList('todos',this)" style="padding:7px 18px;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;background:#4a5e4d;color:#fff;border:2px solid #4a5e4d;">Todos</button>
-                <button id="calc-fil-producto" onclick="filterCalcList('producto',this)" style="padding:7px 18px;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;background:#fff;color:#1a1a1a;border:2px solid #4a5e4d;">Producto</button>
-                <button id="calc-fil-hora" onclick="filterCalcList('hora',this)" style="padding:7px 18px;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;background:#fff;color:#1a1a1a;border:2px solid #4a5e4d;">Por hora</button>
-                <button id="calc-fil-proyecto" onclick="filterCalcList('proyecto',this)" style="padding:7px 18px;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;background:#fff;color:#1a1a1a;border:2px solid #4a5e4d;">Proyecto</button>
+                <button id="calc-fil-todos" onclick="filterCalcList('todos',this)" style="padding:7px 18px;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#3d5240 0%,#4a5e4d 45%,#5e7562 70%,#4a5e4d 100%);color:#e8f0e9;border:1px solid transparent;">Todos</button>
+                <button id="calc-fil-producto" onclick="filterCalcList('producto',this)" style="padding:7px 18px;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;background:transparent;color:#2d2d2d;border:1px solid rgba(0,0,0,0.12);">Producto</button>
+                <button id="calc-fil-hora" onclick="filterCalcList('hora',this)" style="padding:7px 18px;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;background:transparent;color:#2d2d2d;border:1px solid rgba(0,0,0,0.12);">Por hora</button>
+                <button id="calc-fil-proyecto" onclick="filterCalcList('proyecto',this)" style="padding:7px 18px;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;background:transparent;color:#2d2d2d;border:1px solid rgba(0,0,0,0.12);">Proyecto</button>
               </div>
             </div>
             <!-- Cabeceras columnas -->
@@ -6765,7 +6765,7 @@ function renderCalcList() {
   const items = _calcFilter === 'todos' ? allItems : allItems.filter(c=>(c.tipo||'producto')===_calcFilter);
 
   if(count === 0) {
-    document.getElementById('calc-items').innerHTML = createEmptyState('calculadora','Sin cálculos de costos','Creá tu primer cálculo para saber exactamente cuánto te cuesta producir','+ Nuevo cálculo','showCalcForm(null)');
+    document.getElementById('calc-items').innerHTML = '<div style="text-align:center;padding:32px 20px;"><div style="margin-bottom:14px;"><svg width="64" height="64" viewBox="0 0 64 64" fill="none"><rect x="16" y="8" width="32" height="48" rx="4" stroke="var(--sage)" stroke-width="1.5" fill="var(--sage-xl)"/><rect x="22" y="14" width="20" height="10" rx="2" fill="var(--cream)" stroke="var(--sage)" stroke-width="1"/><circle cx="26" cy="32" r="2.5" fill="var(--sage-dark)"/><circle cx="32" cy="32" r="2.5" fill="var(--sage-dark)"/><circle cx="38" cy="32" r="2.5" fill="var(--sage-dark)"/><circle cx="26" cy="40" r="2.5" fill="var(--sage)"/><circle cx="32" cy="40" r="2.5" fill="var(--sage)"/><rect x="35.5" y="37.5" width="5" height="11" rx="2.5" fill="var(--sage-dark)"/><circle cx="26" cy="48" r="2.5" fill="var(--sage)"/><circle cx="32" cy="48" r="2.5" fill="var(--sage)"/></svg></div><div style="font-family:\'Cormorant Garamond\',serif;font-size:18px;color:var(--text);margin-bottom:6px;">Sin cálculos de costos</div><div style="font-size:12px;color:var(--text-l);line-height:1.5;max-width:280px;margin:0 auto;">Creá tu primer cálculo para saber exactamente cuánto te cuesta producir</div><button onclick="showCalcForm(null)" style="background:linear-gradient(135deg,#3d5240 0%,#4a5e4d 45%,#5e7562 70%,#4a5e4d 100%);color:#e8f0e9;border:none;border-radius:10px;padding:10px 20px;font-size:13px;font-family:\'DM Sans\',sans-serif;cursor:pointer;font-weight:600;margin-top:14px;">+ Nuevo cálculo</button></div>';
     return;
   }
   if(items.length === 0) {
@@ -6809,8 +6809,8 @@ window.filterCalcList = function(tipo, btn) {
   ['todos','producto','hora','proyecto'].forEach(t => {
     const b = document.getElementById('calc-fil-'+t);
     if(!b) return;
-    if(t === tipo) { b.style.background='#4a5e4d'; b.style.color='#fff'; b.style.fontWeight='500'; }
-    else { b.style.background='#fff'; b.style.color='#1a1a1a'; b.style.fontWeight='400'; }
+    if(t === tipo) { b.style.background='linear-gradient(135deg,#3d5240 0%,#4a5e4d 45%,#5e7562 70%,#4a5e4d 100%)'; b.style.color='#e8f0e9'; b.style.fontWeight='600'; b.style.border='1px solid transparent'; }
+    else { b.style.background='transparent'; b.style.color='#2d2d2d'; b.style.fontWeight='500'; b.style.border='1px solid rgba(0,0,0,0.12)'; }
   });
   renderCalcList();
 };
