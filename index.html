@@ -3233,7 +3233,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
               <option value="">Categoría: Todas</option>
             </select>
           </div>
-          <button class="bp" onclick="openModal('newNecesidadModal')">+ Nueva necesidad</button>
+          <button class="bp" onclick="openModal('newNecesidadModal')" style="background:linear-gradient(135deg,#3d5240 0%,#4a5e4d 45%,#5e7562 70%,#4a5e4d 100%);color:#e8f0e9;font-weight:600;">+ Nueva necesidad</button>
         </div>
         <div id="nc-lista"><div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Sin necesidades cargadas.</div></div>
       </div>
@@ -14252,7 +14252,12 @@ function renderNecesidades() {
       : (n.estadoCotizacion==='cotizada'||n.cotizaciones?.length>0)
         ? `<span style="background:#E6EEF5;color:#2A4A6A;font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;">En cotización</span>`
         : `<span style="background:var(--cream);color:var(--text-l);font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;">Sin cotizar</span>`;
-    return `<div style="border:.5px solid ${ec.bc};border-radius:12px;padding:14px;margin-bottom:10px;">
+    const franjaGradN = n.estado==='urgente'
+      ? 'linear-gradient(90deg,#9a7870 0%,#b09088 50%,#ccb0a8 100%)'
+      : 'linear-gradient(90deg,#3d5240 0%,#4a5e4d 50%,#5e7562 100%)';
+    return `<div style="border:.5px solid rgba(0,0,0,0.07);border-radius:12px;overflow:hidden;margin-bottom:10px;">
+      <div style="height:4px;background:${franjaGradN};"></div>
+      <div style="padding:14px;">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
         <div style="flex:1;">
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px;">
@@ -14265,13 +14270,14 @@ function renderNecesidades() {
         <div style="display:flex;gap:6px;flex-shrink:0;align-items:center;">
           <button onclick="generarPDFNecesidad('${n.id}')" style="background:none;border:.5px solid var(--cream-d);border-radius:20px;padding:6px 12px;font-size:11px;color:var(--text-m);cursor:pointer;font-family:'DM Sans',sans-serif;">PDF</button>
           ${n.estadoCotizacion==='con-oc'
-            ? `<button onclick="verOCsDeNecesidad('${n.id}')" class="bp" style="font-size:11px;padding:6px 12px;">Ver OC</button>`
+            ? `<button onclick="verOCsDeNecesidad('${n.id}')" style="width:30px;height:30px;border-radius:7px;border:1px solid rgba(0,0,0,0.09);background:#fafafa;display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Ver OC"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4a5e4d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>`
             : `<button onclick="abrirCotizacion('${n.id}')" class="bp" style="font-size:11px;padding:6px 12px;">Cotizar</button>`
           }
           <button onclick="deleteNecesidad('${n.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
         </div>
       </div>
       ${prods?`<div style="background:var(--cream);border-radius:8px;padding:8px 12px;font-size:11px;color:var(--text-m);">${prods}</div>`:''}
+      </div>
     </div>`;
   }).join('');
 }
