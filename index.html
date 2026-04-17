@@ -23,7 +23,7 @@
   gtag('config', 'G-XVY6NLEL2P');
 </script>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>MB Strategy — Sistema</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%234a5e4d'/><text x='50' y='57' text-anchor='middle' dominant-baseline='middle' font-family='Georgia,serif' font-size='44' fill='%23f4f0ea'>MB</text></svg>">
 
@@ -45,7 +45,8 @@
 <style>
 :root{--sage:#A1B1A4;--sage-dark:#7A8E7D;--sage-light:#C8D4CA;--sage-xl:#E7F0E8;--cream:#E7E5DF;--cream-d:#D0CFC9;--cream-m:#C0BEB8;--text:#2C2C2C;--text-m:#3E4E42;--text-l:#4A5A4E;--white:#F5F6F3;--ok:#5A8A62;--ok-bg:#E7F0E8;--warn:#B08A42;--warn-bg:#F5EDDF;--err:#C4786A;--err-bg:#F5ECEC;--blue:#4A6A8A;--blue-bg:#E6EEF5;--topbar:#A1B1A4;--topbar2:#8A9E8D;--accent:#A1B1A4;--accent-dark:#7A8E7D;--accent-light:#C8D4CA;}
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);font-size:14px;}
+html{height:100%;}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);font-size:14px;height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;}
 .loading{position:fixed;inset:0;background:var(--topbar);display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity .4s;}
 .loading-inner{display:flex;flex-direction:column;align-items:center;gap:12px;}
 .loading-circle{width:54px;height:54px;border-radius:50%;border:1.5px solid var(--accent);display:flex;align-items:center;justify-content:center;animation:pulse 1.5s ease-in-out infinite;}
@@ -277,7 +278,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 input[type=date],input[type=time],select{background:var(--cream);border:.5px solid var(--cream-d);border-radius:8px;padding:7px 10px;font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;width:100%;margin-top:5px;outline:none;}
 input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sage);}
 /* ── BOTTOM NAV MOBILE (cliente) ── */
-.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#4a5e4d;z-index:150;overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:nowrap;scrollbar-width:none;padding:0 8px;}
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#4a5e4d;z-index:150;overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:nowrap;scrollbar-width:none;padding:0 8px;padding-bottom:env(safe-area-inset-bottom,0px);}
 .bottom-nav::-webkit-scrollbar{display:none;}
 .bnav-item{display:inline-block;background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;color:rgba(255,255,255,0.65);font-size:13px;font-weight:400;padding:8px 14px;margin:6px 2px;border-radius:20px;white-space:nowrap;-webkit-tap-highlight-color:transparent;transition:all .15s;}
 .bnav-item.active{background:rgba(255,255,255,0.16);color:#fff;font-weight:500;}
@@ -318,7 +319,7 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
   body.client-view .bottom-nav{display:block;}
   body.client-view .mobile-menu{display:none !important;}
   body.client-view .mobile-nav{display:none !important;}
-  body.client-view .content{padding-bottom:56px;overflow-x:hidden;}
+  body.client-view .content{padding-bottom:calc(56px + env(safe-area-inset-bottom,0px));overflow-x:hidden;}
   body.client-view .embi-fab{bottom:56px;}
   body.client-view .topbar-right{display:none !important;}
   body.client-view #client-mobile-menu-wrap{display:block !important;}
@@ -388,7 +389,7 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
   .mg{grid-template-columns:1fr 1fr;}
   .presup-card .presup-actions{flex-wrap:wrap;}
   .content{padding:10px;overflow-x:hidden;}
-  body.client-view .content{padding-bottom:76px;}
+  body.client-view .content{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px));}
   .md{margin:4px;width:calc(100% - 8px);padding:16px 12px;border-radius:12px;}
   /* Selector de producto en modal presupuesto — 1 columna */
   .md [style*="grid-template-columns:1fr 64px 100px"],
