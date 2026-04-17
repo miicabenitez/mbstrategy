@@ -16744,6 +16744,14 @@ window.loadProveedores = loadProveedores;
 function renderProveedoresModule() {
   const egresos = window._clientEgresos || [];
   const setEl = (id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  const metalGrads=[
+    'linear-gradient(135deg,#3d5240 0%,#4a5e4d 45%,#5e7562 70%,#4a5e4d 100%)',
+    'linear-gradient(135deg,#2e6460 0%,#3d7a74 45%,#52908a 70%,#3d7a74 100%)',
+    'linear-gradient(135deg,#3a5a78 0%,#4a6e8e 45%,#6084a4 70%,#4a6e8e 100%)',
+    'linear-gradient(135deg,#a87838 0%,#c8954a 45%,#dea860 70%,#c8954a 100%)',
+    'linear-gradient(135deg,#7e4458 0%,#9e5a6a 45%,#b47080 70%,#9e5a6a 100%)',
+    'linear-gradient(135deg,#9a7870 0%,#b09088 45%,#ccb0a8 65%,#b09088 100%)'
+  ];
 
   // Solo egresos vinculados a proveedores registrados
   const egresosConProv = egresos.filter(e=>e.proveedorId && _proveedores.find(p=>p.id===e.proveedorId));
@@ -16788,7 +16796,7 @@ function renderProveedoresModule() {
             <span style="font-size:12px;color:var(--text-m);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:65%;">${nombre}</span>
             <span style="font-size:12px;font-weight:500;color:var(--text);flex-shrink:0;">$${monto.toLocaleString('es-AR')}</span>
           </div>
-          <div style="height:5px;background:var(--cream-d);border-radius:3px;"><div style="height:100%;width:${Math.round((monto/max)*100)}%;background:${colors[i]};border-radius:3px;"></div></div>
+          <div style="height:5px;background:var(--cream-d);border-radius:3px;"><div style="height:100%;width:${Math.round((monto/max)*100)}%;background:${metalGrads[i%metalGrads.length]};border-radius:3px;"></div></div>
         </div>`).join('');
     }
   }
@@ -16807,7 +16815,7 @@ function renderProveedoresModule() {
             <span style="font-size:12px;color:var(--text-m);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60%;cursor:pointer;text-decoration:underline;text-decoration-color:var(--cream-d);" onclick="abrirCuentaCorriente('${p.id}')">${p.nombre}</span>
             <span style="font-size:12px;font-weight:600;color:#C4786A;flex-shrink:0;">$${(p._saldo||0).toLocaleString('es-AR')}</span>
           </div>
-          <div style="height:5px;background:var(--cream-d);border-radius:3px;"><div style="height:100%;width:${Math.round(((p._saldo||0)/maxDeuda)*100)}%;background:${dColors[i]};border-radius:3px;"></div></div>
+          <div style="height:5px;background:var(--cream-d);border-radius:3px;"><div style="height:100%;width:${Math.round(((p._saldo||0)/maxDeuda)*100)}%;background:${metalGrads[i%metalGrads.length]};border-radius:3px;"></div></div>
         </div>`).join('');
     }
   }
