@@ -40,7 +40,7 @@
 
 <!-- Manifest inline -->
 <link rel="manifest" href="manifest.json">
-<style>@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=DM+Sans:wght@400;500;600;700&display=swap');</style>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root{--sage:#A1B1A4;--sage-dark:#7A8E7D;--sage-light:#C8D4CA;--sage-xl:#E7F0E8;--cream:#E7E5DF;--cream-d:#D0CFC9;--cream-m:#C0BEB8;--text:#2C2C2C;--text-m:#3E4E42;--text-l:#4A5A4E;--white:#F5F6F3;--ok:#5A8A62;--ok-bg:#E7F0E8;--warn:#B08A42;--warn-bg:#F5EDDF;--err:#C4786A;--err-bg:#F5ECEC;--blue:#4A6A8A;--blue-bg:#E6EEF5;--topbar:#A1B1A4;--topbar2:#8A9E8D;--accent:#A1B1A4;--accent-dark:#7A8E7D;--accent-light:#C8D4CA;}
@@ -769,7 +769,7 @@ input[type=number]{-moz-appearance:textfield;}
 .pa-prod-stripe{height:4px !important;background:linear-gradient(90deg,#3d5240 0%,#4a5e4d 25%,#9a7870 55%,#b09088 75%,#c8954a 100%) !important;}
 .pa-prod-inner{padding:18px 20px !important;}
 .pa-prod-top{display:flex !important;align-items:center !important;justify-content:space-between !important;margin-bottom:4px !important;}
-.pa-prod-titulo{font-family:'Cormorant Garamond',Georgia,serif !important;font-size:22px !important;font-weight:400 !important;color:#2d2d2d !important;}
+.pa-prod-titulo{font-family:'Cormorant Garamond',Georgia,serif !important;font-size:24px !important;font-weight:400 !important;color:#2d2d2d !important;}
 .pa-prod-toggles{display:flex !important;gap:4px !important;}
 .pa-prod-tab{font-size:10px !important;font-weight:600 !important;padding:4px 10px !important;border-radius:20px !important;background:#f0f0ee !important;color:#6b6b6b !important;cursor:pointer !important;border:none !important;}
 .pa-prod-tab.active{background:#e8f0e9 !important;color:#4a5e4d !important;}
@@ -11986,9 +11986,12 @@ function paRenderProductividad() {
   const be = document.getElementById('pa-prod-barras');
   const ie = document.getElementById('pa-prod-insight-txt');
   const iw = document.getElementById('pa-prod-insight');
-  if(te) te.textContent = totalMins;
+  if(te) {
+    if(totalMins >= 60) { const h = Math.floor(totalMins/60); const m = totalMins%60; te.textContent = m > 0 ? `${h}h ${m}m` : `${h}h`; }
+    else { te.textContent = `${totalMins}m`; }
+  }
   const pl = {hoy:'hoy', semana:'esta semana', mes:'este mes'}[_paProdPeriod];
-  if(le) le.textContent = `min en el sistema ${pl}`;
+  if(le) le.textContent = `en el sistema ${pl}`;
   if(be) {
     if(totalMins === 0) {
       be.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 0;gap:8px;">
