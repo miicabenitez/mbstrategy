@@ -2421,7 +2421,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
               <div id="pa-pomo-tooltip" style="display:none;position:absolute;top:calc(100% + 6px);left:0;background:#2d2d2d;color:#fff;font-family:'DM Sans',sans-serif;font-size:11px;border-radius:8px;padding:10px 12px;width:220px;z-index:100;line-height:1.5;font-weight:400;">Trabajá 25 min sin interrupciones, descansá 5 min. Repetí 4 veces para máxima productividad.</div>
             </div>
           </div>
-          <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:20px;">
             <div style="position:relative;flex-shrink:0;">
               <svg width="110" height="110" viewBox="0 0 110 110" style="transform:rotate(-90deg);">
                 <circle cx="55" cy="55" r="48" fill="#e8f0e9" stroke="#e8f0e9" stroke-width="3"/>
@@ -2430,19 +2430,18 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
               </svg>
               <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
                 <div id="pa-pomo-timer" style="font-family:'Cormorant Garamond',serif;font-size:30px;color:#4a5e4d;line-height:1;font-weight:500;">25:00</div>
-                <div id="pa-pomo-mode" style="font-family:'DM Sans',sans-serif;font-size:9px;color:#6b6b6b;text-transform:uppercase;letter-spacing:1px;margin-top:2px;">Foco</div>
+                <div id="pa-pomo-mode" style="font-family:'DM Sans',sans-serif;font-size:9px;font-weight:700;color:#4a5e4d;opacity:0.7;text-transform:uppercase;letter-spacing:0.08em;margin-top:2px;">FOCO</div>
               </div>
             </div>
-            <div style="flex:1;min-width:140px;">
-              <div style="margin-bottom:10px;">
-                <div style="font-family:'DM Sans',sans-serif;font-size:10px;color:#6b6b6b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Tarea activa</div>
-                <select id="pa-pomo-tarea" style="font-family:'DM Sans',sans-serif;font-size:12px;color:#2d2d2d;background:#f8f7f5;border:1px solid rgba(0,0,0,0.1);border-radius:8px;padding:6px 10px;width:100%;cursor:pointer;outline:none;margin-top:0;">
+            <div style="flex:1;min-width:140px;display:flex;flex-direction:column;gap:12px;">
+              <div>
+                <div style="font-family:'DM Sans',sans-serif;font-size:9px;color:#6b6b6b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Tarea activa</div>
+                <select id="pa-pomo-tarea" style="font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:#2d2d2d;background:#f8f7f5;border:1px solid rgba(0,0,0,0.1);border-radius:8px;padding:6px 10px;width:100%;cursor:pointer;outline:none;">
                   <option value="">Sin tarea asignada</option>
                 </select>
               </div>
-              <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-                <div style="font-family:'DM Sans',sans-serif;font-size:11px;color:#6b6b6b;">Rondas:</div>
-                <div id="pa-pomo-rondas" style="display:flex;gap:4px;"></div>
+              <div style="display:flex;align-items:center;gap:4px;">
+                <div id="pa-pomo-rondas" style="display:flex;align-items:center;gap:4px;"></div>
               </div>
               <div style="display:flex;gap:8px;">
                 <button id="pa-pomo-btn-iniciar" onclick="paPomoToggle()" style="flex:1;height:34px;padding:0 18px;border-radius:20px;border:none;background:linear-gradient(135deg,#3d5240 0%,#4a5e4d 45%,#5e7562 70%,#4a5e4d 100%);color:#e8f0e9;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;"><svg width="11" height="11" viewBox="0 0 11 11" fill="#e8f0e9"><polygon points="2,1 10,5.5 2,10"/></svg><span id="pa-pomo-btn-txt">Iniciar</span></button>
@@ -11863,7 +11862,7 @@ function paPomoUpdateUI() {
   if(be) { const bt = document.getElementById('pa-pomo-btn-txt'); if(bt) bt.textContent = _pomo.running ? 'Pausar' : 'Iniciar'; }
   if(re) {
     const r = parseInt(localStorage.getItem('pa_pomo_rounds')||'0');
-    re.innerHTML = Array.from({length:4},(_,i) => `<div style="width:8px;height:8px;border-radius:50%;background:${i<r?'#4a5e4d':'rgba(0,0,0,0.12)'}"></div>`).join('');
+    re.innerHTML = Array.from({length:4},(_,i) => `<div style="width:9px;height:9px;border-radius:50%;background:${i<r?'#4a5e4d':'rgba(0,0,0,0.08)'}"></div>`).join('') + `<span style="font-family:'DM Sans',sans-serif;font-size:11px;color:#6b6b6b;margin-left:4px;">${r} / 4</span>`;
   }
 }
 window.paPomoToggle = function() {
