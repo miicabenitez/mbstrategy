@@ -11546,7 +11546,7 @@ async function loadClientTareas() {
       window.showClientMod = function(mod, btn) {
         paTrackModExit();
         const result = _origSCM.call(this, mod, btn);
-        const label = {finanzas:'Caja',ventas:'Comercial',compras:'Compras',herramientas:'Gestión'}[mod];
+        const label = {finanzas:'Caja',ventas:'Comercial',compras:'Compras',herramientas:'Gestión',gestion:'Gestión'}[mod];
         if(label) paTrackModEntry(label); else _paSessionCurrentMod = null;
         return result;
       };
@@ -11568,8 +11568,9 @@ let _paSessionEntradaTime = null;
 function paTrackModEntry(mod) { _paSessionCurrentMod = mod; _paSessionEntradaTime = Date.now(); }
 function paTrackModExit() {
   if(!currentClientUID || !_paSessionCurrentMod || !_paSessionEntradaTime) return;
-  const duracion = Math.round((Date.now() - _paSessionEntradaTime) / 60000);
-  if(duracion < 1) { _paSessionCurrentMod = null; _paSessionEntradaTime = null; return; }
+  const elapsed = Date.now() - _paSessionEntradaTime;
+  if(elapsed < 10000) { _paSessionCurrentMod = null; _paSessionEntradaTime = null; return; }
+  const duracion = Math.max(1, Math.round(elapsed / 60000));
   addDoc(collection(db,'clientes',currentClientUID,'sesiones'), {
     modulo: _paSessionCurrentMod, entrada: new Date(_paSessionEntradaTime).toISOString(),
     salida: new Date().toISOString(), duracion
@@ -11946,15 +11947,25 @@ function paRenderProductividad() {
   if(te) te.textContent = totalMins;
   const pl = {hoy:'hoy', semana:'esta semana', mes:'este mes'}[_paProdPeriod];
   if(le) le.textContent = `min en el sistema ${pl}`;
-  if(be) be.innerHTML = MODS.map(m => {
-    const mins = totals[m];
-    const pct = Math.round((mins/maxMins)*100);
-    return `<div style="display:flex;align-items:center;gap:8px;">
-      <div style="font-family:'DM Sans',sans-serif;font-size:12px;color:#2d2d2d;width:82px;flex-shrink:0;">${m}</div>
-      <div style="flex:1;height:7px;background:rgba(0,0,0,0.06);border-radius:4px;overflow:hidden;"><div style="height:100%;width:${pct}%;background:${GRADS[m]};border-radius:4px;transition:width .4s;"></div></div>
-      <div style="font-family:'DM Sans',sans-serif;font-size:11px;color:#6b6b6b;width:36px;text-align:right;flex-shrink:0;">${mins}min</div>
-    </div>`;
-  }).join('');
+  if(be) {
+    if(totalMins === 0) {
+      be.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 0;gap:8px;">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(74,94,77,0.2)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="4" height="8" rx="1"/><rect x="10" y="8" width="4" height="12" rx="1"/><rect x="17" y="4" width="4" height="16" rx="1"/></svg>
+        <div style="font-family:'DM Sans',sans-serif;font-size:13px;color:#6b6b6b;text-align:center;">Tu actividad se registra automáticamente</div>
+        <div style="font-family:'DM Sans',sans-serif;font-size:11px;color:rgba(0,0,0,0.3);text-align:center;">Navegá entre módulos para ver tu productividad aquí</div>
+      </div>`;
+    } else {
+      be.innerHTML = MODS.map(m => {
+        const mins = totals[m];
+        const pct = Math.round((mins/maxMins)*100);
+        return `<div style="display:flex;align-items:center;gap:8px;">
+          <div style="font-family:'DM Sans',sans-serif;font-size:12px;color:#2d2d2d;width:82px;flex-shrink:0;">${m}</div>
+          <div style="flex:1;height:7px;background:rgba(0,0,0,0.06);border-radius:4px;overflow:hidden;"><div style="height:100%;width:${pct}%;background:${GRADS[m]};border-radius:4px;transition:width .4s;"></div></div>
+          <div style="font-family:'DM Sans',sans-serif;font-size:11px;color:#6b6b6b;width:36px;text-align:right;flex-shrink:0;">${mins}min</div>
+        </div>`;
+      }).join('');
+    }
+  }
   if(ie) {
     if(totalMins === 0) { ie.textContent = 'Empezá a usar el sistema para ver tu actividad'; }
     else { const top = MODS.reduce((a,b)=>totals[a]>=totals[b]?a:b); ie.textContent = `Módulo más visitado: ${top} (${totals[top]}min)`; }
