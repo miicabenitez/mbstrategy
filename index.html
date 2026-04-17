@@ -351,10 +351,11 @@ input[type=date]:focus,input[type=time]:focus,select:focus{border-color:var(--sa
   #inicio-salud-pill{align-self:flex-start;}
   /* Inicio: barra de período ocupa ancho disponible */
   #inicio-dias-slider{max-width:100%;}
-  /* Sub-nav grid para cliente mobile */
-  body.client-view .mod-subnav.visible{display:grid !important;grid-template-columns:1fr 1fr 1fr;gap:6px !important;margin-bottom:14px !important;}
-  body.client-view .mod-subnav .subctab{white-space:normal !important;background:var(--white) !important;border:.5px solid var(--cream-d) !important;border-radius:10px !important;padding:10px !important;display:flex !important;align-items:center;justify-content:center;gap:6px;font-size:12px !important;text-align:center;}
-  body.client-view .mod-subnav .subctab.active{background:var(--topbar) !important;color:#fff !important;border-color:var(--topbar) !important;}
+  /* Sub-nav scroll horizontal para cliente mobile */
+  body.client-view .mod-subnav.visible{display:flex !important;flex-wrap:nowrap !important;gap:8px !important;margin-bottom:14px !important;overflow-x:auto !important;-webkit-overflow-scrolling:touch;scrollbar-width:none !important;padding-bottom:2px;}
+  body.client-view .mod-subnav.visible::-webkit-scrollbar{display:none;}
+  body.client-view .mod-subnav .subctab{white-space:nowrap !important;flex-shrink:0 !important;background:#ffffff !important;border:1px solid rgba(0,0,0,0.09) !important;border-radius:20px !important;height:36px !important;padding:0 16px !important;display:inline-flex !important;align-items:center !important;justify-content:center !important;font-size:12px !important;color:#6b6b6b !important;}
+  body.client-view .mod-subnav .subctab.active{background:linear-gradient(135deg,#3d5240 0%,#4a5e4d 45%,#5e7562 70%,#4a5e4d 100%) !important;color:#e8f0e9 !important;font-weight:600 !important;border:none !important;}
   /* Banners y contenido no desbordan */
   body.client-view [style*="border-radius:13px"]{overflow:hidden;word-break:break-word;max-width:100%;box-sizing:border-box;}
   /* Calculador form grid */
