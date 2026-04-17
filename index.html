@@ -5242,12 +5242,10 @@ function renderAdminDashboard() {
 }
 
 async function loadAdminData() {
-  console.log('[MB] loadAdminData called');
   try {
     const snap = await getDocs(collection(db, 'clientes'));
     const clients = [];
     snap.forEach(d => { const data=d.data(); if(!data.eliminado) clients.push({id:d.id,...data}); });
-    console.log('[MB] clients loaded:', clients.length);
     renderClientList(clients);
     window._allClients = clients;
     const sel = document.getElementById('cob-cliente');
@@ -5294,12 +5292,10 @@ async function loadAdminData() {
       peCliente.innerHTML = '<option value="">Sin cliente especifico</option>' + clients.map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('');
     }
     if(currentAdminTab === 'inicio') renderAdminDashboard();
-  } catch(e) { console.error('[MB] loadAdminData ERROR:', e); }
+  } catch(e) { console.log('Error loading admin data:', e); }
 }
 
 function renderClientList(clients) {
-  console.log('[MB] renderClientList called with', clients.length, 'clients');
-  if (clients.length > 0) console.log('[MB] primer cliente:', JSON.stringify(clients[0]));
   const avatarColors = ['#7A8E7D','#5A8A62','#4A6A8A','#B08A42','#C4786A','#6B7A60'];
 
   // Segmentos
@@ -5422,16 +5418,12 @@ function renderClientList(clients) {
       const items = grupos[tipo];
       if (!items || items.length === 0) return;
       html += `<div class="cli-sec-label" data-seccion="${tipo}" style="grid-column:1/-1;font-size:10px;font-weight:400;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;padding:10px 0 4px;">${secLabels[tipo]}</div>`;
-      items.forEach(c => {
-        console.log('[MB] renderCard para:', c.nombre || c.id);
-        try { html += renderCard(c, gIdx++); }
-        catch(err) { console.error('[MB] renderCard ERROR en cliente', c.id, err); }
-      });
+      items.forEach(c => { html += renderCard(c, gIdx++); });
     });
     html += '</div>';
   }
 
-  document.getElementById('full-clients').innerHTML = '<div style="background:red;padding:20px;color:white">TEST NUEVO CODIGO</div>';
+  document.getElementById('full-clients').innerHTML = html;
   document.getElementById('dash-clients').innerHTML = clients.map((c,i) => {
     const col = avatarColors[i%avatarColors.length];
     const nombre = c.nombre || c.negocioNombre || c.email || '?';
@@ -12013,39 +12005,47 @@ function renderMcLista(clientes) {
     }
     return;
   }
-  const avatarColors = ['#7A8E7D','#5A8A62','#4A6A8A','#B08A42','#C4786A','#6B7A60'];
+  const avatarGrads = [
+    'linear-gradient(135deg,#3d5240 0%,#4a5e4d 45%,#5e7562 70%,#4a5e4d 100%)',
+    'linear-gradient(135deg,#2e6460 0%,#3d7a74 45%,#52908a 70%,#3d7a74 100%)',
+    'linear-gradient(135deg,#9a7870 0%,#b09088 45%,#ccb0a8 65%,#b09088 100%)',
+    'linear-gradient(135deg,#3a5a78 0%,#4a6e8e 45%,#6084a4 70%,#4a6e8e 100%)',
+    'linear-gradient(135deg,#a87838 0%,#c8954a 45%,#dea860 70%,#c8954a 100%)',
+    'linear-gradient(135deg,#7e4458 0%,#9e5a6a 45%,#b47080 70%,#9e5a6a 100%)'
+  ];
   lista.style.display = 'grid';
   lista.style.gridTemplateColumns = 'repeat(3,minmax(0,1fr))';
   lista.style.gap = '12px';
   lista.innerHTML = clientes.map((c, i) => {
-    const col  = avatarColors[i % avatarColors.length];
     const init = (c.nombre||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     const cobradoReal = parseFloat(c.totalCobrado)||0;
     const presapsAprobados = _mcPresupuestos.filter(p=>(p.clienteId===c.id||p.cliente===c.nombre)&&(p.estado==='Aprobado'||p.estado==='Cobrado')).reduce((s,p)=>s+getPresupMonto(p),0);
     const saldo = presapsAprobados - cobradoReal;
-    const saldoColor = saldo > 0 ? 'var(--err)' : saldo < 0 ? 'var(--ok)' : 'var(--text)';
-    const saldoTxt = saldo > 0
-      ? `Pendiente $${saldo.toLocaleString('es-AR')}`
-      : saldo < 0
-        ? `Saldo a favor $${Math.abs(saldo).toLocaleString('es-AR')}`
-        : `Saldo $0`;
-    return `<div onclick="openMcDetalle('${c.id}')"
-      style="background:var(--white);border:.5px solid var(--cream-d);border-radius:14px;padding:18px;cursor:pointer;transition:all .15s;position:relative;"
-      onmouseover="this.style.borderColor='var(--sage)';this.style.boxShadow='0 2px 10px rgba(0,0,0,.06)'"
-      onmouseout="this.style.borderColor='var(--cream-d)';this.style.boxShadow='none'">
-      <!-- Acciones rápidas -->
-      <div style="position:absolute;top:10px;right:10px;display:flex;gap:3px;" onclick="event.stopPropagation()">
+    const franjaGrad = saldo > 0
+      ? 'linear-gradient(90deg,#9a7870 0%,#b09088 45%,#ccb0a8 100%)'
+      : 'linear-gradient(90deg,#3d5240 0%,#4a5e4d 45%,#5e7562 100%)';
+    const saldoDisplayColor = saldo > 0 ? '#b09088' : '#4a5e4d';
+    const badgeBg = saldo > 0 ? '#f5eeec' : '#e8f0e9';
+    const badgeColor2 = saldo > 0 ? '#7a4e46' : '#2e4d31';
+    const badgeText = saldo > 0 ? 'Con saldo pendiente' : saldo < 0 ? 'Saldo a favor' : 'Al día';
+    const saldoAmt = saldo !== 0 ? `$${Math.abs(saldo).toLocaleString('es-AR')}` : '$0';
+    const avatarGrad = avatarGrads[i % avatarGrads.length];
+    const subtitulo = [c.tel||c.dni||'', c.ciudad||''].filter(Boolean).join(' · ');
+    return `<div onclick="openMcDetalle('${c.id}')" style="background:#fafafa;border-radius:12px;border:1px solid rgba(0,0,0,0.06);overflow:hidden;display:flex;flex-direction:column;align-items:center;text-align:center;position:relative;cursor:pointer;">
+      <div style="position:absolute;top:10px;right:10px;display:flex;gap:3px;z-index:1;" onclick="event.stopPropagation()">
         <button onclick="editMcCliente('${c.id}',event)" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <button onclick="deleteMcCliente('${c.id}',event)" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
       </div>
-      <!-- Avatar -->
-      <div style="width:48px;height:48px;border-radius:12px;background:${col};color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:500;margin-bottom:12px;">${init}</div>
-      <!-- Nombre -->
-      <div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:3px;padding-right:56px;line-height:1.3;">${c.nombre}</div>
-      <!-- Tel o DNI + Ciudad -->
-      <div style="font-size:12px;color:var(--text-l);${saldoTxt?'margin-bottom:8px;':''}">${[c.tel||c.dni||'',c.ciudad||''].filter(Boolean).join(' · ')}</div>
-      <!-- Saldo — solo si hay algo que mostrar -->
-      ${saldoTxt ? `<div style="font-size:12px;font-weight:500;color:${saldoColor};">${saldoTxt}</div>` : ''}
+      <div style="width:100%;height:5px;background:${franjaGrad};"></div>
+      <div style="padding:16px 12px 14px;display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;">
+        <div class="av" style="background:${avatarGrad};color:#fff;font-size:12px;border-radius:50%;">${init}</div>
+        <div>
+          <div style="font-size:13px;font-weight:500;color:var(--text);">${c.nombre}</div>
+          ${subtitulo ? `<div style="font-size:11px;color:var(--text-l);margin-top:1px;">${subtitulo}</div>` : ''}
+        </div>
+        <div style="font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;color:${saldoDisplayColor};">${saldoAmt}</div>
+        <span style="background:${badgeBg};color:${badgeColor2};font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;">${badgeText}</span>
+      </div>
     </div>`;
   }).join('');
 }
