@@ -15466,39 +15466,37 @@ function renderHistorialCompra(q) {
   if(kpiProdsEl) kpiProdsEl.textContent=totalProductos;
   if(kpiTotalEl) kpiTotalEl.textContent='$'+totalGastado.toLocaleString('es-AR');
 
+  const fmtHC = v => '$' + new Intl.NumberFormat('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(parseFloat(v)||0);
   el.innerHTML = productos.map(nombre=>{
     const lineas=porProducto[nombre].sort((a,b)=>(a.fecha||'')>(b.fecha||'')?-1:1);
     const precios=lineas.map(l=>parseFloat(l.precioUnit)||0).filter(p=>p>0);
     const min=Math.min(...precios),max=Math.max(...precios);
     const variacion=precios.length>1&&min>0?Math.round(((max-min)/min)*100):0;
     const ultimoPrecio=precios[0]||0;
-    return `<div style="border-radius:14px;overflow:hidden;margin-bottom:12px;border:.5px solid rgba(0,0,0,.07);">
-      <div style="background:#4a5e4d;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">
+    return `<div style="background:#ffffff;border-radius:12px;border:1px solid rgba(0,0,0,0.06);overflow:hidden;margin-bottom:12px;">
+      <div style="position:relative;padding:14px 16px 14px 24px;display:flex;justify-content:space-between;align-items:center;">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,#3d5240 0%,#4a5e4d 50%,#5e7562 100%);"></div>
         <div>
-          <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:300;color:#fff;">${nombre}</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.7);margin-top:2px;">${lineas.length} compra${lineas.length!==1?'s':''} · Último: <b style="color:#fff;">$${ultimoPrecio.toLocaleString('es-AR')}</b></div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:#2d2d2d;">${nombre}</div>
+          <div style="font-size:11px;color:var(--text-l);margin-top:2px;">${lineas.length} compra${lineas.length!==1?'s':''} · Último precio: <b style="color:#4a5e4d;font-weight:600;">${fmtHC(ultimoPrecio)}</b></div>
         </div>
         ${variacion>0
-          ?`<span style="background:rgba(0,0,0,.2);color:#fff;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;">+${variacion}% variación</span>`
-          :`<span style="background:rgba(255,255,255,.15);color:#fff;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;">Precio estable</span>`}
+          ?`<span style="background:#f5eeec;color:#7a4e46;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;">+${variacion}% variación</span>`
+          :`<span style="background:#f0f0ee;color:#666;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;">Precio estable</span>`}
       </div>
       <div style="background:#fff;padding:0 16px;">
-        <div style="display:grid;grid-template-columns:70px 1fr 80px 80px 70px;gap:6px;padding:8px 0;border-bottom:.5px solid var(--cream-d);">
-          <span style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.4px;">OC</span>
-          <span style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.4px;">Proveedor</span>
-          <span style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.4px;">Fecha</span>
-          <span style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.4px;text-align:right;">P. Unit.</span>
-          <span style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.4px;text-align:right;">Total</span>
+        <div style="display:grid;grid-template-columns:80px 1fr 120px 100px;gap:6px;padding:8px 0;border-bottom:.5px solid var(--cream-d);background:#fafafa;margin:0 -16px;padding-left:16px;padding-right:16px;">
+          <span style="font-size:9px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.4px;">OC</span>
+          <span style="font-size:9px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.4px;">Proveedor</span>
+          <span style="font-size:9px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.4px;">Fecha</span>
+          <span style="font-size:9px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.4px;text-align:right;">P. Unitario</span>
         </div>
         ${lineas.map(l=>{
-          const esMax=parseFloat(l.precioUnit)===max&&variacion>0;
-          const esMin=parseFloat(l.precioUnit)===min&&variacion>0;
-          return `<div style="display:grid;grid-template-columns:70px 1fr 80px 80px 70px;gap:6px;padding:8px 0;border-bottom:.5px solid var(--cream-d);align-items:center;">
-            <div style="font-size:11px;font-weight:500;color:var(--text);">OC-${String(l.ocNum||0).padStart(3,'0')}</div>
+          return `<div style="display:grid;grid-template-columns:80px 1fr 120px 100px;gap:6px;padding:8px 0;border-bottom:.5px solid var(--cream-d);align-items:center;">
+            <div><span style="background:#e8f0e9;color:#4a5e4d;font-size:10px;font-weight:700;padding:3px 7px;border-radius:5px;font-family:'DM Sans',sans-serif;">OC-${String(l.ocNum||0).padStart(3,'0')}</span></div>
             <div style="font-size:12px;color:var(--text-m);">${l.proveedor||'—'}</div>
             <div style="font-size:11px;color:var(--text-l);">${l.fecha||'—'}</div>
-            <div style="font-size:13px;font-weight:500;color:${esMax?'var(--err)':esMin?'var(--ok)':'var(--text)'};text-align:right;">$${(parseFloat(l.precioUnit)||0).toLocaleString('es-AR')}</div>
-            <div style="font-size:12px;color:var(--text-m);text-align:right;">$${(parseFloat(l.total)||0).toLocaleString('es-AR')}</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:14px;font-weight:700;color:#2d2d2d;text-align:right;">${fmtHC(l.precioUnit)}</div>
           </div>`;
         }).join('')}
       </div>
