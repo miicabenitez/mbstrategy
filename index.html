@@ -992,6 +992,18 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
   </div>
 </div>
 
+<div id="bienvenida-inicio" style="display:none;min-height:100vh;background:#f5f4f0;align-items:center;justify-content:center;flex-direction:column;padding:40px 24px;">
+  <div style="background:#fff;border-radius:16px;padding:36px 32px;max-width:420px;width:100%;box-shadow:0 4px 24px rgba(0,0,0,.06);">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;color:#2c2c2c;margin-bottom:8px;">¡Bienvenido/a a MB Strategy!</div>
+    <div style="font-size:14px;color:#73726c;margin-bottom:28px;line-height:1.6;">Para personalizar tu experiencia, contanos cómo se llama tu negocio.</div>
+    <div style="margin-bottom:20px;">
+      <label style="font-size:11px;font-weight:500;color:#3e4e42;text-transform:uppercase;letter-spacing:.7px;display:block;margin-bottom:6px;">Nombre del negocio</label>
+      <input type="text" id="bi-negocio" placeholder="Ej: Estudio Creativo Luna" onkeydown="if(event.key==='Enter')document.getElementById('bi-btn').click()" style="width:100%;padding:12px 14px;border:1.5px solid #e8e8e8;border-radius:10px;font-size:14px;font-family:'DM Sans',sans-serif;color:#1a1a1a;background:#fff;outline:none;box-sizing:border-box;"/>
+    </div>
+    <button id="bi-btn" style="width:100%;padding:14px;background:#4a5e4d;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;">Entrar</button>
+  </div>
+</div>
+
 <!-- PANTALLA MEMBRESÍA CANCELADA -->
 <div id="memb-cancelada" style="display:none;min-height:100vh;align-items:center;justify-content:center;background:#f5f4f0;flex-direction:column;text-align:center;padding:40px 24px;">
   <div style="max-width:400px;width:100%;">
@@ -4839,7 +4851,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, addDoc, collection, getDocs, query, where, orderBy, updateDoc, deleteDoc, deleteField } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, addDoc, collection, getDocs, query, where, orderBy, updateDoc, deleteDoc, deleteField, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 // Expose firestore db globally for cross-block access
 
 const cfg = {apiKey:"AIzaSyCZr_VAn5fumCzkrfxb1oK9-W2_cADnGTI",authDomain:"mb-strategy.firebaseapp.com",projectId:"mb-strategy",storageBucket:"mb-strategy.firebasestorage.app",messagingSenderId:"1055393429525",appId:"1:1055393429525:web:0f40fa5869ef5aa8bb761c"};
@@ -4889,6 +4901,22 @@ window.doGoogleLogin = async function() {
     }
   }
 };
+
+function showBienvenidaInicio(user) {
+  document.getElementById('lp').style.display = 'none';
+  document.getElementById('app').classList.remove('visible');
+  const screen = document.getElementById('bienvenida-inicio');
+  if(screen) screen.style.display = 'flex';
+  document.getElementById('bi-btn').onclick = async function() {
+    const nombre = (document.getElementById('bi-negocio').value || '').trim();
+    if(!nombre) { document.getElementById('bi-negocio').focus(); return; }
+    try { await updateDoc(doc(db, 'clientes', user.uid), { negocioNombre: nombre }); } catch(e) {}
+    screen.style.display = 'none';
+    const snap = await getDoc(doc(db, 'clientes', user.uid));
+    const d = snap.exists() ? snap.data() : {};
+    await showClientUI(user.email, { id: user.uid, nombre, ...d });
+  };
+}
 
 window.doLogout = async function() {
   try { await signOut(auth); } catch(ex) {}
@@ -4968,7 +4996,30 @@ onAuthStateChanged(auth, async (user) => {
         }
       } else {
         const clientData = await getClientByAuth(user);
-        await showClientUI(user.email, clientData);
+        if (clientData !== null) {
+          await showClientUI(user.email, clientData);
+        } else {
+          const inicioRef = doc(db, 'clientes', user.uid);
+          const inicioSnap = await getDoc(inicioRef);
+          if (inicioSnap.exists()) {
+            const d = inicioSnap.data();
+            const nombre = d.negocioNombre || user.email.split('@')[0];
+            await showClientUI(user.email, { id: user.uid, nombre, ...d });
+          } else {
+            const now = new Date();
+            const mesActual = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+            await setDoc(inicioRef, {
+              uid: user.uid,
+              email: user.email,
+              negocioNombre: '',
+              creadoEn: serverTimestamp(),
+              plan: 'inicio',
+              movimientosMes: 0,
+              mesActual
+            });
+            showBienvenidaInicio(user);
+          }
+        }
       }
     } catch(e) {
       console.log('Auth flow error:', e);
