@@ -4995,15 +4995,13 @@ onAuthStateChanged(auth, async (user) => {
           await showAdminUI(user.email);
         }
       } else {
-        const clientData = await getClientByAuth(user);
-        if (clientData !== null) {
-          await showClientUI(user.email, clientData);
-        } else {
+        const isGoogleUser = user.providerData.some(p => p.providerId === 'google.com');
+        if (isGoogleUser) {
           const inicioRef = doc(db, 'clientes', user.uid);
           const inicioSnap = await getDoc(inicioRef);
           if (inicioSnap.exists()) {
             const d = inicioSnap.data();
-            const nombre = d.negocioNombre || user.email.split('@')[0];
+            const nombre = d.negocioNombre || d.nombre || user.email.split('@')[0];
             await showClientUI(user.email, { id: user.uid, nombre, ...d });
           } else {
             const now = new Date();
@@ -5019,6 +5017,9 @@ onAuthStateChanged(auth, async (user) => {
             });
             showBienvenidaInicio(user);
           }
+        } else {
+          const clientData = await getClientByAuth(user);
+          await showClientUI(user.email, clientData);
         }
       }
     } catch(e) {
