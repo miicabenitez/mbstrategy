@@ -10388,6 +10388,23 @@ window.mvmGuardar = async function() {
     const btnSave = document.getElementById('mvm-btn-save');
     if(btnSave){btnSave.disabled=true;btnSave.textContent='Guardando...';}
     await Promise.all(docs.map(d=>addDoc(collection(db,'libroCaja'),{uid,...d})));
+    try {
+      const clienteRef = doc(db,'clientes',uid);
+      const clienteSnap = await getDoc(clienteRef);
+      if(clienteSnap.exists()) {
+        const cd = clienteSnap.data();
+        if(cd.plan === 'inicio') {
+          const now = new Date();
+          const mesHoy = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+          let movs = cd.mesActual === mesHoy ? (cd.movimientosMes||0) : 0;
+          movs += 1;
+          const upd = {movimientosMes: movs};
+          if(cd.mesActual !== mesHoy) upd.mesActual = mesHoy;
+          await updateDoc(clienteRef, upd);
+          if(movs >= 30) mostrarOverlayUpgrade();
+        }
+      }
+    } catch(e){ console.log('inicio counter:', e); }
     mvmCerrar();
     loadCajaModule();
   } catch(e){
@@ -10396,6 +10413,11 @@ window.mvmGuardar = async function() {
     if(btnSave){btnSave.disabled=false;btnSave.textContent='Guardar';}
   }
 };
+
+function mostrarOverlayUpgrade() {
+  const ov = document.getElementById('inicio-upgrade-overlay');
+  if(ov) ov.style.display = 'flex';
+}
 
 window.mvmCerrar = function() {
   const ov = document.getElementById('mvm-overlay');
@@ -20210,6 +20232,15 @@ window.doResetPassword = async function(){
       <button id="mcl-cobro-btn" onclick="guardarCobroLibre()" style="padding:9px 20px;border-radius:8px;border:none;background:#4a5e4d;color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;">Registrar cobro</button>
     </div>
     <div id="mcl-cobro-saved" class="saved-msg" style="display:none;">✓ Cobro registrado</div>
+  </div>
+</div>
+
+<div id="inicio-upgrade-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;align-items:center;justify-content:center;padding:24px;">
+  <div style="background:#fff;border-radius:16px;padding:36px 32px;max-width:400px;width:100%;font-family:'DM Sans',sans-serif;">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;color:#2c2c2c;margin-bottom:12px;">Tu negocio está creciendo</div>
+    <div style="font-size:14px;color:#73726c;line-height:1.65;margin-bottom:28px;">Registraste 30 movimientos este mes. Pasate al Plan Base para continuar sin límites.</div>
+    <button onclick="window.open('/planes.html','_blank')" style="width:100%;padding:14px;background:#4a5e4d;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;margin-bottom:10px;">Ver planes</button>
+    <button onclick="document.getElementById('inicio-upgrade-overlay').style.display='none'" style="width:100%;padding:12px;background:none;color:#888;border:none;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;">Recordármelo después</button>
   </div>
 </div>
 
