@@ -4923,6 +4923,11 @@ window.aplicarRestriccionesPlan = function(plan) {
   });
   const fab = document.getElementById('embiFab');
   if(fab) fab.style.display = 'none';
+  // Ocultar sub-items de Finanzas no disponibles en Plan Inicio
+  ['cierre-periodo','caja-config'].forEach(sub => {
+    const el = document.querySelector('#sbsub-finanzas [data-sub="'+sub+'"]');
+    if(el) el.style.display = 'none';
+  });
 };
 
 function mostrarOverlayModuloBloqueado(label) {
@@ -11121,15 +11126,17 @@ async function renderOnboardingChecklist() {
     } catch(e) {}
     if(!window._clientPresupuestos) { try { await loadClientPresupuestos(); } catch(e) {} }
   }
+  const isInicio = (currentClientData||{}).plan === 'inicio';
   const s = {
     nombre: !!(d.negocioNombre && d.negocioNombre.trim()),
     logo: !!d.logoNegocio,
     ingreso: hasIngreso,
     egreso: hasEgreso,
-    presupuesto: (window._clientPresupuestos||[]).length > 0
+    ...(isInicio ? {} : {presupuesto: (window._clientPresupuestos||[]).length > 0})
   };
   const done = Object.values(s).filter(Boolean).length;
-  if(done === 5) {
+  const total = isInicio ? 4 : 5;
+  if(done === total) {
     el.style.display = 'none';
     // Checklist completo: marcar onboarding como terminado y cerrar pantalla de bienvenida
     if(currentClientUID) {
@@ -11138,14 +11145,14 @@ async function renderOnboardingChecklist() {
     window.closeWelcomeScreen();
     return;
   }
-  const pct = Math.round((done/5)*100);
+  const pct = Math.round((done/total)*100);
   const steps = [
     { key:'nombre', label:'Cargá el nombre de tu negocio', sub:'', action:"openModal('miCuentaModal')", btn:'Completar' },
     { key:'logo', label:'Subí tu logo', sub:'Aparece en presupuestos y PDFs', action:"openModal('miCuentaModal')", btn:'Subir' },
     { key:'ingreso', label:'Registrá tu primer ingreso', sub:'En 30 segundos ves tu ganancia real', action:"onboardingAbrirMovimiento('ingreso')", btn:'Registrar' },
     { key:'egreso', label:'Cargá un egreso', sub:'Para calcular tu ganancia real', action:"onboardingAbrirMovimiento('egreso')", btn:'Cargar' },
     { key:'presupuesto', label:'Creá tu primer presupuesto', sub:'Profesionalizá tus propuestas en minutos', action:"openModal('newClientPresupModal')", btn:'Crear' }
-  ];
+  ].filter(st => !((currentClientData||{}).plan === 'inicio' && st.key === 'presupuesto'));
   const checkSvg = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 6l2.5 2.5L9 4" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   let firstPending = true;
   const stepsHtml = steps.map(st => {
