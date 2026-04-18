@@ -1059,7 +1059,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
           <div style="width:22px;height:22px;border-radius:50%;background:#4a5e4d;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">2</div>
           <div><div style="font-size:13px;font-weight:600;color:#2a3a2c;margin-bottom:2px;">Registrá tu primer ingreso</div><div style="font-size:12px;color:#8a9a8c;">En 30 segundos ves tu ganancia real</div></div>
         </div>
-        <div style="opacity:0;animation:wsStep .42s ease 2.6s both;display:flex;align-items:flex-start;gap:12px;padding:13px 15px;background:#f5f8f5;border-radius:12px;border:.5px solid #dce8dd;">
+        <div id="ws-step-embi" style="opacity:0;animation:wsStep .42s ease 2.6s both;display:flex;align-items:flex-start;gap:12px;padding:13px 15px;background:#f5f8f5;border-radius:12px;border:.5px solid #dce8dd;">
           <div style="width:22px;height:22px;border-radius:50%;background:#4a5e4d;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">3</div>
           <div><div style="font-size:13px;font-weight:600;color:#2a3a2c;margin-bottom:2px;">Conocé a Embi, tu asistente</div><div style="font-size:12px;color:#8a9a8c;">Preguntale lo que quieras sobre tu negocio</div></div>
         </div>
@@ -4902,6 +4902,37 @@ window.doGoogleLogin = async function() {
   }
 };
 
+const _LOCK_SVG = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:6px;flex-shrink:0;vertical-align:middle;"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>';
+
+window.aplicarRestriccionesPlan = function(plan) {
+  if(plan !== 'inicio') return;
+  const LOCKED = [
+    {group:'sbg-ventas',       label:'Comercial'},
+    {group:'sbg-compras',      label:'Compras'},
+    {group:'sbg-herramientas', label:'Control del negocio'},
+    {group:'sbg-gestion',      label:'Gestión'}
+  ];
+  LOCKED.forEach(({group, label}) => {
+    const grp = document.getElementById(group);
+    if(!grp) return;
+    const btn = grp.querySelector('.sb-btn');
+    if(!btn) return;
+    const lblEl = btn.querySelector('.sb-label');
+    if(lblEl && !lblEl.querySelector('svg')) lblEl.insertAdjacentHTML('beforeend', _LOCK_SVG);
+    btn.onclick = function(e) { e.stopPropagation(); mostrarOverlayModuloBloqueado(label); };
+  });
+  const fab = document.getElementById('embiFab');
+  if(fab) fab.style.display = 'none';
+};
+
+function mostrarOverlayModuloBloqueado(label) {
+  const ov = document.getElementById('plan-lock-overlay');
+  if(!ov) return;
+  const title = document.getElementById('plo-title');
+  if(title) title.textContent = label;
+  ov.style.display = 'flex';
+}
+
 function showBienvenidaInicio(user) {
   document.getElementById('lp').style.display = 'none';
   document.getElementById('app').classList.remove('visible');
@@ -5174,6 +5205,7 @@ window.showClientUI = async function(email, clientData) {
     }
     if(window.embiShow) window.embiShow(true);
     if(window.sidebarInit) window.sidebarInit();
+    aplicarRestriccionesPlan(clientData ? (clientData.plan || '') : '');
     // módulo ya mostrado antes de los awaits (ver arriba)
 };
 
@@ -11040,6 +11072,8 @@ window.showWelcomeScreen = function(clientData) {
       '<span style="display:inline-block;opacity:0;animation:wsWord .38s ease '+(0.8+i*0.11)+'s both;margin-right:.22em;">'+w+'</span>'
     ).join('');
   }
+  const embiStep = document.getElementById('ws-step-embi');
+  if(embiStep) embiStep.style.display = clientData.plan === 'inicio' ? 'none' : '';
   ws.style.display = 'flex';
 };
 
@@ -20233,6 +20267,15 @@ window.doResetPassword = async function(){
       <button id="mcl-cobro-btn" onclick="guardarCobroLibre()" style="padding:9px 20px;border-radius:8px;border:none;background:#4a5e4d;color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;">Registrar cobro</button>
     </div>
     <div id="mcl-cobro-saved" class="saved-msg" style="display:none;">✓ Cobro registrado</div>
+  </div>
+</div>
+
+<div id="plan-lock-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;align-items:center;justify-content:center;padding:24px;">
+  <div style="background:#fff;border-radius:16px;padding:36px 32px;max-width:400px;width:100%;font-family:'DM Sans',sans-serif;">
+    <div id="plo-title" style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;color:#2c2c2c;margin-bottom:12px;"></div>
+    <div style="font-size:14px;color:#73726c;line-height:1.65;margin-bottom:28px;">Este módulo está disponible en el Plan Base.</div>
+    <button onclick="window.open('/planes.html','_blank')" style="width:100%;padding:14px;background:#4a5e4d;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;margin-bottom:10px;">Ver planes</button>
+    <button onclick="document.getElementById('plan-lock-overlay').style.display='none'" style="width:100%;padding:12px;background:none;color:#888;border:none;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;">Cerrar</button>
   </div>
 </div>
 
