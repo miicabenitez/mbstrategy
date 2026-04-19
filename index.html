@@ -10994,10 +10994,10 @@ async function loadInicio() {
     const actEl = document.getElementById('inicio-actividad');
     if(actEl) {
       const movimientos = [];
-      ingresos.forEach(i=>movimientos.push({tipo:'ingreso',desc:i.concepto||i.categoria||'Ingreso',monto:parseFloat(i.monto)||0,fecha:i.fecha||i.creadoEn||''}));
-      egresos.forEach(e=>movimientos.push({tipo:'egreso',desc:e.concepto||e.categoria||'Egreso',monto:parseFloat(e.monto)||0,fecha:e.fecha||e.creadoEn||''}));
+      ingresos.forEach(i=>movimientos.push({tipo:'ingreso',desc:i.concepto||i.categoria||'Ingreso',monto:parseFloat(i.monto)||0,fecha:i.fecha||i.creadoEn||'',creadoEn:i.creadoEn||i.fecha||''}));
+      egresos.forEach(e=>movimientos.push({tipo:'egreso',desc:e.concepto||e.categoria||'Egreso',monto:parseFloat(e.monto)||0,fecha:e.fecha||e.creadoEn||'',creadoEn:e.creadoEn||e.fecha||''}));
 
-      movimientos.sort((a,b)=>new Date(b.fecha)-new Date(a.fecha));
+      movimientos.sort((a,b)=>new Date(b.creadoEn||b.fecha)-new Date(a.creadoEn||a.fecha));
       const ultimos = movimientos.slice(0,5);
 
       if(ultimos.length === 0) {
@@ -11010,7 +11010,7 @@ async function loadInicio() {
           // Tiempo relativo
           let tiempo = '';
           if(m.fecha) {
-            const diff = Date.now() - new Date(m.fecha).getTime();
+            const diff = Date.now() - new Date(m.creadoEn||m.fecha).getTime();
             const mins = Math.floor(diff/60000);
             const hrs = Math.floor(diff/3600000);
             const dias = Math.floor(diff/86400000);
