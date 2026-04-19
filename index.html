@@ -19499,7 +19499,7 @@ async function embiSaveReport(tipo,modulo,descripcion,userMsg){
 async function embiLogAccion(tipo,estado,datos){
   try{
     if(!currentClientUID)return;
-    await addDoc(collection(db,'embiAcciones'),{
+    await window._addDoc(window._collection(window.db,'embiAcciones'),{
       tipo,estado,
       datos:typeof datos==='object'?JSON.stringify(datos):datos,
       clienteId:currentClientUID,
@@ -19517,19 +19517,19 @@ async function embiEjecutarAccion(tipo,datos){
     mesTxt=mesTxt.charAt(0).toUpperCase()+mesTxt.slice(1);
     if(tipo==='INGRESO'){
       console.log('embi uid:', currentClientUID);
-      await addDoc(collection(db,'libroCaja'),{uid:currentClientUID,fecha:datos.fecha||hoy,tipo:'ingreso',concepto:datos.concepto||'Ingreso',cuenta:datos.cuenta||'',monto:parseFloat(datos.monto)||0,detalle:datos.detalle||'',mes:mesTxt,origen:'embi',eliminado:false,creadoEn:new Date().toISOString()});
+      await window._addDoc(window._collection(window.db,'libroCaja'),{uid:currentClientUID,fecha:datos.fecha||hoy,tipo:'ingreso',concepto:datos.concepto||'Ingreso',cuenta:datos.cuenta||'',monto:parseFloat(datos.monto)||0,detalle:datos.detalle||'',mes:mesTxt,origen:'embi',eliminado:false,creadoEn:new Date().toISOString()});
       if(window.loadClientContabilidad)await window.loadClientContabilidad();
       embiAddMsg('bot','Ingreso de $'+parseFloat(datos.monto).toLocaleString('es-AR')+' registrado en Finanzas.');
     }else if(tipo==='EGRESO'){
-      await addDoc(collection(db,'libroCaja'),{uid:currentClientUID,fecha:datos.fecha||hoy,tipo:'egreso',concepto:datos.concepto||'Egreso',cuenta:datos.cuenta||'',monto:parseFloat(datos.monto)||0,detalle:datos.detalle||'',mes:mesTxt,origen:'embi',eliminado:false,creadoEn:new Date().toISOString()});
+      await window._addDoc(window._collection(window.db,'libroCaja'),{uid:currentClientUID,fecha:datos.fecha||hoy,tipo:'egreso',concepto:datos.concepto||'Egreso',cuenta:datos.cuenta||'',monto:parseFloat(datos.monto)||0,detalle:datos.detalle||'',mes:mesTxt,origen:'embi',eliminado:false,creadoEn:new Date().toISOString()});
       if(window.loadClientContabilidad)await window.loadClientContabilidad();
       embiAddMsg('bot','Egreso de $'+parseFloat(datos.monto).toLocaleString('es-AR')+' registrado en Finanzas.');
     }else if(tipo==='CLIENTE'){
-      await addDoc(collection(db,'clientes',currentClientUID,'mcClientes'),{nombre:datos.nombre,tel:datos.tel||'',email:datos.email||'',creadoEn:new Date().toISOString()});
+      await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'mcClientes'),{nombre:datos.nombre,tel:datos.tel||'',email:datos.email||'',creadoEn:new Date().toISOString()});
       if(window.loadMcModule)await window.loadMcModule();
       embiAddMsg('bot','Cliente '+datos.nombre+' creado en Comercial.');
     }else if(tipo==='COBRO'){
-      await addDoc(collection(db,'clientes',currentClientUID,'cobros'),{monto:parseFloat(datos.monto)||0,clienteNombre:datos.cliente||'',fecha:datos.fecha||hoy,pagado:true,concepto:datos.concepto||'Cobro',origen:'embi',creadoEn:new Date().toISOString()});
+      await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'cobros'),{monto:parseFloat(datos.monto)||0,clienteNombre:datos.cliente||'',fecha:datos.fecha||hoy,pagado:true,concepto:datos.concepto||'Cobro',origen:'embi',creadoEn:new Date().toISOString()});
       if(window.loadClientContabilidad)await window.loadClientContabilidad();
       embiAddMsg('bot','Cobro de $'+parseFloat(datos.monto).toLocaleString('es-AR')+' registrado.');
     }else if(tipo==='OC_RECIBIDA'){
