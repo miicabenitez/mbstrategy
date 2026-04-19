@@ -325,7 +325,7 @@ input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus
   body.client-view .mobile-menu{display:none !important;}
   body.client-view .mobile-nav{display:none !important;}
   body.client-view .content{padding-bottom:calc(56px + env(safe-area-inset-bottom,0px));overflow-x:hidden;}
-  body.client-view .embi-fab{bottom:calc(56px + env(safe-area-inset-bottom,0px));}
+  body.client-view .embi-fab{bottom:56px;}
   body.client-view .topbar-right{display:none !important;}
   body.client-view #client-mobile-menu-wrap{display:block !important;}
   /* CC proveedor — una columna en mobile */
@@ -437,8 +437,8 @@ input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus
 }
 /* Mobile — full screen below topbar */
 @media(max-width:480px){
-  .embi-panel{top:54px;left:0;right:0;bottom:env(safe-area-inset-bottom,0px);width:100%;border-radius:0;border:none;max-height:none;}
-  .embi-fab{bottom:calc(76px + env(safe-area-inset-bottom,0px));right:16px;}
+  .embi-panel{top:54px;left:0;right:0;bottom:0;width:100%;border-radius:0;border:none;max-height:none;}
+  .embi-fab{bottom:76px;right:16px;}
 }
 .embi-header{background:var(--topbar);padding:13px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;}
 .embi-avatar{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
@@ -466,12 +466,12 @@ input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus
 .embi-chip{font-size:11px;padding:5px 10px;border-radius:20px;background:var(--sage-xl);border:.5px solid var(--sage-light);color:var(--text-m);cursor:pointer;white-space:nowrap;transition:all .15s;font-family:'DM Sans',sans-serif;}
 .embi-chip:hover{background:var(--sage-light);}
 .embi-report-btn{font-size:11px;padding:5px 10px;border-radius:20px;background:var(--warn-bg);border:.5px solid rgba(176,138,66,.2);color:var(--warn);cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif;}
-.embi-input-wrap{padding:10px 12px;padding-bottom:max(10px,env(safe-area-inset-bottom,10px));border-top:.5px solid var(--cream-d);display:flex;align-items:center;gap:7px;flex-shrink:0;background:#fff;}
+.embi-input-wrap{padding:10px 12px;border-top:.5px solid var(--cream-d);display:flex;align-items:center;gap:7px;flex-shrink:0;background:#fff;}
 .embi-input{flex:1;border:.5px solid var(--cream-d);border-radius:20px;padding:8px 14px;font-size:12px;font-family:'DM Sans',sans-serif;color:var(--text);background:var(--white);outline:none;resize:none;}
 .embi-input:focus{border-color:var(--topbar);background:#fff;}
 .embi-send{width:33px;height:33px;border-radius:50%;background:var(--topbar);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s;}
 .embi-send:hover{background:var(--topbar2);}
-.embi-mic{width:33px;height:33px;border-radius:50%;background:var(--sage-xl);border:.5px solid var(--sage-light);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;user-select:none;-webkit-user-select:none;touch-action:none;}
+.embi-mic{width:33px;height:33px;border-radius:50%;background:var(--sage-xl);border:.5px solid var(--sage-light);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;user-select:none;-webkit-user-select:none;}
 .embi-mic.recording{background:#fde8e8;border-color:#e24b4a;animation:embi-pulse .8s ease-in-out infinite;}
 @keyframes embi-pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
 @keyframes slideDown{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);}}
@@ -19582,19 +19582,13 @@ var embiRecognition=null,embiRecording=false;
 function embiMicStart(){
   if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){embiAddMsg('bot','Tu navegador no soporta reconocimiento de voz. Usá Chrome o Edge.');return;}
   if(embiRecording)return;
-  var ua=navigator.userAgent;
-  var isIOS=/iPhone|iPad|iPod/i.test(ua)||(ua.includes('Safari')&&!ua.includes('Chrome'));
-  if(isIOS){
+  navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
+    stream.getTracks().forEach(t=>t.stop());
     embiIniciarReconocimiento();
-  } else {
-    navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
-      stream.getTracks().forEach(t=>t.stop());
-      embiIniciarReconocimiento();
-    }).catch(function(err){
-      if(err.name==='NotAllowedError'||err.name==='PermissionDeniedError'){embiAddMsg('bot','Permiso de micrófono denegado. Tocá el candado 🔒 en la barra del navegador → Permisos → Micrófono → Permitir.');}
-      else{embiAddMsg('bot','No se pudo acceder al micrófono.');}
-    });
-  }
+  }).catch(function(err){
+    if(err.name==='NotAllowedError'||err.name==='PermissionDeniedError'){embiAddMsg('bot','Permiso de micrófono denegado. Tocá el candado 🔒 en la barra del navegador → Permisos → Micrófono → Permitir.');}
+    else{embiAddMsg('bot','No se pudo acceder al micrófono.');}
+  });
 }
 function embiIniciarReconocimiento(){
   var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
