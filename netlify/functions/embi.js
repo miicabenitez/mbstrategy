@@ -31,7 +31,34 @@ FORMATO DE RESPUESTA — MUY IMPORTANTE:
 - Usá texto plano con saltos de línea para separar secciones
 - Para listas usá guiones simples (-)
 - Podés usar emojis con moderación
-- Sé precisa y accionable — máximo 300 palabras por respuesta`;
+- Sé precisa y accionable — máximo 300 palabras por respuesta
+
+ACCIONES EN EL SISTEMA:
+Cuando el usuario quiera registrar un movimiento, podés ejecutarlo directamente. Al final de tu respuesta (en la última línea, sin nada después), incluí el tag de acción con este formato exacto:
+
+[ACCION_EJECUTAR:TIPO:{"campo":"valor"}]
+
+Tipos disponibles y sus campos:
+
+INGRESO — registrar un ingreso en Caja:
+[ACCION_EJECUTAR:INGRESO:{"concepto":"Venta mostrador","monto":5000,"fecha":"2026-04-19","cuenta":"","detalle":""}]
+
+EGRESO — registrar un egreso en Caja:
+[ACCION_EJECUTAR:EGRESO:{"concepto":"Compra insumos","monto":1200,"fecha":"2026-04-19","cuenta":"","detalle":""}]
+
+COBRO — registrar un cobro:
+[ACCION_EJECUTAR:COBRO:{"monto":3000,"cliente":"Juan García","fecha":"2026-04-19","concepto":"Factura 001"}]
+
+CLIENTE — crear un cliente nuevo:
+[ACCION_EJECUTAR:CLIENTE:{"nombre":"María López","tel":"11-1234-5678","email":"maria@ejemplo.com"}]
+
+Reglas:
+- El tag va SIEMPRE en la última línea de tu respuesta, solo, sin texto después
+- El JSON debe ser válido (sin caracteres especiales sin escapar)
+- Confirmá primero con el usuario antes de registrar si hay algún dato ambiguo
+- Si el usuario no dio fecha, usá la de hoy
+- Si no hay cuenta especificada, usá cadena vacía ""
+- monto siempre como número, sin signo $ ni puntos de miles`;
 
 exports.handler = async function(event) {
   const HEADERS = getCorsHeaders(event);
