@@ -19516,13 +19516,14 @@ async function embiEjecutarAccion(tipo,datos){
     var mesTxt=d.toLocaleDateString('es-AR',{month:'long',year:'numeric'});
     mesTxt=mesTxt.charAt(0).toUpperCase()+mesTxt.slice(1);
     if(tipo==='INGRESO'){
-      console.log('embi uid:', currentClientUID);
       await window._addDoc(window._collection(window.db,'libroCaja'),{uid:currentClientUID,fecha:datos.fecha||hoy,tipo:'ingreso',concepto:datos.concepto||'Ingreso',cuenta:datos.cuenta||'',monto:parseFloat(datos.monto)||0,detalle:datos.detalle||'',mes:mesTxt,origen:'embi',eliminado:false,creadoEn:new Date().toISOString()});
-      if(window.loadClientContabilidad)await window.loadClientContabilidad();
+      if(window.loadCajaModule)window.loadCajaModule();
+      if(window.loadInicio)window.loadInicio();
       embiAddMsg('bot','Ingreso de $'+parseFloat(datos.monto).toLocaleString('es-AR')+' registrado en Finanzas.');
     }else if(tipo==='EGRESO'){
       await window._addDoc(window._collection(window.db,'libroCaja'),{uid:currentClientUID,fecha:datos.fecha||hoy,tipo:'egreso',concepto:datos.concepto||'Egreso',cuenta:datos.cuenta||'',monto:parseFloat(datos.monto)||0,detalle:datos.detalle||'',mes:mesTxt,origen:'embi',eliminado:false,creadoEn:new Date().toISOString()});
-      if(window.loadClientContabilidad)await window.loadClientContabilidad();
+      if(window.loadCajaModule)window.loadCajaModule();
+      if(window.loadInicio)window.loadInicio();
       embiAddMsg('bot','Egreso de $'+parseFloat(datos.monto).toLocaleString('es-AR')+' registrado en Finanzas.');
     }else if(tipo==='CLIENTE'){
       await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'mcClientes'),{nombre:datos.nombre,tel:datos.tel||'',email:datos.email||'',creadoEn:new Date().toISOString()});
@@ -19546,7 +19547,6 @@ async function embiSend(){
   embiShowTyping();
   var resp=await embiCallAPI(val);
   embiRemoveTyping();
-  console.log('[EMBI] resp completa:', resp);
   // Detectar acciones
   var actionMatch=resp.match(/\[ACCION_EJECUTAR:([A-Z_]+):([\s\S]*?)\](?:\s*$|\n|$)/m);
   if(!actionMatch){
@@ -19563,7 +19563,6 @@ async function embiSend(){
       }
     }
   }
-  console.log('[EMBI] actionMatch:', actionMatch ? 'ENCONTRADO tipo='+actionMatch[1] : 'NO ENCONTRADO');
   if(actionMatch){
     var tipo=actionMatch[1],datosStr=actionMatch[2];
     var textoLimpio=resp.replace(/\[ACCION_EJECUTAR:[\s\S]*?\][\s]*/,'').trim();
