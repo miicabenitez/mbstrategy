@@ -19516,11 +19516,11 @@ async function embiEjecutarAccion(tipo,datos){
     var mesTxt=d.toLocaleDateString('es-AR',{month:'long',year:'numeric'});
     mesTxt=mesTxt.charAt(0).toUpperCase()+mesTxt.slice(1);
     if(tipo==='INGRESO'){
-      await addDoc(collection(db,'clientes',currentClientUID,'ingresos'),{concepto:datos.concepto||'Ingreso',categoria:datos.categoria||'Ingreso',monto:parseFloat(datos.monto)||0,fecha:datos.fecha||hoy,mes:mesTxt,origen:'embi',creadoEn:new Date().toISOString()});
+      await addDoc(collection(db,'libroCaja'),{uid:currentClientUID,fecha:datos.fecha||hoy,tipo:'ingreso',concepto:datos.concepto||'Ingreso',cuenta:datos.cuenta||'',monto:parseFloat(datos.monto)||0,detalle:datos.detalle||'',mes:mesTxt,origen:'embi',eliminado:false,creadoEn:new Date().toISOString()});
       if(window.loadClientContabilidad)await window.loadClientContabilidad();
       embiAddMsg('bot','Ingreso de $'+parseFloat(datos.monto).toLocaleString('es-AR')+' registrado en Finanzas.');
     }else if(tipo==='EGRESO'){
-      await addDoc(collection(db,'clientes',currentClientUID,'egresos'),{concepto:datos.concepto||'Egreso',categoria:datos.categoria||'Otros',monto:parseFloat(datos.monto)||0,fecha:datos.fecha||hoy,mes:mesTxt,origen:'embi',creadoEn:new Date().toISOString()});
+      await addDoc(collection(db,'libroCaja'),{uid:currentClientUID,fecha:datos.fecha||hoy,tipo:'egreso',concepto:datos.concepto||'Egreso',cuenta:datos.cuenta||'',monto:parseFloat(datos.monto)||0,detalle:datos.detalle||'',mes:mesTxt,origen:'embi',eliminado:false,creadoEn:new Date().toISOString()});
       if(window.loadClientContabilidad)await window.loadClientContabilidad();
       embiAddMsg('bot','Egreso de $'+parseFloat(datos.monto).toLocaleString('es-AR')+' registrado en Finanzas.');
     }else if(tipo==='CLIENTE'){
