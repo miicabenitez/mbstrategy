@@ -19582,13 +19582,7 @@ var embiRecognition=null,embiRecording=false;
 function embiMicStart(){
   if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){embiAddMsg('bot','Tu navegador no soporta reconocimiento de voz. Usá Chrome o Edge.');return;}
   if(embiRecording)return;
-  navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
-    stream.getTracks().forEach(t=>t.stop());
-    embiIniciarReconocimiento();
-  }).catch(function(err){
-    if(err.name==='NotAllowedError'||err.name==='PermissionDeniedError'){embiAddMsg('bot','Permiso de micrófono denegado. Tocá el candado 🔒 en la barra del navegador → Permisos → Micrófono → Permitir.');}
-    else{embiAddMsg('bot','No se pudo acceder al micrófono.');}
-  });
+  embiIniciarReconocimiento();
 }
 function embiIniciarReconocimiento(){
   var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
