@@ -19516,6 +19516,7 @@ async function embiEjecutarAccion(tipo,datos){
     var mesTxt=d.toLocaleDateString('es-AR',{month:'long',year:'numeric'});
     mesTxt=mesTxt.charAt(0).toUpperCase()+mesTxt.slice(1);
     if(tipo==='INGRESO'){
+      console.log('embi uid:', currentClientUID);
       await addDoc(collection(db,'libroCaja'),{uid:currentClientUID,fecha:datos.fecha||hoy,tipo:'ingreso',concepto:datos.concepto||'Ingreso',cuenta:datos.cuenta||'',monto:parseFloat(datos.monto)||0,detalle:datos.detalle||'',mes:mesTxt,origen:'embi',eliminado:false,creadoEn:new Date().toISOString()});
       if(window.loadClientContabilidad)await window.loadClientContabilidad();
       embiAddMsg('bot','Ingreso de $'+parseFloat(datos.monto).toLocaleString('es-AR')+' registrado en Finanzas.');
