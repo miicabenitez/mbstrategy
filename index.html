@@ -19358,7 +19358,7 @@ window.embiPrecargarContexto = async function() {
     var uid = currentClientUID;
     var results = await Promise.all([
       window._getDocs(window._collection(window.db,'clientes',uid,'proveedores')),
-      window._getDocs(window._collection(window.db,'clientes',uid,'mcClientes')),
+      window._getDocs(window._collection(window.db,'clientes',uid,'misClientes')),
       window._getDocs(window._collection(window.db,'clientes',uid,'presupuestos')),
       window._getDocs(window._collection(window.db,'clientes',uid,'cuentas')),
       window._getDocs(window._collection(window.db,'clientes',uid,'ordenesCompra'))
@@ -19553,7 +19553,7 @@ async function embiEjecutarAccion(tipo,datos){
       if(window.loadInicio)window.loadInicio();
       embiAddMsg('bot','Egreso de $'+parseFloat(datos.monto).toLocaleString('es-AR')+' registrado en Finanzas.');
     }else if(tipo==='CLIENTE'){
-      await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'mcClientes'),{nombre:datos.nombre,tel:datos.tel||'',email:datos.email||'',creadoEn:new Date().toISOString()});
+      await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'misClientes'),{nombre:datos.nombre,tel:datos.tel||'',email:datos.email||'',creadoEn:new Date().toISOString()});
       if(window._embi_clientes) window._embi_clientes.push({nombre:datos.nombre,email:datos.email||'',tel:datos.tel||''});
       if(window.loadMcModule)await window.loadMcModule();
       if(window.loadInicio)window.loadInicio();
