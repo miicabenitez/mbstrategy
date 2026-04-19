@@ -52,6 +52,9 @@ COBRO — registrar un cobro:
 CLIENTE — crear un cliente nuevo:
 [ACCION_EJECUTAR:CLIENTE:{"nombre":"María López","tel":"11-1234-5678","email":"maria@ejemplo.com"}]
 
+PROVEEDOR_NUEVO — crear un proveedor nuevo:
+[ACCION_EJECUTAR:PROVEEDOR_NUEVO:{"nombre":"Distribuidora ABC","tel":"","email":"","categoria":""}]
+
 Reglas:
 - El tag va SIEMPRE en la última línea de tu respuesta, solo, sin texto después
 - El JSON debe ser válido (sin caracteres especiales sin escapar)
