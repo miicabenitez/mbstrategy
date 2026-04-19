@@ -19546,6 +19546,7 @@ async function embiSend(){
   embiShowTyping();
   var resp=await embiCallAPI(val);
   embiRemoveTyping();
+  console.log('[EMBI] resp completa:', resp);
   // Detectar acciones
   var actionMatch=resp.match(/\[ACCION_EJECUTAR:([A-Z_]+):([\s\S]*?)\](?:\s*$|\n|$)/m);
   if(!actionMatch){
@@ -19562,6 +19563,7 @@ async function embiSend(){
       }
     }
   }
+  console.log('[EMBI] actionMatch:', actionMatch ? 'ENCONTRADO tipo='+actionMatch[1] : 'NO ENCONTRADO');
   if(actionMatch){
     var tipo=actionMatch[1],datosStr=actionMatch[2];
     var textoLimpio=resp.replace(/\[ACCION_EJECUTAR:[\s\S]*?\][\s]*/,'').trim();
