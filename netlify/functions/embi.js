@@ -57,7 +57,7 @@ Reglas:
 - El JSON debe ser válido (sin caracteres especiales sin escapar)
 - Confirmá primero con el usuario antes de registrar si hay algún dato ambiguo
 - Si el usuario no dio fecha, usá la de hoy
-- Si no hay cuenta especificada, usá cadena vacía ""
+- campo cuenta: si el usuario menciona "efectivo" o "en efectivo" → "Efectivo"; si menciona "Mercado Pago" o "MP" → "Mercado Pago"; si no especifica → ""
 - monto siempre como número, sin signo $ ni puntos de miles`;
 
 exports.handler = async function(event) {
