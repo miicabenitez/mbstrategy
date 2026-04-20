@@ -2001,7 +2001,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
       <div id="subnav-finanzas" class="mod-subnav" style="display:none;gap:4px;margin-bottom:14px;">
         <button class="subctab active" onclick="showCTab('contabilidad',this)">Caja</button>
         <button class="subctab" onclick="_checkProTab('cierre-periodo',this)">Cierre</button>
-        <button class="subctab" onclick="_checkProTab('caja-config',this)">Configuración</button>
+        <button class="subctab" onclick="showCTab('caja-config',this)">Configuración</button>
       </div>
 
       <!-- PRO LOCK — Finanzas -->
@@ -18582,7 +18582,7 @@ window._proLockEnTab = function(containerId, titulo, noNav) {
   el.style.position = 'relative';
   var d = document.createElement('div');
   d.className = 'plan-pro-lock';
-  d.style.cssText = 'position:absolute;inset:0;z-index:20;background:rgba(238,235,230,0.92);display:flex;align-items:center;justify-content:center;border-radius:12px;';
+  d.style.cssText = 'position:absolute;inset:0;z-index:20;background:rgba(238,235,230,0.75);display:flex;align-items:center;justify-content:center;border-radius:12px;';
   d.innerHTML = '<div style="background:#fff;border-radius:12px;padding:28px 24px;text-align:center;max-width:260px;box-shadow:0 2px 16px rgba(0,0,0,0.08);">'
     + '<div style="width:40px;height:40px;border-radius:50%;background:rgba(74,94,77,.1);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">'
     + '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4a5e4d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>'
@@ -18598,10 +18598,9 @@ window._checkProTab = function(tab, btn) {
   if(plan === 'pro') {
     window.showCTab(tab, btn);
   } else {
-    var titulos = {'cierre-periodo':'Cierre de Período','caja-config':'Configuración'};
-    var el = document.getElementById('ct-finanzas-pro-lock-titulo');
-    if(el) el.textContent = titulos[tab] || tab;
-    window.showCTab('finanzas-pro-lock', btn);
+    var titulos = {'cierre-periodo':'Cierre de Período'};
+    window.showCTab(tab, btn);
+    window._proLockEnTab('ct-' + tab, titulos[tab] || tab, true);
   }
 };
 
@@ -18617,10 +18616,8 @@ window._aplicarLocksPlanBase = function(clientData) {
       btn.style.opacity = '1';
     }
   }
-  var tabCierre = document.querySelector('#subnav-finanzas .subctab[onclick*="cierre-periodo"]');
-  var tabConfig = document.querySelector('#subnav-finanzas .subctab[onclick*="caja-config"]');
-  if(tabCierre) tabCierre.textContent = esBase ? '🔒 Cierre' : 'Cierre';
-  if(tabConfig) tabConfig.textContent = esBase ? '🔒 Configuración' : 'Configuración';
+  var _sfBtns = document.querySelectorAll('#subnav-finanzas .subctab');
+  if(_sfBtns[1]) _sfBtns[1].textContent = esBase ? '🔒 Cierre' : 'Cierre';
 };
 
 // Abre un PDF guardado como Base64 en nueva pestaña
@@ -19812,13 +19809,10 @@ window.sidebarNav=function(mod,sub){
       else if(sub==='ingresos')window.showClientContView('ingresos',null);
       else if(sub==='egresos')window.showClientContView('egresos',null);
       else if(sub==='cierre-periodo'){
-        if((window.currentClientData||currentClientData)?.plan==='pro') window.showCTab('cierre-periodo',null);
-        else { var _elp=document.getElementById('ct-finanzas-pro-lock-titulo'); if(_elp) _elp.textContent='Cierre de Período'; window.showCTab('finanzas-pro-lock',null); }
+        window.showCTab('cierre-periodo',null);
+        if((window.currentClientData||currentClientData)?.plan!=='pro') window._proLockEnTab('ct-cierre-periodo','Cierre de Período',true);
       }
-      else if(sub==='caja-config'){
-        if((window.currentClientData||currentClientData)?.plan==='pro') window.showCTab('caja-config',null);
-        else { var _elc=document.getElementById('ct-finanzas-pro-lock-titulo'); if(_elc) _elc.textContent='Configuración'; window.showCTab('finanzas-pro-lock',null); }
-      }
+      else if(sub==='caja-config') window.showCTab('caja-config',null);
     }else if(mod==='ventas'){
       if(sub==='presupuestos')window.showCTab('presupuestos',null);
       else if(sub==='catalogo')window.showCTab('productos',null);
