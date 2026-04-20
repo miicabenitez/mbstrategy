@@ -981,26 +981,12 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
     <div class="login-card">
       <div class="login-title">Bienvenido/a</div>
       <div class="login-sub">Ingresá a tu cuenta para continuar.</div>
-      <button class="btn-google" onclick="doGoogleLogin()"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>Continuar con Google</button>
-      <div class="login-sep">o</div>
       <div class="fg"><label class="fl">Email</label><input type="email" class="fi" id="le" placeholder="tu@email.com"/></div>
       <div class="fg"><label class="fl">Contraseña</label><div style="position:relative;"><input type="password" class="fi" id="lp2" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" style="padding-right:44px;"/><button type="button" id="lp2-toggle" onclick="(function(){var i=document.getElementById('lp2'),b=document.getElementById('lp2-toggle');i.type=i.type==='password'?'text':'password';b.innerHTML=i.type==='password'?'<svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;#9ca3af&quot; stroke-width=&quot;1.8&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z&quot;/><circle cx=&quot;12&quot; cy=&quot;12&quot; r=&quot;3&quot;/></svg>':'<svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;#9ca3af&quot; stroke-width=&quot;1.8&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24&quot;/><line x1=&quot;1&quot; y1=&quot;1&quot; x2=&quot;23&quot; y2=&quot;23&quot;/></svg>';})()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;line-height:0;display:flex;align-items:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin:8px 0 20px;"><a href="/terminos.html" target="_blank" style="font-size:12px;color:#aaa;text-decoration:none;">Términos y condiciones</a><a href="#" onclick="resetPassword()" style="font-size:12px;color:#aaa;text-decoration:none;">¿Olvidaste tu contraseña?</a></div>
       <button class="btn-login" onclick="doLogin()">Ingresar</button>
       <div class="login-err" id="lerr"></div>
     </div>
-  </div>
-</div>
-
-<div id="bienvenida-inicio" style="display:none;min-height:100vh;background:#f5f4f0;align-items:center;justify-content:center;flex-direction:column;padding:40px 24px;">
-  <div style="background:#fff;border-radius:16px;padding:36px 32px;max-width:420px;width:100%;box-shadow:0 4px 24px rgba(0,0,0,.06);">
-    <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;color:#2c2c2c;margin-bottom:8px;">¡Bienvenido/a a MB Strategy!</div>
-    <div style="font-size:14px;color:#73726c;margin-bottom:28px;line-height:1.6;">Para personalizar tu experiencia, contanos cómo se llama tu negocio.</div>
-    <div style="margin-bottom:20px;">
-      <label style="font-size:11px;font-weight:500;color:#3e4e42;text-transform:uppercase;letter-spacing:.7px;display:block;margin-bottom:6px;">Nombre del negocio</label>
-      <input type="text" id="bi-negocio" placeholder="Ej: Estudio Creativo Luna" onkeydown="if(event.key==='Enter')document.getElementById('bi-btn').click()" style="width:100%;padding:12px 14px;border:1.5px solid #e8e8e8;border-radius:10px;font-size:14px;font-family:'DM Sans',sans-serif;color:#1a1a1a;background:#fff;outline:none;box-sizing:border-box;"/>
-    </div>
-    <button id="bi-btn" style="width:100%;padding:14px;background:#4a5e4d;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;">Entrar</button>
   </div>
 </div>
 
@@ -4888,72 +4874,6 @@ window.doLogin = async function() {
   catch(ex) { err.textContent = 'Email o contraseña incorrectos'; err.style.display = 'block'; }
 };
 
-window.doGoogleLogin = async function() {
-  const err = document.getElementById('lerr');
-  err.style.display = 'none';
-  try {
-    const provider = new GoogleAuthProvider();
-    await signInWithPopup(auth, provider);
-  } catch(ex) {
-    if(ex.code !== 'auth/popup-closed-by-user') {
-      err.textContent = 'No se pudo iniciar sesión con Google';
-      err.style.display = 'block';
-    }
-  }
-};
-
-const _LOCK_SVG = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:6px;flex-shrink:0;vertical-align:middle;"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>';
-
-window.aplicarRestriccionesPlan = function(plan) {
-  if(plan !== 'inicio') return;
-  const LOCKED = [
-    {group:'sbg-ventas',       label:'Comercial'},
-    {group:'sbg-compras',      label:'Compras'},
-    {group:'sbg-herramientas', label:'Control del negocio'},
-    {group:'sbg-gestion',      label:'Gestión'}
-  ];
-  LOCKED.forEach(({group, label}) => {
-    const grp = document.getElementById(group);
-    if(!grp) return;
-    const btn = grp.querySelector('.sb-btn');
-    if(!btn) return;
-    const lblEl = btn.querySelector('.sb-label');
-    if(lblEl && !lblEl.querySelector('svg')) lblEl.insertAdjacentHTML('beforeend', _LOCK_SVG);
-    btn.onclick = function(e) { e.stopPropagation(); mostrarOverlayModuloBloqueado(label); };
-  });
-  const fab = document.getElementById('embiFab');
-  if(fab) fab.style.display = 'none';
-  // Ocultar sub-items de Finanzas no disponibles en Plan Inicio
-  ['cierre-periodo','caja-config'].forEach(sub => {
-    const el = document.querySelector('#sbsub-finanzas [data-sub="'+sub+'"]');
-    if(el) el.style.display = 'none';
-  });
-};
-
-function mostrarOverlayModuloBloqueado(label) {
-  const ov = document.getElementById('plan-lock-overlay');
-  if(!ov) return;
-  const title = document.getElementById('plo-title');
-  if(title) title.textContent = label;
-  ov.style.display = 'flex';
-}
-
-function showBienvenidaInicio(user) {
-  document.getElementById('lp').style.display = 'none';
-  document.getElementById('app').classList.remove('visible');
-  const screen = document.getElementById('bienvenida-inicio');
-  if(screen) screen.style.display = 'flex';
-  document.getElementById('bi-btn').onclick = async function() {
-    const nombre = (document.getElementById('bi-negocio').value || '').trim();
-    if(!nombre) { document.getElementById('bi-negocio').focus(); return; }
-    try { await updateDoc(doc(db, 'clientes', user.uid), { negocioNombre: nombre }); } catch(e) {}
-    screen.style.display = 'none';
-    const snap = await getDoc(doc(db, 'clientes', user.uid));
-    const d = snap.exists() ? snap.data() : {};
-    await showClientUI(user.email, { id: user.uid, nombre, ...d });
-  };
-}
-
 window.doLogout = async function() {
   try { await signOut(auth); } catch(ex) {}
   document.getElementById('lp').style.display = 'flex';
@@ -5031,32 +4951,8 @@ onAuthStateChanged(auth, async (user) => {
           await showAdminUI(user.email);
         }
       } else {
-        const isGoogleUser = user.providerData.some(p => p.providerId === 'google.com');
-        if (isGoogleUser) {
-          const inicioRef = doc(db, 'clientes', user.uid);
-          const inicioSnap = await getDoc(inicioRef);
-          if (inicioSnap.exists()) {
-            const d = inicioSnap.data();
-            const nombre = d.negocioNombre || d.nombre || user.email.split('@')[0];
-            await showClientUI(user.email, { id: user.uid, nombre, ...d });
-          } else {
-            const now = new Date();
-            const mesActual = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
-            await setDoc(inicioRef, {
-              uid: user.uid,
-              email: user.email,
-              negocioNombre: '',
-              creadoEn: serverTimestamp(),
-              plan: 'inicio',
-              movimientosMes: 0,
-              mesActual
-            });
-            showBienvenidaInicio(user);
-          }
-        } else {
-          const clientData = await getClientByAuth(user);
-          await showClientUI(user.email, clientData);
-        }
+        const clientData = await getClientByAuth(user);
+        await showClientUI(user.email, clientData);
       }
     } catch(e) {
       console.log('Auth flow error:', e);
@@ -5210,7 +5106,6 @@ window.showClientUI = async function(email, clientData) {
     }
     if(window.embiShow) window.embiShow(true);
     if(window.sidebarInit) window.sidebarInit();
-    aplicarRestriccionesPlan(clientData ? (clientData.plan || '') : '');
     if(window.embiPrecargarContexto) window.embiPrecargarContexto();
     // módulo ya mostrado antes de los awaits (ver arriba)
 };
@@ -10427,23 +10322,6 @@ window.mvmGuardar = async function() {
     const btnSave = document.getElementById('mvm-btn-save');
     if(btnSave){btnSave.disabled=true;btnSave.textContent='Guardando...';}
     await Promise.all(docs.map(d=>addDoc(collection(db,'libroCaja'),{uid,...d})));
-    try {
-      const clienteRef = doc(db,'clientes',uid);
-      const clienteSnap = await getDoc(clienteRef);
-      if(clienteSnap.exists()) {
-        const cd = clienteSnap.data();
-        if(cd.plan === 'inicio') {
-          const now = new Date();
-          const mesHoy = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
-          let movs = cd.mesActual === mesHoy ? (cd.movimientosMes||0) : 0;
-          movs += 1;
-          const upd = {movimientosMes: movs};
-          if(cd.mesActual !== mesHoy) upd.mesActual = mesHoy;
-          await updateDoc(clienteRef, upd);
-          if(movs >= 30) mostrarOverlayUpgrade();
-        }
-      }
-    } catch(e){ console.log('inicio counter:', e); }
     mvmCerrar();
     loadCajaModule();
   } catch(e){
@@ -10452,11 +10330,6 @@ window.mvmGuardar = async function() {
     if(btnSave){btnSave.disabled=false;btnSave.textContent='Guardar';}
   }
 };
-
-function mostrarOverlayUpgrade() {
-  const ov = document.getElementById('inicio-upgrade-overlay');
-  if(ov) ov.style.display = 'flex';
-}
 
 window.mvmCerrar = function() {
   const ov = document.getElementById('mvm-overlay');
@@ -20312,24 +20185,6 @@ window.doResetPassword = async function(){
       <button id="mcl-cobro-btn" onclick="guardarCobroLibre()" style="padding:9px 20px;border-radius:8px;border:none;background:#4a5e4d;color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;">Registrar cobro</button>
     </div>
     <div id="mcl-cobro-saved" class="saved-msg" style="display:none;">✓ Cobro registrado</div>
-  </div>
-</div>
-
-<div id="plan-lock-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;align-items:center;justify-content:center;padding:24px;">
-  <div style="background:#fff;border-radius:16px;padding:36px 32px;max-width:400px;width:100%;font-family:'DM Sans',sans-serif;">
-    <div id="plo-title" style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;color:#2c2c2c;margin-bottom:12px;"></div>
-    <div style="font-size:14px;color:#73726c;line-height:1.65;margin-bottom:28px;">Este módulo está disponible a partir del Plan Base.</div>
-    <button onclick="window.open('/planes.html','_blank')" style="width:100%;padding:14px;background:#4a5e4d;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;margin-bottom:10px;">Ver planes</button>
-    <button onclick="document.getElementById('plan-lock-overlay').style.display='none'" style="width:100%;padding:12px;background:none;color:#888;border:none;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;">Cerrar</button>
-  </div>
-</div>
-
-<div id="inicio-upgrade-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;align-items:center;justify-content:center;padding:24px;">
-  <div style="background:#fff;border-radius:16px;padding:36px 32px;max-width:400px;width:100%;font-family:'DM Sans',sans-serif;">
-    <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;color:#2c2c2c;margin-bottom:12px;">Tu negocio está creciendo</div>
-    <div style="font-size:14px;color:#73726c;line-height:1.65;margin-bottom:28px;">Registraste 30 movimientos este mes. Pasate al Plan Base para continuar sin límites.</div>
-    <button onclick="window.open('/planes.html','_blank')" style="width:100%;padding:14px;background:#4a5e4d;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;margin-bottom:10px;">Ver planes</button>
-    <button onclick="document.getElementById('inicio-upgrade-overlay').style.display='none'" style="width:100%;padding:12px;background:none;color:#888;border:none;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;">Recordármelo después</button>
   </div>
 </div>
 

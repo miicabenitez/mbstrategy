@@ -25,7 +25,7 @@ async function crearSuscripcionMP(plan, planData, email, externalRef, freeTrial)
     currency_id: 'ARS'
   };
   if (freeTrial) {
-    autoRecurring.free_trial = { frequency: 7, frequency_type: 'days' };
+    autoRecurring.free_trial = { frequency: 10, frequency_type: 'days' };
   }
   const mpRes = await fetch('https://api.mercadopago.com/preapproval', {
     method: 'POST',
