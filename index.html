@@ -5133,7 +5133,7 @@ window.showClientUI = async function(email, clientData) {
     } else if(clientData && clientData.onboardingCompletado !== true) {
       setTimeout(() => window.showWelcomeScreen(clientData), 500);
     }
-    if(window.embiShow) window.embiShow(true);
+    if(window.embiShow) window.embiShow(true, clientData.plan === 'pro' ? 'operativo' : 'explicativo');
     if(window.sidebarInit) window.sidebarInit();
     if(window.embiPrecargarContexto) window.embiPrecargarContexto();
     if(window._aplicarLocksPlanBase) window._aplicarLocksPlanBase(clientData);
@@ -19722,11 +19722,11 @@ function embiToggle(){
     setTimeout(function(){var i=document.getElementById('embiInput');if(i)i.focus();},300);
   }
 }
-function embiShow(show){
+function embiShow(show, modo){
   var fab=document.getElementById('embiFab');
   if(!fab)return;
   if(!show){fab.style.display='none';if(embiOpen)embiToggle();return;}
-  embiModo='operativo';
+  embiModo=modo||'operativo';
   fab.style.display='block';
   embiInitDrag();
 }
