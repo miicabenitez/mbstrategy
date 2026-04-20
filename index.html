@@ -14455,7 +14455,17 @@ window.navigateToMiCuenta = function() {
   loadMembresiaSection();
 };
 
-async function loadMiCuentaPage() {
+window.navigateToMiCuentaMembresia = function() {
+  navigateToMiCuenta();
+  setTimeout(function(){
+    var el = document.getElementById('memb-activo')
+           || document.getElementById('memb-sin-plan')
+           || document.getElementById('memb-cancelada');
+    if(el) el.closest('.card').scrollIntoView({behavior:'smooth', block:'start'});
+  }, 100);
+};
+
+
   if(!currentClientUID) return;
   try {
     const d = await getDoc(doc(db,'clientes',currentClientUID));
@@ -18589,7 +18599,7 @@ window._proLockEnTab = function(containerId, titulo, noNav) {
     + '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4a5e4d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>'
     + '<div style="font-size:14px;font-weight:600;color:#2c2c2c;margin-bottom:6px;font-family:\'DM Sans\',sans-serif;">' + titulo + '</div>'
     + '<div style="font-size:12px;color:#73726c;line-height:1.5;margin-bottom:18px;font-family:\'DM Sans\',sans-serif;">Disponible en el Plan Pro.</div>'
-    + '<button onclick="navigateToMiCuenta()" style="display:inline-block;background:#4a5e4d;color:#fff;border:none;cursor:pointer;padding:9px 20px;border-radius:8px;font-size:12px;font-weight:500;font-family:\'DM Sans\',sans-serif;">Ver Plan Pro</button>'
+    + '<button onclick="navigateToMiCuentaMembresia()" style="display:inline-block;background:#4a5e4d;color:#fff;border:none;cursor:pointer;padding:9px 20px;border-radius:8px;font-size:12px;font-weight:500;font-family:\'DM Sans\',sans-serif;">Ver Plan Pro</button>'
     + '</div>';
   el.appendChild(d);
 };
@@ -18601,7 +18611,7 @@ window._proToast = function(titulo) {
   t.id = '_pro-toast';
   t.style.cssText = 'position:fixed;top:20px;right:20px;z-index:9999;background:#fff;border-radius:10px;padding:14px 16px;box-shadow:0 4px 20px rgba(0,0,0,0.13);display:flex;align-items:center;gap:12px;font-family:\'DM Sans\',sans-serif;max-width:320px;border:1px solid #e8e5e0;';
   t.innerHTML = '<div style="flex:1;"><div style="font-size:13px;font-weight:600;color:#2c2c2c;margin-bottom:3px;">' + titulo + '</div><div style="font-size:12px;color:#73726c;">Disponible en el Plan Pro.</div></div>'
-    + '<button onclick="document.getElementById(\'_pro-toast\').remove();navigateToMiCuenta()" style="display:inline-block;background:#4a5e4d;color:#fff;border:none;cursor:pointer;padding:7px 14px;border-radius:7px;font-size:12px;font-weight:500;white-space:nowrap;">Ver Plan Pro</button>'
+    + '<button onclick="document.getElementById(\'_pro-toast\').remove();navigateToMiCuentaMembresia()" style="display:inline-block;background:#4a5e4d;color:#fff;border:none;cursor:pointer;padding:7px 14px;border-radius:7px;font-size:12px;font-weight:500;white-space:nowrap;">Ver Plan Pro</button>'
     + '<button onclick="document.getElementById(\'_pro-toast\').remove()" style="background:none;border:none;cursor:pointer;color:#aaa;font-size:18px;padding:0 0 0 4px;line-height:1;">×</button>';
   document.body.appendChild(t);
   setTimeout(function(){ var el=document.getElementById('_pro-toast'); if(el) el.remove(); }, 5000);
