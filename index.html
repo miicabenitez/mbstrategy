@@ -19436,8 +19436,7 @@ function embiGetModule(){
 }
 function embiRenderChips(){
   var qa=document.getElementById('embiQA');if(!qa)return;
-  var chips=embiGetContext();
-  qa.innerHTML=chips.map(function(c){return '<div class="embi-chip" onclick="embiUseChip(this)">'+c+'</div>';}).join('')+'<div class="embi-report-btn" onclick="embiReport()">⚠ Reportar problema</div>';
+  qa.innerHTML='<div class="embi-report-btn" onclick="embiReport()">⚠ Reportar problema</div>';
 }
 function embiUseChip(el){document.getElementById('embiInput').value=el.textContent;embiSend();}
 function embiReport(){document.getElementById('embiInput').value='Quiero reportar un problema con el sistema';embiSend();}
