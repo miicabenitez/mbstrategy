@@ -4928,8 +4928,10 @@ onAuthStateChanged(auth, async (user) => {
   if(lo){ lo.style.opacity='0'; lo.style.display='none'; }
   if (user) {
     currentUser = user;
+    console.log('[AUTH] user:', user.uid, user.email);
     try {
       // Si es impersonation, mostrar UI del cliente directamente
+      console.log('[AUTH] impersonating:', !!window._impersonating);
       if(window._impersonating) {
         const clienteData = window._impersonating;
         window._impersonating = null;
@@ -4938,6 +4940,7 @@ onAuthStateChanged(auth, async (user) => {
         return;
       }
       const adminDoc = await getDoc(doc(db, 'admins', user.uid)).catch(() => null);
+      console.log('[AUTH] adminDoc exists:', adminDoc?.exists());
       if (adminDoc && adminDoc.exists()) {
         const esMicaela = (user.email||'').toLowerCase() === 'micaela@mbstrategy.com.ar';
         if(esMicaela) {
@@ -4951,7 +4954,10 @@ onAuthStateChanged(auth, async (user) => {
           await showAdminUI(user.email);
         }
       } else {
+        console.log('[AUTH] rama cliente — llamando getClientByAuth');
         const clientData = await getClientByAuth(user);
+        console.log('[AUTH] clientData:', clientData);
+        console.log('[AUTH] plan:', clientData?.plan, '| id:', clientData?.id);
         await showClientUI(user.email, clientData);
       }
     } catch(e) {
@@ -4968,15 +4974,19 @@ onAuthStateChanged(auth, async (user) => {
 async function getClientByAuth(user) {
   try {
     // Búsqueda por uid (preferida, matchea con Security Rules)
+    console.log('[getClientByAuth] buscando uid:', user.uid);
     const qUid = query(collection(db, 'clientes'), where('uid', '==', user.uid));
     const snapUid = await getDocs(qUid);
+    console.log('[getClientByAuth] snapUid empty:', snapUid.empty, '| docs:', snapUid.size);
     if (!snapUid.empty) {
       const d = snapUid.docs[0];
       return { id: d.id, ...d.data() };
     }
     // Fallback: búsqueda por email (para clientes que aún no tienen uid)
+    console.log('[getClientByAuth] fallback email:', user.email);
     const q = query(collection(db, 'clientes'), where('email', '==', user.email));
     const snap = await getDocs(q);
+    console.log('[getClientByAuth] snap email empty:', snap.empty);
     if (!snap.empty) {
       const d = snap.docs[0];
       // Auto-fix: agregar uid al documento si no lo tiene
@@ -4984,13 +4994,16 @@ async function getClientByAuth(user) {
       return { id: d.id, ...d.data() };
     }
     // Fallback 2: email en minúsculas
+    console.log('[getClientByAuth] fallback email lowercase:', user.email.toLowerCase());
     const qLower = query(collection(db, 'clientes'), where('email', '==', user.email.toLowerCase()));
     const snapLower = await getDocs(qLower);
+    console.log('[getClientByAuth] snapLower empty:', snapLower.empty);
     if (!snapLower.empty) {
       const d = snapLower.docs[0];
       try { await updateDoc(doc(db, 'clientes', d.id), { uid: user.uid }); } catch(e) {}
       return { id: d.id, ...d.data() };
     }
+    console.log('[getClientByAuth] WARN: retornando null — cliente no encontrado');
   } catch(e) { console.log('getClientByAuth error:', e); }
   return null;
 }
@@ -5107,7 +5120,7 @@ window.showClientUI = async function(email, clientData) {
     if(window.embiShow) window.embiShow(true);
     if(window.sidebarInit) window.sidebarInit();
     if(window.embiPrecargarContexto) window.embiPrecargarContexto();
-    if(window._aplicarLocksPlanBase) window._aplicarLocksPlanBase();
+    if(window._aplicarLocksPlanBase) window._aplicarLocksPlanBase(clientData);
     // módulo ya mostrado antes de los awaits (ver arriba)
 };
 
@@ -18569,8 +18582,8 @@ window._checkProTab = function(tab, btn) {
   else window._proLockEnTab('ct-'+tab, tab==='cierre-periodo'?'Cierre de Período':'');
 };
 
-window._aplicarLocksPlanBase = function() {
-  var esBase = currentClientData?.plan !== 'pro';
+window._aplicarLocksPlanBase = function(clientData) {
+  var esBase = (clientData || currentClientData)?.plan !== 'pro';
   var btn = document.getElementById('embi-analizar-btn');
   if(!btn) return;
   if(esBase) {
