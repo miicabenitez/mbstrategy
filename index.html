@@ -2242,7 +2242,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         <!-- Config sub-tabs -->
         <div class="cprd-cfg-tabs">
           <button class="cprd-cfg-tab active" id="cprd-cfg-tab-caja" onclick="cprdShowCfgTab('caja',this)">Caja</button>
-          <button class="cprd-cfg-tab" id="cprd-cfg-tab-cierre" onclick="cprdShowCfgTab('cierre',this)">Cierre de período</button>
+          <button class="cprd-cfg-tab" id="cprd-cfg-tab-cierre" onclick="_checkProTab('cierre-config',this)">Cierre de período</button>
         </div>
         <div id="cprd-cfg-caja-content">
 
@@ -18404,6 +18404,7 @@ window.showClientMod = function(mod, btn) {
     showSubnav('subnav-finanzas');
     showCTab('contabilidad', null);
     showClientContView('home', null);
+    if(window._aplicarLocksPlanBase) window._aplicarLocksPlanBase();
   } else if(mod === 'ventas') {
     showSubnav('subnav-ventas');
     showCTab('mclientes', null);
@@ -18595,10 +18596,12 @@ window._proLockEnTab = function(containerId, titulo, noNav) {
 
 window._checkProTab = function(tab, btn) {
   var plan = (window.currentClientData || currentClientData)?.plan;
+  var titulos = {'cierre-periodo':'Cierre de Período','cierre-config':'Configuración del Cierre'};
   if(plan === 'pro') {
+    if(tab === 'cierre-config') { cprdShowCfgTab('cierre', btn); return; }
     window.showCTab(tab, btn);
   } else {
-    var titulos = {'cierre-periodo':'Cierre de Período'};
+    if(tab === 'cierre-config') { window._proLockEnTab('ct-caja-config', titulos[tab], true); return; }
     window.showCTab(tab, btn);
     window._proLockEnTab('ct-' + tab, titulos[tab] || tab, true);
   }
