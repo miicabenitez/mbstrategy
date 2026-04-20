@@ -18632,10 +18632,11 @@ window._aplicarLocksPlanBase = function(clientData) {
       btn.style.opacity = '1';
     }
   }
-  var tabCierre = Array.from(document.querySelectorAll('#subnav-finanzas .subctab')).find(function(b){ return b.textContent.trim().replace('🔒 ','').startsWith('Cierre'); });
-  if(tabCierre) tabCierre.textContent = esBase ? '🔒 Cierre de período' : 'Cierre';
+  var _lockSvg = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px;vertical-align:-1px;opacity:.85"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>';
+  var tabCierre = Array.from(document.querySelectorAll('#subnav-finanzas .subctab')).find(function(b){ return b.textContent.trim().replace(/^\S+\s/,'').startsWith('Cierre'); });
+  if(tabCierre) tabCierre.innerHTML = esBase ? _lockSvg + 'Cierre de período' : 'Cierre';
   var btnCfgCierre = document.getElementById('cprd-cfg-tab-cierre');
-  if(btnCfgCierre) btnCfgCierre.textContent = esBase ? '🔒 Cierre de período' : 'Cierre de período';
+  if(btnCfgCierre) btnCfgCierre.innerHTML = esBase ? _lockSvg + 'Cierre de período' : 'Cierre de período';
 };
 
 // Abre un PDF guardado como Base64 en nueva pestaña
