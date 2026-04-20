@@ -134,7 +134,9 @@ exports.handler = async (event) => {
       authorized: 'activo',
       paused:     'pausado',
       cancelled:  'cancelado',
-      pending:    'pendiente'
+      pending:    'pendiente',
+      failed:     'inactivo',
+      past_due:   'inactivo'
     };
     const estadoInterno = estadoMap[sub.status] || 'inactivo';
 
@@ -274,8 +276,12 @@ exports.handler = async (event) => {
       }
     } catch(e) { console.warn('No se pudo leer plan del cliente:', e.message); }
     if (proximoCobro) update['membresia.proximoCobro'] = proximoCobro;
-    if (sub.status === 'authorized') update['membresia.activoDesde'] = FieldValue.serverTimestamp();
+    if (sub.status === 'authorized') {
+      update['membresia.activoDesde'] = FieldValue.serverTimestamp();
+      update['membresia.accesoBloqueado'] = false;
+    }
     if (sub.status === 'cancelled') update['membresia.canceladoEn'] = FieldValue.serverTimestamp();
+    if (['failed','past_due'].includes(sub.status)) update['membresia.accesoBloqueado'] = true;
 
     try {
       await db.collection('clientes').doc(externalRef).set(update, { merge: true });

@@ -80,7 +80,7 @@ exports.handler = async (event) => {
       });
       const clientesSnap = await db.collection('clientes').where('email', '==', email).get();
       const tuvoTrial = !clientesSnap.empty && clientesSnap.docs.some(d => d.data().membresia?.activoDesde);
-      const freeTrial = plan === 'base' && !tuvoTrial;
+      const freeTrial = ['base','pro'].includes(plan) && !tuvoTrial;
       const mpRes = await crearSuscripcionMP(plan, planData, email, pendienteRef.id, freeTrial);
       const mpData = await mpRes.json();
       if (!mpRes.ok || !mpData.init_point) {
@@ -108,7 +108,7 @@ exports.handler = async (event) => {
       return { statusCode: 409, headers: HEADERS, body: JSON.stringify({ error: 'El cliente ya tiene una suscripción activa' }) };
     }
     // Free trial solo si es base y no tiene historial de suscripción
-    const freeTrial = plan === 'base' && !cliente.membresia?.activoDesde;
+    const freeTrial = ['base','pro'].includes(plan) && !cliente.membresia?.activoDesde;
     const mpRes = await crearSuscripcionMP(plan, planData, cliente.email, clienteId, freeTrial);
     const mpData = await mpRes.json();
     if (!mpRes.ok || !mpData.init_point) {

@@ -1004,6 +1004,20 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
   </div>
 </div>
 
+<!-- PANTALLA PAGO FALLIDO -->
+<div id="memb-pago-fallido" style="display:none;min-height:100vh;align-items:center;justify-content:center;background:#f5f4f0;flex-direction:column;text-align:center;padding:40px 24px;">
+  <div style="max-width:400px;width:100%;">
+    <div style="width:72px;height:72px;border-radius:50%;background:rgba(180,60,50,.08);display:flex;align-items:center;justify-content:center;margin:0 auto 28px;">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#b43c32" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v5"/><circle cx="12" cy="16.5" r=".5" fill="#b43c32"/></svg>
+    </div>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:400;color:#2c2c2c;margin-bottom:12px;line-height:1.2;">Tu pago no pudo procesarse</div>
+    <div style="font-size:14px;color:#888780;line-height:1.65;margin-bottom:36px;">Actualizá tu método de pago<br>para continuar usando MB Strategy.</div>
+    <button onclick="navigateToMiCuentaMembresia();document.getElementById('memb-pago-fallido').style.display='none';document.getElementById('app').classList.add('visible');" style="display:block;width:100%;background:#4a5e4d;color:#fff;padding:14px 24px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;border:none;cursor:pointer;margin-bottom:10px;">Ir a Mi cuenta</button>
+    <a href="https://wa.me/5491176553318" target="_blank" rel="noopener" style="display:block;background:transparent;color:#4a5e4d;padding:13px 24px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;text-decoration:none;border:.5px solid rgba(74,94,77,.4);margin-bottom:28px;">Contactar soporte</a>
+    <a href="#" onclick="doLogout();return false;" style="font-size:12px;color:#aaa;text-decoration:none;font-family:'DM Sans',sans-serif;">Cerrar sesión</a>
+  </div>
+</div>
+
 <!-- PANTALLA DE BIENVENIDA (primer login) -->
 <div id="welcome-screen" style="display:none;position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,#3a4e3d 0%,#4a5e4d 40%,#5a7a5d 100%);align-items:center;justify-content:center;padding:24px;overflow-y:auto;">
   <div style="background:#fff;border-radius:24px;max-width:520px;width:100%;position:relative;overflow:hidden;animation:wsScaleIn .55s cubic-bezier(.34,1.56,.64,1) both;">
@@ -5086,6 +5100,15 @@ window.showClientUI = async function(email, clientData) {
       document.getElementById('app').classList.remove('visible');
       const mc = document.getElementById('memb-cancelada');
       if(mc) mc.style.display = 'flex';
+      if(window.embiShow) window.embiShow(false);
+      return;
+    }
+    // Bloqueo por pago fallido
+    if(clientData.membresia?.accesoBloqueado === true) {
+      document.getElementById('lp').style.display = 'none';
+      document.getElementById('app').classList.remove('visible');
+      const pf = document.getElementById('memb-pago-fallido');
+      if(pf) pf.style.display = 'flex';
       if(window.embiShow) window.embiShow(false);
       return;
     }
