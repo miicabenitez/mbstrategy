@@ -2001,7 +2001,19 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
       <div id="subnav-finanzas" class="mod-subnav" style="display:none;gap:4px;margin-bottom:14px;">
         <button class="subctab active" onclick="showCTab('contabilidad',this)">Caja</button>
         <button class="subctab" onclick="_checkProTab('cierre-periodo',this)">Cierre</button>
-        <button class="subctab" onclick="showCTab('caja-config',this)">Configuración</button>
+        <button class="subctab" onclick="_checkProTab('caja-config',this)">Configuración</button>
+      </div>
+
+      <!-- PRO LOCK — Finanzas -->
+      <div id="ct-finanzas-pro-lock" style="display:none;padding:60px 24px;">
+        <div style="background:#fff;border-radius:12px;padding:36px 24px;text-align:center;max-width:280px;margin:0 auto;box-shadow:0 2px 16px rgba(0,0,0,0.08);">
+          <div style="width:44px;height:44px;border-radius:50%;background:rgba(74,94,77,.1);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4a5e4d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          </div>
+          <div id="ct-finanzas-pro-lock-titulo" style="font-size:15px;font-weight:600;color:#2c2c2c;margin-bottom:8px;font-family:'DM Sans',sans-serif;"></div>
+          <div style="font-size:12px;color:#73726c;line-height:1.5;margin-bottom:20px;font-family:'DM Sans',sans-serif;">Disponible en el Plan Pro.</div>
+          <a href="https://sistema.mbstrategy.com.ar/planes.html" target="_blank" style="display:inline-block;background:#4a5e4d;color:#fff;text-decoration:none;padding:9px 20px;border-radius:8px;font-size:12px;font-weight:500;font-family:'DM Sans',sans-serif;">Ver Plan Pro</a>
+        </div>
       </div>
 
       <!-- SUB-NAV Ventas -->
@@ -18489,7 +18501,7 @@ window.showCTab = function(tab, btn) {
     if(ccv && ccv.style.display !== 'none') cerrarCCView();
   }
   // Ocultar subnavs de módulos distintos al que corresponde este tab
-  const _tabToMod = {contabilidad:'finanzas','cierre-periodo':'finanzas','caja-config':'finanzas',mclientes:'ventas',presupuestos:'ventas',productos:'ventas',necesidades:'compras',proveedores:'compras','ordenes-compra':'compras','historial-compra':'compras','prod-compra':'compras','categorias-compra':'compras',calculador:'herramientas',kpis:'herramientas',tareas:'herramientas'};
+  const _tabToMod = {contabilidad:'finanzas','cierre-periodo':'finanzas','caja-config':'finanzas','finanzas-pro-lock':'finanzas',mclientes:'ventas',presupuestos:'ventas',productos:'ventas',necesidades:'compras',proveedores:'compras','ordenes-compra':'compras','historial-compra':'compras','prod-compra':'compras','categorias-compra':'compras',calculador:'herramientas',kpis:'herramientas',tareas:'herramientas'};
   const _thisMod = _tabToMod[tab];
   document.querySelectorAll('.mod-subnav').forEach(sn => {
     if(_thisMod && sn.id === 'subnav-'+_thisMod) return;
@@ -18582,21 +18594,33 @@ window._proLockEnTab = function(containerId, titulo, noNav) {
 };
 
 window._checkProTab = function(tab, btn) {
-  if(currentClientData?.plan==='pro') window.showCTab(tab, btn);
-  else window._proLockEnTab('ct-'+tab, tab==='cierre-periodo'?'Cierre de Período':'');
+  var plan = (window.currentClientData || currentClientData)?.plan;
+  if(plan === 'pro') {
+    window.showCTab(tab, btn);
+  } else {
+    var titulos = {'cierre-periodo':'Cierre de Período','caja-config':'Configuración'};
+    var el = document.getElementById('ct-finanzas-pro-lock-titulo');
+    if(el) el.textContent = titulos[tab] || tab;
+    window.showCTab('finanzas-pro-lock', btn);
+  }
 };
 
 window._aplicarLocksPlanBase = function(clientData) {
   var esBase = (clientData || currentClientData)?.plan !== 'pro';
   var btn = document.getElementById('embi-analizar-btn');
-  if(!btn) return;
-  if(esBase) {
-    btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;vertical-align:-1px;opacity:.75"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Ver análisis';
-    btn.style.opacity = '0.55';
-  } else {
-    btn.innerHTML = 'Ver análisis';
-    btn.style.opacity = '1';
+  if(btn) {
+    if(esBase) {
+      btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;vertical-align:-1px;opacity:.75"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Ver análisis';
+      btn.style.opacity = '0.55';
+    } else {
+      btn.innerHTML = 'Ver análisis';
+      btn.style.opacity = '1';
+    }
   }
+  var tabCierre = document.querySelector('#subnav-finanzas .subctab[onclick*="cierre-periodo"]');
+  var tabConfig = document.querySelector('#subnav-finanzas .subctab[onclick*="caja-config"]');
+  if(tabCierre) tabCierre.textContent = esBase ? '🔒 Cierre' : 'Cierre';
+  if(tabConfig) tabConfig.textContent = esBase ? '🔒 Configuración' : 'Configuración';
 };
 
 // Abre un PDF guardado como Base64 en nueva pestaña
@@ -19787,8 +19811,14 @@ window.sidebarNav=function(mod,sub){
       if(sub==='caja')window.showClientContView('caja',null);
       else if(sub==='ingresos')window.showClientContView('ingresos',null);
       else if(sub==='egresos')window.showClientContView('egresos',null);
-      else if(sub==='cierre-periodo'){ if(currentClientData?.plan==='pro') window.showCTab('cierre-periodo',null); else window._proLockEnTab('ct-cierre-periodo','Cierre de Período'); }
-      else if(sub==='caja-config')window.showCTab('caja-config',null);
+      else if(sub==='cierre-periodo'){
+        if((window.currentClientData||currentClientData)?.plan==='pro') window.showCTab('cierre-periodo',null);
+        else { var _elp=document.getElementById('ct-finanzas-pro-lock-titulo'); if(_elp) _elp.textContent='Cierre de Período'; window.showCTab('finanzas-pro-lock',null); }
+      }
+      else if(sub==='caja-config'){
+        if((window.currentClientData||currentClientData)?.plan==='pro') window.showCTab('caja-config',null);
+        else { var _elc=document.getElementById('ct-finanzas-pro-lock-titulo'); if(_elc) _elc.textContent='Configuración'; window.showCTab('finanzas-pro-lock',null); }
+      }
     }else if(mod==='ventas'){
       if(sub==='presupuestos')window.showCTab('presupuestos',null);
       else if(sub==='catalogo')window.showCTab('productos',null);
