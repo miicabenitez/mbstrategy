@@ -24,8 +24,9 @@ service cloud.firestore {
 
     // ── Reglas existentes ──────────────────────────────────────
     match /clientes/{clienteId} {
-      allow read, write: if request.auth != null &&
-        resource.data.uid == request.auth.uid;
+      allow get: if request.auth != null && resource.data.uid == request.auth.uid;
+      allow list: if request.auth != null;
+      allow write: if isAdmin() || (request.auth != null && (resource == null || resource.data.uid == request.auth.uid));
 
       match /{subcollection}/{docId} {
         allow read, write: if isAdmin() ||
