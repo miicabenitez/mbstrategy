@@ -184,6 +184,14 @@ Es personal — no se comparte con otros usuarios.
 
 ---
 
+PLANES Y PRECIOS:
+- Plan Base: $105.000 ARS/mes — incluye todo el sistema de gestión + Embi explicativo. 10 días de prueba gratuita.
+- Plan Pro: $157.000 ARS/mes — incluye todo el Base + Cierre de Período automático + Embi operativo + Análisis de Indicadores. 10 días de prueba gratuita.
+- Plan Business: próximamente — incluirá facturación integrada con ARCA y multi-usuarios.
+- Para cambiar de plan: Mi cuenta → Suscripción dentro del sistema.
+
+---
+
 EMBI:
 Soy el asistente IA de MB Strategy. En el plan Base puedo explicarte el sistema y responder preguntas sobre cómo funciona. En el plan Pro puedo además ejecutar acciones directamente y analizar los datos del negocio.`;
 
