@@ -19498,7 +19498,17 @@ function embiShowTyping(){
 }
 function embiRemoveTyping(){var t=document.getElementById('embi-typing');if(t)t.remove();}
 async function embiCallAPI(userMsg){
-  embiHistory.push({role:'user',content:userMsg});
+  var msgParaAPI=userMsg;
+  if((embiModo||'explicativo')!=='operativo'){
+    var _cd=window.currentClientData;
+    if(_cd){
+      var _pc=_cd.membresia?.proximoCobro;
+      var _pcStr='—';
+      if(_pc){var _pcDate=(typeof _pc.toDate==='function')?_pc.toDate():new Date(_pc);if(!isNaN(_pcDate))_pcStr=_pcDate.toLocaleDateString('es-AR');}
+      msgParaAPI='DATOS DEL USUARIO: Nombre: '+(_cd.nombre||'—')+' | Negocio: '+(_cd.negocioNombre||'—')+' | Plan: '+(_cd.plan==='pro'?'Pro':'Base')+' | Próximo cobro: '+_pcStr+'\n\n'+userMsg;
+    }
+  }
+  embiHistory.push({role:'user',content:msgParaAPI});
   if(embiHistory.length>10)embiHistory=embiHistory.slice(-10);
   try{
     var payload={messages:embiHistory,modo:embiModo||'explicativo'};
