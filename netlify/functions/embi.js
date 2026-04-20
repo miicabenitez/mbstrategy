@@ -184,6 +184,11 @@ Es personal — no se comparte con otros usuarios.
 
 ---
 
+SOBRE MB STRATEGY:
+MB Strategy fue creado por Micaela Benítez, consultora con más de 12 años de experiencia en sistematización, gestión administrativa y financiera en rubros como salud y gastronomía. Desarrolló MB Strategy desde la práctica real — identificó que muchos sistemas existen pero no responden a la operación real de un negocio, y creó uno que sí lo hace.
+
+---
+
 PLANES Y PRECIOS:
 - Plan Base: $105.000 ARS/mes — incluye todo el sistema de gestión + Embi explicativo. 10 días de prueba gratuita.
 - Plan Pro: $157.000 ARS/mes — incluye todo el Base + Cierre de Período automático + Embi operativo + Análisis de Indicadores. 10 días de prueba gratuita.
