@@ -11651,7 +11651,7 @@ function renderCkSankey(ingresos, egresos) {
 }
 
 window.embiAnalizarIndicadores = async function() {
-  if(currentClientData?.plan !== 'pro') { window._proLockEnTab('ct-kpis','Análisis con Embi',true); return; }
+  if(currentClientData?.plan !== 'pro') { window._proToast('Análisis con Embi'); return; }
   const btn = document.querySelector('[onclick="embiAnalizarIndicadores()"]');
   if(btn) { btn.textContent = 'Analizando...'; btn.disabled = true; btn.style.opacity = '0.7'; }
 
@@ -18594,6 +18594,19 @@ window._proLockEnTab = function(containerId, titulo, noNav) {
   el.appendChild(d);
 };
 
+window._proToast = function(titulo) {
+  var old = document.getElementById('_pro-toast');
+  if(old) old.remove();
+  var t = document.createElement('div');
+  t.id = '_pro-toast';
+  t.style.cssText = 'position:fixed;top:20px;right:20px;z-index:9999;background:#fff;border-radius:10px;padding:14px 16px;box-shadow:0 4px 20px rgba(0,0,0,0.13);display:flex;align-items:center;gap:12px;font-family:\'DM Sans\',sans-serif;max-width:320px;border:1px solid #e8e5e0;';
+  t.innerHTML = '<div style="flex:1;"><div style="font-size:13px;font-weight:600;color:#2c2c2c;margin-bottom:3px;">' + titulo + '</div><div style="font-size:12px;color:#73726c;">Disponible en el Plan Pro.</div></div>'
+    + '<a href="https://sistema.mbstrategy.com.ar/planes.html" target="_blank" style="display:inline-block;background:#4a5e4d;color:#fff;text-decoration:none;padding:7px 14px;border-radius:7px;font-size:12px;font-weight:500;white-space:nowrap;">Ver Plan Pro</a>'
+    + '<button onclick="document.getElementById(\'_pro-toast\').remove()" style="background:none;border:none;cursor:pointer;color:#aaa;font-size:18px;padding:0 0 0 4px;line-height:1;">×</button>';
+  document.body.appendChild(t);
+  setTimeout(function(){ var el=document.getElementById('_pro-toast'); if(el) el.remove(); }, 5000);
+};
+
 window._checkProTab = function(tab, btn) {
   var plan = (window.currentClientData || currentClientData)?.plan;
   var titulos = {'cierre-periodo':'Cierre de Período','cierre-config':'Configuración del Cierre'};
@@ -18601,7 +18614,7 @@ window._checkProTab = function(tab, btn) {
     if(tab === 'cierre-config') { cprdShowCfgTab('cierre', btn); return; }
     window.showCTab(tab, btn);
   } else {
-    if(tab === 'cierre-config') { window._proLockEnTab('ct-caja-config', titulos[tab], true); return; }
+    if(tab === 'cierre-config') { window._proToast(titulos[tab]); return; }
     window.showCTab(tab, btn);
     window._proLockEnTab('ct-' + tab, titulos[tab] || tab, true);
   }
@@ -18619,8 +18632,10 @@ window._aplicarLocksPlanBase = function(clientData) {
       btn.style.opacity = '1';
     }
   }
-  var _sfBtns = document.querySelectorAll('#subnav-finanzas .subctab');
-  if(_sfBtns[1]) _sfBtns[1].textContent = esBase ? '🔒 Cierre' : 'Cierre';
+  var tabCierre = Array.from(document.querySelectorAll('#subnav-finanzas .subctab')).find(function(b){ return b.textContent.trim().replace('🔒 ','').startsWith('Cierre'); });
+  if(tabCierre) tabCierre.textContent = esBase ? '🔒 Cierre de período' : 'Cierre';
+  var btnCfgCierre = document.getElementById('cprd-cfg-tab-cierre');
+  if(btnCfgCierre) btnCfgCierre.textContent = esBase ? '🔒 Cierre de período' : 'Cierre de período';
 };
 
 // Abre un PDF guardado como Base64 en nueva pestaña
