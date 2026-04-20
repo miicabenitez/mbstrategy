@@ -4980,7 +4980,8 @@ async function getClientByAuth(user) {
     console.log('[getClientByAuth] snapUid empty:', snapUid.empty, '| docs:', snapUid.size);
     if (!snapUid.empty) {
       const d = snapUid.docs[0];
-      return { id: d.id, ...d.data() };
+      const _data = d.data();
+      return { id: d.id, ..._data, plan: _data.plan || _data.membresia?.plan || 'base' };
     }
     // Fallback: búsqueda por email (para clientes que aún no tienen uid)
     console.log('[getClientByAuth] fallback email:', user.email);
@@ -4991,7 +4992,8 @@ async function getClientByAuth(user) {
       const d = snap.docs[0];
       // Auto-fix: agregar uid al documento si no lo tiene
       try { await updateDoc(doc(db, 'clientes', d.id), { uid: user.uid }); } catch(e) {}
-      return { id: d.id, ...d.data() };
+      const _data = d.data();
+      return { id: d.id, ..._data, plan: _data.plan || _data.membresia?.plan || 'base' };
     }
     // Fallback 2: email en minúsculas
     console.log('[getClientByAuth] fallback email lowercase:', user.email.toLowerCase());
@@ -5001,7 +5003,8 @@ async function getClientByAuth(user) {
     if (!snapLower.empty) {
       const d = snapLower.docs[0];
       try { await updateDoc(doc(db, 'clientes', d.id), { uid: user.uid }); } catch(e) {}
-      return { id: d.id, ...d.data() };
+      const _data2 = d.data();
+      return { id: d.id, ..._data2, plan: _data2.plan || _data2.membresia?.plan || 'base' };
     }
     console.log('[getClientByAuth] WARN: retornando null — cliente no encontrado');
   } catch(e) { console.log('getClientByAuth error:', e); }
@@ -5079,6 +5082,7 @@ window.showClientUI = async function(email, clientData) {
       currentClientUID = clientData.id;
   window.currentClientUID = currentClientUID;
       currentClientData = clientData;
+      window.currentClientData = clientData;
 
       // Mostrar módulo inicial inmediatamente, sin esperar los awaits de datos
       const _savedMod0 = (() => { try { return localStorage.getItem('mbst_lastmod'); } catch(e) { return null; } })();
