@@ -19858,6 +19858,7 @@ async function embiEjecutarAccion(tipo,datos){
       var _tareaData={titulo:datos.titulo||'',meta:'',estado:'pend',prioridad:datos.prioridad||'media',creadoEn:new Date().toISOString()};
       if(datos.fechaVenc)_tareaData.fechaVenc=datos.fechaVenc;
       await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'tareas'),_tareaData);
+      if(typeof loadClientTareas==='function')await loadClientTareas();
       if(window.loadInicio)window.loadInicio();
       embiAddMsg('bot','Tarea "'+datos.titulo+'" creada en Plan de acción.');
     }else{embiAddMsg('bot','Acción no reconocida: '+tipo);}
