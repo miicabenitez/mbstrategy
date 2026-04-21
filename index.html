@@ -19817,7 +19817,17 @@ async function embiEjecutarAccion(tipo,datos){
       await window._updateDoc(window._doc(window.db,'clientes',currentClientUID,'presupuestos',datos.presupuestoId),{estado:datos.estadoNuevo,actualizadoEn:new Date().toISOString()});
       if(window.loadClientPresupuestos)await window.loadClientPresupuestos();
       if(window.loadInicio)window.loadInicio();
-      embiAddMsg('bot','Presupuesto de '+datos.cliente+' actualizado a "'+datos.estadoNuevo+'".');
+      if(datos.estadoNuevo==='Aprobado'){
+        var _pSnap=await window._getDoc(window._doc(window.db,'clientes',currentClientUID,'presupuestos',datos.presupuestoId));
+        var _pData=_pSnap.exists()?_pSnap.data():{};
+        if(_pData.prospecto===true||!_pData.clienteId){
+          embiAddMsg('bot','Presupuesto de '+datos.cliente+' aprobado. Era un prospecto — ¿querés que lo registre como cliente en el sistema?');
+        }else{
+          embiAddMsg('bot','Presupuesto de '+datos.cliente+' actualizado a "Aprobado".');
+        }
+      }else{
+        embiAddMsg('bot','Presupuesto de '+datos.cliente+' actualizado a "'+datos.estadoNuevo+'".');
+      }
     }else{embiAddMsg('bot','Acción no reconocida: '+tipo);}
   }catch(e){embiAddMsg('bot','Error al ejecutar: '+e.message);}
 }
