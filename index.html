@@ -18130,12 +18130,19 @@ window.toggleCheck = async function(contentId, itemIdx) {
 
 // ── USO DE EMBI ──
 window.loadEmbiUsage = async function loadEmbiUsage() {
-  const ahora = new Date();
-  const mesActual = `${ahora.getFullYear()}-${String(ahora.getMonth()+1).padStart(2,'0')}`;
-  await renderEmbiUsage(mesActual);
+  try {
+    const ahora = new Date();
+    const mesActual = `${ahora.getFullYear()}-${String(ahora.getMonth()+1).padStart(2,'0')}`;
+    await renderEmbiUsage(mesActual);
+  } catch(e) {
+    console.error('loadEmbiUsage error:', e);
+    const el = document.getElementById('embiUsageContent');
+    if (el) el.innerHTML = '<div style="padding:40px;text-align:center;color:#b9554a;font-size:13px;">Error al cargar: ' + e.message + '</div>';
+  }
 }
 
 window.renderEmbiUsage = async function renderEmbiUsage(mes) {
+  try {
   const [anio, mesNum] = mes.split('-').map(Number);
   const inicio = new Date(anio, mesNum - 1, 1);
   const fin = new Date(anio, mesNum, 1);
@@ -18259,6 +18266,11 @@ window.renderEmbiUsage = async function renderEmbiUsage(mes) {
         </table>
       </div>
     </div>`;
+  } catch(e) {
+    console.error('renderEmbiUsage error:', e);
+    const el = document.getElementById('embiUsageContent');
+    if (el) el.innerHTML = '<div style="padding:40px;text-align:center;color:#b9554a;font-size:13px;">Error al cargar: ' + e.message + '</div>';
+  }
 }
 
 // ── PAPELERA ──
