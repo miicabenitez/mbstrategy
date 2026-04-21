@@ -19757,7 +19757,9 @@ async function embiEjecutarAccion(tipo,datos){
       if(_pvId){
         var _facRef=window._collection(window.db,'clientes',currentClientUID,'proveedores',_pvId,'facturas');
         var _ocNum='OC-'+String(_ocData.numero||datos.numero).padStart(3,'0');
-        await window._addDoc(_facRef,{numero:_ocNum,monto:parseFloat(datos.total)||parseFloat(_ocData.total)||0,fecha:_hoy,ocId:_ocDoc.id,desc:'Recepción '+_ocNum,estado:'pendiente',creadoEn:new Date().toISOString(),esOC:true});
+        var _facData={numero:_ocNum,monto:parseFloat(datos.total)||parseFloat(_ocData.total)||0,fecha:_hoy,ocId:_ocDoc.id,desc:'Recepción '+_ocNum,estado:'pendiente',creadoEn:new Date().toISOString(),esOC:true};
+        console.log('[OC_RECIBIDA] factura a crear:', JSON.stringify(_facData));
+        await window._addDoc(_facRef,_facData);
       }
       if(window.loadOrdenesCompra)await window.loadOrdenesCompra();
       if(window.loadProveedores)await window.loadProveedores();
