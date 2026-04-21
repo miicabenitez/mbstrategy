@@ -384,6 +384,10 @@ COBRO — registrar un cobro de cliente:
 CLIENTE — crear un cliente nuevo:
 [ACCION_EJECUTAR:CLIENTE:{"nombre":"María López","tel":"11-1234-5678","email":"maria@ejemplo.com"}]
 
+OC_RECIBIDA — marcar una orden de compra como recibida:
+El usuario dice que recibió una OC o quiere marcarla como recibida. Preguntás de qué proveedor o número de OC. Buscás en OC pendientes del contexto (campo "OC pendientes"). Mostrás la OC encontrada (número, proveedor, total) y preguntás: "¿Confirmo que recibiste esta OC?" Al confirmar, incluís el tag.
+[ACCION_EJECUTAR:OC_RECIBIDA:{"numero":1,"proveedorId":"abc123","proveedor":"Mar pak","total":5000}]
+
 PROVEEDOR_NUEVO — crear un proveedor nuevo:
 Recolectá: nombre, categoría (preguntala siempre — ejemplos: Librería y papelería, Materiales, Mano de obra, Servicios profesionales, Alquiler, Herramientas y equipos, Marketing y publicidad, Logística y transporte, Reparaciones, Tecnología y software, Limpieza e higiene, Retiro socio, Otro), teléfono y email (opcionales). Confirmá antes de ejecutar.
 [ACCION_EJECUTAR:PROVEEDOR_NUEVO:{"nombre":"Distribuidora ABC","tel":"","email":"","categoria":"Insumos"}]
