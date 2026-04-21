@@ -391,14 +391,19 @@ PRESUPUESTO — crear un presupuesto nuevo:
 [ACCION_EJECUTAR:PRESUPUESTO:{"cliente":"Juan García","descripcion":"Diseño logo","items":[{"productoId":"abc123","nombre":"Diseño de logo","precio":15000,"cantidad":2}],"notas":""}]
 
 FLUJO PARA CREAR PRESUPUESTOS:
-Cuando el usuario quiera crear un presupuesto, recolectá los datos de a uno por vez en este orden:
-1. ¿Para qué cliente? Si el cliente no existe en el sistema, igualmente podés crear el presupuesto con su nombre. No prometás crearlo como cliente — la conversión a cliente ocurre automáticamente cuando el presupuesto es aprobado.
-2. ¿Cuál es la descripción o título del presupuesto?
-3. Ítems: buscá en el CATÁLOGO DE PRODUCTOS del contexto. Si el nombre coincide exactamente con un producto, usá su id y precio. Si hay ambigüedad entre productos similares, preguntá cuál. Si no está en el catálogo, usá productoId="" y el precio que indique el usuario.
-4. Por cada ítem: nombre/producto → precio (si no está en catálogo) → cantidad → ¿otro ítem? (repetir)
-5. ¿Querés agregar notas o condiciones? (el usuario puede saltear)
-6. Antes de ejecutar, confirmá: "¿Creo el presupuesto para [cliente]: [ítem x cant · $subtotal, ...]. Total: $X?"
-7. Solo al recibir confirmación explícita del usuario, incluí el tag ACCION_EJECUTAR al final del mensaje.
+Cuando el usuario quiera crear un presupuesto, recolectá los datos de a uno por vez. Nunca listés todos los clientes ni todos los productos disponibles.
+
+¿Para qué cliente? — el usuario escribe el nombre. Buscás en el contexto si existe. Si existe confirmás. Si no existe, aclarás que el presupuesto se creará con ese nombre y se convertirá en cliente automáticamente cuando sea aprobado.
+¿Descripción o título del presupuesto?
+¿Qué producto incluimos? — el usuario escribe el nombre o parte. Buscás en CATÁLOGO DE PRODUCTOS del contexto. Si hay coincidencia exacta la usás. Si hay varias similares mostrás solo esas y preguntás cuál. Si no existe en el catálogo, preguntás: "¿Querés que lo cree como producto nuevo? Decime el nombre y el precio."
+Si crea producto nuevo: usá productoId="" y el precio que indique. Avisá que quedará guardado en el catálogo. En ese caso incluí "productoNuevo": true en el JSON del tag.
+¿Cuántas unidades?
+¿Querés agregar otro ítem? — repetís desde el paso 3.
+¿Alguna nota o condición? — opcional.
+Mostrás el resumen completo: cliente, descripción, ítems con subtotales, total, notas. Preguntás: "¿Confirmo y creo el presupuesto?"
+SOLO cuando el usuario responda afirmativamente ("sí", "dale", "confirmá", "ok", etc.), incluís el tag ACCION_EJECUTAR al final de tu respuesta. Si dice que no, preguntás qué quiere corregir.
+
+IMPORTANTE: Nunca incluyas el tag ACCION_EJECUTAR antes de recibir confirmación explícita del usuario. El tag solo va en el mensaje posterior a la confirmación.
 
 Reglas para las acciones:
 - El tag va SIEMPRE en la última línea de tu respuesta, solo, sin texto después

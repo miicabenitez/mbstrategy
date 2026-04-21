@@ -19593,6 +19593,16 @@ async function embiEjecutarAccion(tipo,datos){
       embiAddMsg('bot','Proveedor '+datos.nombre+' creado en Compras.');
     }else if(tipo==='PRESUPUESTO'){
       var _items=(datos.items||[]).map(function(it){return {desc:it.nombre||'',cant:parseFloat(it.cantidad)||1,precio:parseFloat(it.precio)||0,productoId:it.productoId||''};});
+      if(datos.productoNuevo===true){
+        for(var _pi=0;_pi<_items.length;_pi++){
+          if(!_items[_pi].productoId){
+            var _pRef=await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'productos'),{nombre:_items[_pi].desc,precio:_items[_pi].precio,descripcion:'',activo:true,updatedAt:new Date().toISOString(),creadoEn:new Date().toISOString()});
+            _items[_pi].productoId=_pRef.id;
+            if(window._embi_catalogo)window._embi_catalogo.push({id:_pRef.id,nombre:_items[_pi].desc,precio:_items[_pi].precio,descripcion:''});
+          }
+        }
+        if(window.loadProductos)await window.loadProductos();
+      }
       var _total=_items.reduce(function(s,it){return s+(it.cant*it.precio);},0);
       await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'presupuestos'),{
         cliente:datos.cliente||'',clienteId:null,prospecto:true,
