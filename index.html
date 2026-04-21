@@ -19765,6 +19765,20 @@ async function embiEjecutarAccion(tipo,datos){
       if(window.loadClientPresupuestos)await window.loadClientPresupuestos();
       if(window.loadInicio)window.loadInicio();
       embiAddMsg('bot','Presupuesto para '+datos.cliente+' creado. Total: $'+_total.toLocaleString('es-AR')+'.');
+    }else if(tipo==='ORDEN_COMPRA'){
+      var _ocItems=(datos.items||[]).map(function(it){return {nombre:it.nombre||'',productId:it.productId||null,cantidad:parseFloat(it.cantidad)||1,precioUnit:parseFloat(it.precioUnit)||0,total:(parseFloat(it.cantidad)||1)*(parseFloat(it.precioUnit)||0)};});
+      var _ocTotal=_ocItems.reduce(function(s,it){return s+it.total;},0);
+      var _ocSnap=await window._getDocs(window._collection(window.db,'clientes',currentClientUID,'ordenesCompra'));
+      var _ocNum=_ocSnap.size+1;
+      await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'ordenesCompra'),{
+        numero:_ocNum,proveedor:datos.proveedor||'',proveedorId:datos.proveedorId||null,
+        items:_ocItems,total:_ocTotal,fecha:datos.fecha||new Date().toISOString().split('T')[0],
+        ncId:null,notas:datos.notas||null,estadoPago:'pendiente',estadoRecepcion:'emitida',
+        creadoEn:new Date().toISOString()
+      });
+      if(window.loadProveedores)await window.loadProveedores();
+      if(window.loadInicio)window.loadInicio();
+      embiAddMsg('bot','Orden de compra #'+_ocNum+' para '+datos.proveedor+' creada. Total: $'+_ocTotal.toLocaleString('es-AR')+'.');
     }else{embiAddMsg('bot','Acción no reconocida: '+tipo);}
   }catch(e){embiAddMsg('bot','Error al ejecutar: '+e.message);}
 }

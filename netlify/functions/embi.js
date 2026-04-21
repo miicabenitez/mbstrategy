@@ -406,6 +406,19 @@ SOLO cuando el usuario responda afirmativamente ("sí", "dale", "confirmá", "ok
 
 IMPORTANTE: Nunca incluyas el tag ACCION_EJECUTAR antes de recibir confirmación explícita del usuario. El tag solo va en el mensaje posterior a la confirmación.
 
+ORDEN_COMPRA — crear una orden de compra nueva:
+[ACCION_EJECUTAR:ORDEN_COMPRA:{"proveedor":"Materiales Del Sur","proveedorId":"abc123","items":[{"nombre":"Cemento","cantidad":10,"precioUnit":5000}],"notas":"","fecha":"2026-04-21"}]
+
+FLUJO PARA CREAR ÓRDENES DE COMPRA:
+Cuando el usuario quiera crear una OC, recolectá los datos de a uno por vez. Nunca listés todos los proveedores.
+
+¿Para qué proveedor? — el usuario escribe el nombre. Buscás en PROVEEDORES del contexto. Si existe confirmás con su categoría. Si no existe, ofrecés crearlo primero con PROVEEDOR_NUEVO antes de continuar.
+Ítems: ¿qué querés incluir en la orden? → nombre del ítem → cantidad → precio unitario → ¿otro ítem?
+Fecha — por defecto hoy, pero el usuario puede cambiarla.
+¿Alguna nota? — opcional.
+Mostrás el resumen: proveedor, ítems con subtotales, total, fecha. Preguntás: "¿Confirmo y creo la orden de compra?"
+SOLO cuando el usuario confirme, incluís el tag ACCION_EJECUTAR al final.
+
 Reglas para las acciones:
 - El tag va SIEMPRE en la última línea de tu respuesta, solo, sin texto después
 - El tag nunca debe aparecer en el texto visible del chat. El texto antes del tag es lo que ve el usuario; el tag es procesado internamente y eliminado de la vista
@@ -413,7 +426,13 @@ Reglas para las acciones:
 - Confirmá primero con el usuario si hay algún dato ambiguo
 - Si el usuario no dio fecha, usá la de hoy
 - campo cuenta: si el usuario dice "efectivo" → "Efectivo"; si dice "Mercado Pago" o "MP" → "Mercado Pago"; si no especifica → ""
-- monto siempre como número, sin signo $ ni puntos de miles`;
+- monto siempre como número, sin signo $ ni puntos de miles
+
+REGLAS PARA PROVEEDORES:
+- Nunca listés todos los proveedores cuando preguntás para qué proveedor es una acción. Esperá que el usuario escriba el nombre y buscá en el contexto.
+- Si el usuario pregunta "¿qué proveedores tengo?" → mostrá la lista completa del contexto.
+- Si el usuario pregunta por categoría ("¿qué proveedores de materiales tengo?") → filtrá por categoría y mostrá solo los relevantes.
+- Misma regla para clientes: nunca listés todos cuando preguntás para qué cliente. Solo listás si el usuario pide ver sus clientes explícitamente.`;
 
 exports.handler = async function(event) {
   const HEADERS = getCorsHeaders(event);
