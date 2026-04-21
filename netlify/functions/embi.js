@@ -528,15 +528,19 @@ exports.handler = async function(event) {
     const outputTokens = usage.output_tokens || 0;
     const costoUSD = (inputTokens * 3 + outputTokens * 15) / 1_000_000;
     if (userId) {
-      await db.collection('embiUsage').add({
-        userId,
-        modulo: modulo || 'desconocido',
-        modo,
-        inputTokens,
-        outputTokens,
-        costoUSD,
-        timestamp: admin.firestore.FieldValue.serverTimestamp()
-      });
+      try {
+        await db.collection('embiUsage').add({
+          userId,
+          modulo: modulo || 'desconocido',
+          modo,
+          inputTokens,
+          outputTokens,
+          costoUSD,
+          timestamp: admin.firestore.FieldValue.serverTimestamp()
+        });
+      } catch(e) {
+        console.error('embiUsage log error:', e);
+      }
     }
 
     return {
