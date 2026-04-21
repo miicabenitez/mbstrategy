@@ -17493,8 +17493,8 @@ async function loadProveedores() {
           getDocs(collection(db,'clientes',currentClientUID,'proveedores',p.id,'facturas')),
           getDocs(collection(db,'clientes',currentClientUID,'proveedores',p.id,'pagos'))
         ]);
-        const totalFac = facSnap.docs.reduce((a,d)=>a+(parseFloat(d.data().monto)||0),0);
-        const totalPag = pagSnap.docs.reduce((a,d)=>a+(parseFloat(d.data().monto)||0),0);
+        const totalFac = facSnap.docs.reduce((a,d)=>d.data().eliminado?a:a+(parseFloat(d.data().monto)||0),0);
+        const totalPag = pagSnap.docs.reduce((a,d)=>d.data().eliminado?a:a+(parseFloat(d.data().monto)||0),0);
         p._saldo = Math.max(0, totalFac - totalPag);
         p._saldoFavor = Math.max(0, totalPag - totalFac);
         p._totalFac = totalFac;
