@@ -19741,20 +19741,24 @@ async function embiEjecutarAccion(tipo,datos){
     }else if(tipo==='OC_RECIBIDA'){
       var _ocSnap2=await window._getDocs(window._collection(window.db,'clientes',currentClientUID,'ordenesCompra'));
       var _ocDoc=null;
-      _ocSnap2.forEach(function(d){if(!_ocDoc&&d.data().numero===parseInt(datos.numero))_ocDoc=d;});
-      if(!_ocDoc){embiAddMsg('bot','No encontré la OC #'+datos.numero+'.');return;}
+      if(datos.ocId){
+        _ocSnap2.forEach(function(d){if(!_ocDoc&&d.id===datos.ocId)_ocDoc=d;});
+      } else {
+        _ocSnap2.forEach(function(d){if(!_ocDoc&&d.data().numero===parseInt(datos.numero))_ocDoc=d;});
+      }
+      if(!_ocDoc){embiAddMsg('bot','No encontré la OC '+(datos.ocId||'#'+datos.numero)+'.');return;}
       var _ocData=_ocDoc.data();
-      if(_ocData.estadoRecepcion==='recibida'){embiAddMsg('bot','La OC #'+datos.numero+' ya fue marcada como recibida.');return;}
+      if(_ocData.estadoRecepcion==='recibida'){embiAddMsg('bot','La OC #'+_ocData.numero+' ya fue marcada como recibida.');return;}
       var _hoy=new Date().toISOString().split('T')[0];
       await window._updateDoc(window._doc(window.db,'clientes',currentClientUID,'ordenesCompra',_ocDoc.id),{estadoRecepcion:'recibida',fechaRecepcion:_hoy});
       if(datos.proveedorId){
         var _facRef=window._collection(window.db,'clientes',currentClientUID,'proveedores',datos.proveedorId,'facturas');
-        var _ocNum='OC-'+String(datos.numero).padStart(3,'0');
-        await window._addDoc(_facRef,{numero:_ocNum,monto:parseFloat(datos.total)||0,fecha:_hoy,ocId:_ocDoc.id,desc:'Recepción '+_ocNum,estado:'pendiente',creadoEn:new Date().toISOString(),esOC:true});
+        var _ocNum='OC-'+String(_ocData.numero||datos.numero).padStart(3,'0');
+        await window._addDoc(_facRef,{numero:_ocNum,monto:parseFloat(datos.total)||parseFloat(_ocData.total)||0,fecha:_hoy,ocId:_ocDoc.id,desc:'Recepción '+_ocNum,estado:'pendiente',creadoEn:new Date().toISOString(),esOC:true});
       }
       if(window.loadProveedores)await window.loadProveedores();
       if(window.loadInicio)window.loadInicio();
-      embiAddMsg('bot','OC #'+datos.numero+' ('+datos.proveedor+') marcada como recibida. Se registró la deuda en la cuenta corriente.');
+      embiAddMsg('bot','OC #'+(_ocData.numero||datos.numero)+' ('+datos.proveedor+') marcada como recibida. Se registró la deuda en la cuenta corriente.');
     }else if(tipo==='PROVEEDOR_NUEVO'){
       await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'proveedores'),{nombre:datos.nombre,tel:datos.tel||'',email:datos.email||'',categoria:datos.categoria||'',creadoEn:new Date().toISOString(),eliminado:false});
       if(window._embi_proveedores) window._embi_proveedores.push({nombre:datos.nombre,_saldo:0});

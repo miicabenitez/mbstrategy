@@ -385,8 +385,8 @@ CLIENTE — crear un cliente nuevo:
 [ACCION_EJECUTAR:CLIENTE:{"nombre":"María López","tel":"11-1234-5678","email":"maria@ejemplo.com"}]
 
 OC_RECIBIDA — marcar una orden de compra como recibida:
-El usuario dice que recibió una OC o quiere marcarla como recibida. Preguntás de qué proveedor o número de OC. Buscás en OC pendientes del contexto (campo "OC pendientes"). Mostrás la OC encontrada (número, proveedor, total) y preguntás: "¿Confirmo que recibiste esta OC?" Al confirmar, incluís el tag.
-[ACCION_EJECUTAR:OC_RECIBIDA:{"numero":1,"proveedorId":"abc123","proveedor":"Mar pak","total":5000}]
+El usuario dice que recibió una OC o quiere marcarla como recibida. Preguntás de qué proveedor o número de OC. Buscás en OC pendientes del contexto. Si hay una sola OC del proveedor, la confirmás directamente. Si hay más de una OC pendiente del mismo proveedor, listás todas con número y monto y preguntás cuál quiere marcar como recibida. Confirmás antes de ejecutar. El tag incluye el ocId del documento para búsqueda directa.
+[ACCION_EJECUTAR:OC_RECIBIDA:{"ocId":"docId123","numero":1,"proveedorId":"abc123","proveedor":"Mar pak","total":5000}]
 
 PROVEEDOR_NUEVO — crear un proveedor nuevo:
 Recolectá: nombre, categoría (preguntala siempre — ejemplos: Librería y papelería, Materiales, Mano de obra, Servicios profesionales, Alquiler, Herramientas y equipos, Marketing y publicidad, Logística y transporte, Reparaciones, Tecnología y software, Limpieza e higiene, Retiro socio, Otro), teléfono y email (opcionales). Confirmá antes de ejecutar.
@@ -424,6 +424,7 @@ Mostrás el resumen: proveedor, ítems con subtotales, total, fecha. Preguntás:
 SOLO cuando el usuario confirme, incluís el tag ACCION_EJECUTAR al final.
 
 Reglas para las acciones:
+- CRÍTICO: El tag ACCION_EJECUTAR NUNCA va en el mismo mensaje que la pregunta de confirmación. Primero preguntás, esperás la respuesta del usuario, y SOLO en el mensaje SIGUIENTE incluís el tag si el usuario confirmó.
 - El tag va SIEMPRE en la última línea de tu respuesta, solo, sin texto después
 - El tag nunca debe aparecer en el texto visible del chat. El texto antes del tag es lo que ve el usuario; el tag es procesado internamente y eliminado de la vista
 - El JSON debe ser válido (sin caracteres especiales sin escapar)
