@@ -18135,9 +18135,8 @@ window.loadEmbiUsage = async function loadEmbiUsage() {
     const mesActual = `${ahora.getFullYear()}-${String(ahora.getMonth()+1).padStart(2,'0')}`;
     await renderEmbiUsage(mesActual);
   } catch(e) {
-    console.error('loadEmbiUsage error:', e);
-    const el = document.getElementById('embiUsageContent');
-    if (el) el.innerHTML = '<div style="padding:40px;text-align:center;color:#b9554a;font-size:13px;">Error al cargar: ' + e.message + '</div>';
+    console.error('[loadEmbiUsage] error:', e.message, e.stack);
+    document.getElementById('embiUsageContent').innerHTML = '<p style="color:red;padding:20px;">Error: ' + e.message + '</p>';
   }
 }
 
