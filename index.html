@@ -2151,13 +2151,42 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         <div class="dash-card" style="background:var(--white);border:.5px solid var(--cream-d);border-radius:13px;padding:18px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
             <div style="font-size:13px;font-weight:500;">Actividad reciente</div>
-            <a href="#" onclick="event.preventDefault();showClientMod('finanzas',null)" style="font-size:12px;color:var(--sage-dark);text-decoration:none;font-weight:500;">Ver todo →</a>
+            <a href="#" onclick="event.preventDefault();navigateToHistorial()" style="font-size:12px;color:var(--sage-dark);text-decoration:none;font-weight:500;">Ver todo →</a>
           </div>
           <div id="inicio-actividad">
             <div style="text-align:center;padding:12px;color:var(--text-l);font-size:13px;">Cargando...</div>
           </div>
         </div>
 
+      </div>
+
+      <!-- HISTORIAL GLOBAL -->
+      <div id="ct-historial" style="display:none;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
+          <button onclick="showClientMod('inicio',null)" style="background:none;border:.5px solid var(--cream-d);border-radius:8px;padding:6px 12px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text-m);cursor:pointer;">← Volver</button>
+          <div style="font-size:17px;font-weight:500;color:var(--text);">Historial de actividad</div>
+        </div>
+        <div class="card" style="padding:14px 16px;margin-bottom:12px;">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+            <select id="hist-filtro-tipo" onchange="loadHistorial(this.value,document.getElementById('hist-fecha-desde').value,document.getElementById('hist-fecha-hasta').value)" style="font-family:'DM Sans',sans-serif;font-size:13px;padding:6px 10px;border:.5px solid var(--cream-d);border-radius:8px;background:var(--white);color:var(--text);cursor:pointer;">
+              <option value="">Todos los tipos</option>
+              <option value="caja">Caja</option>
+              <option value="presupuestos">Presupuestos</option>
+              <option value="clientes">Clientes</option>
+              <option value="proveedores">Proveedores</option>
+              <option value="oc">Órdenes de compra</option>
+            </select>
+            <input type="date" id="hist-fecha-desde" style="font-family:'DM Sans',sans-serif;font-size:13px;padding:6px 10px;border:.5px solid var(--cream-d);border-radius:8px;background:var(--white);color:var(--text);" onchange="loadHistorial(document.getElementById('hist-filtro-tipo').value,this.value,document.getElementById('hist-fecha-hasta').value)"/>
+            <input type="date" id="hist-fecha-hasta" style="font-family:'DM Sans',sans-serif;font-size:13px;padding:6px 10px;border:.5px solid var(--cream-d);border-radius:8px;background:var(--white);color:var(--text);" onchange="loadHistorial(document.getElementById('hist-filtro-tipo').value,document.getElementById('hist-fecha-desde').value,this.value)"/>
+            <button onclick="document.getElementById('hist-filtro-tipo').value='';document.getElementById('hist-fecha-desde').value='';document.getElementById('hist-fecha-hasta').value='';loadHistorial('','','')" style="font-family:'DM Sans',sans-serif;font-size:12px;padding:6px 10px;border:.5px solid var(--cream-d);border-radius:8px;background:var(--white);color:var(--text-l);cursor:pointer;">Limpiar</button>
+          </div>
+        </div>
+        <div class="card" style="padding:0 16px;">
+          <div id="hist-lista"><div style="text-align:center;padding:24px;color:var(--text-l);font-size:13px;">Cargando...</div></div>
+          <div id="hist-mas" style="display:none;text-align:center;padding:14px;">
+            <button onclick="histCargarMas()" style="font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 20px;border:.5px solid var(--cream-d);border-radius:8px;background:var(--white);color:var(--text-m);cursor:pointer;">Cargar más</button>
+          </div>
+        </div>
       </div>
 
       <!-- CONTABILIDAD CLIENTE — CAJA -->
@@ -10947,7 +10976,7 @@ async function loadInicio() {
 
         // Ordenar y limitar
         eventos.sort((a,b)=>new Date(b.creadoEn||0)-new Date(a.creadoEn||0));
-        const ultimos=eventos.filter(e=>e.creadoEn).slice(0,10);
+        const ultimos=eventos.filter(e=>e.creadoEn).slice(0,5);
 
         const _feedCfg={
           'ingreso':     {grad:'linear-gradient(135deg,#3d5240 0%,#4a5e4d 50%,#5e7562 100%)',icon:'↑',color:'#5A8A62',signo:'+'},
@@ -14505,6 +14534,98 @@ window.navigateToMiCuenta = function() {
   document.querySelectorAll('.mod-subnav').forEach(el => { el.style.display = 'none'; el.classList.remove('visible'); });
   loadMiCuentaPage();
   loadMembresiaSection();
+};
+
+// ── Historial global ──
+var _histEventos = [], _histOffset = 0;
+var _histFeedCfg = {
+  'ingreso':          {grad:'linear-gradient(135deg,#3d5240 0%,#4a5e4d 50%,#5e7562 100%)',icon:'↑',color:'#5A8A62',signo:'+'},
+  'egreso':           {grad:'linear-gradient(135deg,#9a7870 0%,#b09088 50%,#ccb0a8 100%)',icon:'↓',color:'#C4786A',signo:'-'},
+  'presup-aprobado':  {grad:'linear-gradient(135deg,#3d6644 0%,#4a7a54 100%)',icon:'✓',color:'#3d6644',signo:''},
+  'presup-cobrado':   {grad:'linear-gradient(135deg,#2d5234 0%,#3d6644 100%)',icon:'$',color:'#2d5234',signo:''},
+  'presup-enviado':   {grad:'linear-gradient(135deg,#4a6a8a 0%,#6a8aaa 100%)',icon:'→',color:'#4a6a8a',signo:''},
+  'oc-pagada':        {grad:'linear-gradient(135deg,#5a6a4a 0%,#7a8a6a 100%)',icon:'✓',color:'#5a6a4a',signo:''},
+  'cliente':          {grad:'linear-gradient(135deg,#4a5e4d 0%,#6a7e6d 100%)',icon:'+',color:'var(--text-m)',signo:''},
+  'proveedor':        {grad:'linear-gradient(135deg,#7a6a5a 0%,#a09080 100%)',icon:'+',color:'var(--text-m)',signo:''},
+  'oc':               {grad:'linear-gradient(135deg,#7a6a5a 0%,#a09080 100%)',icon:'→',color:'var(--text-m)',signo:''}
+};
+var _histDefaultCfg = {grad:'linear-gradient(135deg,#6a6a7a 0%,#9a9aaa 100%)',icon:'·',color:'var(--text-m)',signo:''};
+function _histTiempo(ts){
+  if(!ts)return'';
+  var diff=Date.now()-new Date(ts).getTime();
+  var mins=Math.floor(diff/60000),hrs=Math.floor(diff/3600000),dias=Math.floor(diff/86400000);
+  if(mins<60)return'hace '+Math.max(1,mins)+'m';
+  if(hrs<24)return'hace '+hrs+'h';
+  if(dias===1)return'ayer';
+  if(dias<30)return'hace '+dias+'d';
+  return new Date(ts).toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'});
+}
+function _histRenderItem(ev){
+  var cfg=_histFeedCfg[ev.subtipo]||_histDefaultCfg;
+  var montoHtml=ev.monto>0?'<div style="font-size:13px;font-weight:500;color:'+cfg.color+';">'+(cfg.signo?cfg.signo+'$'+ev.monto.toLocaleString('es-AR'):'$'+ev.monto.toLocaleString('es-AR'))+'</div>':'';
+  return '<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:.5px solid var(--cream);">'+
+    '<div style="width:28px;height:28px;border-radius:50%;background:'+cfg.grad+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;">'+cfg.icon+'</div>'+
+    '<div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+ev.desc+'</div></div>'+
+    '<div style="text-align:right;flex-shrink:0;">'+montoHtml+'<div style="font-size:11px;color:var(--text-l);">'+_histTiempo(ev.creadoEn)+'</div></div></div>';
+}
+function _histRenderPage(){
+  var el=document.getElementById('hist-lista');
+  var masEl=document.getElementById('hist-mas');
+  if(!el)return;
+  var lote=_histEventos.slice(_histOffset,_histOffset+20);
+  if(_histOffset===0) el.innerHTML='';
+  if(lote.length===0&&_histOffset===0){el.innerHTML='<div style="text-align:center;padding:24px;color:var(--text-l);font-size:13px;">Sin eventos para los filtros seleccionados.</div>';if(masEl)masEl.style.display='none';return;}
+  el.innerHTML+=lote.map(_histRenderItem).join('');
+  _histOffset+=lote.length;
+  if(masEl)masEl.style.display=_histOffset<_histEventos.length?'block':'none';
+}
+window.histCargarMas=function(){_histRenderPage();};
+window.loadHistorial=async function(filtroTipo,fechaDesde,fechaHasta){
+  var el=document.getElementById('hist-lista');
+  if(el)el.innerHTML='<div style="text-align:center;padding:24px;color:var(--text-l);font-size:13px;">Cargando...</div>';
+  try{
+    var uid=currentClientUID;if(!uid)return;
+    var eventos=[];
+    var pDescMap={'Pendiente de enviar':'Presupuesto creado','Enviado':'Presupuesto enviado','Aprobado':'Presupuesto aprobado','Cobrado':'Presupuesto cobrado','Denegado':'Presupuesto denegado','Consultado':'Presupuesto consultado'};
+    // Caja
+    (window._clientIngresos||[]).forEach(i=>eventos.push({subtipo:'ingreso',desc:i.concepto||i.categoria||'Ingreso',monto:parseFloat(i.monto)||0,creadoEn:i.creadoEn||i.fecha||''}));
+    (window._clientEgresos||[]).forEach(e=>eventos.push({subtipo:'egreso',desc:e.concepto||e.categoria||'Egreso',monto:parseFloat(e.monto)||0,creadoEn:e.creadoEn||e.fecha||''}));
+    // Presupuestos
+    (window._clientPresupuestos||[]).forEach(p=>eventos.push({subtipo:'presup-'+(p.estado||'').toLowerCase().replace(/ /g,'-'),desc:((pDescMap[p.estado]||'Presupuesto'))+(p.cliente?' · '+p.cliente:''),monto:typeof getPresupMonto==='function'?getPresupMonto(p):(parseFloat(p.monto)||0),creadoEn:p.creadoEn||''}));
+    // Clientes
+    var fclis=window._mcClientes||_mcClientes||[];
+    if(!fclis.length){try{var cs=await window._getDocs(window._collection(window.db,'clientes',uid,'misClientes'));fclis=[];cs.forEach(d=>{var r=d.data();if(!r.eliminado)fclis.push({nombre:r.nombre||'',creadoEn:r.creadoEn||''}); });}catch(e){}}
+    fclis.forEach(c=>eventos.push({subtipo:'cliente',desc:'Cliente: '+(c.nombre||'Sin nombre'),monto:0,creadoEn:c.creadoEn||''}));
+    // Proveedores
+    var fprovs=window._proveedores||_proveedores||[];
+    if(!fprovs.length){try{var ps=await window._getDocs(window._collection(window.db,'clientes',uid,'proveedores'));fprovs=[];ps.forEach(d=>{var r=d.data();if(!r.eliminado)fprovs.push({nombre:r.nombre||'',creadoEn:r.creadoEn||''});});}catch(e){}}
+    fprovs.forEach(p=>eventos.push({subtipo:'proveedor',desc:'Proveedor: '+(p.nombre||'Sin nombre'),monto:0,creadoEn:p.creadoEn||''}));
+    // OC
+    var focs=window._ordenesCompra||[];
+    if(!focs.length){try{var os=await window._getDocs(window._collection(window.db,'clientes',uid,'ordenesCompra'));focs=[];os.forEach(d=>{var r=d.data();if(!r.eliminado)focs.push({id:d.id,...r});});}catch(e){}}
+    focs.forEach(oc=>eventos.push({subtipo:oc.estadoPago==='pagada'?'oc-pagada':'oc',desc:(oc.estadoPago==='pagada'?'OC pagada':'OC emitida')+' · '+(oc.proveedor||'Sin proveedor'),monto:parseFloat(oc.total)||0,creadoEn:oc.creadoEn||''}));
+    // Filtrar tipo
+    var tipoMap={'caja':['ingreso','egreso'],'presupuestos':null,'clientes':['cliente'],'proveedores':['proveedor'],'oc':['oc','oc-pagada']};
+    if(filtroTipo&&tipoMap[filtroTipo]){
+      if(filtroTipo==='presupuestos') eventos=eventos.filter(e=>e.subtipo.startsWith('presup-'));
+      else{var allowed=tipoMap[filtroTipo];eventos=eventos.filter(e=>allowed.includes(e.subtipo));}
+    }
+    // Filtrar fechas
+    if(fechaDesde){var d0=new Date(fechaDesde+'T00:00:00');eventos=eventos.filter(e=>e.creadoEn&&new Date(e.creadoEn)>=d0);}
+    if(fechaHasta){var d1=new Date(fechaHasta+'T23:59:59');eventos=eventos.filter(e=>e.creadoEn&&new Date(e.creadoEn)<=d1);}
+    // Ordenar
+    eventos=eventos.filter(e=>e.creadoEn).sort((a,b)=>new Date(b.creadoEn)-new Date(a.creadoEn));
+    _histEventos=eventos;_histOffset=0;
+    _histRenderPage();
+  }catch(e){console.error('loadHistorial:',e);if(el)el.innerHTML='<div style="text-align:center;padding:24px;color:var(--text-l);font-size:13px;">Error al cargar el historial.</div>';}
+};
+window.navigateToHistorial=function(){
+  showCTab('historial',null);
+  loadHistorial(
+    document.getElementById('hist-filtro-tipo')?.value||'',
+    document.getElementById('hist-fecha-desde')?.value||'',
+    document.getElementById('hist-fecha-hasta')?.value||''
+  );
 };
 
 window.navigateToMiCuentaMembresia = function() {
