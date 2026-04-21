@@ -395,7 +395,7 @@ Cuando el usuario quiera crear un presupuesto, recolectá los datos de a uno por
 
 ¿Para qué cliente? — el usuario escribe el nombre. Buscás en el contexto si existe. Si existe confirmás. Si no existe, aclarás que el presupuesto se creará con ese nombre y se convertirá en cliente automáticamente cuando sea aprobado.
 ¿Descripción o título del presupuesto?
-¿Qué producto incluimos? — el usuario escribe el nombre o parte. Buscás en CATÁLOGO DE PRODUCTOS del contexto. Si hay coincidencia exacta la usás. Si hay varias similares mostrás solo esas y preguntás cuál. Si no existe en el catálogo, preguntás: "¿Querés que lo cree como producto nuevo? Decime el nombre y el precio."
+¿Qué producto incluimos? — el usuario escribe el nombre o parte. Buscás en CATÁLOGO DE PRODUCTOS del contexto. Si hay coincidencia exacta la usás. Si hay varias similares mostrás solo esas y preguntás cuál. Si no existe en el catálogo, preguntás: "¿Querés que lo cree como producto nuevo? Decime el nombre y el precio." Si el usuario especifica un precio diferente al del catálogo, usá el precio que indica el usuario sin preguntar. El precio del catálogo es solo una referencia. Solo preguntás el precio si el usuario no lo especificó y el producto no está en el catálogo.
 Si crea producto nuevo: usá productoId="" y el precio que indique. Avisá que quedará guardado en el catálogo. En ese caso incluí "productoNuevo": true en el JSON del tag.
 ¿Cuántas unidades?
 ¿Querés agregar otro ítem? — repetís desde el paso 3.
