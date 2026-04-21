@@ -10792,10 +10792,10 @@ async function loadInicio() {
         const mv = aprobados2.reduce((s,p)=>s+(getPresupMonto?getPresupMonto(p):0),0);
         alertas.push({tipo:'urgente',key:'cobros-venc',color:'#C4786A',
           svg:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C4786A" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>',
-          title:aprobados2.length+(aprobados2.length>1?' cobros pendientes':' cobro pendiente')+' sin cobrar',
+          title:aprobados2.length+' cobro/s pendiente/s de cobro',
           subtitle:'Presupuestos aprobados pendientes de cobro',
           monto:mv>0?'$'+mv.toLocaleString('es-AR'):'',
-          accionLabel:'Ver presupuestos', accionFn:"showClientMod('ventas',null)", tag:'Urgente'});
+          accionLabel:'Ver presupuestos', accionFn:"showClientMod('ventas',null);showCTab('presupuestos',null)", tag:'Urgente'});
       }
       if(totalEgMes > totalIngMes && totalIngMes > 0) {
         alertas.push({tipo:'urgente',key:'eg-sup-ing',color:'#C4786A',
@@ -10807,17 +10807,17 @@ async function loadInicio() {
       }
 
       // ATENCIÓN (descartables 7 días)
-      if(!isDismissed('presup-por-enviar')) {
-        const porEnviar = (window._clientPresupuestos||[]).filter(p=>p.estado==='Pendiente de enviar');
-        if(porEnviar.length > 0) {
-          const mv = porEnviar.reduce((s,p)=>s+(getPresupMonto?getPresupMonto(p):0),0);
-          alertas.push({tipo:'atencion',key:'presup-por-enviar',color:'#8A6A3A',
-            svg:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8A6A3A" stroke-width="1.8" stroke-linecap="round"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/></svg>',
-            title:porEnviar.length+(porEnviar.length>1?' presupuestos pendientes de enviar':' presupuesto pendiente de enviar'),
-            subtitle:'Están listos pero todavía no se enviaron al cliente',
-            monto:mv>0?'$'+mv.toLocaleString('es-AR'):'',
-            accionLabel:'Ver presupuestos', accionFn:"showClientMod('ventas',null)", tag:'Atención'});
-        }
+      delete dismissed['presup-por-enviar'];
+      localStorage.setItem('mb_dismissed_alertas_'+currentClientUID, JSON.stringify(dismissed));
+      const porEnviar = (window._clientPresupuestos||[]).filter(p=>p.estado==='Pendiente de enviar');
+      if(porEnviar.length > 0) {
+        const mv = porEnviar.reduce((s,p)=>s+(getPresupMonto?getPresupMonto(p):0),0);
+        alertas.push({tipo:'urgente',key:'presup-por-enviar',color:'#8A6A3A',
+          svg:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8A6A3A" stroke-width="1.8" stroke-linecap="round"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/></svg>',
+          title:porEnviar.length+(porEnviar.length>1?' presupuestos pendientes de enviar':' presupuesto pendiente de enviar'),
+          subtitle:'Están listos pero todavía no se enviaron al cliente',
+          monto:mv>0?'$'+mv.toLocaleString('es-AR'):'',
+          accionLabel:'Ver presupuestos', accionFn:"showClientMod('ventas',null);showCTab('presupuestos',null)", tag:'Urgente'});
       }
       if(!isDismissed('presup-sin-resp')) {
         const hace7 = new Date(); hace7.setDate(hace7.getDate()-7);
