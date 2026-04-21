@@ -19834,7 +19834,6 @@ async function embiEjecutarAccion(tipo,datos){
       var _cbConcepto='Cobro presupuesto '+datos.cliente;
       var _cbMesStr=new Date(_cbFecha+'T12:00:00').toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,function(c){return c.toUpperCase();});
       await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'cobros'),{concepto:_cbConcepto,monto:_cbMonto,estado:'Cobrado',fecha:_cbFecha,saldoPendiente:0,totalAcumulado:_cbMonto});
-      await window._addDoc(window._collection(window.db,'cobros'),{clienteId:currentClientUID,cliente:datos.cliente,concepto:_cbConcepto,monto:_cbMonto,estado:'cobrado',fecha:_cbFecha,creadoEn:new Date().toISOString()});
       if(datos.presupuestoId)await window._updateDoc(window._doc(window.db,'clientes',currentClientUID,'presupuestos',datos.presupuestoId),{estado:'Cobrado',actualizadoEn:new Date().toISOString()});
       if(window.loadClientPresupuestos)await window.loadClientPresupuestos();
       if(window.loadClientContabilidad)await window.loadClientContabilidad();
