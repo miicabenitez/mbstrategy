@@ -19850,6 +19850,7 @@ async function embiEjecutarAccion(tipo,datos){
       if(_ppProvId)await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'proveedores',_ppProvId,'pagos'),{tipo:'pago',monto:_ppMonto,fecha:_ppFecha,medio:datos.cuenta||'',concepto:_ppConcepto,creadoEn:new Date().toISOString()});
       await window._addDoc(window._collection(window.db,'libroCaja'),{uid:currentClientUID,fecha:_ppFecha,tipo:'egreso',concepto:_ppConcepto,cuenta:datos.cuenta||'',monto:_ppMonto,origen:'embi',detalle:'Pago proveedor: '+datos.proveedor,mes:_ppMesStr,eliminado:false,creadoEn:new Date().toISOString()});
       if(window.loadProveedores)await window.loadProveedores();
+      if(window._ccProvId && _ppProvId && window._ccProvId===_ppProvId && window.abrirCuentaCorriente) await window.abrirCuentaCorriente(_ppProvId);
       if(window.loadCajaModule)window.loadCajaModule();
       if(window.loadInicio)window.loadInicio();
       embiAddMsg('bot','Pago de $'+_ppMonto.toLocaleString('es-AR')+' a '+datos.proveedor+' registrado.');
