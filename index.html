@@ -19642,7 +19642,8 @@ async function embiSend(){
   }
   if(actionMatch){
     var tipo=actionMatch[1],datosStr=actionMatch[2];
-    var textoLimpio=resp.replace(/\[ACCION_EJECUTAR:[\s\S]*?\][\s]*/,'').trim();
+    var tagStart=resp.indexOf('[ACCION_EJECUTAR:');
+    var textoLimpio=tagStart!==-1?resp.slice(0,tagStart).trim():resp.trim();
     embiAddMsg('bot',textoLimpio||'Procesando...');
     var datos={};
     try{datos=JSON.parse(datosStr);}catch(e){embiAddMsg('bot','Hubo un problema al procesar los datos. Intentá de nuevo.');embiLogAccion(tipo,'error_parse',datosStr);return;}

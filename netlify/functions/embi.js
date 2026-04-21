@@ -407,6 +407,7 @@ IMPORTANTE: Nunca incluyas el tag ACCION_EJECUTAR antes de recibir confirmación
 
 Reglas para las acciones:
 - El tag va SIEMPRE en la última línea de tu respuesta, solo, sin texto después
+- El tag nunca debe aparecer en el texto visible del chat. El texto antes del tag es lo que ve el usuario; el tag es procesado internamente y eliminado de la vista
 - El JSON debe ser válido (sin caracteres especiales sin escapar)
 - Confirmá primero con el usuario si hay algún dato ambiguo
 - Si el usuario no dio fecha, usá la de hoy
