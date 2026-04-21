@@ -19740,6 +19740,7 @@ async function embiEjecutarAccion(tipo,datos){
       await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'proveedores'),{nombre:datos.nombre,tel:datos.tel||'',email:datos.email||'',categoria:datos.categoria||'',creadoEn:new Date().toISOString(),eliminado:false});
       if(window._embi_proveedores) window._embi_proveedores.push({nombre:datos.nombre,_saldo:0});
       if(window._proveedores) window._proveedores.push({id:'embi-'+Date.now(),nombre:datos.nombre,_saldo:0,_saldoFavor:0});
+      if(window.loadProveedores)await window.loadProveedores();
       if(window.loadInicio)window.loadInicio();
       embiAddMsg('bot','Proveedor '+datos.nombre+' creado en Compras.');
     }else if(tipo==='PRESUPUESTO'){
