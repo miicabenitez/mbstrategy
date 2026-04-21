@@ -19740,6 +19740,7 @@ async function embiEjecutarAccion(tipo,datos){
       if(window.loadInicio)window.loadInicio();
       embiAddMsg('bot','Cobro de $'+parseFloat(datos.monto).toLocaleString('es-AR')+' registrado.');
     }else if(tipo==='OC_RECIBIDA'){
+      console.log('[OC_RECIBIDA] datos:', JSON.stringify(datos));
       var _ocSnap2=await window._getDocs(window._collection(window.db,'clientes',currentClientUID,'ordenesCompra'));
       var _ocDoc=null;
       if(datos.ocId){
@@ -19757,6 +19758,7 @@ async function embiEjecutarAccion(tipo,datos){
         var _ocNum='OC-'+String(_ocData.numero||datos.numero).padStart(3,'0');
         await window._addDoc(_facRef,{numero:_ocNum,monto:parseFloat(datos.total)||parseFloat(_ocData.total)||0,fecha:_hoy,ocId:_ocDoc.id,desc:'Recepción '+_ocNum,estado:'pendiente',creadoEn:new Date().toISOString(),esOC:true});
       }
+      if(window.loadOrdenesCompra)await window.loadOrdenesCompra();
       if(window.loadProveedores)await window.loadProveedores();
       if(window.loadInicio)window.loadInicio();
       embiAddMsg('bot','OC #'+(_ocData.numero||datos.numero)+' ('+datos.proveedor+') marcada como recibida. Se registró la deuda en la cuenta corriente.');
