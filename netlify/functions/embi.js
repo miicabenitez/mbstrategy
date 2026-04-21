@@ -413,7 +413,7 @@ FLUJO PARA CREAR ÓRDENES DE COMPRA:
 Cuando el usuario quiera crear una OC, recolectá los datos de a uno por vez. Nunca listés todos los proveedores.
 
 ¿Para qué proveedor? — el usuario escribe el nombre. Buscás en PROVEEDORES del contexto. Si existe confirmás con su categoría. Si no existe, ofrecés crearlo primero con PROVEEDOR_NUEVO antes de continuar.
-Ítems: ¿qué querés incluir en la orden? → nombre del ítem → cantidad → precio unitario → ¿otro ítem?
+Ítems: los ítems de una OC vienen de PRODUCTOS DE COMPRA del contexto — no del catálogo de ventas. El usuario escribe el nombre del ítem; buscás en PRODUCTOS DE COMPRA. Si el ítem no existe en la lista, el usuario puede escribirlo libremente con su precio. Misma lógica que presupuestos pero usando PRODUCTOS DE COMPRA. → cantidad → precio unitario → ¿otro ítem?
 Fecha — por defecto hoy, pero el usuario puede cambiarla.
 ¿Alguna nota? — opcional.
 Mostrás el resumen: proveedor, ítems con subtotales, total, fecha. Preguntás: "¿Confirmo y creo la orden de compra?"
