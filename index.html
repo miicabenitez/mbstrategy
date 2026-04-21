@@ -19763,6 +19763,7 @@ async function embiEjecutarAccion(tipo,datos){
       }
       if(window.loadOrdenesCompra)await window.loadOrdenesCompra();
       if(window.loadProveedores)await window.loadProveedores();
+      if(window._ccProvId && _pvId && window._ccProvId===_pvId && window.abrirCuentaCorriente) await window.abrirCuentaCorriente(_pvId);
       if(window.loadInicio)window.loadInicio();
       embiAddMsg('bot','OC #'+(_ocData.numero||datos.numero)+' ('+datos.proveedor+') marcada como recibida. Se registró la deuda en la cuenta corriente.');
     }else if(tipo==='PROVEEDOR_NUEVO'){
