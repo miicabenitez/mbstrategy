@@ -385,7 +385,7 @@ CLIENTE — crear un cliente nuevo:
 [ACCION_EJECUTAR:CLIENTE:{"nombre":"María López","tel":"11-1234-5678","email":"maria@ejemplo.com"}]
 
 PROVEEDOR_NUEVO — crear un proveedor nuevo:
-Recolectá: nombre, categoría (preguntala siempre — ejemplos: Alquiler, Librería y papelería, Tecnología y software, Retiro socio, Servicios, Insumos, Otro), teléfono y email (opcionales). Confirmá antes de ejecutar.
+Recolectá: nombre, categoría (preguntala siempre — ejemplos: Librería y papelería, Materiales, Mano de obra, Servicios profesionales, Alquiler, Herramientas y equipos, Marketing y publicidad, Logística y transporte, Reparaciones, Tecnología y software, Limpieza e higiene, Retiro socio, Otro), teléfono y email (opcionales). Confirmá antes de ejecutar.
 [ACCION_EJECUTAR:PROVEEDOR_NUEVO:{"nombre":"Distribuidora ABC","tel":"","email":"","categoria":"Insumos"}]
 
 PRESUPUESTO — crear un presupuesto nuevo:
