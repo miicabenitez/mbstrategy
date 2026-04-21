@@ -1109,6 +1109,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         <button class="nt" onclick="showATab('tareas',this)">Plan de acción</button>
         <button class="nt" onclick="showATab('kpis',this)">KPIs MB</button>
         <button class="nt" onclick="showATab('embi',this)">Embi ✦</button>
+        <button class="nt" onclick="showATab('embiusage',this)">Uso de Embi</button>
         <button class="nt" onclick="showATab('papelera',this)">Papelera</button>
       </div>
       <div class="nav-tabs" id="cNav" style="display:none;">
@@ -1867,6 +1868,11 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
             <div style="position:relative;height:180px;"><canvas id="mbDonut"></canvas></div>
           </div>
         </div>
+      </div>
+
+      <!-- USO DE EMBI -->
+      <div class="view" id="av-embiusage" style="padding:20px;">
+        <div id="embiUsageContent">Cargando...</div>
       </div>
 
       <!-- PAPELERA -->
@@ -18118,6 +18124,139 @@ window.toggleCheck = async function(contentId, itemIdx) {
   } catch(e) { console.log(e); }
 };
 
+// ── USO DE EMBI ──
+async function loadEmbiUsage() {
+  const ahora = new Date();
+  const mesActual = `${ahora.getFullYear()}-${String(ahora.getMonth()+1).padStart(2,'0')}`;
+  await renderEmbiUsage(mesActual);
+}
+
+async function renderEmbiUsage(mes) {
+  const [anio, mesNum] = mes.split('-').map(Number);
+  const inicio = new Date(anio, mesNum - 1, 1);
+  const fin = new Date(anio, mesNum, 1);
+
+  const snap = await window._getDocs(window._query(
+    window._collection(window.db, 'embiUsage'),
+    window._where('timestamp', '>=', inicio),
+    window._where('timestamp', '<', fin)
+  ));
+
+  const porUsuario = {};
+  let totalCosto = 0, totalMensajes = 0;
+  let totalProCosto = 0, totalProMsg = 0, totalBaseCosto = 0, totalBaseMsg = 0;
+
+  snap.forEach(doc => {
+    const d = doc.data();
+    if (!porUsuario[d.userId]) porUsuario[d.userId] = { mensajes: 0, costo: 0, modo: d.modo };
+    porUsuario[d.userId].mensajes++;
+    porUsuario[d.userId].costo += d.costoUSD || 0;
+    totalCosto += d.costoUSD || 0;
+    totalMensajes++;
+    if (d.modo === 'operativo') { totalProCosto += d.costoUSD || 0; totalProMsg++; }
+    else { totalBaseCosto += d.costoUSD || 0; totalBaseMsg++; }
+  });
+
+  const usuarioIds = Object.keys(porUsuario);
+  const nombresMap = {};
+  await Promise.all(usuarioIds.map(async uid => {
+    const cSnap = await window._getDoc(window._doc(window.db, 'clientes', uid));
+    nombresMap[uid] = cSnap.exists() ? (cSnap.data().nombre || uid) : uid;
+  }));
+
+  const ranking = usuarioIds.sort((a,b) => porUsuario[b].costo - porUsuario[a].costo);
+  const promedio = totalMensajes > 0 ? totalCosto / totalMensajes : 0;
+  const clientesActivos = usuarioIds.length;
+  const topUsuario = ranking[0] ? porUsuario[ranking[0]] : null;
+  const topNombre = ranking[0] ? nombresMap[ranking[0]] : null;
+  const topPct = totalMensajes > 0 && topUsuario ? Math.round(topUsuario.mensajes / totalMensajes * 100) : 0;
+
+  const filasRanking = ranking.map(uid => {
+    const u = porUsuario[uid];
+    const pct = totalMensajes > 0 ? Math.round(u.mensajes / totalMensajes * 100) : 0;
+    const esPro = u.modo === 'operativo';
+    return `<tr>
+      <td style="font-weight:500;padding:8px 0;border-bottom:0.5px solid rgba(0,0,0,0.05);">${nombresMap[uid]}</td>
+      <td style="text-align:right;padding:8px 0;border-bottom:0.5px solid rgba(0,0,0,0.05);"><span style="display:inline-block;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500;background:${esPro?'#f0e8e5':'#e8ede9'};color:${esPro?'#7a4e43':'#3d5240'}">${esPro?'Pro':'Base'}</span></td>
+      <td style="text-align:right;padding:8px 0;border-bottom:0.5px solid rgba(0,0,0,0.05);">${u.mensajes}</td>
+      <td style="text-align:right;padding:8px 0;border-bottom:0.5px solid rgba(0,0,0,0.05);">$${u.costo.toFixed(4)}</td>
+      <td style="text-align:right;padding:8px 0;border-bottom:0.5px solid rgba(0,0,0,0.05);"><div style="display:flex;align-items:center;gap:8px;"><div style="flex:1;height:4px;background:#eeebe6;border-radius:2px;"><div style="height:4px;border-radius:2px;background:${esPro?'#b09088':'#4a5e4d'};width:${pct}%"></div></div><span style="font-size:11px;color:#888;min-width:28px;">${pct}%</span></div></td>
+    </tr>`;
+  }).join('');
+
+  const alertaHtml = topUsuario && topPct >= 30
+    ? `<div style="background:#fdf3f0;border-left:3px solid #b09088;border-radius:0 8px 8px 0;padding:10px 14px;margin-bottom:12px;font-size:12px;color:#7a4e43;">⚠ ${topNombre} usó ${topUsuario.mensajes} mensajes este mes — el ${topPct}% del total.</div>`
+    : '';
+
+  document.getElementById('embiUsageContent').innerHTML = `
+    <div style="font-family:'DM Sans',sans-serif;background:#eeebe6;padding:20px;border-radius:16px;">
+      <div style="background:#4a5e4d;border-radius:16px;padding:20px 24px;margin-bottom:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <span style="color:#fff;font-size:15px;font-weight:500;">Uso de Embi ✦</span>
+          <span style="color:rgba(255,255,255,0.7);font-size:12px;">${mes}</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px;">
+          <div style="background:rgba(255,255,255,0.1);border-radius:10px;padding:12px 14px;">
+            <div style="font-size:11px;color:rgba(255,255,255,0.65);margin-bottom:4px;">Gasto total</div>
+            <div style="font-size:22px;font-weight:500;color:#fff;">$${totalCosto.toFixed(4)}</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px;">USD este mes</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.1);border-radius:10px;padding:12px 14px;">
+            <div style="font-size:11px;color:rgba(255,255,255,0.65);margin-bottom:4px;">Mensajes</div>
+            <div style="font-size:22px;font-weight:500;color:#fff;">${totalMensajes}</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px;">este mes</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.1);border-radius:10px;padding:12px 14px;">
+            <div style="font-size:11px;color:rgba(255,255,255,0.65);margin-bottom:4px;">Costo promedio</div>
+            <div style="font-size:22px;font-weight:500;color:#fff;">$${promedio.toFixed(4)}</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px;">por mensaje</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.1);border-radius:10px;padding:12px 14px;">
+            <div style="font-size:11px;color:rgba(255,255,255,0.65);margin-bottom:4px;">Clientes activos</div>
+            <div style="font-size:22px;font-weight:500;color:#fff;">${clientesActivos}</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px;">usaron Embi</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div style="background:rgba(255,255,255,0.07);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:14px;">
+            <div style="width:8px;height:8px;border-radius:50%;background:#9fc4a8;flex-shrink:0;"></div>
+            <div>
+              <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-bottom:2px;">Plan Pro</div>
+              <div style="display:flex;align-items:baseline;gap:8px;">
+                <span style="font-size:16px;font-weight:500;color:#fff;">$${totalProCosto.toFixed(4)}</span>
+                <span style="font-size:11px;color:rgba(255,255,255,0.45);">${totalProMsg} mensajes</span>
+              </div>
+            </div>
+          </div>
+          <div style="background:rgba(255,255,255,0.07);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:14px;">
+            <div style="width:8px;height:8px;border-radius:50%;background:#c9a99f;flex-shrink:0;"></div>
+            <div>
+              <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-bottom:2px;">Plan Base</div>
+              <div style="display:flex;align-items:baseline;gap:8px;">
+                <span style="font-size:16px;font-weight:500;color:#fff;">$${totalBaseCosto.toFixed(4)}</span>
+                <span style="font-size:11px;color:rgba(255,255,255,0.45);">${totalBaseMsg} mensajes</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      ${alertaHtml}
+      <div style="background:#fff;border-radius:14px;padding:18px 20px;border:0.5px solid rgba(0,0,0,0.08);">
+        <div style="font-size:13px;font-weight:500;color:#4a5e4d;margin-bottom:14px;">Ranking por cliente</div>
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead><tr>
+            <th style="text-align:left;color:#888;font-weight:400;font-size:11px;padding:0 0 8px;border-bottom:0.5px solid rgba(0,0,0,0.08);">Cliente</th>
+            <th style="text-align:right;color:#888;font-weight:400;font-size:11px;padding:0 0 8px;border-bottom:0.5px solid rgba(0,0,0,0.08);">Plan</th>
+            <th style="text-align:right;color:#888;font-weight:400;font-size:11px;padding:0 0 8px;border-bottom:0.5px solid rgba(0,0,0,0.08);">Mensajes</th>
+            <th style="text-align:right;color:#888;font-weight:400;font-size:11px;padding:0 0 8px;border-bottom:0.5px solid rgba(0,0,0,0.08);">Costo USD</th>
+            <th style="text-align:right;color:#888;font-weight:400;font-size:11px;padding:0 0 8px;border-bottom:0.5px solid rgba(0,0,0,0.08);min-width:80px;">Uso</th>
+          </tr></thead>
+          <tbody>${filasRanking || '<tr><td colspan="5" style="text-align:center;color:#888;padding:20px 0;">Sin datos para este mes</td></tr>'}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
 // ── PAPELERA ──
 let _papeleraItems = [];
 let _papeleraFilterTipo = 'todos';
@@ -18449,6 +18588,7 @@ window.showATab = function(tab, btn) {
   if (tab === 'kpis') setTimeout(() => { if(window._mbChartFn) window._mbChartFn(); initMbChart(); }, 100);
   if (tab === 'cobros') setTimeout(() => { initCashflowCharts(); }, 100);
   if (tab === 'embi') setTimeout(() => { loadEmbiReports(); }, 100);
+  if (tab === 'embiusage') loadEmbiUsage();
   if (tab === 'papelera') setTimeout(() => { loadPapelera(); }, 100);
   if (tab === 'inicio') {
     if(window._allClients?.length && window.renderAdminDashboard) {
