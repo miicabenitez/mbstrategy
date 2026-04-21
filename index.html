@@ -18129,13 +18129,13 @@ window.toggleCheck = async function(contentId, itemIdx) {
 };
 
 // ── USO DE EMBI ──
-async function loadEmbiUsage() {
+window.loadEmbiUsage = async function loadEmbiUsage() {
   const ahora = new Date();
   const mesActual = `${ahora.getFullYear()}-${String(ahora.getMonth()+1).padStart(2,'0')}`;
   await renderEmbiUsage(mesActual);
 }
 
-async function renderEmbiUsage(mes) {
+window.renderEmbiUsage = async function renderEmbiUsage(mes) {
   const [anio, mesNum] = mes.split('-').map(Number);
   const inicio = new Date(anio, mesNum - 1, 1);
   const fin = new Date(anio, mesNum, 1);
