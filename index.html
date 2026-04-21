@@ -19878,6 +19878,14 @@ async function embiEjecutarAccion(tipo,datos){
       await window._updateDoc(window._doc(window.db,'clientes',currentClientUID,'listas',_ailLista.id),{items:_ailItems});
       _ailLista.items=_ailItems;
       embiAddMsg('bot','Item "'+datos.texto+'" agregado a "'+_ailLista.nombre+'".');
+    }else if(tipo==='CREAR_LISTA'){
+      var _clItems=(datos.items||[]).map(function(t,i){return {id:(Date.now()+i).toString(36),texto:t.trim(),completado:false};});
+      var _clOrden=(window._embi_listas||[]).length;
+      var _clData={nombre:datos.nombre||'Nueva lista',color:datos.color||'sage',items:_clItems,creadoEn:new Date().toISOString(),orden:_clOrden};
+      var _clRef=await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'listas'),_clData);
+      (window._embi_listas=window._embi_listas||[]).push({id:_clRef.id,nombre:_clData.nombre,color:_clData.color,items:_clItems});
+      if(window.loadInicio)window.loadInicio();
+      embiAddMsg('bot','Lista "'+_clData.nombre+'" creada'+(datos.items&&datos.items.length?' con '+datos.items.length+' ítems.':'.'));
     }else{embiAddMsg('bot','Acción no reconocida: '+tipo);}
   }catch(e){embiAddMsg('bot','Error al ejecutar: '+e.message);}
 }
