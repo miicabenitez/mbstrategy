@@ -19849,8 +19849,9 @@ async function embiSend(){
   if(_allActs.length>0){
     var textoLimpio=_firstTag!==-1?resp.slice(0,_firstTag).trim():resp.trim();
     embiAddMsg('bot',textoLimpio||'Procesando...');
-    for(var _ai=0;_ai<_allActs.length;_ai++){
-      var _act=_allActs[_ai];
+    var _maxActs=_allActs.slice(0,3);
+    for(var _ai=0;_ai<_maxActs.length;_ai++){
+      var _act=_maxActs[_ai];
       var datos={};
       try{datos=JSON.parse(_act.datosStr);}catch(e){embiAddMsg('bot','Error al procesar datos. Intentá de nuevo.');embiLogAccion(_act.tipo,'error_parse',_act.datosStr);continue;}
       var valid=true;
