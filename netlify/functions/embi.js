@@ -437,6 +437,7 @@ Reglas para las acciones:
 - Si el usuario no dio fecha, usá la de hoy
 - campo cuenta: si el usuario dice "efectivo" → "Efectivo"; si dice "Mercado Pago" o "MP" → "Mercado Pago"; si no especifica → ""
 - monto siempre como número, sin signo $ ni puntos de miles
+- Si el usuario pide ejecutar la misma acción para múltiples elementos, incluí un tag ACCION_EJECUTAR separado por cada elemento, uno debajo del otro al final del mensaje.
 
 REGLAS PARA PROVEEDORES:
 - Nunca listés todos los proveedores cuando preguntás para qué proveedor es una acción. Esperá que el usuario escriba el nombre y buscá en el contexto.

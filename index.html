@@ -19829,35 +19829,37 @@ async function embiSend(){
   embiShowTyping();
   var resp=await embiCallAPI(val);
   embiRemoveTyping();
-  // Detectar acciones
-  var actionMatch=resp.match(/\[ACCION_EJECUTAR:([A-Z_]+):([\s\S]*?)\](?:\s*$|\n|$)/m);
-  if(!actionMatch){
-    var tagIdx=resp.indexOf('[ACCION_EJECUTAR:');
-    if(tagIdx!==-1){
-      var afterTag=resp.slice(tagIdx+17);
-      var colonIdx=afterTag.indexOf(':');
-      if(colonIdx!==-1){
-        var tipo2=afterTag.slice(0,colonIdx);
-        var jsonStr=afterTag.slice(colonIdx+1);
-        var lastBrace=jsonStr.lastIndexOf('}');
-        if(lastBrace!==-1)jsonStr=jsonStr.slice(0,lastBrace+1);
-        try{var datos2=JSON.parse(jsonStr);actionMatch={1:tipo2,2:jsonStr};}catch(e){}
-      }
-    }
+  // Detectar acciones — soporta múltiples tags en el mismo mensaje
+  var _allActs=[],_srch=0,_firstTag=-1;
+  while(true){
+    var _tIdx=resp.indexOf('[ACCION_EJECUTAR:',_srch);
+    if(_tIdx===-1)break;
+    if(_firstTag===-1)_firstTag=_tIdx;
+    var _aft=resp.slice(_tIdx+17);
+    var _cIdx=_aft.indexOf(':');
+    if(_cIdx===-1){_srch=_tIdx+1;continue;}
+    var _tipoN=_aft.slice(0,_cIdx);
+    var _jPart=_aft.slice(_cIdx+1);
+    var _lastB=_jPart.lastIndexOf('}');
+    if(_lastB===-1){_srch=_tIdx+1;continue;}
+    var _jStr=_jPart.slice(0,_lastB+1);
+    _allActs.push({tipo:_tipoN,datosStr:_jStr});
+    _srch=_tIdx+17+_cIdx+1+_lastB+1;
   }
-  if(actionMatch){
-    var tipo=actionMatch[1],datosStr=actionMatch[2];
-    var tagStart=resp.indexOf('[ACCION_EJECUTAR:');
-    var textoLimpio=tagStart!==-1?resp.slice(0,tagStart).trim():resp.trim();
+  if(_allActs.length>0){
+    var textoLimpio=_firstTag!==-1?resp.slice(0,_firstTag).trim():resp.trim();
     embiAddMsg('bot',textoLimpio||'Procesando...');
-    var datos={};
-    try{datos=JSON.parse(datosStr);}catch(e){embiAddMsg('bot','Hubo un problema al procesar los datos. Intentá de nuevo.');embiLogAccion(tipo,'error_parse',datosStr);return;}
-    var valid=true;
-    if((tipo==='INGRESO'||tipo==='EGRESO'||tipo==='COBRO')&&!(parseFloat(datos.monto)>0)){embiAddMsg('bot','Faltó el monto. ¿Cuánto fue?');valid=false;}
-    if(tipo==='CLIENTE'&&!datos.nombre){embiAddMsg('bot','Faltó el nombre del cliente.');valid=false;}
-    if(!valid){embiLogAccion(tipo,'error_validacion',datos);return;}
-    try{await embiEjecutarAccion(tipo,datos);embiLogAccion(tipo,'ok',datos);}
-    catch(e){embiAddMsg('bot','Error: '+e.message);embiLogAccion(tipo,'error_ejecucion',{error:e.message});}
+    for(var _ai=0;_ai<_allActs.length;_ai++){
+      var _act=_allActs[_ai];
+      var datos={};
+      try{datos=JSON.parse(_act.datosStr);}catch(e){embiAddMsg('bot','Error al procesar datos. Intentá de nuevo.');embiLogAccion(_act.tipo,'error_parse',_act.datosStr);continue;}
+      var valid=true;
+      if((_act.tipo==='INGRESO'||_act.tipo==='EGRESO'||_act.tipo==='COBRO')&&!(parseFloat(datos.monto)>0)){embiAddMsg('bot','Faltó el monto. ¿Cuánto fue?');valid=false;}
+      if(_act.tipo==='CLIENTE'&&!datos.nombre){embiAddMsg('bot','Faltó el nombre del cliente.');valid=false;}
+      if(!valid){embiLogAccion(_act.tipo,'error_validacion',datos);continue;}
+      try{await embiEjecutarAccion(_act.tipo,datos);embiLogAccion(_act.tipo,'ok',datos);}
+      catch(e){embiAddMsg('bot','Error: '+e.message);embiLogAccion(_act.tipo,'error_ejecucion',{error:e.message});}
+    }
     return;
   }
   embiAddMsg('bot',resp);
