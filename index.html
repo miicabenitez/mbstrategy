@@ -19841,11 +19841,13 @@ async function embiEjecutarAccion(tipo,datos){
       if(window.loadInicio)window.loadInicio();
       embiAddMsg('bot','Cobro de $'+_cbMonto.toLocaleString('es-AR')+' de '+datos.cliente+' registrado. Presupuesto marcado como Cobrado.');
     }else if(tipo==='PAGAR_PROVEEDOR'){
+      console.log('[PAGAR_PROVEEDOR] datos:', JSON.stringify(datos));
       var _ppFecha=datos.fecha||new Date().toISOString().split('T')[0];
       var _ppMonto=parseFloat(datos.monto)||0;
       var _ppConcepto=datos.concepto||'Pago a '+datos.proveedor;
       var _ppMesStr=new Date(_ppFecha+'T12:00:00').toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,function(c){return c.toUpperCase();});
-      if(datos.proveedorId)await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'proveedores',datos.proveedorId,'pagos'),{tipo:'pago',monto:_ppMonto,fecha:_ppFecha,medio:datos.cuenta||'',concepto:_ppConcepto,creadoEn:new Date().toISOString()});
+      var _ppProvId=datos.proveedorId||((window._proveedores||[]).find(function(p){return p.nombre===datos.proveedor;})||{}).id||'';
+      if(_ppProvId)await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'proveedores',_ppProvId,'pagos'),{tipo:'pago',monto:_ppMonto,fecha:_ppFecha,medio:datos.cuenta||'',concepto:_ppConcepto,creadoEn:new Date().toISOString()});
       await window._addDoc(window._collection(window.db,'libroCaja'),{uid:currentClientUID,fecha:_ppFecha,tipo:'egreso',concepto:_ppConcepto,cuenta:datos.cuenta||'',monto:_ppMonto,origen:'embi',detalle:'Pago proveedor: '+datos.proveedor,mes:_ppMesStr,eliminado:false,creadoEn:new Date().toISOString()});
       if(window.loadProveedores)await window.loadProveedores();
       if(window.loadCajaModule)window.loadCajaModule();
