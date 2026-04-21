@@ -5111,6 +5111,7 @@ window.showClientUI = async function(email, clientData) {
   window._clientPresupuestos = [];
   window._allCobros = [];
   window.calcData = {};
+  window._clientTareas = null;
 
   // Reset UI visual — SIEMPRE, antes de cargar datos del nuevo cliente
   const logoWrap = document.getElementById('negocio-logo-wrap');
@@ -5152,6 +5153,11 @@ window.showClientUI = async function(email, clientData) {
       const _savedMod0 = (() => { try { return localStorage.getItem('mbst_lastmod'); } catch(e) { return null; } })();
       const _modToShow0 = _savedMod0 || 'inicio';
       const _modBtn0 = document.querySelector('#cNav .nt[onclick*="\''+_modToShow0+'\'"]') || document.querySelector('#cNav .nt');
+      getDocs(collection(db,'clientes',currentClientUID,'tareas')).then(function(_tSnap){
+        window._clientTareas=[];
+        _tSnap.forEach(function(d){var r=d.data();if(!r.eliminado)window._clientTareas.push({id:d.id,...r});});
+        if(_modToShow0==='inicio'&&typeof loadInicio==='function')loadInicio();
+      }).catch(function(){});
       window.showClientMod(_modToShow0, _modBtn0);
 
       try {
@@ -10889,7 +10895,7 @@ async function loadInicio() {
       {
         const hoyA = new Date(); hoyA.setHours(0,0,0,0);
         const mananaA = new Date(hoyA); mananaA.setDate(hoyA.getDate()+1);
-        const vencenProx = (_paTareas||[]).filter(t => {
+        const vencenProx = (window._clientTareas||_paTareas||[]).filter(t => {
           if(!t.fechaVenc || t.estado==='done') return false;
           const fv = new Date(t.fechaVenc+'T00:00:00');
           return fv <= mananaA;
@@ -11886,6 +11892,7 @@ function paBuildCard(t) {
 
 function renderClientTareas(tareas) {
   _paTareas = tareas;
+  window._clientTareas = tareas;
   paKpiSet('pa-kpi-pend', tareas.filter(t=>t.estado==='pend').length);
   paKpiSet('pa-kpi-curso', tareas.filter(t=>t.estado==='doing').length);
   paKpiSet('pa-kpi-comp', tareas.filter(t=>t.estado==='done').length);
@@ -19653,7 +19660,7 @@ function embiRenderMd(text){
 function embiAddMsg(role,text){
   var msgs=document.getElementById('embiMsgs');if(!msgs)return;
   var now=new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
-  var displayText = (role !== 'bot' && text.length > 100) ? '📊 Analizando mis indicadores...' : text;
+  var displayText = (role !== 'bot' && text.length > 100) ? text.slice(0,80)+'...' : text;
   var content=role==='bot'?embiRenderMd(text):displayText.replace(/\[REPORT:[^\]]+\]/g,'').trim().replace(/\n/g,'<br/>');
   var div=document.createElement('div');div.className='embi-msg '+role;
   div.innerHTML='<div class="embi-bubble">'+content+'</div><div class="embi-time">'+now+'</div>';
