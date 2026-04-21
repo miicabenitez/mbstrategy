@@ -10,6 +10,12 @@ function getCorsHeaders(event) {
   };
 }
 
+const admin = require('firebase-admin');
+if (!admin.apps.length) {
+  admin.initializeApp({ credential: admin.credential.applicationDefault() });
+}
+const db = admin.firestore();
+
 const SYSTEM_EXPLICATIVO = `Sos Embi, el asistente de MB Strategy. Conocés el sistema en profundidad y ayudás a los dueños de negocio a entenderlo y usarlo bien. Respondés en español argentino, de forma directa y práctica.
 
 REGLAS FUNDAMENTALES:
@@ -484,7 +490,7 @@ exports.handler = async function(event) {
   }
 
   try {
-    const { messages, modo, contextStr } = JSON.parse(event.body || '{}');
+    const { messages, modo, contextStr, userId, modulo } = JSON.parse(event.body || '{}');
 
     if (!messages || !Array.isArray(messages)) {
       return { statusCode: 400, headers: HEADERS, body: JSON.stringify({ error: 'messages requerido' }) };
@@ -515,6 +521,22 @@ exports.handler = async function(event) {
     if (!response.ok) {
       console.error('Anthropic error:', JSON.stringify(data));
       return { statusCode: response.status, headers: HEADERS, body: JSON.stringify({ error: data.error?.message || 'Error de API' }) };
+    }
+
+    const usage = data.usage || {};
+    const inputTokens = usage.input_tokens || 0;
+    const outputTokens = usage.output_tokens || 0;
+    const costoUSD = (inputTokens * 3 + outputTokens * 15) / 1_000_000;
+    if (userId) {
+      await db.collection('embiUsage').add({
+        userId,
+        modulo: modulo || 'desconocido',
+        modo,
+        inputTokens,
+        outputTokens,
+        costoUSD,
+        timestamp: admin.firestore.FieldValue.serverTimestamp()
+      });
     }
 
     return {
