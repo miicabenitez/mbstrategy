@@ -19530,7 +19530,7 @@ window.embiPrecargarContexto = async function() {
     window._embi_clientes = [];
     results[1].forEach(d=>{ var r=d.data(); if(!r.eliminado) window._embi_clientes.push({nombre:r.nombre||'',email:r.email||'',tel:r.tel||''}); });
     window._embi_presupuestos = [];
-    results[2].forEach(d=>{ var r=d.data(); if(!r.eliminado) window._embi_presupuestos.push({cliente:r.cliente||'',monto:parseFloat(r.monto)||0,estado:r.estado||''}); });
+    results[2].forEach(d=>{ var r=d.data(); if(!r.eliminado) window._embi_presupuestos.push({id:d.id,cliente:r.cliente||'',descripcion:r.descripcion||'',monto:parseFloat(r.monto)||0,estado:r.estado||''}); });
     window._embi_cuentas = [];
     results[3].forEach(d=>{ var r=d.data(); window._embi_cuentas.push({nombre:r.nombre||'',saldo:parseFloat(r.saldo)||0}); });
     window._embi_ocs = [];
@@ -19579,7 +19579,7 @@ function embiGetFinancialContext(){
     var cuentasDetalle=cuentas.length>0?cuentas.map(c=>c.nombre+': $'+(c.saldo||0).toLocaleString('es-AR')).join(', '):'Sin cuentas';
     var presupActivos=window._embi_presupuestos||[];
     var presupDetalle=presupActivos.filter(p=>p.estado&&p.estado!=='Cobrado'&&p.estado!=='Rechazado');
-    var presupStr=presupDetalle.length>0?presupDetalle.map(p=>p.cliente+' $'+Math.round(p.monto).toLocaleString('es-AR')+' ('+p.estado+')').join(', '):'Sin presupuestos activos';
+    var presupStr=presupDetalle.length>0?presupDetalle.map(p=>p.cliente+' — '+p.descripcion+' $'+Math.round(p.monto).toLocaleString('es-AR')+' ('+p.estado+') [id:'+p.id+']').join(', '):'Sin presupuestos activos';
     var catEgr={};
     egresos.forEach(e=>{
       var mesDoc=(e.mes||'').replace(' de ',' ');
@@ -19811,6 +19811,13 @@ async function embiEjecutarAccion(tipo,datos){
       if(window.loadProveedores)await window.loadProveedores();
       if(window.loadInicio)window.loadInicio();
       embiAddMsg('bot','Orden de compra #'+_ocNum+' para '+datos.proveedor+' creada. Total: $'+_ocTotal.toLocaleString('es-AR')+'.');
+    }else if(tipo==='CAMBIAR_ESTADO_PRESUPUESTO'){
+      var _estValid=['Enviado','Aprobado','Rechazado'];
+      if(!_estValid.includes(datos.estadoNuevo)){embiAddMsg('bot','Estado inválido: '+datos.estadoNuevo);return;}
+      await window._updateDoc(window._doc(window.db,'clientes',currentClientUID,'presupuestos',datos.presupuestoId),{estado:datos.estadoNuevo,actualizadoEn:new Date().toISOString()});
+      if(window.loadClientPresupuestos)await window.loadClientPresupuestos();
+      if(window.loadInicio)window.loadInicio();
+      embiAddMsg('bot','Presupuesto de '+datos.cliente+' actualizado a "'+datos.estadoNuevo+'".');
     }else{embiAddMsg('bot','Acción no reconocida: '+tipo);}
   }catch(e){embiAddMsg('bot','Error al ejecutar: '+e.message);}
 }
