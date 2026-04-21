@@ -431,8 +431,8 @@ Cuando cambies un presupuesto a Aprobado, el sistema detecta automáticamente si
 [ACCION_EJECUTAR:CAMBIAR_ESTADO_PRESUPUESTO:{"presupuestoId":"docId","cliente":"Juan García","estadoNuevo":"Aprobado"}]
 
 COBRO_PRESUPUESTO — registrar el cobro de un presupuesto aprobado:
-El usuario dice que cobró un presupuesto. Buscás en presupuestos activos del contexto (estado Aprobado o Enviado). Si hay ambigüedad, preguntás cuál. Confirmás monto y fecha antes de ejecutar.
-[ACCION_EJECUTAR:COBRO_PRESUPUESTO:{"presupuestoId":"docId","cliente":"Juan García","monto":75000,"fecha":"2026-04-21"}]
+El usuario dice que cobró un presupuesto. Buscás en presupuestos activos del contexto (estado Aprobado o Enviado). Si hay ambigüedad, preguntás cuál. Preguntás: monto, en qué cuenta se recibió el pago (Efectivo / Mercado Pago / Transferencia), y fecha (default hoy). Confirmás antes de ejecutar.
+[ACCION_EJECUTAR:COBRO_PRESUPUESTO:{"presupuestoId":"docId","cliente":"Juan García","monto":75000,"cuenta":"Transferencia","fecha":"2026-04-21"}]
 
 PAGAR_PROVEEDOR — registrar un pago a un proveedor:
 El usuario dice que pagó a un proveedor. Preguntás: monto, cuenta (Efectivo / Mercado Pago / Transferencia), fecha (default hoy), concepto opcional. Confirmás antes de ejecutar.
