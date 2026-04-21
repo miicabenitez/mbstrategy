@@ -19753,8 +19753,9 @@ async function embiEjecutarAccion(tipo,datos){
       if(_ocData.estadoRecepcion==='recibida'){embiAddMsg('bot','La OC #'+_ocData.numero+' ya fue marcada como recibida.');return;}
       var _hoy=new Date().toISOString().split('T')[0];
       await window._updateDoc(window._doc(window.db,'clientes',currentClientUID,'ordenesCompra',_ocDoc.id),{estadoRecepcion:'recibida',fechaRecepcion:_hoy});
-      if(datos.proveedorId){
-        var _facRef=window._collection(window.db,'clientes',currentClientUID,'proveedores',datos.proveedorId,'facturas');
+      var _pvId=datos.proveedorId||_ocData.proveedorId||'';
+      if(_pvId){
+        var _facRef=window._collection(window.db,'clientes',currentClientUID,'proveedores',_pvId,'facturas');
         var _ocNum='OC-'+String(_ocData.numero||datos.numero).padStart(3,'0');
         await window._addDoc(_facRef,{numero:_ocNum,monto:parseFloat(datos.total)||parseFloat(_ocData.total)||0,fecha:_hoy,ocId:_ocDoc.id,desc:'Recepción '+_ocNum,estado:'pendiente',creadoEn:new Date().toISOString(),esOC:true});
       }
