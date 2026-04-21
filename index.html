@@ -15890,6 +15890,7 @@ window.eliminarOC = function(ocId) {
       } catch(e) { console.error('Error eliminando factura esOC:', e); }
       _ordenesCompra = _ordenesCompra.filter(o=>o.id!==ocId);
       renderOrdenesCompra();
+      if(_ccProvId && oc?.proveedorId && _ccProvId===oc.proveedorId) await abrirCuentaCorriente(_ccProvId);
     } catch(e) { showToast('Error: '+e.message, 'error'); }
   }, 'Eliminar orden de compra');
 };
