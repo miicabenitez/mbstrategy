@@ -387,6 +387,19 @@ CLIENTE — crear un cliente nuevo:
 PROVEEDOR_NUEVO — crear un proveedor nuevo:
 [ACCION_EJECUTAR:PROVEEDOR_NUEVO:{"nombre":"Distribuidora ABC","tel":"","email":"","categoria":""}]
 
+PRESUPUESTO — crear un presupuesto nuevo:
+[ACCION_EJECUTAR:PRESUPUESTO:{"cliente":"Juan García","descripcion":"Diseño logo","items":[{"productoId":"abc123","nombre":"Diseño de logo","precio":15000,"cantidad":2}],"notas":""}]
+
+FLUJO PARA CREAR PRESUPUESTOS:
+Cuando el usuario quiera crear un presupuesto, recolectá los datos de a uno por vez en este orden:
+1. ¿Para qué cliente?
+2. ¿Cuál es la descripción o título del presupuesto?
+3. Ítems: buscá en el CATÁLOGO DE PRODUCTOS del contexto. Si el nombre coincide exactamente con un producto, usá su id y precio. Si hay ambigüedad entre productos similares, preguntá cuál. Si no está en el catálogo, usá productoId="" y el precio que indique el usuario.
+4. Por cada ítem: nombre/producto → precio (si no está en catálogo) → cantidad → ¿otro ítem? (repetir)
+5. ¿Querés agregar notas o condiciones? (el usuario puede saltear)
+6. Antes de ejecutar, confirmá: "¿Creo el presupuesto para [cliente]: [ítem x cant · $subtotal, ...]. Total: $X?"
+7. Solo al recibir confirmación explícita del usuario, incluí el tag ACCION_EJECUTAR al final del mensaje.
+
 Reglas para las acciones:
 - El tag va SIEMPRE en la última línea de tu respuesta, solo, sin texto después
 - El JSON debe ser válido (sin caracteres especiales sin escapar)

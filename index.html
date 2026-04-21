@@ -19368,7 +19368,8 @@ window.embiPrecargarContexto = async function() {
       window._getDocs(window._collection(window.db,'clientes',uid,'misClientes')),
       window._getDocs(window._collection(window.db,'clientes',uid,'presupuestos')),
       window._getDocs(window._collection(window.db,'clientes',uid,'cuentas')),
-      window._getDocs(window._collection(window.db,'clientes',uid,'ordenesCompra'))
+      window._getDocs(window._collection(window.db,'clientes',uid,'ordenesCompra')),
+      window._getDocs(window._collection(window.db,'clientes',uid,'productos'))
     ]);
     window._embi_proveedores = [];
     results[0].forEach(d=>{ var r=d.data(); if(!r.eliminado) window._embi_proveedores.push({nombre:r.nombre||'',_saldo:0}); });
@@ -19380,6 +19381,8 @@ window.embiPrecargarContexto = async function() {
     results[3].forEach(d=>{ var r=d.data(); window._embi_cuentas.push({nombre:r.nombre||'',saldo:parseFloat(r.saldo)||0}); });
     window._embi_ocs = [];
     results[4].forEach(d=>{ var r=d.data(); if(!r.eliminado && r.estadoPago!=='pagado') window._embi_ocs.push({proveedor:r.proveedorNombre||r.proveedor||'',monto:parseFloat(r.monto)||0}); });
+    window._embi_catalogo = [];
+    results[5].forEach(d=>{ var r=d.data(); if(!r.eliminado) window._embi_catalogo.push({id:d.id,nombre:r.nombre||'',precio:parseFloat(r.precio)||0,descripcion:r.descripcion||''}); });
   } catch(e){ console.error('embiPrecargarContexto:', e); }
 };
 function embiGetFinancialContext(){
@@ -19443,7 +19446,9 @@ function embiGetFinancialContext(){
         return s + p.items.reduce(function(it_s,it){ return it_s + (parseFloat(it.cant||0) * parseFloat(it.precio||0)); }, 0);
       return s + (parseFloat(p.monto) || 0);
     },0);
-    return '\n\nDATA FINANCIERA ('+hoy.toLocaleDateString('es-AR',{month:'long',year:'numeric'})+'):\n- Ingresos mes: $'+Math.round(ingMes).toLocaleString('es-AR')+'\n- Egresos mes: $'+Math.round(egrMes).toLocaleString('es-AR')+'\n- Ganancia: $'+Math.round(ganancia).toLocaleString('es-AR')+' | Margen: '+margen+'%\n- Cobros pendientes: $'+Math.round(cobPend).toLocaleString('es-AR')+'\n- Clientes ('+clientes.length+'): '+clientesNombres+'\n- Proveedores: '+provDetalle+'\n- OC pendientes: '+ocsPend.length+'\n- Egresos por categoría: '+(catDetalle||'sin datos')+'\n- Cuentas: '+cuentasDetalle+'\n- Presupuestos activos: '+presupStr+'\n\nPROYECCIÓN MENSUAL:\n- Día '+diaDelMes+' de '+diasEnMes+' del mes ('+diasRestantes+' días restantes)\n- Ingresos acumulados: $'+Math.round(ingMes).toLocaleString('es-AR')+'\n- Egresos acumulados: $'+Math.round(egrMes).toLocaleString('es-AR')+'\n- Ritmo diario de ingresos: $'+Math.round(ritmoIngDiario).toLocaleString('es-AR')+'/día\n- Proyección de ingresos al cierre: $'+proyIngreso.toLocaleString('es-AR')+'\n- Proyección de ganancia al cierre: $'+proyGanancia.toLocaleString('es-AR')+'\n- Mes anterior cerró en: $'+Math.round(ingAnt).toLocaleString('es-AR')+'\n- Variación proyectada vs mes anterior: '+(varVsMesAnt>0?'+':'')+varVsMesAnt+'%\n- Presupuestos aprobados sin cobrar: $'+Math.round(montoSinCobrar).toLocaleString('es-AR')+' (ingreso probable adicional)\nCuando el cliente pregunte sobre proyección, cierre del mes, o cómo va el negocio, usá estos datos para dar una respuesta clara y motivadora. Si la proyección es positiva respecto al mes anterior, felicitalo. Si es negativa, sugerí acciones concretas.';
+    var catalogo=window._embi_catalogo||[];
+    var catalogoStr=catalogo.length>0?catalogo.map(function(p){return p.nombre+' ($'+p.precio.toLocaleString('es-AR')+')';}).join(', '):'Sin productos en catálogo';
+    return '\n\nDATA FINANCIERA ('+hoy.toLocaleDateString('es-AR',{month:'long',year:'numeric'})+'):\n- Ingresos mes: $'+Math.round(ingMes).toLocaleString('es-AR')+'\n- Egresos mes: $'+Math.round(egrMes).toLocaleString('es-AR')+'\n- Ganancia: $'+Math.round(ganancia).toLocaleString('es-AR')+' | Margen: '+margen+'%\n- Cobros pendientes: $'+Math.round(cobPend).toLocaleString('es-AR')+'\n- Clientes ('+clientes.length+'): '+clientesNombres+'\n- Proveedores: '+provDetalle+'\n- OC pendientes: '+ocsPend.length+'\n- Egresos por categoría: '+(catDetalle||'sin datos')+'\n- Cuentas: '+cuentasDetalle+'\n- Presupuestos activos: '+presupStr+'\n\nPROYECCIÓN MENSUAL:\n- Día '+diaDelMes+' de '+diasEnMes+' del mes ('+diasRestantes+' días restantes)\n- Ingresos acumulados: $'+Math.round(ingMes).toLocaleString('es-AR')+'\n- Egresos acumulados: $'+Math.round(egrMes).toLocaleString('es-AR')+'\n- Ritmo diario de ingresos: $'+Math.round(ritmoIngDiario).toLocaleString('es-AR')+'/día\n- Proyección de ingresos al cierre: $'+proyIngreso.toLocaleString('es-AR')+'\n- Proyección de ganancia al cierre: $'+proyGanancia.toLocaleString('es-AR')+'\n- Mes anterior cerró en: $'+Math.round(ingAnt).toLocaleString('es-AR')+'\n- Variación proyectada vs mes anterior: '+(varVsMesAnt>0?'+':'')+varVsMesAnt+'%\n- Presupuestos aprobados sin cobrar: $'+Math.round(montoSinCobrar).toLocaleString('es-AR')+' (ingreso probable adicional)\nCuando el cliente pregunte sobre proyección, cierre del mes, o cómo va el negocio, usá estos datos para dar una respuesta clara y motivadora. Si la proyección es positiva respecto al mes anterior, felicitalo. Si es negativa, sugerí acciones concretas.'+'\nCATÁLOGO DE PRODUCTOS ('+catalogo.length+'): '+catalogoStr;
   }catch(e){console.error('embiGetFinancialContext ERROR:', e); return '';}
 }
 
@@ -19586,6 +19591,18 @@ async function embiEjecutarAccion(tipo,datos){
       if(window._proveedores) window._proveedores.push({id:'embi-'+Date.now(),nombre:datos.nombre,_saldo:0,_saldoFavor:0});
       if(window.loadInicio)window.loadInicio();
       embiAddMsg('bot','Proveedor '+datos.nombre+' creado en Compras.');
+    }else if(tipo==='PRESUPUESTO'){
+      var _items=(datos.items||[]).map(function(it){return {desc:it.nombre||'',cant:parseFloat(it.cantidad)||1,precio:parseFloat(it.precio)||0,productoId:it.productoId||''};});
+      var _total=_items.reduce(function(s,it){return s+(it.cant*it.precio);},0);
+      await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'presupuestos'),{
+        cliente:datos.cliente||'',clienteId:null,prospecto:true,
+        descripcion:datos.descripcion||'',items:_items,monto:_total,
+        moneda:'ARS',estado:'Borrador',fecha:new Date().toISOString().split('T')[0],
+        notas:datos.notas||'',origen:'embi',creadoEn:new Date().toISOString()
+      });
+      if(window.loadClientPresupuestos)await window.loadClientPresupuestos();
+      if(window.loadInicio)window.loadInicio();
+      embiAddMsg('bot','Presupuesto para '+datos.cliente+' creado. Total: $'+_total.toLocaleString('es-AR')+'.');
     }else{embiAddMsg('bot','Acción no reconocida: '+tipo);}
   }catch(e){embiAddMsg('bot','Error al ejecutar: '+e.message);}
 }
