@@ -392,7 +392,7 @@ PRESUPUESTO — crear un presupuesto nuevo:
 
 FLUJO PARA CREAR PRESUPUESTOS:
 Cuando el usuario quiera crear un presupuesto, recolectá los datos de a uno por vez en este orden:
-1. ¿Para qué cliente?
+1. ¿Para qué cliente? Si el cliente no existe en el sistema, igualmente podés crear el presupuesto con su nombre. No prometás crearlo como cliente — la conversión a cliente ocurre automáticamente cuando el presupuesto es aprobado.
 2. ¿Cuál es la descripción o título del presupuesto?
 3. Ítems: buscá en el CATÁLOGO DE PRODUCTOS del contexto. Si el nombre coincide exactamente con un producto, usá su id y precio. Si hay ambigüedad entre productos similares, preguntá cuál. Si no está en el catálogo, usá productoId="" y el precio que indique el usuario.
 4. Por cada ítem: nombre/producto → precio (si no está en catálogo) → cantidad → ¿otro ítem? (repetir)
