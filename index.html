@@ -14552,13 +14552,14 @@ var _histFeedCfg = {
 var _histDefaultCfg = {grad:'linear-gradient(135deg,#6a6a7a 0%,#9a9aaa 100%)',icon:'·',color:'var(--text-m)',signo:''};
 function _histTiempo(ts){
   if(!ts)return'';
-  var diff=Date.now()-new Date(ts).getTime();
+  var d=new Date(ts);
+  var diff=Date.now()-d.getTime();
   var mins=Math.floor(diff/60000),hrs=Math.floor(diff/3600000),dias=Math.floor(diff/86400000);
-  if(mins<60)return'hace '+Math.max(1,mins)+'m';
+  var hhmm=d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+  if(mins<60)return'hace '+Math.max(1,mins)+' min';
   if(hrs<24)return'hace '+hrs+'h';
-  if(dias===1)return'ayer';
-  if(dias<30)return'hace '+dias+'d';
-  return new Date(ts).toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'});
+  if(dias===1)return'ayer · '+hhmm;
+  return d.toLocaleDateString('es-AR',{day:'numeric',month:'short'})+' · '+hhmm;
 }
 function _histRenderItem(ev){
   var cfg=_histFeedCfg[ev.subtipo]||_histDefaultCfg;
