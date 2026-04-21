@@ -19605,7 +19605,7 @@ async function embiEjecutarAccion(tipo,datos){
       await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'presupuestos'),{
         cliente:datos.cliente||'',clienteId:null,prospecto:true,
         descripcion:datos.descripcion||'',items:_items,monto:_total,
-        moneda:'ARS',estado:'Borrador',fecha:new Date().toISOString().split('T')[0],
+        moneda:'ARS',estado:'Pendiente de enviar',fecha:new Date().toISOString().split('T')[0],
         notas:datos.notas||'',origen:'embi',creadoEn:new Date().toISOString()
       });
       if(window.loadClientPresupuestos)await window.loadClientPresupuestos();
