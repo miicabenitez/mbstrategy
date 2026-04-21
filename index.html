@@ -19844,7 +19844,7 @@ async function embiEjecutarAccion(tipo,datos){
       console.log('[PAGAR_PROVEEDOR] datos:', JSON.stringify(datos));
       var _ppFecha=datos.fecha||new Date().toISOString().split('T')[0];
       var _ppMonto=parseFloat(datos.monto)||0;
-      var _ppConcepto=datos.concepto||'Pago a '+datos.proveedor;
+      var _ppConcepto='Pago a '+datos.proveedor;
       var _ppMesStr=new Date(_ppFecha+'T12:00:00').toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,function(c){return c.toUpperCase();});
       var _ppProvId=datos.proveedorId||((window._proveedores||[]).find(function(p){return p.nombre===datos.proveedor;})||{}).id||'';
       if(_ppProvId)await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'proveedores',_ppProvId,'pagos'),{tipo:'pago',monto:_ppMonto,fecha:_ppFecha,medio:datos.cuenta||'',concepto:_ppConcepto,creadoEn:new Date().toISOString()});
