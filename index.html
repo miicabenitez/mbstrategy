@@ -18165,6 +18165,7 @@ window.renderEmbiUsage = async function renderEmbiUsage(mes) {
   ));
 
   const porUsuario = {};
+  const porModulo = {};
   let totalCosto = 0, totalMensajes = 0;
   let totalProCosto = 0, totalProMsg = 0, totalBaseCosto = 0, totalBaseMsg = 0;
 
@@ -18175,6 +18176,10 @@ window.renderEmbiUsage = async function renderEmbiUsage(mes) {
     porUsuario[d.userId].costo += d.costoUSD || 0;
     totalCosto += d.costoUSD || 0;
     totalMensajes++;
+    const mod = d.modulo || 'general';
+    if (!porModulo[mod]) porModulo[mod] = { mensajes: 0, costo: 0 };
+    porModulo[mod].mensajes++;
+    porModulo[mod].costo += d.costoUSD || 0;
     if (d.modo === 'operativo') { totalProCosto += d.costoUSD || 0; totalProMsg++; }
     else { totalBaseCosto += d.costoUSD || 0; totalBaseMsg++; }
   });
@@ -18263,6 +18268,41 @@ window.renderEmbiUsage = async function renderEmbiUsage(mes) {
         </div>
       </div>
       ${alertaHtml}
+      ${(() => {
+        const modulosOrdenados = Object.entries(porModulo).sort((a,b) => b[1].costo - a[1].costo);
+        const maxModuloMsg = modulosOrdenados[0]?.[1].mensajes || 1;
+        const filasModulo = modulosOrdenados.map(([mod, data]) => {
+          const pct = Math.round(data.mensajes / maxModuloMsg * 100);
+          const nombre = mod.charAt(0).toUpperCase() + mod.slice(1);
+          return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <div style="font-size:13px;color:#1a1a1a;flex:1;">${nombre}</div>
+            <div style="font-size:12px;color:#888;">${data.mensajes} msg${data.mensajes>1?'s':''}</div>
+            <div style="font-size:12px;font-weight:500;color:#1a1a1a;min-width:52px;text-align:right;">$${data.costo.toFixed(4)}</div>
+            <div style="width:60px;height:4px;background:#eeebe6;border-radius:2px;"><div style="width:${pct}%;height:100%;background:#4a5e4d;border-radius:2px;"></div></div>
+          </div>`;
+        }).join('');
+        return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+          <div style="background:#fff;border-radius:14px;padding:18px 20px;border:0.5px solid rgba(0,0,0,0.08);">
+            <div style="font-size:13px;font-weight:500;color:#4a5e4d;margin-bottom:14px;">Por módulo</div>
+            ${filasModulo || '<p style="font-size:12px;color:#888;">Sin datos</p>'}
+          </div>
+          <div style="background:#fff;border-radius:14px;padding:18px 20px;border:0.5px solid rgba(0,0,0,0.08);">
+            <div style="font-size:13px;font-weight:500;color:#4a5e4d;margin-bottom:14px;">Por plan</div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+              <div style="width:8px;height:8px;border-radius:50%;background:#4a5e4d;flex-shrink:0;"></div>
+              <div style="font-size:13px;color:#1a1a1a;flex:1;">Plan Pro</div>
+              <div style="font-size:12px;color:#888;">${totalProMsg} msgs</div>
+              <div style="font-size:12px;font-weight:500;color:#1a1a1a;">$${totalProCosto.toFixed(4)}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:8px;height:8px;border-radius:50%;background:#ccc;flex-shrink:0;"></div>
+              <div style="font-size:13px;color:#888;flex:1;">Plan Base</div>
+              <div style="font-size:12px;color:#888;">${totalBaseMsg} msgs</div>
+              <div style="font-size:12px;font-weight:500;color:#888;">$${totalBaseCosto.toFixed(4)}</div>
+            </div>
+          </div>
+        </div>`;
+      })()}
       <div style="background:#fff;border-radius:14px;padding:18px 20px;border:0.5px solid rgba(0,0,0,0.08);">
         <div style="font-size:13px;font-weight:500;color:#4a5e4d;margin-bottom:14px;">Ranking por cliente</div>
         <table style="width:100%;border-collapse:collapse;font-size:13px;">
