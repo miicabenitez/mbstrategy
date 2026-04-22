@@ -491,6 +491,7 @@ exports.handler = async function(event) {
 
   try {
     const { messages, modo, contextStr, userId, modulo } = JSON.parse(event.body || '{}');
+    console.log('[embi] userId recibido:', userId);
 
     if (!messages || !Array.isArray(messages)) {
       return { statusCode: 400, headers: HEADERS, body: JSON.stringify({ error: 'messages requerido' }) };
