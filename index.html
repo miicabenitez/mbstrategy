@@ -5210,6 +5210,8 @@ window._volverAClienteView = async function() {
   if(!clientData) return;
   document.body.classList.remove('admin-micaela');
   document.body.classList.add('cliente-micaela');
+  const asbEmbi = document.getElementById('asb-embi');
+  if(asbEmbi) asbEmbi.style.display = '';
   await showClientUI(email, clientData);
 };
 
@@ -5221,6 +5223,8 @@ window._irAAdminTab = function(tab) {
   document.body.classList.remove('client-view');
   document.body.classList.remove('cliente-micaela');
   document.body.classList.add('admin-micaela');
+  const asbEmbi = document.getElementById('asb-embi');
+  if(asbEmbi) asbEmbi.style.display = 'none';
   document.querySelectorAll('#adminSidebar .sb-btn').forEach(b => b.classList.remove('active'));
   const activeBtn = document.getElementById('asb-' + tab);
   if(activeBtn) activeBtn.classList.add('active');
