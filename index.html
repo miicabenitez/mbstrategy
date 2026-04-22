@@ -5395,15 +5395,15 @@ function renderAdminDashboard() {
   var lPath = pts.map(function(p,i){return(i===0?'M':'L')+p.x+','+p.y;}).join(' ');
   var aPath = lPath+' L'+pts[11].x+','+(pT+cH2)+' L'+pL+','+(pT+cH2)+' Z';
   var dotsSVG = '';
-  pts.forEach(function(p){dotsSVG+='<circle cx="'+p.x+'" cy="'+p.y+'" r="2.5" fill="#ccb0a8"/>';});
+  pts.forEach(function(p){dotsSVG+='<circle cx="'+p.x+'" cy="'+p.y+'" r="2.5" fill="#7a9e7e"/>';});
   var lblSVG = '';
   mrrMonths.forEach(function(m,i){
     if(i%3===0||i===11) lblSVG+='<text x="'+(pL+i*xSt).toFixed(1)+'" y="'+(CH-3)+'" text-anchor="middle" font-size="7" fill="rgba(255,255,255,.4)" font-family="DM Sans,sans-serif">'+m.label+'</text>';
   });
   var mrrChartHTML = '<svg viewBox="0 0 '+CW+' '+CH+'" style="width:100%;height:'+CH+'px;" preserveAspectRatio="none">'
-    +'<defs><linearGradient id="mrrG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ccb0a8" stop-opacity=".2"/><stop offset="100%" stop-color="#ccb0a8" stop-opacity="0"/></linearGradient></defs>'
+    +'<defs><linearGradient id="mrrG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7a9e7e" stop-opacity=".2"/><stop offset="100%" stop-color="#7a9e7e" stop-opacity="0"/></linearGradient></defs>'
     +'<path d="'+aPath+'" fill="url(#mrrG)"/>'
-    +'<path d="'+lPath+'" fill="none" stroke="#ccb0a8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>'
+    +'<path d="'+lPath+'" fill="none" stroke="#7a9e7e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>'
     +dotsSVG+lblSVG+'</svg>';
 
   // — Donut: composición de cartera —
@@ -5417,7 +5417,7 @@ function renderAdminDashboard() {
   } else {
     var dr=32, dcx=40, dcy=40, dsw=13;
     var DC = 2*Math.PI*dr;
-    var dSegs = [{n:cAca,col:'#b09088',lbl:'Academia'},{n:cSis,col:'#d4a574',lbl:'Sistema'},{n:cTri,col:'#a89898',lbl:'Trial'}].filter(function(s){return s.n>0;});
+    var dSegs = [{n:cAca,col:'#4a5e4d',lbl:'Academia'},{n:cSis,col:'#6b8f71',lbl:'Sistema'},{n:cTri,col:'#3d5240',lbl:'Trial'}].filter(function(s){return s.n>0;});
     var rings='', legend='', cum=0;
     dSegs.forEach(function(s) {
       var frac=s.n/dTotal;
@@ -5455,7 +5455,7 @@ function renderAdminDashboard() {
     var h2=Math.max(2,Math.round((c/spMax)*bHH));
     var x2=i*(bW+bG);
     var y2=bHH-h2;
-    var col2=i===daysFromMon?'#b09088':'rgba(255,255,255,.18)';
+    var col2=i===daysFromMon?'#4a5e4d':'rgba(255,255,255,.18)';
     spBars+='<rect x="'+x2+'" y="'+y2+'" width="'+bW+'" height="'+h2+'" rx="2" fill="'+col2+'"/>';
     spBars+='<text x="'+(x2+bW/2)+'" y="'+(bHH+bLH-1)+'" text-anchor="middle" font-size="7" fill="rgba(255,255,255,.4)" font-family="DM Sans,sans-serif">'+dayLbls[i]+'</text>';
   });
@@ -5470,7 +5470,7 @@ function renderAdminDashboard() {
     +'<div style="font-size:12px;color:var(--text-l);margin-top:4px;">'+fechaStr+'</div>'
     +'</div>'
     // Banner: 4 KPIs (activos, en trial, MRR, cobrado del mes)
-    +'<div style="background:linear-gradient(135deg,#b09088 0%,#bfa098 40%,#ccb0a8 60%,#b09088 100%);border-radius:16px;padding:20px 24px;margin-bottom:16px;">'
+    +'<div style="background:linear-gradient(135deg,#4a5e4d 0%,#5e7562 40%,#7a9e7e 60%,#4a5e4d 100%);border-radius:16px;padding:20px 24px;margin-bottom:16px;">'
     +'<div class="adm-dash-4col">'
     +'<div style="background:rgba(255,255,255,.15);border-radius:10px;padding:12px 14px;"><div style="font-size:9px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Clientes activos</div><div id="adash-activos" style="font-family:\'Cormorant Garamond\',serif;font-size:26px;font-weight:400;color:#fff;line-height:1;">0</div></div>'
     +'<div style="background:rgba(255,255,255,.15);border-radius:10px;padding:12px 14px;"><div style="font-size:9px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">En trial</div><div id="adash-trial" style="font-family:\'Cormorant Garamond\',serif;font-size:26px;font-weight:400;color:#fff;line-height:1;">0</div></div>'
