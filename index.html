@@ -5527,7 +5527,7 @@ function renderClientList(clients) {
     'linear-gradient(135deg,#7e4458,#9e5a6a)'
   ];
   const avatarGrad = avatarGrads[i % avatarGrads.length];
-  return `<div style="display:grid;grid-template-columns:2fr 70px 110px 120px 120px 110px;gap:12px;padding:10px 16px;border-bottom:0.5px solid #f5f2ed;align-items:center;" data-tipo="${tipo}" data-nombre="${nombre.toLowerCase()}">
+  return `<div style="display:grid;grid-template-columns:2fr 70px 110px 120px 120px 110px 40px;gap:12px;padding:10px 16px;border-bottom:0.5px solid #f5f2ed;align-items:center;" data-tipo="${tipo}" data-nombre="${nombre.toLowerCase()}">
     <div style="display:flex;align-items:center;gap:10px;cursor:pointer;" onclick="openClientDetail('${c.id}')">
       <div style="width:32px;height:32px;border-radius:50%;background:${avatarGrad};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;color:#fff;flex-shrink:0;">${init}</div>
       <div><div style="font-size:12px;font-weight:500;color:#2d3d30;">${nombre}</div><div style="font-size:10px;color:#aaa;">${c.email||''}</div></div>
@@ -5537,6 +5537,9 @@ function renderClientList(clients) {
     <div style="font-size:13px;font-weight:600;color:${mrrColor};">${mrr}</div>
     <div style="font-size:10px;color:${proxCobroColor};">${proxCobro}</div>
     <div style="font-size:10px;color:${actividadColor};">${actividadLabel}</div>
+    <div style="text-align:center;">
+      <button onclick="deleteCliente('${c.id}')" style="background:none;border:none;cursor:pointer;color:#c0392b;font-size:14px;padding:4px 8px;border-radius:4px;" title="Eliminar cliente">✕</button>
+    </div>
   </div>`;
 };
 
@@ -5545,7 +5548,7 @@ function renderClientList(clients) {
     html = '<div style="text-align:center;padding:20px;color:#aaa;font-size:13px;">Sin clientes aún. Creá el primero.</div>';
   } else {
     html = '<div style="background:#fff;border-radius:12px;overflow:hidden;">';
-    html += '<div style="display:grid;grid-template-columns:2fr 70px 110px 120px 120px 110px;gap:12px;padding:8px 16px;border-bottom:0.5px solid #eeebe6;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#999;"><span>Cliente</span><span>Plan</span><span>Estado</span><span>MRR</span><span>Próx. cobro</span><span>Último acceso</span></div>';
+    html += '<div style="display:grid;grid-template-columns:2fr 70px 110px 120px 120px 110px 40px;gap:12px;padding:8px 16px;border-bottom:0.5px solid #eeebe6;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#999;"><span>Cliente</span><span>Plan</span><span>Estado</span><span>MRR</span><span>Próx. cobro</span><span>Último acceso</span><span></span></div>';
     let gIdx = 0;
     ordenGrupos.forEach(seg => {
       const cards = grupos[seg];
