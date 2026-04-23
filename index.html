@@ -5603,99 +5603,62 @@ function renderClientList(clients) {
   clients.forEach(c => { grupos[getTipo(c)].push(c); });
 
   const renderCard = (c, i) => {
-    const nombre = c.nombre || c.negocioNombre || c.email || '?';
-    const init = nombre.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    const sem = c.semanaActual || 1;
-    const planLabel = c.rubro
-      ? `${c.rubro} · Prog. ${c.programa}`
-      : c.membresia?.plan ? `Plan ${c.membresia.plan}` : '—';
-    const tipo = getTipo(c);
-    const acaActiva = !!(c.productos?.academia);
-    const acaLabel = acaActiva ? `Sem. ${sem}` : 'Sin activar';
-    const reunionLabel = c.proximaReunion?.fecha
-      ? new Date(c.proximaReunion.fecha+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'short'})
-      : 'Sin agendar';
-    const diasInactivo = c.lastLogin ? Math.floor((Date.now()-new Date(c.lastLogin).getTime())/(1000*60*60*24)) : -1;
-    const actividadLabel = diasInactivo < 0 ? 'Sin registro' : diasInactivo === 0 ? 'Hoy' : diasInactivo === 1 ? 'Ayer' : `Hace ${diasInactivo}d`;
-    const actividadColor = diasInactivo > 7 ? 'var(--err)' : diasInactivo < 0 ? 'var(--text-l)' : 'var(--ok)';
-    const estadoLabel = c.membresia?.estado === 'activo' ? 'Activo' : c.membresia?.estado === 'trial' ? 'Trial' : c.membresia?.estado === 'cancelado' ? 'Cancelado' : c.programa ? 'Programa' : 'Sin estado';
-    const estadoColor = c.membresia?.estado === 'activo' ? 'var(--ok)' : c.membresia?.estado === 'cancelado' ? 'var(--err)' : 'var(--warn)';
-    const saldo = c.saldo || 0;
-    const franjaGrad = saldo > 0
-      ? 'linear-gradient(90deg,#9a7870 0%,#b09088 45%,#ccb0a8 100%)'
-      : 'linear-gradient(90deg,#3d5240 0%,#4a5e4d 45%,#5e7562 100%)';
-    const saldoColor = saldo > 0 ? '#b09088' : '#4a5e4d';
-    const badgeBg = saldo > 0 ? '#f5eeec' : '#e8f0e9';
-    const badgeColor2 = saldo > 0 ? '#7a4e46' : '#2e4d31';
-    const badgeText = saldo > 0 ? 'Con saldo pendiente' : 'Al día';
-    const avatarGrads = [
-      'linear-gradient(135deg,#3d5240 0%,#4a5e4d 45%,#5e7562 70%,#4a5e4d 100%)',
-      'linear-gradient(135deg,#2e6460 0%,#3d7a74 45%,#52908a 70%,#3d7a74 100%)',
-      'linear-gradient(135deg,#9a7870 0%,#b09088 45%,#ccb0a8 65%,#b09088 100%)',
-      'linear-gradient(135deg,#3a5a78 0%,#4a6e8e 45%,#6084a4 70%,#4a6e8e 100%)',
-      'linear-gradient(135deg,#a87838 0%,#c8954a 45%,#dea860 70%,#c8954a 100%)',
-      'linear-gradient(135deg,#7e4458 0%,#9e5a6a 45%,#b47080 70%,#9e5a6a 100%)'
-    ];
-    const avatarGrad = avatarGrads[i % avatarGrads.length];
-    return `<div style="background:#fafafa;border-radius:12px;border:1px solid rgba(0,0,0,0.06);overflow:hidden;display:flex;flex-direction:column;align-items:center;text-align:center;" data-tipo="${tipo}" data-nombre="${nombre.toLowerCase()}">
-      <div style="width:100%;height:5px;background:${franjaGrad};"></div>
-      <div style="padding:16px 12px 12px;display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;">
-        <div class="av" style="background:${avatarGrad};color:#fff;font-size:12px;border-radius:50%;">${init}</div>
-        <div>
-          <div style="font-size:13px;font-weight:500;color:var(--text);">${nombre}</div>
-          <div style="font-size:11px;color:var(--text-l);margin-top:1px;">${planLabel}</div>
-        </div>
-        <div style="font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;color:${saldoColor};">$${saldo.toLocaleString('es-AR')}</div>
-        <span style="background:${badgeBg};color:${badgeColor2};font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;">${badgeText}</span>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 10px 10px;width:100%;box-sizing:border-box;">
-        <div style="background:var(--cream);border-radius:8px;padding:10px 12px;text-align:left;">
-          <div style="font-size:9px;color:var(--text-m);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Academia</div>
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:4px;">
-            <span style="font-size:11px;color:${acaActiva?'var(--ok)':'var(--text-l)'};font-weight:500;">${acaLabel}</span>
-            <div onclick="toggleAcademia('${c.id}',${acaActiva},event)" style="cursor:pointer;flex-shrink:0;" title="${acaActiva?'Desactivar Academia':'Activar Academia'}">
-              <div style="width:26px;height:14px;border-radius:20px;background:${acaActiva?'var(--ok)':'rgba(0,0,0,.1)'};position:relative;transition:background .2s;">
-                <div style="position:absolute;top:2px;${acaActiva?'left:13px':'left:2px'};width:10px;height:10px;border-radius:50%;background:#fff;transition:left .2s;"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div style="background:var(--cream);border-radius:8px;padding:10px 12px;text-align:left;">
-          <div style="font-size:9px;color:var(--text-m);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Próxima reunión</div>
-          <div style="font-size:11px;color:${c.proximaReunion?.fecha?'var(--text)':'var(--text-l)'};font-weight:500;">${reunionLabel}</div>
-        </div>
-        <div style="background:var(--cream);border-radius:8px;padding:10px 12px;text-align:left;">
-          <div style="font-size:9px;color:var(--text-m);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Última actividad</div>
-          <div style="font-size:11px;color:${actividadColor};font-weight:500;">${actividadLabel}</div>
-        </div>
-        <div style="background:var(--cream);border-radius:8px;padding:10px 12px;text-align:left;">
-          <div style="font-size:9px;color:var(--text-m);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Sistema</div>
-          <div style="font-size:11px;color:${estadoColor};font-weight:500;">${estadoLabel}</div>
-        </div>
-      </div>
-      <div style="display:flex;gap:6px;padding:8px 10px;border-top:.5px solid var(--cream-d);width:100%;box-sizing:border-box;">
-        <button onclick="openClientDetail('${c.id}')" style="flex:1;padding:6px 4px;border-radius:7px;background:var(--cream);border:.5px solid var(--cream-d);font-size:11px;font-weight:500;color:var(--text);cursor:pointer;font-family:'DM Sans',sans-serif;">Ver perfil</button>
-        <button onclick="accederComoClienteById('${c.id}')" style="flex:1;padding:6px 4px;border-radius:7px;background:linear-gradient(135deg,#b09088,#bfa098);border:none;font-size:11px;font-weight:500;color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;">Ingresar</button>
-      </div>
-    </div>`;
-  };
+  const nombre = c.nombre || c.negocioNombre || c.email || '?';
+  const init = nombre.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  const tipo = getTipo(c);
+  const planLabel = c.membresia?.plan ? c.membresia.plan.charAt(0).toUpperCase() + c.membresia.plan.slice(1) : '—';
+  const esPro = c.membresia?.plan === 'pro';
+  const planBg = esPro ? '#eaf3de' : '#e8ede9';
+  const planColor = esPro ? '#3b6d11' : '#3d5240';
+  const estadoLabel = c.membresia?.estado === 'activo' ? 'Activo' : c.membresia?.estado === 'trial' ? 'Trial' : c.membresia?.estado === 'cancelado' ? 'Cancelado' : c.membresia?.estado === 'pending' ? 'Pend. pago' : c.programa ? 'Fin programa' : 'Sin estado';
+  const estadoBg = c.membresia?.estado === 'activo' ? '#eaf3de' : c.membresia?.estado === 'trial' ? '#fff8f0' : c.membresia?.estado === 'pending' ? '#fdf0ee' : '#f5eeec';
+  const estadoColor = c.membresia?.estado === 'activo' ? '#3b6d11' : c.membresia?.estado === 'trial' ? '#9a7030' : c.membresia?.estado === 'pending' ? '#c0392b' : '#9a7870';
+  const mrr = c.precio ? '$' + parseFloat(c.precio).toLocaleString('es-AR') : '—';
+  const mrrColor = c.precio ? '#2d3d30' : '#aaa';
+  const proxCobro = c.membresia?.proximoCobro ? new Date(c.membresia.proximoCobro.seconds*1000).toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'}) : '—';
+  const proxCobroColor = c.membresia?.proximoCobro && new Date(c.membresia.proximoCobro.seconds*1000) < new Date() ? '#c0392b' : '#aaa';
+  const diasInactivo = c.lastLogin ? Math.floor((Date.now()-new Date(c.lastLogin).getTime())/(1000*60*60*24)) : -1;
+  const actividadLabel = diasInactivo < 0 ? 'Sin registro' : diasInactivo === 0 ? 'Hoy' : diasInactivo === 1 ? 'Ayer' : `Hace ${diasInactivo}d`;
+  const actividadColor = diasInactivo > 7 ? '#c0392b' : diasInactivo < 0 ? '#aaa' : '#4a5e4d';
+  const avatarGrads = [
+    'linear-gradient(135deg,#3d5240,#5e7562)',
+    'linear-gradient(135deg,#2e6460,#3d7a74)',
+    'linear-gradient(135deg,#9a7870,#b09088)',
+    'linear-gradient(135deg,#3a5a78,#4a6e8e)',
+    'linear-gradient(135deg,#a87838,#c8954a)',
+    'linear-gradient(135deg,#7e4458,#9e5a6a)'
+  ];
+  const avatarGrad = avatarGrads[i % avatarGrads.length];
+  return `<div style="display:grid;grid-template-columns:2fr 70px 110px 120px 120px 110px 80px;gap:12px;padding:10px 16px;border-bottom:0.5px solid #f5f2ed;align-items:center;" data-tipo="${tipo}" data-nombre="${nombre.toLowerCase()}">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="width:32px;height:32px;border-radius:50%;background:${avatarGrad};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;color:#fff;flex-shrink:0;">${init}</div>
+      <div><div style="font-size:12px;font-weight:500;color:#2d3d30;">${nombre}</div><div style="font-size:10px;color:#aaa;">${c.email||''}</div></div>
+    </div>
+    <div><span style="font-size:10px;padding:3px 8px;border-radius:4px;font-weight:500;background:${planBg};color:${planColor};">${planLabel}</span></div>
+    <div><span style="font-size:10px;padding:3px 8px;border-radius:4px;font-weight:500;background:${estadoBg};color:${estadoColor};">${estadoLabel}</span></div>
+    <div style="font-size:13px;font-weight:600;color:${mrrColor};">${mrr}</div>
+    <div style="font-size:10px;color:${proxCobroColor};">${proxCobro}</div>
+    <div style="font-size:10px;color:${actividadColor};">${actividadLabel}</div>
+    <div><button onclick="impersonateClient('${c.id}')" style="font-family:'DM Sans',sans-serif;font-size:10px;padding:4px 10px;border-radius:5px;border:none;background:#b09088;color:#fff;cursor:pointer;font-weight:500;">Ingresar</button></div>
+  </div>`;
+};
 
   let html;
   if (clients.length === 0) {
-    html = '<div style="text-align:center;padding:20px;color:var(--text-l);font-size:13px;">Sin clientes aún. Creá el primero.</div>';
+    html = '<div style="text-align:center;padding:20px;color:#aaa;font-size:13px;">Sin clientes aún. Creá el primero.</div>';
   } else {
-    html = '<div class="cli-grid">';
+    html = '<div style="background:#fff;border-radius:12px;overflow:hidden;">';
+    html += '<div style="display:grid;grid-template-columns:2fr 70px 110px 120px 120px 110px 80px;gap:12px;padding:8px 16px;border-bottom:0.5px solid #eeebe6;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#999;"><span>Cliente</span><span>Plan</span><span>Estado</span><span>MRR</span><span>Próx. cobro</span><span>Último acceso</span><span></span></div>';
     let gIdx = 0;
-    ordenGrupos.forEach(tipo => {
-      const items = grupos[tipo];
-      if (!items || items.length === 0) return;
-      html += `<div class="cli-sec-label" data-seccion="${tipo}" style="grid-column:1/-1;font-size:10px;font-weight:400;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;padding:10px 0 4px;">${secLabels[tipo]}</div>`;
-      items.forEach(c => { html += renderCard(c, gIdx++); });
+    ordenGrupos.forEach(seg => {
+      const cards = grupos[seg];
+      if(!cards || !cards.length) return;
+      cards.forEach(c => { html += renderCard(c, gIdx++); });
     });
     html += '</div>';
   }
-
-  document.getElementById('full-clients').innerHTML = html;
+  const el = document.getElementById('full-clients');
+  if(el) el.innerHTML = html;
   document.getElementById('dash-clients').innerHTML = clients.map((c,i) => {
     const col = avatarColors[i%avatarColors.length];
     const nombre = c.nombre || c.negocioNombre || c.email || '?';
