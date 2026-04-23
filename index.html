@@ -3645,6 +3645,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
       </select>
     </div>
     <div class="fg"><label class="fl">Estado membresía</label><select class="fi" id="ecl-membresia-estado" style="margin-top:0;"><option value="activo">Activo</option><option value="trial">Trial</option><option value="beta">Beta</option><option value="fin_programa">Fin de programa</option><option value="cancelado">Cancelado</option><option value="pending">Pendiente de pago</option></select></div>
+    <div class="fg"><label class="fl">Plan</label><select class="fi" id="ecl-plan" style="margin-top:0;"><option value="base">Base</option><option value="pro">Pro</option><option value="business">Business</option></select></div>
     <div class="fg"><label class="fl">Embi</label><select class="fi" id="ecl-embi" style="margin-top:0;"><option value="explicativo">Explicativo</option><option value="operativo">Operativo</option><option value="bloqueado">Bloqueado</option></select></div>
     <div class="fg"><label class="fl">Precio acordado (USD)</label><input type="number" class="fi" id="ecl-precio" placeholder="1200"/></div>
     <div class="fg"><label class="fl">Email</label><input type="email" class="fi" id="ecl-email" placeholder="cliente@email.com"/></div>
@@ -6110,6 +6111,7 @@ window.editCliente = async function(id, event) {
     document.getElementById('ecl-genero').value = c.genero||'F';
     document.getElementById('ecl-programa').value = c.programa||'';
     document.getElementById('ecl-membresia-estado').value = c.membresia?.estado||'activo';
+    document.getElementById('ecl-plan').value = c.membresia?.plan||'base';
     document.getElementById('ecl-embi').value = c.productos?.embi||'explicativo';
     document.getElementById('ecl-precio').value = c.precio||'';
     document.getElementById('ecl-email').value = c.email||'';
@@ -6131,6 +6133,7 @@ window.saveEditCliente = async function() {
     email: document.getElementById('ecl-email').value,
     notas: document.getElementById('ecl-notas').value,
     'membresia.estado': membresiaEstado,
+    'membresia.plan': document.getElementById('ecl-plan').value,
     'productos.embi': document.getElementById('ecl-embi').value,
   };
   try {
