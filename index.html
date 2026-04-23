@@ -1385,24 +1385,6 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
           </div>
         </div>
 
-        <!-- Proximas reuniones de todos los clientes -->
-        <div class="card">
-          <div class="ct">Proximas reuniones</div>
-          <div id="dash-reuniones"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Cargando...</div></div>
-        </div>
-
-        <!-- Pendientes en dashboard -->
-        <div class="card">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px;">
-            <div style="display:flex;align-items:center;gap:8px;">
-              <div class="ct" style="margin:0;">Pendientes urgentes</div>
-              <div id="dash-pend-badge" style="display:none;background:var(--err);color:var(--white);font-size:10px;font-weight:500;padding:1px 7px;border-radius:20px;"></div>
-            </div>
-            <button class="bs" style="font-size:11px;padding:5px 12px;" onclick="showATab('clientes',document.querySelector('.nt:nth-child(2)'))">Ver todos →</button>
-          </div>
-          <div id="dash-pendientes"><div style="text-align:center;padding:12px;color:var(--text-l);font-size:13px;">Sin pendientes urgentes ✓</div></div>
-        </div>
-
         <div style="background:#fff;border-radius:12px;padding:16px 18px;margin-bottom:10px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
             <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#999;">Clientes</div>
@@ -1429,6 +1411,24 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
           </div>
           <div id="full-clients"><div style="text-align:center;padding:20px;color:#aaa;font-size:13px;">Cargando...</div></div>
         </div>
+        <!-- Proximas reuniones de todos los clientes -->
+        <div class="card">
+          <div class="ct">Proximas reuniones</div>
+          <div id="dash-reuniones"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Cargando...</div></div>
+        </div>
+
+        <!-- Pendientes en dashboard -->
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div class="ct" style="margin:0;">Pendientes urgentes</div>
+              <div id="dash-pend-badge" style="display:none;background:var(--err);color:var(--white);font-size:10px;font-weight:500;padding:1px 7px;border-radius:20px;"></div>
+            </div>
+            <button class="bs" style="font-size:11px;padding:5px 12px;" onclick="showATab('clientes',document.querySelector('.nt:nth-child(2)'))">Ver todos →</button>
+          </div>
+          <div id="dash-pendientes"><div style="text-align:center;padding:12px;color:var(--text-l);font-size:13px;">Sin pendientes urgentes ✓</div></div>
+        </div>
+
       </div>
 
       <!-- CONTABILIDAD -->
@@ -5629,8 +5629,8 @@ function renderClientList(clients) {
     'linear-gradient(135deg,#7e4458,#9e5a6a)'
   ];
   const avatarGrad = avatarGrads[i % avatarGrads.length];
-  return `<div style="display:grid;grid-template-columns:2fr 70px 110px 120px 120px 110px 80px;gap:12px;padding:10px 16px;border-bottom:0.5px solid #f5f2ed;align-items:center;" data-tipo="${tipo}" data-nombre="${nombre.toLowerCase()}">
-    <div style="display:flex;align-items:center;gap:10px;">
+  return `<div style="display:grid;grid-template-columns:2fr 70px 110px 120px 120px 110px;gap:12px;padding:10px 16px;border-bottom:0.5px solid #f5f2ed;align-items:center;" data-tipo="${tipo}" data-nombre="${nombre.toLowerCase()}">
+    <div style="display:flex;align-items:center;gap:10px;cursor:pointer;" onclick="accederComoClienteById('${c.id}')">
       <div style="width:32px;height:32px;border-radius:50%;background:${avatarGrad};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;color:#fff;flex-shrink:0;">${init}</div>
       <div><div style="font-size:12px;font-weight:500;color:#2d3d30;">${nombre}</div><div style="font-size:10px;color:#aaa;">${c.email||''}</div></div>
     </div>
@@ -5639,7 +5639,6 @@ function renderClientList(clients) {
     <div style="font-size:13px;font-weight:600;color:${mrrColor};">${mrr}</div>
     <div style="font-size:10px;color:${proxCobroColor};">${proxCobro}</div>
     <div style="font-size:10px;color:${actividadColor};">${actividadLabel}</div>
-    <div><button onclick="impersonateClient('${c.id}')" style="font-family:'DM Sans',sans-serif;font-size:10px;padding:4px 10px;border-radius:5px;border:none;background:#b09088;color:#fff;cursor:pointer;font-weight:500;">Ingresar</button></div>
   </div>`;
 };
 
@@ -5648,7 +5647,7 @@ function renderClientList(clients) {
     html = '<div style="text-align:center;padding:20px;color:#aaa;font-size:13px;">Sin clientes aún. Creá el primero.</div>';
   } else {
     html = '<div style="background:#fff;border-radius:12px;overflow:hidden;">';
-    html += '<div style="display:grid;grid-template-columns:2fr 70px 110px 120px 120px 110px 80px;gap:12px;padding:8px 16px;border-bottom:0.5px solid #eeebe6;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#999;"><span>Cliente</span><span>Plan</span><span>Estado</span><span>MRR</span><span>Próx. cobro</span><span>Último acceso</span><span></span></div>';
+    html += '<div style="display:grid;grid-template-columns:2fr 70px 110px 120px 120px 110px;gap:12px;padding:8px 16px;border-bottom:0.5px solid #eeebe6;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#999;"><span>Cliente</span><span>Plan</span><span>Estado</span><span>MRR</span><span>Próx. cobro</span><span>Último acceso</span></div>';
     let gIdx = 0;
     ordenGrupos.forEach(seg => {
       const cards = grupos[seg];
