@@ -1243,7 +1243,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         </button>
         <button class="sb-btn" id="asb-dash" onclick="showATabSb('dash',this)">
           <svg class="sb-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="7" width="3" height="6" rx="1"/><rect x="5.5" y="4" width="3" height="9" rx="1"/><rect x="10" y="1" width="3" height="12" rx="1"/></svg>
-          <span class="sb-label">Dashboard</span>
+          <span class="sb-label">Clientes</span>
         </button>
       </div>
       <div class="sb-group">
@@ -1289,94 +1289,6 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 
       <!-- DASHBOARD -->
       <div class="view active" id="av-dash">
-        <!-- Banner principal -->
-        <div style="background:linear-gradient(135deg,#2d3d30,#3d4f40,#4a5e4d,#3d4f40);border-radius:16px;padding:22px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;">
-          <div style="position:absolute;right:60px;bottom:-40px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,0.03);"></div>
-          <div style="font-size:10px;opacity:0.6;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;">MB Strategy — Panel de Control</div>
-          <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;margin-bottom:4px;">Bienvenida, Micaela</div>
-          <div style="font-size:12px;opacity:0.65;" id="dash-fecha">Cargando...</div>
-          <div style="margin-top:16px;display:flex;gap:20px;">
-            <div><div style="font-size:10px;opacity:0.6;text-transform:uppercase;letter-spacing:1px;">Meta mensual</div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;">$28.000</div></div>
-            <div style="width:1px;background:rgba(255,255,255,0.15);"></div>
-            <div><div style="font-size:10px;opacity:0.6;text-transform:uppercase;letter-spacing:1px;" id="dm-periodo-label">Este mes</div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;" id="dm-f2">$0</div></div>
-            <div style="width:1px;background:rgba(255,255,255,0.15);"></div>
-            <div><div style="font-size:10px;opacity:0.6;text-transform:uppercase;letter-spacing:1px;">Progreso</div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;" id="dm-pct2">0%</div></div>
-          </div>
-          <div style="height:4px;background:rgba(255,255,255,0.15);border-radius:2px;margin-top:12px;"><div style="height:100%;background:var(--sage-light);border-radius:2px;transition:width .5s;" id="dm-bar"></div></div>
-        </div>
-
-        <!-- Selector de mes -->
-        <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
-          <select id="admin-mes-sel" style="width:auto;padding:8px 14px;font-size:12px;border-radius:20px;border:.5px solid var(--cream-d);font-family:'DM Sans',sans-serif;cursor:pointer;" onchange="filtrarDashboardPorMes(this.value)">
-            <option value="todo">Todo el año</option>
-            <option>Enero 2026</option><option>Febrero 2026</option><option selected>Marzo 2026</option>
-            <option>Abril 2026</option><option>Mayo 2026</option><option>Junio 2026</option>
-            <option>Julio 2026</option><option>Agosto 2026</option><option>Septiembre 2026</option>
-            <option>Octubre 2026</option><option>Noviembre 2026</option><option>Diciembre 2026</option>
-          </select>
-        </div>
-
-        <!-- Métricas principales -->
-        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:18px;">
-          <div class="mc accent">
-            <div class="ml" style="color:rgba(255,255,255,.6);">Clientes activos</div>
-            <div class="mv" style="color:#fff;" id="dm-c">—</div>
-            <div class="ms" style="color:rgba(255,255,255,.7);">programas en curso</div>
-          </div>
-          <div class="mc">
-            <div class="ml">Facturacion cobrada</div>
-            <div class="mv" style="color:var(--ok);" id="dm-f">—</div>
-            <div class="ms" id="dm-f-label">USD este mes</div>
-          </div>
-          <div class="mc">
-            <div class="ml">Gastos del mes</div>
-            <div class="mv" style="color:var(--err);" id="dm-g">$0</div>
-            <div class="ms">USD gastados</div>
-          </div>
-          <div class="mc">
-            <div class="ml">Ganancia neta</div>
-            <div class="mv" style="color:var(--topbar);" id="dm-n">—</div>
-            <div class="ms">USD este mes</div>
-          </div>
-        </div>
-
-        <div class="g2">
-
-          <!-- Resumen financiero -->
-          <div class="card">
-            <div class="ct">Resumen financiero</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
-              <div style="background:var(--ok-bg);border-radius:10px;padding:12px;text-align:center;">
-                <div style="font-size:10px;color:var(--ok);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;">Ingresos</div>
-                <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:500;color:var(--ok);" id="dm-ing">$0</div>
-              </div>
-              <div style="background:var(--err-bg);border-radius:10px;padding:12px;text-align:center;">
-                <div style="font-size:10px;color:var(--err);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;">Egresos</div>
-                <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:500;color:var(--err);" id="dm-eg2">$0</div>
-              </div>
-            </div>
-            <div style="background:var(--sage-xl);border:.5px solid var(--sage-light);border-radius:10px;padding:12px;display:flex;justify-content:space-between;align-items:center;">
-              <div><div style="font-size:10px;color:var(--topbar);text-transform:uppercase;letter-spacing:.5px;">Ganancia neta</div><div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:500;color:var(--topbar);" id="dm-gan">$0</div></div>
-              <div style="font-size:11px;color:var(--topbar);font-weight:500;" id="dm-margen">— margen</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Cobros pendientes y próximas reuniones -->
-        <div class="g2">
-          <div class="card">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px;">
-              <div class="ct" style="margin:0;">Cobros pendientes</div>
-              <button class="bp" onclick="openModal('newCobroModal')">+ Cobro</button>
-            </div>
-            <div id="dash-cobros-pend"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Cargando...</div></div>
-          </div>
-          <div class="card">
-            <div class="ct">Ultimos gastos cargados</div>
-            <div id="dash-gastos"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin gastos registrados.</div></div>
-          </div>
-        </div>
-
         <div style="background:#fff;border-radius:12px;padding:16px 18px;margin-bottom:10px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
             <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#999;">Clientes</div>
@@ -5192,7 +5104,7 @@ function _mostrarSeccionAdmin() {
       </button>
       <button class="sb-btn" onclick="_irAAdminTab('dash')" style="width:100%;">
         <svg class="sb-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="7" width="3" height="6" rx="1"/><rect x="5.5" y="4" width="3" height="9" rx="1"/><rect x="10" y="1" width="3" height="12" rx="1"/></svg>
-        <span class="sb-label">Dashboard</span>
+        <span class="sb-label">Clientes</span>
       </button>
       <button class="sb-btn" onclick="_irAAdminTab('tareas')" style="width:100%;">
         <svg class="sb-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 14h4M8 17h2"/></svg>
@@ -5692,7 +5604,7 @@ function renderCobros(cobros, clients=[]) {
   clients.forEach(c => {
     if (!clientesConAlgunCobro.has(c.id)) {
       const precio = parseFloat(c.precio)||0;
-      autoPendientes.push({cliente:c.nombre, concepto:'Programa '+c.programa+' — pendiente', monto:precio, estado:'pendiente', fecha:'', clienteId:c.id, _auto:true});
+      autoPendientes.push({cliente:c.nombre, concepto:(c.programa?'Programa '+c.programa:c.membresia?.plan?'Plan '+c.membresia.plan:'Sin plan')+' — pendiente', monto:precio, estado:'pendiente', fecha:'', clienteId:c.id, _auto:true});
     }
   });
   const allCobros = [...cobros, ...autoPendientes];
