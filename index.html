@@ -4960,6 +4960,9 @@ window.showAdminUI = async function(email) {
 };
 
 window.showClientUI = async function(email, clientData) {
+  if(clientData?.id) {
+    updateDoc(doc(db,'clientes',clientData.id), { lastLogin: new Date().toISOString() }).catch(()=>{});
+  }
   document.body.classList.add('client-view');
   const btnMiCuenta = document.getElementById('btn-mi-cuenta');
   if(btnMiCuenta) btnMiCuenta.style.display = 'none';
@@ -5525,7 +5528,7 @@ function renderClientList(clients) {
   const proxCobroColor = c.membresia?.proximoCobro && new Date(c.membresia.proximoCobro.seconds*1000) < new Date() ? '#c0392b' : '#aaa';
   const diasInactivo = c.lastLogin ? Math.floor((Date.now()-new Date(c.lastLogin).getTime())/(1000*60*60*24)) : -1;
   const actividadLabel = diasInactivo < 0 ? 'Sin registro' : diasInactivo === 0 ? 'Hoy' : diasInactivo === 1 ? 'Ayer' : `Hace ${diasInactivo}d`;
-  const actividadColor = diasInactivo > 7 ? '#c0392b' : diasInactivo < 0 ? '#aaa' : '#4a5e4d';
+  const actividadColor = diasInactivo < 0 ? '#aaa' : diasInactivo <= 1 ? '#4a5e4d' : diasInactivo <= 7 ? '#e67e22' : '#c0392b';
   const avatarGrads = [
     'linear-gradient(135deg,#3d5240,#5e7562)',
     'linear-gradient(135deg,#2e6460,#3d7a74)',
