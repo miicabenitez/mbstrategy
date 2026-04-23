@@ -5139,7 +5139,8 @@ window.renderAdminDashboard = function() {
 
   // — KPIs —
   const activos   = clients.filter(c => c.membresia?.estado==='activo' || c.programa);
-  const mrr       = activos.reduce((a,c)=>a+(parseFloat(c.precio)||0), 0);
+  const MRR_PLAN = {base:105000, pro:157000};
+  const mrr       = clients.filter(c=>c.membresia?.estado==='activo'||c.membresia?.estado==='trial').reduce((a,c)=>a+(MRR_PLAN[c.membresia?.plan]||MRR_PLAN.base),0);
   const cobrado   = window._totalRealCobrado || 0;
   const pendiente = Math.max(0, mrr - cobrado);
 
@@ -5361,20 +5362,16 @@ window.renderAdminDashboard = function() {
     +'<div style="background:#fff;border-radius:12px;padding:16px 18px;"><div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#999;margin-bottom:12px;">Academia</div>'
     +'<div style="margin-bottom:12px;"><div id="adash-academia" style="font-family:\'Cormorant Garamond\',serif;font-size:28px;font-weight:600;color:#2d3d30;line-height:1;">0</div><div style="font-size:10px;color:#aaa;margin-top:2px;">con academia activa</div></div>'+academiaHTML+'</div>'
     +'</div>'
-    // Facturaci\u00f3n + Resumen financiero \u2014 grid 1fr 1fr
-    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">'
-    +'<div style="background:#fff;border-radius:12px;padding:16px 18px;"><div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#999;margin-bottom:14px;">Facturaci\u00f3n del mes</div>'
+    // Facturaci\u00f3n del mes \u2014 full width con cards coloreadas
+    +'<div style="background:#fff;border-radius:12px;padding:16px 18px;margin-bottom:10px;">'
+    +'<div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#999;margin-bottom:14px;">Facturaci\u00f3n del mes</div>'
     +'<div class="adm-dash-4col">'
-    +'<div style="background:#f5f2ed;border-radius:8px;padding:10px 12px;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.4px;color:#888;margin-bottom:4px;">MRR te\u00f3rico</div><div id="adash-mrr2" style="font-family:\'Cormorant Garamond\',serif;font-size:18px;font-weight:600;color:#2d3d30;">$0</div></div>'
-    +'<div style="background:#f5f2ed;border-radius:8px;padding:10px 12px;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.4px;color:#888;margin-bottom:4px;">Cobrado</div><div id="adash-cobrado2" style="font-family:\'Cormorant Garamond\',serif;font-size:18px;font-weight:600;color:#4a5e4d;">$0</div></div>'
-    +'<div style="background:#f5f2ed;border-radius:8px;padding:10px 12px;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.4px;color:#888;margin-bottom:4px;">Por cobrar</div><div id="adash-pendiente2" style="font-family:\'Cormorant Garamond\',serif;font-size:18px;font-weight:600;color:#b09088;">$0</div></div>'
-    +'<div style="background:#f5f2ed;border-radius:8px;padding:10px 12px;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.4px;color:#888;margin-bottom:4px;">Clientes activos</div><div id="adash-activos2" style="font-family:\'Cormorant Garamond\',serif;font-size:18px;font-weight:600;color:#2d3d30;">0</div></div>'
-    +'</div></div>'
-    +'<div style="background:#fff;border-radius:12px;padding:16px 18px;"><div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#999;margin-bottom:14px;">Resumen financiero</div>'
-    +'<div style="border-radius:10px 10px 4px 4px;background:#4a5e4d;padding:12px 14px;margin-bottom:4px;"><div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.55);margin-bottom:4px;">MRR te\u00f3rico</div><div id="adash-mrr3" style="font-family:\'Cormorant Garamond\',serif;font-size:22px;font-weight:600;color:#fff;">$0</div></div>'
-    +'<div style="border-radius:4px;background:#9a7870;padding:12px 14px;margin-bottom:4px;"><div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.55);margin-bottom:4px;">Cobrado del mes</div><div id="adash-cobrado3" style="font-family:\'Cormorant Garamond\',serif;font-size:22px;font-weight:600;color:#fff;">$0</div></div>'
-    +'<div style="border-radius:4px 4px 10px 10px;background:#2d3d30;padding:12px 14px;"><div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.55);margin-bottom:4px;">Por cobrar</div><div id="adash-pendiente3" style="font-family:\'Cormorant Garamond\',serif;font-size:22px;font-weight:600;color:#fff;">$0</div></div>'
-    +'</div></div>'
+    +'<div style="border-radius:10px;background:#4a5e4d;padding:12px 14px;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.4px;color:rgba(255,255,255,0.6);margin-bottom:4px;">MRR Te\u00f3rico</div><div id="adash-mrr2" style="font-family:\'Cormorant Garamond\',serif;font-size:22px;font-weight:600;color:#fff;">$0</div></div>'
+    +'<div style="border-radius:10px;background:#b09088;padding:12px 14px;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.4px;color:rgba(255,255,255,0.6);margin-bottom:4px;">Cobrado</div><div id="adash-cobrado2" style="font-family:\'Cormorant Garamond\',serif;font-size:22px;font-weight:600;color:#fff;">$0</div></div>'
+    +'<div style="border-radius:10px;background:#f5f2ed;padding:12px 14px;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.4px;color:#888;margin-bottom:4px;">Por cobrar</div><div id="adash-pendiente2" style="font-family:\'Cormorant Garamond\',serif;font-size:22px;font-weight:600;color:#b09088;">$0</div></div>'
+    +'<div style="border-radius:10px;background:#f5f2ed;padding:12px 14px;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.4px;color:#888;margin-bottom:4px;">Clientes activos</div><div id="adash-activos2" style="font-family:\'Cormorant Garamond\',serif;font-size:22px;font-weight:600;color:#2d3d30;">0</div></div>'
+    +'</div>'
+    +'</div>'
     // Gr\u00e1ficos 2fr / 1fr
     +'<div style="display:grid;grid-template-columns:2fr 1fr;gap:10px;">'
     +'<div style="background:#fff;border-radius:12px;padding:16px 18px;">'
