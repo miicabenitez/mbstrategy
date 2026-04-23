@@ -5418,8 +5418,8 @@ async function loadAdminData() {
     const snap = await getDocs(collection(db, 'clientes'));
     const clients = [];
     snap.forEach(d => { const data=d.data(); if(!data.eliminado) clients.push({id:d.id,...data}); });
-    renderClientList(clients);
     window._allClients = clients;
+    renderClientList(clients);
     const sel = document.getElementById('cob-cliente');
     if (sel) {
       sel.innerHTML = '<option value="">Seleccionar cliente...</option>' + clients.map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('');
@@ -5568,7 +5568,7 @@ function renderClientList(clients) {
         const r = c.proximaReunion;
         const esHoy = r.fecha === today;
         const fechaD = new Date(r.fecha+'T12:00:00').toLocaleDateString('es-AR',{weekday:'short',day:'numeric',month:'short'});
-        const init = c.nombre.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+        const init = (c.nombre||c.email||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
         return `<div class="row">
           <div style="display:flex;align-items:center;gap:10px;flex:1;">
             <div style="width:40px;height:40px;background:${esHoy?'var(--sage-dark)':'var(--cream)'};border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;">
