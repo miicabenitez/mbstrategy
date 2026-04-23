@@ -5943,7 +5943,7 @@ async function loadCobrosCliente(clientId) {
       const m = parseFloat(c.monto)||0;
       totalCobrado += m;
       const bc = m > 0 ? 'bg' : 'br';
-      html += `<div class="row"><div><div class="rn">${c.concepto||'Pago'}</div><div class="rs">${c.fecha||'Sin fecha'}</div></div><div style="display:flex;align-items:center;gap:8px;"><span class="badge bg">cobrado</span><b>$${m.toLocaleString('es-AR')}</b></div></div>`;
+      html += `<div class="row"><div><div class="rn">${c.concepto||'Pago'}</div><div class="rs">${c.fecha||'Sin fecha'}</div></div><div style="display:flex;align-items:center;gap:8px;"><span class="badge bg">cobrado</span><b>$${m.toLocaleString('es-AR')}</b><button onclick="eliminarPagoMB('${clientId}','${c.id}')" style="background:#c0392b;color:#fff;border:none;border-radius:5px;padding:3px 8px;font-size:11px;cursor:pointer;line-height:1.4;">✕</button></div></div>`;
     });
 
     document.getElementById('cobros-cliente-list').innerHTML = html || '<div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin pagos registrados.</div>';
@@ -5969,6 +5969,15 @@ async function loadCobrosCliente(clientId) {
     }
   } catch(e) { console.log(e); }
 }
+
+window.eliminarPagoMB = async function(clienteId, cobroId) {
+  showConfirm('¿Eliminar este pago?', async () => {
+    try {
+      await deleteDoc(doc(db,'clientes',clienteId,'pagosMB',cobroId));
+      await loadCobrosCliente(clienteId);
+    } catch(e) { showToast('Error: '+e.message, 'error'); }
+  }, 'Eliminar pago');
+};
 
 window.saveNota = async function() {
   const texto = document.getElementById('nota-input').value;
