@@ -1307,6 +1307,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
             <button class="cli-fil" onclick="filterClientes('academia',this)">Academia</button>
             <button class="cli-fil" onclick="filterClientes('sistema',this)">Sistema</button>
             <button class="cli-fil" onclick="filterClientes('trial',this)">Trial</button>
+            <button class="cli-fil" onclick="filterClientes('beta',this)">Beta</button>
             <button class="cli-fil" onclick="filterClientes('fin',this)">Fin programa</button>
             <button class="cli-fil" onclick="filterClientes('cancelado',this)">Cancelados</button>
             <button class="cli-fil" onclick="filterClientes('pendiente',this)">Pendiente pago</button>
@@ -3660,8 +3661,10 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
     <div class="fg"><label class="fl">Nombre / Negocio</label><input type="text" class="fi" id="nc-nombre" placeholder="Ej: Marcelo — La Playa en Tu Casa"/></div>
     <div class="fg"><label class="fl">Género</label><select class="fi" id="nc-genero" style="margin-top:0;"><option value="F">Femenino — Bienvenida</option><option value="M">Masculino — Bienvenido</option><option value="N">Neutro — ¡Hola!</option></select></div>
     <div class="fg"><label class="fl">Rubro / Nombre del negocio</label><input type="text" class="fi" id="nc-rubro" placeholder="Ej: Piletas, Salud, Retail..."/></div>
-    <div class="fg"><label class="fl">Programa</label><select class="fi" id="nc-prog" style="margin-top:0;"><option value="30D">Programa 30D — Orden Operativo</option><option value="90D">Programa 90D — Gestión Estratégica</option></select></div>
+    <div class="fg"><label class="fl">Programa</label><select class="fi" id="nc-prog" style="margin-top:0;"><option value="">Sin programa</option><option value="30D">Programa 30D — Orden Operativo</option><option value="90D">Programa 90D — Gestión Estratégica</option></select></div>
+    <div class="fg"><label class="fl">Estado membresía</label><select class="fi" id="nc-membresia-estado" style="margin-top:0;"><option value="activo">Activo</option><option value="trial">Trial</option><option value="beta">Beta</option><option value="fin_programa">Fin de programa</option><option value="cancelado">Cancelado</option><option value="pending">Pendiente de pago</option></select></div>
     <div class="fg"><label class="fl">Plan</label><select class="fi" id="nc-plan" style="margin-top:0;"><option value="base">Base</option><option value="pro">Pro</option><option value="business">Business</option></select></div>
+    <div class="fg"><label class="fl">Embi</label><select class="fi" id="nc-embi" style="margin-top:0;"><option value="explicativo">Explicativo</option><option value="operativo">Operativo</option><option value="bloqueado">Bloqueado</option></select></div>
     <div class="fg"><label class="fl">Precio acordado (USD)</label><input type="number" class="fi" id="nc-precio" placeholder="Ingresá el precio"/></div>
     <div class="fg"><label class="fl">Email del cliente</label><input type="email" class="fi" id="nc-email" placeholder="cliente@email.com"/></div>
     <div class="fg"><label class="fl">UID Firebase Auth <span style="font-size:11px;color:#999;">(del usuario creado en Authentication)</span></label><input type="text" class="fi" id="nc-uid" placeholder="Ej: abc123XYZ..."/></div>
@@ -5490,12 +5493,13 @@ function renderClientList(clients) {
   const getTipo = c => c.productos?.academia ? 'academia'
                      : c.membresia?.estado === 'activo' ? 'sistema'
                      : c.membresia?.estado === 'trial' ? 'trial'
+                     : c.membresia?.estado === 'beta' ? 'beta'
                      : c.programa ? 'fin'
                      : c.membresia?.estado === 'cancelado' ? 'cancelado'
                      : c.membresia?.estado === 'pending' ? 'pendiente'
                      : 'otros';
-  const secLabels = { academia:'Academia activa', sistema:'Sistema activo', trial:'Trial', fin:'Fin de programa', cancelado:'Cancelados', pendiente:'Pendiente de pago', otros:'Sin clasificar' };
-  const ordenGrupos = ['academia','sistema','trial','fin','pendiente','cancelado','otros'];
+  const secLabels = { academia:'Academia activa', sistema:'Sistema activo', trial:'Trial', beta:'Beta', fin:'Fin de programa', cancelado:'Cancelados', pendiente:'Pendiente de pago', otros:'Sin clasificar' };
+  const ordenGrupos = ['academia','sistema','trial','beta','fin','pendiente','cancelado','otros'];
   const grupos = {};
   ordenGrupos.forEach(t => { grupos[t] = []; });
   clients.forEach(c => { grupos[getTipo(c)].push(c); });
@@ -5508,9 +5512,9 @@ function renderClientList(clients) {
   const esPro = c.membresia?.plan === 'pro';
   const planBg = esPro ? '#eaf3de' : '#e8ede9';
   const planColor = esPro ? '#3b6d11' : '#3d5240';
-  const estadoLabel = c.membresia?.estado === 'activo' ? 'Activo' : c.membresia?.estado === 'trial' ? 'Trial' : c.membresia?.estado === 'cancelado' ? 'Cancelado' : c.membresia?.estado === 'pending' ? 'Pend. pago' : c.programa ? 'Fin programa' : 'Sin estado';
-  const estadoBg = c.membresia?.estado === 'activo' ? '#eaf3de' : c.membresia?.estado === 'trial' ? '#fff8f0' : c.membresia?.estado === 'pending' ? '#fdf0ee' : '#f5eeec';
-  const estadoColor = c.membresia?.estado === 'activo' ? '#3b6d11' : c.membresia?.estado === 'trial' ? '#9a7030' : c.membresia?.estado === 'pending' ? '#c0392b' : '#9a7870';
+  const estadoLabel = c.membresia?.estado === 'activo' ? 'Activo' : c.membresia?.estado === 'trial' ? 'Trial' : c.membresia?.estado === 'beta' ? 'Beta' : c.membresia?.estado === 'cancelado' ? 'Cancelado' : c.membresia?.estado === 'pending' ? 'Pend. pago' : c.programa ? 'Fin programa' : 'Sin estado';
+  const estadoBg = c.membresia?.estado === 'activo' ? '#eaf3de' : c.membresia?.estado === 'trial' ? '#fff8f0' : c.membresia?.estado === 'beta' ? '#e8ecf0' : c.membresia?.estado === 'pending' ? '#fdf0ee' : '#f5eeec';
+  const estadoColor = c.membresia?.estado === 'activo' ? '#3b6d11' : c.membresia?.estado === 'trial' ? '#9a7030' : c.membresia?.estado === 'beta' ? '#3a4a5a' : c.membresia?.estado === 'pending' ? '#c0392b' : '#9a7870';
   const mrr = c.precio ? '$' + parseFloat(c.precio).toLocaleString('es-AR') : '—';
   const mrrColor = c.precio ? '#2d3d30' : '#aaa';
   const proxCobro = c.membresia?.proximoCobro ? new Date(c.membresia.proximoCobro.seconds*1000).toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'}) : '—';
@@ -6173,15 +6177,17 @@ window.filterClientes = function(tipo, btn, texto) {
 };
 
 window.createClient = async function() {
-  const nombre  = document.getElementById('nc-nombre').value.trim();
-  const rubro   = document.getElementById('nc-rubro').value.trim();
-  const prog    = document.getElementById('nc-prog').value;
-  const plan    = document.getElementById('nc-plan').value;
-  const precio  = document.getElementById('nc-precio').value;
-  const email   = document.getElementById('nc-email').value.trim();
-  const uid     = document.getElementById('nc-uid').value.trim();
-  const notas   = document.getElementById('nc-notas').value;
-  const genero  = document.getElementById('nc-genero').value;
+  const nombre         = document.getElementById('nc-nombre').value.trim();
+  const rubro          = document.getElementById('nc-rubro').value.trim();
+  const prog           = document.getElementById('nc-prog').value;
+  const plan           = document.getElementById('nc-plan').value;
+  const precio         = document.getElementById('nc-precio').value;
+  const email          = document.getElementById('nc-email').value.trim();
+  const uid            = document.getElementById('nc-uid').value.trim();
+  const notas          = document.getElementById('nc-notas').value;
+  const genero         = document.getElementById('nc-genero').value;
+  const membresiaEstado = document.getElementById('nc-membresia-estado').value;
+  const embiMode       = document.getElementById('nc-embi').value;
   if (!nombre || !email) { showToast('Nombre y email son obligatorios', 'info'); return; }
   if (!uid) { showToast('El UID de Firebase Auth es obligatorio', 'info'); return; }
   try {
@@ -6200,7 +6206,8 @@ window.createClient = async function() {
       activo:             true,
       eliminado:          false,
       suscripcionEstado:  'active',
-      productos:          { academia: false, sistema: true, embi: 'explicativo' },
+      membresia:          { estado: membresiaEstado, plan },
+      productos:          { academia: false, sistema: true, embi: embiMode },
       semanaActual:       1,
       creadoEn:           new Date().toISOString()
     });
