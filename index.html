@@ -3639,10 +3639,13 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
     <div class="fg"><label class="fl">Rubro</label><input type="text" class="fi" id="ecl-rubro" placeholder="Ej: Piletas, Salud, Retail..."/></div>
     <div class="fg"><label class="fl">Programa</label>
       <select class="fi" id="ecl-programa" style="margin-top:0;">
+        <option value="">Sin programa</option>
         <option value="30D">Programa 30D — Orden Operativo</option>
         <option value="90D">Programa 90D — Gestión Estratégica</option>
       </select>
     </div>
+    <div class="fg"><label class="fl">Estado membresía</label><select class="fi" id="ecl-membresia-estado" style="margin-top:0;"><option value="activo">Activo</option><option value="trial">Trial</option><option value="beta">Beta</option><option value="fin_programa">Fin de programa</option><option value="cancelado">Cancelado</option><option value="pending">Pendiente de pago</option></select></div>
+    <div class="fg"><label class="fl">Embi</label><select class="fi" id="ecl-embi" style="margin-top:0;"><option value="explicativo">Explicativo</option><option value="operativo">Operativo</option><option value="bloqueado">Bloqueado</option></select></div>
     <div class="fg"><label class="fl">Precio acordado (USD)</label><input type="number" class="fi" id="ecl-precio" placeholder="1200"/></div>
     <div class="fg"><label class="fl">Email</label><input type="email" class="fi" id="ecl-email" placeholder="cliente@email.com"/></div>
     <div class="fg"><label class="fl">Notas</label><textarea class="na" id="ecl-notas" style="min-height:60px;" placeholder="Contexto, dolores, situación actual..."></textarea></div>
@@ -6105,7 +6108,9 @@ window.editCliente = async function(id, event) {
     document.getElementById('ecl-nombre').value = c.nombre||'';
     document.getElementById('ecl-rubro').value = c.rubro||'';
     document.getElementById('ecl-genero').value = c.genero||'F';
-    document.getElementById('ecl-programa').value = c.programa||'30D';
+    document.getElementById('ecl-programa').value = c.programa||'';
+    document.getElementById('ecl-membresia-estado').value = c.membresia?.estado||'activo';
+    document.getElementById('ecl-embi').value = c.productos?.embi||'explicativo';
     document.getElementById('ecl-precio').value = c.precio||'';
     document.getElementById('ecl-email').value = c.email||'';
     document.getElementById('ecl-notas').value = c.notas||'';
@@ -6116,6 +6121,7 @@ window.editCliente = async function(id, event) {
 window.saveEditCliente = async function() {
   const id = document.getElementById('ecl-id').value;
   if(!id) return;
+  const membresiaEstado = document.getElementById('ecl-membresia-estado').value;
   const data = {
     nombre: document.getElementById('ecl-nombre').value,
     rubro: document.getElementById('ecl-rubro').value,
@@ -6124,6 +6130,8 @@ window.saveEditCliente = async function() {
     precio: document.getElementById('ecl-precio').value,
     email: document.getElementById('ecl-email').value,
     notas: document.getElementById('ecl-notas').value,
+    'membresia.estado': membresiaEstado,
+    'productos.embi': document.getElementById('ecl-embi').value,
   };
   try {
     await updateDoc(doc(db,'clientes',id), data);
