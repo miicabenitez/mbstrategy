@@ -1311,6 +1311,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
             <button class="cli-fil" onclick="filterClientes('fin',this)">Fin programa</button>
             <button class="cli-fil" onclick="filterClientes('cancelado',this)">Cancelados</button>
             <button class="cli-fil" onclick="filterClientes('pendiente',this)">Pendiente pago</button>
+            <button class="cli-fil" onclick="filterClientes('inactivo',this)">Sin actividad</button>
             <div style="margin-left:auto;position:relative;">
               <input id="cli-search" type="text" placeholder="Buscar cliente..." oninput="filterClientes('search',null,this.value)" style="padding:7px 12px 7px 30px;border-radius:20px;border:.5px solid #c8c4bc;background:#f7f4ef;font-size:12px;font-family:'DM Sans',sans-serif;color:#2d3d30;outline:none;width:160px;">
             </div>
@@ -5494,7 +5495,7 @@ function renderClientList(clients) {
   setEl('adm-kpi-sistema',  clients.filter(c => c.membresia?.estado === 'activo' && !c.productos?.academia).length);
   setEl('adm-kpi-trial',    clients.filter(c => c.membresia?.estado === 'trial').length);
   setEl('adm-kpi-fin',      clients.filter(c => c.programa && c.membresia?.estado !== 'activo').length);
-  // adm-kpi-inactivos: 0 fijo hasta implementar campo lastLogin
+  setEl('adm-kpi-inactivos', clients.filter(c => (c.membresia?.estado === 'activo' || c.programa) && c.lastLogin && Math.floor((Date.now()-new Date(c.lastLogin).getTime())/(1000*60*60*24)) > 7).length);
 
   // Client cards — agrupados por segmento
   const getTipo = c => c.productos?.academia ? 'academia'
@@ -5522,8 +5523,8 @@ function renderClientList(clients) {
   const estadoLabel = c.membresia?.estado === 'activo' ? 'Activo' : c.membresia?.estado === 'trial' ? 'Trial' : c.membresia?.estado === 'beta' ? 'Beta' : c.membresia?.estado === 'cancelado' ? 'Cancelado' : c.membresia?.estado === 'pending' ? 'Pend. pago' : c.programa ? 'Fin programa' : 'Sin estado';
   const estadoBg = c.membresia?.estado === 'activo' ? '#eaf3de' : c.membresia?.estado === 'trial' ? '#fff8f0' : c.membresia?.estado === 'beta' ? '#e8ecf0' : c.membresia?.estado === 'pending' ? '#fdf0ee' : '#f5eeec';
   const estadoColor = c.membresia?.estado === 'activo' ? '#3b6d11' : c.membresia?.estado === 'trial' ? '#9a7030' : c.membresia?.estado === 'beta' ? '#3a4a5a' : c.membresia?.estado === 'pending' ? '#c0392b' : '#9a7870';
-  const mrr = c.precio ? '$' + parseFloat(c.precio).toLocaleString('es-AR') : '—';
-  const mrrColor = c.precio ? '#2d3d30' : '#aaa';
+  const mrr = c.membresia?.plan === 'pro' ? '$157.000' : c.membresia?.plan === 'base' ? '$105.000' : '—';
+  const mrrColor = c.membresia?.plan ? '#2d3d30' : '#aaa';
   const proxCobro = c.membresia?.proximoCobro ? new Date(c.membresia.proximoCobro.seconds*1000).toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'}) : '—';
   const proxCobroColor = c.membresia?.proximoCobro && new Date(c.membresia.proximoCobro.seconds*1000) < new Date() ? '#c0392b' : '#aaa';
   const diasInactivo = c.lastLogin ? Math.floor((Date.now()-new Date(c.lastLogin).getTime())/(1000*60*60*24)) : -1;
@@ -5538,7 +5539,8 @@ function renderClientList(clients) {
     'linear-gradient(135deg,#7e4458,#9e5a6a)'
   ];
   const avatarGrad = avatarGrads[i % avatarGrads.length];
-  return `<div style="display:grid;grid-template-columns:2fr 70px 110px 120px 120px 110px 80px;gap:12px;padding:10px 16px;border-bottom:0.5px solid #f5f2ed;align-items:center;" data-tipo="${tipo}" data-nombre="${nombre.toLowerCase()}">
+  const esInactivo = !c.lastLogin || Math.floor((Date.now()-new Date(c.lastLogin).getTime())/(1000*60*60*24)) > 7;
+  return `<div style="display:grid;grid-template-columns:2fr 70px 110px 120px 120px 110px 80px;gap:12px;padding:10px 16px;border-bottom:0.5px solid #f5f2ed;align-items:center;" data-tipo="${tipo}" data-nombre="${nombre.toLowerCase()}" data-inactivo="${esInactivo?'1':'0'}">
     <div style="display:flex;align-items:center;gap:10px;cursor:pointer;" onclick="openClientDetail('${c.id}')">
       <div style="width:32px;height:32px;border-radius:50%;background:${avatarGrad};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;color:#fff;flex-shrink:0;">${init}</div>
       <div><div style="font-size:12px;font-weight:500;color:#2d3d30;">${nombre}</div><div style="font-size:10px;color:#aaa;">${c.email||''}</div></div>
@@ -6179,9 +6181,11 @@ window.filterClientes = function(tipo, btn, texto) {
   const cards = document.querySelectorAll('#full-clients [data-tipo]');
   if (tipo === 'search') {
     const q = (texto||'').toLowerCase().trim();
-    cards.forEach(el => { el.style.display = (!q || el.dataset.nombre?.includes(q)) ? '' : 'none'; });
+    cards.forEach(el => { el.style.display = (!q || el.dataset.nombre?.includes(q)) ? 'grid' : 'none'; });
+  } else if (tipo === 'inactivo') {
+    cards.forEach(el => { el.style.display = el.dataset.inactivo === '1' ? 'grid' : 'none'; });
   } else {
-    cards.forEach(el => { el.style.display = (tipo === 'todos' || el.dataset.tipo === tipo) ? '' : 'none'; });
+    cards.forEach(el => { el.style.display = (tipo === 'todos' || el.dataset.tipo === tipo) ? 'grid' : 'none'; });
   }
   // Ocultar labels de sección si su grupo quedó sin cards visibles
   document.querySelectorAll('#full-clients .cli-sec-label').forEach(label => {
