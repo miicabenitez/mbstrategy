@@ -5456,47 +5456,64 @@ function renderAdminDashboard() {
   var sparklineHTML='<svg viewBox="0 0 '+spW+' '+(bHH+bLH)+'" style="width:100%;height:'+(bHH+bLH)+'px;">'+spBars+'</svg>';
 
   // — Render HTML —
+  container.style.background = '#eeebe6';
+  container.style.padding = '20px';
+  container.style.borderRadius = '16px';
   container.innerHTML =
-    // Saludo dinámico + fecha
-    '<div style="margin-bottom:20px;">'
-    +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:28px;font-weight:400;color:var(--text);line-height:1.2;">'+saludo+', Micaela</div>'
-    +'<div style="font-size:12px;color:var(--text-l);margin-top:4px;">'+fechaStr+'</div>'
+    // Banner verde
+    '<div style="background:linear-gradient(135deg,#2d3d30,#3d4f40,#4a5e4d,#3d4f40);border-radius:16px;padding:22px 28px;margin-bottom:12px;">'
+    +'<div style="font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,0.45);margin-bottom:5px;">MB Strategy \u2014 Panel de control</div>'
+    +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:26px;color:#fff;margin-bottom:14px;">'+saludo+', Micaela</div>'
+    +'<div style="font-size:11px;color:rgba(255,255,255,0.5);">'+fechaStr+'</div>'
     +'</div>'
-    // Banner: 4 KPIs (activos, en trial, MRR, cobrado del mes)
-    +'<div style="background:linear-gradient(135deg,#4a5e4d 0%,#5e7562 40%,#7a9e7e 60%,#4a5e4d 100%);border-radius:16px;padding:20px 24px;margin-bottom:16px;">'
-    +'<div class="adm-dash-4col">'
-    +'<div style="background:rgba(255,255,255,.15);border-radius:10px;padding:12px 14px;"><div style="font-size:9px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Clientes activos</div><div id="adash-activos" style="font-family:\'Cormorant Garamond\',serif;font-size:26px;font-weight:400;color:#fff;line-height:1;">0</div></div>'
-    +'<div style="background:rgba(255,255,255,.15);border-radius:10px;padding:12px 14px;"><div style="font-size:9px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">En trial</div><div id="adash-trial" style="font-family:\'Cormorant Garamond\',serif;font-size:26px;font-weight:400;color:#fff;line-height:1;">0</div></div>'
-    +'<div style="background:rgba(255,255,255,.15);border-radius:10px;padding:12px 14px;"><div style="font-size:9px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">MRR</div><div id="adash-mrr" style="font-family:\'Cormorant Garamond\',serif;font-size:26px;font-weight:400;color:#fff;line-height:1;">$0</div></div>'
-    +'<div style="background:rgba(255,255,255,.15);border-radius:10px;padding:12px 14px;"><div style="font-size:9px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Cobrado del mes</div><div id="adash-cobrado" style="font-family:\'Cormorant Garamond\',serif;font-size:26px;font-weight:400;color:#fff;line-height:1;">$0</div></div>'
-    +'</div></div>'
-    // 3-col: alertas / reuniones / academia
-    +'<div class="adm-dash-3col">'
-    +'<div style="background:#2c2c2e;border-radius:12px;border:.5px solid rgba(255,255,255,.08);padding:16px;"><div style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">Alertas</div>'+alertasHTML+'</div>'
-    +'<div style="background:#2c2c2e;border-radius:12px;border:.5px solid rgba(255,255,255,.08);padding:16px;"><div style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">Pr\u00f3ximas reuniones</div>'+reunionesHTML+'</div>'
-    +'<div style="background:#2c2c2e;border-radius:12px;border:.5px solid rgba(255,255,255,.08);padding:16px;"><div style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">Academia</div>'
-    +'<div style="margin-bottom:12px;"><div id="adash-academia" style="font-family:\'Cormorant Garamond\',serif;font-size:28px;font-weight:400;color:var(--text);line-height:1;">0</div><div style="font-size:10px;color:var(--text-l);margin-top:2px;">con academia activa</div></div>'+academiaHTML+'</div>'
+    // KPIs grid
+    +'<div class="adm-dash-4col" style="margin-bottom:6px;">'
+    +'<div style="background:#fff;border-radius:10px;padding:12px 14px;border-left:3px solid #4a5e4d;"><div style="font-size:9px;letter-spacing:1.2px;text-transform:uppercase;color:#888;margin-bottom:5px;">Clientes activos</div><div id="adash-activos" style="font-family:\'Cormorant Garamond\',serif;font-size:24px;font-weight:600;color:#2d3d30;line-height:1;">0</div><div style="font-size:10px;color:#aaa;margin-top:3px;">programas en curso</div></div>'
+    +'<div style="background:#fff;border-radius:10px;padding:12px 14px;border-left:3px solid #b09088;"><div style="font-size:9px;letter-spacing:1.2px;text-transform:uppercase;color:#888;margin-bottom:5px;">Cobrado del mes</div><div id="adash-cobrado" style="font-family:\'Cormorant Garamond\',serif;font-size:24px;font-weight:600;color:#2d3d30;line-height:1;">$0</div><div style="font-size:10px;color:#aaa;margin-top:3px;">este mes</div></div>'
+    +'<div style="background:#fff;border-radius:10px;padding:12px 14px;border-left:3px solid #4a5e4d;"><div style="font-size:9px;letter-spacing:1.2px;text-transform:uppercase;color:#888;margin-bottom:5px;">MRR te\u00f3rico</div><div id="adash-mrr" style="font-family:\'Cormorant Garamond\',serif;font-size:24px;font-weight:600;color:#2d3d30;line-height:1;">$0</div><div style="font-size:10px;color:#aaa;margin-top:3px;">recurrente mensual</div></div>'
+    +'<div style="background:#fff;border-radius:10px;padding:12px 14px;border-left:3px solid #4a5e4d;"><div style="font-size:9px;letter-spacing:1.2px;text-transform:uppercase;color:#888;margin-bottom:5px;">En trial</div><div id="adash-trial" style="font-family:\'Cormorant Garamond\',serif;font-size:24px;font-weight:600;color:#2d3d30;line-height:1;">0</div><div style="font-size:10px;color:#aaa;margin-top:3px;">per\u00edodo de prueba</div></div>'
     +'</div>'
-    // Facturación del mes
-    +'<div style="background:#2c2c2e;border-radius:12px;border:.5px solid rgba(255,255,255,.08);padding:20px;margin-bottom:16px;">'
-    +'<div style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px;">Facturaci\u00f3n del mes</div>'
+    // Selector de mes
+    +'<div style="display:flex;justify-content:flex-end;margin-bottom:12px;">'
+    +'<select id="adash-mes-sel" style="font-family:\'DM Sans\',sans-serif;font-size:11px;font-weight:500;color:#3d4f40;background:#fff;border:1px solid #c8c4bc;border-radius:6px;padding:4px 22px 4px 8px;cursor:pointer;">'
+    +'<option value="all">Todo el a\u00f1o</option>'
+    +'<option value="0">Enero</option><option value="1">Febrero</option><option value="2">Marzo</option>'
+    +'<option value="3" selected>Abril</option><option value="4">Mayo</option><option value="5">Junio</option>'
+    +'<option value="6">Julio</option><option value="7">Agosto</option><option value="8">Septiembre</option>'
+    +'<option value="9">Octubre</option><option value="10">Noviembre</option><option value="11">Diciembre</option>'
+    +'</select></div>'
+    // 3 cols: alertas / reuniones / academia
+    +'<div class="adm-dash-3col" style="margin-bottom:10px;">'
+    +'<div style="background:#fff;border-radius:12px;padding:16px 18px;"><div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#999;margin-bottom:12px;">Alertas</div>'+alertasHTML+'</div>'
+    +'<div style="background:#fff;border-radius:12px;padding:16px 18px;"><div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#999;margin-bottom:12px;">Pr\u00f3ximas reuniones</div>'+reunionesHTML+'</div>'
+    +'<div style="background:#fff;border-radius:12px;padding:16px 18px;"><div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#999;margin-bottom:12px;">Academia</div>'
+    +'<div style="margin-bottom:12px;"><div id="adash-academia" style="font-family:\'Cormorant Garamond\',serif;font-size:28px;font-weight:600;color:#2d3d30;line-height:1;">0</div><div style="font-size:10px;color:#aaa;margin-top:2px;">con academia activa</div></div>'+academiaHTML+'</div>'
+    +'</div>'
+    // Facturaci\u00f3n + Resumen financiero \u2014 grid 1fr 1fr
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">'
+    +'<div style="background:#fff;border-radius:12px;padding:16px 18px;"><div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#999;margin-bottom:14px;">Facturaci\u00f3n del mes</div>'
     +'<div class="adm-dash-4col">'
-    +'<div style="background:rgba(255,255,255,.04);border-radius:10px;padding:14px;"><div style="font-size:9px;color:var(--text-l);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">MRR te\u00f3rico</div><div id="adash-mrr2" style="font-family:\'Cormorant Garamond\',serif;font-size:20px;font-weight:400;color:var(--text);">$0</div></div>'
-    +'<div style="background:rgba(255,255,255,.04);border-radius:10px;padding:14px;"><div style="font-size:9px;color:var(--text-l);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">Cobrado</div><div id="adash-cobrado2" style="font-family:\'Cormorant Garamond\',serif;font-size:20px;font-weight:400;color:var(--ok);">$0</div></div>'
-    +'<div style="background:rgba(255,255,255,.04);border-radius:10px;padding:14px;"><div style="font-size:9px;color:var(--text-l);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">Por cobrar</div><div id="adash-pendiente2" style="font-family:\'Cormorant Garamond\',serif;font-size:20px;font-weight:400;color:var(--warn);">$0</div></div>'
-    +'<div style="background:rgba(255,255,255,.04);border-radius:10px;padding:14px;"><div style="font-size:9px;color:var(--text-l);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">Clientes activos</div><div id="adash-activos2" style="font-family:\'Cormorant Garamond\',serif;font-size:20px;font-weight:400;color:var(--text);">0</div></div>'
+    +'<div style="background:#f5f2ed;border-radius:8px;padding:10px 12px;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.4px;color:#888;margin-bottom:4px;">MRR te\u00f3rico</div><div id="adash-mrr2" style="font-family:\'Cormorant Garamond\',serif;font-size:18px;font-weight:600;color:#2d3d30;">$0</div></div>'
+    +'<div style="background:#f5f2ed;border-radius:8px;padding:10px 12px;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.4px;color:#888;margin-bottom:4px;">Cobrado</div><div id="adash-cobrado2" style="font-family:\'Cormorant Garamond\',serif;font-size:18px;font-weight:600;color:#4a5e4d;">$0</div></div>'
+    +'<div style="background:#f5f2ed;border-radius:8px;padding:10px 12px;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.4px;color:#888;margin-bottom:4px;">Por cobrar</div><div id="adash-pendiente2" style="font-family:\'Cormorant Garamond\',serif;font-size:18px;font-weight:600;color:#b09088;">$0</div></div>'
+    +'<div style="background:#f5f2ed;border-radius:8px;padding:10px 12px;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.4px;color:#888;margin-bottom:4px;">Clientes activos</div><div id="adash-activos2" style="font-family:\'Cormorant Garamond\',serif;font-size:18px;font-weight:600;color:#2d3d30;">0</div></div>'
     +'</div></div>'
-    // Gráficos 2fr / 1fr
-    +'<div style="display:grid;grid-template-columns:2fr 1fr;gap:12px;">'
-    +'<div style="background:#2c2c2e;border-radius:12px;border:.5px solid rgba(255,255,255,.08);padding:16px;">'
-    +'<div style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">Evoluci\u00f3n MRR \u2014 12 meses</div>'
+    +'<div style="background:#fff;border-radius:12px;padding:16px 18px;"><div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#999;margin-bottom:14px;">Resumen financiero</div>'
+    +'<div style="border-radius:10px 10px 4px 4px;background:#4a5e4d;padding:12px 14px;margin-bottom:4px;"><div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.55);margin-bottom:4px;">MRR te\u00f3rico</div><div id="adash-mrr3" style="font-family:\'Cormorant Garamond\',serif;font-size:22px;font-weight:600;color:#fff;">$0</div></div>'
+    +'<div style="border-radius:4px;background:#9a7870;padding:12px 14px;margin-bottom:4px;"><div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.55);margin-bottom:4px;">Cobrado del mes</div><div id="adash-cobrado3" style="font-family:\'Cormorant Garamond\',serif;font-size:22px;font-weight:600;color:#fff;">$0</div></div>'
+    +'<div style="border-radius:4px 4px 10px 10px;background:#2d3d30;padding:12px 14px;"><div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.55);margin-bottom:4px;">Por cobrar</div><div id="adash-pendiente3" style="font-family:\'Cormorant Garamond\',serif;font-size:22px;font-weight:600;color:#fff;">$0</div></div>'
+    +'</div></div>'
+    // Gr\u00e1ficos 2fr / 1fr
+    +'<div style="display:grid;grid-template-columns:2fr 1fr;gap:10px;">'
+    +'<div style="background:#fff;border-radius:12px;padding:16px 18px;">'
+    +'<div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#999;margin-bottom:12px;">Evoluci\u00f3n MRR \u2014 12 meses</div>'
     +mrrChartHTML+'</div>'
-    +'<div style="background:#2c2c2e;border-radius:12px;border:.5px solid rgba(255,255,255,.08);padding:16px;display:flex;flex-direction:column;gap:16px;">'
-    +'<div><div style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Composici\u00f3n cartera</div>'+donutHTML+'</div>'
-    +'<div><div style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Actividad esta semana</div>'+sparklineHTML+'</div>'
+    +'<div style="background:#fff;border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:16px;">'
+    +'<div><div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#999;margin-bottom:10px;">Composici\u00f3n cartera</div>'+donutHTML+'</div>'
+    +'<div><div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#999;margin-bottom:8px;">Actividad esta semana</div>'+sparklineHTML+'</div>'
     +'</div></div>';
 
-  // — CountUp —
+  // \u2014 CountUp \u2014
   function countUp(id, target, pfx, ms) {
     var el = document.getElementById(id);
     if(!el) return;
@@ -5518,6 +5535,9 @@ function renderAdminDashboard() {
     countUp('adash-cobrado2',  cobrado,           '$', 900);
     countUp('adash-pendiente2',pendiente,         '$', 800);
     countUp('adash-activos2',  activos.length,    '',  700);
+    countUp('adash-mrr3',      mrr,               '$', 900);
+    countUp('adash-cobrado3',  cobrado,           '$', 900);
+    countUp('adash-pendiente3',pendiente,         '$', 800);
   }, 60);
 }
 
