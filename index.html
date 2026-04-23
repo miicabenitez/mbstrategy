@@ -927,6 +927,7 @@ body.cliente-micaela [style*="background:rgba(255,255,255,.08)"]{background:rgba
 body.admin-micaela .app{padding-left:220px;}
 body.admin-micaela #adminSidebar{display:flex !important;}
 body.admin-micaela #clientSidebar{display:none !important;}
+body.admin-micaela .topbar{display:none !important;}
 body.client-view #adminSidebar{display:none !important;}
 body.admin-micaela *{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}
 body.admin-micaela{--ok:#c9a898;--warn:#d4a574;--err:#c47070;}
@@ -1290,18 +1291,32 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 
       <!-- DASHBOARD -->
       <div class="view active" id="av-dash">
-        <div style="background:#fff;border-radius:12px;padding:16px 18px;margin-bottom:10px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-            <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#999;">Clientes</div>
-            <button onclick="openModal('newClientModal')" style="font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;padding:5px 14px;border-radius:6px;border:none;background:#4a5e4d;color:#fff;cursor:pointer;">+ Nuevo cliente</button>
+        <!-- Banner verde metalizado -->
+        <div style="background:linear-gradient(135deg,#3d5240,#4a5e4d,#556a58,#4a5e4d);border-radius:14px;padding:20px 24px;margin-bottom:12px;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+            <div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:500;color:#f4f0ea;letter-spacing:.5px;">MB Strategy — Clientes</div>
+              <div id="adm-banner-date" style="font-size:11px;color:rgba(255,255,255,.45);margin-top:2px;"></div>
+            </div>
+            <div id="adm-banner-alert" style="font-size:11px;background:rgba(192,57,43,.25);color:#f4a394;padding:4px 10px;border-radius:20px;border:.5px solid rgba(192,57,43,.3);display:none;"></div>
           </div>
-          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px;">
-            <div style="border-radius:8px;padding:10px 12px;border-top:2px solid #4a5e4d;background:#f7f4ef;cursor:pointer;" onclick="filterClientes('academia',this)"><div style="font-size:8px;letter-spacing:1.2px;text-transform:uppercase;color:#999;margin-bottom:3px;">Academia</div><div id="adm-kpi-academia" style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;color:#2d3d30;">0</div></div>
-            <div style="border-radius:8px;padding:10px 12px;border-top:2px solid #4a5e4d;background:#f7f4ef;cursor:pointer;" onclick="filterClientes('sistema',this)"><div style="font-size:8px;letter-spacing:1.2px;text-transform:uppercase;color:#999;margin-bottom:3px;">Sistema activo</div><div id="adm-kpi-sistema" style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;color:#2d3d30;">0</div></div>
-            <div style="border-radius:8px;padding:10px 12px;border-top:2px solid #9a7030;background:#f7f4ef;cursor:pointer;" onclick="filterClientes('trial',this)"><div style="font-size:8px;letter-spacing:1.2px;text-transform:uppercase;color:#999;margin-bottom:3px;">Trial</div><div id="adm-kpi-trial" style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;color:#2d3d30;">0</div></div>
-            <div style="border-radius:8px;padding:10px 12px;border-top:2px solid #b09088;background:#f7f4ef;cursor:pointer;" onclick="filterClientes('fin',this)"><div style="font-size:8px;letter-spacing:1.2px;text-transform:uppercase;color:#999;margin-bottom:3px;">Fin programa</div><div id="adm-kpi-fin" style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;color:#2d3d30;">0</div></div>
-            <div style="border-radius:8px;padding:10px 12px;border-top:2px solid #888;background:#f7f4ef;cursor:pointer;" onclick="filterClientes('inactivo',this)"><div style="font-size:8px;letter-spacing:1.2px;text-transform:uppercase;color:#999;margin-bottom:3px;">Sin actividad</div><div id="adm-kpi-inactivos" style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;color:#2d3d30;">0</div></div>
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px;">
+            <div style="border-radius:8px;padding:10px 12px;background:rgba(255,255,255,.1);cursor:pointer;" onclick="filterClientes('sistema',this)"><div style="font-size:8px;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:3px;">MRR activo</div><div id="adm-kpi-mrr" style="font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;color:#f4f0ea;">$0</div></div>
+            <div style="border-radius:8px;padding:10px 12px;background:rgba(255,255,255,.1);cursor:pointer;" onclick="filterClientes('sistema',this)"><div style="font-size:8px;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:3px;">Sistema activo</div><div id="adm-kpi-sistema" style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;color:#f4f0ea;">0</div></div>
+            <div style="border-radius:8px;padding:10px 12px;background:rgba(255,255,255,.1);cursor:pointer;" onclick="filterClientes('trial',this)"><div style="font-size:8px;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:3px;">Trial</div><div id="adm-kpi-trial" style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;color:#f4f0ea;">0</div></div>
+            <div style="border-radius:8px;padding:10px 12px;background:rgba(255,255,255,.1);cursor:pointer;" onclick="filterClientes('beta',this)"><div style="font-size:8px;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:3px;">Beta testers</div><div id="adm-kpi-beta" style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;color:#f4f0ea;">0</div></div>
+            <div style="border-radius:8px;padding:10px 12px;background:rgba(255,255,255,.1);cursor:pointer;" onclick="filterClientes('inactivo',this)"><div style="font-size:8px;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:3px;">Sin actividad</div><div id="adm-kpi-inactivos" style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;color:#f4f0ea;">0</div></div>
           </div>
+          <div style="border-top:.5px solid rgba(255,255,255,.15);margin-bottom:14px;"></div>
+          <div style="display:flex;gap:8px;">
+            <button onclick="openModal('newClientModal')" style="font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;padding:6px 14px;border-radius:6px;border:.5px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);color:#fff;cursor:pointer;">+ Nuevo cliente</button>
+            <button onclick="document.getElementById('adm-two-cols').scrollIntoView({behavior:'smooth'})" style="font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;padding:6px 14px;border-radius:6px;border:.5px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);color:#fff;cursor:pointer;">Próximas reuniones</button>
+            <button onclick="document.getElementById('adm-two-cols').scrollIntoView({behavior:'smooth'})" style="font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;padding:6px 14px;border-radius:6px;border:.5px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);color:#fff;cursor:pointer;">Pendientes urgentes</button>
+          </div>
+        </div>
+
+        <!-- Tabla de clientes -->
+        <div style="background:#fff;border-radius:12px;padding:16px 18px;margin-bottom:12px;">
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
             <button class="cli-fil active" onclick="filterClientes('todos',this)">Todos</button>
             <button class="cli-fil" onclick="filterClientes('academia',this)">Academia</button>
@@ -1312,28 +1327,29 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
             <button class="cli-fil" onclick="filterClientes('cancelado',this)">Cancelados</button>
             <button class="cli-fil" onclick="filterClientes('pendiente',this)">Pendiente pago</button>
             <button class="cli-fil" onclick="filterClientes('inactivo',this)">Sin actividad</button>
-            <div style="margin-left:auto;position:relative;">
-              <input id="cli-search" type="text" placeholder="Buscar cliente..." oninput="filterClientes('search',null,this.value)" style="padding:7px 12px 7px 30px;border-radius:20px;border:.5px solid #c8c4bc;background:#f7f4ef;font-size:12px;font-family:'DM Sans',sans-serif;color:#2d3d30;outline:none;width:160px;">
-            </div>
+          </div>
+          <div style="position:relative;margin-bottom:10px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2" stroke-linecap="round" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);pointer-events:none;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input id="cli-search" type="text" placeholder="Buscar cliente..." oninput="filterClientes('search',null,this.value)" style="width:100%;box-sizing:border-box;padding:8px 12px 8px 30px;border-radius:8px;border:.5px solid #c8c4bc;background:#f7f4ef;font-size:12px;font-family:'DM Sans',sans-serif;color:#2d3d30;outline:none;">
           </div>
           <div id="full-clients"><div style="text-align:center;padding:20px;color:#aaa;font-size:13px;">Cargando...</div></div>
         </div>
-        <!-- Proximas reuniones de todos los clientes -->
-        <div class="card">
-          <div class="ct">Proximas reuniones</div>
-          <div id="dash-reuniones"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Cargando...</div></div>
-        </div>
 
-        <!-- Pendientes en dashboard -->
-        <div class="card">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px;">
-            <div style="display:flex;align-items:center;gap:8px;">
-              <div class="ct" style="margin:0;">Pendientes urgentes</div>
-              <div id="dash-pend-badge" style="display:none;background:var(--err);color:var(--white);font-size:10px;font-weight:500;padding:1px 7px;border-radius:20px;"></div>
-            </div>
-            <button class="bs" style="font-size:11px;padding:5px 12px;" onclick="showATab('clientes',document.querySelector('.nt:nth-child(2)'))">Ver todos →</button>
+        <!-- Dos columnas: reuniones + pendientes -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;" id="adm-two-cols">
+          <div class="card">
+            <div class="ct">Próximas reuniones</div>
+            <div id="dash-reuniones"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Cargando...</div></div>
           </div>
-          <div id="dash-pendientes"><div style="text-align:center;padding:12px;color:var(--text-l);font-size:13px;">Sin pendientes urgentes ✓</div></div>
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div class="ct" style="margin:0;">Pendientes urgentes</div>
+                <div id="dash-pend-badge" style="display:none;background:var(--err);color:var(--white);font-size:10px;font-weight:500;padding:1px 7px;border-radius:20px;"></div>
+              </div>
+            </div>
+            <div id="dash-pendientes"><div style="text-align:center;padding:12px;color:var(--text-l);font-size:13px;">Sin pendientes urgentes ✓</div></div>
+          </div>
         </div>
 
       </div>
@@ -5491,11 +5507,17 @@ function renderClientList(clients) {
   setEl('dm-c', segT);
 
   // KPIs del banner verde
-  setEl('adm-kpi-academia', clients.filter(c => c.productos?.academia === true).length);
+  const mrrTotal = clients.filter(c => c.membresia?.estado === 'activo').reduce((sum, c) => sum + (c.membresia?.plan === 'pro' ? 157000 : c.membresia?.plan === 'base' ? 105000 : 0), 0);
+  setEl('adm-kpi-mrr', '$' + mrrTotal.toLocaleString('es-AR'));
   setEl('adm-kpi-sistema',  clients.filter(c => c.membresia?.estado === 'activo' && !c.productos?.academia).length);
   setEl('adm-kpi-trial',    clients.filter(c => c.membresia?.estado === 'trial').length);
-  setEl('adm-kpi-fin',      clients.filter(c => c.programa && c.membresia?.estado !== 'activo').length);
-  setEl('adm-kpi-inactivos', clients.filter(c => !c.lastLogin || Math.floor((Date.now()-new Date(c.lastLogin).getTime())/(1000*60*60*24)) > 7).length);
+  setEl('adm-kpi-beta',     clients.filter(c => c.membresia?.estado === 'beta').length);
+  const inactivosCount = clients.filter(c => !c.lastLogin || Math.floor((Date.now()-new Date(c.lastLogin).getTime())/(1000*60*60*24)) > 7).length;
+  setEl('adm-kpi-inactivos', inactivosCount);
+  const bannerDate = document.getElementById('adm-banner-date');
+  if(bannerDate) bannerDate.textContent = new Date().toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const bannerAlert = document.getElementById('adm-banner-alert');
+  if(bannerAlert) { bannerAlert.textContent = inactivosCount + ' sin actividad'; bannerAlert.style.display = inactivosCount > 0 ? '' : 'none'; }
 
   // Client cards — agrupados por segmento
   const getTipo = c => c.productos?.academia ? 'academia'
