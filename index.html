@@ -5650,20 +5650,6 @@ function renderClientList(clients) {
   }
   const el = document.getElementById('full-clients');
   if(el) el.innerHTML = html;
-  document.getElementById('dash-clients').innerHTML = clients.map((c,i) => {
-    const col = avatarColors[i%avatarColors.length];
-    const nombre = c.nombre || c.negocioNombre || c.email || '?';
-    const init = nombre.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    const total = c.programa==='90D'?12:4;
-    const sem = c.semanaActual||1;
-    const dots = Array(4).fill(0).map((_,j)=>`<div class="wd ${j<sem-1?'done':j===sem-1?'active':''}"></div>`).join('');
-    const subtitulo = c.rubro ? `${c.rubro} · Programa ${c.programa}` : c.membresia?.plan ? `Plan ${c.membresia.plan} · Suscripción` : '—';
-    return `<div class="cr" onclick="openClientDetail('${c.id}')">
-      <div class="av" style="background:${col};color:#fff;">${init}</div>
-      <div class="ci"><div class="cn">${nombre}</div><div class="cs">${subtitulo}</div><div class="wb">${dots}</div></div>
-      <div class="badge bg">${c.programa ? 'Sem. '+sem : (c.membresia?.estado || 'Activo')}</div>
-    </div>`;
-  }).join('');
 
   // Calendario en página clientes
   const reuniones = clients.filter(c=>c.proximaReunion?.fecha).sort((a,b)=>new Date(a.proximaReunion.fecha)-new Date(b.proximaReunion.fecha));
