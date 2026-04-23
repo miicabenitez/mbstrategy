@@ -5933,7 +5933,7 @@ async function loadCobrosCliente(clientId) {
     const clienteDoc = await getDoc(doc(db,'clientes',clientId));
     const precioTotal = clienteDoc.exists() ? parseFloat(String(clienteDoc.data().precio||'0').replace(/[^0-9.]/g,''))||0 : 0;
 
-    const snap = await getDocs(collection(db,'clientes',clientId,'cobros'));
+    const snap = await getDocs(collection(db,'clientes',clientId,'pagosMB'));
     let html = '', totalCobrado = 0;
     const pagos = [];
     snap.forEach(d => { const data=d.data(); if(!data.eliminado) pagos.push({id:d.id,...data}); });
@@ -6359,7 +6359,7 @@ window.createCobro = async function() {
   try {
     await addDoc(collection(db,'cobros'), {clienteId,cliente:clienteNombre,concepto,monto,estado,fecha,creadoEn:new Date().toISOString()});
     // Also add to client's subcollection
-    await addDoc(collection(db,'clientes',clienteId,'cobros'), {concepto,monto,estado,fecha});
+    await addDoc(collection(db,'clientes',clienteId,'pagosMB'), {concepto,monto,estado,fecha});
     const s = document.getElementById('cobro-saved');
     s.style.display='block';
     setTimeout(async()=>{s.style.display='none';closeModal('newCobroModal');await loadAdminData();},1500);
@@ -6488,7 +6488,7 @@ window.loadCcBalance = async function() {
     const precioRaw = String(clienteData.precio||'0').replace(/[^0-9.]/g,'');
     const precioTotal = parseFloat(precioRaw)||0;
 
-    const snap = await getDocs(collection(db,'clientes',currentClientId,'cobros'));
+    const snap = await getDocs(collection(db,'clientes',currentClientId,'pagosMB'));
     let yaCobrado = 0;
     snap.forEach(d => { yaCobrado += parseFloat(d.data().monto)||0; });
     const saldo = Math.max(0, precioTotal - yaCobrado);
@@ -6552,7 +6552,7 @@ window.createCobroCliente = async function() {
   const mesStr = fecha ? new Date(fecha+'T12:00:00').toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase()) : '';
 
   try {
-    await addDoc(collection(db,'clientes',currentClientId,'cobros'), {
+    await addDoc(collection(db,'clientes',currentClientId,'pagosMB'), {
       concepto: conceptoFinal,
       monto, estado, fecha,
       saldoPendiente,
