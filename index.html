@@ -18481,6 +18481,7 @@ window.showATab = function(tab, btn) {
   if (tab === 'inicio') {
     if(window._allClients?.length && window.renderAdminDashboard) {
       setTimeout(()=>{ window.renderAdminDashboard(); }, 50);
+      if(window.loadAdminData) window.loadAdminData();
     } else {
       const c = document.getElementById('admin-dashboard-container');
       if(c) c.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-l);font-size:13px;">Cargando...</div>';
