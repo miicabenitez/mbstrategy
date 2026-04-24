@@ -18644,7 +18644,7 @@ window.embiUpdateEstado = async function(id, estado) {
     if(r) r.estado = estado;
     console.log('[EMBI NOTIF] clienteId:', r?.clienteId, 'estado:', estado);
     if(estado==='resuelto' && r?.clienteId) {
-      await addDoc(collection(db,'clientes',r.clienteId,'embiNotificaciones'),{
+      await window._addDoc(window._collection(window.db,'clientes',r.clienteId,'embiNotificaciones'),{
         mensaje:'Tu reporte fue revisado y resuelto por el equipo de MB Strategy.',
         leido:false,
         creadoEn:new Date().toISOString()
