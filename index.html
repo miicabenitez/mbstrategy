@@ -18591,7 +18591,7 @@ function renderEmbiReports() {
       <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;">
         <span style="background:${badgeBg};color:${badgeTc};font-size:9px;font-weight:500;padding:2px 8px;border-radius:20px;flex-shrink:0;margin-top:2px;">${badgeLabel}</span>
         <div style="flex:1;min-width:0;">
-          <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px;">${r.descripcion||r.mensajeOriginal||'—'}</div>
+          <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px;">${(r.descripcion||r.mensajeOriginal||'—').slice(0,60)}${(r.descripcion||r.mensajeOriginal||'').length>60?'…':''}</div>
           <div style="font-size:11px;color:var(--text-l);">${r.clienteNombre||r.cliente||'—'}${clienteEmail?' · <span style="color:var(--blue);">'+clienteEmail+'</span>':''} · ${fecha}</div>
           ${r.mensajeOriginal?`<div style="font-size:11px;color:var(--text-l);margin-top:4px;font-style:italic;">"${r.mensajeOriginal}"</div>`:''}
         </div>
@@ -18600,11 +18600,33 @@ function renderEmbiReports() {
       <div style="display:flex;gap:6px;padding-left:0;">
         ${r.estado!=='revisado'&&r.estado!=='resuelto'?`<button onclick="embiUpdateEstado('${r.id}','revisado')" style="font-size:11px;padding:4px 12px;border-radius:20px;border:.5px solid var(--cream-d);background:var(--warn-bg);color:var(--warn);cursor:pointer;font-family:'DM Sans',sans-serif;">Marcar revisado</button>`:''}
         ${r.estado!=='resuelto'?`<button onclick="embiUpdateEstado('${r.id}','resuelto')" style="font-size:11px;padding:4px 12px;border-radius:20px;border:.5px solid var(--cream-d);background:var(--ok-bg);color:var(--ok);cursor:pointer;font-family:'DM Sans',sans-serif;">Marcar resuelto</button>`:''}
+        <button onclick="embiVerDetalle('${r.id}')" style="font-size:11px;padding:4px 12px;border-radius:20px;border:.5px solid var(--cream-d);background:none;color:var(--blue);cursor:pointer;font-family:'DM Sans',sans-serif;">Ver detalle</button>
         <button onclick="embiDeleteReport('${r.id}')" style="font-size:11px;padding:4px 12px;border-radius:20px;border:.5px solid var(--cream-d);background:none;color:var(--err);cursor:pointer;font-family:'DM Sans',sans-serif;">Eliminar</button>
       </div>
     </div>`;
   }).join('');
 }
+
+window.embiVerDetalle = function(id) {
+  const r = _embiReports.find(x=>x.id===id); if(!r) return;
+  const clienteEmail = (window._allClients||[]).find(c=>c.id===r.clienteId)?.email||'';
+  const fecha = r.creadoEn ? new Date(r.creadoEn).toLocaleDateString('es-AR',{day:'2-digit',month:'long',year:'numeric'}) : '—';
+  const titulo = r.tipo==='falla' ? 'Falla reportada' : 'Sugerencia';
+  const existing = document.getElementById('embi-detalle-modal');
+  if(existing) existing.remove();
+  const modal = document.createElement('div');
+  modal.id = 'embi-detalle-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9999;display:flex;align-items:center;justify-content:center;';
+  modal.innerHTML = `<div style="background:#fff;border-radius:16px;padding:28px;max-width:480px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.18);">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:var(--text);margin-bottom:16px;">${titulo}</div>
+    <div style="font-size:13px;color:var(--text);line-height:1.6;margin-bottom:14px;">${r.descripcion||r.mensajeOriginal||'—'}</div>
+    <div style="font-size:11px;color:var(--text-l);margin-bottom:4px;"><strong>Cliente:</strong> ${r.clienteNombre||r.cliente||'—'}${clienteEmail?' · '+clienteEmail:''}</div>
+    <div style="font-size:11px;color:var(--text-l);margin-bottom:20px;"><strong>Fecha:</strong> ${fecha}</div>
+    <button onclick="document.getElementById('embi-detalle-modal').remove()" style="font-size:12px;padding:6px 20px;border-radius:20px;border:.5px solid var(--cream-d);background:var(--cream);color:var(--text-m);cursor:pointer;font-family:'DM Sans',sans-serif;">Cerrar</button>
+  </div>`;
+  modal.addEventListener('click', e=>{ if(e.target===modal) modal.remove(); });
+  document.body.appendChild(modal);
+};
 
 window.embiAdminFilter = function(f, btn) {
   _embiFilter = f;
