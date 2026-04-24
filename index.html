@@ -18115,9 +18115,11 @@ window.renderEmbiUsage = async function renderEmbiUsage(mes) {
 
   const usuarioIds = Object.keys(porUsuario);
   const nombresMap = {};
+  const emailsMap = {};
   await Promise.all(usuarioIds.map(async uid => {
     const cSnap = await window._getDoc(window._doc(window.db, 'clientes', uid));
     nombresMap[uid] = cSnap.exists() ? (cSnap.data().nombre || uid) : uid;
+    emailsMap[uid] = cSnap.exists() ? (cSnap.data().email || '') : '';
   }));
 
   const ranking = usuarioIds.sort((a,b) => porUsuario[b].costo - porUsuario[a].costo);
@@ -18132,7 +18134,7 @@ window.renderEmbiUsage = async function renderEmbiUsage(mes) {
     const pct = totalMensajes > 0 ? Math.round(u.mensajes / totalMensajes * 100) : 0;
     const esPro = u.modo === 'operativo';
     return `<tr>
-      <td style="font-weight:500;padding:8px 0;border-bottom:0.5px solid rgba(0,0,0,0.05);">${nombresMap[uid]}</td>
+      <td style="font-weight:500;padding:8px 0;border-bottom:0.5px solid rgba(0,0,0,0.05);">${nombresMap[uid]}${emailsMap[uid]?`<div style="font-size:10px;color:#aaa;font-weight:400;">${emailsMap[uid]}</div>`:''}</td>
       <td style="text-align:right;padding:8px 0;border-bottom:0.5px solid rgba(0,0,0,0.05);"><span style="display:inline-block;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500;background:${esPro?'#f0e8e5':'#e8ede9'};color:${esPro?'#7a4e43':'#3d5240'}">${esPro?'Pro':'Base'}</span></td>
       <td style="text-align:right;padding:8px 0;border-bottom:0.5px solid rgba(0,0,0,0.05);">${u.mensajes}</td>
       <td style="text-align:right;padding:8px 0;border-bottom:0.5px solid rgba(0,0,0,0.05);">$${u.costo.toFixed(4)}</td>
