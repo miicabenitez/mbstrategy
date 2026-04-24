@@ -19838,9 +19838,11 @@ async function embiCallAPI(userMsg){
   try{
     var payload={messages:embiHistory,modo:embiModo||'explicativo',userId:window.currentClientUID||null,modulo:window._moduloActivo||'general'};
     if(embiModo==='operativo')payload.contextStr=embiGetFinancialContext();
+    var _embiUser=window._auth?.currentUser;
+    var _embiToken=_embiUser?await _embiUser.getIdToken():null;
     var resp=await fetch('/.netlify/functions/embi',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json',...(_embiToken?{Authorization:'Bearer '+_embiToken}:{})},
       body:JSON.stringify(payload)
     });
     var data=await resp.json();

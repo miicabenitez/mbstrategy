@@ -5,7 +5,7 @@ function getCorsHeaders(event) {
   const corsOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
   return {
     'Access-Control-Allow-Origin': corsOrigin,
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Content-Type': 'application/json'
   };
 }
@@ -540,7 +540,21 @@ exports.handler = async function(event) {
 
   try {
     const { messages, modo, contextStr, userId, modulo } = JSON.parse(event.body || '{}');
-    console.log('[embi] userId recibido:', userId);
+    const authHeader = event.headers?.authorization || event.headers?.Authorization || '';
+    const idToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+    if (!idToken) {
+      return { statusCode: 401, headers: HEADERS, body: JSON.stringify({ error: 'Token requerido' }) };
+    }
+    let verifiedUid;
+    try {
+      const decoded = await admin.auth().verifyIdToken(idToken);
+      verifiedUid = decoded.uid;
+    } catch(e) {
+      return { statusCode: 401, headers: HEADERS, body: JSON.stringify({ error: 'Token inválido' }) };
+    }
+    if (userId && verifiedUid !== userId) {
+      return { statusCode: 401, headers: HEADERS, body: JSON.stringify({ error: 'Token no coincide con userId' }) };
+    }
 
     if (!messages || !Array.isArray(messages)) {
       return { statusCode: 400, headers: HEADERS, body: JSON.stringify({ error: 'messages requerido' }) };
