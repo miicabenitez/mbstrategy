@@ -18591,7 +18591,7 @@ function renderEmbiReports() {
         <span style="background:${badgeBg};color:${badgeTc};font-size:9px;font-weight:500;padding:2px 8px;border-radius:20px;flex-shrink:0;margin-top:2px;">${badgeLabel}</span>
         <div style="flex:1;min-width:0;">
           <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px;">${r.descripcion||r.mensajeOriginal||'—'}</div>
-          <div style="font-size:11px;color:var(--text-l);">${r.cliente||'—'} · ${r.modulo||'—'} · ${fecha}</div>
+          <div style="font-size:11px;color:var(--text-l);">${r.clienteNombre||r.cliente||'—'} · ${r.modulo||'—'} · ${fecha}</div>
           ${r.mensajeOriginal?`<div style="font-size:11px;color:var(--text-l);margin-top:4px;font-style:italic;">"${r.mensajeOriginal}"</div>`:''}
         </div>
         <span style="background:${estadoBg};color:${estadoTc};font-size:9px;font-weight:500;padding:2px 8px;border-radius:20px;flex-shrink:0;margin-top:2px;">${r.estado||'pendiente'}</span>
@@ -19818,7 +19818,6 @@ async function embiEjecutarAccion(tipo,datos){
     var d=new Date();
     var mesTxt=d.toLocaleDateString('es-AR',{month:'long',year:'numeric'});
     mesTxt=mesTxt.charAt(0).toUpperCase()+mesTxt.slice(1);
-    console.log('[EMBI ACTION] tipo:', tipo, 'datos:', JSON.stringify(datos));
     if(tipo==='INGRESO'){
       await window._addDoc(window._collection(window.db,'libroCaja'),{uid:currentClientUID,fecha:datos.fecha||hoy,tipo:'ingreso',concepto:datos.concepto||'Ingreso',cuenta:datos.cuenta||'',monto:parseFloat(datos.monto)||0,detalle:datos.detalle||'',mes:mesTxt,origen:'embi',eliminado:false,creadoEn:new Date().toISOString()});
       if(window.loadCajaModule)window.loadCajaModule();
