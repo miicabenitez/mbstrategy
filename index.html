@@ -5158,12 +5158,13 @@ window._irAAdminTab = function(tab) {
 };
 
 function _mostrarSeccionAdmin() {
-  if(document.getElementById('sb-admin-section')) return;
-  const nav = document.querySelector('.sidebar nav');
-  if(!nav) return;
-  const section = document.createElement('div');
-  section.id = 'sb-admin-section';
-  section.innerHTML = `
+  // Desktop sidebar
+  if(!document.getElementById('sb-admin-section')) {
+    const nav = document.querySelector('.sidebar nav');
+    if(nav) {
+      const section = document.createElement('div');
+      section.id = 'sb-admin-section';
+      section.innerHTML = `
     <div style="margin:12px 16px 6px;border-top:.5px solid rgba(255,255,255,.15);padding-top:12px;">
       <div style="font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.4);padding:0 4px;margin-bottom:6px;">Administración</div>
       <button class="sb-btn" onclick="_irAAdminTab('inicio')" style="width:100%;">
@@ -5188,7 +5189,27 @@ function _mostrarSeccionAdmin() {
       </button>
     </div>
   `;
-  nav.appendChild(section);
+      nav.appendChild(section);
+    }
+  }
+  // Mobile nav
+  const mobilePanel = document.querySelector('#mobileNav .mobile-nav-panel');
+  if(mobilePanel) {
+    const existing = document.getElementById('mnav-admin-section');
+    if(existing) existing.remove();
+    const ms = document.createElement('div');
+    ms.id = 'mnav-admin-section';
+    ms.innerHTML = `
+      <div style="margin-top:12px;padding-top:12px;border-top:.5px solid rgba(255,255,255,.15);">
+        <div style="font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.4);padding:0 4px 6px;">Administración</div>
+        <button class="mobile-nav-btn" onclick="showATab('inicio',null);closeMobileNav();">Inicio</button>
+        <button class="mobile-nav-btn" onclick="showATab('dash',null);closeMobileNav();">Clientes</button>
+        <button class="mobile-nav-btn" onclick="showATab('embi',null);closeMobileNav();">Embi ✦</button>
+        <button class="mobile-nav-btn" onclick="showATab('embiusage',null);closeMobileNav();">Uso de Embi</button>
+        <button class="mobile-nav-btn" onclick="showATab('papelera',null);closeMobileNav();">Papelera</button>
+      </div>`;
+    mobilePanel.appendChild(ms);
+  }
 }
 
 window.renderAdminDashboard = function() {
