@@ -4792,6 +4792,7 @@ window.db = db;
 
 window._db = db;
 window._auth = auth;
+window._confirmPasswordReset = confirmPasswordReset;
 window._addDoc = addDoc;
 window._collection = collection;
 window._doc = doc;
@@ -20476,7 +20477,7 @@ window.handleConfirmReset = async function() {
   const oobCode = window._pendingResetOobCode;
   if(!oobCode) return showMsg('Código de restablecimiento inválido o expirado.', false);
   try {
-    await confirmPasswordReset(auth, oobCode, pass1);
+    await window._confirmPasswordReset(window._auth, oobCode, pass1);
     document.getElementById('confirmResetForm').style.display = 'none';
     showMsg('Contraseña actualizada. Podés ingresar al sistema.', true);
     if(msgEl) {
