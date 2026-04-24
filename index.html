@@ -18676,6 +18676,13 @@ window.embiUpdateEstado = async function(id, estado) {
         creadoEn:new Date().toISOString()
       });
     }
+    if(estado==='revisado' && r?.clienteId) {
+      await window._addDoc(window._collection(window.db,'clientes',r.clienteId,'embiNotificaciones'),{
+        mensaje:'Tu reporte está siendo revisado por el equipo de MB Strategy. Te avisaremos cuando esté resuelto.',
+        leido:false,
+        creadoEn:new Date().toISOString()
+      });
+    }
     renderEmbiReports();
   } catch(e){ showToast('Error: '+e.message, 'error'); }
 };
