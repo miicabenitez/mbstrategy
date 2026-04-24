@@ -18639,7 +18639,7 @@ window.embiAdminFilter = function(f, btn) {
 
 window.embiUpdateEstado = async function(id, estado) {
   try {
-    await updateDoc(doc(db,'embiReports',id),{estado});
+    await window._updateDoc(window._doc(window.db,'embiReports',id),{estado});
     const r = _embiReports.find(x=>x.id===id);
     if(r) r.estado = estado;
     if(estado==='resuelto' && r?.clienteId) {
@@ -18656,7 +18656,7 @@ window.embiUpdateEstado = async function(id, estado) {
 window.embiDeleteReport = function(id) {
   showConfirm('¿Eliminar este reporte?', async()=>{
     try {
-      await updateDoc(doc(db,'embiReports',id), {eliminado:true, eliminadoEn:new Date().toISOString()});
+      await window._updateDoc(window._doc(window.db,'embiReports',id), {eliminado:true, eliminadoEn:new Date().toISOString()});
       _embiReports = _embiReports.filter(r=>r.id!==id);
       renderEmbiReports();
     } catch(e){ showToast('Error: '+e.message, 'error'); }
