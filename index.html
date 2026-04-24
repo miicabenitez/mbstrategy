@@ -415,8 +415,8 @@ input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus
 }
 .mobile-menu{display:none;background:none;border:none;cursor:pointer;padding:4px;color:var(--text-m);}
 .mobile-nav{display:none;position:fixed;inset:0;background:rgba(44,40,38,.5);z-index:200;}
-.mobile-nav.open{display:flex;}
-.mobile-nav-panel{background:var(--topbar);width:240px;height:100%;padding:20px 16px;display:flex;flex-direction:column;gap:4px;border-right:.5px solid rgba(255,255,255,.06);overflow-y:auto;}
+.mobile-nav.open{display:flex;align-items:stretch;}
+.mobile-nav-panel{background:var(--topbar);width:240px;height:100vh;padding:20px 16px;display:flex;flex-direction:column;gap:4px;border-right:.5px solid rgba(255,255,255,.06);overflow-y:auto;}
 .mobile-nav-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:16px;border-bottom:.5px solid var(--cream-d);}
 .mobile-nav-logo{font-family:'Cormorant Garamond',serif;font-size:16px;letter-spacing:2px;color:var(--accent);}
 .mobile-nav-btn{width:100%;text-align:left;padding:11px 14px;border-radius:10px;border:none;background:transparent;font-size:14px;font-family:'DM Sans',sans-serif;color:rgba(255,255,255,.7);cursor:pointer;transition:all .15s;}
@@ -5200,6 +5200,7 @@ function _mostrarSeccionAdmin() {
     if(existing) existing.remove();
     const ms = document.createElement('div');
     ms.id = 'mnav-admin-section';
+    ms.style.cssText = 'display:block;width:100%;';
     ms.innerHTML = `
       <div style="margin-top:12px;padding-top:12px;border-top:.5px solid rgba(255,255,255,.15);">
         <div style="font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.4);padding:0 4px 6px;">Administración</div>
