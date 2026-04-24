@@ -934,6 +934,7 @@ body.admin-micaela{--ok:#c9a898;--warn:#d4a574;--err:#c47070;}
 body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,body.admin-micaela p,body.admin-micaela div,body.admin-micaela span{-webkit-font-smoothing:antialiased !important;-moz-osx-font-smoothing:grayscale !important;}
 @media (max-width:767px) {
   body.admin-micaela .app{padding-left:0 !important;}
+  body.admin-micaela #admin-back-btn{display:block !important;}
   body.admin-micaela #adminSidebar{display:none !important;position:fixed;top:0;left:0;height:100vh;z-index:1100;transform:translateX(-100%);transition:transform .25s ease;}
   body.admin-micaela #adminSidebar.drawer-open{display:flex !important;transform:translateX(0);}
   #admin-drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1099;}
@@ -1299,6 +1300,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
   <div class="content">
     <!-- ADMIN -->
     <div id="aArea" style="display:none;">
+      <button id="admin-back-btn" onclick="window._volverAClienteView();var bn=document.getElementById('bottomNav');if(bn)bn.style.display='';" style="display:none;margin-bottom:16px;background:none;border:none;color:rgba(255,255,255,.6);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;padding:4px 0;">← Volver a mi negocio</button>
 
       <!-- INICIO - Dashboard Micaela -->
       <div class="view" id="av-inicio">
@@ -5157,6 +5159,12 @@ window._irAAdminTab = function(tab) {
   loadAdminData();
 };
 
+window.goToAdminTab = function(tab) {
+  window._irAAdminTab(tab);
+  const bn = document.getElementById('bottomNav');
+  if(bn) bn.style.display = 'none';
+};
+
 function _mostrarSeccionAdmin() {
   // Desktop sidebar
   if(!document.getElementById('sb-admin-section')) {
@@ -5220,7 +5228,7 @@ function _mostrarSeccionAdmin() {
     if(existingBnav) existingBnav.remove();
     const ba = document.createElement('span');
     ba.id = 'bnav-admin-section';
-    ba.innerHTML = `<span style="display:inline-block;width:1px;height:20px;background:rgba(255,255,255,.2);margin:0 6px;vertical-align:middle;"></span><span style="display:inline-block;font-size:10px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1px;padding:0 4px;vertical-align:middle;">Admin</span><button class="bnav-item" onclick="showATab('inicio',null)">Inicio</button><button class="bnav-item" onclick="showATab('dash',null)">Clientes</button><button class="bnav-item" onclick="showATab('embi',null)">Embi ✦</button><button class="bnav-item" onclick="showATab('embiusage',null)">Uso Embi</button><button class="bnav-item" onclick="showATab('papelera',null)">Papelera</button>`;
+    ba.innerHTML = `<span style="display:inline-block;width:1px;height:20px;background:rgba(255,255,255,.2);margin:0 6px;vertical-align:middle;"></span><span style="display:inline-block;font-size:10px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1px;padding:0 4px;vertical-align:middle;">Admin</span><button class="bnav-item" onclick="goToAdminTab('inicio')">Inicio</button><button class="bnav-item" onclick="goToAdminTab('dash')">Clientes</button><button class="bnav-item" onclick="goToAdminTab('embi')">Embi ✦</button><button class="bnav-item" onclick="goToAdminTab('embiusage')">Uso Embi</button><button class="bnav-item" onclick="goToAdminTab('papelera')">Papelera</button>`;
     bNav.appendChild(ba);
   }
 }
