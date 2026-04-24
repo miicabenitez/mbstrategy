@@ -51,6 +51,7 @@ async function enviarWelcomeEmail(data) {
   const { handler } = require('./send-welcome-email');
   const event = {
     httpMethod: 'POST',
+    headers: { 'x-internal-secret': process.env.INTERNAL_SECRET || '' },
     body: JSON.stringify(data)
   };
   try {
