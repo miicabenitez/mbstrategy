@@ -4780,7 +4780,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, confirmPasswordReset } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, addDoc, collection, getDocs, query, where, orderBy, updateDoc, deleteDoc, deleteField, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 // Expose firestore db globally for cross-block access
 
@@ -4877,6 +4877,19 @@ window.createEmptyState = function(icon, title, description, buttonText, buttonA
     + btnHtml
     + '</div>';
 };
+
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  const mode = params.get('mode');
+  const oobCode = params.get('oobCode');
+  if (mode === 'resetPassword' && oobCode) {
+    window._pendingResetOobCode = oobCode;
+    const lo = document.getElementById('lo');
+    if(lo) { lo.style.opacity='0'; lo.style.display='none'; }
+    const modal = document.getElementById('confirmResetModal');
+    if(modal) modal.classList.add('open');
+  }
+})();
 
 onAuthStateChanged(auth, async (user) => {
   const lo = document.getElementById('lo');
@@ -20453,6 +20466,32 @@ function closeClientMobileMenu(){
 }
 document.addEventListener('click',function(){closeClientMobileMenu();});
 
+window.handleConfirmReset = async function() {
+  const pass1 = (document.getElementById('confirmResetPass1')?.value||'').trim();
+  const pass2 = (document.getElementById('confirmResetPass2')?.value||'').trim();
+  const msgEl = document.getElementById('confirmResetMsg');
+  const showMsg = (txt, ok) => { if(msgEl){ msgEl.textContent=txt; msgEl.style.background=ok?'var(--ok-bg)':'var(--err-bg)'; msgEl.style.color=ok?'var(--ok)':'var(--err)'; msgEl.style.display='block'; } };
+  if(!pass1 || pass1.length < 8) return showMsg('La contraseña debe tener al menos 8 caracteres.', false);
+  if(pass1 !== pass2) return showMsg('Las contraseñas no coinciden.', false);
+  const oobCode = window._pendingResetOobCode;
+  if(!oobCode) return showMsg('Código de restablecimiento inválido o expirado.', false);
+  try {
+    await confirmPasswordReset(auth, oobCode, pass1);
+    document.getElementById('confirmResetForm').style.display = 'none';
+    showMsg('Contraseña actualizada. Podés ingresar al sistema.', true);
+    if(msgEl) {
+      const btn = document.createElement('button');
+      btn.textContent = 'Ir al login';
+      btn.style.cssText = 'margin-top:14px;width:100%;padding:12px;background:#4a5e4d;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;font-family:"DM Sans",sans-serif;cursor:pointer;';
+      btn.onclick = () => { window.history.replaceState({},'','/'); document.getElementById('confirmResetModal').classList.remove('open'); const lo=document.getElementById('lo'); if(lo){lo.style.display='';lo.style.opacity='1';} };
+      msgEl.after(btn);
+    }
+  } catch(e) {
+    const msg = e.code==='auth/expired-action-code' ? 'El link expiró. Solicitá un nuevo link de restablecimiento.' : e.code==='auth/invalid-action-code' ? 'El link no es válido o ya fue usado.' : 'Error al actualizar la contraseña. Intentá de nuevo.';
+    showMsg(msg, false);
+  }
+};
+
 window.resetPassword = function(){
   var el = document.getElementById('resetPassModal');
   if(!el) return;
@@ -20501,6 +20540,19 @@ window.doResetPassword = async function(){
     <div id="resetPassForm">
       <div style="margin-bottom:16px;"><label style="font-size:11px;font-weight:700;color:#4a4a4a;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px;">Email</label><input type="email" id="resetPassEmail" class="fi" placeholder="tu@email.com" onkeydown="if(event.key==='Enter')doResetPassword()"/></div>
       <button onclick="doResetPassword()" style="width:100%;padding:13px;background:#4a5e4d;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;">Enviar</button>
+    </div>
+  </div>
+</div>
+
+<div class="mo" id="confirmResetModal">
+  <div class="md" style="max-width:420px;">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;color:var(--text);margin-bottom:6px;">Nueva contraseña</div>
+    <div style="font-size:13px;color:var(--text-l);margin-bottom:22px;">Ingresá y confirmá tu nueva contraseña para acceder al sistema.</div>
+    <div id="confirmResetMsg" style="display:none;font-size:13px;padding:10px 14px;border-radius:9px;margin-bottom:16px;"></div>
+    <div id="confirmResetForm">
+      <div style="margin-bottom:14px;"><label style="font-size:11px;font-weight:700;color:#4a4a4a;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px;">Nueva contraseña</label><input type="password" id="confirmResetPass1" class="fi" placeholder="Mínimo 8 caracteres"/></div>
+      <div style="margin-bottom:20px;"><label style="font-size:11px;font-weight:700;color:#4a4a4a;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px;">Confirmar contraseña</label><input type="password" id="confirmResetPass2" class="fi" placeholder="Repetí tu contraseña"/></div>
+      <button onclick="handleConfirmReset()" style="width:100%;padding:13px;background:#4a5e4d;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;">Guardar contraseña</button>
     </div>
   </div>
 </div>
