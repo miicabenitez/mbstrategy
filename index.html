@@ -948,6 +948,12 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 .adm-dash-4col{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;}
 .adm-dash-3col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;}
 @media(max-width:768px){.adm-dash-4col{grid-template-columns:1fr 1fr;}.adm-dash-3col{grid-template-columns:1fr;}}
+@media(max-width:767px){
+  body.admin-micaela #adm-two-cols{grid-template-columns:1fr !important;}
+  body.admin-micaela #detail-finanzas,body.admin-micaela #inicio-kpis,body.admin-micaela #inicio-accesos-grid,body.admin-micaela #caja-kpi-grid,body.admin-micaela #ck-alertas-grid,body.admin-micaela #presup-kpi-grid,body.admin-micaela #mc-kpi-clientes-grid{grid-template-columns:1fr 1fr !important;}
+  body.admin-micaela [style*="grid-template-columns:repeat(5"]{grid-template-columns:1fr 1fr !important;}
+  body.admin-micaela [style*="grid-template-columns:1.4fr"]{grid-template-columns:1fr !important;overflow-x:auto;}
+}
 </style>
 <!-- deploy force 001 -->
 </head>
@@ -1300,7 +1306,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
   <div class="content">
     <!-- ADMIN -->
     <div id="aArea" style="display:none;">
-      <button id="admin-back-btn" onclick="window._volverAClienteView();var bn=document.getElementById('bottomNav');if(bn)bn.style.display='';" style="display:none;margin-bottom:16px;background:none;border:none;color:rgba(255,255,255,.6);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;padding:4px 0;">← Volver a mi negocio</button>
+      <button id="admin-back-btn" onclick="window._volverAClienteView();var bn=document.getElementById('bottomNav');if(bn&&bn.dataset.origHtml){bn.innerHTML=bn.dataset.origHtml;delete bn.dataset.origHtml;}" style="display:none;margin-bottom:16px;background:none;border:none;color:#2a3a2c;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;padding:4px 0;">← Volver a mi negocio</button>
 
       <!-- INICIO - Dashboard Micaela -->
       <div class="view" id="av-inicio">
@@ -5162,7 +5168,10 @@ window._irAAdminTab = function(tab) {
 window.goToAdminTab = function(tab) {
   window._irAAdminTab(tab);
   const bn = document.getElementById('bottomNav');
-  if(bn) bn.style.display = 'none';
+  if(bn) {
+    if(!bn.dataset.origHtml) bn.dataset.origHtml = bn.innerHTML;
+    bn.innerHTML = `<button class="bnav-item active" onclick="window._volverAClienteView();var bn=document.getElementById('bottomNav');if(bn&&bn.dataset.origHtml){bn.innerHTML=bn.dataset.origHtml;delete bn.dataset.origHtml;}">← Negocio</button><button class="bnav-item" onclick="goToAdminTab('inicio')">Inicio</button><button class="bnav-item" onclick="goToAdminTab('dash')">Clientes</button><button class="bnav-item" onclick="goToAdminTab('embi')">Embi ✦</button><button class="bnav-item" onclick="goToAdminTab('embiusage')">Uso Embi</button><button class="bnav-item" onclick="goToAdminTab('papelera')">Papelera</button>`;
+  }
 };
 
 function _mostrarSeccionAdmin() {
