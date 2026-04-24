@@ -20487,6 +20487,7 @@ window.handleConfirmReset = async function() {
       msgEl.after(btn);
     }
   } catch(e) {
+    console.error('[RESET PASS] error code:', e.code, 'message:', e.message, e);
     const msg = e.code==='auth/expired-action-code' ? 'El link expiró. Solicitá un nuevo link de restablecimiento.' : e.code==='auth/invalid-action-code' ? 'El link no es válido o ya fue usado.' : 'Error al actualizar la contraseña. Intentá de nuevo.';
     showMsg(msg, false);
   }
