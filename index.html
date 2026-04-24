@@ -5213,6 +5213,16 @@ function _mostrarSeccionAdmin() {
     mobilePanel.appendChild(ms);
     console.log('[ADMIN MOBILE] sección inyectada, botones:', ms.querySelectorAll('button').length);
   }
+  // Bottom nav
+  const bNav = document.getElementById('bottomNav');
+  if(bNav) {
+    const existingBnav = document.getElementById('bnav-admin-section');
+    if(existingBnav) existingBnav.remove();
+    const ba = document.createElement('span');
+    ba.id = 'bnav-admin-section';
+    ba.innerHTML = `<span style="display:inline-block;width:1px;height:20px;background:rgba(255,255,255,.2);margin:0 6px;vertical-align:middle;"></span><span style="display:inline-block;font-size:10px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1px;padding:0 4px;vertical-align:middle;">Admin</span><button class="bnav-item" onclick="showATab('inicio',null)">Inicio</button><button class="bnav-item" onclick="showATab('dash',null)">Clientes</button><button class="bnav-item" onclick="showATab('embi',null)">Embi ✦</button><button class="bnav-item" onclick="showATab('embiusage',null)">Uso Embi</button><button class="bnav-item" onclick="showATab('papelera',null)">Papelera</button>`;
+    bNav.appendChild(ba);
+  }
 }
 
 window.renderAdminDashboard = function() {
