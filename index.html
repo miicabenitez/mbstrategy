@@ -20048,6 +20048,11 @@ async function embiEjecutarAccion(tipo,datos){
       var _repData={tipo:datos.tipo||'falla',descripcion:datos.descripcion||'',estado:'pendiente',eliminado:false,creadoEn:new Date().toISOString(),clienteId:currentClientUID||''};
       if(window.currentClientData&&window.currentClientData.nombre)_repData.clienteNombre=window.currentClientData.nombre;
       await window._addDoc(window._collection(window.db,'embiReports'),_repData);
+    }else if(tipo==='CALCULADOR_EXPRESS'){
+      var _calcData={nombre:datos.nombre||'Sin nombre',costoTotal:parseFloat(datos.costoTotal)||0,tipo:datos.tipo||'producto',margen:parseFloat(datos.margen)||30,creadoEn:new Date().toISOString(),origen:'embi'};
+      await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'calculadora'),_calcData);
+      var _calcPrecio=Math.round(_calcData.costoTotal*(1+_calcData.margen/100));
+      embiAddMsg('bot','Cálculo guardado: '+_calcData.nombre+'. Costo: $'+_calcData.costoTotal.toLocaleString('es-AR')+' → Precio sugerido con '+_calcData.margen+'% margen: $'+_calcPrecio.toLocaleString('es-AR')+'. Lo encontrás en Control del negocio → Calculador de costos.');
     }else{embiAddMsg('bot','Acción no reconocida: '+tipo);}
   }catch(e){embiAddMsg('bot','Error al ejecutar: '+e.message);}
 }
