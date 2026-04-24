@@ -19879,6 +19879,7 @@ async function embiLogAccion(tipo,estado,datos){
 async function embiEjecutarAccion(tipo,datos){
   if(!currentClientUID){embiAddMsg('bot','No hay sesión activa.');return;}
   try{
+    console.log('[EMBI ACTION] tipo:', tipo, 'datos:', JSON.stringify(datos));
     var hoy=new Date().toISOString().split('T')[0];
     var d=new Date();
     var mesTxt=d.toLocaleDateString('es-AR',{month:'long',year:'numeric'});
