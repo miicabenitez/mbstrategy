@@ -6834,7 +6834,8 @@ async function loadClientReunion(clientId) {
       // Botón Meet en la card
       if(meetCardEl) {
         if(r.link) {
-          meetCardEl.innerHTML = `<a href="${r.link}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--topbar);color:#fff;text-decoration:none;padding:7px 14px;border-radius:9px;font-size:12px;font-weight:500;font-family:'DM Sans',sans-serif;">
+          const _safeLink = (r.link||'').startsWith('https://') ? r.link : '#';
+          meetCardEl.innerHTML = `<a href="${_safeLink}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--topbar);color:#fff;text-decoration:none;padding:7px 14px;border-radius:9px;font-size:12px;font-weight:500;font-family:'DM Sans',sans-serif;">
             <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 11L11 2M11 2H5M11 2v6" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/></svg>
             Entrar a la reunión
           </a>`;
@@ -12183,7 +12184,7 @@ function paRenderProductividad() {
   if(ie && totalMins > 0) {
     const top = MODS.reduce((a,b)=>totals[a]>=totals[b]?a:b);
     const c = CONF[top];
-    ie.innerHTML = `<div class="pa-insight-main">${top} es tu módulo más activo</div><div class="pa-insight-sub">Dedicaste ${fmtTime(totals[top])} ${pl} gestionando ${c.area}. En total llevás ${fmtTime(totalMins)} organizando tu negocio.</div>`;
+    ie.innerHTML = `<div class="pa-insight-main">${top} es tu módulo más activo</div><div class="pa-insight-sub">Dedicaste ${fmtTime(totals[top])} ${pl} gestionando ${sanitize(c.area)}. En total llevás ${fmtTime(totalMins)} organizando tu negocio.</div>`;
   }
 }
 
@@ -12497,8 +12498,8 @@ function renderMcPendientes() {
   const tipoIcon={presupuesto:'→',cobro:'$',reunion:'·',entregable:'·'};
   el.innerHTML=_mcPendientes.map(p=>`<div class="row" style="${p.completado?'opacity:.5':''}">
     <div style="flex:1;">
-      <div style="font-size:13px;font-weight:500;color:var(--text);${p.completado?'text-decoration:line-through':''};">${tipoIcon[p.tipo]||'·'} ${p.texto}</div>
-      <div style="font-size:11px;color:var(--text-l);margin-top:2px;">${p.cliente||''}${p.fecha?' · '+p.fecha:''}</div>
+      <div style="font-size:13px;font-weight:500;color:var(--text);${p.completado?'text-decoration:line-through':''};">${tipoIcon[p.tipo]||'·'} ${sanitize(p.texto)}</div>
+      <div style="font-size:11px;color:var(--text-l);margin-top:2px;">${sanitize(p.cliente||'')}${p.fecha?' · '+sanitize(p.fecha):''}</div>
     </div>
     <div style="display:flex;gap:4px;flex-shrink:0;">
       ${!p.completado?`<button onclick="completarMcPendiente('${p.id}')" style="font-size:11px;padding:3px 9px;border-radius:20px;border:.5px solid var(--ok);background:var(--ok-bg);color:var(--ok);cursor:pointer;font-family:'DM Sans',sans-serif;">✓</button>`:''}
@@ -12816,7 +12817,7 @@ window.openMcCobroModal = async function(clienteId, presupId, concepto, monto) {
       const cuentas = [];
       snap.forEach(d=>cuentas.push({id:d.id,...d.data()}));
       cuentas.sort((a,b)=>(a.orden||0)-(b.orden||0));
-      cuentaSel.innerHTML = cuentas.map(c=>`<option value="${c.nombre}">${c.nombre}</option>`).join('');
+      cuentaSel.innerHTML = cuentas.map(c=>`<option value="${sanitize(c.nombre)}">${sanitize(c.nombre)}</option>`).join('');
     } catch(e) { cuentaSel.innerHTML = '<option value="Efectivo">Efectivo</option>'; }
   }
   openModal('newMcCobroModal');
@@ -19201,7 +19202,7 @@ window.openModal = function(id) {
     const clients = window._allClients || [];
     ['ec-cliente','cob-cliente'].forEach(selId => {
       const sel = document.getElementById(selId);
-      if(sel) sel.innerHTML = '<option value="">Sin cliente específico</option>' + clients.map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('');
+      if(sel) sel.innerHTML = '<option value="">Sin cliente específico</option>' + clients.map(c=>`<option value="${c.id}">${sanitize(c.nombre)}</option>`).join('');
     });
   }
   if(id === 'newCobroClienteModal') { loadCcBalance(); }
@@ -19232,7 +19233,7 @@ window.openModal = function(id) {
   if(id === 'newMcReunionModal') {
     // Populate client selector
     const sel = document.getElementById('mcr-cliente-sel');
-    if(sel) sel.innerHTML = _mcClientes.map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('');
+    if(sel) sel.innerHTML = _mcClientes.map(c=>`<option value="${c.id}">${sanitize(c.nombre)}</option>`).join('');
     document.getElementById('mcr-fecha').value = '';
     document.getElementById('mcr-hora').value = '10:00';
     document.getElementById('mcr-notas').value = '';
@@ -19242,7 +19243,7 @@ window.openModal = function(id) {
     // Populate client selector with mc clients
     const sel = document.getElementById('mcp-presup-cliente-sel');
     if (sel && _mcClientes.length > 0) {
-      sel.innerHTML = _mcClientes.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
+      sel.innerHTML = _mcClientes.map(c => `<option value="${c.id}">${sanitize(c.nombre)}</option>`).join('');
     }
     document.getElementById('mcp-presup-fecha').value = new Date().toISOString().split('T')[0];
   }
