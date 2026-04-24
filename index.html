@@ -18586,12 +18586,13 @@ function renderEmbiReports() {
     const estadoBg = r.estado==='resuelto'?'var(--ok-bg)':r.estado==='revisado'?'var(--warn-bg)':'var(--cream)';
     const estadoTc = r.estado==='resuelto'?'var(--ok)':r.estado==='revisado'?'var(--warn)':'var(--text-l)';
     const fecha = r.fecha ? new Date(r.fecha).toLocaleDateString('es-AR',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+    const clienteEmail = (window._allClients||[]).find(c=>c.id===r.clienteId)?.email||'';
     return `<div style="padding:14px 0;border-bottom:.5px solid var(--cream-d);">
       <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;">
         <span style="background:${badgeBg};color:${badgeTc};font-size:9px;font-weight:500;padding:2px 8px;border-radius:20px;flex-shrink:0;margin-top:2px;">${badgeLabel}</span>
         <div style="flex:1;min-width:0;">
           <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px;">${r.descripcion||r.mensajeOriginal||'—'}</div>
-          <div style="font-size:11px;color:var(--text-l);">${r.clienteNombre||r.cliente||'—'} · ${r.modulo||'—'} · ${fecha}</div>
+          <div style="font-size:11px;color:var(--text-l);">${r.clienteNombre||r.cliente||'—'}${clienteEmail?' · <span style="color:var(--blue);">'+clienteEmail+'</span>':''} · ${fecha}</div>
           ${r.mensajeOriginal?`<div style="font-size:11px;color:var(--text-l);margin-top:4px;font-style:italic;">"${r.mensajeOriginal}"</div>`:''}
         </div>
         <span style="background:${estadoBg};color:${estadoTc};font-size:9px;font-weight:500;padding:2px 8px;border-radius:20px;flex-shrink:0;margin-top:2px;">${r.estado||'pendiente'}</span>
@@ -18619,6 +18620,13 @@ window.embiUpdateEstado = async function(id, estado) {
     await updateDoc(doc(db,'embiReports',id),{estado});
     const r = _embiReports.find(x=>x.id===id);
     if(r) r.estado = estado;
+    if(estado==='resuelto' && r?.clienteId) {
+      await addDoc(collection(db,'clientes',r.clienteId,'embiNotificaciones'),{
+        mensaje:'Tu reporte fue revisado y resuelto por el equipo de MB Strategy.',
+        leido:false,
+        creadoEn:new Date().toISOString()
+      });
+    }
     renderEmbiReports();
   } catch(e){ showToast('Error: '+e.message, 'error'); }
 };
@@ -19721,10 +19729,11 @@ function embiGetModule(){
 }
 function embiRenderChips(){
   var qa=document.getElementById('embiQA');if(!qa)return;
-  qa.innerHTML='<div class="embi-report-btn" onclick="embiReport()">⚠ Reportar problema</div>';
+  qa.innerHTML='<div class="embi-report-btn" onclick="embiReport()">⚠ Reportar problema</div><div class="embi-report-btn" onclick="embiSuggest()" style="margin-left:8px;">💡 Sugerir mejora</div>';
 }
 function embiUseChip(el){document.getElementById('embiInput').value=el.textContent;embiSend();}
 function embiReport(){document.getElementById('embiInput').value='Quiero reportar un problema con el sistema';embiSend();}
+function embiSuggest(){document.getElementById('embiInput').value='Quiero hacer una sugerencia sobre el sistema';embiSend();}
 function embiRenderMd(text){
   var s=text.replace(/\[REPORT:[^\]]+\]/g,'').trim();
   s=s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
@@ -20160,6 +20169,19 @@ function embiToggle(){
       var greet=nombre?'Hola '+nombre+', soy Embi, tu asistente en MB Strategy. Estoy acá para ayudarte a operar el sistema y resolver dudas al instante. ¿En qué te puedo ayudar?':'Hola, soy Embi, tu asistente en MB Strategy. Estoy acá para ayudarte a operar el sistema y resolver dudas al instante. ¿En qué te puedo ayudar?';
       embiAddMsg('bot',greet);
       embiHistory.push({role:'assistant',content:greet});
+      if(window.currentClientUID){
+        (async()=>{
+          try{
+            const _nSnap=await getDocs(collection(db,'clientes',window.currentClientUID,'embiNotificaciones'));
+            const _nPend=[];
+            _nSnap.forEach(d=>{if(!d.data().leido)_nPend.push({id:d.id,...d.data()});});
+            if(_nPend.length>0){
+              _nPend.forEach(n=>embiAddMsg('bot','📋 '+n.mensaje));
+              await Promise.all(_nPend.map(n=>updateDoc(doc(db,'clientes',window.currentClientUID,'embiNotificaciones',n.id),{leido:true})));
+            }
+          }catch(e){}
+        })();
+      }
     }
     setTimeout(function(){var i=document.getElementById('embiInput');if(i)i.focus();},300);
   }
