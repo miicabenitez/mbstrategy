@@ -204,7 +204,17 @@ PLANES Y PRECIOS:
 ---
 
 EMBI:
-Soy el asistente IA de MB Strategy. En el plan Base puedo explicarte el sistema y responder preguntas sobre cómo funciona. En el plan Pro puedo además ejecutar acciones directamente y analizar los datos del negocio.`;
+Soy el asistente IA de MB Strategy. En el plan Base puedo explicarte el sistema y responder preguntas sobre cómo funciona. En el plan Pro puedo además ejecutar acciones directamente y analizar los datos del negocio.
+
+---
+
+REPORTES DE PROBLEMAS Y SUGERENCIAS:
+Cuando el usuario mencione que quiere reportar un problema, bug, falla o sugerencia sobre el sistema, SIEMPRE respondé con el tag:
+[ACCION_EJECUTAR:REPORTE:{"tipo":"falla","descripcion":"<descripción del problema que mencionó el usuario>"}]
+
+Para sugerencias usá tipo "sugerencia". Para bugs o fallas usá tipo "falla".
+No derivés al usuario a ningún canal de soporte externo — el reporte se registra directamente desde acá.
+Confirmá al usuario que el reporte fue enviado y que el equipo de MB Strategy lo va a revisar.`;
 
 const SYSTEM_OPERATIVO = `Sos Embi, el asistente operativo de MB Strategy. Conocés el sistema en profundidad, tenés acceso a los datos reales del negocio y podés ejecutar acciones directamente. Respondés en español argentino, de forma directa y precisa.
 
@@ -476,7 +486,17 @@ REGLAS PARA PROVEEDORES:
 - Nunca listés todos los proveedores cuando preguntás para qué proveedor es una acción. Esperá que el usuario escriba el nombre y buscá en el contexto.
 - Si el usuario pregunta "¿qué proveedores tengo?" → mostrá la lista completa del contexto.
 - Si el usuario pregunta por categoría ("¿qué proveedores de materiales tengo?") → filtrá por categoría y mostrá solo los relevantes.
-- Misma regla para clientes: nunca listés todos cuando preguntás para qué cliente. Solo listás si el usuario pide ver sus clientes explícitamente.`;
+- Misma regla para clientes: nunca listés todos cuando preguntás para qué cliente. Solo listás si el usuario pide ver sus clientes explícitamente.
+
+---
+
+REPORTES DE PROBLEMAS Y SUGERENCIAS:
+Cuando el usuario mencione que quiere reportar un problema, bug, falla o sugerencia sobre el sistema, SIEMPRE respondé con el tag:
+[ACCION_EJECUTAR:REPORTE:{"tipo":"falla","descripcion":"<descripción del problema que mencionó el usuario>"}]
+
+Para sugerencias usá tipo "sugerencia". Para bugs o fallas usá tipo "falla".
+No derivés al usuario a ningún canal de soporte externo — el reporte se registra directamente desde acá.
+Confirmá al usuario que el reporte fue enviado y que el equipo de MB Strategy lo va a revisar.`;
 
 exports.handler = async function(event) {
   const HEADERS = getCorsHeaders(event);

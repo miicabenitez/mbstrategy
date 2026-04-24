@@ -19979,6 +19979,10 @@ async function embiEjecutarAccion(tipo,datos){
       (window._embi_listas=window._embi_listas||[]).push({id:_clRef.id,nombre:_clData.nombre,color:_clData.color,items:_clItems});
       if(window.loadInicio)window.loadInicio();
       embiAddMsg('bot','Lista "'+_clData.nombre+'" creada'+(datos.items&&datos.items.length?' con '+datos.items.length+' ítems.':'.'));
+    }else if(tipo==='REPORTE'){
+      var _repData={tipo:datos.tipo||'falla',descripcion:datos.descripcion||'',estado:'pendiente',eliminado:false,creadoEn:new Date().toISOString(),clienteId:currentClientUID||''};
+      if(window.currentClientData&&window.currentClientData.nombre)_repData.clienteNombre=window.currentClientData.nombre;
+      await window._addDoc(window._collection(window.db,'embiReports'),_repData);
     }else{embiAddMsg('bot','Acción no reconocida: '+tipo);}
   }catch(e){embiAddMsg('bot','Error al ejecutar: '+e.message);}
 }
