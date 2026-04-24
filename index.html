@@ -10720,6 +10720,25 @@ async function loadInicio() {
 
       const alertas = []; // {tipo, key, svg, color, title, subtitle, monto, accionLabel, accionFn, tag}
 
+      if(currentClientUID) {
+        try {
+          const _nSnap2 = await window._getDocs(window._collection(window.db,'clientes',currentClientUID,'embiNotificaciones'));
+          _nSnap2.forEach(d => {
+            const nd = d.data();
+            if(!nd.leido) {
+              alertas.push({tipo:'urgente', key:'embi-notif-'+d.id,
+                svg:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C4786A" stroke-width="1.8" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+                title: nd.mensaje||'Notificación de MB Strategy',
+                subtitle: 'MB Strategy',
+                monto:'',
+                accionLabel:'Entendido',
+                accionFn:"dismissEmbiNotif('"+d.id+"')",
+                tag:'Notificación'});
+            }
+          });
+        } catch(e) {}
+      }
+
       // URGENTES
       const aprobados2 = (window._clientPresupuestos||[]).filter(p=>p.estado==='Aprobado');
       if(aprobados2.length > 0) {
@@ -10828,7 +10847,7 @@ async function loadInicio() {
           const anim = 'animation:slideIn .35s ease both;animation-delay:'+(idx*60)+'ms;';
           const days = a.tipo==='positiva' ? 1 : 7;
           const dismissBtn = canDismiss ? '<button onclick="dismissAlerta(\'alerta-'+idx+'\',\''+a.key+'\','+days+')" style="background:none;border:none;cursor:pointer;padding:0;color:var(--text-l);font-size:18px;line-height:1;flex-shrink:0;" title="Descartar">×</button>' : '';
-          return '<div id="alerta-'+idx+'" style="display:flex;align-items:flex-start;gap:0;border-radius:10px;overflow:hidden;margin-bottom:8px;'+anim+'background:'+cm.bg+';border-left:4px solid '+cm.bar+';">'+
+          return '<div id="alerta-'+idx+'" data-key="'+a.key+'" style="display:flex;align-items:flex-start;gap:0;border-radius:10px;overflow:hidden;margin-bottom:8px;'+anim+'background:'+cm.bg+';border-left:4px solid '+cm.bar+';">'+
             '<div style="padding:12px 12px 12px 14px;flex:1;min-width:0;">'+
               '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px;">'+
                 '<div style="display:flex;align-items:center;gap:8px;">'+a.svg+
@@ -10948,6 +10967,13 @@ window.dismissAlerta = function(elId, key, days) {
   localStorage.setItem('mb_dismissed_alertas_'+(currentClientUID||''), JSON.stringify(d));
   const el = document.getElementById(elId);
   if(el) { el.style.animation = 'slideOut .3s ease forwards'; setTimeout(()=>{ if(el.parentNode) el.remove(); }, 320); }
+};
+window.dismissEmbiNotif = async function(docId) {
+  try {
+    await window._updateDoc(window._doc(window.db,'clientes',currentClientUID,'embiNotificaciones',docId),{leido:true});
+    const el = document.querySelector('#inicio-alertas [data-key="embi-notif-'+docId+'"]');
+    if(el) { el.style.animation='slideOut .3s ease forwards'; setTimeout(()=>{ if(el.parentNode) el.remove(); },320); }
+  } catch(e){}
 };
 
 window.showWelcomeScreen = function(clientData) {
