@@ -4808,6 +4808,17 @@ let currentClientId = null;
 let currentClientData = null;
 let currentClientUID = null;
 
+function sanitize(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+window.sanitize = sanitize;
+
 window.doLogin = async function() {
   const e = document.getElementById('le').value;
   const p = document.getElementById('lp2').value;
@@ -5446,7 +5457,7 @@ async function loadAdminData() {
     renderClientList(clients);
     const sel = document.getElementById('cob-cliente');
     if (sel) {
-      sel.innerHTML = '<option value="">Seleccionar cliente...</option>' + clients.map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('');
+      sel.innerHTML = '<option value="">Seleccionar cliente...</option>' + clients.map(c=>`<option value="${c.id}">${sanitize(c.nombre)}</option>`).join('');
     }
 
     // Leer cobros de colección global para renderizado de lista
@@ -5485,7 +5496,7 @@ async function loadAdminData() {
     await loadPendientes();
     const peCliente = document.getElementById('pe-cliente');
     if (peCliente) {
-      peCliente.innerHTML = '<option value="">Sin cliente especifico</option>' + clients.map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('');
+      peCliente.innerHTML = '<option value="">Sin cliente especifico</option>' + clients.map(c=>`<option value="${c.id}">${sanitize(c.nombre)}</option>`).join('');
     }
     if(currentAdminTab === 'inicio') renderAdminDashboard();
   } catch(e) { console.log('Error loading admin data:', e); }
@@ -7594,7 +7605,7 @@ window.editPendiente = function(id) {
   // Populate client dropdown
   const sel = document.getElementById('ep2-cliente');
   const clients = window._allClients||[];
-  sel.innerHTML = '<option value="">Sin cliente específico</option>' + clients.map(c=>`<option value="${c.id}" ${c.id===p.clienteId?'selected':''}>${c.nombre}</option>`).join('');
+  sel.innerHTML = '<option value="">Sin cliente específico</option>' + clients.map(c=>`<option value="${c.id}" ${c.id===p.clienteId?'selected':''}>${sanitize(c.nombre)}</option>`).join('');
   openModal('editPendienteModal');
 };
 
@@ -12622,7 +12633,7 @@ function renderMcKanban() {
     const cobradoKanban = parseFloat(c.totalCobrado)||0;
     const card    = document.createElement('div');
     card.innerHTML = `<div onclick="openMcDetalle('${c.id}')" style="background:var(--white);border:.5px solid var(--cream-d);border-radius:9px;padding:10px;margin-bottom:6px;cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='var(--sage)'" onmouseout="this.style.borderColor='var(--cream-d)'">
-      <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:3px;">${c.nombre}</div>
+      <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:3px;">${sanitize(c.nombre)}</div>
       ${cobradoKanban>0?`<div style="font-size:11px;color:var(--ok);margin-top:2px;">Cobrado: $${cobradoKanban.toLocaleString('es-AR')}</div>`:''}
       ${presups.length>0?`<div style="font-size:11px;color:var(--text-l);margin-top:4px;">${presups.length} presup.</div>`:''}
     </div>`;
