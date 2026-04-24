@@ -18642,6 +18642,7 @@ window.embiUpdateEstado = async function(id, estado) {
     await window._updateDoc(window._doc(window.db,'embiReports',id),{estado});
     const r = _embiReports.find(x=>x.id===id);
     if(r) r.estado = estado;
+    console.log('[EMBI NOTIF] clienteId:', r?.clienteId, 'estado:', estado);
     if(estado==='resuelto' && r?.clienteId) {
       await addDoc(collection(db,'clientes',r.clienteId,'embiNotificaciones'),{
         mensaje:'Tu reporte fue revisado y resuelto por el equipo de MB Strategy.',
@@ -19751,7 +19752,7 @@ function embiGetModule(){
 }
 function embiRenderChips(){
   var qa=document.getElementById('embiQA');if(!qa)return;
-  qa.innerHTML='<div class="embi-report-btn" onclick="embiReport()">⚠ Reportar problema</div><div class="embi-report-btn" onclick="embiSuggest()" style="margin-left:8px;">💡 Sugerir mejora</div>';
+  qa.innerHTML='<div class="embi-report-btn" onclick="embiReport()">Reportar problema</div><div class="embi-report-btn" onclick="embiSuggest()" style="margin-left:8px;">Sugerencias</div>';
 }
 function embiUseChip(el){document.getElementById('embiInput').value=el.textContent;embiSend();}
 function embiReport(){document.getElementById('embiInput').value='Quiero reportar un problema con el sistema';embiSend();}
