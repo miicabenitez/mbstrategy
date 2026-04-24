@@ -20053,6 +20053,7 @@ async function embiEjecutarAccion(tipo,datos){
       await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'calculos'),_calcData);
       var _calcPrecio=Math.round(_calcData.costoTotal*(1+_calcData.margen/100));
       embiAddMsg('bot','Cálculo guardado: '+_calcData.nombre+'. Costo: $'+_calcData.costoTotal.toLocaleString('es-AR')+' → Precio sugerido con '+_calcData.margen+'% margen: $'+_calcPrecio.toLocaleString('es-AR')+'. Lo encontrás en Control del negocio → Calculador de costos.');
+      if(window.loadCalcItems) loadCalcItems(currentClientUID);
     }else{embiAddMsg('bot','Acción no reconocida: '+tipo);}
   }catch(e){embiAddMsg('bot','Error al ejecutar: '+e.message);}
 }
