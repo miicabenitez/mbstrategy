@@ -967,7 +967,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
   body.admin-micaela .adm-dash-4col{grid-template-columns:1fr !important;}
 }
 </style>
-<!-- deploy force 007 -->
+<!-- deploy force 008 -->
 </head>
 <body>
 
@@ -7194,7 +7194,7 @@ const CALCF_TEMAS = {
 };
 
 function calcfFmt(n){return '$'+Math.round(n).toLocaleString('es-AR');}
-function calcfFmtK(n){if(!n)return '$0';return n>=1000?'$'+Math.round(n/1000)+'k':'$'+Math.round(n);}
+function calcfFmtK(n){return calcfFmt(n||0);}
 
 function calcfGetTema(costo, pct) {
   if(costo === 0) return CALCF_TEMAS.empty;
@@ -7337,19 +7337,19 @@ window.recalcCalc = function() {
     </div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px;">
       <div style="background:#fff;border-radius:14px;padding:13px 8px;display:flex;flex-direction:column;align-items:center;gap:7px;">
-        <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:#4a5e4d;">${calcfFmtK(costo)}</div>
+        <div style="font-family:'DM Sans',sans-serif;font-size:14px;color:#2d4a30;">${calcfFmtK(costo)}</div>
         <div style="width:34px;height:84px;border-radius:17px;background:#e8ede8;position:relative;overflow:hidden;"><div style="position:absolute;bottom:0;width:100%;border-radius:17px;background:linear-gradient(180deg,#6a8e6d,#4a5e4d);height:${h1}px;transition:height .8s cubic-bezier(.34,1.56,.64,1);"></div></div>
-        <div style="font-size:9px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;">Costo</div>
+        <div style="font-size:9px;color:#4a4a4a;text-transform:uppercase;letter-spacing:.06em;">Costo</div>
       </div>
       <div style="background:#fff;border-radius:14px;padding:13px 8px;display:flex;flex-direction:column;align-items:center;gap:7px;">
-        <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:#b09088;">${calcfFmtK(precio)}</div>
+        <div style="font-family:'DM Sans',sans-serif;font-size:14px;color:#7a5850;">${calcfFmtK(precio)}</div>
         <div style="width:34px;height:84px;border-radius:17px;background:#f5ebe8;position:relative;overflow:hidden;"><div style="position:absolute;bottom:0;width:100%;border-radius:17px;background:linear-gradient(180deg,#c4a098,#b09088);height:${h2}px;transition:height .8s cubic-bezier(.34,1.56,.64,1);"></div></div>
-        <div style="font-size:9px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;">Precio</div>
+        <div style="font-size:9px;color:#4a4a4a;text-transform:uppercase;letter-spacing:.06em;">Precio</div>
       </div>
       <div style="background:#fff;border-radius:14px;padding:13px 8px;display:flex;flex-direction:column;align-items:center;gap:7px;">
-        <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:#b09030;">${calcfFmtK(gan)}</div>
+        <div style="font-family:'DM Sans',sans-serif;font-size:14px;color:#8a7010;">${calcfFmtK(gan)}</div>
         <div style="width:34px;height:84px;border-radius:17px;background:#fdf8e8;position:relative;overflow:hidden;"><div style="position:absolute;bottom:0;width:100%;border-radius:17px;background:linear-gradient(180deg,#d4c060,#b09030);height:${h3}px;transition:height .8s cubic-bezier(.34,1.56,.64,1);"></div></div>
-        <div style="font-size:9px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;">Ganancia</div>
+        <div style="font-size:9px;color:#4a4a4a;text-transform:uppercase;letter-spacing:.06em;">Ganancia</div>
       </div>
     </div>
     <button onclick="saveCalc()" style="width:100%;background:#4a5e4d;color:#fff;border:none;border-radius:14px;padding:14px;font-size:14px;font-family:'DM Sans',sans-serif;cursor:pointer;font-weight:500;margin-bottom:8px;">Guardar cálculo</button>
