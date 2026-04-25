@@ -967,7 +967,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
   body.admin-micaela .adm-dash-4col{grid-template-columns:1fr !important;}
 }
 </style>
-<!-- deploy force 006 -->
+<!-- deploy force 007 -->
 </head>
 <body>
 
@@ -2994,137 +2994,108 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         </div>
 
         <!-- FORM VIEW (crear / editar) -->
-        <div id="calc-form-view" style="display:none;">
-          <button class="back-btn" onclick="closeCalcForm()">← Volver</button>
-          <input type="hidden" id="calcf-id"/>
+<div id="calc-form-view" style="display:none;">
+  <input type="hidden" id="calcf-id">
 
-          <!-- Banner con KPIs live -->
-          <div style="background:#4a5e4d;border-radius:16px;padding:20px 24px 22px;margin:0 0 14px;color:#fff;position:relative;overflow:hidden;">
-            <div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div>
-            <div style="font-family:'Cormorant Garamond',serif;font-size:22px;margin-bottom:16px;" id="calcf-banner-title">Nuevo cálculo</div>
-            <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;">
-              <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
-                <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Precio sugerido</div>
-                <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#fff;line-height:1;" id="calcf-kpi-precio">$0</div>
-              </div>
-              <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
-                <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Costo por unidad</div>
-                <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#fff;line-height:1;" id="calcf-kpi-costo">$0</div>
-              </div>
-              <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
-                <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Ganancia unit.</div>
-                <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#fff;line-height:1;" id="calcf-kpi-ganancia">$0</div>
-              </div>
-              <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
-                <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Margen</div>
-                <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#fff;line-height:1;" id="calcf-kpi-margen-live">30%</div>
-              </div>
-            </div>
-          </div>
+  <!-- BANNER — cambia de color según margen -->
+  <div id="calcf-banner" style="border-radius:16px;padding:24px 26px;margin-bottom:16px;background:linear-gradient(135deg,#4a5e4d,#3a4e3d,#5a6e5d);transition:background 1s ease;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
+      <div>
+        <div id="calcf-banner-title" style="font-family:'Cormorant Garamond',serif;font-size:28px;color:#fff;font-weight:400;">Nuevo cálculo de costo</div>
+        <div id="calcf-banner-sub" style="font-size:11px;color:rgba(255,255,255,.45);margin-top:4px;">Los números se actualizan en tiempo real</div>
+      </div>
+      <div id="calcf-banner-badge" style="font-size:11px;padding:5px 14px;border-radius:20px;background:rgba(255,255,255,.12);color:rgba(255,255,255,.8);">Completá los datos</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+      <div style="background:rgba(255,255,255,.1);border-radius:12px;padding:14px 16px;">
+        <div style="font-size:10px;color:rgba(255,255,255,.5);letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px;">Precio sugerido</div>
+        <div id="calcf-kpi-precio" style="font-family:'Cormorant Garamond',serif;font-size:26px;color:#fff;">$0</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:4px;">con tu margen</div>
+      </div>
+      <div style="background:rgba(255,255,255,.1);border-radius:12px;padding:14px 16px;">
+        <div style="font-size:10px;color:rgba(255,255,255,.5);letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px;">Costo por unidad</div>
+        <div id="calcf-kpi-costo" style="font-family:'Cormorant Garamond',serif;font-size:26px;color:rgba(255,255,255,.7);">$0</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:4px;">insumos + directos</div>
+      </div>
+      <div style="background:rgba(255,255,255,.1);border-radius:12px;padding:14px 16px;">
+        <div style="font-size:10px;color:rgba(255,255,255,.5);letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px;">Ganancia unit.</div>
+        <div id="calcf-kpi-ganancia" style="font-family:'Cormorant Garamond',serif;font-size:26px;color:#fff;">$0</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:4px;">lo que te queda</div>
+      </div>
+      <div style="background:rgba(255,255,255,.1);border-radius:12px;padding:14px 16px;">
+        <div style="font-size:10px;color:rgba(255,255,255,.5);letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px;">Margen</div>
+        <div id="calcf-kpi-margen-live" style="font-family:'Cormorant Garamond',serif;font-size:26px;color:rgba(255,255,255,.7);">40%</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:4px;">sobre el costo</div>
+      </div>
+    </div>
+  </div>
 
-          <!-- Grid: izquierda + derecha sticky -->
-          <div style="display:grid;grid-template-columns:1fr 320px;gap:16px;align-items:start;" id="calc-form-grid">
+  <!-- 1. MARGEN -->
+  <div style="background:#fff;border-radius:14px;padding:16px 18px;margin-bottom:10px;">
+    <div style="font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:#6b7280;margin-bottom:12px;font-weight:500;">Margen de ganancia</div>
+    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px;">
+      <div>
+        <div style="font-size:12px;color:#6b7280;margin-bottom:2px;">¿Cuánto querés ganar encima del costo?</div>
+        <div style="font-size:11px;color:#bbb;">Arrastrá el control o escribí el número</div>
+      </div>
+      <div id="calcf-margen-display" style="font-family:'Cormorant Garamond',serif;font-size:48px;line-height:1;color:#4a5e4d;transition:color .5s;">40%</div>
+    </div>
+    <input type="range" id="calcf-margen" min="1" max="1000" value="40" step="1" style="width:100%;cursor:pointer;accent-color:#b09088;" oninput="calcfSyncSlider(this.value)">
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:#bbb;margin-top:3px;margin-bottom:10px;"><span>1% — mínimo</span><span>← arrastrá</span><span>sin límite →</span></div>
+    <div style="display:flex;align-items:center;gap:8px;padding-top:10px;border-top:.5px solid #f0ece8;">
+      <span style="font-size:12px;color:#6b7280;">O escribí directamente:</span>
+      <input type="number" id="calcf-margen-manual" min="1" value="40" style="width:90px;text-align:center;font-family:'Cormorant Garamond',serif;font-size:18px;border:.5px solid rgba(0,0,0,.08);border-radius:8px;padding:8px;background:#eeebe6;outline:none;" oninput="calcfSyncManual(this.value)">
+      <span style="font-size:13px;color:#6b7280;">%</span>
+    </div>
+  </div>
 
-            <!-- Panel izquierdo -->
-            <div>
-              <div class="card">
+  <!-- 2. QUÉ CALCULÁS -->
+  <div style="background:#fff;border-radius:14px;padding:16px 18px;margin-bottom:10px;">
+    <div style="font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:#6b7280;margin-bottom:12px;font-weight:500;">¿Qué estás calculando?</div>
+    <div style="display:grid;grid-template-columns:1fr 80px;gap:8px;">
+      <div>
+        <div style="font-size:11px;color:#6b7280;margin-bottom:4px;">Nombre</div>
+        <input type="text" id="calcf-nombre" placeholder="Ej: Docena de facturas, Remera talle M..." style="width:100%;border:.5px solid rgba(0,0,0,.08);border-radius:8px;padding:9px 11px;font-size:13px;font-family:'DM Sans',sans-serif;background:#eeebe6;outline:none;" oninput="recalcCalc()">
+      </div>
+      <div>
+        <div style="font-size:11px;color:#6b7280;margin-bottom:4px;">Unidades</div>
+        <input type="number" id="calcf-unidades" value="1" min="1" style="width:100%;border:.5px solid rgba(0,0,0,.08);border-radius:8px;padding:9px 11px;font-size:13px;font-family:'DM Sans',sans-serif;background:#eeebe6;outline:none;" oninput="recalcCalc()">
+      </div>
+    </div>
+  </div>
 
-                <!-- Tabs tipo -->
-                <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;">
-                  <button id="ctab-btn-producto" onclick="setCalcMode('producto')" style="padding:7px 18px;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;background:#4a5e4d;color:#fff;border:2px solid #4a5e4d;">Producto</button>
-                  <button id="ctab-btn-hora" onclick="setCalcMode('hora')" style="padding:7px 18px;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;background:#fff;color:#1a1a1a;border:2px solid #4a5e4d;">Por hora</button>
-                  <button id="ctab-btn-proyecto" onclick="setCalcMode('proyecto')" style="padding:7px 18px;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;background:#fff;color:#1a1a1a;border:2px solid #4a5e4d;">Proyecto</button>
-                </div>
+  <!-- 3. INSUMOS -->
+  <div style="background:#fff;border-radius:14px;padding:16px 18px;margin-bottom:10px;">
+    <div style="font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:#6b7280;margin-bottom:12px;font-weight:500;">Insumos o materiales</div>
+    <div style="display:grid;grid-template-columns:1fr 88px 80px 74px;gap:6px;margin-bottom:6px;">
+      <div style="font-size:11px;color:#6b7280;">¿Qué usás?</div>
+      <div style="font-size:11px;color:#6b7280;">Comprás</div>
+      <div style="font-size:11px;color:#6b7280;">Precio $</div>
+      <div style="font-size:11px;color:#6b7280;">Usás x und.</div>
+    </div>
+    <div id="calcf-insumos-wrap"></div>
+    <button onclick="calcfAddInsumo()" style="width:100%;border:1px dashed rgba(74,94,77,.4);background:none;border-radius:10px;padding:9px;font-size:12px;color:#4a5e4d;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:5px;margin-top:2px;">
+      <svg width="11" height="11" viewBox="0 0 11 11"><path d="M5.5 1v9M1 5.5h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Agregar insumo
+    </button>
+  </div>
 
-                <!-- Modo express -->
-                <div style="margin-bottom:16px;">
-                  <button id="calc-express-btn" onclick="toggleExpressPanel()" style="padding:7px 14px;background:#f5f4f2;color:#3E4E42;border:1px solid #d0cec9;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;">⚡ Modo express</button>
-                </div>
-                <div id="calc-express-panel" style="display:none;background:#f5f4f2;border:1px solid #d0cec9;border-radius:12px;padding:14px;margin-bottom:16px;">
-                  <div style="font-size:10px;font-weight:600;color:var(--text-l);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;">Precio rápido</div>
-                  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;">
-                    <div>
-                      <div style="font-size:10px;color:var(--text-l);margin-bottom:4px;">Costo total ($)</div>
-                      <input type="number" id="exp-costo" placeholder="0" oninput="recalcExpress()" style="width:100%;padding:9px 11px;border:1.5px solid #d0cec9;border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;background:#fff;color:#1a1a1a;"/>
-                    </div>
-                    <div>
-                      <div style="font-size:10px;color:var(--text-l);margin-bottom:4px;">Margen (%)</div>
-                      <input type="number" id="exp-margen" placeholder="30" value="30" oninput="recalcExpress()" style="width:100%;padding:9px 11px;border:1.5px solid #d0cec9;border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;background:#fff;color:#1a1a1a;"/>
-                    </div>
-                    <div>
-                      <div style="font-size:10px;color:var(--text-l);margin-bottom:4px;">Cantidad</div>
-                      <input type="number" id="exp-qty" placeholder="1" value="1" oninput="recalcExpress()" style="width:100%;padding:9px 11px;border:1.5px solid #d0cec9;border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;background:#fff;color:#1a1a1a;"/>
-                    </div>
-                  </div>
-                  <div id="exp-result" style="background:#fff;border:1px solid #d0cec9;border-radius:8px;padding:10px 13px;font-size:13px;color:var(--text-m);">Ingresá el costo para ver el resultado.</div>
-                </div>
+  <!-- 4. COSTOS DIRECTOS -->
+  <div style="background:#fff;border-radius:14px;padding:16px 18px;margin-bottom:10px;">
+    <div style="font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:#6b7280;margin-bottom:6px;font-weight:500;">Costos directos por unidad</div>
+    <div style="font-size:11px;color:#6b7280;margin-bottom:10px;">Taller, flete, packaging, mano de obra...</div>
+    <div id="calcf-directos-wrap"></div>
+    <button onclick="calcfAddDirecto()" style="width:100%;border:1px dashed rgba(74,94,77,.4);background:none;border-radius:10px;padding:9px;font-size:12px;color:#4a5e4d;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:5px;margin-top:2px;">
+      <svg width="11" height="11" viewBox="0 0 11 11"><path d="M5.5 1v9M1 5.5h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Agregar costo directo
+    </button>
+  </div>
 
-                <!-- Nombre -->
-                <div style="margin-bottom:14px;">
-                  <label style="font-size:11px;font-weight:700;color:#4a4a4a;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px;">Nombre del producto / servicio</label>
-                  <input type="text" id="calcf-nombre" placeholder="Ej: Mascarilla facial, Consulta, Diseño web..." oninput="recalcCalc()" style="width:100%;padding:12px 14px;border:1.5px solid #e8e8e8;border-radius:10px;font-size:14px;font-family:'DM Sans',sans-serif;color:#1a1a1a;background:#fff;"/>
-                </div>
+  <!-- 5. RECIBO + MENSAJE + TERMÓMETROS -->
+  <div id="calcf-recibo-wrap"></div>
 
-                <!-- Calcular para X unidades -->
-                <div style="background:#E7F0E8;border:1px solid #C8D4CA;border-radius:10px;padding:11px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-                  <span style="font-size:12px;color:var(--text-m);white-space:nowrap;">Calcular para</span>
-                  <input type="number" id="calcf-unidades" placeholder="1" value="1" min="1" oninput="recalcCalc()" style="width:70px;padding:7px 10px;border:1.5px solid #C8D4CA;border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;background:#fff;color:#1a1a1a;text-align:center;"/>
-                  <span style="font-size:12px;color:var(--text-m);">unidades — muestra el costo e ingreso total del lote</span>
-                </div>
-
-                <!-- Margen slider -->
-                <div style="margin-bottom:16px;">
-                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-                    <label style="font-size:11px;font-weight:700;color:#4a4a4a;text-transform:uppercase;letter-spacing:.8px;">Margen de ganancia</label>
-                    <span style="font-size:14px;font-weight:600;color:#4a5e4d;" id="calcf-margen-label">30%</span>
-                  </div>
-                  <input type="range" id="calcf-margen" min="0" max="200" value="30" oninput="document.getElementById('calcf-margen-label').textContent=this.value+'%';recalcCalc();" style="width:100%;accent-color:#4a5e4d;cursor:pointer;height:4px;"/>
-                  <div style="font-size:11px;color:var(--text-l);margin-top:5px;">Porcentaje que agregás sobre el costo para definir tu precio de venta.</div>
-                </div>
-
-                <!-- Producto section -->
-                <div id="calcf-prod-section">
-                  <div style="font-size:10px;font-weight:600;color:var(--text-l);text-transform:uppercase;letter-spacing:.8px;margin:4px 0 10px;">Insumos</div>
-                  <div id="calcf-insumos-wrap"></div>
-                  <button onclick="addCalcInsumo()" style="width:100%;padding:9px;border:1.5px dashed #C8D4CA;border-radius:9px;background:transparent;color:var(--sage-dark);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;margin-top:4px;">+ Agregar insumo</button>
-                </div>
-
-                <!-- Por hora section -->
-                <div id="calcf-hora-section" style="display:none;">
-                  <div style="margin-bottom:14px;">
-                    <label style="font-size:11px;font-weight:700;color:#4a4a4a;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px;">Costos fijos mensuales ($)</label>
-                    <input type="number" id="calcf-costos-fijos" placeholder="0" oninput="recalcCalc()" style="width:100%;padding:12px 14px;border:1.5px solid #e8e8e8;border-radius:10px;font-size:14px;font-family:'DM Sans',sans-serif;color:#1a1a1a;background:#fff;"/>
-                  </div>
-                  <div style="margin-bottom:14px;">
-                    <label style="font-size:11px;font-weight:700;color:#4a4a4a;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px;">Horas facturables por mes</label>
-                    <input type="number" id="calcf-horas-mes" placeholder="0" oninput="recalcCalc()" style="width:100%;padding:12px 14px;border:1.5px solid #e8e8e8;border-radius:10px;font-size:14px;font-family:'DM Sans',sans-serif;color:#1a1a1a;background:#fff;"/>
-                  </div>
-                </div>
-
-                <!-- Proyecto section -->
-                <div id="calcf-proy-section" style="display:none;">
-                  <div style="margin-bottom:14px;">
-                    <label style="font-size:11px;font-weight:700;color:#4a4a4a;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px;">Horas estimadas</label>
-                    <input type="number" id="calcf-horas-est" placeholder="0" oninput="recalcCalc()" style="width:100%;padding:12px 14px;border:1.5px solid #e8e8e8;border-radius:10px;font-size:14px;font-family:'DM Sans',sans-serif;color:#1a1a1a;background:#fff;"/>
-                  </div>
-                  <div style="margin-bottom:14px;">
-                    <label style="font-size:11px;font-weight:700;color:#4a4a4a;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px;">Tarifa por hora ($)</label>
-                    <input type="number" id="calcf-tarifa-hora" placeholder="0" oninput="recalcCalc()" style="width:100%;padding:12px 14px;border:1.5px solid #e8e8e8;border-radius:10px;font-size:14px;font-family:'DM Sans',sans-serif;color:#1a1a1a;background:#fff;"/>
-                  </div>
-                  <div style="margin-bottom:14px;">
-                    <label style="font-size:11px;font-weight:700;color:#4a4a4a;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px;">Costos directos del proyecto ($)</label>
-                    <input type="number" id="calcf-costos-dir" placeholder="0" oninput="recalcCalc()" style="width:100%;padding:12px 14px;border:1.5px solid #e8e8e8;border-radius:10px;font-size:14px;font-family:'DM Sans',sans-serif;color:#1a1a1a;background:#fff;"/>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-
-            <!-- Panel derecho sticky -->
-            <div id="calcf-results-col" style="position:sticky;top:74px;"></div>
-
-          </div>
-        </div>
+  <div id="calcf-saved" style="display:none;text-align:center;padding:10px;color:#4a5e4d;font-size:13px;">✓ Cálculo guardado</div>
+</div>
       </div>
 
       <!-- PRODUCTOS / CATÁLOGO -->
@@ -7010,6 +6981,10 @@ function calcCostoProducto(insumos) {
 
 function _calcItemMetrics(c) {
   const margen = parseFloat(c.margen)||30;
+  // Preferir valores denormalizados del calculador nuevo si están presentes
+  if(typeof c.costoTotal === 'number' && typeof c.precioSugerido === 'number') {
+    return {margen, costo:c.costoTotal, precio:c.precioSugerido, ganancia:c.precioSugerido-c.costoTotal};
+  }
   const tipo = c.tipo || 'producto';
   let costo = 0, precio = 0, ganancia = 0;
   if(tipo === 'producto') {
@@ -7209,234 +7184,297 @@ window.removeCalcInsumo = function(idx) {
   recalcCalc();
 };
 
-window.showCalcForm = function(id) {
-  document.getElementById('calc-list-view').style.display = 'none';
-  document.getElementById('calc-form-view').style.display = 'block';
-  document.getElementById('calcf-id').value = id||'';
-  const clearFields = ids => ids.forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});
-  const setMargen = v => {
-    const el = document.getElementById('calcf-margen');
-    const lbl = document.getElementById('calcf-margen-label');
-    if(el) el.value = v;
-    if(lbl) lbl.textContent = v+'%';
-  };
-  const unEl = document.getElementById('calcf-unidades');
-  if(unEl) unEl.value = '1';
-  const bTitle = document.getElementById('calcf-banner-title');
-  if(id && calcData[id]) {
-    const c = calcData[id];
-    document.getElementById('calcf-nombre').value = c.nombre||'';
-    setMargen(c.margen||30);
-    if(bTitle) bTitle.textContent = c.nombre||'Editar cálculo';
-    _calcMode = c.tipo||'producto';
-    if(_calcMode === 'hora') {
-      document.getElementById('calcf-costos-fijos').value = c.costosFijos||'';
-      document.getElementById('calcf-horas-mes').value = c.horasMes||'';
-    } else if(_calcMode === 'proyecto') {
-      document.getElementById('calcf-horas-est').value = c.horasEstimadas||'';
-      document.getElementById('calcf-tarifa-hora').value = c.tarifaHora||'';
-      document.getElementById('calcf-costos-dir').value = c.costosDirectos||'';
-    } else {
-      _calcFormInsumos = (c.insumos||[]).map(ins=>({...ins}));
-      if(_calcFormInsumos.length === 0) _calcFormInsumos = [newInsumo()];
-    }
-  } else {
-    document.getElementById('calcf-nombre').value = '';
-    setMargen(30);
-    if(bTitle) bTitle.textContent = 'Nuevo cálculo';
-    _calcMode = 'producto';
-    _calcFormInsumos = [newInsumo()];
-    clearFields(['calcf-costos-fijos','calcf-horas-mes','calcf-horas-est','calcf-tarifa-hora','calcf-costos-dir']);
-  }
-  setCalcMode(_calcMode);
+// ─── CALCULADOR NUEVO ───────────────────────────────────────────
+const CALCF_TEMAS = {
+  empty: {bg:'linear-gradient(135deg,#4a5e4d,#3a4e3d,#5a6e5d)',badge:'Completá los datos',msgBg:'#e8ede8',mEC:'#4a5e4d',mSC:'#5a7a5d',mE:'Completá los datos para ver tu resultado',mS:'Agregá los insumos y el margen que querés ganar.',ganBg:'#f8f4f0',ganC:'#b09088',precioC:'#4a5e4d',mgC:'#4a5e4d'},
+  low:   {bg:'linear-gradient(135deg,#8b4a4a,#7a3a3a,#9a5a5a)',badge:'⚠ Margen muy bajo',msgBg:'#fdf0f0',mEC:'#b04040',mSC:'#904040',mE:'Cuidado — estás muy justo',mS:'Con este margen casi no cubrís tus costos. Revisá los insumos o subí el precio.',ganBg:'#fdf0f0',ganC:'#c04040',precioC:'#b04040',mgC:'#b04040'},
+  ok:    {bg:'linear-gradient(135deg,#7a7040,#6a6030,#8a8050)',badge:'✓ Margen aceptable',msgBg:'#fdf8e8',mEC:'#907020',mSC:'#806020',mE:'Puede mejorar',mS:'Estás en equilibrio pero cualquier imprevisto te come la ganancia. Apuntá a más.',ganBg:'#fdf8e8',ganC:'#a07020',precioC:'#907020',mgC:'#907020'},
+  good:  {bg:'linear-gradient(135deg,#4a5e4d,#3a4e3d,#5a6e5d)',badge:'✦ Margen saludable',msgBg:'#e8ede8',mEC:'#4a5e4d',mSC:'#5a7a5d',mE:'¡Vas muy bien!',mS:'',ganBg:'#e8f0e8',ganC:'#4a6e4d',precioC:'#4a5e4d',mgC:'#4a5e4d'},
+  great: {bg:'linear-gradient(135deg,#b09088,#9a7870,#c4a098)',badge:'✦✦ Margen excelente',msgBg:'#f5ebe8',mEC:'#906058',mSC:'#806050',mE:'¡Excelente negocio!',mS:'Cada peso que invertís vuelve multiplicado. Estás en el top de rentabilidad.',ganBg:'#f5ebe8',ganC:'#906058',precioC:'#906058',mgC:'#906058'}
 };
 
-window.closeCalcForm = function() {
-  document.getElementById('calc-list-view').style.display = 'block';
-  document.getElementById('calc-form-view').style.display = 'none';
-};
+function calcfFmt(n){return '$'+Math.round(n).toLocaleString('es-AR');}
+function calcfFmtK(n){if(!n)return '$0';return n>=1000?'$'+Math.round(n/1000)+'k':'$'+Math.round(n);}
 
-window.setCalcMode = function(mode) {
-  _calcMode = mode;
-  const map = {producto:'prod',hora:'hora',proyecto:'proy'};
-  ['producto','hora','proyecto'].forEach(m => {
-    const btn = document.getElementById('ctab-btn-'+m);
-    if(btn) {
-      btn.style.background = m===mode ? '#4a5e4d' : '#fff';
-      btn.style.color = m===mode ? '#fff' : '#1a1a1a';
-      btn.style.fontWeight = m===mode ? '500' : '400';
-      btn.style.border = '2px solid #4a5e4d';
-    }
-    const sec = document.getElementById('calcf-'+map[m]+'-section');
-    if(sec) sec.style.display = m===mode?'block':'none';
-  });
-  if(mode === 'producto') renderInsumos();
+function calcfGetTema(costo, pct) {
+  if(costo === 0) return CALCF_TEMAS.empty;
+  if(pct < 15) return CALCF_TEMAS.low;
+  if(pct < 30) return CALCF_TEMAS.ok;
+  if(pct < 55) return CALCF_TEMAS.good;
+  return CALCF_TEMAS.great;
+}
+
+window.calcfSyncSlider = function(val) {
+  document.getElementById('calcf-margen-manual').value = val;
+  recalcCalc();
+};
+window.calcfSyncManual = function(val) {
+  const v = Math.max(1, parseInt(val)||1);
+  document.getElementById('calcf-margen').value = Math.min(v, 1000);
   recalcCalc();
 };
 
+window.calcfAddInsumo = function(data) {
+  const wrap = document.getElementById('calcf-insumos-wrap');
+  const idx = Date.now();
+  const d = data || {nombre:'', compraQty:'', compraUnit:'kg', precio:'', usoPorUnidad:''};
+  const div = document.createElement('div');
+  div.className = 'calcf-ins-card';
+  div.dataset.idx = idx;
+  div.style.cssText = 'background:#eeebe6;border-radius:10px;padding:11px 12px;margin-bottom:8px;';
+  div.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 88px 80px 74px;gap:6px;align-items:center;">
+      <input type="text" placeholder="Nombre del insumo" value="${sanitize(d.nombre)}" class="calcf-ins-n" style="border:.5px solid rgba(0,0,0,.08);border-radius:8px;padding:9px 11px;font-size:13px;font-family:'DM Sans',sans-serif;background:#fff;outline:none;width:100%;">
+      <div style="display:flex;gap:3px;">
+        <input type="number" placeholder="25" value="${d.compraQty}" class="calcf-ins-cq" min="0" style="width:40px;padding:9px 5px;border:.5px solid rgba(0,0,0,.08);border-radius:8px;font-size:12px;font-family:'DM Sans',sans-serif;background:#fff;outline:none;">
+        <select class="calcf-ins-cu" style="width:46px;padding:9px 3px;border:.5px solid rgba(0,0,0,.08);border-radius:8px;font-size:12px;font-family:'DM Sans',sans-serif;background:#fff;outline:none;">
+          ${['kg','lt','g','ml','und','mts','rollo','frasco','caja'].map(u=>`<option ${u===d.compraUnit?'selected':''}>${u}</option>`).join('')}
+        </select>
+      </div>
+      <input type="number" placeholder="Precio $" value="${d.precio}" class="calcf-ins-p" min="0" style="border:.5px solid rgba(0,0,0,.08);border-radius:8px;padding:9px 11px;font-size:13px;font-family:'DM Sans',sans-serif;background:#fff;outline:none;width:100%;">
+      <div style="display:flex;gap:3px;align-items:center;">
+        <input type="number" placeholder="0.5" value="${d.usoPorUnidad}" class="calcf-ins-u" step="0.001" min="0" style="width:46px;padding:9px 5px;border:.5px solid rgba(0,0,0,.08);border-radius:8px;font-size:12px;font-family:'DM Sans',sans-serif;background:#fff;outline:none;">
+        <button onclick="this.closest('.calcf-ins-card').remove();recalcCalc();" style="background:none;border:.5px solid rgba(0,0,0,.1);border-radius:6px;width:26px;height:26px;cursor:pointer;color:#bbb;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">✕</button>
+      </div>
+    </div>
+    <div class="calcf-ins-cost" style="font-size:11px;color:#4a5e4d;text-align:right;margin-top:5px;font-weight:500;">Costo: <span class="calcf-ins-r">$0</span></div>`;
+  wrap.appendChild(div);
+  div.querySelectorAll('input,select').forEach(el => el.addEventListener('input', recalcCalc));
+};
+
+window.calcfAddDirecto = function(data) {
+  const wrap = document.getElementById('calcf-directos-wrap');
+  const d = data || {nombre:'', monto:''};
+  const div = document.createElement('div');
+  div.className = 'calcf-dir-row';
+  div.style.cssText = 'display:grid;grid-template-columns:1fr 100px 26px;gap:6px;align-items:center;margin-bottom:7px;';
+  div.innerHTML = `
+    <input type="text" placeholder="Ej: Taller, flete..." value="${sanitize(d.nombre)}" class="calcf-dir-n" style="border:.5px solid rgba(0,0,0,.08);border-radius:8px;padding:9px 11px;font-size:13px;font-family:'DM Sans',sans-serif;background:#eeebe6;outline:none;width:100%;">
+    <input type="number" placeholder="$" value="${d.monto}" class="calcf-dir-m" min="0" style="border:.5px solid rgba(0,0,0,.08);border-radius:8px;padding:9px 11px;font-size:13px;font-family:'DM Sans',sans-serif;background:#eeebe6;outline:none;width:100%;">
+    <button onclick="this.closest('.calcf-dir-row').remove();recalcCalc();" style="background:none;border:.5px solid rgba(0,0,0,.1);border-radius:6px;width:26px;height:26px;cursor:pointer;color:#bbb;font-size:12px;display:flex;align-items:center;justify-content:center;">✕</button>`;
+  wrap.appendChild(div);
+  div.querySelectorAll('input').forEach(el => el.addEventListener('input', recalcCalc));
+};
+
 window.recalcCalc = function() {
-  const margen = parseFloat(document.getElementById('calcf-margen')?.value)||30;
-  const unidades = Math.max(1, parseFloat(document.getElementById('calcf-unidades')?.value)||1);
-  const col = document.getElementById('calcf-results-col');
-  if(!col) return;
+  const mg = parseInt(document.getElementById('calcf-margen-manual').value) || parseInt(document.getElementById('calcf-margen').value) || 40;
+  const nombre = document.getElementById('calcf-nombre').value.trim() || 'Tu producto';
+  const cant = parseInt(document.getElementById('calcf-unidades').value) || 1;
 
-  const fmt = n => '$'+Math.round(n).toLocaleString('es-AR');
-  const setKpi = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
-  setKpi('calcf-kpi-margen-live', margen+'%');
+  document.getElementById('calcf-margen-display').textContent = mg + '%';
+  document.getElementById('calcf-kpi-margen-live').textContent = mg + '%';
 
-  let precio = 0, costo = 0, ganancia = 0, precioMin = 0;
-  let extraRows = '';
-  let rightTitle = 'Precio sugerido';
+  // Calcular insumos
+  let costoIns = 0, itemsHtml = '';
+  document.querySelectorAll('.calcf-ins-card').forEach(r => {
+    const n = r.querySelector('.calcf-ins-n').value.trim();
+    const cq = parseFloat(r.querySelector('.calcf-ins-cq').value) || 0;
+    const cu = r.querySelector('.calcf-ins-cu').value;
+    const p = parseFloat(r.querySelector('.calcf-ins-p').value) || 0;
+    const u = parseFloat(r.querySelector('.calcf-ins-u').value) || 0;
+    const c = cq > 0 ? (p / cq) * u : 0;
+    r.querySelector('.calcf-ins-r').textContent = calcfFmt(c);
+    costoIns += c;
+    if(n && c > 0) itemsHtml += `<div style="display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:.5px solid #f2eeea;"><div><div style="font-size:13px;color:#6b7280;">${sanitize(n)}</div><div style="font-size:10px;color:#ccc;margin-top:1px;">${u}${cu} de ${cq}${cu} a ${calcfFmt(p)}</div></div><div style="font-family:'Cormorant Garamond',serif;font-size:15px;color:#1a1a1a;">${calcfFmt(c)}</div></div>`;
+  });
 
-  if(_calcMode === 'producto') {
-    costo = calcCostoProducto(_calcFormInsumos);
-    precio = costo*(1+margen/100);
-    ganancia = precio - costo;
-    precioMin = costo;
-    // Desglose insumos
-    const insConDatos = _calcFormInsumos.filter(ins=>(parseFloat(ins.precio)||0)>0||(ins.nombre||'').trim());
-    if(insConDatos.length > 0) {
-      extraRows = `<div style="margin-top:14px;border-top:.5px solid rgba(255,255,255,.15);padding-top:12px;">
-        <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px;">Desglose por insumo</div>`;
-      insConDatos.forEach(ins => {
-        const pIns = parseFloat(ins.precio)||0;
-        const eqQty = parseFloat(ins.eqQty)||1;
-        let costoIns = 0, formula = '';
-        if(ins.tipoUso === 'durabilidad') {
-          const usos = parseFloat(ins.usosTotal)||1;
-          costoIns = pIns/usos;
-          formula = `${fmt(pIns)} ÷ ${usos} usos`;
-        } else {
-          const uso = parseFloat(ins.usoPorUnidad)||0;
-          costoIns = (pIns/eqQty)*uso;
-          formula = `(${fmt(pIns)} ÷ ${eqQty}${ins.eqUnit||'gr'}) × ${uso}${ins.eqUnit||'gr'}`;
-        }
-        const pct = costo > 0 ? Math.round((costoIns/costo)*100) : 0;
-        extraRows += `<div style="margin-bottom:8px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
-            <span style="font-size:12px;color:rgba(255,255,255,.85);">${ins.nombre||'Insumo'}</span>
-            <span style="font-size:12px;font-weight:500;color:#fff;">$${costoIns.toFixed(2)}</span>
-          </div>
-          <div style="font-size:10px;color:rgba(255,255,255,.5);margin-bottom:3px;">${formula}</div>
-          <div style="height:3px;background:rgba(255,255,255,.15);border-radius:2px;"><div style="height:100%;width:${pct}%;background:rgba(255,255,255,.55);border-radius:2px;"></div></div>
-        </div>`;
-      });
-      extraRows += `</div>`;
+  // Calcular directos
+  let costoDir = 0;
+  document.querySelectorAll('.calcf-dir-row').forEach(r => {
+    const n = r.querySelector('.calcf-dir-n').value.trim();
+    const m = parseFloat(r.querySelector('.calcf-dir-m').value) || 0;
+    costoDir += m;
+    if(n && m > 0) itemsHtml += `<div style="display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:.5px solid #f2eeea;"><div><div style="font-size:13px;color:#6b7280;">${sanitize(n)}</div><div style="font-size:10px;color:#ccc;margin-top:1px;">Costo directo por unidad</div></div><div style="font-family:'Cormorant Garamond',serif;font-size:15px;color:#1a1a1a;">${calcfFmt(m)}</div></div>`;
+  });
+
+  const costo = costoIns + costoDir;
+  const precio = costo * (1 + mg / 100);
+  const gan = precio - costo;
+  const pct = precio > 0 ? Math.round((gan / precio) * 100) : 0;
+  const t = calcfGetTema(costo, pct);
+
+  // KPIs banner
+  document.getElementById('calcf-kpi-precio').textContent = calcfFmt(precio);
+  document.getElementById('calcf-kpi-costo').textContent = calcfFmt(costo);
+  document.getElementById('calcf-kpi-ganancia').textContent = calcfFmt(gan);
+  document.getElementById('calcf-banner').style.background = t.bg;
+  document.getElementById('calcf-banner-title').textContent = nombre === 'Tu producto' ? 'Nuevo cálculo de costo' : nombre;
+  document.getElementById('calcf-banner-badge').textContent = t.badge;
+  document.getElementById('calcf-margen-display').style.color = t.mgC;
+
+  // Recibo + mensaje + termómetros
+  const reciboWrap = document.getElementById('calcf-recibo-wrap');
+  const mS = costo > 0 ? 'Con ' + mg + '% de margen, por cada ' + calcfFmt(costo) + ' que invertís ganás ' + calcfFmt(gan) + '.' : t.mS;
+  const maxH = 84;
+  const h1 = precio > 0 ? Math.round((costo/precio)*maxH) : 0;
+  const h2 = precio > 0 ? maxH : 0;
+  const h3 = precio > 0 ? Math.max(4, Math.round((gan/precio)*maxH)) : 0;
+
+  reciboWrap.innerHTML = `
+    <div style="background:#fff;border-radius:20px;overflow:hidden;margin-bottom:10px;">
+      <div style="padding:20px 22px 16px;background:${t.bg};transition:background .7s;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:#fff;line-height:1.1;margin-bottom:2px;">${sanitize(nombre)}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.5);">Calculado hoy · ${cant} unidad${cant>1?'es':''}</div>
+        <div style="display:inline-block;margin-top:9px;padding:4px 13px;border-radius:20px;font-size:10px;font-weight:500;background:rgba(255,255,255,.15);color:#fff;">${t.badge}</div>
+      </div>
+      <div style="display:flex;align-items:center;"><div style="width:17px;height:17px;border-radius:50%;background:#eeebe6;flex-shrink:0;"></div><div style="flex:1;border-top:1.5px dashed #e8e4e0;"></div><div style="width:17px;height:17px;border-radius:50%;background:#eeebe6;flex-shrink:0;"></div></div>
+      <div style="padding:15px 22px;">
+        ${itemsHtml || '<div style="font-size:12px;color:#ccc;font-style:italic;padding:4px 0;">Tus insumos aparecerán acá...</div>'}
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:13px;padding-top:13px;border-top:1px solid #ece8e4;">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;">Precio sugerido</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:32px;line-height:1;color:${t.precioC};">${calcfFmt(precio)}</div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;border-radius:10px;padding:10px 13px;background:${t.ganBg};">
+          <div style="font-size:12px;color:${t.ganC};">Tu ganancia · ${mg}% de margen</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:${t.ganC};">+${calcfFmt(gan)}</div>
+        </div>
+      </div>
+      <div style="padding:10px 22px;background:#faf8f6;border-top:.5px solid #f0ece8;text-align:center;font-size:10px;color:#6b7280;letter-spacing:.06em;text-transform:uppercase;">Costo total · ${calcfFmt(costo)}</div>
+    </div>
+    <div style="border-radius:16px;padding:15px 17px;margin-bottom:10px;background:${t.msgBg};">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:21px;line-height:1;margin-bottom:5px;color:${t.mEC};">${t.mE}</div>
+      <div style="font-size:12px;line-height:1.55;color:${t.mSC};">${mS}</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px;">
+      <div style="background:#fff;border-radius:14px;padding:13px 8px;display:flex;flex-direction:column;align-items:center;gap:7px;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:#4a5e4d;">${calcfFmtK(costo)}</div>
+        <div style="width:34px;height:84px;border-radius:17px;background:#e8ede8;position:relative;overflow:hidden;"><div style="position:absolute;bottom:0;width:100%;border-radius:17px;background:linear-gradient(180deg,#6a8e6d,#4a5e4d);height:${h1}px;transition:height .8s cubic-bezier(.34,1.56,.64,1);"></div></div>
+        <div style="font-size:9px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;">Costo</div>
+      </div>
+      <div style="background:#fff;border-radius:14px;padding:13px 8px;display:flex;flex-direction:column;align-items:center;gap:7px;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:#b09088;">${calcfFmtK(precio)}</div>
+        <div style="width:34px;height:84px;border-radius:17px;background:#f5ebe8;position:relative;overflow:hidden;"><div style="position:absolute;bottom:0;width:100%;border-radius:17px;background:linear-gradient(180deg,#c4a098,#b09088);height:${h2}px;transition:height .8s cubic-bezier(.34,1.56,.64,1);"></div></div>
+        <div style="font-size:9px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;">Precio</div>
+      </div>
+      <div style="background:#fff;border-radius:14px;padding:13px 8px;display:flex;flex-direction:column;align-items:center;gap:7px;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:#b09030;">${calcfFmtK(gan)}</div>
+        <div style="width:34px;height:84px;border-radius:17px;background:#fdf8e8;position:relative;overflow:hidden;"><div style="position:absolute;bottom:0;width:100%;border-radius:17px;background:linear-gradient(180deg,#d4c060,#b09030);height:${h3}px;transition:height .8s cubic-bezier(.34,1.56,.64,1);"></div></div>
+        <div style="font-size:9px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;">Ganancia</div>
+      </div>
+    </div>
+    <button onclick="saveCalc()" style="width:100%;background:#4a5e4d;color:#fff;border:none;border-radius:14px;padding:14px;font-size:14px;font-family:'DM Sans',sans-serif;cursor:pointer;font-weight:500;margin-bottom:8px;">Guardar cálculo</button>
+    <button onclick="showCalcList()" style="width:100%;background:#fff;color:#6b7280;border:.5px solid rgba(0,0,0,.1);border-radius:14px;padding:12px;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;">← Volver sin guardar</button>`;
+};
+
+window.showCalcForm = async function(id) {
+  document.getElementById('calc-list-view').style.display = 'none';
+  document.getElementById('calc-form-view').style.display = 'block';
+
+  // Reset
+  document.getElementById('calcf-id').value = id || '';
+  document.getElementById('calcf-nombre').value = '';
+  document.getElementById('calcf-unidades').value = 1;
+  document.getElementById('calcf-margen').value = 40;
+  document.getElementById('calcf-margen-manual').value = 40;
+  document.getElementById('calcf-insumos-wrap').innerHTML = '';
+  document.getElementById('calcf-directos-wrap').innerHTML = '';
+
+  if(id) {
+    document.getElementById('calcf-banner-title').textContent = 'Editando cálculo';
+    try {
+      const snap = await getDoc(doc(db, 'clientes', currentClientId, 'calculos', id));
+      if(!snap.exists()) { showCalcList(); return; }
+      const d = snap.data();
+      // Bloquear edición de cálculos antiguos hora/proyecto (schema viejo no compatible con el nuevo form)
+      if(d.tipo === 'hora' || d.tipo === 'proyecto') {
+        alert('Este cálculo se creó con un formato anterior y no se puede editar. Si lo necesitás, creá uno nuevo.');
+        showCalcList();
+        return;
+      }
+      document.getElementById('calcf-nombre').value = d.nombre || '';
+      document.getElementById('calcf-unidades').value = d.unidades || 1;
+      const mg = d.margen || 40;
+      document.getElementById('calcf-margen').value = Math.min(mg, 1000);
+      document.getElementById('calcf-margen-manual').value = mg;
+      // Defensivo: si insumos/costosDirectos no son arrays (schema viejo), ignorar
+      (Array.isArray(d.insumos) ? d.insumos : []).forEach(ins => calcfAddInsumo(ins));
+      (Array.isArray(d.costosDirectos) ? d.costosDirectos : []).forEach(dir => calcfAddDirecto(dir));
+      recalcCalc();
+    } catch(e) {
+      console.error('showCalcForm error:', e);
+      showCalcList();
     }
-
-  } else if(_calcMode === 'hora') {
-    const costosFijos = parseFloat(document.getElementById('calcf-costos-fijos')?.value)||0;
-    const horasMes = parseFloat(document.getElementById('calcf-horas-mes')?.value)||1;
-    costo = costosFijos/horasMes;
-    precio = costo*(1+margen/100);
-    ganancia = precio - costo;
-    precioMin = costo;
-    rightTitle = 'Tarifa por hora';
-    const horasParaCubrir = precio > 0 ? Math.ceil(costosFijos/precio) : 0;
-    extraRows = `<div style="margin-top:12px;padding-top:10px;border-top:.5px solid rgba(255,255,255,.15);">
-      <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-        <span style="font-size:12px;color:rgba(255,255,255,.7);">Horas para cubrir costos</span>
-        <span style="font-size:13px;color:#fff;">${horasParaCubrir}h / ${Math.round(horasMes)}h mes</span>
-      </div>
-    </div>`;
-
-  } else if(_calcMode === 'proyecto') {
-    const horas = parseFloat(document.getElementById('calcf-horas-est')?.value)||0;
-    const tarifa = parseFloat(document.getElementById('calcf-tarifa-hora')?.value)||0;
-    const costosDir = parseFloat(document.getElementById('calcf-costos-dir')?.value)||0;
-    costo = horas*tarifa + costosDir;
-    precio = costo*(1+margen/100);
-    ganancia = precio - costo;
-    precioMin = costo;
-    rightTitle = 'Precio del proyecto';
+  } else {
+    calcfAddInsumo();
+    calcfAddDirecto();
+    recalcCalc();
   }
+};
 
-  // Update banner KPIs
-  setKpi('calcf-kpi-precio', precio > 0 ? fmt(precio) : '$0');
-  setKpi('calcf-kpi-costo', costo > 0 ? fmt(costo) : '$0');
-  setKpi('calcf-kpi-ganancia', ganancia > 0 ? fmt(ganancia) : '$0');
-
-  // Lote block
-  const costoTotal = costo * unidades;
-  const ingresoTotal = precio * unidades;
-  const gananciaLote = ganancia * unidades;
-  const loteLabel = _calcMode === 'hora' ? 'horas' : (_calcMode === 'proyecto' ? 'proyectos' : 'unidades');
-  const loteHtml = `<div style="background:rgba(255,255,255,.1);border-radius:10px;padding:13px;margin-bottom:14px;">
-    <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px;">Lote — ${unidades} ${loteLabel}</div>
-    <div style="display:flex;justify-content:space-between;margin-bottom:7px;">
-      <span style="font-size:12px;color:rgba(255,255,255,.7);">Costo total</span>
-      <span style="font-size:13px;color:#fff;">${fmt(costoTotal)}</span>
-    </div>
-    <div style="display:flex;justify-content:space-between;margin-bottom:7px;">
-      <span style="font-size:12px;color:rgba(255,255,255,.7);">Ingreso total</span>
-      <span style="font-size:13px;color:#fff;">${fmt(ingresoTotal)}</span>
-    </div>
-    <div style="display:flex;justify-content:space-between;padding-top:7px;border-top:.5px solid rgba(255,255,255,.15);">
-      <span style="font-size:12px;color:rgba(255,255,255,.7);">Ganancia lote</span>
-      <span style="font-size:13px;font-weight:600;color:#a8e6b0;">+${fmt(gananciaLote)}</span>
-    </div>
-  </div>`;
-
-  col.innerHTML = `<div style="background:#4a5e4d;border-radius:16px;padding:22px 24px;color:#fff;">
-    <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;">${rightTitle}</div>
-    <div style="font-family:'Cormorant Garamond',serif;font-size:52px;font-weight:500;color:#fff;line-height:1;margin-bottom:6px;">${precio > 0 ? fmt(precio) : '$0'}</div>
-    <div style="font-size:12px;color:rgba(255,255,255,.55);margin-bottom:16px;">Con ${margen}% de margen</div>
-    <div style="border-top:.5px solid rgba(255,255,255,.15);padding-top:13px;display:flex;flex-direction:column;gap:9px;margin-bottom:14px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:12px;color:rgba(255,255,255,.7);">Costo por unidad</span>
-        <span style="font-size:13px;font-weight:500;color:#fff;">${fmt(costo)}</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:12px;color:rgba(255,255,255,.7);">Precio mínimo</span>
-        <span style="font-size:13px;font-weight:500;color:#fff;">${fmt(precioMin)}</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:12px;color:rgba(255,255,255,.7);">Ganancia unit.</span>
-        <span style="font-size:13px;font-weight:500;color:#a8e6b0;">${ganancia > 0 ? '+'+fmt(ganancia) : fmt(0)}</span>
-      </div>
-    </div>
-    ${loteHtml}
-    ${extraRows}
-    <button onclick="saveCalc()" style="width:100%;padding:12px;background:#fff;color:#4a5e4d;border:none;border-radius:9px;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;margin-top:4px;">Guardar cálculo</button>
-    <div id="calcf-saved" style="display:none;text-align:center;font-size:12px;color:rgba(255,255,255,.8);margin-top:8px;padding-top:8px;">✓ Cálculo guardado</div>
-  </div>`;
+window.showCalcList = function() {
+  document.getElementById('calc-form-view').style.display = 'none';
+  document.getElementById('calc-list-view').style.display = 'block';
 };
 
 window.saveCalc = async function() {
   if(!currentClientId) return;
-  const nombre = (document.getElementById('calcf-nombre')?.value||'').trim();
-  if(!nombre) { showToast('Ingresá un nombre', 'info'); return; }
-  const margen = parseFloat(document.getElementById('calcf-margen')?.value)||30;
-  const id = document.getElementById('calcf-id')?.value||'';
-  let data = {nombre, margen, tipo:_calcMode, creadoEn:new Date().toISOString()};
-  if(_calcMode === 'producto') {
-    data.insumos = _calcFormInsumos.map(ins=>({
-      nombre:ins.nombre||'', compraQty:parseFloat(ins.compraQty)||1, compraUnit:ins.compraUnit||'kg',
-      eqQty:parseFloat(ins.eqQty)||1, eqUnit:ins.eqUnit||'gr', precio:parseFloat(ins.precio)||0,
-      tipoUso:ins.tipoUso||'cantidad', usoPorUnidad:parseFloat(ins.usoPorUnidad)||0, usosTotal:parseFloat(ins.usosTotal)||0
-    }));
-  } else if(_calcMode === 'hora') {
-    data.costosFijos = parseFloat(document.getElementById('calcf-costos-fijos')?.value)||0;
-    data.horasMes = parseFloat(document.getElementById('calcf-horas-mes')?.value)||0;
-  } else if(_calcMode === 'proyecto') {
-    data.horasEstimadas = parseFloat(document.getElementById('calcf-horas-est')?.value)||0;
-    data.tarifaHora = parseFloat(document.getElementById('calcf-tarifa-hora')?.value)||0;
-    data.costosDirectos = parseFloat(document.getElementById('calcf-costos-dir')?.value)||0;
-  }
+  const id = document.getElementById('calcf-id').value;
+  const nombre = document.getElementById('calcf-nombre').value.trim();
+  if(!nombre) { alert('Escribí el nombre del producto o servicio'); return; }
+
+  const mg = parseInt(document.getElementById('calcf-margen-manual').value) || parseInt(document.getElementById('calcf-margen').value) || 40;
+  const unidades = parseInt(document.getElementById('calcf-unidades').value) || 1;
+
+  const insumos = [];
+  document.querySelectorAll('.calcf-ins-card').forEach(r => {
+    const n = r.querySelector('.calcf-ins-n').value.trim();
+    if(!n) return;
+    insumos.push({
+      nombre: n,
+      compraQty: parseFloat(r.querySelector('.calcf-ins-cq').value) || 0,
+      compraUnit: r.querySelector('.calcf-ins-cu').value,
+      precio: parseFloat(r.querySelector('.calcf-ins-p').value) || 0,
+      usoPorUnidad: parseFloat(r.querySelector('.calcf-ins-u').value) || 0
+    });
+  });
+
+  const costosDirectos = [];
+  document.querySelectorAll('.calcf-dir-row').forEach(r => {
+    const n = r.querySelector('.calcf-dir-n').value.trim();
+    const m = parseFloat(r.querySelector('.calcf-dir-m').value) || 0;
+    if(n && m > 0) costosDirectos.push({nombre: n, monto: m});
+  });
+
+  // Calcular totales denormalizados (los lee _calcItemMetrics en la vista lista)
+  let costoTotal = 0;
+  insumos.forEach(ins => { if(ins.compraQty > 0) costoTotal += (ins.precio / ins.compraQty) * ins.usoPorUnidad; });
+  costosDirectos.forEach(d => costoTotal += d.monto);
+  const precioSugerido = costoTotal * (1 + mg / 100);
+
+  const now = new Date().toISOString();
+  const data = {
+    nombre, margen: mg, unidades,
+    tipo: 'producto',
+    insumos, costosDirectos,
+    costoTotal, precioSugerido,
+    creadoEn: now,
+    actualizadoEn: now,
+    eliminado: false
+  };
+
   try {
     if(id) {
-      await updateDoc(doc(db,'clientes',currentClientId,'calculos',id), data);
-      calcData[id] = {id,...data};
+      await updateDoc(doc(db, 'clientes', currentClientId, 'calculos', id), data);
+      calcData[id] = {id, ...data};
     } else {
-      const ref = await addDoc(collection(db,'clientes',currentClientId,'calculos'), data);
-      calcData[ref.id] = {id:ref.id,...data};
+      const ref = await addDoc(collection(db, 'clientes', currentClientId, 'calculos'), data);
       document.getElementById('calcf-id').value = ref.id;
+      calcData[ref.id] = {id: ref.id, ...data};
     }
-    const s = document.getElementById('calcf-saved');
-    if(s) { s.style.display='block'; setTimeout(()=>s.style.display='none',2000); }
-    renderCalcList();
-  } catch(e) { showToast('Error: '+e.message, 'error'); }
+    const toast = document.getElementById('calcf-saved');
+    if(toast) {
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; showCalcList(); renderCalcList(); }, 1500);
+    } else {
+      showCalcList();
+      renderCalcList();
+    }
+  } catch(err) {
+    console.error('saveCalc error:', err);
+    alert('Error al guardar: ' + err.message);
+  }
 };
+// ─── FIN CALCULADOR NUEVO ────────────────────────────────────────
 
 window.uploadNegocioLogo = function(input) {
   const file = input.files[0];
