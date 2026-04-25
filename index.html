@@ -966,8 +966,13 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 @media(max-width:480px){
   body.admin-micaela .adm-dash-4col{grid-template-columns:1fr !important;}
 }
+@keyframes calcFloat1{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-10px) rotate(2deg)}}
+@keyframes calcFloat2{0%,100%{transform:translateY(0) rotate(1deg)}50%{transform:translateY(-8px) rotate(-1deg)}}
+@keyframes calcFloat3{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-12px) rotate(2deg)}}
+@keyframes calcFadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes calcPillPop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
 </style>
-<!-- deploy force 009 -->
+<!-- deploy force 010 -->
 </head>
 <body>
 
@@ -2970,14 +2975,8 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 
           <!-- Card Mis cálculos -->
           <div class="card" style="margin-bottom:14px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+            <div style="margin-bottom:12px;">
               <div style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Mis cálculos</div>
-              <div id="calc-filter-tabs" style="display:flex;gap:6px;flex-wrap:wrap;">
-                <button id="calc-fil-todos" onclick="filterCalcList('todos',this)" style="padding:7px 18px;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#3d5240 0%,#4a5e4d 45%,#5e7562 70%,#4a5e4d 100%);color:#e8f0e9;border:1px solid transparent;">Todos</button>
-                <button id="calc-fil-producto" onclick="filterCalcList('producto',this)" style="padding:7px 18px;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;background:transparent;color:#2d2d2d;border:1px solid rgba(0,0,0,0.12);">Producto</button>
-                <button id="calc-fil-hora" onclick="filterCalcList('hora',this)" style="padding:7px 18px;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;background:transparent;color:#2d2d2d;border:1px solid rgba(0,0,0,0.12);">Por hora</button>
-                <button id="calc-fil-proyecto" onclick="filterCalcList('proyecto',this)" style="padding:7px 18px;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;background:transparent;color:#2d2d2d;border:1px solid rgba(0,0,0,0.12);">Proyecto</button>
-              </div>
             </div>
             <!-- Cabeceras columnas -->
             <div id="calc-table-wrap" style="overflow-x:auto;">
@@ -7003,65 +7002,222 @@ function _calcItemMetrics(c) {
   return {margen, costo, precio, ganancia};
 }
 
-function renderCalcList() {
-  const allItems = Object.values(calcData);
-  const setEl = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
-  const count = allItems.length;
-  const avg = count > 0 ? Math.round(allItems.reduce((a,c)=>a+(parseFloat(c.margen)||30),0)/count) : 0;
-  setEl('calc-kpi-count', count);
-  setEl('calc-kpi-margen', avg+'%');
+window.renderCalcList = function() {
+  if(!currentClientId) return;
+  const wrap = document.getElementById('calc-table-wrap');
+  const countEl = document.getElementById('calc-kpi-count');
+  const margenEl = document.getElementById('calc-kpi-margen');
+  const topEl = document.getElementById('calc-kpi-top');
+  const bajoEl = document.getElementById('calc-kpi-bajo');
+  const items = Object.values(calcData).filter(c => !c.eliminado);
 
-  // KPI más rentable / margen más bajo
-  if(count > 0) {
-    const sorted = [...allItems].sort((a,b)=>(parseFloat(b.margen)||30)-(parseFloat(a.margen)||30));
-    setEl('calc-kpi-top', sorted[0].nombre||'—');
-    const lowest = sorted[sorted.length-1];
-    setEl('calc-kpi-bajo', (parseFloat(lowest.margen)||30)+'%');
+  // KPIs banner
+  if(countEl) countEl.textContent = items.length;
+  if(items.length > 0) {
+    const margenes = items.map(c => _calcItemMetrics(c).margen);
+    const avg = Math.round(margenes.reduce((a,b)=>a+b,0)/margenes.length);
+    if(margenEl) margenEl.textContent = avg+'%';
+    const top = items.reduce((a,b)=>_calcItemMetrics(a).margen>_calcItemMetrics(b).margen?a:b);
+    const bajo = items.reduce((a,b)=>_calcItemMetrics(a).margen<_calcItemMetrics(b).margen?a:b);
+    if(topEl) topEl.textContent = top.nombre||'—';
+    if(bajoEl) bajoEl.textContent = bajo.nombre||'—';
   } else {
-    setEl('calc-kpi-top','—'); setEl('calc-kpi-bajo','—');
+    if(margenEl) margenEl.textContent = '0%';
+    if(topEl) topEl.textContent = '—';
+    if(bajoEl) bajoEl.textContent = '—';
   }
 
-  const items = _calcFilter === 'todos' ? allItems : allItems.filter(c=>(c.tipo||'producto')===_calcFilter);
+  if(!wrap) return;
 
-  if(count === 0) {
-    document.getElementById('calc-items').innerHTML = '<div style="text-align:center;padding:32px 20px;display:flex;flex-direction:column;align-items:center;"><div style="margin-bottom:14px;"><svg width="64" height="64" viewBox="0 0 64 64" fill="none"><rect x="16" y="8" width="32" height="48" rx="4" stroke="var(--sage)" stroke-width="1.5" fill="var(--sage-xl)"/><rect x="22" y="14" width="20" height="10" rx="2" fill="var(--cream)" stroke="var(--sage)" stroke-width="1"/><circle cx="26" cy="32" r="2.5" fill="var(--sage-dark)"/><circle cx="32" cy="32" r="2.5" fill="var(--sage-dark)"/><circle cx="38" cy="32" r="2.5" fill="var(--sage-dark)"/><circle cx="26" cy="40" r="2.5" fill="var(--sage)"/><circle cx="32" cy="40" r="2.5" fill="var(--sage)"/><rect x="35.5" y="37.5" width="5" height="11" rx="2.5" fill="var(--sage-dark)"/><circle cx="26" cy="48" r="2.5" fill="var(--sage)"/><circle cx="32" cy="48" r="2.5" fill="var(--sage)"/></svg></div><div style="font-family:\'Cormorant Garamond\',serif;font-size:18px;color:var(--text);margin-bottom:6px;">Sin cálculos de costos</div><div style="font-size:12px;color:var(--text-l);line-height:1.5;max-width:280px;margin:0 auto;">Creá tu primer cálculo para saber exactamente cuánto te cuesta producir</div><button onclick="showCalcForm(null)" style="background:linear-gradient(135deg,#3d5240 0%,#4a5e4d 45%,#5e7562 70%,#4a5e4d 100%);color:#e8f0e9;border:none;border-radius:10px;padding:10px 20px;font-size:13px;font-family:\'DM Sans\',sans-serif;cursor:pointer;font-weight:600;margin-top:14px;">+ Nuevo cálculo</button></div>';
-    return;
-  }
+  // Empty state
   if(items.length === 0) {
-    document.getElementById('calc-items').innerHTML = `<div style="text-align:center;padding:20px;color:var(--text-l);font-size:13px;">Sin cálculos en esta categoría.</div>`;
+    wrap.innerHTML = `<div style="background:#fff;border-radius:16px;padding:40px 28px;text-align:center;">
+  <div style="display:flex;justify-content:center;align-items:flex-end;gap:24px;margin-bottom:28px;height:90px;">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;animation:calcFloat1 3.5s ease-in-out infinite;">
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="22" fill="#e8ede8" stroke="#c8d4c8" stroke-width="1"/><path d="M14 24c0-5.5 4.5-10 10-10s10 4.5 10 10-4.5 10-10 10" stroke="#4a5e4d" stroke-width="1.5" stroke-linecap="round"/><path d="M24 18v6l4 3" stroke="#4a5e4d" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;">Servicio</div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;animation:calcFloat2 4s ease-in-out infinite .6s;">
+      <svg width="56" height="56" viewBox="0 0 56 56" fill="none"><circle cx="28" cy="28" r="26" fill="#fff" stroke="#4a5e4d" stroke-width="1.5"/><rect x="16" y="14" width="24" height="28" rx="4" fill="#e8ede8" stroke="#c8d4c8" stroke-width="1"/><path d="M21 22h14M21 28h14M21 34h10" stroke="#4a5e4d" stroke-width="1.5" stroke-linecap="round"/><circle cx="38" cy="38" r="8" fill="#b09088"/><path d="M38 34v8M34 38h8" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;">Tu cálculo</div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;animation:calcFloat3 3.2s ease-in-out infinite 1.2s;">
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="22" fill="#f5ebe8" stroke="#e8d4c8" stroke-width="1"/><path d="M24 14v4M24 30v4M14 24h4M30 24h4" stroke="#b09088" stroke-width="1.5" stroke-linecap="round"/><circle cx="24" cy="24" r="6" fill="#b09088"/><path d="M24 22v4M22 24h4" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;">Producto</div>
+    </div>
+  </div>
+  <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:#1a1a1a;margin-bottom:8px;line-height:1.2;">Sabé exactamente cuánto<br>vale lo que hacés</div>
+  <div style="font-size:13px;color:#6b7280;line-height:1.65;margin-bottom:28px;max-width:400px;margin-left:auto;margin-right:auto;">Dejá de adivinar el precio. Cargás los insumos, elegís el margen, y el sistema te dice cuánto cobrar.</div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px;text-align:left;">
+    <div style="background:#e8ede8;border-radius:14px;padding:18px 16px;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:36px;color:#4a5e4d;line-height:1;margin-bottom:8px;">01</div>
+      <div style="font-size:13px;font-weight:500;color:#2d4a30;margin-bottom:4px;">Cargás los insumos</div>
+      <div style="font-size:11px;color:#5a7a5d;line-height:1.5;">Ingredientes, materiales o tiempo — con precio y cantidad real</div>
+    </div>
+    <div style="background:#f5ebe8;border-radius:14px;padding:18px 16px;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:36px;color:#b09088;line-height:1;margin-bottom:8px;">02</div>
+      <div style="font-size:13px;font-weight:500;color:#7a5850;margin-bottom:4px;">Elegís tu margen</div>
+      <div style="font-size:11px;color:#906860;line-height:1.5;">Cuánto querés ganar encima del costo — libre, sin límite</div>
+    </div>
+    <div style="background:#4a5e4d;border-radius:14px;padding:18px 16px;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:36px;color:#e8c4b8;line-height:1;margin-bottom:8px;">03</div>
+      <div style="font-size:13px;font-weight:500;color:#fff;margin-bottom:4px;">Tu precio aparece</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.65);line-height:1.5;">Con desglose completo y feedback de qué tan bien está tu margen</div>
+    </div>
+  </div>
+  <button onclick="showCalcForm(null)" style="background:#4a5e4d;color:#fff;border:none;border-radius:12px;padding:13px 32px;font-size:14px;font-family:'DM Sans',sans-serif;cursor:pointer;font-weight:500;margin-bottom:28px;">+ Crear mi primer cálculo</button>
+  <div style="padding-top:24px;border-top:.5px solid #f0ece8;">
+    <div style="font-size:10px;color:#bbb;text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;">Para cualquier tipo de negocio</div>
+    <div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap;">
+      <div style="background:#eeebe6;border-radius:20px;padding:5px 14px;font-size:12px;color:#6b7280;display:flex;align-items:center;gap:6px;"><div style="width:6px;height:6px;border-radius:50%;background:#4a5e4d;flex-shrink:0;"></div>Gastronomía</div>
+      <div style="background:#eeebe6;border-radius:20px;padding:5px 14px;font-size:12px;color:#6b7280;display:flex;align-items:center;gap:6px;"><div style="width:6px;height:6px;border-radius:50%;background:#b09088;flex-shrink:0;"></div>Indumentaria</div>
+      <div style="background:#eeebe6;border-radius:20px;padding:5px 14px;font-size:12px;color:#6b7280;display:flex;align-items:center;gap:6px;"><div style="width:6px;height:6px;border-radius:50%;background:#b09088;flex-shrink:0;"></div>Belleza y estética</div>
+      <div style="background:#eeebe6;border-radius:20px;padding:5px 14px;font-size:12px;color:#6b7280;display:flex;align-items:center;gap:6px;"><div style="width:6px;height:6px;border-radius:50%;background:#b09030;flex-shrink:0;"></div>Construcción</div>
+      <div style="background:#eeebe6;border-radius:20px;padding:5px 14px;font-size:12px;color:#6b7280;display:flex;align-items:center;gap:6px;"><div style="width:6px;height:6px;border-radius:50%;background:#6b7280;flex-shrink:0;"></div>Servicios profesionales</div>
+      <div style="background:#eeebe6;border-radius:20px;padding:5px 14px;font-size:12px;color:#6b7280;display:flex;align-items:center;gap:6px;"><div style="width:6px;height:6px;border-radius:50%;background:#4a5e4d;flex-shrink:0;"></div>Diseño</div>
+      <div style="background:#eeebe6;border-radius:20px;padding:5px 14px;font-size:12px;color:#6b7280;display:flex;align-items:center;gap:6px;"><div style="width:6px;height:6px;border-radius:50%;background:#b09030;flex-shrink:0;"></div>Salud y bienestar</div>
+      <div style="background:#eeebe6;border-radius:20px;padding:5px 14px;font-size:12px;color:#6b7280;display:flex;align-items:center;gap:6px;"><div style="width:6px;height:6px;border-radius:50%;background:#6b7280;flex-shrink:0;"></div>Comercio</div>
+    </div>
+  </div>
+</div>`;
     return;
   }
 
-  const tipoBadge = {producto:'Producto',hora:'Por hora',proyecto:'Proyecto'};
-  const tipoColor = {producto:'#7A8E7D',hora:'#4A6A8A',proyecto:'#B08A42'};
-  const trashSvg = `<svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#C4786A" stroke-width="1.2" stroke-linecap="round"/></svg>`;
-  const editSvg = `<svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M11 2l3 3-8 8H3v-3l8-8z" stroke="#7A8E7D" stroke-width="1.2" stroke-linejoin="round"/></svg>`;
+  // Helper tema — thresholds alineados con calculador
+  const getTema = mg => {
+    if(mg > 150) return {pill:'background:linear-gradient(135deg,#e8d4c8,#f0ddd5);color:#7a4838', dot:'background:linear-gradient(135deg,#b09088,#c4a098)', av:'linear-gradient(135deg,#b09088,#9a7870)', pc:'#b09088'};
+    if(mg >= 60)  return {pill:'background:#e8ede8;color:#2d5a30', dot:'background:#4a5e4d', av:'linear-gradient(135deg,#4a5e4d,#3a4e3d)', pc:'#4a5e4d'};
+    if(mg >= 20)  return {pill:'background:#fdf8e8;color:#806020', dot:'background:#c8a030', av:'linear-gradient(135deg,#7a7040,#6a6030)', pc:'#907020'};
+    return              {pill:'background:#fdf0f0;color:#b04040', dot:'background:#c04040', av:'linear-gradient(135deg,#8b4a4a,#7a3a3a)', pc:'#b04040'};
+  };
 
-  document.getElementById('calc-items').innerHTML = items.map(c => {
-    const tipo = c.tipo || 'producto';
-    const tc = tipoColor[tipo]||'#7A8E7D';
-    const badge = `<span style="background:${tc}22;color:${tc};font-size:10px;font-weight:500;padding:2px 7px;border-radius:20px;">${tipoBadge[tipo]||'Producto'}</span>`;
-    const {margen, costo, precio} = _calcItemMetrics(c);
-    const costoS = costo > 0 ? '$'+Math.round(costo).toLocaleString('es-AR') : '—';
-    const precioS = precio > 0 ? '$'+Math.round(precio).toLocaleString('es-AR') : '—';
-    let pillBg = '#E7F0E8', pillColor = '#5A8A62';
-    if(margen < 20) { pillBg = '#F5EDDF'; pillColor = '#B08A42'; }
-    else if(margen < 40) { pillBg = '#e6ede6'; pillColor = '#4A5A4E'; }
-    return `<div style="display:grid;grid-template-columns:1fr 110px 130px 58px 64px;gap:10px;align-items:center;padding:10px 0;border-bottom:.5px solid var(--cream-d);">
-      <div style="cursor:pointer;min-width:0;" onclick="showCalcForm('${c.id}')">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;flex-wrap:wrap;">${badge}<span style="font-size:13px;font-weight:500;color:#1a1a1a;">${c.nombre||'Sin nombre'}</span></div>
-        <div style="font-size:11px;color:var(--text-l);">${tipoBadge[tipo]||'Producto'}</div>
+  const fmt = n => '$'+Math.round(n).toLocaleString('es-AR');
+
+  // Sort state
+  if(!window._calcSort) window._calcSort = {col:'nombre', dir:1};
+
+  const sortData = arr => [...arr].sort((a,b) => {
+    const {col,dir} = window._calcSort;
+    if(col==='nombre') return dir*(a.nombre||'').localeCompare(b.nombre||'');
+    if(col==='actualizadoEn') return dir*(new Date(b.actualizadoEn||b.creadoEn||0) - new Date(a.actualizadoEn||a.creadoEn||0));
+    const ma = _calcItemMetrics(a), mb = _calcItemMetrics(b);
+    if(col==='costo') return dir*(ma.costo - mb.costo);
+    if(col==='precio') return dir*(ma.precio - mb.precio);
+    if(col==='margen') return dir*(ma.margen - mb.margen);
+    return 0;
+  });
+
+  const renderRows = (lista) => {
+    const body = document.getElementById('calc-rows-body');
+    const lc = document.getElementById('calc-lista-count');
+    if(lc) lc.textContent = lista.length+' resultado'+(lista.length===1?'':'s');
+    if(!body) return;
+    if(!lista.length) {
+      body.innerHTML = `<div style="text-align:center;padding:40px;color:#6b7280;font-size:13px;"><div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:#1a1a1a;margin-bottom:6px;">Sin resultados</div>Probá con otro nombre</div>`;
+      return;
+    }
+    body.innerHTML = lista.map((c,i) => {
+      const m = _calcItemMetrics(c);
+      const t = getTema(m.margen);
+      const ahora = new Date();
+      const fechaDoc = new Date(c.actualizadoEn||c.creadoEn||0);
+      const diasDesde = Math.floor((ahora-fechaDoc)/(1000*60*60*24));
+      const obs = diasDesde > 90;
+      const fechaLabel = fechaDoc.getTime()>0 ? fechaDoc.toLocaleDateString('es-AR',{day:'numeric',month:'short'}) : '—';
+      const ini = (c.nombre||'?')[0].toUpperCase();
+      return `<div style="display:grid;grid-template-columns:2fr 120px 140px 90px 90px 36px;align-items:center;padding:0 24px;border-bottom:.5px solid #f8f4f0;min-height:64px;cursor:pointer;transition:background .15s;opacity:0;animation:calcFadeUp .35s ease ${i*.06}s forwards;${obs?'background:#fffbf0;':''}"
+        onmouseover="this.style.background='#faf8f6'" onmouseout="this.style.background='${obs?'#fffbf0':'#fff'}'"
+        onclick="showCalcForm('${c.id}')">
+        <div style="display:flex;align-items:center;gap:12px;padding:14px 0;">
+          <div style="width:36px;height:36px;border-radius:10px;background:${t.av};display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:18px;color:#fff;flex-shrink:0;transition:transform .2s;"
+            onmouseover="this.style.transform='scale(1.08) rotate(-2deg)'" onmouseout="this.style.transform=''">${ini}</div>
+          <div>
+            <div style="font-size:14px;font-weight:500;color:#1a1a1a;">${sanitize(c.nombre||'')}</div>
+            ${obs?`<div style="display:inline-block;margin-top:3px;background:#fdf8e8;color:#c8a030;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:500;">Revisar precios</div>`:''}
+          </div>
+        </div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:#1a1a1a;">${fmt(m.costo)}</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:${t.pc};">${fmt(m.precio)}</div>
+        <div><span style="display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;${t.pill};animation:calcPillPop .4s ease ${i*.06+.15}s forwards;opacity:0;">
+          <span style="width:6px;height:6px;border-radius:50%;flex-shrink:0;${t.dot};display:inline-block;"></span>${m.margen}%
+        </span></div>
+        <div style="font-size:12px;color:#6b7280;">${fechaLabel}</div>
+        <div><button onclick="event.stopPropagation();calcMenuOpc('${c.id}',this)" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:18px;padding:4px 6px;border-radius:6px;line-height:1;" onmouseover="this.style.background='#eeebe6';this.style.color='#6b7280'" onmouseout="this.style.background='none';this.style.color='#ccc'">⋯</button></div>
+      </div>`;
+    }).join('');
+  };
+
+  const setSortUI = () => {
+    ['nombre','costo','precio','margen','actualizadoEn'].forEach(c => {
+      const a = document.getElementById('calc-arr-'+c);
+      const h = document.getElementById('calc-col-'+c);
+      if(a) a.textContent = c===window._calcSort.col?(window._calcSort.dir===1?'↑':'↓'):'↕';
+      if(h) h.style.color = c===window._calcSort.col?'#4a5e4d':'#bbb';
+    });
+  };
+
+  const sortBy = col => {
+    if(window._calcSort.col===col) window._calcSort.dir*=-1; else{window._calcSort.col=col;window._calcSort.dir=1;}
+    setSortUI();
+    const q = document.getElementById('calc-buscador')?.value||'';
+    renderRows(sortData(items.filter(c=>(c.nombre||'').toLowerCase().includes(q.toLowerCase()))));
+  };
+  window._calcSortBy = sortBy;
+
+  const filtrar = () => {
+    const q = document.getElementById('calc-buscador')?.value.toLowerCase()||'';
+    renderRows(sortData(items.filter(c=>(c.nombre||'').toLowerCase().includes(q))));
+  };
+  window._calcFiltrar = filtrar;
+
+  wrap.innerHTML = `
+    <div style="background:#fff;border-radius:16px;overflow:hidden;">
+      <div style="background:linear-gradient(135deg,#4a5e4d,#3a4e3d,#5a6e5d);padding:18px 24px;display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:#fff;font-weight:400;">Mis cálculos</div>
+        <div id="calc-lista-count" style="font-size:11px;color:rgba(255,255,255,.55);background:rgba(255,255,255,.12);padding:4px 12px;border-radius:20px;">${items.length} resultado${items.length===1?'':'s'}</div>
       </div>
-      <div style="text-align:right;font-size:13px;color:var(--text-m);">${costoS}</div>
-      <div style="text-align:right;font-size:13px;font-weight:500;color:#1a1a1a;">${precioS}</div>
-      <div style="text-align:center;"><span style="background:${pillBg};color:${pillColor};font-size:11px;font-weight:500;padding:3px 8px;border-radius:20px;">${margen}%</span></div>
-      <div style="display:flex;gap:6px;justify-content:flex-end;">
-        <button onclick="showCalcForm('${c.id}')" style="width:30px;height:30px;border-radius:7px;background:#f5f4f2;border:1px solid #d0cec9;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">${editSvg}</button>
-        <button onclick="event.stopPropagation();deleteCalc('${c.id}')" style="width:30px;height:30px;border-radius:7px;background:#f5f4f2;border:1px solid #d0cec9;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">${trashSvg}</button>
+      <div style="padding:14px 20px;border-bottom:.5px solid #f0ece8;position:relative;">
+        <svg style="position:absolute;left:32px;top:50%;transform:translateY(-50%)" width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4.5" stroke="#bbb" stroke-width="1.2"/><path d="M9.5 9.5l3 3" stroke="#bbb" stroke-width="1.2" stroke-linecap="round"/></svg>
+        <input id="calc-buscador" type="text" placeholder="Buscar cálculo..." oninput="window._calcFiltrar()" style="width:100%;border:.5px solid rgba(0,0,0,.08);border-radius:10px;padding:10px 14px 10px 36px;font-size:13px;font-family:'DM Sans',sans-serif;background:#eeebe6;color:#1a1a1a;outline:none;">
+      </div>
+      <div style="display:grid;grid-template-columns:2fr 120px 140px 90px 90px 36px;padding:10px 24px;background:#faf8f6;border-bottom:.5px solid #f0ece8;">
+        <div id="calc-col-nombre" onclick="window._calcSortBy('nombre')" style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#4a5e4d;cursor:pointer;display:flex;align-items:center;gap:4px;user-select:none;">Nombre <span id="calc-arr-nombre">↑</span></div>
+        <div id="calc-col-costo" onclick="window._calcSortBy('costo')" style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#bbb;cursor:pointer;display:flex;align-items:center;gap:4px;user-select:none;">Costo unit. <span id="calc-arr-costo">↕</span></div>
+        <div id="calc-col-precio" onclick="window._calcSortBy('precio')" style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#bbb;cursor:pointer;display:flex;align-items:center;gap:4px;user-select:none;">Precio sugerido <span id="calc-arr-precio">↕</span></div>
+        <div id="calc-col-margen" onclick="window._calcSortBy('margen')" style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#bbb;cursor:pointer;display:flex;align-items:center;gap:4px;user-select:none;">Margen <span id="calc-arr-margen">↕</span></div>
+        <div id="calc-col-actualizadoEn" onclick="window._calcSortBy('actualizadoEn')" style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#bbb;cursor:pointer;display:flex;align-items:center;gap:4px;user-select:none;">Actualizado <span id="calc-arr-actualizadoEn">↕</span></div>
+        <div></div>
+      </div>
+      <div id="calc-rows-body"></div>
+      <div style="padding:12px 24px;background:#faf8f6;border-top:.5px solid #f0ece8;display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-size:11px;color:#bbb;">Clic en columna para ordenar · ⋯ para más opciones</div>
+        <div style="display:flex;gap:12px;">
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#6b7280;"><div style="width:8px;height:8px;border-radius:50%;background:linear-gradient(135deg,#b09088,#c4a098);"></div>Excelente</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#6b7280;"><div style="width:8px;height:8px;border-radius:50%;background:#4a5e4d;"></div>Saludable</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#6b7280;"><div style="width:8px;height:8px;border-radius:50%;background:#c8a030;"></div>Mejorable</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#6b7280;"><div style="width:8px;height:8px;border-radius:50%;background:#c04040;"></div>Bajo</div>
+        </div>
       </div>
     </div>`;
-  }).join('');
-}
+
+  renderRows(sortData(items));
+};
+
+window.calcMenuOpc = function(id, btn) {
+  const existing = document.getElementById('calc-menu-popup');
+  if(existing) existing.remove();
+  const menu = document.createElement('div');
+  menu.id = 'calc-menu-popup';
+  menu.style.cssText = 'position:fixed;background:#fff;border-radius:10px;border:.5px solid rgba(0,0,0,.1);padding:6px;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.1);min-width:140px;';
+  menu.innerHTML = `
+    <div onclick="showCalcForm('${id}');document.getElementById('calc-menu-popup')?.remove()" style="padding:8px 14px;font-size:13px;color:#1a1a1a;cursor:pointer;border-radius:7px;font-family:'DM Sans',sans-serif;" onmouseover="this.style.background='#eeebe6'" onmouseout="this.style.background=''">✎ Editar</div>
+    <div onclick="deleteCalc('${id}');document.getElementById('calc-menu-popup')?.remove()" style="padding:8px 14px;font-size:13px;color:#e05050;cursor:pointer;border-radius:7px;font-family:'DM Sans',sans-serif;" onmouseover="this.style.background='#fdf0f0'" onmouseout="this.style.background=''">Eliminar</div>`;
+  const rect = btn.getBoundingClientRect();
+  menu.style.top = (rect.bottom + 4) + 'px';
+  menu.style.right = (window.innerWidth - rect.right) + 'px';
+  document.body.appendChild(menu);
+  setTimeout(() => document.addEventListener('click', function h(){ menu.remove(); document.removeEventListener('click',h); }), 50);
+};
 
 window.filterCalcList = function(tipo, btn) {
   _calcFilter = tipo;
@@ -7449,10 +7605,10 @@ window.saveCalc = async function() {
     tipo: 'producto',
     insumos, costosDirectos,
     costoTotal, precioSugerido,
-    creadoEn: now,
     actualizadoEn: now,
     eliminado: false
   };
+  if(!id) data.creadoEn = now;
 
   try {
     if(id) {
