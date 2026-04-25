@@ -967,7 +967,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
   body.admin-micaela .adm-dash-4col{grid-template-columns:1fr !important;}
 }
 </style>
-<!-- deploy force 004 -->
+<!-- deploy force 006 -->
 </head>
 <body>
 
@@ -5668,7 +5668,7 @@ function renderClientList(clients) {
   ];
   const avatarGrad = avatarGrads[i % avatarGrads.length];
   const esInactivo = !c.lastLogin || Math.floor((Date.now()-new Date(c.lastLogin).getTime())/(1000*60*60*24)) > 7;
-  return `<div style="display:grid;grid-template-columns:2fr 70px 110px 120px 120px 110px 80px;gap:12px;padding:10px 16px;border-bottom:0.5px solid #f5f2ed;align-items:center;" data-tipo="${tipo}" data-nombre="${nombre.toLowerCase()}" data-inactivo="${esInactivo?'1':'0'}">
+  return `<div style="display:grid;grid-template-columns:200px 70px 110px 120px 120px 110px 80px;gap:12px;padding:10px 16px;border-bottom:0.5px solid #f5f2ed;align-items:center;" data-tipo="${tipo}" data-nombre="${nombre.toLowerCase()}" data-inactivo="${esInactivo?'1':'0'}">
     <div style="display:flex;align-items:center;gap:10px;cursor:pointer;" onclick="openClientDetail('${c.id}')">
       <div style="width:32px;height:32px;border-radius:50%;background:${avatarGrad};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;color:#fff;flex-shrink:0;">${init}</div>
       <div><div style="font-size:12px;font-weight:500;color:#2d3d30;">${nombre}</div><div style="font-size:10px;color:#aaa;">${c.email||''}</div></div>
@@ -5689,7 +5689,7 @@ function renderClientList(clients) {
     html = '<div style="text-align:center;padding:20px;color:#aaa;font-size:13px;">Sin clientes aún. Creá el primero.</div>';
   } else {
     html = '<div style="background:#fff;border-radius:12px;">';
-    html += '<div style="display:grid;grid-template-columns:2fr 70px 110px 120px 120px 110px 80px;gap:12px;padding:8px 16px;border-bottom:0.5px solid #eeebe6;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#999;"><span>Cliente</span><span>Plan</span><span>Estado</span><span>MRR</span><span>Próx. cobro</span><span>Último acceso</span><span></span></div>';
+    html += '<div style="display:grid;grid-template-columns:200px 70px 110px 120px 120px 110px 80px;gap:12px;padding:8px 16px;border-bottom:0.5px solid #eeebe6;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#999;"><span>Cliente</span><span>Plan</span><span>Estado</span><span>MRR</span><span>Próx. cobro</span><span>Último acceso</span><span></span></div>';
     let gIdx = 0;
     ordenGrupos.forEach(seg => {
       const cards = grupos[seg];
