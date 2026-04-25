@@ -5170,7 +5170,9 @@ window.goToAdminTab = function(tab) {
   const bn = document.getElementById('bottomNav');
   if(bn) {
     if(!bn.dataset.origHtml) bn.dataset.origHtml = bn.innerHTML;
-    bn.innerHTML = `<button class="bnav-item active" onclick="window._volverAClienteView();var bn=document.getElementById('bottomNav');if(bn&&bn.dataset.origHtml){bn.innerHTML=bn.dataset.origHtml;delete bn.dataset.origHtml;}bn.style.display='';">← Negocio</button><button class="bnav-item" onclick="goToAdminTab('inicio')">Inicio</button><button class="bnav-item" onclick="goToAdminTab('dash')">Clientes</button><button class="bnav-item" onclick="goToAdminTab('embi')">Embi ✦</button><button class="bnav-item" onclick="goToAdminTab('embiusage')">Uso Embi</button><button class="bnav-item" onclick="goToAdminTab('papelera')">Papelera</button>`;
+    const tabs = ['inicio','dash','embi','embiusage','papelera'];
+    const labels = {inicio:'Inicio',dash:'Clientes',embi:'Embi ✦',embiusage:'Uso Embi',papelera:'Papelera'};
+    bn.innerHTML = tabs.map(t=>`<button class="bnav-item${t===tab?' active':''}" onclick="goToAdminTab('${t}')">${labels[t]}</button>`).join('');
     bn.style.display = 'block';
   }
 };
