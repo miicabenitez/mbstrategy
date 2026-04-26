@@ -368,11 +368,13 @@ input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus
   #calc-form-grid{grid-template-columns:1fr !important;}
   /* Calculador list view — banner KPIs (clientes, sin admin) */
   #calc-list-view [style*="grid-template-columns:repeat(4"]{grid-template-columns:1fr 1fr !important;}
+  /* Calculador form view — banner KPIs */
+  #calc-form-view [style*="grid-template-columns:repeat(4"]{grid-template-columns:1fr 1fr !important;}
   /* Calculador form — insumos apilados en mobile */
   .calcf-ins-card [style*="grid-template-columns:1fr 88px 80px 74px"]{grid-template-columns:1fr !important; gap:6px !important;}
   .calcf-ins-card [style*="grid-template-columns:1fr 88px 80px 74px"] > *{margin-bottom:4px;}
   /* Calculador tabla — min-width al wrapper completo para que banner+sort+filas+footer scrolleen alineados */
-  #calc-table-wrap > div{min-width:520px;}
+  #calc-table-wrap > div{min-width:560px;}
   /* Calculador form — ocultar labels de columna cuando los inputs se apilan */
   .calcf-ins-labels{display:none !important;}
   /* ── Indicadores KPI banner — font-size adaptativo ── */
@@ -981,7 +983,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 @keyframes calcFadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes calcPillPop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
 </style>
-<!-- deploy force 013 -->
+<!-- deploy force 014 -->
 </head>
 <body>
 
@@ -3208,7 +3210,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
           </div>
 
           <!-- Ranking por gasto -->
-          <div>
+          <div id="prov-side-cards">
             <div class="card" style="margin-bottom:12px;">
               <div class="ct">Mayor gasto (desde egresos)</div>
               <div id="prov-ranking"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin egresos registrados.</div></div>
@@ -7393,14 +7395,14 @@ window.calcfAddInsumo = function(data) {
     <div style="display:grid;grid-template-columns:1fr 88px 80px 74px;gap:6px;align-items:center;">
       <input type="text" placeholder="Nombre del insumo" value="${sanitize(d.nombre)}" class="calcf-ins-n" style="border:.5px solid rgba(0,0,0,.08);border-radius:8px;padding:9px 11px;font-size:13px;font-family:'DM Sans',sans-serif;background:#fff;outline:none;width:100%;">
       <div style="display:flex;gap:3px;">
-        <input type="number" placeholder="25" value="${d.compraQty}" class="calcf-ins-cq" min="0" style="width:40px;padding:9px 5px;border:.5px solid rgba(0,0,0,.08);border-radius:8px;font-size:12px;font-family:'DM Sans',sans-serif;background:#fff;outline:none;">
+        <input type="number" placeholder="Cant." value="${d.compraQty}" class="calcf-ins-cq" min="0" style="width:40px;padding:9px 5px;border:.5px solid rgba(0,0,0,.08);border-radius:8px;font-size:12px;font-family:'DM Sans',sans-serif;background:#fff;outline:none;">
         <select class="calcf-ins-cu" style="width:46px;padding:9px 3px;border:.5px solid rgba(0,0,0,.08);border-radius:8px;font-size:12px;font-family:'DM Sans',sans-serif;background:#fff;outline:none;">
           ${['kg','lt','g','ml','und','mts','rollo','frasco','caja'].map(u=>`<option ${u===d.compraUnit?'selected':''}>${u}</option>`).join('')}
         </select>
       </div>
       <input type="number" placeholder="Precio $" value="${d.precio}" class="calcf-ins-p" min="0" style="border:.5px solid rgba(0,0,0,.08);border-radius:8px;padding:9px 11px;font-size:13px;font-family:'DM Sans',sans-serif;background:#fff;outline:none;width:100%;">
       <div style="display:flex;gap:3px;align-items:center;">
-        <input type="number" placeholder="0.5" value="${d.usoPorUnidad}" class="calcf-ins-u" step="0.001" min="0" style="width:46px;padding:9px 5px;border:.5px solid rgba(0,0,0,.08);border-radius:8px;font-size:12px;font-family:'DM Sans',sans-serif;background:#fff;outline:none;">
+        <input type="number" placeholder="Uso x und." value="${d.usoPorUnidad}" class="calcf-ins-u" step="0.001" min="0" style="width:46px;padding:9px 5px;border:.5px solid rgba(0,0,0,.08);border-radius:8px;font-size:12px;font-family:'DM Sans',sans-serif;background:#fff;outline:none;">
         <button onclick="this.closest('.calcf-ins-card').remove();recalcCalc();" style="background:none;border:.5px solid rgba(0,0,0,.1);border-radius:6px;width:26px;height:26px;cursor:pointer;color:#bbb;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">✕</button>
       </div>
     </div>
@@ -17875,10 +17877,48 @@ function renderListaProveedores(filtro) {
     ? _proveedores.filter(p=>(p.nombre||'').toLowerCase().includes(q)||(p.categoria||'').toLowerCase().includes(q))
     : _proveedores;
 
+  const sideCards = document.getElementById('prov-side-cards');
   if(_proveedores.length===0) {
-    lista.innerHTML=createEmptyState('tienda','Aún no tenés proveedores','Cargá tus proveedores para cotizar y emitir órdenes de compra','+ Nuevo proveedor',"openModal('newProveedorModal')");
+    if(sideCards) sideCards.style.display = 'none';
+    lista.innerHTML = `<div style="background:#fff;border-radius:16px;padding:36px 24px;text-align:center;">
+  <div style="display:flex;justify-content:center;align-items:flex-end;gap:24px;margin-bottom:24px;height:86px;">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;animation:calcFloat1 3.5s ease-in-out infinite;">
+      <svg width="46" height="46" viewBox="0 0 46 46" fill="none"><circle cx="23" cy="23" r="21" fill="#e8ede8" stroke="#c8d4c8" stroke-width="1"/><rect x="12" y="16" width="22" height="16" rx="3" fill="#fff" stroke="#4a5e4d" stroke-width="1.3"/><path d="M16 20h14M16 24h10" stroke="#4a5e4d" stroke-width="1.3" stroke-linecap="round"/><path d="M20 32v-4h6v4" stroke="#4a5e4d" stroke-width="1.3" stroke-linecap="round"/></svg>
+      <div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;">Proveedor</div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;animation:calcFloat2 4s ease-in-out infinite .6s;">
+      <svg width="54" height="54" viewBox="0 0 54 54" fill="none"><circle cx="27" cy="27" r="25" fill="#fff" stroke="#4a5e4d" stroke-width="1.5"/><path d="M16 20h22M16 27h22M16 34h14" stroke="#4a5e4d" stroke-width="1.5" stroke-linecap="round"/><circle cx="39" cy="39" r="8" fill="#b09088"/><path d="M36 39h6M39 36v6" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;">Necesidad</div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px;animation:calcFloat3 3.2s ease-in-out infinite 1.2s;">
+      <svg width="46" height="46" viewBox="0 0 46 46" fill="none"><circle cx="23" cy="23" r="21" fill="#f5ebe8" stroke="#e8d4c8" stroke-width="1"/><rect x="11" y="14" width="24" height="18" rx="3" fill="#fff" stroke="#b09088" stroke-width="1.3"/><path d="M15 20h16M15 25h10" stroke="#b09088" stroke-width="1.3" stroke-linecap="round"/><path d="M28 28l4 4" stroke="#b09088" stroke-width="1.3" stroke-linecap="round"/><circle cx="33" cy="33" r="3" fill="#b09088"/></svg>
+      <div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;">Orden de compra</div>
+    </div>
+  </div>
+  <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:#1a1a1a;margin-bottom:8px;line-height:1.2;">Organizá tus compras<br>de principio a fin</div>
+  <div style="font-size:13px;color:#6b7280;line-height:1.65;margin-bottom:24px;max-width:360px;margin-left:auto;margin-right:auto;">Cargá tus proveedores, registrá lo que necesitás y emitís órdenes de compra en segundos.</div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px;text-align:left;">
+    <div style="background:#e8ede8;border-radius:12px;padding:16px 14px;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:32px;color:#4a5e4d;line-height:1;margin-bottom:6px;">01</div>
+      <div style="font-size:12px;font-weight:500;color:#2d4a30;margin-bottom:3px;">Cargás el proveedor</div>
+      <div style="font-size:11px;color:#5a7a5d;line-height:1.4;">Con sus datos, productos y precios de referencia</div>
+    </div>
+    <div style="background:#f5ebe8;border-radius:12px;padding:16px 14px;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:32px;color:#b09088;line-height:1;margin-bottom:6px;">02</div>
+      <div style="font-size:12px;font-weight:500;color:#7a5850;margin-bottom:3px;">Generás una necesidad</div>
+      <div style="font-size:11px;color:#906860;line-height:1.4;">Lo que necesitás cotizar — cantidad, producto y proveedor</div>
+    </div>
+    <div style="background:#4a5e4d;border-radius:12px;padding:16px 14px;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:32px;color:#e8c4b8;line-height:1;margin-bottom:6px;">03</div>
+      <div style="font-size:12px;font-weight:500;color:#fff;margin-bottom:3px;">Emitís la orden</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.65);line-height:1.4;">Orden de compra generada y seguimiento del pago</div>
+    </div>
+  </div>
+  <button onclick="openModal('newProveedorModal')" style="background:#4a5e4d;color:#fff;border:none;border-radius:12px;padding:12px 28px;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;font-weight:500;">+ Agregar primer proveedor</button>
+</div>`;
     return;
   }
+  if(sideCards) sideCards.style.display = '';
   if(provsFiltrados.length===0) {
     lista.innerHTML=`<div style="text-align:center;padding:20px;color:var(--text-l);font-size:13px;">Sin resultados para "${filtro}"</div>`;
     return;
