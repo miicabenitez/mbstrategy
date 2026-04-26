@@ -366,6 +366,13 @@ input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus
   body.client-view [style*="border-radius:13px"]{overflow:hidden;word-break:break-word;max-width:100%;box-sizing:border-box;}
   /* Calculador form grid */
   #calc-form-grid{grid-template-columns:1fr !important;}
+  /* Calculador list view — banner KPIs (clientes, sin admin) */
+  #calc-list-view [style*="grid-template-columns:repeat(4"]{grid-template-columns:1fr 1fr !important;}
+  /* Calculador form — insumos apilados en mobile */
+  .calcf-ins-card [style*="grid-template-columns:1fr 88px 80px 74px"]{grid-template-columns:1fr !important; gap:6px !important;}
+  .calcf-ins-card [style*="grid-template-columns:1fr 88px 80px 74px"] > *{margin-bottom:4px;}
+  /* Calculador tabla — min-width compartido para scroll alineado */
+  #calc-table-wrap > div > div[style*="grid-template-columns:2fr"]{min-width:520px;}
   /* ── Indicadores KPI banner — font-size adaptativo ── */
   #ct-kpis [style*="grid-template-columns:repeat(3"]{grid-template-columns:1fr 1fr 1fr !important;}
   #ck-ing,#ck-eg,#ck-gan{font-size:16px !important;}
@@ -972,7 +979,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 @keyframes calcFadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes calcPillPop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
 </style>
-<!-- deploy force 010 -->
+<!-- deploy force 011 -->
 </head>
 <body>
 
@@ -7171,7 +7178,7 @@ window.renderCalcList = function() {
   window._calcFiltrar = filtrar;
 
   wrap.innerHTML = `
-    <div style="background:#fff;border-radius:16px;overflow:hidden;">
+    <div style="background:#fff;border-radius:16px;">
       <div style="background:linear-gradient(135deg,#4a5e4d,#3a4e3d,#5a6e5d);padding:18px 24px;display:flex;justify-content:space-between;align-items:center;">
         <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:#fff;font-weight:400;">Mis cálculos</div>
         <div id="calc-lista-count" style="font-size:11px;color:rgba(255,255,255,.55);background:rgba(255,255,255,.12);padding:4px 12px;border-radius:20px;">${items.length} resultado${items.length===1?'':'s'}</div>
