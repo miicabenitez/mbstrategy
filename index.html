@@ -370,9 +370,16 @@ input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus
   #calc-list-view [style*="grid-template-columns:repeat(4"]{grid-template-columns:1fr 1fr !important;}
   /* Calculador form view — banner KPIs */
   #calc-form-view [style*="grid-template-columns:repeat(4"]{grid-template-columns:1fr 1fr !important;}
-  /* Calculador form — insumos apilados en mobile */
-  .calcf-ins-card [style*="grid-template-columns:1fr 88px 80px 74px"]{grid-template-columns:1fr !important; gap:6px !important;}
-  .calcf-ins-card [style*="grid-template-columns:1fr 88px 80px 74px"] > *{margin-bottom:4px;}
+  /* Calculador form — insumos en mobile */
+  .calcf-ins-card [style*="grid-template-columns:1fr 88px 80px 74px"]{
+    grid-template-columns:1fr !important;
+  }
+  .calcf-ins-card .calcf-ins-cq,
+  .calcf-ins-card .calcf-ins-p,
+  .calcf-ins-card .calcf-ins-u,
+  .calcf-ins-card select.calcf-ins-cu{
+    width:100% !important;
+  }
   /* Calculador tabla — min-width al wrapper completo para que banner+sort+filas+footer scrolleen alineados */
   #calc-table-wrap > div{min-width:680px;}
   /* Calculador form — ocultar labels de columna cuando los inputs se apilan */
@@ -983,7 +990,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 @keyframes calcFadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes calcPillPop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
 </style>
-<!-- deploy force 016 -->
+<!-- deploy force 017 -->
 </head>
 <body>
 
@@ -7393,21 +7400,23 @@ window.calcfAddInsumo = function(data) {
   div.dataset.idx = idx;
   div.style.cssText = 'background:#eeebe6;border-radius:10px;padding:11px 12px;margin-bottom:8px;';
   div.innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 88px 80px 74px;gap:6px;align-items:center;">
-      <input type="text" placeholder="Nombre del insumo" value="${sanitize(d.nombre)}" class="calcf-ins-n" style="border:.5px solid rgba(0,0,0,.08);border-radius:8px;padding:9px 11px;font-size:13px;font-family:'DM Sans',sans-serif;background:#fff;outline:none;width:100%;">
-      <div style="display:flex;gap:3px;">
-        <input type="number" placeholder="Cant." value="${d.compraQty}" class="calcf-ins-cq" min="0" style="width:40px;padding:9px 5px;border:.5px solid rgba(0,0,0,.08);border-radius:8px;font-size:12px;font-family:'DM Sans',sans-serif;background:#fff;outline:none;">
-        <select class="calcf-ins-cu" style="width:46px;padding:9px 3px;border:.5px solid rgba(0,0,0,.08);border-radius:8px;font-size:12px;font-family:'DM Sans',sans-serif;background:#fff;outline:none;">
-          ${['kg','lt','g','ml','und','mts','rollo','frasco','caja'].map(u=>`<option ${u===d.compraUnit?'selected':''}>${u}</option>`).join('')}
-        </select>
+    <input type="text" placeholder="¿Qué insumo usás? Ej: Harina" value="${sanitize(d.nombre)}" class="calcf-ins-n" style="border:.5px solid rgba(0,0,0,.08);border-radius:8px;padding:9px 11px;font-size:13px;font-family:'DM Sans',sans-serif;background:#fff;outline:none;width:100%;margin-bottom:8px;">
+    <div class="calcf-ins-seccion-compra" style="background:rgba(74,94,77,.06);border-radius:8px;padding:10px;margin-bottom:8px;">
+      <div style="font-size:10px;color:#4a5e4d;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;font-weight:500;">Lo que comprás</div>
+      <div style="display:flex;gap:6px;margin-bottom:6px;">
+        <input type="number" placeholder="Cantidad" value="${d.compraQty}" class="calcf-ins-cq" min="0" style="flex:1;border:.5px solid rgba(0,0,0,.08);border-radius:8px;padding:9px 11px;font-size:13px;font-family:'DM Sans',sans-serif;background:#fff;outline:none;">
+        <select class="calcf-ins-cu" style="width:80px;border:.5px solid rgba(0,0,0,.08);border-radius:8px;padding:9px 6px;font-size:13px;font-family:'DM Sans',sans-serif;background:#fff;outline:none;">${['kg','lt','g','ml','und','mts','rollo','frasco','caja'].map(u=>`<option ${u===d.compraUnit?'selected':''}>${u}</option>`).join('')}</select>
       </div>
-      <input type="number" placeholder="Precio $" value="${d.precio}" class="calcf-ins-p" min="0" style="border:.5px solid rgba(0,0,0,.08);border-radius:8px;padding:9px 11px;font-size:13px;font-family:'DM Sans',sans-serif;background:#fff;outline:none;width:100%;">
-      <div style="display:flex;gap:3px;align-items:center;">
-        <input type="number" placeholder="Uso x und." value="${d.usoPorUnidad}" class="calcf-ins-u" step="0.001" min="0" style="width:46px;padding:9px 5px;border:.5px solid rgba(0,0,0,.08);border-radius:8px;font-size:12px;font-family:'DM Sans',sans-serif;background:#fff;outline:none;">
-        <button onclick="this.closest('.calcf-ins-card').remove();recalcCalc();" style="background:none;border:.5px solid rgba(0,0,0,.1);border-radius:6px;width:26px;height:26px;cursor:pointer;color:#bbb;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">✕</button>
+      <input type="number" placeholder="Precio total de esa compra $" value="${d.precio}" class="calcf-ins-p" min="0" style="width:100%;border:.5px solid rgba(0,0,0,.08);border-radius:8px;padding:9px 11px;font-size:13px;font-family:'DM Sans',sans-serif;background:#fff;outline:none;">
+    </div>
+    <div style="background:rgba(176,144,136,.1);border-radius:8px;padding:10px;">
+      <div style="font-size:10px;color:#b09088;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;font-weight:500;">Lo que usás por unidad</div>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <input type="number" placeholder="Cantidad usada para hacer 1 unidad" value="${d.usoPorUnidad}" class="calcf-ins-u" step="0.001" min="0" style="flex:1;border:.5px solid rgba(0,0,0,.08);border-radius:8px;padding:9px 11px;font-size:13px;font-family:'DM Sans',sans-serif;background:#fff;outline:none;">
+        <button onclick="this.closest('.calcf-ins-card').remove();recalcCalc();" style="background:none;border:.5px solid rgba(0,0,0,.1);border-radius:6px;width:32px;height:32px;cursor:pointer;color:#bbb;font-size:14px;flex-shrink:0;">✕</button>
       </div>
     </div>
-    <div class="calcf-ins-cost" style="font-size:11px;color:#4a5e4d;text-align:right;margin-top:5px;font-weight:500;">Costo: <span class="calcf-ins-r">$0</span></div>`;
+    <div class="calcf-ins-cost" style="font-size:11px;color:#4a5e4d;text-align:right;margin-top:8px;font-weight:500;">Costo: <span class="calcf-ins-r">$0</span></div>`;
   wrap.appendChild(div);
   div.querySelectorAll('input,select').forEach(el => el.addEventListener('input', recalcCalc));
 };
