@@ -990,7 +990,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 @keyframes calcFadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes calcPillPop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
 </style>
-<!-- deploy force 017 -->
+<!-- deploy force 018 -->
 </head>
 <body>
 
@@ -7142,7 +7142,7 @@ window.renderCalcList = function() {
       const fechaDoc = new Date(c.actualizadoEn||c.creadoEn||0);
       const diasDesde = Math.floor((ahora-fechaDoc)/(1000*60*60*24));
       const obs = diasDesde > 90;
-      const fechaLabel = fechaDoc.getTime()>0 ? fechaDoc.toLocaleDateString('es-AR',{day:'numeric',month:'short'}) : '—';
+      const fechaLabel = fechaDoc.getTime()>0 ? fechaDoc.toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'}) : '—';
       const ini = (c.nombre||'?')[0].toUpperCase();
       return `<div style="display:grid;grid-template-columns:2fr 120px 140px 90px 90px 36px;align-items:center;padding:0 24px;border-bottom:.5px solid #f8f4f0;min-height:64px;cursor:pointer;transition:background .15s;opacity:0;animation:calcFadeUp .35s ease ${i*.06}s forwards;${obs?'background:#fffbf0;':''}"
         onmouseover="this.style.background='#faf8f6'" onmouseout="this.style.background='${obs?'#fffbf0':'#fff'}'"
@@ -7170,7 +7170,7 @@ window.renderCalcList = function() {
     ['nombre','costo','precio','margen','actualizadoEn'].forEach(c => {
       const a = document.getElementById('calc-arr-'+c);
       const h = document.getElementById('calc-col-'+c);
-      if(a) a.textContent = c===window._calcSort.col?(window._calcSort.dir===1?'↑':'↓'):'↕';
+      if(a) a.innerHTML = c===window._calcSort.col?(window._calcSort.dir===1?'↑':'↓'):'<span style="font-size:9px;opacity:.5;">↑↓</span>';
       if(h) h.style.color = c===window._calcSort.col?'#4a5e4d':'#bbb';
     });
   };
@@ -7201,10 +7201,10 @@ window.renderCalcList = function() {
       </div>
       <div style="display:grid;grid-template-columns:2fr 120px 140px 90px 90px 36px;padding:10px 24px;background:#faf8f6;border-bottom:.5px solid #f0ece8;">
         <div id="calc-col-nombre" onclick="window._calcSortBy('nombre')" style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#4a5e4d;cursor:pointer;display:flex;align-items:center;gap:4px;user-select:none;">Nombre <span id="calc-arr-nombre">↑</span></div>
-        <div id="calc-col-costo" onclick="window._calcSortBy('costo')" style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#bbb;cursor:pointer;display:flex;align-items:center;gap:4px;user-select:none;">Costo unit. <span id="calc-arr-costo">↕</span></div>
-        <div id="calc-col-precio" onclick="window._calcSortBy('precio')" style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#bbb;cursor:pointer;display:flex;align-items:center;gap:4px;user-select:none;">Precio sugerido <span id="calc-arr-precio">↕</span></div>
-        <div id="calc-col-margen" onclick="window._calcSortBy('margen')" style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#bbb;cursor:pointer;display:flex;align-items:center;gap:4px;user-select:none;">Margen <span id="calc-arr-margen">↕</span></div>
-        <div id="calc-col-actualizadoEn" onclick="window._calcSortBy('actualizadoEn')" style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#bbb;cursor:pointer;display:flex;align-items:center;gap:4px;user-select:none;">Actualizado <span id="calc-arr-actualizadoEn">↕</span></div>
+        <div id="calc-col-costo" onclick="window._calcSortBy('costo')" style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#bbb;cursor:pointer;display:flex;align-items:center;gap:4px;user-select:none;">Costo unit. <span id="calc-arr-costo"><span style="font-size:9px;opacity:.5;">↑↓</span></span></div>
+        <div id="calc-col-precio" onclick="window._calcSortBy('precio')" style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#bbb;cursor:pointer;display:flex;align-items:center;gap:4px;user-select:none;">Precio sugerido <span id="calc-arr-precio"><span style="font-size:9px;opacity:.5;">↑↓</span></span></div>
+        <div id="calc-col-margen" onclick="window._calcSortBy('margen')" style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#bbb;cursor:pointer;display:flex;align-items:center;gap:4px;user-select:none;">Margen <span id="calc-arr-margen"><span style="font-size:9px;opacity:.5;">↑↓</span></span></div>
+        <div id="calc-col-actualizadoEn" onclick="window._calcSortBy('actualizadoEn')" style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#bbb;cursor:pointer;display:flex;align-items:center;gap:4px;user-select:none;">Actualizado <span id="calc-arr-actualizadoEn"><span style="font-size:9px;opacity:.5;">↑↓</span></span></div>
         <div></div>
       </div>
       <div id="calc-rows-body"></div>
