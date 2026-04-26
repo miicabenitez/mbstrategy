@@ -371,8 +371,10 @@ input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus
   /* Calculador form — insumos apilados en mobile */
   .calcf-ins-card [style*="grid-template-columns:1fr 88px 80px 74px"]{grid-template-columns:1fr !important; gap:6px !important;}
   .calcf-ins-card [style*="grid-template-columns:1fr 88px 80px 74px"] > *{margin-bottom:4px;}
-  /* Calculador tabla — min-width compartido para scroll alineado */
-  #calc-table-wrap > div > div[style*="grid-template-columns:2fr"]{min-width:520px;}
+  /* Calculador tabla — min-width al wrapper completo para que banner+sort+filas+footer scrolleen alineados */
+  #calc-table-wrap > div{min-width:520px;}
+  /* Calculador form — ocultar labels de columna cuando los inputs se apilan */
+  .calcf-ins-labels{display:none !important;}
   /* ── Indicadores KPI banner — font-size adaptativo ── */
   #ct-kpis [style*="grid-template-columns:repeat(3"]{grid-template-columns:1fr 1fr 1fr !important;}
   #ck-ing,#ck-eg,#ck-gan{font-size:16px !important;}
@@ -979,7 +981,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 @keyframes calcFadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes calcPillPop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
 </style>
-<!-- deploy force 011 -->
+<!-- deploy force 012 -->
 </head>
 <body>
 
@@ -3075,7 +3077,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
   <!-- 3. INSUMOS -->
   <div style="background:#fff;border-radius:14px;padding:16px 18px;margin-bottom:10px;">
     <div style="font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:#6b7280;margin-bottom:12px;font-weight:500;">Insumos o materiales</div>
-    <div style="display:grid;grid-template-columns:1fr 88px 80px 74px;gap:6px;margin-bottom:6px;">
+    <div class="calcf-ins-labels" style="display:grid;grid-template-columns:1fr 88px 80px 74px;gap:6px;margin-bottom:6px;">
       <div style="font-size:11px;color:#6b7280;">¿Qué usás?</div>
       <div style="font-size:11px;color:#6b7280;">Comprás</div>
       <div style="font-size:11px;color:#6b7280;">Precio $</div>
