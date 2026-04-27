@@ -71,17 +71,20 @@ async function getValidTA(wsaa) {
 }
 
 // ── Helper: chequea si AFIP devolvió Errors.Err en el response ──
-// Si el error es por token expirado, borra el TA cacheado en Firestore
-// (fire-and-forget) para que el próximo request re-autentique.
-function checkAfipErrors(response, methodName) {
-  const result = response[methodName + 'Result'];
-  if (result && result.Errors && result.Errors.Err) {
-    const errors = Array.isArray(result.Errors.Err) ? result.Errors.Err : [result.Errors.Err];
-    const isTokenError = errors.some(e => e.Code === 600 || /token/i.test(e.Msg || ''));
-    if (isTokenError) {
-      db.collection('config').doc('afipTA').delete().catch(() => {});
+// methodOrKeys: string (se le agrega 'Result') o array de keys completas (incluyendo 'Result').
+// Si el error es por token expirado, borra el TA cacheado en Firestore (fire-and-forget).
+function checkAfipErrors(response, methodOrKeys) {
+  const keys = Array.isArray(methodOrKeys) ? methodOrKeys : [methodOrKeys + 'Result'];
+  for (const key of keys) {
+    const result = response[key];
+    if (result && result.Errors && result.Errors.Err) {
+      const errors = Array.isArray(result.Errors.Err) ? result.Errors.Err : [result.Errors.Err];
+      const isTokenError = errors.some(e => e.Code === 600 || /token/i.test(e.Msg || ''));
+      if (isTokenError) {
+        db.collection('config').doc('afipTA').delete().catch(() => {});
+      }
+      return errors.map(e => ({ code: e.Code, msg: e.Msg }));
     }
-    return errors.map(e => ({ code: e.Code, msg: e.Msg }));
   }
   return null;
 }
@@ -90,6 +93,13 @@ function checkAfipErrors(response, methodName) {
 function extractFECAEDetail(result) {
   const detResp = result.FECAESolicitarResult.FeDetResp;
   return Array.isArray(detResp.FECAEDetResponse) ? detResp.FECAEDetResponse[0] : detResp.FECAEDetResponse;
+}
+
+// ── Helper: lee result de FECompUltimoAutorizado tolerando typo en response key ──
+// La doc README muestra 'FECompUltimoAutozizadoResult' (typo "zi"), pero el WSDL oficial
+// usa 'FECompUltimoAutorizadoResult'. Manejamos ambos por las dudas.
+function getUltimoAutorizadoResult(resp) {
+  return resp.FECompUltimoAutorizadoResult || resp.FECompUltimoAutozizadoResult || {};
 }
 
 exports.handler = async function(event) {
@@ -135,7 +145,7 @@ exports.handler = async function(event) {
     wsaa.setCertificate(afipConfig.cert);
     wsaa.setKey(afipConfig.key);
     const ta = await getValidTA(wsaa);
-    const wsfe = new Wsfe(ta);
+    const wsfe = new Wsfe(ta, { prod: process.env.AFIP_PRODUCTION === 'true' });
     const ambiente = process.env.AFIP_PRODUCTION === 'true' ? 'produccion' : 'homologacion';
 
     // ════════════════════════════════════════
@@ -163,16 +173,16 @@ exports.handler = async function(event) {
         return { statusCode: 429, headers: corsHeaders, body: JSON.stringify({ error: 'Límite diario de facturas alcanzado (50/día)' }) };
       }
 
-      // Obtener último número (typo intencional en response key 'Autozizado' — así lo devuelve afipjs)
+      // Obtener último número (response key tolerante al typo de la doc)
       const lastResp = await wsfe.FECompUltimoAutorizado({
         PtoVta: puntoVenta,
         CbteTipo: tipoComprobante
       });
-      const lastErrors = checkAfipErrors(lastResp, 'FECompUltimoAutozizado');
+      const lastErrors = checkAfipErrors(lastResp, ['FECompUltimoAutorizadoResult', 'FECompUltimoAutozizadoResult']);
       if (lastErrors) {
         return { statusCode: 422, headers: corsHeaders, body: JSON.stringify({ error: 'AFIP rechazó consulta de último comprobante', afipErrors: lastErrors }) };
       }
-      const lastVoucher = (lastResp.FECompUltimoAutozizadoResult && lastResp.FECompUltimoAutozizadoResult.CbteNro) || 0;
+      const lastVoucher = getUltimoAutorizadoResult(lastResp).CbteNro || 0;
       const nroComprobante = lastVoucher + 1;
       const fechaHoy = fechaAfip();
 
@@ -301,11 +311,11 @@ exports.handler = async function(event) {
         PtoVta: puntoVenta,
         CbteTipo: tipoNotaCredito
       });
-      const lastErrors = checkAfipErrors(lastResp, 'FECompUltimoAutozizado');
+      const lastErrors = checkAfipErrors(lastResp, ['FECompUltimoAutorizadoResult', 'FECompUltimoAutozizadoResult']);
       if (lastErrors) {
         return { statusCode: 422, headers: corsHeaders, body: JSON.stringify({ error: 'AFIP rechazó consulta de último comprobante', afipErrors: lastErrors }) };
       }
-      const lastVoucher = (lastResp.FECompUltimoAutozizadoResult && lastResp.FECompUltimoAutozizadoResult.CbteNro) || 0;
+      const lastVoucher = getUltimoAutorizadoResult(lastResp).CbteNro || 0;
       const nroComprobante = lastVoucher + 1;
       const fechaHoy = fechaAfip();
 
@@ -406,11 +416,11 @@ exports.handler = async function(event) {
         PtoVta: puntoVenta,
         CbteTipo: tipoComprobante
       });
-      const lastErrors = checkAfipErrors(lastResp, 'FECompUltimoAutozizado');
+      const lastErrors = checkAfipErrors(lastResp, ['FECompUltimoAutorizadoResult', 'FECompUltimoAutozizadoResult']);
       if (lastErrors) {
         return { statusCode: 422, headers: corsHeaders, body: JSON.stringify({ error: 'AFIP rechazó la consulta', afipErrors: lastErrors }) };
       }
-      const ultimo = (lastResp.FECompUltimoAutozizadoResult && lastResp.FECompUltimoAutozizadoResult.CbteNro) || 0;
+      const ultimo = getUltimoAutorizadoResult(lastResp).CbteNro || 0;
       return { statusCode: 200, headers: corsHeaders, body: JSON.stringify({ ok: true, ultimo, siguiente: ultimo + 1 }) };
     }
 
