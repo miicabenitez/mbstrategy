@@ -1,6 +1,6 @@
 'use strict';
 const admin = require('firebase-admin');
-const Afip = require('@afipsdk/afip.js');
+const { Wsaa, Wsfe } = require('afipjs');
 
 // ── Firebase Admin singleton ──
 if (!admin.apps.length) {
@@ -42,6 +42,56 @@ function fechaAfip(date) {
   return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
 }
 
+// ── TA cache en Firestore (config/afipTA) — persiste entre cold starts ──
+async function getValidTA(wsaa) {
+  const taRef = db.collection('config').doc('afipTA');
+  const taSnap = await taRef.get();
+  if (taSnap.exists) {
+    const saved = taSnap.data();
+    if (saved.expirationTime && saved.TA) {
+      const expiration = new Date(saved.expirationTime);
+      // 10 min de buffer antes del vencimiento
+      if (expiration > new Date(Date.now() + 10 * 60 * 1000)) {
+        return wsaa.createTAFromString(saved.TA);
+      }
+    }
+  }
+  // TA vencido o inexistente — re-autenticar contra WSAA
+  const tra = wsaa.createTRA();
+  const ta = await tra.supplicateTA();
+  await taRef.set({
+    TA: ta.TA,
+    token: ta.TA_parsed.token,
+    sign: ta.TA_parsed.sign,
+    cuit: ta.TA_parsed.cuit,
+    expirationTime: ta.TA_parsed.expirationTime,
+    actualizadoEn: new Date().toISOString()
+  });
+  return ta;
+}
+
+// ── Helper: chequea si AFIP devolvió Errors.Err en el response ──
+// Si el error es por token expirado, borra el TA cacheado en Firestore
+// (fire-and-forget) para que el próximo request re-autentique.
+function checkAfipErrors(response, methodName) {
+  const result = response[methodName + 'Result'];
+  if (result && result.Errors && result.Errors.Err) {
+    const errors = Array.isArray(result.Errors.Err) ? result.Errors.Err : [result.Errors.Err];
+    const isTokenError = errors.some(e => e.Code === 600 || /token/i.test(e.Msg || ''));
+    if (isTokenError) {
+      db.collection('config').doc('afipTA').delete().catch(() => {});
+    }
+    return errors.map(e => ({ code: e.Code, msg: e.Msg }));
+  }
+  return null;
+}
+
+// ── Helper: extrae detalle de respuesta FECAESolicitar ──
+function extractFECAEDetail(result) {
+  const detResp = result.FECAESolicitarResult.FeDetResp;
+  return Array.isArray(detResp.FECAEDetResponse) ? detResp.FECAEDetResponse[0] : detResp.FECAEDetResponse;
+}
+
 exports.handler = async function(event) {
   const corsHeaders = getCorsHeaders(event);
 
@@ -80,15 +130,13 @@ exports.handler = async function(event) {
     }
     const afipConfig = afipConfigSnap.data();
 
-    // ── Inicializar AFIP SDK ──
-    const afip = new Afip({
-      CUIT: parseInt(process.env.AFIP_CUIT),
-      cert: afipConfig.cert,
-      key: afipConfig.key,
-      production: process.env.AFIP_PRODUCTION === 'true',
-      res_folder: '/tmp',
-      ta_folder: '/tmp'
-    });
+    // ── Instanciar Wsaa con cert/key, obtener TA (cache Firestore o nuevo), instanciar Wsfe ──
+    const wsaa = new Wsaa({ prod: process.env.AFIP_PRODUCTION === 'true' });
+    wsaa.setCertificate(afipConfig.cert);
+    wsaa.setKey(afipConfig.key);
+    const ta = await getValidTA(wsaa);
+    const wsfe = new Wsfe(ta);
+    const ambiente = process.env.AFIP_PRODUCTION === 'true' ? 'produccion' : 'homologacion';
 
     // ════════════════════════════════════════
     // ACCIÓN: emitirFactura
@@ -115,16 +163,22 @@ exports.handler = async function(event) {
         return { statusCode: 429, headers: corsHeaders, body: JSON.stringify({ error: 'Límite diario de facturas alcanzado (50/día)' }) };
       }
 
-      // Obtener último número de comprobante
-      const lastVoucher = await afip.ElectronicBilling.getLastVoucher(puntoVenta, tipoComprobante);
+      // Obtener último número (typo intencional en response key 'Autozizado' — así lo devuelve afipjs)
+      const lastResp = await wsfe.FECompUltimoAutorizado({
+        PtoVta: puntoVenta,
+        CbteTipo: tipoComprobante
+      });
+      const lastErrors = checkAfipErrors(lastResp, 'FECompUltimoAutozizado');
+      if (lastErrors) {
+        return { statusCode: 422, headers: corsHeaders, body: JSON.stringify({ error: 'AFIP rechazó consulta de último comprobante', afipErrors: lastErrors }) };
+      }
+      const lastVoucher = (lastResp.FECompUltimoAutozizadoResult && lastResp.FECompUltimoAutozizadoResult.CbteNro) || 0;
       const nroComprobante = lastVoucher + 1;
       const fechaHoy = fechaAfip();
 
-      const voucherData = {
-        CantReg: 1,
-        PtoVta: puntoVenta,
-        CbteTipo: tipoComprobante,
-        Concepto: concepto || 2, // 2=Servicios por defecto (PyMEs de servicio)
+      // Construir detalle (estructura anidada de afipjs)
+      const detRequest = {
+        Concepto: concepto || 2, // 2=Servicios por defecto
         DocTipo: cuitReceptor ? 80 : 99, // 80=CUIT, 99=Consumidor Final
         DocNro: cuitReceptor ? parseInt(cuitReceptor) : 0,
         CbteDesde: nroComprobante,
@@ -134,22 +188,52 @@ exports.handler = async function(event) {
         ImpTotConc: 0,
         ImpNeto: importeTotal,
         ImpOpEx: 0,
-        ImpIVA: 0,
         ImpTrib: 0,
+        ImpIVA: 0,
         MonId: 'PES',
-        MonCotiz: 1,
+        MonCotiz: 1
       };
 
-      // Servicios: agregar fechas
+      // Servicios (concepto 2 o 3): agregar fechas
       if (concepto === 2 || concepto === 3) {
-        voucherData.FchServDesde = fechaServDesde || fechaHoy;
-        voucherData.FchServHasta = fechaServHasta || fechaHoy;
-        voucherData.FchVtoPago = fechaVtoPago || fechaHoy;
+        detRequest.FchServDesde = fechaServDesde || fechaHoy;
+        detRequest.FchServHasta = fechaServHasta || fechaHoy;
+        detRequest.FchVtoPago = fechaVtoPago || fechaHoy;
       }
 
-      const result = await afip.ElectronicBilling.createVoucher(voucherData);
+      const factura = {
+        FeCAEReq: {
+          FeCabReq: { CantReg: 1, PtoVta: puntoVenta, CbteTipo: tipoComprobante },
+          FeDetReq: { FECAEDetRequest: detRequest }
+        }
+      };
 
-      // Guardar en Firestore con log completo
+      const result = await wsfe.FECAESolicitar(factura);
+      const caeErrors = checkAfipErrors(result, 'FECAESolicitar');
+      if (caeErrors) {
+        return { statusCode: 422, headers: corsHeaders, body: JSON.stringify({ error: 'AFIP rechazó la factura', afipErrors: caeErrors }) };
+      }
+
+      const detail = extractFECAEDetail(result);
+      const cae = detail.CAE;
+      const caeFchVto = detail.CAEFchVto;
+      const resultado = detail.Resultado; // 'A'=aprobado, 'R'=rechazado, 'P'=parcial
+
+      if (resultado !== 'A' || !cae) {
+        const obs = detail.Observaciones && detail.Observaciones.Obs;
+        const obsArr = obs ? (Array.isArray(obs) ? obs : [obs]) : [];
+        return {
+          statusCode: 422,
+          headers: corsHeaders,
+          body: JSON.stringify({
+            error: 'AFIP no aprobó la factura',
+            resultado,
+            observaciones: obsArr.map(o => ({ code: o.Code, msg: o.Msg }))
+          })
+        };
+      }
+
+      // Guardar en Firestore
       const facturaRef = db.collection('clientes').doc(uid).collection('facturas').doc();
       const facturaData = {
         id: facturaRef.id,
@@ -157,29 +241,29 @@ exports.handler = async function(event) {
         puntoVenta,
         tipoComprobante,
         nroComprobante,
-        cae: result.CAE,
-        caeFechaVto: result.CAEFchVto,
+        cae,
+        caeFechaVto: caeFchVto,
         importeTotal,
         concepto,
         cuitReceptor: cuitReceptor || null,
         razonSocialReceptor: razonSocialReceptor || null,
         descripcion: descripcion || null,
         fechaEmision: admin.firestore.FieldValue.serverTimestamp(),
-        ambiente: process.env.AFIP_PRODUCTION === 'true' ? 'produccion' : 'homologacion',
+        ambiente,
         estado: 'emitida',
         creadoEn: new Date().toISOString()
       };
       await facturaRef.set(facturaData);
 
-      // Log de auditoría separado
+      // Audit log
       await db.collection('afipAuditLog').add({
         uid,
         accion: 'emitirFactura',
         facturaId: facturaRef.id,
         nroComprobante,
-        cae: result.CAE,
+        cae,
         importeTotal,
-        ambiente: facturaData.ambiente,
+        ambiente,
         timestamp: admin.firestore.FieldValue.serverTimestamp(),
         ip: event.headers?.['x-forwarded-for'] || 'unknown'
       });
@@ -189,11 +273,11 @@ exports.handler = async function(event) {
         headers: corsHeaders,
         body: JSON.stringify({
           ok: true,
-          cae: result.CAE,
-          caeFechaVto: result.CAEFchVto,
+          cae,
+          caeFechaVto: caeFchVto,
           nroComprobante,
           facturaId: facturaRef.id,
-          ambiente: facturaData.ambiente
+          ambiente
         })
       };
     }
@@ -213,14 +297,19 @@ exports.handler = async function(event) {
         return { statusCode: 429, headers: corsHeaders, body: JSON.stringify({ error: 'Límite diario alcanzado' }) };
       }
 
-      const lastVoucher = await afip.ElectronicBilling.getLastVoucher(puntoVenta, tipoNotaCredito);
+      const lastResp = await wsfe.FECompUltimoAutorizado({
+        PtoVta: puntoVenta,
+        CbteTipo: tipoNotaCredito
+      });
+      const lastErrors = checkAfipErrors(lastResp, 'FECompUltimoAutozizado');
+      if (lastErrors) {
+        return { statusCode: 422, headers: corsHeaders, body: JSON.stringify({ error: 'AFIP rechazó consulta de último comprobante', afipErrors: lastErrors }) };
+      }
+      const lastVoucher = (lastResp.FECompUltimoAutozizadoResult && lastResp.FECompUltimoAutozizadoResult.CbteNro) || 0;
       const nroComprobante = lastVoucher + 1;
       const fechaHoy = fechaAfip();
 
-      const ncData = {
-        CantReg: 1,
-        PtoVta: puntoVenta,
-        CbteTipo: tipoNotaCredito, // 13=NC C monotributo, 3=NC A RI, 8=NC B RI
+      const ncDetRequest = {
         Concepto: 2,
         DocTipo: cuitReceptor ? 80 : 99,
         DocNro: cuitReceptor ? parseInt(cuitReceptor) : 0,
@@ -231,22 +320,54 @@ exports.handler = async function(event) {
         ImpTotConc: 0,
         ImpNeto: importeTotal,
         ImpOpEx: 0,
-        ImpIVA: 0,
         ImpTrib: 0,
+        ImpIVA: 0,
         MonId: 'PES',
         MonCotiz: 1,
         FchServDesde: fechaHoy,
         FchServHasta: fechaHoy,
         FchVtoPago: fechaHoy,
-        CbtesAsoc: [{
-          Tipo: tipoComprobanteOriginal,
-          PtoVta: puntoVenta,
-          Nro: nroComprobanteOriginal,
-          Cuit: parseInt(process.env.AFIP_CUIT)
-        }]
+        CbtesAsoc: {
+          CbteAsoc: [{
+            Tipo: tipoComprobanteOriginal,
+            PtoVta: puntoVenta,
+            Nro: nroComprobanteOriginal,
+            Cuit: parseInt(process.env.AFIP_CUIT)
+          }]
+        }
       };
 
-      const result = await afip.ElectronicBilling.createVoucher(ncData);
+      const ncFactura = {
+        FeCAEReq: {
+          FeCabReq: { CantReg: 1, PtoVta: puntoVenta, CbteTipo: tipoNotaCredito },
+          FeDetReq: { FECAEDetRequest: ncDetRequest }
+        }
+      };
+
+      const result = await wsfe.FECAESolicitar(ncFactura);
+      const caeErrors = checkAfipErrors(result, 'FECAESolicitar');
+      if (caeErrors) {
+        return { statusCode: 422, headers: corsHeaders, body: JSON.stringify({ error: 'AFIP rechazó la nota de crédito', afipErrors: caeErrors }) };
+      }
+
+      const detail = extractFECAEDetail(result);
+      const cae = detail.CAE;
+      const caeFchVto = detail.CAEFchVto;
+      const resultado = detail.Resultado;
+
+      if (resultado !== 'A' || !cae) {
+        const obs = detail.Observaciones && detail.Observaciones.Obs;
+        const obsArr = obs ? (Array.isArray(obs) ? obs : [obs]) : [];
+        return {
+          statusCode: 422,
+          headers: corsHeaders,
+          body: JSON.stringify({
+            error: 'AFIP no aprobó la nota de crédito',
+            resultado,
+            observaciones: obsArr.map(o => ({ code: o.Code, msg: o.Msg }))
+          })
+        };
+      }
 
       const ncRef = db.collection('clientes').doc(uid).collection('notasCredito').doc();
       await ncRef.set({
@@ -255,13 +376,13 @@ exports.handler = async function(event) {
         puntoVenta,
         tipoNotaCredito,
         nroComprobante,
-        cae: result.CAE,
-        caeFechaVto: result.CAEFchVto,
+        cae,
+        caeFechaVto: caeFchVto,
         importeTotal,
         caeOriginal,
         nroComprobanteOriginal,
         fechaEmision: admin.firestore.FieldValue.serverTimestamp(),
-        ambiente: process.env.AFIP_PRODUCTION === 'true' ? 'produccion' : 'homologacion',
+        ambiente,
         estado: 'emitida',
         creadoEn: new Date().toISOString()
       });
@@ -269,7 +390,7 @@ exports.handler = async function(event) {
       return {
         statusCode: 200,
         headers: corsHeaders,
-        body: JSON.stringify({ ok: true, cae: result.CAE, caeFechaVto: result.CAEFchVto, nroComprobante, ncId: ncRef.id })
+        body: JSON.stringify({ ok: true, cae, caeFechaVto: caeFchVto, nroComprobante, ncId: ncRef.id })
       };
     }
 
@@ -281,8 +402,16 @@ exports.handler = async function(event) {
       if (!puntoVenta || !tipoComprobante) {
         return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: 'Faltan puntoVenta y tipoComprobante' }) };
       }
-      const last = await afip.ElectronicBilling.getLastVoucher(puntoVenta, tipoComprobante);
-      return { statusCode: 200, headers: corsHeaders, body: JSON.stringify({ ok: true, ultimo: last, siguiente: last + 1 }) };
+      const lastResp = await wsfe.FECompUltimoAutorizado({
+        PtoVta: puntoVenta,
+        CbteTipo: tipoComprobante
+      });
+      const lastErrors = checkAfipErrors(lastResp, 'FECompUltimoAutozizado');
+      if (lastErrors) {
+        return { statusCode: 422, headers: corsHeaders, body: JSON.stringify({ error: 'AFIP rechazó la consulta', afipErrors: lastErrors }) };
+      }
+      const ultimo = (lastResp.FECompUltimoAutozizadoResult && lastResp.FECompUltimoAutozizadoResult.CbteNro) || 0;
+      return { statusCode: 200, headers: corsHeaders, body: JSON.stringify({ ok: true, ultimo, siguiente: ultimo + 1 }) };
     }
 
     // ════════════════════════════════════════
