@@ -201,7 +201,8 @@ exports.handler = async function(event) {
         ImpTrib: 0,
         ImpIVA: 0,
         MonId: 'PES',
-        MonCotiz: 1
+        MonCotiz: 1,
+        CondicionIVAReceptorId: cuitReceptor ? (body.condicionIVAReceptor || 1) : 5
       };
 
       // Servicios (concepto 2 o 3): agregar fechas
@@ -334,6 +335,7 @@ exports.handler = async function(event) {
         ImpIVA: 0,
         MonId: 'PES',
         MonCotiz: 1,
+        CondicionIVAReceptorId: cuitReceptor ? (body.condicionIVAReceptor || 1) : 5,
         FchServDesde: fechaHoy,
         FchServHasta: fechaHoy,
         FchVtoPago: fechaHoy,
