@@ -3931,6 +3931,28 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
       <div class="fg"><label class="fl">DNI</label><input type="text" class="fi" id="mcc-dni" placeholder="12345678"/></div>
       <div class="fg"><label class="fl">CUIT</label><input type="text" class="fi" id="mcc-cuit" placeholder="20-12345678-9"/></div>
     </div>
+    <div class="fg">
+      <label class="fl">Condición frente al IVA</label>
+      <div id="mcc-condicion-iva-pills" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px;">
+        <div class="mcc-civa-pill" data-val="5" onclick="selectMccCondicionIVA(this,'5')" style="padding:10px 12px;border-radius:10px;border:1.5px solid var(--sage-dark);background:var(--sage-xl);cursor:pointer;">
+          <div class="mcc-civa-label" style="font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;color:var(--sage-dark);">Consumidor Final</div>
+          <div style="font-size:10px;color:var(--text-m);margin-top:2px;">Factura C · sin CUIT</div>
+        </div>
+        <div class="mcc-civa-pill" data-val="6" onclick="selectMccCondicionIVA(this,'6')" style="padding:10px 12px;border-radius:10px;border:.5px solid var(--cream-d);background:var(--cream);cursor:pointer;">
+          <div class="mcc-civa-label" style="font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;color:var(--text-d);">Monotributista</div>
+          <div style="font-size:10px;color:var(--text-m);margin-top:2px;">Factura C · con CUIT</div>
+        </div>
+        <div class="mcc-civa-pill" data-val="1" onclick="selectMccCondicionIVA(this,'1')" style="padding:10px 12px;border-radius:10px;border:.5px solid var(--cream-d);background:var(--cream);cursor:pointer;">
+          <div class="mcc-civa-label" style="font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;color:var(--text-d);">Resp. Inscripto</div>
+          <div style="font-size:10px;color:var(--text-m);margin-top:2px;">Factura A · CUIT obligatorio</div>
+        </div>
+        <div class="mcc-civa-pill" data-val="4" onclick="selectMccCondicionIVA(this,'4')" style="padding:10px 12px;border-radius:10px;border:.5px solid var(--cream-d);background:var(--cream);cursor:pointer;">
+          <div class="mcc-civa-label" style="font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;color:var(--text-d);">Exento</div>
+          <div style="font-size:10px;color:var(--text-m);margin-top:2px;">Factura B · con CUIT</div>
+        </div>
+      </div>
+      <input type="hidden" id="mcc-condicion-iva" value="5"/>
+    </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
       <div class="fg"><label class="fl">Dirección</label><input type="text" class="fi" id="mcc-direccion" placeholder="Calle 123"/></div>
       <div class="fg"><label class="fl">Ciudad</label><input type="text" class="fi" id="mcc-ciudad" placeholder="Ej: Rosario"/></div>
@@ -4538,6 +4560,29 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
     <button class="mc2" onclick="closeModal('newProveedorModal')">×</button>
     <div class="mt">Nuevo proveedor</div>
     <div class="fg"><label class="fl">Nombre</label><input type="text" class="fi" id="nprov-nombre" placeholder="Ej: Materiales Rodriguez, Mano de obra García..."/></div>
+    <div class="fg"><label class="fl">CUIT</label><input type="text" class="fi" id="mprov-cuit" placeholder="20-12345678-9"/></div>
+    <div class="fg">
+      <label class="fl">Condición frente al IVA</label>
+      <div id="mprov-condicion-iva-pills" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px;">
+        <div class="mprov-civa-pill" data-val="5" onclick="selectMprovCondicionIVA(this,'5')" style="padding:10px 12px;border-radius:10px;border:1.5px solid var(--sage-dark);background:var(--sage-xl);cursor:pointer;">
+          <div class="mprov-civa-label" style="font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;color:var(--sage-dark);">Consumidor Final</div>
+          <div style="font-size:10px;color:var(--text-m);margin-top:2px;">sin CUIT</div>
+        </div>
+        <div class="mprov-civa-pill" data-val="6" onclick="selectMprovCondicionIVA(this,'6')" style="padding:10px 12px;border-radius:10px;border:.5px solid var(--cream-d);background:var(--cream);cursor:pointer;">
+          <div class="mprov-civa-label" style="font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;color:var(--text-d);">Monotributista</div>
+          <div style="font-size:10px;color:var(--text-m);margin-top:2px;">con CUIT</div>
+        </div>
+        <div class="mprov-civa-pill" data-val="1" onclick="selectMprovCondicionIVA(this,'1')" style="padding:10px 12px;border-radius:10px;border:.5px solid var(--cream-d);background:var(--cream);cursor:pointer;">
+          <div class="mprov-civa-label" style="font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;color:var(--text-d);">Resp. Inscripto</div>
+          <div style="font-size:10px;color:var(--text-m);margin-top:2px;">CUIT obligatorio</div>
+        </div>
+        <div class="mprov-civa-pill" data-val="4" onclick="selectMprovCondicionIVA(this,'4')" style="padding:10px 12px;border-radius:10px;border:.5px solid var(--cream-d);background:var(--cream);cursor:pointer;">
+          <div class="mprov-civa-label" style="font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;color:var(--text-d);">Exento</div>
+          <div style="font-size:10px;color:var(--text-m);margin-top:2px;">con CUIT</div>
+        </div>
+      </div>
+      <input type="hidden" id="mprov-condicion-iva" value="5"/>
+    </div>
     <div class="fg"><label class="fl">Categoría</label>
       <div style="display:flex;gap:8px;align-items:center;">
         <select class="fi" id="nprov-cat" style="margin-top:0;flex:1;"></select>
@@ -13748,6 +13793,38 @@ window.createMcPresup = async function() {
   }catch(e){showToast('Error: '+e.message, 'error');if(_mcpBtn){_mcpBtn.disabled=false;_mcpBtn.textContent='Guardar';}}
 };
 
+window.selectMccCondicionIVA = function(el, valor) {
+  const container = document.getElementById('mcc-condicion-iva-pills');
+  if(container) container.querySelectorAll('.mcc-civa-pill').forEach(p => {
+    p.style.border = '.5px solid var(--cream-d)';
+    p.style.background = 'var(--cream)';
+    p.querySelector('.mcc-civa-label').style.color = 'var(--text-d)';
+  });
+  if(el) {
+    el.style.border = '1.5px solid var(--sage-dark)';
+    el.style.background = 'var(--sage-xl)';
+    el.querySelector('.mcc-civa-label').style.color = 'var(--sage-dark)';
+  }
+  const hid = document.getElementById('mcc-condicion-iva');
+  if(hid) hid.value = valor;
+};
+
+window.selectMprovCondicionIVA = function(el, valor) {
+  const container = document.getElementById('mprov-condicion-iva-pills');
+  if(container) container.querySelectorAll('.mprov-civa-pill').forEach(p => {
+    p.style.border = '.5px solid var(--cream-d)';
+    p.style.background = 'var(--cream)';
+    p.querySelector('.mprov-civa-label').style.color = 'var(--text-d)';
+  });
+  if(el) {
+    el.style.border = '1.5px solid var(--sage-dark)';
+    el.style.background = 'var(--sage-xl)';
+    el.querySelector('.mprov-civa-label').style.color = 'var(--sage-dark)';
+  }
+  const hid = document.getElementById('mprov-condicion-iva');
+  if(hid) hid.value = valor;
+};
+
 window.createMcCliente = async function() {
   if(!currentClientUID) return;
   const nombre = document.getElementById('mcc-nombre').value.trim();
@@ -13769,6 +13846,7 @@ window.createMcCliente = async function() {
   const data = {
     nombre: apellido ? nombre+' '+apellido : nombre,
     apellido, dni, cuit,
+    condicionIVA: document.getElementById('mcc-condicion-iva').value || '5',
     direccion: document.getElementById('mcc-direccion').value,
     ciudad: document.getElementById('mcc-ciudad')?.value || '',
     tel: document.getElementById('mcc-tel').value,
@@ -13784,6 +13862,7 @@ window.createMcCliente = async function() {
       if(s) s.style.display='none';
       closeModal('newMclienteModal');
       ['mcc-nombre','mcc-apellido','mcc-dni','mcc-cuit','mcc-direccion','mcc-ciudad','mcc-tel','mcc-email','mcc-notas'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+      selectMccCondicionIVA(document.querySelector('#mcc-condicion-iva-pills .mcc-civa-pill'),'5');
       await loadMcModule();
     }, 1500);
   } catch(e) { showToast('Error: '+e.message, 'error'); }
@@ -13806,6 +13885,8 @@ window.editMcCliente = function(id, event) {
   document.getElementById('mcc-tel').value = c.tel||'';
   document.getElementById('mcc-email').value = c.email||'';
   document.getElementById('mcc-notas').value = c.notas||'';
+  const condPill = document.querySelector(`#mcc-condicion-iva-pills .mcc-civa-pill[data-val="${c.condicionIVA||'5'}"]`);
+  selectMccCondicionIVA(condPill||document.querySelector('#mcc-condicion-iva-pills .mcc-civa-pill'), c.condicionIVA||'5');
   const btn=document.querySelector('#newMclienteModal .bp');
   if(btn){btn.textContent='Guardar cambios';btn.onclick=()=>saveMcCliente(id);}
   openModal('newMclienteModal');
@@ -13820,6 +13901,7 @@ window.saveMcCliente = async function(id) {
     apellido: apellidoVal,
     dni: document.getElementById('mcc-dni').value,
     cuit: document.getElementById('mcc-cuit').value,
+    condicionIVA: document.getElementById('mcc-condicion-iva').value || '5',
     direccion: document.getElementById('mcc-direccion').value,
     ciudad: document.getElementById('mcc-ciudad')?.value || '',
     tel: document.getElementById('mcc-tel').value,
@@ -18135,17 +18217,20 @@ window.createProveedor = async function() {
   if(!currentClientUID) return;
   const nombre=document.getElementById('nprov-nombre').value.trim();
   if(!nombre){showToast('Ingresá un nombre', 'info');return;}
-  const data={nombre,categoria:document.getElementById('nprov-cat').value,tel:document.getElementById('nprov-tel').value,costoFijo:document.getElementById('nprov-costo-fijo').value||0,notas:document.getElementById('nprov-notas').value,creadoEn:new Date().toISOString()};
+  const data={nombre,cuit:document.getElementById('mprov-cuit').value.trim(),condicionIVA:document.getElementById('mprov-condicion-iva').value||'5',categoria:document.getElementById('nprov-cat').value,tel:document.getElementById('nprov-tel').value,costoFijo:document.getElementById('nprov-costo-fijo').value||0,notas:document.getElementById('nprov-notas').value,creadoEn:new Date().toISOString()};
   try {
     await addDoc(collection(db,'clientes',currentClientUID,'proveedores'),data);
     const s=document.getElementById('nprov-saved');if(s)s.style.display='block';
-    setTimeout(async()=>{if(s)s.style.display='none';closeModal('newProveedorModal');['nprov-nombre','nprov-tel','nprov-costo-fijo','nprov-notas'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});await loadProveedores();},1500);
+    setTimeout(async()=>{if(s)s.style.display='none';closeModal('newProveedorModal');['nprov-nombre','mprov-cuit','nprov-tel','nprov-costo-fijo','nprov-notas'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});selectMprovCondicionIVA(document.querySelector('#mprov-condicion-iva-pills .mprov-civa-pill'),'5');await loadProveedores();},1500);
   }catch(e){showToast('Error: '+e.message, 'error');}
 };
 
 window.editProveedor = function(id) {
   const p=_proveedores.find(x=>x.id===id); if(!p) return;
   document.getElementById('nprov-nombre').value=p.nombre||'';
+  document.getElementById('mprov-cuit').value=p.cuit||'';
+  const mprovPill=document.querySelector(`#mprov-condicion-iva-pills .mprov-civa-pill[data-val="${p.condicionIVA||'5'}"]`);
+  selectMprovCondicionIVA(mprovPill||document.querySelector('#mprov-condicion-iva-pills .mprov-civa-pill'),p.condicionIVA||'5');
   document.getElementById('nprov-tel').value=p.tel||'';
   document.getElementById('nprov-costo-fijo').value=p.costoFijo||'';
   document.getElementById('nprov-notas').value=p.notas||'';
@@ -18159,7 +18244,7 @@ window.editProveedor = function(id) {
 
 window.saveProveedor = async function(id) {
   if(!currentClientUID) return;
-  const data={nombre:document.getElementById('nprov-nombre').value.trim(),categoria:document.getElementById('nprov-cat').value,tel:document.getElementById('nprov-tel').value,costoFijo:document.getElementById('nprov-costo-fijo').value||0,notas:document.getElementById('nprov-notas').value};
+  const data={nombre:document.getElementById('nprov-nombre').value.trim(),cuit:document.getElementById('mprov-cuit').value.trim(),condicionIVA:document.getElementById('mprov-condicion-iva').value||'5',categoria:document.getElementById('nprov-cat').value,tel:document.getElementById('nprov-tel').value,costoFijo:document.getElementById('nprov-costo-fijo').value||0,notas:document.getElementById('nprov-notas').value};
   if(!data.nombre) return;
   try {
     await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',id),data);
@@ -19719,6 +19804,7 @@ window.openModal = function(id) {
   if(id === 'newMclienteModal') {
     // Limpiar todos los campos y resetear el botón
     ['mcc-nombre','mcc-apellido','mcc-dni','mcc-cuit','mcc-direccion','mcc-ciudad','mcc-tel','mcc-email','mcc-notas'].forEach(fid=>{const el=document.getElementById(fid);if(el)el.value='';});
+    selectMccCondicionIVA(document.querySelector('#mcc-condicion-iva-pills .mcc-civa-pill'),'5');
     const errEl = document.getElementById('mcc-error'); if(errEl) errEl.style.display='none';
     const savedEl = document.getElementById('mcc-saved'); if(savedEl) savedEl.style.display='none';
     const btn = document.querySelector('#newMclienteModal .bp');
