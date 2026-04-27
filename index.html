@@ -4140,11 +4140,43 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
       <div class="fg"><label class="fl">CUIT (opcional)</label><input type="text" class="fi" id="mc-negocio-cuit" placeholder="20-12345678-9"/></div>
       <div class="fg"><label class="fl">Dirección (opcional)</label><input type="text" class="fi" id="mc-negocio-dir" placeholder="Calle 123, Ciudad"/></div>
       <div style="height:.5px;background:var(--cream-d);margin:16px 0;"></div>
+      <!-- Datos fiscales -->
+      <div style="font-size:11px;font-weight:500;color:var(--text-m);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">Datos fiscales</div>
+      <div class="fg">
+        <label class="fl">Condición IVA del emisor</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">
+          <button type="button" id="mc-pill-monotributista" onclick="selectMcCondicionIVA('monotributista')" style="padding:7px 14px;border-radius:20px;border:.5px solid var(--cream-d);background:var(--cream);color:var(--text-m);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;">Monotributista</button>
+          <button type="button" id="mc-pill-responsable_inscripto" onclick="selectMcCondicionIVA('responsable_inscripto')" style="padding:7px 14px;border-radius:20px;border:.5px solid var(--cream-d);background:var(--cream);color:var(--text-m);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;">Resp. Inscripto</button>
+          <button type="button" id="mc-pill-exento" onclick="selectMcCondicionIVA('exento')" style="padding:7px 14px;border-radius:20px;border:.5px solid var(--cream-d);background:var(--cream);color:var(--text-m);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;">Exento</button>
+        </div>
+        <input type="hidden" id="mc-negocio-condicion-iva"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Punto de venta ARCA</label>
+        <input type="number" class="fi" id="mc-negocio-punto-venta" placeholder="Ej: 1" min="1" max="9999"/>
+        <div style="font-size:11px;color:var(--text-l);margin-top:4px;">El que creaste en ARCA para web services</div>
+      </div>
+      <div class="fg">
+        <label class="fl">Domicilio fiscal</label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text-d);margin-bottom:10px;">
+          <input type="checkbox" id="mc-fiscal-mismo" onchange="toggleMcFiscalMismo()" style="accent-color:var(--sage-dark);width:15px;height:15px;"/>
+          Usar la misma dirección que los datos del negocio
+        </label>
+        <div id="mc-fiscal-fields">
+          <input type="text" class="fi" id="mc-fiscal-calle" placeholder="Calle y número" style="margin-bottom:8px;"/>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+            <input type="text" class="fi" id="mc-fiscal-localidad" placeholder="Localidad"/>
+            <input type="text" class="fi" id="mc-fiscal-provincia" placeholder="Provincia"/>
+          </div>
+          <input type="text" class="fi" id="mc-fiscal-cp" placeholder="Código postal"/>
+        </div>
+      </div>
+      <div style="height:.5px;background:var(--cream-d);margin:16px 0;"></div>
       <!-- Cambio de contraseña -->
       <div style="font-size:11px;font-weight:500;color:var(--text-m);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">Cambiar contraseña</div>
-      <div class="fg"><label class="fl">Contraseña actual</label><input type="password" class="fi" id="mc-pass-actual" placeholder="Tu contraseña actual"/></div>
-      <div class="fg"><label class="fl">Nueva contraseña</label><input type="password" class="fi" id="mc-pass-nueva" placeholder="Mínimo 6 caracteres"/></div>
-      <div class="fg"><label class="fl">Confirmar nueva contraseña</label><input type="password" class="fi" id="mc-pass-confirm" placeholder="Repetí la nueva contraseña"/></div>
+      <div class="fg"><label class="fl">Contraseña actual</label><div style="position:relative;"><input type="password" class="fi" id="mc-pass-actual" placeholder="Tu contraseña actual" style="padding-right:44px;"/><button type="button" id="mc-pass-actual-eye" onclick="(function(){var i=document.getElementById('mc-pass-actual'),b=document.getElementById('mc-pass-actual-eye');i.type=i.type==='password'?'text':'password';b.innerHTML=i.type==='password'?'<svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;#9ca3af&quot; stroke-width=&quot;1.8&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z&quot;/><circle cx=&quot;12&quot; cy=&quot;12&quot; r=&quot;3&quot;/></svg>':'<svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;#9ca3af&quot; stroke-width=&quot;1.8&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24&quot;/><line x1=&quot;1&quot; y1=&quot;1&quot; x2=&quot;23&quot; y2=&quot;23&quot;/></svg>';})()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;line-height:0;display:flex;align-items:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
+      <div class="fg"><label class="fl">Nueva contraseña</label><div style="position:relative;"><input type="password" class="fi" id="mc-pass-nueva" placeholder="Mínimo 6 caracteres" style="padding-right:44px;"/><button type="button" id="mc-pass-nueva-eye" onclick="(function(){var i=document.getElementById('mc-pass-nueva'),b=document.getElementById('mc-pass-nueva-eye');i.type=i.type==='password'?'text':'password';b.innerHTML=i.type==='password'?'<svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;#9ca3af&quot; stroke-width=&quot;1.8&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z&quot;/><circle cx=&quot;12&quot; cy=&quot;12&quot; r=&quot;3&quot;/></svg>':'<svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;#9ca3af&quot; stroke-width=&quot;1.8&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24&quot;/><line x1=&quot;1&quot; y1=&quot;1&quot; x2=&quot;23&quot; y2=&quot;23&quot;/></svg>';})()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;line-height:0;display:flex;align-items:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
+      <div class="fg"><label class="fl">Confirmar nueva contraseña</label><div style="position:relative;"><input type="password" class="fi" id="mc-pass-confirm" placeholder="Repetí la nueva contraseña" style="padding-right:44px;"/><button type="button" id="mc-pass-confirm-eye" onclick="(function(){var i=document.getElementById('mc-pass-confirm'),b=document.getElementById('mc-pass-confirm-eye');i.type=i.type==='password'?'text':'password';b.innerHTML=i.type==='password'?'<svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;#9ca3af&quot; stroke-width=&quot;1.8&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z&quot;/><circle cx=&quot;12&quot; cy=&quot;12&quot; r=&quot;3&quot;/></svg>':'<svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;#9ca3af&quot; stroke-width=&quot;1.8&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24&quot;/><line x1=&quot;1&quot; y1=&quot;1&quot; x2=&quot;23&quot; y2=&quot;23&quot;/></svg>';})()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;line-height:0;display:flex;align-items:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
       <div class="br2">
         <button class="bp" onclick="guardarMiCuenta()">Guardar cambios</button>
         <button class="bs" onclick="closeModal('miCuentaModal')">Cancelar</button>
@@ -14643,6 +14675,20 @@ window.openModal_miCuentaModal_extra = async function() {
       document.getElementById('mc-negocio-email').value = data.negocioEmail||'';
       document.getElementById('mc-negocio-cuit').value = data.negocioCuit||'';
       document.getElementById('mc-negocio-dir').value = data.negocioDir||'';
+      // Datos fiscales
+      selectMcCondicionIVA(data.negocioCondicionIVA||'');
+      document.getElementById('mc-negocio-punto-venta').value = data.negocioPuntoVenta||'';
+      const chkFiscal = document.getElementById('mc-fiscal-mismo');
+      if(chkFiscal) {
+        chkFiscal.checked = !!data.negocioDomicilioFiscalIgual;
+        toggleMcFiscalMismo();
+        if(!data.negocioDomicilioFiscalIgual) {
+          document.getElementById('mc-fiscal-calle').value = data.negocioFiscalCalle||'';
+          document.getElementById('mc-fiscal-localidad').value = data.negocioFiscalLocalidad||'';
+          document.getElementById('mc-fiscal-provincia').value = data.negocioFiscalProvincia||'';
+          document.getElementById('mc-fiscal-cp').value = data.negocioFiscalCp||'';
+        }
+      }
     }
     const emailEl = document.getElementById('mc-email-display');
     if(emailEl) emailEl.textContent = currentUser?.email||'';
@@ -14683,6 +14729,45 @@ window.uploadMcLogo = function(input) {
   reader.readAsDataURL(file);
 };
 
+window.selectMcCondicionIVA = function(val) {
+  const hid = document.getElementById('mc-negocio-condicion-iva');
+  if(hid) hid.value = val;
+  ['monotributista','responsable_inscripto','exento'].forEach(v => {
+    const pill = document.getElementById('mc-pill-' + v);
+    if(!pill) return;
+    if(v === val) {
+      pill.style.background = 'var(--sage-dark)';
+      pill.style.color = '#fff';
+      pill.style.border = '.5px solid var(--sage-dark)';
+    } else {
+      pill.style.background = 'var(--cream)';
+      pill.style.color = 'var(--text-m)';
+      pill.style.border = '.5px solid var(--cream-d)';
+    }
+  });
+};
+
+window.toggleMcFiscalMismo = function() {
+  const chk = document.getElementById('mc-fiscal-mismo');
+  const fields = document.getElementById('mc-fiscal-fields');
+  if(!chk || !fields) return;
+  const ids = ['mc-fiscal-calle','mc-fiscal-localidad','mc-fiscal-provincia','mc-fiscal-cp'];
+  if(chk.checked) {
+    const dir = document.getElementById('mc-negocio-dir')?.value || '';
+    document.getElementById('mc-fiscal-calle').value = dir;
+    document.getElementById('mc-fiscal-localidad').value = '';
+    document.getElementById('mc-fiscal-provincia').value = '';
+    document.getElementById('mc-fiscal-cp').value = '';
+    fields.style.opacity = '0.45';
+    fields.style.pointerEvents = 'none';
+    ids.forEach(id => { const el = document.getElementById(id); if(el) el.disabled = true; });
+  } else {
+    fields.style.opacity = '';
+    fields.style.pointerEvents = '';
+    ids.forEach(id => { const el = document.getElementById(id); if(el) el.disabled = false; });
+  }
+};
+
 window.guardarMiCuenta = async function() {
   if(!currentClientUID) return;
   const data = {
@@ -14693,6 +14778,13 @@ window.guardarMiCuenta = async function() {
     negocioEmail:  document.getElementById('mc-negocio-email').value.trim(),
     negocioCuit:   document.getElementById('mc-negocio-cuit').value.trim(),
     negocioDir:    document.getElementById('mc-negocio-dir').value.trim(),
+    negocioCondicionIVA: document.getElementById('mc-negocio-condicion-iva').value,
+    negocioPuntoVenta: document.getElementById('mc-negocio-punto-venta').value,
+    negocioDomicilioFiscalIgual: document.getElementById('mc-fiscal-mismo').checked,
+    negocioFiscalCalle: document.getElementById('mc-fiscal-calle')?.value || '',
+    negocioFiscalLocalidad: document.getElementById('mc-fiscal-localidad')?.value || '',
+    negocioFiscalProvincia: document.getElementById('mc-fiscal-provincia')?.value || '',
+    negocioFiscalCp: document.getElementById('mc-fiscal-cp')?.value || '',
   };
   const errEl = document.getElementById('mc-error');
   const showErr = (msg) => { errEl.textContent=msg; errEl.style.display='block'; };
