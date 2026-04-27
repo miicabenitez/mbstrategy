@@ -987,7 +987,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 @keyframes calcFadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes calcPillPop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
 </style>
-<!-- deploy force 020 -->
+<!-- deploy force 021 -->
 </head>
 <body>
 
@@ -3546,12 +3546,50 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
           <div id="micuenta-error" style="display:none;background:var(--err-bg);color:var(--err);border-radius:8px;padding:10px;font-size:12px;margin-top:8px;"></div>
         </div>
 
+        <!-- Sección 1b: Datos fiscales -->
+        <div class="card" style="margin-bottom:14px;">
+          <div style="font-size:11px;font-weight:500;color:var(--text-m);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;">Datos fiscales</div>
+          <div class="fg">
+            <label class="fl">Condición IVA del emisor</label>
+            <div id="micuenta-condicion-iva-pills" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">
+              <button type="button" id="micuenta-pill-monotributista" onclick="selectMiCuentaCondicionIVA('monotributista')" style="padding:7px 14px;border-radius:20px;border:.5px solid var(--cream-d);background:var(--cream);color:var(--text-m);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;">Monotributista</button>
+              <button type="button" id="micuenta-pill-responsable_inscripto" onclick="selectMiCuentaCondicionIVA('responsable_inscripto')" style="padding:7px 14px;border-radius:20px;border:.5px solid var(--cream-d);background:var(--cream);color:var(--text-m);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;">Resp. Inscripto</button>
+              <button type="button" id="micuenta-pill-exento" onclick="selectMiCuentaCondicionIVA('exento')" style="padding:7px 14px;border-radius:20px;border:.5px solid var(--cream-d);background:var(--cream);color:var(--text-m);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;">Exento</button>
+            </div>
+            <input type="hidden" id="micuenta-negocio-condicion-iva"/>
+          </div>
+          <div class="fg">
+            <label class="fl">Punto de venta ARCA</label>
+            <input type="number" class="fi" id="micuenta-punto-venta" placeholder="Ej: 1" min="1" max="9999"/>
+            <div style="font-size:11px;color:var(--text-l);margin-top:4px;">El que creaste en ARCA para web services</div>
+          </div>
+          <div class="fg">
+            <label class="fl">Domicilio fiscal</label>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text-d);margin-bottom:10px;">
+              <input type="checkbox" id="micuenta-fiscal-mismo" onchange="toggleMiCuentaFiscalMismo()" style="accent-color:var(--sage-dark);width:15px;height:15px;"/>
+              Usar la misma dirección que los datos del negocio
+            </label>
+            <div id="micuenta-fiscal-fields">
+              <input type="text" class="fi" id="micuenta-fiscal-calle" placeholder="Calle y número" style="margin-bottom:8px;"/>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+                <input type="text" class="fi" id="micuenta-fiscal-localidad" placeholder="Localidad"/>
+                <input type="text" class="fi" id="micuenta-fiscal-provincia" placeholder="Provincia"/>
+              </div>
+              <input type="text" class="fi" id="micuenta-fiscal-cp" placeholder="Código postal"/>
+            </div>
+          </div>
+          <div style="margin-top:14px;">
+            <button class="bp" onclick="guardarDatosFiscalesPage()" style="width:100%;">Guardar datos fiscales</button>
+          </div>
+          <div class="saved-msg" id="micuenta-fiscal-saved">✓ Datos fiscales guardados</div>
+        </div>
+
         <!-- Sección 2: Cambiar contraseña -->
         <div class="card" style="margin-bottom:14px;">
           <div style="font-size:11px;font-weight:500;color:var(--text-m);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;">Cambiar contraseña</div>
-          <div class="fg"><label class="fl">Contraseña actual</label><input type="password" class="fi" id="micuenta-pass-actual" placeholder="Tu contraseña actual"/></div>
-          <div class="fg"><label class="fl">Nueva contraseña</label><input type="password" class="fi" id="micuenta-pass-nueva" placeholder="Mínimo 6 caracteres"/></div>
-          <div class="fg"><label class="fl">Confirmar nueva contraseña</label><input type="password" class="fi" id="micuenta-pass-confirm" placeholder="Repetí la nueva contraseña"/></div>
+          <div class="fg"><label class="fl">Contraseña actual</label><div style="position:relative;"><input type="password" class="fi" id="micuenta-pass-actual" placeholder="Tu contraseña actual" style="padding-right:44px;"/><button type="button" id="micuenta-pass-actual-eye" onclick="(function(){var i=document.getElementById('micuenta-pass-actual'),b=document.getElementById('micuenta-pass-actual-eye');i.type=i.type==='password'?'text':'password';b.innerHTML=i.type==='password'?'<svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;#9ca3af&quot; stroke-width=&quot;1.8&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z&quot;/><circle cx=&quot;12&quot; cy=&quot;12&quot; r=&quot;3&quot;/></svg>':'<svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;#9ca3af&quot; stroke-width=&quot;1.8&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24&quot;/><line x1=&quot;1&quot; y1=&quot;1&quot; x2=&quot;23&quot; y2=&quot;23&quot;/></svg>';})()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;line-height:0;display:flex;align-items:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
+          <div class="fg"><label class="fl">Nueva contraseña</label><div style="position:relative;"><input type="password" class="fi" id="micuenta-pass-nueva" placeholder="Mínimo 6 caracteres" style="padding-right:44px;"/><button type="button" id="micuenta-pass-nueva-eye" onclick="(function(){var i=document.getElementById('micuenta-pass-nueva'),b=document.getElementById('micuenta-pass-nueva-eye');i.type=i.type==='password'?'text':'password';b.innerHTML=i.type==='password'?'<svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;#9ca3af&quot; stroke-width=&quot;1.8&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z&quot;/><circle cx=&quot;12&quot; cy=&quot;12&quot; r=&quot;3&quot;/></svg>':'<svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;#9ca3af&quot; stroke-width=&quot;1.8&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24&quot;/><line x1=&quot;1&quot; y1=&quot;1&quot; x2=&quot;23&quot; y2=&quot;23&quot;/></svg>';})()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;line-height:0;display:flex;align-items:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
+          <div class="fg"><label class="fl">Confirmar nueva contraseña</label><div style="position:relative;"><input type="password" class="fi" id="micuenta-pass-confirm" placeholder="Repetí la nueva contraseña" style="padding-right:44px;"/><button type="button" id="micuenta-pass-confirm-eye" onclick="(function(){var i=document.getElementById('micuenta-pass-confirm'),b=document.getElementById('micuenta-pass-confirm-eye');i.type=i.type==='password'?'text':'password';b.innerHTML=i.type==='password'?'<svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;#9ca3af&quot; stroke-width=&quot;1.8&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z&quot;/><circle cx=&quot;12&quot; cy=&quot;12&quot; r=&quot;3&quot;/></svg>':'<svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;#9ca3af&quot; stroke-width=&quot;1.8&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24&quot;/><line x1=&quot;1&quot; y1=&quot;1&quot; x2=&quot;23&quot; y2=&quot;23&quot;/></svg>';})()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;line-height:0;display:flex;align-items:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
           <div style="margin-top:14px;">
             <button class="bp" onclick="cambiarPasswordPage()" style="width:100%;background:var(--sage-dark);">Cambiar contraseña</button>
           </div>
@@ -15165,6 +15203,16 @@ async function loadMiCuentaPage() {
       setVal('micuenta-negocio-email', data.negocioEmail||'');
       setVal('micuenta-negocio-cuit', data.negocioCuit||'');
       setVal('micuenta-negocio-dir', data.negocioDir||'');
+      selectMiCuentaCondicionIVA(data.negocioCondicionIVA||'');
+      setVal('micuenta-punto-venta', data.negocioPuntoVenta||'');
+      const fiscalMismo = document.getElementById('micuenta-fiscal-mismo');
+      if(fiscalMismo) { fiscalMismo.checked = !!data.negocioDomicilioFiscalIgual; toggleMiCuentaFiscalMismo(); }
+      if(!data.negocioDomicilioFiscalIgual) {
+        setVal('micuenta-fiscal-calle', data.negocioFiscalCalle||'');
+        setVal('micuenta-fiscal-localidad', data.negocioFiscalLocalidad||'');
+        setVal('micuenta-fiscal-provincia', data.negocioFiscalProvincia||'');
+        setVal('micuenta-fiscal-cp', data.negocioFiscalCp||'');
+      }
       if(data.logoNegocio) {
         const wrap = document.getElementById('micuenta-logo-wrap');
         if(wrap) wrap.innerHTML = '<img src="'+data.logoNegocio+'" style="width:100%;height:100%;object-fit:cover;"/>';
@@ -15231,6 +15279,64 @@ window.guardarMiCuentaPage = async function() {
   } catch(e) {
     if(errEl){ errEl.textContent='Error: '+e.message; errEl.style.display='block'; }
   }
+};
+
+window.selectMiCuentaCondicionIVA = function(val) {
+  const hid = document.getElementById('micuenta-negocio-condicion-iva');
+  if(hid) hid.value = val;
+  ['monotributista','responsable_inscripto','exento'].forEach(v => {
+    const pill = document.getElementById('micuenta-pill-' + v);
+    if(!pill) return;
+    if(v === val) {
+      pill.style.background = 'var(--sage-dark)';
+      pill.style.color = '#fff';
+      pill.style.border = '.5px solid var(--sage-dark)';
+    } else {
+      pill.style.background = 'var(--cream)';
+      pill.style.color = 'var(--text-m)';
+      pill.style.border = '.5px solid var(--cream-d)';
+    }
+  });
+};
+
+window.toggleMiCuentaFiscalMismo = function() {
+  const chk = document.getElementById('micuenta-fiscal-mismo');
+  const fields = document.getElementById('micuenta-fiscal-fields');
+  if(!chk || !fields) return;
+  const ids = ['micuenta-fiscal-calle','micuenta-fiscal-localidad','micuenta-fiscal-provincia','micuenta-fiscal-cp'];
+  if(chk.checked) {
+    const dir = document.getElementById('micuenta-negocio-dir')?.value || '';
+    document.getElementById('micuenta-fiscal-calle').value = dir;
+    document.getElementById('micuenta-fiscal-localidad').value = '';
+    document.getElementById('micuenta-fiscal-provincia').value = '';
+    document.getElementById('micuenta-fiscal-cp').value = '';
+    fields.style.opacity = '0.45';
+    fields.style.pointerEvents = 'none';
+    ids.forEach(id => { const el = document.getElementById(id); if(el) el.disabled = true; });
+  } else {
+    fields.style.opacity = '';
+    fields.style.pointerEvents = '';
+    ids.forEach(id => { const el = document.getElementById(id); if(el) el.disabled = false; });
+  }
+};
+
+window.guardarDatosFiscalesPage = async function() {
+  if(!currentClientUID) return;
+  const data = {
+    negocioCondicionIVA: document.getElementById('micuenta-negocio-condicion-iva').value,
+    negocioPuntoVenta: document.getElementById('micuenta-punto-venta').value,
+    negocioDomicilioFiscalIgual: document.getElementById('micuenta-fiscal-mismo').checked,
+    negocioFiscalCalle: document.getElementById('micuenta-fiscal-calle')?.value || '',
+    negocioFiscalLocalidad: document.getElementById('micuenta-fiscal-localidad')?.value || '',
+    negocioFiscalProvincia: document.getElementById('micuenta-fiscal-provincia')?.value || '',
+    negocioFiscalCp: document.getElementById('micuenta-fiscal-cp')?.value || '',
+  };
+  try {
+    await updateDoc(doc(db,'clientes',currentClientUID), data);
+    if(currentClientData) Object.assign(currentClientData, data);
+    const s = document.getElementById('micuenta-fiscal-saved');
+    if(s){ s.style.display='block'; setTimeout(()=>s.style.display='none', 2000); }
+  } catch(e) { console.log(e); }
 };
 
 window.confirmarPrimerLogin = async function() {
