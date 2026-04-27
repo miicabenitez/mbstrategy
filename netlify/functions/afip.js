@@ -73,11 +73,18 @@ exports.handler = async function(event) {
       return { statusCode: 403, headers: corsHeaders, body: JSON.stringify({ error: 'Cuenta inactiva' }) };
     }
 
+    // ── Leer cert y key desde Firestore (no env vars por límite 4KB Lambda) ──
+    const afipConfigSnap = await db.collection('config').doc('afip').get();
+    if (!afipConfigSnap.exists) {
+      return { statusCode: 500, headers: corsHeaders, body: JSON.stringify({ error: 'Configuración AFIP no encontrada' }) };
+    }
+    const afipConfig = afipConfigSnap.data();
+
     // ── Inicializar AFIP SDK ──
     const afip = new Afip({
       CUIT: parseInt(process.env.AFIP_CUIT),
-      cert: process.env.AFIP_CERT,
-      key: process.env.AFIP_KEY,
+      cert: afipConfig.cert,
+      key: afipConfig.key,
       production: process.env.AFIP_PRODUCTION === 'true',
       res_folder: '/tmp',
       ta_folder: '/tmp'
