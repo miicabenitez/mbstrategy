@@ -10974,13 +10974,21 @@ window.descargarPdfFactura = async function(facturaId) {
     const b64 = btoa(JSON.stringify(qrPayload)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
     const qrUrl = 'https://www.afip.gob.ar/fe/qr/?p=' + b64;
     const qrDiv = document.createElement('div');
-    qrDiv.style.display = 'none';
+    qrDiv.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:80px;height:80px;';
     document.body.appendChild(qrDiv);
-    await new Promise(res => {
-      new QRCode(qrDiv, { text:qrUrl, width:80, height:80, correctLevel:QRCode.CorrectLevel.M });
-      setTimeout(res, 300);
+    await new Promise((res, rej) => {
+      try {
+        new QRCode(qrDiv, {
+          text: qrUrl,
+          width: 128,
+          height: 128,
+          correctLevel: QRCode.CorrectLevel.M
+        });
+        setTimeout(res, 500);
+      } catch(e) { rej(e); }
     });
-    const qrDataUrl = qrDiv.querySelector('canvas')?.toDataURL('image/png');
+    const qrCanvas = qrDiv.querySelector('canvas');
+    const qrDataUrl = qrCanvas ? qrCanvas.toDataURL('image/png') : null;
     document.body.removeChild(qrDiv);
     if (qrDataUrl) { try { pdf.addImage(qrDataUrl,'PNG',10,267,28,28); } catch(e) {} }
     st([255,255,255]); pdf.setFont('times','normal'); pdf.setFontSize(16);
