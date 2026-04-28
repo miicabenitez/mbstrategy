@@ -10750,7 +10750,7 @@ window.descargarPdfFactura = async function(facturaId) {
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     const W = 210, H = 297;
-    const GREEN = [74,94,77], CREAM = [248,246,242], TEXT = [44,44,44], TEXT_L = [120,120,120], BORDER = [220,220,220];
+    const GREEN = [74,94,77], CREAM = [248,246,242], TEXT = [20,20,20], TEXT_L = [60,60,60], BORDER = [220,220,220];
     const sf = a => pdf.setFillColor(a[0],a[1],a[2]);
     const sd = a => pdf.setDrawColor(a[0],a[1],a[2]);
     const st = a => pdf.setTextColor(a[0],a[1],a[2]);
@@ -10788,7 +10788,7 @@ window.descargarPdfFactura = async function(facturaId) {
     st(TEXT); pdf.setFont('times','normal'); pdf.setFontSize(14);
     pdf.text(c.negocioNombre || 'Mi negocio', 24, 18);
     pdf.setFont('helvetica','normal'); pdf.setFontSize(7.5); st(TEXT_L);
-    let lyL = 26;
+    let lyL = 30;
     pdf.text('Razón Social: ' + (c.negocioNombre || '—'), 6, lyL); lyL += 4;
     const dirLines = pdf.splitTextToSize('Domicilio Comercial: ' + domicilioComercial, 76);
     dirLines.forEach(l => { pdf.text(l, 6, lyL); lyL += 4; });
