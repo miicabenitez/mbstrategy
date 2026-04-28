@@ -10882,9 +10882,10 @@ window.descargarPdfFactura = async function(facturaId) {
       pdf.setLineWidth(0.3);
     }
     st(TEXT); pdf.setFont('times','normal'); pdf.setFontSize(14);
-    pdf.text(c.negocioNombre || 'Mi negocio', 24, 18);
+    const nombreLines = pdf.splitTextToSize(c.negocioNombre || 'MB Strategy', 70);
+    pdf.text(nombreLines, 36, 14);
     pdf.setFont('helvetica','normal'); pdf.setFontSize(7.5); st(TEXT_L);
-    let lyL = 30;
+    let lyL = 14 + (nombreLines.length * 6);
     pdf.text('Razón Social: ' + (c.negocioNombre || '—'), 6, lyL); lyL += 4;
     const dirLines = pdf.splitTextToSize('Domicilio Comercial: ' + domicilioComercial, 76);
     dirLines.forEach(l => { pdf.text(l, 6, lyL); lyL += 4; });
