@@ -27,7 +27,17 @@ service cloud.firestore {
       allow get: if request.auth != null && resource.data.uid == request.auth.uid;
       allow list: if request.auth != null;
       allow read: if isAdmin() || (request.auth != null && resource.data.uid == request.auth.uid);
-      allow write: if isAdmin();
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() ||
+        (request.auth != null && resource.data.uid == request.auth.uid &&
+         request.resource.data.diff(resource.data).affectedKeys()
+           .hasOnly([
+             'titularNombre','negocioNombre','negocioRubro','negocioTel',
+             'negocioEmail','negocioCuit','negocioDir','negocioCondicionIVA',
+             'negocioPuntoVenta','negocioDomicilioFiscalIgual',
+             'negocioFiscalCalle','negocioFiscalLocalidad','negocioFiscalProvincia',
+             'negocioFiscalCp','negocioPvComprobante','logoNegocio'
+           ]));
 
       match /{subcollection}/{docId} {
         allow read, write: if isAdmin() ||
