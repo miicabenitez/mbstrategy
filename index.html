@@ -9323,8 +9323,9 @@ window.abrirModalFacturaCaja = async function(movId) {
     const modal = document.getElementById('modalFacturaCaja');
     modal.dataset.movId = movId;
     modal.dataset.monto = mov.monto;
-    // Reset pills al abrir
-    selectMfcCond(document.querySelector('#modalFacturaCaja .mfc-pill'), '5', 'C', false);
+    // Reset pills al abrir — labels primero para que reflejen la condición del emisor
+    window._updateMfcPillLabels();
+    selectMfcCond(document.querySelector('#modalFacturaCaja .mfc-pill'), '5', false);
     openModal('modalFacturaCaja');
   } catch(e) {
     console.error('abrirModalFacturaCaja:', e);
@@ -9332,7 +9333,23 @@ window.abrirModalFacturaCaja = async function(movId) {
   }
 }
 
-window.selectMfcCond = function(el, cond, tipo, needCuit) {
+window._getMfcTipoComp = function(emisorCond, receptorCond) {
+  if (emisorCond === 'responsable_inscripto') return receptorCond === '1' ? 'A' : 'B';
+  if (emisorCond === 'exento') return 'B';
+  return 'C';
+};
+
+window._updateMfcPillLabels = function() {
+  const emisorCond = currentClientData?.negocioCondicionIVA || 'monotributista';
+  document.querySelectorAll('#modalFacturaCaja .mfc-pill').forEach(p => {
+    const cond = p.dataset.cond;
+    const tipo = window._getMfcTipoComp(emisorCond, cond);
+    const label = p.querySelector('.mfc-tipo');
+    if (label) label.textContent = tipo === 'A' ? 'Factura A + IVA' : 'Factura ' + tipo;
+  });
+};
+
+window.selectMfcCond = function(el, cond, needCuit) {
   document.querySelectorAll('#modalFacturaCaja .mfc-pill').forEach(p => {
     p.style.background = '';
     p.style.borderColor = 'rgba(0,0,0,.08)';
@@ -9341,6 +9358,8 @@ window.selectMfcCond = function(el, cond, tipo, needCuit) {
   el.style.background = '#e8ede8';
   el.style.borderColor = '#4a5e4d';
   el.querySelector('.mfc-dot').style.background = '#4a5e4d';
+  const emisorCond = currentClientData?.negocioCondicionIVA || 'monotributista';
+  const tipo = window._getMfcTipoComp(emisorCond, cond);
   const tipos = {C:'Se emitirá Factura C', A:'Se emitirá Factura A', B:'Se emitirá Factura B'};
   document.getElementById('mfc-badge-txt').textContent = tipos[tipo];
   document.getElementById('mfc-extra').style.display = needCuit ? 'block' : 'none';
@@ -9365,9 +9384,11 @@ window.emitirFacturaCaja = async function() {
   const descripcion = document.getElementById('mfc-descripcion').value || null;
   const puntoVenta = parseInt(currentClientData?.negocioPuntoVenta) || 2;
   const condEmisor = currentClientData?.negocioCondicionIVA || 'monotributista';
-  let tipoComprobante = 11; // Factura C por defecto
+  let tipoComprobante = 11; // Factura C por defecto (Monotributista)
   if (condEmisor === 'responsable_inscripto') {
     tipoComprobante = condReceptor === '1' ? 1 : 6; // A para RI receptor, B para el resto
+  } else if (condEmisor === 'exento') {
+    tipoComprobante = 6; // Factura B
   }
   const btn = document.getElementById('mfc-btn-emitir');
   btn.textContent = 'Emitiendo...';
@@ -22502,21 +22523,21 @@ window.doResetPassword = async function(){
     <div style="padding:18px 22px">
       <div style="font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--text-m);font-weight:500;margin-bottom:10px">Condición del receptor</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">
-        <div class="mfc-pill selected" onclick="selectMfcCond(this,'5','C',false)" style="border:.5px solid #4a5e4d;border-radius:10px;padding:8px 10px;cursor:pointer;display:flex;align-items:center;gap:6px;background:#e8ede8">
+        <div class="mfc-pill selected" data-cond="5" onclick="selectMfcCond(this,'5',false)" style="border:.5px solid #4a5e4d;border-radius:10px;padding:8px 10px;cursor:pointer;display:flex;align-items:center;gap:6px;background:#e8ede8">
           <div class="mfc-dot" style="width:6px;height:6px;border-radius:50%;background:#4a5e4d;flex-shrink:0"></div>
-          <div><div style="font-size:12px;font-weight:500;color:var(--text-d)">Consumidor Final</div><div style="font-size:10px;color:var(--text-m)">Factura C</div></div>
+          <div><div style="font-size:12px;font-weight:500;color:var(--text-d)">Consumidor Final</div><div class="mfc-tipo" style="font-size:10px;color:var(--text-m)">Factura C</div></div>
         </div>
-        <div class="mfc-pill" onclick="selectMfcCond(this,'6','C',true)" style="border:.5px solid rgba(0,0,0,.08);border-radius:10px;padding:8px 10px;cursor:pointer;display:flex;align-items:center;gap:6px">
+        <div class="mfc-pill" data-cond="6" onclick="selectMfcCond(this,'6',true)" style="border:.5px solid rgba(0,0,0,.08);border-radius:10px;padding:8px 10px;cursor:pointer;display:flex;align-items:center;gap:6px">
           <div class="mfc-dot" style="width:6px;height:6px;border-radius:50%;background:rgba(0,0,0,.08);flex-shrink:0"></div>
-          <div><div style="font-size:12px;font-weight:500;color:var(--text-d)">Monotributista</div><div style="font-size:10px;color:var(--text-m)">Factura C</div></div>
+          <div><div style="font-size:12px;font-weight:500;color:var(--text-d)">Monotributista</div><div class="mfc-tipo" style="font-size:10px;color:var(--text-m)">Factura C</div></div>
         </div>
-        <div class="mfc-pill" onclick="selectMfcCond(this,'1','A',true)" style="border:.5px solid rgba(0,0,0,.08);border-radius:10px;padding:8px 10px;cursor:pointer;display:flex;align-items:center;gap:6px">
+        <div class="mfc-pill" data-cond="1" onclick="selectMfcCond(this,'1',true)" style="border:.5px solid rgba(0,0,0,.08);border-radius:10px;padding:8px 10px;cursor:pointer;display:flex;align-items:center;gap:6px">
           <div class="mfc-dot" style="width:6px;height:6px;border-radius:50%;background:rgba(0,0,0,.08);flex-shrink:0"></div>
-          <div><div style="font-size:12px;font-weight:500;color:var(--text-d)">Resp. Inscripto</div><div style="font-size:10px;color:var(--text-m)">Factura A + IVA</div></div>
+          <div><div style="font-size:12px;font-weight:500;color:var(--text-d)">Resp. Inscripto</div><div class="mfc-tipo" style="font-size:10px;color:var(--text-m)">Factura A + IVA</div></div>
         </div>
-        <div class="mfc-pill" onclick="selectMfcCond(this,'4','B',true)" style="border:.5px solid rgba(0,0,0,.08);border-radius:10px;padding:8px 10px;cursor:pointer;display:flex;align-items:center;gap:6px">
+        <div class="mfc-pill" data-cond="4" onclick="selectMfcCond(this,'4',true)" style="border:.5px solid rgba(0,0,0,.08);border-radius:10px;padding:8px 10px;cursor:pointer;display:flex;align-items:center;gap:6px">
           <div class="mfc-dot" style="width:6px;height:6px;border-radius:50%;background:rgba(0,0,0,.08);flex-shrink:0"></div>
-          <div><div style="font-size:12px;font-weight:500;color:var(--text-d)">Exento</div><div style="font-size:10px;color:var(--text-m)">Factura B</div></div>
+          <div><div style="font-size:12px;font-weight:500;color:var(--text-d)">Exento</div><div class="mfc-tipo" style="font-size:10px;color:var(--text-m)">Factura B</div></div>
         </div>
       </div>
       <div id="mfc-badge" style="display:inline-flex;align-items:center;gap:5px;background:#e8ede8;border-radius:8px;padding:5px 10px;font-size:12px;color:#4a5e4d;font-weight:500;margin-bottom:12px">
