@@ -152,6 +152,7 @@ exports.handler = async function(event) {
     if (clienteCuit) {
       wsfe.hAuth.Auth.Cuit = clienteCuit;
     }
+    console.log('[AFIP DEBUG] clienteCuit:', clienteCuit, '| wsfe.hAuth.Auth.Cuit:', wsfe.hAuth.Auth.Cuit);
     const ambiente = process.env.AFIP_PRODUCTION === 'true' ? 'produccion' : 'homologacion';
 
     // ════════════════════════════════════════
