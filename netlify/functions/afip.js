@@ -1,4 +1,6 @@
 'use strict';
+const https = require('https');
+https.globalAgent.options.ciphers = 'DEFAULT@SECLEVEL=0';
 const admin = require('firebase-admin');
 const { Wsaa, Wsfe } = require('afipjs');
 
@@ -152,7 +154,6 @@ exports.handler = async function(event) {
     if (clienteCuit) {
       wsfe.hAuth.Auth.Cuit = clienteCuit;
     }
-    console.log('[AFIP DEBUG] clienteCuit:', clienteCuit, '| wsfe.hAuth.Auth.Cuit:', wsfe.hAuth.Auth.Cuit);
     const ambiente = process.env.AFIP_PRODUCTION === 'true' ? 'produccion' : 'homologacion';
 
     // ════════════════════════════════════════
