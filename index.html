@@ -10842,7 +10842,12 @@ window.descargarPdfFactura = async function(facturaId) {
     const st = a => pdf.setTextColor(a[0],a[1],a[2]);
     const fmt = v => '$' + Number(Math.round(v)||0).toLocaleString('es-AR');
     const fmtCuit = x => { const s=String(x||'').replace(/\D/g,''); return s.length===11 ? s.slice(0,2)+'-'+s.slice(2,10)+'-'+s.slice(10) : (s||'—'); };
-    const fmtFechaISO = iso => { if(!iso) return '—'; const [y,m,d]=iso.slice(0,10).split('-'); return `${d}/${m}/${y}`; };
+    const fmtFechaISO = iso => {
+      try {
+        const d = iso?.toDate ? iso.toDate() : new Date(iso);
+        return d.toISOString().slice(0,10).split('-').reverse().join('/');
+      } catch(e) { return ''; }
+    };
     const fmtFechaAfip = a => { if(!a||a.length<8) return ''; return `${a.slice(6,8)}/${a.slice(4,6)}/${a.slice(0,4)}`; };
     const tipoNombre = {1:'Factura',6:'Factura',11:'Factura',3:'Nota de Crédito',8:'Nota de Crédito',13:'Nota de Crédito'};
     const tipoLetra  = {1:'A',6:'B',11:'C',3:'A',8:'B',13:'C'};
