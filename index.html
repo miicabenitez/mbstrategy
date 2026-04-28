@@ -1204,6 +1204,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
           <button class="sb-subitem active" data-sub="caja" onclick="sidebarNav('finanzas','caja')">Caja</button>
           <button class="sb-subitem" data-sub="cierre-periodo" onclick="sidebarNav('finanzas','cierre-periodo')">Cierre de período</button>
           <button class="sb-subitem" data-sub="caja-config" onclick="sidebarNav('finanzas','caja-config')">Configuración</button>
+          <button class="sb-subitem" data-sub="mis-facturas" onclick="sidebarNav('finanzas','mis-facturas')">Mis Facturas</button>
         </div>
       </div>
       <!-- Ventas → Comercial -->
@@ -2349,6 +2350,53 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
           </div>
         </div><!-- /cprd-cfg-cierre-content -->
 
+      </div>
+
+      <!-- ── MIS FACTURAS ── -->
+      <div id="ct-mis-facturas" style="display:none;">
+        <!-- Banner -->
+        <div class="av-banner" style="background:#4a5e4d;border-radius:16px;padding:20px 24px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:#fff;font-weight:400">Mis Facturas</div>
+          <button onclick="abrirNuevaFacturaLibre()" style="background:#fff;border:none;border-radius:12px;padding:9px 16px;font-size:13px;font-family:'DM Sans',sans-serif;color:#4a5e4d;cursor:pointer;font-weight:500;display:flex;align-items:center;gap:6px">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v9M2 6.5h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Nueva factura
+          </button>
+        </div>
+        <!-- KPIs -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">
+          <div class="card" style="padding:16px 20px">
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-m);margin-bottom:6px">Emitidas este mes</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--text-d)" id="mf-kpi-cantidad">—</div>
+          </div>
+          <div class="card" style="padding:16px 20px">
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-m);margin-bottom:6px">Total facturado</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:#4a5e4d" id="mf-kpi-total">—</div>
+          </div>
+          <div class="card" style="padding:16px 20px">
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-m);margin-bottom:6px">Última factura</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--text-d)" id="mf-kpi-ultima">—</div>
+          </div>
+        </div>
+        <!-- Tabla -->
+        <div class="card" style="overflow:hidden">
+          <div id="mf-empty" style="display:none;padding:48px;text-align:center;color:var(--text-m)">
+            <div style="font-size:14px;margin-bottom:6px">Todavía no emitiste ninguna factura</div>
+            <div style="font-size:12px">Usá el botón "Nueva factura" o el ícono en Caja</div>
+          </div>
+          <table class="caja-table" id="mf-tabla" style="display:none">
+            <colgroup>
+              <col style="width:90px"><col style="width:1fr"><col style="width:120px">
+              <col style="width:130px"><col style="width:100px"><col style="width:80px"><col style="width:36px">
+            </colgroup>
+            <thead>
+              <tr>
+                <th>Fecha</th><th>Receptor</th><th>Tipo</th>
+                <th>N° Comprobante</th><th class="r">Total</th><th>Estado</th><th></th>
+              </tr>
+            </thead>
+            <tbody id="mf-tbody"></tbody>
+          </table>
+        </div>
       </div>
 
       <!-- ── CIERRE DE PERÍODO ── -->
@@ -10503,6 +10551,66 @@ window.cierreGenerarPDF = cierreGenerarPDF;
 
 // Expose main entry point
 window.loadCierrePeriodo = loadCierrePeriodo;
+
+async function loadMisFacturasModule() {
+  try {
+    const { getDocs, collection, orderBy, query, limit } = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
+    const q = query(
+      collection(db, 'clientes', currentClientUID, 'facturas'),
+      orderBy('creadoEn', 'desc'),
+      limit(100)
+    );
+    const snap = await getDocs(q);
+    const facturas = snap.docs.map(d => ({id: d.id, ...d.data()}));
+    const mesActual = new Date().toISOString().slice(0,7);
+    const delMes = facturas.filter(f => (f.creadoEn||'').slice(0,7) === mesActual);
+    const totalMes = delMes.reduce((s,f) => s + (f.importeTotal||0), 0);
+    document.getElementById('mf-kpi-cantidad').textContent = delMes.length;
+    document.getElementById('mf-kpi-total').textContent = '$' + totalMes.toLocaleString('es-AR');
+    document.getElementById('mf-kpi-ultima').textContent = facturas.length > 0 ? (facturas[0].creadoEn||'').slice(0,10) : '—';
+    if (facturas.length === 0) {
+      document.getElementById('mf-empty').style.display = 'block';
+      document.getElementById('mf-tabla').style.display = 'none';
+      return;
+    }
+    document.getElementById('mf-empty').style.display = 'none';
+    document.getElementById('mf-tabla').style.display = 'table';
+    const tipoLabels = {1:'Factura A', 6:'Factura B', 11:'Factura C', 3:'NC A', 8:'NC B', 13:'NC C'};
+    const tipoColors = {1:'#e8f0f8', 6:'#f5ebe8', 11:'#e8ede8', 3:'#fde8d8', 8:'#fde8d8', 13:'#fde8d8'};
+    const tipoText  = {1:'#3a6a8e', 6:'#8e5a3a', 11:'#4a5e4d', 3:'#b05030', 8:'#b05030', 13:'#b05030'};
+    document.getElementById('mf-tbody').innerHTML = facturas.map(f => {
+      const tipo = f.tipoComprobante || 11;
+      const nro = ('0000'+(f.puntoVenta||2)).slice(-4)+'-'+('00000000'+(f.nroComprobante||0)).slice(-8);
+      const receptor = f.razonSocialReceptor || (f.cuitReceptor ? f.cuitReceptor : 'Consumidor Final');
+      const fecha = (f.creadoEn||'').slice(0,10);
+      const ambienteBadge = f.ambiente === 'homologacion'
+        ? `<span style="font-size:9px;background:rgba(200,160,0,.12);color:#a07000;padding:2px 6px;border-radius:4px;margin-left:4px">homo</span>`
+        : '';
+      return `<tr>
+        <td style="font-size:12px;color:var(--text-m)">${fecha}</td>
+        <td>${receptor}</td>
+        <td><span style="font-size:10px;padding:2px 8px;border-radius:5px;font-weight:500;background:${tipoColors[tipo]||'#eee'};color:${tipoText[tipo]||'#666'}">${tipoLabels[tipo]||'Fact.'}</span>${ambienteBadge}</td>
+        <td style="font-size:11px;color:var(--text-m)">${nro}</td>
+        <td class="r" style="font-family:'Cormorant Garamond',serif;font-size:15px">$${Number(f.importeTotal||0).toLocaleString('es-AR')}</td>
+        <td><span style="font-size:10px;padding:2px 8px;border-radius:5px;background:#e8ede8;color:#4a5e4d">Emitida</span></td>
+        <td><button onclick="descargarPdfFactura('${f.id}')" title="Descargar PDF" style="background:none;border:.5px solid rgba(0,0,0,.08);border-radius:7px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-m)">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 9v2h9V9M6.5 2v7M4 7l2.5 2.5L9 7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button></td>
+      </tr>`;
+    }).join('');
+  } catch(e) {
+    console.error('loadMisFacturasModule:', e);
+  }
+}
+window.descargarPdfFactura = function(facturaId) {
+  console.log('TODO: generar PDF para factura', facturaId);
+  showToast('PDF en desarrollo', 'info');
+};
+window.abrirNuevaFacturaLibre = function() {
+  console.log('TODO: modal nueva factura libre');
+  showToast('Próximamente', 'info');
+};
+window.loadMisFacturasModule = loadMisFacturasModule;
 
 function _ccfgTipoBadgeHtml(tipo) {
   const map = {efectivo:'efectivo',banco:'banco',mp:'mp'};
@@ -19827,6 +19935,7 @@ window.showCTab = function(tab, btn) {
   }
   if(tab==='caja-config') { loadCajaConfig(); }
   if(tab==='cierre-periodo') { if(currentClientData?.plan==='pro') loadCierrePeriodo(); }
+  if(tab==='mis-facturas') { loadMisFacturasModule(); }
   if(tab==='tareas') { if(typeof loadListas==='function') loadListas(); }
 };
 
@@ -21276,6 +21385,7 @@ window.sidebarNav=function(mod,sub){
         if((window.currentClientData||currentClientData)?.plan!=='pro') window._proLockEnTab('ct-cierre-periodo','Cierre de Período',true);
       }
       else if(sub==='caja-config') window.showCTab('caja-config',null);
+      else if(sub==='mis-facturas') window.showCTab('mis-facturas',null);
     }else if(mod==='ventas'){
       if(sub==='presupuestos')window.showCTab('presupuestos',null);
       else if(sub==='catalogo')window.showCTab('productos',null);
