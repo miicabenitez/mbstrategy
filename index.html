@@ -10720,9 +10720,158 @@ async function loadMisFacturasModule() {
     console.error('loadMisFacturasModule:', e);
   }
 }
-window.descargarPdfFactura = function(facturaId) {
-  console.log('TODO: generar PDF para factura', facturaId);
-  showToast('PDF en desarrollo', 'info');
+window.descargarPdfFactura = async function(facturaId) {
+  try {
+    showToast('Generando PDF...', 'info');
+    const { getDoc, doc } = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
+    const [facSnap, clientSnap] = await Promise.all([
+      getDoc(doc(db, 'clientes', currentClientUID, 'facturas', facturaId)),
+      getDoc(doc(db, 'clientes', currentClientUID))
+    ]);
+    if (!facSnap.exists()) return showToast('Factura no encontrada', 'error');
+    const f = { id: facSnap.id, ...facSnap.data() };
+    const c = clientSnap.data() || {};
+    if (!window.jspdf) {
+      await new Promise((res, rej) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+        s.onload = res; s.onerror = rej;
+        document.head.appendChild(s);
+      });
+    }
+    if (!window.QRCode) {
+      await new Promise((res, rej) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+        s.onload = res; s.onerror = rej;
+        document.head.appendChild(s);
+      });
+    }
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const W = 210, H = 297;
+    const fmt = v => '$' + Number(v || 0).toLocaleString('es-AR');
+    const tipoNombre = {1:'FACTURA A', 6:'FACTURA B', 11:'FACTURA C', 3:'NOTA DE CREDITO A', 8:'NOTA DE CREDITO B', 13:'NOTA DE CREDITO C'};
+    const tipoLetra  = {1:'A', 6:'B', 11:'C', 3:'A', 8:'B', 13:'C'};
+    const condNombre = {monotributista:'Monotributista', responsable_inscripto:'Responsable Inscripto', exento:'Exento'};
+    const nro = ('0000' + (f.puntoVenta || 2)).slice(-4) + '-' + ('00000000' + (f.nroComprobante || 0)).slice(-8);
+    const fechaEmision = f.creadoEn ? f.creadoEn.slice(0,10) : new Date().toISOString().slice(0,10);
+    const caeFechaVtoFmt = f.caeFechaVto
+      ? f.caeFechaVto.slice(0,4)+'/'+f.caeFechaVto.slice(4,6)+'/'+f.caeFechaVto.slice(6,8) : '';
+    const domicilioFiscal = c.negocioDomicilioFiscalIgual
+      ? (c.negocioDir || '')
+      : [c.negocioFiscalCalle, c.negocioFiscalLocalidad, c.negocioFiscalProvincia, c.negocioFiscalCp].filter(Boolean).join(', ');
+    // Header verde
+    pdf.setFillColor(74, 94, 77);
+    pdf.rect(0, 0, W, 42, 'F');
+    if (c.logoNegocio) {
+      try { pdf.addImage(c.logoNegocio, 'JPEG', 10, 6, 22, 22); } catch(e) {}
+    }
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(14);
+    pdf.text(c.negocioNombre || 'Mi negocio', 36, 14);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(8);
+    pdf.text('CUIT: ' + (c.negocioCuit || ''), 36, 20);
+    pdf.text(condNombre[c.negocioCondicionIVA] || 'Monotributista', 36, 25);
+    if (domicilioFiscal) pdf.text(domicilioFiscal, 36, 30);
+    if (c.negocioTel)   pdf.text('Tel: ' + c.negocioTel, 36, 35);
+    if (c.negocioEmail) pdf.text(c.negocioEmail, 36, 40);
+    // Cuadro tipo comprobante (derecha)
+    pdf.setFillColor(255, 255, 255);
+    pdf.rect(148, 4, 52, 34, 'F');
+    pdf.setTextColor(74, 94, 77);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(28);
+    pdf.text(tipoLetra[f.tipoComprobante] || 'C', 174, 22, { align: 'center' });
+    pdf.setFontSize(8);
+    pdf.text(tipoNombre[f.tipoComprobante] || 'FACTURA C', 174, 28, { align: 'center' });
+    pdf.setFontSize(7);
+    pdf.text('N° ' + nro, 174, 33, { align: 'center' });
+    pdf.text('Fecha: ' + fechaEmision, 174, 37, { align: 'center' });
+    // Datos receptor
+    let y = 52;
+    pdf.setTextColor(30, 30, 30);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(9);
+    pdf.text('DATOS DEL RECEPTOR', 10, y); y += 6;
+    pdf.setFont('helvetica', 'normal');
+    pdf.text('Razon social / Nombre: ' + (f.razonSocialReceptor || 'Consumidor Final'), 10, y); y += 5;
+    if (f.cuitReceptor) { pdf.text('CUIT: ' + f.cuitReceptor, 10, y); y += 5; }
+    pdf.setDrawColor(200, 200, 200);
+    pdf.line(10, y + 2, W - 10, y + 2); y += 8;
+    // Detalle
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('DESCRIPCION', 10, y);
+    pdf.text('IMPORTE', W - 10, y, { align: 'right' });
+    pdf.setFont('helvetica', 'normal'); y += 6;
+    const desc = f.descripcion || (f.concepto === 1 ? 'Productos' : 'Servicios');
+    pdf.text(desc, 10, y);
+    pdf.text(fmt(f.importeTotal), W - 10, y, { align: 'right' });
+    if (f.tipoComprobante === 11) {
+      const neto = Math.round((f.importeTotal || 0) / 1.21);
+      const iva = (f.importeTotal || 0) - neto;
+      y += 10;
+      pdf.setFontSize(7.5);
+      pdf.setTextColor(120, 120, 120);
+      pdf.text('(Precio neto: ' + fmt(neto) + ' + IVA contenido 21%: ' + fmt(iva) + ')', 10, y);
+      pdf.setFontSize(9);
+      pdf.setTextColor(30, 30, 30);
+    }
+    y += 10;
+    pdf.setDrawColor(200, 200, 200);
+    pdf.line(10, y, W - 10, y); y += 6;
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(11);
+    pdf.text('TOTAL', 10, y);
+    pdf.text(fmt(f.importeTotal), W - 10, y, { align: 'right' });
+    // QR oficial ARCA
+    const cuitEmisor = parseInt((c.negocioCuit || '').replace(/\D/g, '')) || 0;
+    const qrPayload = {
+      ver: 1, fecha: fechaEmision, cuit: cuitEmisor,
+      ptoVta: f.puntoVenta || 2, tipoCmp: f.tipoComprobante || 11,
+      nroCmp: f.nroComprobante || 0, importe: f.importeTotal || 0,
+      moneda: 'PES', ctz: 1,
+      tipoDocRec: f.cuitReceptor ? 80 : 99,
+      nroDocRec: f.cuitReceptor ? parseInt(f.cuitReceptor.replace(/\D/g,'')) : 0,
+      tipoCodAut: 'E', codAut: parseInt(f.cae || 0)
+    };
+    const b64 = btoa(JSON.stringify(qrPayload))
+      .replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+    const qrUrl = 'https://www.afip.gob.ar/fe/qr/?p=' + b64;
+    // Renderizar QR en div oculto (QRCode.js necesita un div contenedor)
+    const qrDiv = document.createElement('div');
+    qrDiv.style.display = 'none';
+    document.body.appendChild(qrDiv);
+    await new Promise(res => {
+      new QRCode(qrDiv, { text: qrUrl, width: 80, height: 80, correctLevel: QRCode.CorrectLevel.M });
+      setTimeout(res, 300);
+    });
+    const qrDataUrl = qrDiv.querySelector('canvas')?.toDataURL('image/png');
+    document.body.removeChild(qrDiv);
+    // Footer verde con CAE + QR
+    y = 265;
+    pdf.setFillColor(74, 94, 77);
+    pdf.rect(0, y, W, H - y, 'F');
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(7.5);
+    pdf.text('CAE: ' + (f.cae || ''), 10, y + 8);
+    pdf.text('Vencimiento CAE: ' + caeFechaVtoFmt, 10, y + 14);
+    if (f.ambiente === 'homologacion') {
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('COMPROBANTE DE HOMOLOGACION - SIN VALIDEZ FISCAL', 10, y + 20);
+    }
+    if (qrDataUrl) {
+      try { pdf.addImage(qrDataUrl, 'PNG', W - 38, y + 2, 28, 28); } catch(e) {}
+    }
+    pdf.save('factura-' + nro + '-' + fechaEmision + '.pdf');
+    showToast('PDF descargado', 'success');
+  } catch(e) {
+    console.error('descargarPdfFactura:', e);
+    showToast('Error al generar PDF: ' + e.message, 'error');
+  }
 };
 window.abrirNuevaFacturaLibre = function() {
   console.log('TODO: modal nueva factura libre');
