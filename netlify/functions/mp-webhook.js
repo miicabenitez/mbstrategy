@@ -51,6 +51,7 @@ async function enviarWelcomeEmail(data) {
   const { handler } = require('./send-welcome-email');
   const event = {
     httpMethod: 'POST',
+    headers: { 'x-internal-secret': process.env.INTERNAL_SECRET || '' },
     body: JSON.stringify(data)
   };
   try {
@@ -134,7 +135,9 @@ exports.handler = async (event) => {
       authorized: 'activo',
       paused:     'pausado',
       cancelled:  'cancelado',
-      pending:    'pendiente'
+      pending:    'pendiente',
+      failed:     'inactivo',
+      past_due:   'inactivo'
     };
     const estadoInterno = estadoMap[sub.status] || 'inactivo';
 
@@ -155,7 +158,8 @@ exports.handler = async (event) => {
             'membresia.mpSubscriptionId': subscriptionId,
             'membresia.mpEstado': sub.status,
             'membresia.actualizadoEn': FieldValue.serverTimestamp(),
-            'productos.embi': (pendiente.plan || 'base') === 'pro' ? 'operativo' : 'explicativo'
+            'productos.embi': (pendiente.plan || 'base') === 'pro' ? 'operativo' : 'explicativo',
+            'plan': pendiente.plan || 'base'
           };
           if (sub.next_payment_date) update['membresia.proximoCobro'] = new Date(sub.next_payment_date);
           await clienteDoc.ref.update(update);
@@ -201,6 +205,7 @@ exports.handler = async (event) => {
           uid: userRecord.uid,
           creadoEn: FieldValue.serverTimestamp(),
           primerLogin: true,
+          plan: plan,
           productos: {
             sistema: true,
             academia: false,
@@ -264,9 +269,20 @@ exports.handler = async (event) => {
       'membresia.mpEstado': sub.status,
       'membresia.actualizadoEn': FieldValue.serverTimestamp()
     };
+    try {
+      const existSnap = await db.collection('clientes').doc(externalRef).get();
+      if (existSnap.exists) {
+        const planActual = existSnap.data().membresia?.plan;
+        if (planActual) update['plan'] = planActual;
+      }
+    } catch(e) { console.warn('No se pudo leer plan del cliente:', e.message); }
     if (proximoCobro) update['membresia.proximoCobro'] = proximoCobro;
-    if (sub.status === 'authorized') update['membresia.activoDesde'] = FieldValue.serverTimestamp();
+    if (sub.status === 'authorized') {
+      update['membresia.activoDesde'] = FieldValue.serverTimestamp();
+      update['membresia.accesoBloqueado'] = false;
+    }
     if (sub.status === 'cancelled') update['membresia.canceladoEn'] = FieldValue.serverTimestamp();
+    if (['failed','past_due'].includes(sub.status)) update['membresia.accesoBloqueado'] = true;
 
     try {
       await db.collection('clientes').doc(externalRef).set(update, { merge: true });

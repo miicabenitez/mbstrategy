@@ -102,6 +102,10 @@ exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: JSON.stringify({ error: 'Método no permitido' }) };
   }
+  const secret = event.headers?.['x-internal-secret'] || '';
+  if (secret !== process.env.INTERNAL_SECRET) {
+    return { statusCode: 401, body: JSON.stringify({ error: 'No autorizado' }) };
+  }
   try {
     const data = JSON.parse(event.body || '{}');
     const { email, nombre, negocioNombre, password, plan, trialEnd } = data;
