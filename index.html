@@ -10977,9 +10977,8 @@ window.descargarPdfFactura = async function(facturaId) {
       nroDocRec:f.cuitReceptor?parseInt(String(f.cuitReceptor).replace(/\D/g,'')):0,
       tipoCodAut:'E', codAut:parseInt(f.cae||0)
     };
-    console.log('[QR DEBUG]', JSON.stringify(qrPayload));
-    const b64 = btoa(JSON.stringify(qrPayload)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
-    const qrUrl = 'https://www.afip.gob.ar/fe/qr/?p=' + b64;
+    const b64 = encodeURIComponent(btoa(JSON.stringify(qrPayload)));
+    const qrUrl = 'https://www.arca.gob.ar/fe/qr/?p=' + b64;
     const qrDiv = document.createElement('div');
     qrDiv.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:80px;height:80px;';
     document.body.appendChild(qrDiv);
