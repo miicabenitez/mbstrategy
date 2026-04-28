@@ -1935,6 +1935,33 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
           </div>
           <div id="cobros-cliente-list"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin pagos registrados.</div></div>
         </div>
+        <!-- Datos fiscales del cliente -->
+        <div class="card" style="margin-top:16px;padding:20px 24px">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-m);font-weight:500;margin-bottom:14px">Facturación ARCA</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:14px">
+            <div>
+              <div style="font-size:10px;color:var(--text-m);margin-bottom:3px">CUIT</div>
+              <div style="font-size:14px;font-weight:500;color:var(--text-d)" id="det-fiscal-cuit">—</div>
+            </div>
+            <div>
+              <div style="font-size:10px;color:var(--text-m);margin-bottom:3px">Punto de venta</div>
+              <div style="font-size:14px;font-weight:500;color:var(--text-d)" id="det-fiscal-pv">—</div>
+            </div>
+            <div>
+              <div style="font-size:10px;color:var(--text-m);margin-bottom:3px">Condición IVA</div>
+              <div style="font-size:14px;font-weight:500;color:var(--text-d)" id="det-fiscal-condicion">—</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div>
+              <div style="font-size:10px;color:var(--text-m);margin-bottom:3px">Comprobante punto de venta</div>
+              <div id="det-fiscal-pv-estado" style="font-size:12px;color:var(--text-m)">Sin cargar</div>
+            </div>
+            <button id="det-fiscal-pv-btn" style="display:none;background:#4a5e4d;border:none;border-radius:10px;padding:8px 16px;font-size:12px;font-family:inherit;color:#fff;cursor:pointer" onclick="verComprobantePv()">
+              Ver PDF
+            </button>
+          </div>
+        </div>
       </div>
 
     </div>
@@ -6292,6 +6319,12 @@ function updateMetricsSecondary() {
   buildMonthlyData(allCobrosPend.filter(c=>c.estado==='cobrado'||c.estado==='parcial'), window._rawGastos||[]);
 }
 
+window.verComprobantePv = function() {
+  if (!window._currentPvComprobante) return;
+  const win = window.open();
+  win.document.write('<iframe src="' + window._currentPvComprobante + '" width="100%" height="100%" style="border:none"></iframe>');
+};
+
 window.openClientDetail = async function(clientId) {
   currentClientId = clientId;
   document.querySelectorAll('[id^="av-"]').forEach(el => el.classList.remove('active'));
@@ -6307,6 +6340,22 @@ window.openClientDetail = async function(clientId) {
       <div><div style="font-size:16px;font-weight:500;">${data.nombre}</div><div style="font-size:12px;color:var(--text-l);">${data.rubro} · Programa ${data.programa} · $${data.precio} USD</div></div>
       <div class="badge bg" style="margin-left:auto;">Semana ${data.semanaActual||1} activa</div>`;
     renderSemanas(data);
+    // Datos fiscales
+    const condMap = {monotributista:'Monotributista', responsable_inscripto:'Resp. Inscripto', exento:'Exento'};
+    document.getElementById('det-fiscal-cuit').textContent = data.negocioCuit || '—';
+    document.getElementById('det-fiscal-pv').textContent = data.negocioPuntoVenta || '—';
+    document.getElementById('det-fiscal-condicion').textContent = condMap[data.negocioCondicionIVA] || '—';
+    if (data.negocioPvComprobante) {
+      document.getElementById('det-fiscal-pv-estado').textContent = '✓ Comprobante cargado';
+      document.getElementById('det-fiscal-pv-estado').style.color = '#4a5e4d';
+      document.getElementById('det-fiscal-pv-btn').style.display = 'block';
+      window._currentPvComprobante = data.negocioPvComprobante;
+    } else {
+      document.getElementById('det-fiscal-pv-estado').textContent = 'Sin cargar';
+      document.getElementById('det-fiscal-pv-estado').style.color = 'var(--text-m)';
+      document.getElementById('det-fiscal-pv-btn').style.display = 'none';
+      window._currentPvComprobante = null;
+    }
     await loadNotas(clientId);
     await loadNotasClienteAdmin(clientId);
     await loadContentAdmin(clientId);
