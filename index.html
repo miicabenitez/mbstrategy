@@ -9080,7 +9080,7 @@ function renderCajaTable(movs) {
   }
 }
 
-async function abrirModalFacturaCaja(movId) {
+window.abrirModalFacturaCaja = async function(movId) {
   try {
     const { getDoc, doc } = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
     const movSnap = await getDoc(doc(db, 'libroCaja', movId));
@@ -9101,7 +9101,7 @@ async function abrirModalFacturaCaja(movId) {
   }
 }
 
-function selectMfcCond(el, cond, tipo, needCuit) {
+window.selectMfcCond = function(el, cond, tipo, needCuit) {
   document.querySelectorAll('#modalFacturaCaja .mfc-pill').forEach(p => {
     p.style.background = '';
     p.style.borderColor = 'rgba(0,0,0,.08)';
@@ -9118,14 +9118,14 @@ function selectMfcCond(el, cond, tipo, needCuit) {
   modal.dataset.tipoComp = tipo;
 }
 
-function fmtMfcCuit(inp) {
+window.fmtMfcCuit = function(inp) {
   let v = inp.value.replace(/\D/g,'');
   if(v.length>2) v=v.slice(0,2)+'-'+v.slice(2);
   if(v.length>11) v=v.slice(0,11)+'-'+v.slice(11);
   inp.value=v.slice(0,13);
 }
 
-async function emitirFacturaCaja() {
+window.emitirFacturaCaja = async function() {
   const modal = document.getElementById('modalFacturaCaja');
   const monto = parseFloat(modal.dataset.monto);
   const condReceptor = modal.dataset.condReceptor || '5';
