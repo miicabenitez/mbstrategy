@@ -10874,22 +10874,22 @@ window.descargarPdfFactura = async function(facturaId) {
     // ── 2. Header (y=8..58) ──
     sd(GREEN); pdf.setLineWidth(1.5); pdf.line(0,58,W,58); pdf.setLineWidth(0.3);
     if (c.logoNegocio) {
-      try { pdf.addImage(c.logoNegocio,'JPEG',6,12,14,14); } catch(e) {}
+      try { pdf.addImage(c.logoNegocio,'JPEG',10,10,16,16); } catch(e) {}
     } else {
-      sf([245,245,245]); sd(GREEN); pdf.setLineWidth(0.5); pdf.circle(13,19,7,'FD');
+      sf([245,245,245]); sd(GREEN); pdf.setLineWidth(0.5); pdf.circle(18,18,8,'FD');
       st(GREEN); pdf.setFont('helvetica','bold'); pdf.setFontSize(10);
-      pdf.text((c.negocioNombre||'MB').slice(0,2).toUpperCase(), 13, 21, {align:'center'});
+      pdf.text((c.negocioNombre||'MB').slice(0,2).toUpperCase(), 18, 20, {align:'center'});
       pdf.setLineWidth(0.3);
     }
     st(TEXT); pdf.setFont('times','normal'); pdf.setFontSize(14);
-    const nombreLines = pdf.splitTextToSize(c.negocioNombre || 'MB Strategy', 70);
-    pdf.text(nombreLines, 36, 14);
+    const nombreLines = pdf.splitTextToSize(c.negocioNombre || 'MB Strategy', 75);
+    pdf.text(nombreLines, 30, 16);
     pdf.setFont('helvetica','normal'); pdf.setFontSize(7.5); st(TEXT_L);
-    let lyL = 14 + (nombreLines.length * 6);
-    pdf.text('Razón Social: ' + (c.negocioNombre || '—'), 6, lyL); lyL += 4;
-    const dirLines = pdf.splitTextToSize('Domicilio Comercial: ' + domicilioComercial, 76);
-    dirLines.forEach(l => { pdf.text(l, 6, lyL); lyL += 4; });
-    pdf.text('Condición frente al IVA: ' + (condNombre[c.negocioCondicionIVA] || 'Monotributista'), 6, lyL);
+    let lyL = 36;
+    pdf.text('Razón Social: ' + (c.negocioNombre || '—'), 10, lyL); lyL += 4;
+    const dirLines = pdf.splitTextToSize('Domicilio Comercial: ' + domicilioComercial, 72);
+    dirLines.forEach(l => { pdf.text(l, 10, lyL); lyL += 4; });
+    pdf.text('Condición frente al IVA: ' + (condNombre[c.negocioCondicionIVA] || 'Monotributista'), 10, lyL);
     sd(GREEN); pdf.setLineWidth(1); pdf.rect(82,12,26,32,'D'); pdf.setLineWidth(0.3);
     st(GREEN); pdf.setFont('times','normal'); pdf.setFontSize(36);
     pdf.text(tipoLetra[tipo]||'C', 95, 32, {align:'center'});
@@ -10977,6 +10977,7 @@ window.descargarPdfFactura = async function(facturaId) {
       nroDocRec:f.cuitReceptor?parseInt(String(f.cuitReceptor).replace(/\D/g,'')):0,
       tipoCodAut:'E', codAut:parseInt(f.cae||0)
     };
+    console.log('[QR DEBUG]', JSON.stringify(qrPayload));
     const b64 = btoa(JSON.stringify(qrPayload)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
     const qrUrl = 'https://www.afip.gob.ar/fe/qr/?p=' + b64;
     const qrDiv = document.createElement('div');
