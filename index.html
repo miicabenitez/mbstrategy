@@ -2201,12 +2201,12 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
             <table class="caja-table">
               <colgroup>
                 <col class="c-fecha"><col class="c-concepto"><col class="c-movimiento">
-                <col class="c-cuenta"><col class="c-entrada"><col class="c-salida"><col class="c-saldo">
+                <col class="c-cuenta"><col class="c-entrada"><col class="c-salida"><col class="c-saldo"><col class="c-accion" style="width:44px">
               </colgroup>
               <thead>
                 <tr>
                   <th>FECHA</th><th>CONCEPTO</th><th>MOVIMIENTO</th><th>CUENTA</th>
-                  <th class="r">ENTRADA</th><th class="r">SALIDA</th><th class="r">SALDO</th>
+                  <th class="r">ENTRADA</th><th class="r">SALIDA</th><th class="r">SALDO</th><th></th>
                 </tr>
               </thead>
               <tbody id="caja-tbody">
@@ -9054,6 +9054,9 @@ function renderCajaTable(movs) {
     const cuentaLabel = m.tipo==='transfer'
       ? `${m.cuentaDesde||'?'} → ${m.cuentaHacia||'?'}`
       : m.tipo==='transferencia' ? (m.cuentaOrigen||'—') : (m.cuenta||'—');
+    const accionTd = m.tipo === 'ingreso'
+      ? `<td class="c-accion" onclick="event.stopPropagation();abrirModalFacturaCaja('${m.id}')" title="Emitir factura" style="cursor:pointer;"><div style="width:32px;height:32px;border-radius:8px;border:.5px solid rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;color:#9ca3af;transition:all .15s;" onmouseover="this.style.background='#e8ede8';this.style.borderColor='#4a5e4d';this.style.color='#4a5e4d'" onmouseout="this.style.background='';this.style.borderColor='rgba(0,0,0,.08)';this.style.color='#9ca3af'"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="2.5" y="1.5" width="10" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M5 5h5M5 7.5h5M5 10h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></div></td>`
+      : `<td class="c-accion"></td>`;
     return `<tr data-tipo="${m.tipo||''}" data-concepto="${(m.concepto||'').toLowerCase()}" data-fecha="${m.fecha||''}" style="opacity:0;animation:fadeUp .3s ease both;animation-delay:${80+i*50}ms;" onclick="cajaMostrarMovimiento('${m.id}')">
       <td><span style="font-size:12px;color:#bbb;">${fechaStr}</span></td>
       <td><span style="font-size:13px;font-weight:500;color:#1a1a1a;white-space:nowrap;">${m.concepto||'—'}</span></td>
@@ -9062,6 +9065,7 @@ function renderCajaTable(movs) {
       <td class="r">${entradaHtml}</td>
       <td class="r">${salidaHtml}</td>
       <td class="r"><span style="font-size:13px;font-weight:650;color:#1a1a1a;display:block;text-align:right;">$${Math.round(saldo).toLocaleString('es-AR')}</span></td>
+      ${accionTd}
     </tr>`;
   }).join('');
   const tfoot = document.getElementById('caja-tfoot');
@@ -9074,6 +9078,11 @@ function renderCajaTable(movs) {
       <td class="r" style="padding:10px 0;"><span style="font-size:14px;font-weight:700;color:#1a1f1b;">$${Math.round(saldo).toLocaleString('es-AR')}</span></td>
     </tr>`;
   }
+}
+
+function abrirModalFacturaCaja(movId) {
+  console.log('Facturar movimiento:', movId);
+  // TODO: implementar modal de factura
 }
 
 window.cajaMesAnterior = function() {
