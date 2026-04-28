@@ -10855,7 +10855,12 @@ window.descargarPdfFactura = async function(facturaId) {
     const condNombre = {monotributista:'Monotributista',responsable_inscripto:'Responsable Inscripto',exento:'Exento'};
     const tipo = f.tipoComprobante || 11;
     const nro = ('0000'+(f.puntoVenta||2)).slice(-4)+'-'+('00000000'+(f.nroComprobante||0)).slice(-8);
-    const fechaEmisionISO = f.creadoEn ? f.creadoEn.slice(0,10) : new Date().toISOString().slice(0,10);
+    const fechaEmisionISO = (() => {
+      try {
+        const d = f.creadoEn?.toDate ? f.creadoEn.toDate() : new Date(f.creadoEn);
+        return d.toISOString().slice(0,10);
+      } catch(e) { return new Date().toISOString().slice(0,10); }
+    })();
     const fechaEmisionFmt = fmtFechaISO(fechaEmisionISO);
     const caeFechaVtoFmt = fmtFechaAfip(f.caeFechaVto);
     const cuitEmisorFmt = fmtCuit(c.negocioCuit);
