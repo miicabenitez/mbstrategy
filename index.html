@@ -987,7 +987,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 @keyframes calcFadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes calcPillPop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
 </style>
-<!-- deploy force 021 -->
+<!-- deploy force 022 -->
 </head>
 <body>
 
@@ -3506,18 +3506,52 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
       <!-- MI CUENTA (página completa) -->
       <div id="ct-micuenta" style="display:none;">
 
-        <!-- Volver + Banner -->
-        <div style="margin-bottom:14px;">
-          <button onclick="showClientMod('inicio',null)" style="display:inline-flex;align-items:center;gap:6px;background:none;border:none;font-size:13px;color:var(--sage-dark);font-family:'DM Sans',sans-serif;cursor:pointer;padding:0;margin-bottom:12px;font-weight:500;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-            Volver
-          </button>
-          <div style="background:#4a5e4d;border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;"><div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div><div style="font-family:'Cormorant Garamond',serif;font-size:22px;">Mi cuenta</div><div style="font-size:12px;color:rgba(255,255,255,.7);margin-top:4px;" id="micuenta-email-display"></div></div>
+        <!-- 1. Volver -->
+        <button onclick="showClientMod('inicio',null)" style="display:inline-flex;align-items:center;gap:6px;background:none;border:none;font-size:13px;color:var(--sage-dark);font-family:'DM Sans',sans-serif;cursor:pointer;padding:0;margin-bottom:14px;font-weight:500;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          Volver
+        </button>
+
+        <!-- 2. Banner verde con avatar + KPIs -->
+        <div style="background:linear-gradient(135deg,#4a5e4d,#3a4e3d,#5a6e5d);border-radius:20px;padding:22px 22px 18px;margin:0 0 22px;color:#fff;position:relative;overflow:hidden;">
+          <div style="position:absolute;right:-30px;top:-30px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.04);"></div>
+          <div style="position:absolute;right:30px;bottom:-40px;width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,.05);"></div>
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;position:relative;">
+            <div id="micuenta-banner-avatar" style="width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.18);border:.5px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:#fff;flex-shrink:0;">·</div>
+            <div style="flex:1;min-width:0;">
+              <div id="micuenta-banner-nombre" style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Mi cuenta</div>
+              <div id="micuenta-email-display" style="font-size:11.5px;color:rgba(255,255,255,.7);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+            </div>
+            <div id="micuenta-banner-plan" style="background:rgba(255,255,255,.18);border:.5px solid rgba(255,255,255,.3);border-radius:20px;padding:5px 11px;font-size:10.5px;font-weight:500;font-family:'DM Sans',sans-serif;flex-shrink:0;">Plan Pro</div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;position:relative;">
+            <div style="background:rgba(255,255,255,.08);border:.5px solid rgba(255,255,255,.12);border-radius:12px;padding:9px 10px;">
+              <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">Miembro desde</div>
+              <div id="micuenta-kpi-desde" style="font-size:12px;font-weight:600;line-height:1.1;">—</div>
+            </div>
+            <div style="background:rgba(255,255,255,.08);border:.5px solid rgba(255,255,255,.12);border-radius:12px;padding:9px 10px;">
+              <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">Plan activo</div>
+              <div id="micuenta-kpi-plan" style="font-size:12px;font-weight:600;line-height:1.1;">—</div>
+            </div>
+            <div style="background:rgba(255,255,255,.08);border:.5px solid rgba(255,255,255,.12);border-radius:12px;padding:9px 10px;">
+              <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">Próximo cobro</div>
+              <div id="micuenta-kpi-cobro" style="font-size:12px;font-weight:600;line-height:1.1;">—</div>
+            </div>
+          </div>
         </div>
 
-        <!-- Sección 1: Datos del negocio -->
-        <div class="card" style="margin-bottom:14px;">
-          <div style="font-size:11px;font-weight:500;color:var(--text-m);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;">Datos del negocio</div>
+        <!-- 3. Separador PERFIL DEL NEGOCIO -->
+        <div style="font-size:10px;font-weight:600;color:var(--text-l);text-transform:uppercase;letter-spacing:1px;margin:0 4px 8px;">Perfil del negocio</div>
+        <div class="card" style="margin-bottom:18px;border-left:3px solid #4a5e4d;border-radius:16px;">
+          <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;">
+            <div style="width:36px;height:36px;border-radius:10px;background:#eef2ee;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4a5e4d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0116 0v1"/></svg>
+            </div>
+            <div style="flex:1;">
+              <div style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;color:var(--text);line-height:1.1;">Datos del negocio</div>
+              <div style="font-size:11px;color:var(--text-l);margin-top:2px;">Nombre, contacto y logo</div>
+            </div>
+          </div>
           <!-- Logo -->
           <div class="fg">
             <label class="fl">Logo del negocio</label>
@@ -3537,31 +3571,37 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
           <div class="fg"><label class="fl">Rubro</label><input type="text" class="fi" id="micuenta-negocio-rubro" placeholder="Ej: Gastronomía, Construcción..."/></div>
           <div class="fg"><label class="fl">Teléfono / WhatsApp</label><input type="text" class="fi" id="micuenta-negocio-tel" placeholder="+54 9 11 1234-5678"/></div>
           <div class="fg"><label class="fl">Email de contacto</label><input type="email" class="fi" id="micuenta-negocio-email" placeholder="contacto@minegocio.com"/></div>
-          <div class="fg"><label class="fl">CUIT (opcional)</label><input type="text" class="fi" id="micuenta-negocio-cuit" placeholder="20-12345678-9"/></div>
-          <div class="fg"><label class="fl">Dirección (opcional)</label><input type="text" class="fi" id="micuenta-negocio-dir" placeholder="Calle 123, Ciudad"/></div>
-          <div style="margin-top:14px;">
-            <button class="bp" onclick="guardarMiCuentaPage()" style="width:100%;">Guardar cambios</button>
-          </div>
-          <div class="saved-msg" id="micuenta-saved">✓ Cambios guardados</div>
+          <div class="fg" style="margin-bottom:0;"><label class="fl">Dirección (opcional)</label><input type="text" class="fi" id="micuenta-negocio-dir" placeholder="Calle 123, Ciudad"/></div>
+          <div class="saved-msg" id="micuenta-saved" style="margin-top:10px;">✓ Cambios guardados</div>
           <div id="micuenta-error" style="display:none;background:var(--err-bg);color:var(--err);border-radius:8px;padding:10px;font-size:12px;margin-top:8px;"></div>
         </div>
 
-        <!-- Sección 1b: Datos fiscales -->
-        <div class="card" style="margin-bottom:14px;">
-          <div style="font-size:11px;font-weight:500;color:var(--text-m);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;">Datos fiscales</div>
+        <!-- 4. Separador FACTURACIÓN -->
+        <div style="font-size:10px;font-weight:600;color:var(--text-l);text-transform:uppercase;letter-spacing:1px;margin:0 4px 8px;">Facturación</div>
+        <div class="card" style="margin-bottom:18px;border-left:3px solid #b09088;border-radius:16px;">
+          <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;">
+            <div style="width:36px;height:36px;border-radius:10px;background:#f7eeec;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b09088" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
+            </div>
+            <div style="flex:1;">
+              <div style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;color:var(--text);line-height:1.1;">Datos fiscales</div>
+              <div style="font-size:11px;color:var(--text-l);margin-top:2px;">Aparecen en todas tus facturas electrónicas</div>
+            </div>
+          </div>
+          <!-- CUIT + Punto de venta en 2 columnas -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+            <div class="fg" style="margin:0;"><label class="fl">CUIT</label><input type="text" class="fi" id="micuenta-negocio-cuit" placeholder="20-12345678-9"/></div>
+            <div class="fg" style="margin:0;"><label class="fl">Punto de venta ARCA</label><input type="number" class="fi" id="micuenta-punto-venta" placeholder="Ej: 1" min="1" max="9999"/></div>
+          </div>
           <div class="fg">
             <label class="fl">Condición IVA del emisor</label>
             <div id="micuenta-condicion-iva-pills" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">
-              <button type="button" id="micuenta-pill-monotributista" onclick="selectMiCuentaCondicionIVA('monotributista')" style="padding:7px 14px;border-radius:20px;border:.5px solid var(--cream-d);background:var(--cream);color:var(--text-m);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;">Monotributista</button>
-              <button type="button" id="micuenta-pill-responsable_inscripto" onclick="selectMiCuentaCondicionIVA('responsable_inscripto')" style="padding:7px 14px;border-radius:20px;border:.5px solid var(--cream-d);background:var(--cream);color:var(--text-m);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;">Resp. Inscripto</button>
-              <button type="button" id="micuenta-pill-exento" onclick="selectMiCuentaCondicionIVA('exento')" style="padding:7px 14px;border-radius:20px;border:.5px solid var(--cream-d);background:var(--cream);color:var(--text-m);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;">Exento</button>
+              <button type="button" id="micuenta-pill-monotributista" onclick="selectMiCuentaCondicionIVA('monotributista');document.getElementById('micuenta-civa-badge').textContent='Monotributista — emite Facturas C';document.getElementById('micuenta-civa-badge').style.display='block';" style="padding:7px 14px;border-radius:20px;border:.5px solid var(--cream-d);background:var(--cream);color:var(--text-m);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;">Monotributista</button>
+              <button type="button" id="micuenta-pill-responsable_inscripto" onclick="selectMiCuentaCondicionIVA('responsable_inscripto');document.getElementById('micuenta-civa-badge').textContent='Resp. Inscripto — emite Facturas A y B';document.getElementById('micuenta-civa-badge').style.display='block';" style="padding:7px 14px;border-radius:20px;border:.5px solid var(--cream-d);background:var(--cream);color:var(--text-m);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;">Resp. Inscripto</button>
+              <button type="button" id="micuenta-pill-exento" onclick="selectMiCuentaCondicionIVA('exento');document.getElementById('micuenta-civa-badge').textContent='Exento — emite Facturas C';document.getElementById('micuenta-civa-badge').style.display='block';" style="padding:7px 14px;border-radius:20px;border:.5px solid var(--cream-d);background:var(--cream);color:var(--text-m);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;">Exento</button>
             </div>
             <input type="hidden" id="micuenta-negocio-condicion-iva"/>
-          </div>
-          <div class="fg">
-            <label class="fl">Punto de venta ARCA</label>
-            <input type="number" class="fi" id="micuenta-punto-venta" placeholder="Ej: 1" min="1" max="9999"/>
-            <div style="font-size:11px;color:var(--text-l);margin-top:4px;">El que creaste en ARCA para web services</div>
+            <div id="micuenta-civa-badge" style="display:none;margin-top:10px;background:#eef5ef;color:#3f6149;border:.5px solid #c8d8c9;border-radius:8px;padding:7px 11px;font-size:11.5px;font-weight:500;"></div>
           </div>
           <div class="fg">
             <label class="fl">Domicilio fiscal</label>
@@ -3578,15 +3618,21 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
               <input type="text" class="fi" id="micuenta-fiscal-cp" placeholder="Código postal"/>
             </div>
           </div>
-          <div style="margin-top:14px;">
-            <button class="bp" onclick="guardarDatosFiscalesPage()" style="width:100%;">Guardar datos fiscales</button>
-          </div>
           <div class="saved-msg" id="micuenta-fiscal-saved">✓ Datos fiscales guardados</div>
         </div>
 
-        <!-- Sección 2: Cambiar contraseña -->
-        <div class="card" style="margin-bottom:14px;">
-          <div style="font-size:11px;font-weight:500;color:var(--text-m);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;">Cambiar contraseña</div>
+        <!-- 5. Separador SEGURIDAD -->
+        <div style="font-size:10px;font-weight:600;color:var(--text-l);text-transform:uppercase;letter-spacing:1px;margin:0 4px 8px;">Seguridad</div>
+        <div class="card" style="margin-bottom:18px;border-left:3px solid #6b7280;border-radius:16px;">
+          <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;">
+            <div style="width:36px;height:36px;border-radius:10px;background:#f0f1f3;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            </div>
+            <div style="flex:1;">
+              <div style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;color:var(--text);line-height:1.1;">Cambiar contraseña</div>
+              <div style="font-size:11px;color:var(--text-l);margin-top:2px;">Asegurá tu acceso al sistema</div>
+            </div>
+          </div>
           <div class="fg"><label class="fl">Contraseña actual</label><div style="position:relative;"><input type="password" class="fi" id="micuenta-pass-actual" placeholder="Tu contraseña actual" style="padding-right:44px;"/><button type="button" id="micuenta-pass-actual-eye" onclick="(function(){var i=document.getElementById('micuenta-pass-actual'),b=document.getElementById('micuenta-pass-actual-eye');i.type=i.type==='password'?'text':'password';b.innerHTML=i.type==='password'?'<svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;#9ca3af&quot; stroke-width=&quot;1.8&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z&quot;/><circle cx=&quot;12&quot; cy=&quot;12&quot; r=&quot;3&quot;/></svg>':'<svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;#9ca3af&quot; stroke-width=&quot;1.8&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24&quot;/><line x1=&quot;1&quot; y1=&quot;1&quot; x2=&quot;23&quot; y2=&quot;23&quot;/></svg>';})()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;line-height:0;display:flex;align-items:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
           <div class="fg"><label class="fl">Nueva contraseña</label><div style="position:relative;"><input type="password" class="fi" id="micuenta-pass-nueva" placeholder="Mínimo 6 caracteres" style="padding-right:44px;"/><button type="button" id="micuenta-pass-nueva-eye" onclick="(function(){var i=document.getElementById('micuenta-pass-nueva'),b=document.getElementById('micuenta-pass-nueva-eye');i.type=i.type==='password'?'text':'password';b.innerHTML=i.type==='password'?'<svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;#9ca3af&quot; stroke-width=&quot;1.8&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z&quot;/><circle cx=&quot;12&quot; cy=&quot;12&quot; r=&quot;3&quot;/></svg>':'<svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;#9ca3af&quot; stroke-width=&quot;1.8&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24&quot;/><line x1=&quot;1&quot; y1=&quot;1&quot; x2=&quot;23&quot; y2=&quot;23&quot;/></svg>';})()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;line-height:0;display:flex;align-items:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
           <div class="fg"><label class="fl">Confirmar nueva contraseña</label><div style="position:relative;"><input type="password" class="fi" id="micuenta-pass-confirm" placeholder="Repetí la nueva contraseña" style="padding-right:44px;"/><button type="button" id="micuenta-pass-confirm-eye" onclick="(function(){var i=document.getElementById('micuenta-pass-confirm'),b=document.getElementById('micuenta-pass-confirm-eye');i.type=i.type==='password'?'text':'password';b.innerHTML=i.type==='password'?'<svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;#9ca3af&quot; stroke-width=&quot;1.8&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z&quot;/><circle cx=&quot;12&quot; cy=&quot;12&quot; r=&quot;3&quot;/></svg>':'<svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;#9ca3af&quot; stroke-width=&quot;1.8&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24&quot;/><line x1=&quot;1&quot; y1=&quot;1&quot; x2=&quot;23&quot; y2=&quot;23&quot;/></svg>';})()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;line-height:0;display:flex;align-items:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
@@ -3597,21 +3643,35 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
           <div id="micuenta-pass-error" style="display:none;background:var(--err-bg);color:var(--err);border-radius:8px;padding:10px;font-size:12px;margin-top:8px;"></div>
         </div>
 
-        <!-- Sección 3: Membresía -->
-        <div class="card" style="margin-bottom:14px;">
-          <div style="font-size:11px;font-weight:500;color:var(--text-m);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;">Membresía</div>
+        <!-- 6. Separador PLAN Y FACTURACIÓN -->
+        <div style="font-size:10px;font-weight:600;color:var(--text-l);text-transform:uppercase;letter-spacing:1px;margin:0 4px 8px;">Plan y facturación</div>
+        <div class="card" style="margin-bottom:18px;border-left:3px solid #c8a030;border-radius:16px;">
+          <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;">
+            <div style="width:36px;height:36px;border-radius:10px;background:#fbf3da;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c8a030" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <div style="flex:1;">
+              <div style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;color:var(--text);line-height:1.1;">Membresía</div>
+              <div style="font-size:11px;color:var(--text-l);margin-top:2px;">Tu plan y próximo cobro</div>
+            </div>
+          </div>
           <!-- Estado: activo -->
           <div id="memb-activo" style="display:none;">
-            <div style="display:flex;align-items:center;gap:8px;background:#EEF5EF;border-radius:10px;padding:12px 14px;margin-bottom:12px;border:.5px solid #5A8A62;">
-              <div style="width:8px;height:8px;border-radius:50%;background:#5A8A62;flex-shrink:0;"></div>
-              <div><div style="font-size:13px;font-weight:500;color:#5A8A62;">Plan activo</div></div>
+            <div style="background:linear-gradient(135deg,#3a4e3d,#2d3e30);border-radius:14px;padding:18px;color:#fff;position:relative;overflow:hidden;">
+              <div style="position:absolute;right:-25px;top:-25px;width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,.04);"></div>
+              <div style="display:flex;align-items:center;gap:7px;margin-bottom:14px;position:relative;">
+                <div style="width:7px;height:7px;border-radius:50%;background:#a8d4a8;"></div>
+                <div style="font-size:11px;font-weight:500;color:#a8d4a8;text-transform:uppercase;letter-spacing:.5px;">Plan activo</div>
+              </div>
+              <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px;position:relative;">
+                <div id="memb-plan-nombre" style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;line-height:1;"></div>
+                <div id="memb-monto" style="font-size:14px;font-weight:500;color:rgba(255,255,255,.85);"></div>
+              </div>
+              <div style="font-size:11.5px;color:rgba(255,255,255,.6);margin-bottom:14px;position:relative;">Próximo cobro: <span id="memb-proximo-cobro" style="color:rgba(255,255,255,.9);font-weight:500;">—</span></div>
+              <button onclick="toggleCambiarPlan()" style="width:100%;background:rgba(255,255,255,.12);color:#fff;border:.5px solid rgba(255,255,255,.25);border-radius:10px;padding:9px;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;position:relative;">Ver otros planes</button>
             </div>
-            <div style="font-size:12px;color:var(--text-m);padding:6px 0;border-bottom:.5px solid var(--cream-d);display:flex;justify-content:space-between;"><span>Plan</span><span id="memb-plan-nombre" style="font-weight:500;color:var(--text);"></span></div>
-            <div style="font-size:12px;color:var(--text-m);padding:6px 0;border-bottom:.5px solid var(--cream-d);display:flex;justify-content:space-between;"><span>Próximo cobro</span><span id="memb-proximo-cobro" style="font-weight:500;color:var(--text);"></span></div>
-            <div style="font-size:12px;color:var(--text-m);padding:6px 0;display:flex;justify-content:space-between;"><span>Monto mensual</span><span id="memb-monto" style="font-weight:500;color:var(--text);"></span></div>
-            <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px;">
-              <button onclick="toggleCambiarPlan()" style="width:100%;background:var(--sage-xl);color:var(--sage-dark);border:.5px solid var(--sage-dark);border-radius:8px;padding:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;">Cambiar plan</button>
-              <button onclick="cancelarMembresia()" style="width:100%;background:#F5F6F3;color:#C4786A;border:.5px solid #C4786A;border-radius:8px;padding:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;">Cancelar suscripción</button>
+            <div style="margin-top:10px;text-align:center;">
+              <button onclick="cancelarMembresia()" style="background:none;border:none;color:#C4786A;font-family:'DM Sans',sans-serif;font-size:11.5px;cursor:pointer;text-decoration:underline;padding:4px;">Cancelar suscripción</button>
             </div>
             <!-- Panel cambio de plan (oculto por defecto) -->
             <div id="memb-cambiar-plan" style="display:none;margin-top:14px;padding:14px;background:var(--cream);border-radius:10px;border:.5px solid var(--cream-d);">
@@ -3698,6 +3758,12 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
             <div style="font-size:10px;color:var(--text-l);text-align:center;line-height:1.5;">Al suscribirte aceptás los <a href="/terminos.html" target="_blank" style="color:#7A8E7D;">Términos y Condiciones</a> y la <a href="/privacidad.html" target="_blank" style="color:#7A8E7D;">Política de Privacidad</a></div>
           </div>
           <div id="memb-error" style="display:none;background:var(--err-bg);color:var(--err);border-radius:8px;padding:10px;font-size:12px;margin-top:10px;"></div>
+        </div>
+
+        <!-- 7-8. Botones de acción -->
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:6px;margin-bottom:20px;">
+          <button class="bp" onclick="guardarMiCuentaPage();guardarDatosFiscalesPage();" style="width:100%;">Guardar cambios</button>
+          <button onclick="doLogout()" style="width:100%;background:#fff;border:.5px solid #C4786A;color:#C4786A;border-radius:10px;padding:11px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;">Cerrar sesión</button>
         </div>
 
       </div>
