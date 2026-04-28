@@ -194,6 +194,11 @@ exports.handler = async function(event) {
       const nroComprobante = lastVoucher + 1;
       const fechaHoy = fechaAfip();
 
+      // IVA: las facturas A (tipo 1) y B (tipo 6) deben discriminar 21%; C (tipo 11) no
+      const esConIva = [1, 6].includes(tipoComprobante);
+      const netoGravado = esConIva ? Math.round(importeTotal / 1.21) : importeTotal;
+      const importeIva = esConIva ? importeTotal - netoGravado : 0;
+
       // Construir detalle (estructura anidada de afipjs)
       const detRequest = {
         Concepto: concepto || 2, // 2=Servicios por defecto
@@ -204,13 +209,22 @@ exports.handler = async function(event) {
         CbteFch: fechaHoy,
         ImpTotal: importeTotal,
         ImpTotConc: 0,
-        ImpNeto: importeTotal,
+        ImpNeto: esConIva ? netoGravado : importeTotal,
         ImpOpEx: 0,
         ImpTrib: 0,
-        ImpIVA: 0,
+        ImpIVA: importeIva,
         MonId: 'PES',
         MonCotiz: 1,
-        CondicionIVAReceptorId: cuitReceptor ? (body.condicionIVAReceptor || 1) : 5
+        CondicionIVAReceptorId: cuitReceptor ? (body.condicionIVAReceptor || 1) : 5,
+        ...(esConIva ? {
+          Iva: {
+            AlicIva: {
+              Id: 5, // 5 = 21%
+              BaseImp: netoGravado,
+              Importe: importeIva
+            }
+          }
+        } : {})
       };
 
       // Servicios (concepto 2 o 3): agregar fechas
