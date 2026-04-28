@@ -146,6 +146,12 @@ exports.handler = async function(event) {
     wsaa.setKey(afipConfig.key);
     const ta = await getValidTA(wsaa);
     const wsfe = new Wsfe(ta, { prod: process.env.AFIP_PRODUCTION === 'true' });
+    const clienteCuit = clienteData.negocioCuit
+      ? parseInt(String(clienteData.negocioCuit).replace(/\D/g, ''))
+      : null;
+    if (clienteCuit) {
+      wsfe.hAuth.Auth.Cuit = clienteCuit;
+    }
     const ambiente = process.env.AFIP_PRODUCTION === 'true' ? 'produccion' : 'homologacion';
 
     // ════════════════════════════════════════
@@ -262,7 +268,8 @@ exports.handler = async function(event) {
         fechaEmision: admin.firestore.FieldValue.serverTimestamp(),
         ambiente,
         estado: 'emitida',
-        creadoEn: new Date().toISOString()
+        creadoEn: new Date().toISOString(),
+        cuitEmisor: clienteCuit || null
       };
       await facturaRef.set(facturaData);
 
@@ -344,7 +351,7 @@ exports.handler = async function(event) {
             Tipo: tipoComprobanteOriginal,
             PtoVta: puntoVenta,
             Nro: nroComprobanteOriginal,
-            Cuit: parseInt(process.env.AFIP_CUIT)
+            Cuit: clienteCuit || 0
           }]
         }
       };

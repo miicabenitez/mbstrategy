@@ -3757,6 +3757,22 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
             <div class="fg" style="margin:0;"><label class="fl">CUIT</label><input type="text" class="fi" id="micuenta-negocio-cuit" placeholder="20-12345678-9"/></div>
             <div class="fg" style="margin:0;"><label class="fl">Punto de venta ARCA</label><input type="number" class="fi" id="micuenta-punto-venta" placeholder="Ej: 1" min="1" max="9999"/></div>
           </div>
+          <div class="fg" style="margin-top:12px">
+            <label class="fl">Comprobante de punto de venta ARCA</label>
+            <div id="micuenta-pv-upload-area" style="border:.5px dashed var(--cream-d);border-radius:12px;padding:16px;text-align:center;cursor:pointer;transition:all .15s" onclick="document.getElementById('micuenta-pv-file').click()">
+              <div id="micuenta-pv-preview" style="display:none">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style="color:#4a5e4d;margin-bottom:6px"><path d="M4 4h8l4 4v8a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1z" stroke="currentColor" stroke-width="1.3"/><path d="M12 4v4h4" stroke="currentColor" stroke-width="1.3"/></svg>
+                <div id="micuenta-pv-filename" style="font-size:12px;color:#4a5e4d;font-weight:500"></div>
+                <div style="font-size:11px;color:var(--text-m);margin-top:2px">PDF cargado ✓ · Tocá para cambiar</div>
+              </div>
+              <div id="micuenta-pv-empty">
+                <div style="font-size:12px;color:var(--text-m);margin-bottom:4px">Subir comprobante PDF</div>
+                <div style="font-size:11px;color:var(--text-l)">El PDF de alta de punto de venta que generó ARCA</div>
+              </div>
+            </div>
+            <input type="file" id="micuenta-pv-file" accept=".pdf" style="display:none" onchange="handleMiCuentaPvUpload(this)">
+            <div style="font-size:10px;color:var(--text-l);margin-top:4px">Solo PDF · Máx 2MB · Requerido para activar facturación</div>
+          </div>
           <div class="fg">
             <label class="fl">Condición IVA del emisor</label>
             <div id="micuenta-condicion-iva-pills" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">
@@ -15977,6 +15993,11 @@ async function loadMiCuentaPage() {
       setVal('micuenta-negocio-dir', data.negocioDir||'');
       selectMiCuentaCondicionIVA(data.negocioCondicionIVA||'');
       setVal('micuenta-punto-venta', data.negocioPuntoVenta||'');
+      if (data.negocioPvComprobante) {
+        document.getElementById('micuenta-pv-preview').style.display = 'block';
+        document.getElementById('micuenta-pv-empty').style.display = 'none';
+        document.getElementById('micuenta-pv-filename').textContent = 'Comprobante cargado';
+      }
       // Banner: avatar inicial + nombre
       const negNombreBanner = data.negocioNombre||data.nombre||'';
       const avatarEl = document.getElementById('micuenta-banner-avatar');
@@ -16108,6 +16129,21 @@ window.toggleMiCuentaFiscalMismo = function() {
   }
 };
 
+window.handleMiCuentaPvUpload = function(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) return showToast('El archivo no puede superar 2MB', 'error');
+  if (file.type !== 'application/pdf') return showToast('Solo se aceptan archivos PDF', 'error');
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    window._pvComprobanteBase64 = e.target.result;
+    document.getElementById('micuenta-pv-preview').style.display = 'block';
+    document.getElementById('micuenta-pv-empty').style.display = 'none';
+    document.getElementById('micuenta-pv-filename').textContent = file.name;
+  };
+  reader.readAsDataURL(file);
+};
+
 window.guardarDatosFiscalesPage = async function() {
   if(!currentClientUID) return;
   const data = {
@@ -16118,6 +16154,7 @@ window.guardarDatosFiscalesPage = async function() {
     negocioFiscalLocalidad: document.getElementById('micuenta-fiscal-localidad')?.value || '',
     negocioFiscalProvincia: document.getElementById('micuenta-fiscal-provincia')?.value || '',
     negocioFiscalCp: document.getElementById('micuenta-fiscal-cp')?.value || '',
+    ...(window._pvComprobanteBase64 ? { negocioPvComprobante: window._pvComprobanteBase64 } : {})
   };
   try {
     await updateDoc(doc(db,'clientes',currentClientUID), data);
