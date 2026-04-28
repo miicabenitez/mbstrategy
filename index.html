@@ -10968,7 +10968,7 @@ window.descargarPdfFactura = async function(facturaId) {
     totalRow('Importe Total:', fmt(importeTotal), true);
     // ── 7. Footer (y=265..297) ──
     sf(GREEN); pdf.rect(0,265,W,H-265,'F');
-    const cuitEmisorNum = parseInt((c.negocioCuit||'').replace(/\D/g,'')) || 0;
+    const cuitEmisorNum = f.cuitEmisor || parseInt((c.negocioCuit||'').replace(/\D/g,'')) || 0;
     const qrPayload = {
       ver:1, fecha:fechaEmisionISO, cuit:cuitEmisorNum,
       ptoVta:f.puntoVenta||2, tipoCmp:tipo, nroCmp:f.nroComprobante||0,
