@@ -9080,9 +9080,96 @@ function renderCajaTable(movs) {
   }
 }
 
-function abrirModalFacturaCaja(movId) {
-  console.log('Facturar movimiento:', movId);
-  // TODO: implementar modal de factura
+async function abrirModalFacturaCaja(movId) {
+  try {
+    const { getDoc, doc } = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
+    const movSnap = await getDoc(doc(db, 'libroCaja', movId));
+    if (!movSnap.exists()) return showToast('Movimiento no encontrado', 'error');
+    const mov = { id: movSnap.id, ...movSnap.data() };
+    document.getElementById('mfc-monto-txt').textContent = '$' + Number(mov.monto).toLocaleString('es-AR');
+    document.getElementById('mfc-concepto-txt').textContent = (mov.concepto || mov.detalle || 'Movimiento') + ' · ' + (mov.fecha || '');
+    document.getElementById('mfc-descripcion').value = mov.concepto || '';
+    const modal = document.getElementById('modalFacturaCaja');
+    modal.dataset.movId = movId;
+    modal.dataset.monto = mov.monto;
+    // Reset pills al abrir
+    selectMfcCond(document.querySelector('#modalFacturaCaja .mfc-pill'), '5', 'C', false);
+    openModal('modalFacturaCaja');
+  } catch(e) {
+    console.error('abrirModalFacturaCaja:', e);
+    showToast('Error al abrir el modal', 'error');
+  }
+}
+
+function selectMfcCond(el, cond, tipo, needCuit) {
+  document.querySelectorAll('#modalFacturaCaja .mfc-pill').forEach(p => {
+    p.style.background = '';
+    p.style.borderColor = 'rgba(0,0,0,.08)';
+    p.querySelector('.mfc-dot').style.background = 'rgba(0,0,0,.08)';
+  });
+  el.style.background = '#e8ede8';
+  el.style.borderColor = '#4a5e4d';
+  el.querySelector('.mfc-dot').style.background = '#4a5e4d';
+  const tipos = {C:'Se emitirá Factura C', A:'Se emitirá Factura A', B:'Se emitirá Factura B'};
+  document.getElementById('mfc-badge-txt').textContent = tipos[tipo];
+  document.getElementById('mfc-extra').style.display = needCuit ? 'block' : 'none';
+  const modal = document.getElementById('modalFacturaCaja');
+  modal.dataset.condReceptor = cond;
+  modal.dataset.tipoComp = tipo;
+}
+
+function fmtMfcCuit(inp) {
+  let v = inp.value.replace(/\D/g,'');
+  if(v.length>2) v=v.slice(0,2)+'-'+v.slice(2);
+  if(v.length>11) v=v.slice(0,11)+'-'+v.slice(11);
+  inp.value=v.slice(0,13);
+}
+
+async function emitirFacturaCaja() {
+  const modal = document.getElementById('modalFacturaCaja');
+  const monto = parseFloat(modal.dataset.monto);
+  const condReceptor = modal.dataset.condReceptor || '5';
+  const cuitReceptor = document.getElementById('mfc-cuit').value.replace(/\D/g,'') || null;
+  const razonSocial = document.getElementById('mfc-razon').value || null;
+  const descripcion = document.getElementById('mfc-descripcion').value || null;
+  const puntoVenta = parseInt(currentClientData?.negocioPuntoVenta) || 2;
+  const condEmisor = currentClientData?.negocioCondicionIVA || 'monotributista';
+  let tipoComprobante = 11; // Factura C por defecto
+  if (condEmisor === 'responsable_inscripto') {
+    tipoComprobante = condReceptor === '1' ? 1 : 6; // A para RI receptor, B para el resto
+  }
+  const btn = document.getElementById('mfc-btn-emitir');
+  btn.textContent = 'Emitiendo...';
+  btn.disabled = true;
+  try {
+    const idToken = await currentUser.getIdToken(true);
+    const res = await fetch('/.netlify/functions/afip', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        idToken,
+        accion: 'emitirFactura',
+        puntoVenta,
+        tipoComprobante,
+        importeTotal: monto,
+        concepto: 2,
+        condicionIVAReceptor: parseInt(condReceptor),
+        cuitReceptor: cuitReceptor || null,
+        razonSocialReceptor: razonSocial,
+        descripcion
+      })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.error || 'Error AFIP');
+    showToast('Factura emitida · CAE ' + data.cae, 'success');
+    closeModal('modalFacturaCaja');
+  } catch(e) {
+    console.error('emitirFacturaCaja:', e);
+    showToast('Error al emitir: ' + e.message, 'error');
+  } finally {
+    btn.textContent = 'Emitir factura';
+    btn.disabled = false;
+  }
 }
 
 window.cajaMesAnterior = function() {
@@ -21692,5 +21779,68 @@ window.doResetPassword = async function(){
   </div>
 </div>
 
+<div id="modalFacturaCaja" class="mo" style="display:none">
+  <div class="md" style="max-width:440px;padding:0;overflow:hidden">
+    <div style="background:linear-gradient(135deg,#4a5e4d,#3a4e3d,#5a6e5d);padding:18px 22px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:#fff;font-weight:400">Emitir factura</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:2px">Factura electrónica ARCA</div>
+      </div>
+      <button onclick="closeModal('modalFacturaCaja')" style="background:rgba(255,255,255,.15);border:none;color:#fff;width:28px;height:28px;border-radius:8px;cursor:pointer;font-size:16px">✕</button>
+    </div>
+    <div id="mfc-monto-banner" style="background:var(--cream);padding:14px 22px;display:flex;justify-content:space-between;align-items:center;border-bottom:.5px solid var(--cream-d)">
+      <div>
+        <div style="font-size:10px;color:var(--text-m);text-transform:uppercase;letter-spacing:.07em">Monto a facturar</div>
+        <div style="font-size:11px;color:var(--text-l);margin-top:1px" id="mfc-concepto-txt"></div>
+      </div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:30px;color:#4a5e4d;font-weight:600" id="mfc-monto-txt"></div>
+    </div>
+    <div style="padding:18px 22px">
+      <div style="font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--text-m);font-weight:500;margin-bottom:10px">Condición del receptor</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">
+        <div class="mfc-pill selected" onclick="selectMfcCond(this,'5','C',false)" style="border:.5px solid #4a5e4d;border-radius:10px;padding:8px 10px;cursor:pointer;display:flex;align-items:center;gap:6px;background:#e8ede8">
+          <div class="mfc-dot" style="width:6px;height:6px;border-radius:50%;background:#4a5e4d;flex-shrink:0"></div>
+          <div><div style="font-size:12px;font-weight:500;color:var(--text-d)">Consumidor Final</div><div style="font-size:10px;color:var(--text-m)">Factura C</div></div>
+        </div>
+        <div class="mfc-pill" onclick="selectMfcCond(this,'6','C',true)" style="border:.5px solid rgba(0,0,0,.08);border-radius:10px;padding:8px 10px;cursor:pointer;display:flex;align-items:center;gap:6px">
+          <div class="mfc-dot" style="width:6px;height:6px;border-radius:50%;background:rgba(0,0,0,.08);flex-shrink:0"></div>
+          <div><div style="font-size:12px;font-weight:500;color:var(--text-d)">Monotributista</div><div style="font-size:10px;color:var(--text-m)">Factura C</div></div>
+        </div>
+        <div class="mfc-pill" onclick="selectMfcCond(this,'1','A',true)" style="border:.5px solid rgba(0,0,0,.08);border-radius:10px;padding:8px 10px;cursor:pointer;display:flex;align-items:center;gap:6px">
+          <div class="mfc-dot" style="width:6px;height:6px;border-radius:50%;background:rgba(0,0,0,.08);flex-shrink:0"></div>
+          <div><div style="font-size:12px;font-weight:500;color:var(--text-d)">Resp. Inscripto</div><div style="font-size:10px;color:var(--text-m)">Factura A + IVA</div></div>
+        </div>
+        <div class="mfc-pill" onclick="selectMfcCond(this,'4','B',true)" style="border:.5px solid rgba(0,0,0,.08);border-radius:10px;padding:8px 10px;cursor:pointer;display:flex;align-items:center;gap:6px">
+          <div class="mfc-dot" style="width:6px;height:6px;border-radius:50%;background:rgba(0,0,0,.08);flex-shrink:0"></div>
+          <div><div style="font-size:12px;font-weight:500;color:var(--text-d)">Exento</div><div style="font-size:10px;color:var(--text-m)">Factura B</div></div>
+        </div>
+      </div>
+      <div id="mfc-badge" style="display:inline-flex;align-items:center;gap:5px;background:#e8ede8;border-radius:8px;padding:5px 10px;font-size:12px;color:#4a5e4d;font-weight:500;margin-bottom:12px">
+        <div style="width:5px;height:5px;border-radius:50%;background:#4a5e4d"></div>
+        <span id="mfc-badge-txt">Se emitirá Factura C</span>
+      </div>
+      <div id="mfc-extra" style="display:none">
+        <div style="height:.5px;background:var(--cream-d);margin-bottom:12px"></div>
+        <div class="fg" style="margin-bottom:10px">
+          <label class="fl">CUIT del receptor</label>
+          <input class="fi" type="text" id="mfc-cuit" placeholder="20-12345678-9" maxlength="13" oninput="fmtMfcCuit(this)">
+        </div>
+        <div class="fg" style="margin-bottom:10px">
+          <label class="fl">Razón social</label>
+          <input class="fi" type="text" id="mfc-razon" placeholder="Nombre o razón social del receptor">
+        </div>
+      </div>
+      <div style="height:.5px;background:var(--cream-d);margin-bottom:12px"></div>
+      <div class="fg">
+        <label class="fl">Descripción (opcional)</label>
+        <input class="fi" type="text" id="mfc-descripcion" placeholder="Concepto de la operación">
+      </div>
+    </div>
+    <div style="padding:12px 22px 18px;display:flex;gap:10px;border-top:.5px solid var(--cream-d)">
+      <button onclick="closeModal('modalFacturaCaja')" style="flex:1;background:none;border:.5px solid rgba(0,0,0,.08);border-radius:12px;padding:11px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text-m);cursor:pointer">Cancelar</button>
+      <button onclick="emitirFacturaCaja()" id="mfc-btn-emitir" style="flex:2;background:#4a5e4d;border:none;border-radius:12px;padding:11px;font-size:13px;font-family:'DM Sans',sans-serif;color:#fff;cursor:pointer;font-weight:500">Emitir factura</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
