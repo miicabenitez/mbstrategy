@@ -196,8 +196,9 @@ exports.handler = async function(event) {
 
       // IVA: las facturas A (tipo 1) y B (tipo 6) deben discriminar 21%; C (tipo 11) no
       const esConIva = [1, 6].includes(tipoComprobante);
-      const netoGravado = esConIva ? Math.round(importeTotal / 1.21) : importeTotal;
-      const importeIva = esConIva ? importeTotal - netoGravado : 0;
+      const netoGravado = esConIva ? Math.round((importeTotal / 1.21) * 100) / 100 : importeTotal;
+      const importeIva = esConIva ? Math.round((netoGravado * 0.21) * 100) / 100 : 0;
+      const totalCalculado = esConIva ? Math.round((netoGravado + importeIva) * 100) / 100 : importeTotal;
 
       // Construir detalle (estructura anidada de afipjs)
       const detRequest = {
@@ -207,9 +208,9 @@ exports.handler = async function(event) {
         CbteDesde: nroComprobante,
         CbteHasta: nroComprobante,
         CbteFch: fechaHoy,
-        ImpTotal: importeTotal,
+        ImpTotal: totalCalculado,
         ImpTotConc: 0,
-        ImpNeto: esConIva ? netoGravado : importeTotal,
+        ImpNeto: netoGravado,
         ImpOpEx: 0,
         ImpTrib: 0,
         ImpIVA: importeIva,
