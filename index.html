@@ -1205,6 +1205,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
           <button class="sb-subitem" data-sub="cierre-periodo" onclick="sidebarNav('finanzas','cierre-periodo')">Cierre de período</button>
           <button class="sb-subitem" data-sub="caja-config" onclick="sidebarNav('finanzas','caja-config')">Configuración</button>
           <button class="sb-subitem" data-sub="mis-facturas" onclick="sidebarNav('finanzas','mis-facturas')">Mis Facturas</button>
+          <button class="sb-subitem" data-sub="resumen-ventas" onclick="sidebarNav('finanzas','resumen-ventas')">Resumen de Ventas</button>
         </div>
       </div>
       <!-- Ventas → Comercial -->
@@ -2396,6 +2397,64 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
             </thead>
             <tbody id="mf-tbody"></tbody>
           </table>
+        </div>
+      </div>
+
+      <!-- ── RESUMEN DE VENTAS ── -->
+      <div id="ct-resumen-ventas" style="display:none;">
+        <!-- Banner -->
+        <div class="av-banner" style="background:#4a5e4d;border-radius:16px;padding:20px 24px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+          <div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:#fff;font-weight:400;line-height:1.1">Resumen de Ventas</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:4px;letter-spacing:.04em">Libro IVA Ventas · Para tu contador</div>
+          </div>
+          <button onclick="exportarResumenVentas()" style="background:#fff;border:none;border-radius:12px;padding:9px 16px;font-size:13px;font-family:'DM Sans',sans-serif;color:#4a5e4d;cursor:pointer;font-weight:500;display:flex;align-items:center;gap:6px">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v7M4 7l2.5 2.5L9 7M2 11h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Exportar Excel
+          </button>
+        </div>
+        <!-- KPIs -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
+          <div class="card" style="padding:16px 20px">
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-m);margin-bottom:6px">Comprobantes</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--text-d)" id="rv-kpi-cant">—</div>
+          </div>
+          <div class="card" style="padding:16px 20px">
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-m);margin-bottom:6px">Total bruto</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:#4a5e4d" id="rv-kpi-bruto">—</div>
+          </div>
+          <div class="card" style="padding:16px 20px">
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-m);margin-bottom:6px">NC emitidas</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:#b05030" id="rv-kpi-nc">—</div>
+          </div>
+          <div class="card" style="padding:16px 20px">
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-m);margin-bottom:6px">Neto del período</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--text-d)" id="rv-kpi-neto">—</div>
+          </div>
+        </div>
+        <!-- Selector de meses -->
+        <div style="background:#fff;border:0.5px solid var(--cream-d);border-radius:12px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span style="font-size:11px;color:var(--text-m);font-weight:500;margin-right:4px">Período</span>
+          <div id="rv-meses-pills" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+        </div>
+        <!-- Tabla -->
+        <div class="card" style="overflow:hidden">
+          <div id="rv-empty" style="display:none;padding:48px;text-align:center;color:var(--text-m)">
+            <div style="font-size:14px;margin-bottom:6px">Sin facturas en este período</div>
+            <div style="font-size:12px">Probá con otro mes o emití tu primera factura desde Caja</div>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="caja-table" id="rv-tabla" style="display:none;min-width:880px">
+              <thead>
+                <tr>
+                  <th>Fecha</th><th>Tipo</th><th>N° Comprobante</th><th>Receptor</th>
+                  <th class="r">Neto gravado</th><th class="r">IVA 21%</th><th class="r">IVA 10.5%</th><th class="r">Total</th>
+                </tr>
+              </thead>
+              <tbody id="rv-tbody"></tbody>
+              <tfoot id="rv-tfoot"></tfoot>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -10611,6 +10670,104 @@ window.abrirNuevaFacturaLibre = function() {
   showToast('Próximamente', 'info');
 };
 window.loadMisFacturasModule = loadMisFacturasModule;
+
+async function loadResumenVentas() {
+  try {
+    const { getDocs, collection, orderBy, query, limit } = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
+    const q = query(
+      collection(db, 'clientes', currentClientUID, 'facturas'),
+      orderBy('creadoEn', 'desc'),
+      limit(500)
+    );
+    const snap = await getDocs(q);
+    const todas = snap.docs.map(d => ({id: d.id, ...d.data()}));
+    const mesSel = window._rvMesSel || new Date().toISOString().slice(0,7);
+    window._rvMesSel = mesSel;
+    const pillsEl = document.getElementById('rv-meses-pills');
+    if (pillsEl) {
+      const lblMes = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+      const meses = [];
+      const hoy = new Date();
+      for (let i=0; i<12; i++) {
+        const d = new Date(hoy.getFullYear(), hoy.getMonth()-i, 1);
+        const ym = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+        meses.push({ym, lbl: lblMes[d.getMonth()] + ' ' + String(d.getFullYear()).slice(-2)});
+      }
+      pillsEl.innerHTML = meses.map(m =>
+        `<button onclick="rvSelectMes('${m.ym}')" style="padding:6px 12px;border-radius:20px;border:0.5px solid ${m.ym===mesSel?'#4a5e4d':'var(--cream-d)'};background:${m.ym===mesSel?'#4a5e4d':'#fff'};color:${m.ym===mesSel?'#fff':'var(--text-m)'};font-size:11px;font-family:inherit;cursor:pointer">${m.lbl}</button>`
+      ).join('');
+    }
+    const facs = todas.filter(f => (f.creadoEn||'').slice(0,7) === mesSel);
+    facs.sort((a,b)=>(a.creadoEn||'').localeCompare(b.creadoEn||''));
+    const tipoNC = [3, 8, 13];
+    const tipoLabels = {1:'Factura A', 6:'Factura B', 11:'Factura C', 3:'NC A', 8:'NC B', 13:'NC C'};
+    let totBruto = 0, totNC = 0, totNeto = 0, totIva21 = 0, totIva105 = 0, totGral = 0;
+    let cantComp = 0, cantNC = 0;
+    const fmt = v => '$' + Math.round(v).toLocaleString('es-AR');
+    const filas = facs.map(f => {
+      const tipo = f.tipoComprobante || 11;
+      const esNC = tipoNC.includes(tipo);
+      const signo = esNC ? -1 : 1;
+      const total = (f.importeTotal||0) * signo;
+      let neto = 0, iva21 = 0, iva105 = 0;
+      if (f.netoGravado != null && f.iva != null) {
+        neto = (f.netoGravado||0) * signo;
+        iva21 = (f.iva||0) * signo;
+      } else {
+        neto = Math.round((f.importeTotal||0) / 1.21) * signo;
+        iva21 = total - neto;
+      }
+      if (esNC) { cantNC++; totNC += Math.abs(total); }
+      else { cantComp++; totBruto += total; }
+      totNeto += neto; totIva21 += iva21; totIva105 += iva105; totGral += total;
+      const nro = ('0000'+(f.puntoVenta||2)).slice(-4)+'-'+('00000000'+(f.nroComprobante||0)).slice(-8);
+      const receptor = f.razonSocialReceptor || (f.cuitReceptor || 'Consumidor Final');
+      const fecha = (f.creadoEn||'').slice(0,10);
+      const bg = esNC ? 'background:rgba(232,160,144,.06);' : '';
+      return `<tr style="${bg}">
+        <td style="font-size:12px;color:var(--text-m)">${fecha}</td>
+        <td style="font-size:12px">${tipoLabels[tipo]||'Fact.'}</td>
+        <td style="font-size:11px;color:var(--text-m)">${nro}</td>
+        <td>${receptor}</td>
+        <td class="r" style="font-family:'Cormorant Garamond',serif;font-size:14px">${fmt(neto)}</td>
+        <td class="r" style="font-family:'Cormorant Garamond',serif;font-size:14px">${fmt(iva21)}</td>
+        <td class="r" style="font-family:'Cormorant Garamond',serif;font-size:14px">${fmt(iva105)}</td>
+        <td class="r" style="font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:500">${fmt(total)}</td>
+      </tr>`;
+    }).join('');
+    document.getElementById('rv-kpi-cant').textContent = cantComp;
+    document.getElementById('rv-kpi-bruto').textContent = fmt(totBruto);
+    document.getElementById('rv-kpi-nc').textContent = cantNC;
+    document.getElementById('rv-kpi-neto').textContent = fmt(totBruto - totNC);
+    const empty = document.getElementById('rv-empty');
+    const tabla = document.getElementById('rv-tabla');
+    if (facs.length === 0) {
+      empty.style.display = 'block';
+      tabla.style.display = 'none';
+    } else {
+      empty.style.display = 'none';
+      tabla.style.display = 'table';
+      document.getElementById('rv-tbody').innerHTML = filas;
+      document.getElementById('rv-tfoot').innerHTML = `<tr style="background:#f8f7f3;font-weight:600">
+        <td colspan="4" style="padding:14px 12px;font-size:11px;text-transform:uppercase;letter-spacing:.06em">Totales</td>
+        <td class="r" style="font-family:'Cormorant Garamond',serif;font-size:15px;padding:14px 12px">${fmt(totNeto)}</td>
+        <td class="r" style="font-family:'Cormorant Garamond',serif;font-size:15px;padding:14px 12px">${fmt(totIva21)}</td>
+        <td class="r" style="font-family:'Cormorant Garamond',serif;font-size:15px;padding:14px 12px">${fmt(totIva105)}</td>
+        <td class="r" style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;padding:14px 12px">${fmt(totGral)}</td>
+      </tr>`;
+    }
+  } catch(e) {
+    console.error('loadResumenVentas:', e);
+  }
+}
+window.rvSelectMes = function(ym) {
+  window._rvMesSel = ym;
+  loadResumenVentas();
+};
+window.exportarResumenVentas = function() {
+  showToast('Export Excel en desarrollo', 'info');
+};
+window.loadResumenVentas = loadResumenVentas;
 
 function _ccfgTipoBadgeHtml(tipo) {
   const map = {efectivo:'efectivo',banco:'banco',mp:'mp'};
@@ -19936,6 +20093,7 @@ window.showCTab = function(tab, btn) {
   if(tab==='caja-config') { loadCajaConfig(); }
   if(tab==='cierre-periodo') { if(currentClientData?.plan==='pro') loadCierrePeriodo(); }
   if(tab==='mis-facturas') { loadMisFacturasModule(); }
+  if(tab==='resumen-ventas') { loadResumenVentas(); }
   if(tab==='tareas') { if(typeof loadListas==='function') loadListas(); }
 };
 
@@ -21386,6 +21544,7 @@ window.sidebarNav=function(mod,sub){
       }
       else if(sub==='caja-config') window.showCTab('caja-config',null);
       else if(sub==='mis-facturas') window.showCTab('mis-facturas',null);
+      else if(sub==='resumen-ventas') window.showCTab('resumen-ventas',null);
     }else if(mod==='ventas'){
       if(sub==='presupuestos')window.showCTab('presupuestos',null);
       else if(sub==='catalogo')window.showCTab('productos',null);
