@@ -1206,6 +1206,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
           <button class="sb-subitem" data-sub="caja-config" onclick="sidebarNav('finanzas','caja-config')">Configuración</button>
           <button class="sb-subitem" data-sub="mis-facturas" onclick="sidebarNav('finanzas','mis-facturas')">Mis Facturas</button>
           <button class="sb-subitem" data-sub="resumen-ventas" onclick="sidebarNav('finanzas','resumen-ventas')">Resumen de Ventas</button>
+          <button class="sb-subitem" data-sub="resumen-compras" onclick="sidebarNav('finanzas','resumen-compras')">Resumen de Compras</button>
         </div>
       </div>
       <!-- Ventas → Comercial -->
@@ -2453,6 +2454,64 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
               </thead>
               <tbody id="rv-tbody"></tbody>
               <tfoot id="rv-tfoot"></tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── RESUMEN DE COMPRAS ── -->
+      <div id="ct-resumen-compras" style="display:none;">
+        <!-- Banner -->
+        <div class="av-banner" style="background:#4a5e4d;border-radius:16px;padding:20px 24px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+          <div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:#fff;font-weight:400;line-height:1.1">Resumen de Compras</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:4px;letter-spacing:.04em">Libro IVA Compras · Para tu contador</div>
+          </div>
+          <button onclick="exportarResumenCompras()" style="background:#fff;border:none;border-radius:12px;padding:9px 16px;font-size:13px;font-family:'DM Sans',sans-serif;color:#4a5e4d;cursor:pointer;font-weight:500;display:flex;align-items:center;gap:6px">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v7M4 7l2.5 2.5L9 7M2 11h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Exportar Excel
+          </button>
+        </div>
+        <!-- KPIs -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
+          <div class="card" style="padding:16px 20px">
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-m);margin-bottom:6px">Comprobantes</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--text-d)" id="rc-kpi-cant">—</div>
+          </div>
+          <div class="card" style="padding:16px 20px">
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-m);margin-bottom:6px">Total compras</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:#4a5e4d" id="rc-kpi-total">—</div>
+          </div>
+          <div class="card" style="padding:16px 20px">
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-m);margin-bottom:6px">Crédito fiscal IVA</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:#3a6a8e" id="rc-kpi-iva">—</div>
+          </div>
+          <div class="card" style="padding:16px 20px">
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-m);margin-bottom:6px">Neto gravado</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--text-d)" id="rc-kpi-neto">—</div>
+          </div>
+        </div>
+        <!-- Selector de meses -->
+        <div style="background:#fff;border:0.5px solid var(--cream-d);border-radius:12px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span style="font-size:11px;color:var(--text-m);font-weight:500;margin-right:4px">Período</span>
+          <div id="rc-meses-pills" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+        </div>
+        <!-- Tabla -->
+        <div class="card" style="overflow:hidden">
+          <div id="rc-empty" style="display:none;padding:48px;text-align:center;color:var(--text-m)">
+            <div style="font-size:14px;margin-bottom:6px">Sin facturas de proveedores en este período</div>
+            <div style="font-size:12px">Cargá facturas en cuenta corriente de cada proveedor</div>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="caja-table" id="rc-tabla" style="display:none;min-width:920px">
+              <thead>
+                <tr>
+                  <th>Fecha</th><th>Proveedor</th><th>Tipo</th><th>N° Comprobante</th>
+                  <th class="r">Neto gravado</th><th class="r">IVA 21%</th><th class="r">IVA 10.5%</th><th class="r">Total</th>
+                </tr>
+              </thead>
+              <tbody id="rc-tbody"></tbody>
+              <tfoot id="rc-tfoot"></tfoot>
             </table>
           </div>
         </div>
@@ -10768,6 +10827,98 @@ window.exportarResumenVentas = function() {
   showToast('Export Excel en desarrollo', 'info');
 };
 window.loadResumenVentas = loadResumenVentas;
+
+async function loadResumenCompras() {
+  try {
+    const { getDocs, collection } = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
+    const provsSnap = await getDocs(collection(db, 'clientes', currentClientUID, 'proveedores'));
+    const proveedores = provsSnap.docs.map(d => ({id: d.id, ...d.data()})).filter(p => !p.eliminado);
+    const facsByProv = await Promise.all(
+      proveedores.map(p =>
+        getDocs(collection(db, 'clientes', currentClientUID, 'proveedores', p.id, 'facturas'))
+          .then(snap => snap.docs.map(d => {
+            const data = d.data();
+            return {id: d.id, provId: p.id, provNombre: p.nombre || p.razonSocial || '—', ...data};
+          }))
+      )
+    );
+    const todas = facsByProv.flat().filter(f => !f.eliminado && f.esOC !== true);
+    const mesSel = window._rcMesSel || new Date().toISOString().slice(0,7);
+    window._rcMesSel = mesSel;
+    const pillsEl = document.getElementById('rc-meses-pills');
+    if (pillsEl) {
+      const lblMes = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+      const meses = [];
+      const hoy = new Date();
+      for (let i=0; i<12; i++) {
+        const d = new Date(hoy.getFullYear(), hoy.getMonth()-i, 1);
+        const ym = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+        meses.push({ym, lbl: lblMes[d.getMonth()] + ' ' + String(d.getFullYear()).slice(-2)});
+      }
+      pillsEl.innerHTML = meses.map(m =>
+        `<button onclick="rcSelectMes('${m.ym}')" style="padding:6px 12px;border-radius:20px;border:0.5px solid ${m.ym===mesSel?'#4a5e4d':'var(--cream-d)'};background:${m.ym===mesSel?'#4a5e4d':'#fff'};color:${m.ym===mesSel?'#fff':'var(--text-m)'};font-size:11px;font-family:inherit;cursor:pointer">${m.lbl}</button>`
+      ).join('');
+    }
+    const facs = todas.filter(f => {
+      const ym = (f.fecha || f.creadoEn || '').slice(0,7);
+      return ym === mesSel;
+    });
+    facs.sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
+    let totGral = 0, totNeto = 0, totIva21 = 0, totIva105 = 0, cantComp = 0;
+    const fmt = v => '$' + Math.round(v).toLocaleString('es-AR');
+    const filas = facs.map(f => {
+      const total = Number(f.monto) || 0;
+      const neto = Math.round(total / 1.21);
+      const iva21 = total - neto;
+      const iva105 = 0;
+      cantComp++;
+      totGral += total; totNeto += neto; totIva21 += iva21; totIva105 += iva105;
+      const numero = f.numero || '—';
+      const fecha = f.fecha || (f.creadoEn||'').slice(0,10);
+      return `<tr>
+        <td style="font-size:12px;color:var(--text-m)">${fecha}</td>
+        <td>${f.provNombre}</td>
+        <td style="font-size:12px">Factura</td>
+        <td style="font-size:11px;color:var(--text-m)">${numero}</td>
+        <td class="r" style="font-family:'Cormorant Garamond',serif;font-size:14px">${fmt(neto)}</td>
+        <td class="r" style="font-family:'Cormorant Garamond',serif;font-size:14px">${fmt(iva21)}</td>
+        <td class="r" style="font-family:'Cormorant Garamond',serif;font-size:14px">${fmt(iva105)}</td>
+        <td class="r" style="font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:500">${fmt(total)}</td>
+      </tr>`;
+    }).join('');
+    document.getElementById('rc-kpi-cant').textContent = cantComp;
+    document.getElementById('rc-kpi-total').textContent = fmt(totGral);
+    document.getElementById('rc-kpi-iva').textContent = fmt(totIva21 + totIva105);
+    document.getElementById('rc-kpi-neto').textContent = fmt(totNeto);
+    const empty = document.getElementById('rc-empty');
+    const tabla = document.getElementById('rc-tabla');
+    if (facs.length === 0) {
+      empty.style.display = 'block';
+      tabla.style.display = 'none';
+    } else {
+      empty.style.display = 'none';
+      tabla.style.display = 'table';
+      document.getElementById('rc-tbody').innerHTML = filas;
+      document.getElementById('rc-tfoot').innerHTML = `<tr style="background:#f8f7f3;font-weight:600">
+        <td colspan="4" style="padding:14px 12px;font-size:11px;text-transform:uppercase;letter-spacing:.06em">Totales</td>
+        <td class="r" style="font-family:'Cormorant Garamond',serif;font-size:15px;padding:14px 12px">${fmt(totNeto)}</td>
+        <td class="r" style="font-family:'Cormorant Garamond',serif;font-size:15px;padding:14px 12px">${fmt(totIva21)}</td>
+        <td class="r" style="font-family:'Cormorant Garamond',serif;font-size:15px;padding:14px 12px">${fmt(totIva105)}</td>
+        <td class="r" style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;padding:14px 12px">${fmt(totGral)}</td>
+      </tr>`;
+    }
+  } catch(e) {
+    console.error('loadResumenCompras:', e);
+  }
+}
+window.rcSelectMes = function(ym) {
+  window._rcMesSel = ym;
+  loadResumenCompras();
+};
+window.exportarResumenCompras = function() {
+  showToast('Export Excel en desarrollo', 'info');
+};
+window.loadResumenCompras = loadResumenCompras;
 
 function _ccfgTipoBadgeHtml(tipo) {
   const map = {efectivo:'efectivo',banco:'banco',mp:'mp'};
@@ -20094,6 +20245,7 @@ window.showCTab = function(tab, btn) {
   if(tab==='cierre-periodo') { if(currentClientData?.plan==='pro') loadCierrePeriodo(); }
   if(tab==='mis-facturas') { loadMisFacturasModule(); }
   if(tab==='resumen-ventas') { loadResumenVentas(); }
+  if(tab==='resumen-compras') { loadResumenCompras(); }
   if(tab==='tareas') { if(typeof loadListas==='function') loadListas(); }
 };
 
@@ -21545,6 +21697,7 @@ window.sidebarNav=function(mod,sub){
       else if(sub==='caja-config') window.showCTab('caja-config',null);
       else if(sub==='mis-facturas') window.showCTab('mis-facturas',null);
       else if(sub==='resumen-ventas') window.showCTab('resumen-ventas',null);
+      else if(sub==='resumen-compras') window.showCTab('resumen-compras',null);
     }else if(mod==='ventas'){
       if(sub==='presupuestos')window.showCTab('presupuestos',null);
       else if(sub==='catalogo')window.showCTab('productos',null);
