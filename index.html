@@ -15595,6 +15595,7 @@ window.updateMcPresupEstado = async function(id, estado) {
 window.abrirFacturaDesdePresupuesto = async function(presupId) {
   const p = [...(_mcPresupuestos||[]), ...(window._clientPresupuestos||[])].find(x => x.id === presupId);
   if (!p) return;
+  if (!_verificarDatosFiscales()) return;
   sidebarNav('finanzas', 'mis-facturas');
   await new Promise(r => setTimeout(r, 300));
   abrirNuevaFacturaLibre();
@@ -21424,13 +21425,8 @@ window.openModal = function(id) {
     }
   }
   if(id === 'newMclienteModal') {
-    // Limpiar todos los campos y resetear el botón
-    ['mcc-nombre','mcc-apellido','mcc-dni','mcc-cuit','mcc-direccion','mcc-ciudad','mcc-tel','mcc-email','mcc-notas'].forEach(fid=>{const el=document.getElementById(fid);if(el)el.value='';});
-    selectMccCondicionIVA(document.querySelector('#mcc-condicion-iva-pills .mcc-civa-pill'),'5');
     const errEl = document.getElementById('mcc-error'); if(errEl) errEl.style.display='none';
     const savedEl = document.getElementById('mcc-saved'); if(savedEl) savedEl.style.display='none';
-    const btn = document.querySelector('#newMclienteModal .bp');
-    if(btn){ btn.textContent='Guardar'; btn.onclick=createMcCliente; }
   }
   if(id === 'newContentModal') toggleContDesc();
   // Reset PDF upload state
