@@ -12,8 +12,8 @@ const transporter = nodemailer.createTransport({
 });
 
 function buildEmailHTML({ nombre, negocioNombre, email, password, plan, trialEnd }) {
-  const planLabel = plan === 'pro' ? 'Pro' : 'Base · 10 días gratis';
-  const isBase = plan !== 'pro';
+  const planLabel = plan === 'pro' ? 'Pro · 10 días gratis' : 'Base · 10 días gratis';
+  const isBase = true;
   return `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
 <body style="margin:0;padding:0;background:#F5F4EF;font-family:Arial,Helvetica,sans-serif;">
