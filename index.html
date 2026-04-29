@@ -16816,9 +16816,9 @@ async function loadMiCuentaPage() {
       setVal('micuenta-punto-venta', data.negocioPuntoVenta||'');
       const _afipStatus = document.getElementById('micuenta-afip-status');
       if (_afipStatus) {
-        const _hasCuit = !!(data.negocioCuit||'').trim();
-        const _hasPv = !!(data.negocioPuntoVenta||'').trim();
-        const _hasCond = !!(data.negocioCondicionIVA||'').trim();
+        const _hasCuit = !!(data.negocioCuit && String(data.negocioCuit).trim());
+        const _hasPv = !!(data.negocioPuntoVenta && String(data.negocioPuntoVenta).trim());
+        const _hasCond = !!(data.negocioCondicionIVA && String(data.negocioCondicionIVA).trim());
         const _aprobado = data.afipAprobado === true || !!(_hasCuit && _hasPv);
         if (!_hasCuit || !_hasPv) {
           const _faltantes = [];
