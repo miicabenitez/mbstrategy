@@ -2515,12 +2515,18 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px">
             <div>
               <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;line-height:1.1">Resumen de Ventas</div>
-              <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:4px;letter-spacing:.04em">Libro IVA Ventas · Para tu contador</div>
+              <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:4px;letter-spacing:.04em">Libro IVA Ventas</div>
             </div>
-            <button onclick="exportarResumenVentas()" style="background:#fff;border:none;border-radius:12px;padding:9px 16px;font-size:13px;font-family:'DM Sans',sans-serif;color:#4a5e4d;cursor:pointer;font-weight:500;display:flex;align-items:center;gap:6px">
-              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v7M4 7l2.5 2.5L9 7M2 11h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              Exportar Excel
-            </button>
+            <div style="display:flex;gap:8px">
+              <button onclick="exportarResumenVentas()" style="background:#fff;border:none;border-radius:12px;padding:9px 16px;font-size:13px;font-family:'DM Sans',sans-serif;color:#4a5e4d;cursor:pointer;font-weight:500;display:flex;align-items:center;gap:6px">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v7M4 7l2.5 2.5L9 7M2 11h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                ↓ Excel
+              </button>
+              <button onclick="exportarCitiVentas()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:12px;padding:9px 16px;font-size:13px;font-family:'DM Sans',sans-serif;color:#fff;cursor:pointer;font-weight:500;display:flex;align-items:center;gap:6px">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v7M4 7l2.5 2.5L9 7M2 11h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                ↓ CITI
+              </button>
+            </div>
           </div>
           <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;">
             <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
@@ -2574,12 +2580,18 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px">
             <div>
               <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;line-height:1.1">Resumen de Compras</div>
-              <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:4px;letter-spacing:.04em">Libro IVA Compras · Para tu contador</div>
+              <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:4px;letter-spacing:.04em">Libro IVA Compras</div>
             </div>
-            <button onclick="exportarResumenCompras()" style="background:#fff;border:none;border-radius:12px;padding:9px 16px;font-size:13px;font-family:'DM Sans',sans-serif;color:#4a5e4d;cursor:pointer;font-weight:500;display:flex;align-items:center;gap:6px">
-              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v7M4 7l2.5 2.5L9 7M2 11h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              Exportar Excel
-            </button>
+            <div style="display:flex;gap:8px">
+              <button onclick="exportarResumenCompras()" style="background:#fff;border:none;border-radius:12px;padding:9px 16px;font-size:13px;font-family:'DM Sans',sans-serif;color:#4a5e4d;cursor:pointer;font-weight:500;display:flex;align-items:center;gap:6px">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v7M4 7l2.5 2.5L9 7M2 11h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                ↓ Excel
+              </button>
+              <button onclick="exportarCitiCompras()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:12px;padding:9px 16px;font-size:13px;font-family:'DM Sans',sans-serif;color:#fff;cursor:pointer;font-weight:500;display:flex;align-items:center;gap:6px">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v7M4 7l2.5 2.5L9 7M2 11h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                ↓ CITI
+              </button>
+            </div>
           </div>
           <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;">
             <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
@@ -11400,6 +11412,54 @@ window.rvSelectMes = function(ym) {
 window.exportarResumenVentas = function() {
   showToast('Export Excel en desarrollo', 'info');
 };
+window.exportarCitiVentas = async function() {
+  try {
+    const mesSel = window._rvMesSel || new Date().toISOString().slice(0,7);
+    const { getDocs, collection, orderBy, query, limit } = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
+    const q = query(collection(db, 'clientes', currentClientUID, 'facturas'), orderBy('creadoEn', 'desc'), limit(500));
+    const snap = await getDocs(q);
+    const facs = snap.docs.map(d => ({id: d.id, ...d.data()}))
+      .filter(f => (f.creadoEn||'').slice(0,7) === mesSel)
+      .sort((a,b) => (a.creadoEn||'').localeCompare(b.creadoEn||''));
+    if (!facs.length) return showToast('Sin facturas en el período seleccionado', 'error');
+    const pad = (v, n, ch='0') => String(v).padStart(n, ch);
+    const padR = (v, n) => String(v).slice(0,n).padEnd(n, ' ');
+    const tipoCiti = {1:'001', 6:'006', 11:'011', 3:'003', 8:'008', 13:'013'};
+    const lines = facs.map(f => {
+      const fecha = (f.creadoEn||'').slice(0,10).replace(/-/g,'');
+      const tipo = pad(tipoCiti[f.tipoComprobante||11]||'011', 3);
+      const pv = pad(f.puntoVenta||2, 5);
+      const nro = pad(f.nroComprobante||0, 20);
+      const cuitRaw = f.cuitReceptor ? String(f.cuitReceptor).replace(/\D/g,'') : '';
+      const codDoc = cuitRaw ? '80' : '99';
+      const nroDoc = pad(cuitRaw || '0', 20);
+      const nombre = padR((f.razonSocialReceptor || 'CONSUMIDOR FINAL').toUpperCase(), 30);
+      const total = f.importeTotal || 0;
+      const condEmisor = (currentClientData||{}).negocioCondicionIVA || 'monotributista';
+      const esRI = condEmisor === 'responsable_inscripto';
+      const neto = esRI ? Math.round(total / 1.21) : total;
+      const iva = esRI ? total - neto : 0;
+      const fmtCiti = v => pad(Math.round(Math.abs(v) * 100), 15);
+      return [
+        fecha, tipo, pv, nro, nro,
+        codDoc, nroDoc, nombre,
+        fmtCiti(total), '000000000000000', '000000000000000',
+        fmtCiti(iva), '000000000000000',
+        'PES', '0001000000'
+      ].join('');
+    });
+    const blob = new Blob([lines.join('\r\n')], {type:'text/plain'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'CITI_Ventas_' + mesSel + '.txt';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    showToast('CITI Ventas exportado', 'success');
+  } catch(e) {
+    console.error('exportarCitiVentas:', e);
+    showToast('Error al exportar CITI: ' + e.message, 'error');
+  }
+};
 window.loadResumenVentas = loadResumenVentas;
 
 async function loadResumenCompras() {
@@ -11487,6 +11547,9 @@ window.rcSelectMes = function(ym) {
 };
 window.exportarResumenCompras = function() {
   showToast('Export Excel en desarrollo', 'info');
+};
+window.exportarCitiCompras = function() {
+  showToast('CITI Compras en desarrollo', 'info');
 };
 window.loadResumenCompras = loadResumenCompras;
 
