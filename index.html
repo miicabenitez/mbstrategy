@@ -2422,7 +2422,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
             <thead>
               <tr>
                 <th>Fecha</th><th>Receptor</th><th>Tipo</th>
-                <th>N° Comprobante</th><th class="r">Total</th><th>Estado</th><th></th>
+                <th>N° Comprobante</th><th class="r" style="padding-right:12px">Total</th><th style="padding-left:12px">Estado</th><th></th>
               </tr>
             </thead>
             <tbody id="mf-tbody"></tbody>
@@ -10873,8 +10873,8 @@ async function loadMisFacturasModule() {
         <td>${receptor}</td>
         <td><span style="font-size:10px;padding:2px 8px;border-radius:5px;font-weight:500;background:#e8ede8;color:#4a5e4d">${tipoLabels[tipo]||'Fact.'}</span>${ambienteBadge}</td>
         <td style="font-size:11px;color:var(--text-m)">${nro}</td>
-        <td class="r" style="font-family:'Cormorant Garamond',serif;font-size:15px">$${Number(f.importeTotal||0).toLocaleString('es-AR')}</td>
-        <td><span style="font-size:10px;padding:2px 8px;border-radius:5px;background:#e8ede8;color:#4a5e4d">Emitida</span></td>
+        <td class="r" style="font-family:'Cormorant Garamond',serif;font-size:15px;padding-right:12px">$${Number(f.importeTotal||0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+        <td style="padding-left:12px"><span style="font-size:10px;padding:2px 8px;border-radius:5px;background:#e8ede8;color:#4a5e4d">Emitida</span></td>
         <td><button onclick="descargarPdfFactura('${f.id}')" title="Descargar PDF" style="background:none;border:.5px solid rgba(0,0,0,.08);border-radius:7px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-m)">
           <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 9v2h9V9M6.5 2v7M4 7l2.5 2.5L9 7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button></td>
