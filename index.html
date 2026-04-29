@@ -2383,6 +2383,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 
       <!-- ── MIS FACTURAS ── -->
       <div id="ct-mis-facturas" style="display:none;">
+        <div id="mf-list-view">
         <!-- Banner -->
         <div class="av-banner" style="background:#4a5e4d;border-radius:16px;padding:20px 24px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
           <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:#fff;font-weight:400">Mis Facturas</div>
@@ -2425,6 +2426,70 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
             </thead>
             <tbody id="mf-tbody"></tbody>
           </table>
+        </div>
+        </div><!-- /mf-list-view -->
+
+        <!-- ── NUEVA FACTURA LIBRE ── -->
+        <div id="nfl-view" style="display:none;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+            <button onclick="volverMisFacturas()" style="background:none;border:.5px solid rgba(0,0,0,.12);border-radius:10px;padding:7px 14px;font-size:12px;font-family:'DM Sans',sans-serif;color:var(--text-m);cursor:pointer">← Volver</button>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--text);font-weight:400">Nueva factura</div>
+          </div>
+          <div class="card" style="margin-bottom:14px">
+            <div class="ct">Emisor</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px 20px;align-items:center">
+              <div style="font-size:13px;font-weight:500;color:var(--text)" id="nfl-emisor-nombre">—</div>
+              <div style="font-size:12px;color:var(--text-l)">CUIT <span id="nfl-emisor-cuit" style="font-weight:500">—</span></div>
+              <div style="font-size:12px;color:var(--text-l)" id="nfl-emisor-pv">—</div>
+              <span style="font-size:11px;background:#e8ede8;color:#4a5e4d;padding:2px 8px;border-radius:6px;font-weight:500" id="nfl-emisor-cond">—</span>
+            </div>
+          </div>
+          <div class="card" style="margin-bottom:14px">
+            <div class="ct">Producto o servicio</div>
+            <div style="position:relative;margin-bottom:14px">
+              <input class="fi" type="text" id="nfl-prod-search" placeholder="Buscá en catálogo o describí el servicio" oninput="nflBuscarProducto(this.value)" autocomplete="off">
+              <input type="hidden" id="nfl-prod-id">
+              <div id="nfl-prod-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:.5px solid var(--cream-d);border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.1);z-index:10;overflow:hidden;margin-top:4px"></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div class="fg"><label class="fl">Cantidad</label><input class="fi" type="number" id="nfl-cantidad" value="1" min="1" step="1" oninput="nflRecalcular()"></div>
+              <div class="fg" style="margin-bottom:0"><label class="fl">Precio unitario ($)</label><input class="fi" type="number" id="nfl-precio" placeholder="0.00" min="0" step="0.01" oninput="nflRecalcular()"></div>
+            </div>
+          </div>
+          <div class="card" style="margin-bottom:14px">
+            <div class="ct">Condición del receptor</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">
+              <div class="nfl-pill" data-cond="5" onclick="selectNflCond(this,'5',false)" style="border:.5px solid #4a5e4d;border-radius:10px;padding:8px 10px;cursor:pointer;display:flex;align-items:center;gap:6px;background:#e8ede8">
+                <div class="nfl-dot" style="width:6px;height:6px;border-radius:50%;background:#4a5e4d;flex-shrink:0"></div>
+                <div><div style="font-size:12px;font-weight:500;color:var(--text)">Consumidor Final</div><div class="nfl-tipo" style="font-size:10px;color:var(--text-l)">Factura C</div></div>
+              </div>
+              <div class="nfl-pill" data-cond="6" onclick="selectNflCond(this,'6',true)" style="border:.5px solid rgba(0,0,0,.08);border-radius:10px;padding:8px 10px;cursor:pointer;display:flex;align-items:center;gap:6px">
+                <div class="nfl-dot" style="width:6px;height:6px;border-radius:50%;background:rgba(0,0,0,.08);flex-shrink:0"></div>
+                <div><div style="font-size:12px;font-weight:500;color:var(--text)">Monotributista</div><div class="nfl-tipo" style="font-size:10px;color:var(--text-l)">Factura C</div></div>
+              </div>
+              <div class="nfl-pill" data-cond="1" onclick="selectNflCond(this,'1',true)" style="border:.5px solid rgba(0,0,0,.08);border-radius:10px;padding:8px 10px;cursor:pointer;display:flex;align-items:center;gap:6px">
+                <div class="nfl-dot" style="width:6px;height:6px;border-radius:50%;background:rgba(0,0,0,.08);flex-shrink:0"></div>
+                <div><div style="font-size:12px;font-weight:500;color:var(--text)">Resp. Inscripto</div><div class="nfl-tipo" style="font-size:10px;color:var(--text-l)">Factura A + IVA</div></div>
+              </div>
+              <div class="nfl-pill" data-cond="4" onclick="selectNflCond(this,'4',true)" style="border:.5px solid rgba(0,0,0,.08);border-radius:10px;padding:8px 10px;cursor:pointer;display:flex;align-items:center;gap:6px">
+                <div class="nfl-dot" style="width:6px;height:6px;border-radius:50%;background:rgba(0,0,0,.08);flex-shrink:0"></div>
+                <div><div style="font-size:12px;font-weight:500;color:var(--text)">Exento</div><div class="nfl-tipo" style="font-size:10px;color:var(--text-l)">Factura B</div></div>
+              </div>
+            </div>
+            <div id="nfl-receptor-extra" style="display:none">
+              <div style="height:.5px;background:var(--cream-d);margin-bottom:12px"></div>
+              <div class="fg" style="margin-bottom:10px"><label class="fl">CUIT del receptor</label><input class="fi" type="text" id="nfl-cuit-receptor" placeholder="20-12345678-9" maxlength="13" oninput="fmtNflCuit(this)"></div>
+              <div class="fg" style="margin-bottom:0"><label class="fl">Razón social</label><input class="fi" type="text" id="nfl-razon-receptor" placeholder="Nombre o razón social"></div>
+            </div>
+          </div>
+          <div class="card" style="margin-bottom:16px">
+            <div class="ct">Resumen</div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:13px;color:var(--text-l)">Subtotal</span><span style="font-size:13px;color:var(--text)" id="nfl-subtotal">$0</span></div>
+            <div id="nfl-iva-row" style="display:none;justify-content:space-between;margin-bottom:6px"><span style="font-size:13px;color:var(--text-l)">IVA 21%</span><span style="font-size:13px;color:var(--text)" id="nfl-iva">$0</span></div>
+            <div style="height:.5px;background:var(--cream-d);margin:8px 0"></div>
+            <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:14px;font-weight:500;color:var(--text)">Total a facturar</span><span style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#4a5e4d" id="nfl-total">$0</span></div>
+          </div>
+          <button id="nfl-btn-emitir" onclick="emitirFacturaLibre()" style="width:100%;background:#4a5e4d;border:none;border-radius:14px;padding:14px;font-size:14px;font-family:'DM Sans',sans-serif;color:#fff;cursor:pointer;font-weight:500">Emitir factura</button>
         </div>
       </div>
 
@@ -11024,8 +11089,164 @@ window.descargarPdfFactura = async function(facturaId) {
   }
 };
 window.abrirNuevaFacturaLibre = function() {
-  console.log('TODO: modal nueva factura libre');
-  showToast('Próximamente', 'info');
+  document.getElementById('mf-list-view').style.display = 'none';
+  const nflView = document.getElementById('nfl-view');
+  nflView.style.display = 'block';
+  nflView.dataset.condReceptor = '5';
+  nflView.dataset.tipoComp = 'C';
+  nflView.dataset.totalImporte = '0';
+  const c = currentClientData || {};
+  const condMap = {monotributista:'Monotributista',responsable_inscripto:'Responsable Inscripto',exento:'Exento',consumidor_final:'Consumidor Final'};
+  document.getElementById('nfl-emisor-nombre').textContent = c.negocioNombre || c.titularNombre || '—';
+  document.getElementById('nfl-emisor-cuit').textContent = c.negocioCuit || '—';
+  document.getElementById('nfl-emisor-pv').textContent = c.negocioPuntoVenta ? 'PV ' + c.negocioPuntoVenta : '—';
+  document.getElementById('nfl-emisor-cond').textContent = condMap[c.negocioCondicionIVA] || 'Monotributista';
+  document.getElementById('nfl-prod-search').value = '';
+  document.getElementById('nfl-prod-dropdown').style.display = 'none';
+  document.getElementById('nfl-prod-id').value = '';
+  document.getElementById('nfl-cantidad').value = '1';
+  document.getElementById('nfl-precio').value = '';
+  document.getElementById('nfl-cuit-receptor').value = '';
+  document.getElementById('nfl-razon-receptor').value = '';
+  document.getElementById('nfl-receptor-extra').style.display = 'none';
+  window._updateNflPillLabels();
+  selectNflCond(document.querySelector('.nfl-pill[data-cond="5"]'), '5', false);
+  nflRecalcular();
+  if (typeof loadProductos === 'function' && !_productos.length) loadProductos().catch(()=>{});
+};
+
+window.volverMisFacturas = function() {
+  document.getElementById('nfl-view').style.display = 'none';
+  document.getElementById('mf-list-view').style.display = 'block';
+  loadMisFacturasModule();
+};
+
+window._updateNflPillLabels = function() {
+  const emisorCond = currentClientData?.negocioCondicionIVA || 'monotributista';
+  document.querySelectorAll('.nfl-pill').forEach(p => {
+    const tipo = window._getMfcTipoComp(emisorCond, p.dataset.cond);
+    const label = p.querySelector('.nfl-tipo');
+    if (label) label.textContent = tipo === 'A' ? 'Factura A + IVA' : 'Factura ' + tipo;
+  });
+};
+
+window.selectNflCond = function(el, cond, needCuit) {
+  document.querySelectorAll('.nfl-pill').forEach(p => {
+    p.style.background = '';
+    p.style.borderColor = 'rgba(0,0,0,.08)';
+    p.querySelector('.nfl-dot').style.background = 'rgba(0,0,0,.08)';
+  });
+  el.style.background = '#e8ede8';
+  el.style.borderColor = '#4a5e4d';
+  el.querySelector('.nfl-dot').style.background = '#4a5e4d';
+  const emisorCond = currentClientData?.negocioCondicionIVA || 'monotributista';
+  const tipo = window._getMfcTipoComp(emisorCond, cond);
+  const nflView = document.getElementById('nfl-view');
+  nflView.dataset.condReceptor = cond;
+  nflView.dataset.tipoComp = tipo;
+  document.getElementById('nfl-receptor-extra').style.display = needCuit ? 'block' : 'none';
+  nflRecalcular();
+};
+
+window.nflBuscarProducto = function(q) {
+  const dropdown = document.getElementById('nfl-prod-dropdown');
+  if (!q.trim()) { dropdown.style.display = 'none'; return; }
+  const matches = (_productos || []).filter(p => p.activo !== false && (p.nombre||'').toLowerCase().includes(q.toLowerCase())).slice(0, 6);
+  if (!matches.length) { dropdown.style.display = 'none'; return; }
+  dropdown.innerHTML = matches.map(p => `<div onclick="nflSeleccionarProducto('${p.id}')" style="padding:10px 14px;cursor:pointer;border-bottom:.5px solid var(--cream-d);font-size:13px" onmouseenter="this.style.background='var(--cream)'" onmouseleave="this.style.background=''"><div style="font-weight:500;color:var(--text)">${p.nombre||''}</div><div style="font-size:11px;color:var(--text-l)">$${Number(p.precio||0).toLocaleString('es-AR')}</div></div>`).join('');
+  dropdown.style.display = 'block';
+};
+
+window.nflSeleccionarProducto = function(id) {
+  const prod = (_productos||[]).find(p => p.id === id);
+  if (!prod) return;
+  document.getElementById('nfl-prod-id').value = id;
+  document.getElementById('nfl-prod-search').value = prod.nombre || '';
+  document.getElementById('nfl-prod-dropdown').style.display = 'none';
+  document.getElementById('nfl-precio').value = prod.precio || '';
+  nflRecalcular();
+};
+
+window.nflRecalcular = function() {
+  const cantidad = parseFloat(document.getElementById('nfl-cantidad').value) || 1;
+  const precio = parseFloat(document.getElementById('nfl-precio').value) || 0;
+  const total = Math.round(cantidad * precio * 100) / 100;
+  const nflView = document.getElementById('nfl-view');
+  const tipo = nflView?.dataset.tipoComp || 'C';
+  const tipoNum = tipo === 'A' ? 1 : tipo === 'B' ? 6 : 11;
+  const esConIva = [1, 6].includes(tipoNum);
+  const fmt = v => '$' + Number(Math.round(v)||0).toLocaleString('es-AR');
+  if (esConIva) {
+    const neto = Math.round((total / 1.21) * 100) / 100;
+    const iva = Math.round((neto * 0.21) * 100) / 100;
+    document.getElementById('nfl-subtotal').textContent = fmt(neto);
+    document.getElementById('nfl-iva').textContent = fmt(iva);
+    document.getElementById('nfl-iva-row').style.display = 'flex';
+  } else {
+    document.getElementById('nfl-subtotal').textContent = fmt(total);
+    document.getElementById('nfl-iva-row').style.display = 'none';
+  }
+  document.getElementById('nfl-total').textContent = fmt(total);
+  if (nflView) nflView.dataset.totalImporte = total;
+};
+
+window.fmtNflCuit = function(inp) {
+  let v = inp.value.replace(/\D/g,'');
+  if(v.length>2) v=v.slice(0,2)+'-'+v.slice(2);
+  if(v.length>11) v=v.slice(0,11)+'-'+v.slice(11);
+  inp.value=v.slice(0,13);
+};
+
+window.emitirFacturaLibre = async function() {
+  const nflView = document.getElementById('nfl-view');
+  const total = parseFloat(nflView.dataset.totalImporte) || 0;
+  if (!total) return showToast('Ingresá un monto válido', 'error');
+  const condReceptor = nflView.dataset.condReceptor || '5';
+  const condEmisor = currentClientData?.negocioCondicionIVA || 'monotributista';
+  const puntoVenta = parseInt(currentClientData?.negocioPuntoVenta) || 2;
+  let tipoComprobante = 11;
+  if (condEmisor === 'responsable_inscripto') {
+    tipoComprobante = condReceptor === '1' ? 1 : 6;
+  } else if (condEmisor === 'exento') {
+    tipoComprobante = 6;
+  }
+  const cuitReceptor = document.getElementById('nfl-cuit-receptor').value.replace(/\D/g,'') || null;
+  const razonSocial = document.getElementById('nfl-razon-receptor').value.trim() || null;
+  const descripcion = document.getElementById('nfl-prod-search').value.trim() || null;
+  if (['6','1','4'].includes(condReceptor) && !cuitReceptor) {
+    return showToast('Ingresá el CUIT del receptor', 'error');
+  }
+  const btn = document.getElementById('nfl-btn-emitir');
+  btn.textContent = 'Emitiendo...';
+  btn.disabled = true;
+  try {
+    const idToken = await currentUser.getIdToken(true);
+    const res = await fetch('/.netlify/functions/afip', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+idToken},
+      body: JSON.stringify({
+        accion: 'emitirFactura',
+        puntoVenta,
+        tipoComprobante,
+        importeTotal: total,
+        concepto: 2,
+        condicionIVAReceptor: parseInt(condReceptor),
+        cuitReceptor: cuitReceptor || null,
+        razonSocialReceptor: razonSocial,
+        descripcion
+      })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.error || 'Error AFIP');
+    showToast('Factura emitida · CAE ' + data.cae, 'success');
+    volverMisFacturas();
+  } catch(e) {
+    console.error('emitirFacturaLibre:', e);
+    showToast('Error al emitir: ' + e.message, 'error');
+  } finally {
+    btn.textContent = 'Emitir factura';
+    btn.disabled = false;
+  }
 };
 window.loadMisFacturasModule = loadMisFacturasModule;
 
