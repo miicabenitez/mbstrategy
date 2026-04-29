@@ -2431,11 +2431,11 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 
         <!-- ── NUEVA FACTURA LIBRE ── -->
         <div id="nfl-view" style="display:none;">
-          <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
-            <button onclick="volverMisFacturas()" style="background:none;border:.5px solid rgba(0,0,0,.12);border-radius:10px;padding:7px 14px;font-size:12px;font-family:'DM Sans',sans-serif;color:var(--text-m);cursor:pointer">← Volver</button>
-            <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--text);font-weight:400">Nueva factura</div>
+          <div style="background:linear-gradient(135deg,#2d3d30,#3a4e3d,#2d3d30);border-radius:16px;padding:20px 24px;margin-bottom:16px">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:#fff;font-weight:400">Nueva factura</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:2px">Factura electrónica ARCA</div>
           </div>
-          <div class="card" style="margin-bottom:14px">
+          <div class="card" style="margin-bottom:12px">
             <div class="ct">Emisor</div>
             <div style="display:flex;flex-wrap:wrap;gap:6px 20px;align-items:center">
               <div style="font-size:13px;font-weight:500;color:var(--text)" id="nfl-emisor-nombre">—</div>
@@ -2444,7 +2444,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
               <span style="font-size:11px;background:#e8ede8;color:#4a5e4d;padding:2px 8px;border-radius:6px;font-weight:500" id="nfl-emisor-cond">—</span>
             </div>
           </div>
-          <div class="card" style="margin-bottom:14px">
+          <div class="card" style="margin-bottom:12px">
             <div class="ct">Producto o servicio</div>
             <div style="position:relative;margin-bottom:14px">
               <input class="fi" type="text" id="nfl-prod-search" placeholder="Buscá en catálogo o describí el servicio" oninput="nflBuscarProducto(this.value)" autocomplete="off">
@@ -2456,7 +2456,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
               <div class="fg" style="margin-bottom:0"><label class="fl">Precio unitario ($)</label><input class="fi" type="number" id="nfl-precio" placeholder="0.00" min="0" step="0.01" oninput="nflRecalcular()"></div>
             </div>
           </div>
-          <div class="card" style="margin-bottom:14px">
+          <div class="card" style="margin-bottom:12px">
             <div class="ct">Condición del receptor</div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">
               <div class="nfl-pill" data-cond="5" onclick="selectNflCond(this,'5',false)" style="border:.5px solid #4a5e4d;border-radius:10px;padding:8px 10px;cursor:pointer;display:flex;align-items:center;gap:6px;background:#e8ede8">
@@ -2484,12 +2484,18 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
           </div>
           <div class="card" style="margin-bottom:16px">
             <div class="ct">Resumen</div>
-            <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:13px;color:var(--text-l)">Subtotal</span><span style="font-size:13px;color:var(--text)" id="nfl-subtotal">$0</span></div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:13px;color:var(--text-l)">Subtotal neto</span><span style="font-size:13px;color:var(--text)" id="nfl-subtotal">$0</span></div>
             <div id="nfl-iva-row" style="display:none;justify-content:space-between;margin-bottom:6px"><span style="font-size:13px;color:var(--text-l)">IVA 21%</span><span style="font-size:13px;color:var(--text)" id="nfl-iva">$0</span></div>
-            <div style="height:.5px;background:var(--cream-d);margin:8px 0"></div>
-            <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:14px;font-weight:500;color:var(--text)">Total a facturar</span><span style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#4a5e4d" id="nfl-total">$0</span></div>
+            <div style="height:.5px;background:var(--cream-d);margin:10px 0"></div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span style="font-size:14px;font-weight:500;color:var(--text)">Total a facturar</span>
+              <span style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:500;color:#b09088" id="nfl-total">$0</span>
+            </div>
           </div>
-          <button id="nfl-btn-emitir" onclick="emitirFacturaLibre()" style="width:100%;background:#4a5e4d;border:none;border-radius:14px;padding:14px;font-size:14px;font-family:'DM Sans',sans-serif;color:#fff;cursor:pointer;font-weight:500">Emitir factura</button>
+          <div style="display:grid;grid-template-columns:1fr 2fr;gap:10px">
+            <button onclick="volverMisFacturas()" style="background:#fff;border:.5px solid rgba(0,0,0,.08);border-radius:12px;padding:13px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text-m);cursor:pointer">Cancelar</button>
+            <button id="nfl-btn-emitir" onclick="emitirFacturaLibre()" style="background:#4a5e4d;border:none;border-radius:12px;padding:13px;font-size:13px;font-family:'DM Sans',sans-serif;color:#fff;cursor:pointer;font-weight:500">Emitir factura</button>
+          </div>
         </div>
       </div>
 
