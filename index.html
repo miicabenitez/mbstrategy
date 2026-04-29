@@ -1967,6 +1967,14 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
               Ver PDF
             </button>
           </div>
+          <div style="margin-top:14px;padding-top:14px;border-top:.5px solid var(--cream-d);">
+            <div style="font-size:10px;color:var(--text-m);margin-bottom:6px">Estado delegación ARCA</div>
+            <div id="det-fiscal-aprobado-estado" style="font-size:12px;color:var(--text-m);margin-bottom:10px;">—</div>
+            <div style="display:flex;gap:8px;">
+              <button id="det-fiscal-aprobar-btn" onclick="setAfipAprobado(true)" style="background:#4a5e4d;border:none;border-radius:10px;padding:7px 14px;font-size:12px;font-family:inherit;color:#fff;cursor:pointer;">✅ Aprobar delegación</button>
+              <button id="det-fiscal-revocar-btn" onclick="setAfipAprobado(false)" style="display:none;background:#fff;border:.5px solid #c05050;border-radius:10px;padding:7px 14px;font-size:12px;font-family:inherit;color:#c05050;cursor:pointer;">Revocar</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -6496,6 +6504,15 @@ window.verComprobantePv = function() {
   win.document.write('<iframe src="' + window._currentPvComprobante + '" width="100%" height="100%" style="border:none"></iframe>');
 };
 
+window.setAfipAprobado = async function(value) {
+  if (!currentClientId) return;
+  try {
+    await updateDoc(doc(db, 'clientes', currentClientId), { afipAprobado: value });
+    showToast(value ? '✅ Delegación ARCA aprobada' : 'Delegación revocada', value ? 'success' : 'info');
+    await openClientDetail(currentClientId);
+  } catch(e) { showToast('Error: ' + e.message, 'error'); }
+};
+
 window.openClientDetail = async function(clientId) {
   currentClientId = clientId;
   document.querySelectorAll('[id^="av-"]').forEach(el => el.classList.remove('active'));
@@ -6527,6 +6544,25 @@ window.openClientDetail = async function(clientId) {
       document.getElementById('det-fiscal-pv-btn').style.display = 'none';
       window._currentPvComprobante = null;
     }
+    const _hasDatosAdmin = !!(data.negocioCuit && data.negocioPuntoVenta);
+    const _aprobadoAdmin = data.afipAprobado === true || _hasDatosAdmin;
+    const aprobadoEl = document.getElementById('det-fiscal-aprobado-estado');
+    const aprobarBtn = document.getElementById('det-fiscal-aprobar-btn');
+    const revocarBtn = document.getElementById('det-fiscal-revocar-btn');
+    if (aprobadoEl) {
+      if (!_hasDatosAdmin) {
+        aprobadoEl.textContent = 'Datos incompletos — falta CUIT o punto de venta';
+        aprobadoEl.style.color = '#b09088';
+      } else if (_aprobadoAdmin) {
+        aprobadoEl.textContent = '✅ Aprobado — puede emitir facturas';
+        aprobadoEl.style.color = '#4a5e4d';
+      } else {
+        aprobadoEl.textContent = '🕐 Pendiente de aprobación';
+        aprobadoEl.style.color = '#856c00';
+      }
+    }
+    if (aprobarBtn) aprobarBtn.style.display = _aprobadoAdmin ? 'none' : '';
+    if (revocarBtn) revocarBtn.style.display = _aprobadoAdmin ? '' : 'none';
     await loadNotas(clientId);
     await loadNotasClienteAdmin(clientId);
     await loadContentAdmin(clientId);
@@ -6924,7 +6960,8 @@ window.createClient = async function() {
       membresia:          { estado: membresiaEstado, plan },
       productos:          { academia: false, sistema: true, embi: embiMode },
       semanaActual:       1,
-      creadoEn:           new Date().toISOString()
+      creadoEn:           new Date().toISOString(),
+      afipAprobado:       false
     });
     const s = document.getElementById('client-saved');
     s.style.display = 'block';
@@ -9495,21 +9532,28 @@ function renderCajaTable(movs, facturadosMap = new Map()) {
 
 function _verificarDatosFiscales() {
   const c = currentClientData || {};
-  if (c.negocioCuit && c.negocioPuntoVenta && c.negocioCondicionIVA) return true;
-  showToast('Para emitir facturas completá tus datos fiscales en Mi cuenta → Datos fiscales', 'error');
-  setTimeout(() => {
-    const container = document.getElementById('toast-container');
-    if (!container) return;
-    const t = document.createElement('div');
-    t.className = 'toast info';
-    t.style.cssText = 'cursor:pointer;text-decoration:underline;';
-    t.textContent = '→ Ir a Mi cuenta';
-    t.onclick = () => openModal('miCuentaModal');
-    container.appendChild(t);
-    requestAnimationFrame(() => { requestAnimationFrame(() => { t.classList.add('show'); }); });
-    setTimeout(() => { t.classList.remove('show'); setTimeout(() => { if(t.parentNode) t.parentNode.removeChild(t); }, 250); }, 5000);
-  }, 400);
-  return false;
+  if (!c.negocioCuit || !c.negocioPuntoVenta || !c.negocioCondicionIVA) {
+    showToast('Para emitir facturas completá tus datos fiscales en Mi cuenta → Datos fiscales', 'error');
+    setTimeout(() => {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      const t = document.createElement('div');
+      t.className = 'toast info';
+      t.style.cssText = 'cursor:pointer;text-decoration:underline;';
+      t.textContent = '→ Ir a Mi cuenta';
+      t.onclick = () => openModal('miCuentaModal');
+      container.appendChild(t);
+      requestAnimationFrame(() => { requestAnimationFrame(() => { t.classList.add('show'); }); });
+      setTimeout(() => { t.classList.remove('show'); setTimeout(() => { if(t.parentNode) t.parentNode.removeChild(t); }, 250); }, 5000);
+    }, 400);
+    return false;
+  }
+  const aprobado = c.afipAprobado === true || !!(c.negocioCuit && c.negocioPuntoVenta);
+  if (!aprobado) {
+    showToast('Tu configuración fiscal está pendiente de aprobación por MB Strategy. Te avisamos cuando esté lista.', 'info');
+    return false;
+  }
+  return true;
 }
 
 window.abrirModalFacturaCaja = async function(movId) {
@@ -16775,18 +16819,21 @@ async function loadMiCuentaPage() {
         const _hasCuit = !!(data.negocioCuit||'').trim();
         const _hasPv = !!(data.negocioPuntoVenta||'').trim();
         const _hasCond = !!(data.negocioCondicionIVA||'').trim();
-        if (_hasCuit && _hasPv && _hasCond) {
-          _afipStatus.innerHTML = '<div style="display:flex;align-items:center;gap:8px;background:#eef5ef;border:.5px solid #c8d8c9;border-radius:10px;padding:10px 14px;font-size:12px;font-weight:500;color:#3f6149;">✅ Facturación lista — podés emitir facturas electrónicas</div>';
-        } else {
+        const _aprobado = data.afipAprobado === true || !!(_hasCuit && _hasPv);
+        if (!_hasCuit || !_hasPv) {
           const _faltantes = [];
           if (!_hasCuit) _faltantes.push('CUIT');
           if (!_hasPv) _faltantes.push('Punto de venta ARCA');
           if (!_hasCond) _faltantes.push('Condición IVA');
           _afipStatus.innerHTML = '<div style="background:#fffaeb;border:.5px solid #e5d48a;border-radius:10px;padding:10px 14px;font-size:12px;">' +
-            '<div style="font-weight:600;color:#856c00;margin-bottom:4px;">⚠️ Completá tu configuración fiscal</div>' +
+            '<div style="font-weight:600;color:#856c00;margin-bottom:4px;">⚠️ Completá tus datos fiscales</div>' +
             '<div style="color:#9a7c0a;margin-bottom:4px;">Falta completar: ' + _faltantes.join(', ') + '</div>' +
-            '<a href="https://sistema.mbstrategy.com.ar/instructivo.html" target="_blank" rel="noopener" style="font-size:11px;color:#4a5e4d;font-weight:500;text-decoration:underline;">Ver instructivo →</a>' +
+            '<a href="https://sistema.mbstrategy.com.ar/instructivo.html?seccion=arca" target="_blank" rel="noopener" style="font-size:11px;color:#4a5e4d;font-weight:500;text-decoration:underline;">Ver instructivo →</a>' +
             '</div>';
+        } else if (!_aprobado) {
+          _afipStatus.innerHTML = '<div style="display:flex;align-items:center;gap:8px;background:#f0f4f8;border:.5px solid #c0cdd8;border-radius:10px;padding:10px 14px;font-size:12px;font-weight:500;color:#4a6078;">🕐 Configuración recibida — pendiente de aprobación por MB Strategy</div>';
+        } else {
+          _afipStatus.innerHTML = '<div style="display:flex;align-items:center;gap:8px;background:#eef5ef;border:.5px solid #c8d8c9;border-radius:10px;padding:10px 14px;font-size:12px;font-weight:500;color:#3f6149;">✅ Facturación lista — podés emitir facturas electrónicas</div>';
         }
       }
       if (data.negocioPvComprobante) {
