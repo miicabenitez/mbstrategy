@@ -2184,6 +2184,8 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         <button onclick="cajaNuevoMovimiento()" style="height:32px;padding:0 14px;background:rgba(255,255,255,.12);color:#fff;border:0.5px solid rgba(255,255,255,.25);border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Movimiento
         </button>
+        <button onclick="exportarCajaExcel()" style="height:32px;padding:0 14px;background:#fff;color:#4a5e4d;border:none;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;">↓ Excel</button>
+        <button onclick="exportarCajaCsv()" style="height:32px;padding:0 14px;background:rgba(255,255,255,.12);color:#fff;border:0.5px solid rgba(255,255,255,.25);border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;">↓ CSV</button>
       </div>
     </div>
     <div id="caja-kpi-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
@@ -10016,6 +10018,87 @@ async function loadCajaConfig() {
 // Exponer funciones del módulo Caja en window
 window.loadCajaModule = loadCajaModule;
 window.loadCajaConfig = loadCajaConfig;
+
+window.exportarCajaExcel = async function() {
+  const movs = window._cajaMovimientos || [];
+  if (!movs.length) return showToast('Sin movimientos en el período', 'info');
+  if (!window.ExcelJS) {
+    await new Promise((res, rej) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js';
+      s.onload = res; s.onerror = rej;
+      document.head.appendChild(s);
+    });
+  }
+  const periodo = document.getElementById('caja-mes-label')?.textContent || '';
+  const nombreNegocio = document.getElementById('negocio-nombre-display')?.textContent || 'Mi negocio';
+  const wb = new ExcelJS.Workbook();
+  wb.creator = 'MB Strategy'; wb.created = new Date();
+  const SAGE_DK='7A8E7D', CREAM='F5F6F3', TEXT='2C2C2C', GREEN='5A8A62', RED='C4786A';
+  const sTitle={font:{bold:true,size:13,color:{argb:'FFFFFFFF'}},fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FF'+SAGE_DK}},alignment:{vertical:'middle',horizontal:'left'}};
+  const sSub={font:{size:9,color:{argb:'FFFFFFFF'}},fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FF'+SAGE_DK}},alignment:{vertical:'middle'}};
+  const sHead={font:{bold:true,size:10,color:{argb:'FFFFFFFF'}},fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FF'+SAGE_DK}},alignment:{horizontal:'center',vertical:'middle'}};
+  const sData=(alt)=>({font:{size:10,color:{argb:'FF'+TEXT}},fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FF'+(alt?CREAM:'FFFFFF')}},alignment:{vertical:'middle'}});
+  const sMonto=(alt,hex)=>({font:{bold:true,size:10,color:{argb:'FF'+(hex||SAGE_DK)}},fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FF'+(alt?CREAM:'FFFFFF')}},numFmt:'"$"#,##0',alignment:{horizontal:'right',vertical:'middle'}});
+  const sTotal={font:{bold:true,size:11,color:{argb:'FFFFFFFF'}},fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FF'+SAGE_DK}},numFmt:'"$"#,##0',alignment:{horizontal:'right',vertical:'middle'}};
+  const sTotalL={font:{bold:true,size:11,color:{argb:'FFFFFFFF'}},fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FF'+SAGE_DK}},alignment:{vertical:'middle'}};
+  const sTotalB={fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FF'+SAGE_DK}}};
+  function addSheet(titulo, headers, filas, colMonto, colHex) {
+    const ws = wb.addWorksheet(titulo);
+    ws.columns = headers.map((h,ci)=>({width:Math.min(Math.max(h.length,...filas.map(r=>String(r[ci]||'').length))+4,45)}));
+    ws.addRow(['MB Strategy — Caja · '+titulo]); ws.getRow(1).height=24;
+    ws.mergeCells(1,1,1,headers.length); ws.getRow(1).getCell(1).style=sTitle;
+    ws.addRow([nombreNegocio+'   ·   Período: '+periodo]); ws.getRow(2).height=16;
+    ws.mergeCells(2,1,2,headers.length); ws.getRow(2).getCell(1).style=sSub;
+    ws.addRow([]); ws.getRow(3).height=6;
+    ws.addRow(headers); ws.getRow(4).height=18;
+    headers.forEach((_,ci)=>ws.getRow(4).getCell(ci+1).style=sHead);
+    filas.forEach((row,ri)=>{
+      ws.addRow(row); const r=ws.getRow(ri+5); r.height=16; const alt=ri%2===1;
+      row.forEach((val,ci)=>{
+        const cell=r.getCell(ci+1);
+        if(ci===colMonto){cell.style=sMonto(alt,colHex);cell.value=typeof val==='number'?val:(parseFloat(val)||0);}
+        else cell.style=sData(alt);
+      });
+    });
+    if(filas.length){
+      const tv=filas.reduce((s,r)=>s+(parseFloat(r[colMonto])||0),0);
+      const tr=new Array(headers.length).fill(''); tr[0]='TOTAL'; tr[colMonto]=tv;
+      ws.addRow(tr); const rt=ws.getRow(filas.length+5); rt.height=18;
+      headers.forEach((_,ci)=>{const cell=rt.getCell(ci+1); if(ci===0)cell.style=sTotalL; else if(ci===colMonto){cell.style=sTotal;cell.value=tv;}else cell.style=sTotalB;});
+    }
+  }
+  const ing=movs.filter(m=>m.tipo==='ingreso');
+  const eg=movs.filter(m=>m.tipo==='egreso');
+  addSheet('Ingresos',['Fecha','Concepto','Cuenta','Monto'],ing.map(m=>[m.fecha||'',m.concepto||m.detalle||'',m.cuenta||'',parseFloat(m.monto)||0]),3,GREEN);
+  addSheet('Egresos',['Fecha','Concepto','Cuenta','Monto'],eg.map(m=>[m.fecha||'',m.concepto||m.detalle||'',m.cuenta||'',parseFloat(m.monto)||0]),3,RED);
+  const buffer=await wb.xlsx.writeBuffer();
+  const blob=new Blob([buffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download='Caja_'+periodo.replace(/ /g,'_')+'.xlsx'; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  showToast('Excel exportado', 'success');
+};
+
+window.exportarCajaCsv = function() {
+  const movs = window._cajaMovimientos || [];
+  if (!movs.length) return showToast('Sin movimientos en el período', 'info');
+  const periodo = document.getElementById('caja-mes-label')?.textContent || '';
+  const headers = ['Fecha','Tipo','Concepto','Cuenta','Monto'];
+  const rows = movs.map(m=>[
+    m.fecha||'',
+    m.tipo==='ingreso'?'Ingreso':m.tipo==='egreso'?'Egreso':'Transferencia',
+    '"'+(m.concepto||m.detalle||'').replace(/"/g,'""')+'"',
+    '"'+(m.cuenta||'').replace(/"/g,'""')+'"',
+    parseFloat(m.monto)||0
+  ]);
+  const csv=[headers.join(','),...rows.map(r=>r.join(','))].join('\r\n');
+  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download='Caja_'+periodo.replace(/ /g,'_')+'.csv'; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  showToast('CSV exportado', 'success');
+};
 
 // ══════════════════════════════════════════════════════════════
 // MÓDULO CIERRE DE PERÍODO
