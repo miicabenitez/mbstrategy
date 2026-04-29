@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manual · MB Strategy</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%234a5e4d'/><text x='16' y='21' text-anchor='middle' font-family='serif' font-size='14' font-weight='600' fill='%23f5f0eb'>M</text><text x='22' y='21' text-anchor='middle' font-family='serif' font-size='14' font-weight='600' fill='%23b09088'>B</text></svg>">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cream:#f5f0eb;
+  --cream-d:#e8e2d9;
+  --green:#4a5e4d;
+  --green-dark:#2d3d30;
+  --green-light:#e8ede8;
+  --terra:#b09088;
+  --terra-light:#f0e8e5;
+  --gray:#8a8a8a;
+  --text:#1a1a1a;
+}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:300;
+  background:linear-gradient(135deg,#1e2e22 0%,#2d3d30 20%,#3d5242 35%,#4a6150 45%,#3d5242 55%,#2d3d30 75%,#1e2e22 100%);
+  border-bottom:1px solid rgba(255,255,255,.08);
+  box-shadow:0 1px 0 rgba(255,255,255,.04) inset, 0 2px 20px rgba(0,0,0,.3);
+}
+nav::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(255,255,255,.06) 0%,transparent 60%);
+  pointer-events:none;
+}
+.nav-top{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 32px;
+}
+.nav-logo{
+  font-family:'Cormorant Garamond',serif;
+  font-size:18px;color:white;display:flex;align-items:center;gap:10px;
+}
+.nav-logo em{font-style:italic;color:var(--terra)}
+.nav-logo span{
+  font-size:10px;font-weight:500;letter-spacing:.15em;
+  text-transform:uppercase;color:rgba(255,255,255,.35);
+  border-left:1px solid rgba(255,255,255,.15);
+  padding-left:12px;margin-left:2px;font-family:'DM Sans',sans-serif;
+}
+.nav-link{
+  font-size:12px;color:rgba(255,255,255,.5);
+  text-decoration:none;transition:color .2s;letter-spacing:.03em;
+}
+.nav-link:hover{color:white}
+
+/* MODULE TABS */
+.mod-tabs{
+  display:flex;padding:0 32px;overflow-x:auto;gap:0;
+  border-top:1px solid rgba(255,255,255,.06);
+}
+.mod-tabs::-webkit-scrollbar{display:none}
+.mod-tab{
+  font-size:11px;font-weight:500;letter-spacing:.04em;
+  color:rgba(255,255,255,.38);
+  padding:11px 16px;
+  border-bottom:2px solid transparent;
+  cursor:pointer;white-space:nowrap;
+  transition:all .2s;flex-shrink:0;
+}
+.mod-tab:hover{color:rgba(255,255,255,.75)}
+.mod-tab.active{color:white;border-bottom-color:var(--terra)}
+
+/* SUB TABS */
+.sub-tabs-wrap{
+  background:white;
+  border-bottom:1px solid rgba(0,0,0,.07);
+  padding:0 32px;
+  display:flex;gap:0;overflow-x:auto;
+  position:sticky;top:89px;z-index:200;
+}
+.sub-tabs-wrap::-webkit-scrollbar{display:none}
+.sub-tab{
+  font-size:12px;color:#999;
+  padding:11px 14px;
+  border-bottom:2px solid transparent;
+  cursor:pointer;white-space:nowrap;
+  transition:all .2s;flex-shrink:0;
+}
+.sub-tab:hover{color:var(--green)}
+.sub-tab.active{color:var(--green);font-weight:500;border-bottom-color:var(--green)}
+
+/* CONTENT */
+.content-wrap{
+  padding-top:89px;
+  min-height:100vh;
+}
+.page{
+  max-width:760px;margin:0 auto;
+  padding:48px 32px 80px;
+  animation:fadeUp .35s ease both;
+}
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(14px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+/* MODULE INDEX */
+.mod-index-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(36px,5vw,54px);
+  font-weight:400;line-height:1.05;
+  color:var(--green-dark);margin-bottom:8px;
+}
+.mod-index-sub{
+  font-size:15px;color:var(--gray);font-weight:300;
+  margin-bottom:36px;padding-bottom:28px;
+  border-bottom:.5px solid var(--cream-d);
+}
+.mod-index-label{
+  font-size:10px;font-weight:500;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--gray);margin-bottom:18px;
+}
+.mod-index-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:14px;
+}
+.mod-index-card{
+  background:white;border-radius:16px;
+  padding:22px 20px;
+  border:.5px solid rgba(0,0,0,.07);
+  cursor:pointer;
+  transition:all .25s cubic-bezier(.4,0,.2,1);
+  position:relative;overflow:hidden;
+  display:flex;align-items:flex-start;gap:14px;
+}
+.mod-index-card::after{
+  content:'';position:absolute;
+  left:0;top:0;bottom:0;width:3px;
+  background:linear-gradient(180deg,var(--green),var(--terra));
+  transform:scaleY(0);transform-origin:top;
+  transition:transform .25s ease;
+}
+.mod-index-card:hover{
+  box-shadow:0 8px 28px rgba(0,0,0,.09);
+  transform:translateY(-2px);
+}
+.mod-index-card:hover::after{transform:scaleY(1)}
+.mod-index-icon{
+  width:36px;height:36px;border-radius:10px;
+  background:var(--green-light);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;color:var(--green);
+  transition:background .2s,color .2s;
+}
+.mod-index-card:hover .mod-index-icon{background:var(--green);color:white}
+.mod-index-info{}
+.mod-index-name{font-size:14px;font-weight:600;color:var(--green-dark);margin-bottom:4px}
+.mod-index-desc{font-size:12px;color:var(--gray);line-height:1.55;font-weight:300}
+
+/* HOME */
+.home-orb{
+  position:absolute;top:89px;right:0;
+  width:500px;height:500px;
+  background:radial-gradient(circle at 70% 30%,rgba(176,144,136,.12),transparent 70%);
+  pointer-events:none;
+}
+.home-eyebrow{
+  font-size:10px;font-weight:500;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--terra);
+  display:flex;align-items:center;gap:14px;
+  margin-bottom:28px;
+  animation:fadeUp .4s ease .1s both;
+}
+.home-eyebrow::before,.home-eyebrow::after{
+  content:'';flex:1 0 30px;max-width:50px;height:1px;
+  background:var(--terra);opacity:.3;
+}
+.home-h1{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(48px,7vw,72px);
+  font-weight:300;line-height:1.05;
+  color:var(--green-dark);margin-bottom:8px;
+  animation:fadeUp .4s ease .15s both;
+}
+.home-h1 em{font-style:italic;color:var(--terra);font-weight:300}
+.home-sub{
+  font-size:16px;color:var(--gray);font-weight:300;line-height:1.7;
+  max-width:460px;margin-bottom:52px;
+  animation:fadeUp .4s ease .2s both;
+}
+.home-divider{width:48px;height:1px;background:var(--cream-d);margin-bottom:40px}
+.start-label{
+  font-size:10px;font-weight:500;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--gray);margin-bottom:18px;
+}
+.start-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:40px}
+.start-card{
+  background:white;border-radius:18px;padding:26px 22px;
+  border:.5px solid rgba(0,0,0,.07);
+  cursor:pointer;
+  transition:all .3s cubic-bezier(.4,0,.2,1);
+  position:relative;overflow:hidden;
+}
+.start-card::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--green),var(--terra));
+  transform:scaleX(0);transform-origin:left;
+  transition:transform .3s ease;
+}
+.start-card:hover{box-shadow:0 12px 40px rgba(0,0,0,.1);transform:translateY(-3px)}
+.start-card:hover::after{transform:scaleX(1)}
+.start-num{
+  font-family:'Cormorant Garamond',serif;
+  font-size:42px;color:var(--terra);line-height:1;
+  margin-bottom:14px;font-weight:300;
+}
+.start-title{font-size:13px;font-weight:600;color:var(--green-dark);margin-bottom:6px}
+.start-desc{font-size:12px;color:var(--gray);line-height:1.6;font-weight:300}
+.home-hint{font-size:13px;color:var(--gray);font-style:italic;text-align:center;padding-top:24px;border-top:.5px solid var(--cream-d)}
+
+/* MODULE PAGE */
+.mod-kicker{
+  font-size:10px;font-weight:500;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--terra);margin-bottom:14px;
+}
+.mod-h1{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(36px,5vw,54px);
+  font-weight:400;line-height:1.05;
+  color:var(--green-dark);margin-bottom:12px;
+}
+.mod-desc{
+  font-size:15px;color:#555;font-weight:300;line-height:1.75;
+  margin-bottom:36px;padding-bottom:28px;
+  border-bottom:.5px solid var(--cream-d);
+}
+.section{margin-bottom:32px}
+.sec-title{
+  font-size:10px;font-weight:600;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--green);
+  margin-bottom:18px;display:flex;align-items:center;gap:12px;
+}
+.sec-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--green-light),transparent)}
+.steps{display:flex;flex-direction:column}
+.step{display:flex;gap:18px;padding:16px 0;border-bottom:.5px solid rgba(0,0,0,.05)}
+.step:last-child{border-bottom:none}
+.step-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
+.step-num{
+  width:30px;height:30px;border-radius:50%;
+  background:var(--green);color:white;
+  font-size:12px;font-weight:500;
+  display:flex;align-items:center;justify-content:center;
+}
+.step-line{width:1px;flex:1;min-height:10px;background:linear-gradient(180deg,var(--green-light),transparent);margin-top:4px}
+.step:last-child .step-line{display:none}
+.step-text{font-size:14px;color:#444;line-height:1.7;font-weight:300;padding-top:5px}
+.tips{display:flex;flex-direction:column;gap:12px}
+.tip{
+  display:flex;gap:14px;background:white;border-radius:12px;
+  padding:14px 18px;border:.5px solid rgba(0,0,0,.06);
+  transition:box-shadow .2s;
+}
+.tip:hover{box-shadow:0 4px 16px rgba(0,0,0,.06)}
+.tip-dot{width:6px;height:6px;border-radius:50%;background:var(--terra);flex-shrink:0;margin-top:7px}
+.tip-text{font-size:13.5px;color:#555;line-height:1.65;font-weight:300}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field{
+  background:white;border-radius:10px;padding:12px 16px;
+  border:.5px solid rgba(0,0,0,.06);font-size:13px;color:#555;line-height:1.5;
+}
+.field strong{display:block;font-size:11px;font-weight:600;color:var(--green-dark);letter-spacing:.03em;margin-bottom:3px}
+.badges{display:flex;gap:8px;flex-wrap:wrap}
+.badge{
+  background:var(--green-light);color:var(--green);font-size:12px;font-weight:500;
+  padding:6px 14px;border-radius:20px;cursor:pointer;
+  transition:all .2s;border:.5px solid transparent;
+}
+.badge:hover{background:var(--green);color:white;transform:translateY(-1px);box-shadow:0 4px 12px rgba(74,94,77,.25)}
+
+/* BOTTOM NAV */
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  background:rgba(245,240,235,.95);backdrop-filter:blur(12px);
+  border-top:1px solid rgba(0,0,0,.07);
+  padding:14px 32px;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.bn-prev{
+  display:flex;align-items:center;gap:8px;
+  font-size:12px;color:var(--gray);cursor:pointer;
+  transition:color .2s;
+}
+.bn-prev:hover{color:var(--green)}
+.bn-progress{font-size:11px;color:#bbb;letter-spacing:.03em}
+.bn-next{
+  display:flex;align-items:center;gap:8px;
+  font-size:12px;font-weight:500;color:var(--green);
+  background:var(--green-light);padding:8px 18px;
+  border-radius:20px;cursor:pointer;transition:all .2s;
+}
+.bn-next:hover{background:var(--green);color:white;box-shadow:0 4px 16px rgba(74,94,77,.3)}
+
+/* MOBILE */
+@media(max-width:640px){
+  .nav-top{padding:12px 16px}
+  .mod-tabs{padding:0 16px}
+  .sub-tabs-wrap{padding:0 16px;top:84px}
+  .content-wrap{padding-top:84px}
+  .page{padding:32px 16px 80px}
+  .start-grid{grid-template-columns:1fr}
+  .fields{grid-template-columns:1fr}
+  .home-h1{font-size:38px}
+  .bottom-nav{padding:12px 16px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-top">
+    <div class="nav-logo" onclick="goPage('bienvenida')" style="cursor:pointer">
+      <em>MB</em> Strategy
+      <span>Manual de uso</span>
+    </div>
+    <a href="https://sistema.mbstrategy.com.ar" class="nav-link">Ir al sistema →</a>
+  </div>
+  <div class="mod-tabs" id="mod-tabs"></div>
+</nav>
+
+<div class="sub-tabs-wrap" id="sub-tabs-wrap" style="display:none"></div>
+
+<div class="content-wrap">
+  <div class="page" id="page-content"></div>
+</div>
+
+<div class="bottom-nav" id="bottom-nav" style="display:none">
+  <div class="bn-prev" id="bn-prev" onclick="goAdj(-1)">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+    <span id="bn-prev-label"></span>
+  </div>
+  <div class="bn-progress" id="bn-progress"></div>
+  <div class="bn-next" id="bn-next" onclick="goAdj(1)">
+    <span id="bn-next-label"></span>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+  </div>
+</div>
+
+<script>
+const MODULES = [
+  { id:'bienvenida', label:'Bienvenida', subs:[] },
+  { id:'inicio-mod', label:'Inicio', subs:[] },
+  { id:'finanzas', label:'Finanzas', subs:[
+    {id:'caja',label:'Caja'},
+    {id:'cierre',label:'Cierre de período'},
+    {id:'config-caja',label:'Configuración'},
+    {id:'mis-facturas',label:'Mis Facturas'},
+    {id:'resumen-ventas',label:'Resumen de Ventas'},
+    {id:'resumen-compras',label:'Resumen de Compras'},
+  ]},
+  { id:'comercial', label:'Comercial', subs:[
+    {id:'clientes',label:'Clientes'},
+    {id:'cobranzas',label:'Cobranzas'},
+    {id:'presupuestos',label:'Presupuestos'},
+    {id:'catalogo',label:'Catálogo'},
+  ]},
+  { id:'compras', label:'Compras', subs:[
+    {id:'proveedores',label:'Proveedores'},
+    {id:'necesidades',label:'Necesidades'},
+    {id:'ordenes',label:'Órdenes'},
+    {id:'historial',label:'Historial'},
+    {id:'config-compras',label:'Configuración'},
+  ]},
+  { id:'control', label:'Control del negocio', subs:[
+    {id:'calculador',label:'Calculador de costos'},
+    {id:'indicadores',label:'Indicadores'},
+  ]},
+  { id:'gestion', label:'Gestión', subs:[
+    {id:'plan-accion',label:'Plan de acción'},
+  ]},
+  { id:'micuenta', label:'Mi cuenta', subs:[
+    {id:'datos-negocio',label:'Datos del negocio'},
+    {id:'datos-fiscales',label:'Datos fiscales'},
+    {id:'arca',label:'Config. ARCA'},
+    {id:'membresia',label:'Membresía'},
+  ]},
+];
+
+// Flat list of all pages in order
+const ALL_PAGES = [];
+MODULES.forEach(m => {
+  if(m.subs.length === 0 && m.id !== 'bienvenida') ALL_PAGES.push({id:m.id,label:m.label,mod:m.id});
+  m.subs.forEach(s => ALL_PAGES.push({id:s.id,label:s.label,mod:m.id}));
+});
+
+let currentMod = 'home';
+let currentSub = null;
+
+function mod(kicker, title, desc, steps, fields, tips, badges) {
+  const stepsHtml = steps.map((s,i) => `
+    <div class="step">
+      <div class="step-left"><div class="step-num">${i+1}</div><div class="step-line"></div></div>
+      <div class="step-text">${s}</div>
+    </div>`).join('');
+  const fieldsHtml = fields.length ? `<div class="section"><div class="sec-title">Datos que necesitás</div><div class="fields">${fields.map(f=>`<div class="field"><strong>${f[0]}</strong>${f[1]}</div>`).join('')}</div></div>` : '';
+  const tipsHtml = tips.map(t=>`<div class="tip"><div class="tip-dot"></div><div class="tip-text">${t}</div></div>`).join('');
+  const badgesHtml = badges.map(([l,id])=>`<div class="badge" onclick="goPage('${id}')">${l}</div>`).join('');
+  return `
+    <div class="mod-kicker">${kicker}</div>
+    <h1 class="mod-h1">${title}</h1>
+    <p class="mod-desc">${desc}</p>
+    <div class="section"><div class="sec-title">Cómo se usa</div><div class="steps">${stepsHtml}</div></div>
+    ${fieldsHtml}
+    <div class="section"><div class="sec-title">Tips importantes</div><div class="tips">${tipsHtml}</div></div>
+    ${badgesHtml.length?`<div class="section"><div class="sec-title">Se conecta con</div><div class="badges">${badgesHtml}</div></div>`:''}
+  `;
+}
+
+const PAGES = {
+bienvenida: `
+  <div style="position:relative">
+    <div class="home-eyebrow">MB Strategy · Manual de uso</div>
+    <h1 class="home-h1">Bienvenido al<br>manual de uso<br><em>completo.</em></h1>
+    <p class="home-sub">Cada módulo explicado en lenguaje simple. Sin tecnicismos, sin vueltas. Todo lo que necesitás para operar tu negocio desde el primer día.</p>
+    <div class="home-divider"></div>
+    <div class="start-label">¿Es tu primera vez? Empezá por acá</div>
+    <div class="start-grid">
+      <div class="start-card" onclick="goPage('datos-negocio')">
+        <div class="start-num">01</div>
+        <div class="start-title">Datos del negocio</div>
+        <div class="start-desc">Nombre, logo, teléfono y email. Lo que aparece en todas tus facturas y presupuestos.</div>
+      </div>
+      <div class="start-card" onclick="goPage('datos-fiscales')">
+        <div class="start-num">02</div>
+        <div class="start-title">Datos fiscales</div>
+        <div class="start-desc">Tu condición ante AFIP y punto de venta ARCA. Necesario para facturar.</div>
+      </div>
+      <div class="start-card" onclick="goPage('config-caja')">
+        <div class="start-num">03</div>
+        <div class="start-title">Configuración de Caja</div>
+        <div class="start-desc">Tus cuentas (efectivo, banco, MP) y los conceptos de ingreso y egreso.</div>
+      </div>
+    </div>
+    <p class="home-hint">¿Ya sabés lo que buscás? Usá las pestañas de arriba.</p>
+  </div>
+`,
+'inicio-mod': mod('Panel principal','Inicio','El dashboard que resume la salud del negocio al entrar. Muestra la ganancia del mes, tu margen, cuánto te deben los clientes y si el negocio está en buen estado. Se actualiza automáticamente.',
+  ['Se abre automáticamente al entrar al sistema.','Lee Caja, Presupuestos y datos del negocio y muestra alertas de colores: verde = bien, amarillo = margen bajo, rojo = gastás más de lo que ganás.','No requiere ninguna acción — es una vista de lectura que se actualiza sola.'],
+  [],
+  ['Si el margen aparece como "bajo", significa que estás ganando menos del 20% de lo que facturás.','Los "pendientes de cobro" son presupuestos aprobados que todavía no cobraste.','Si el módulo aparece vacío, es porque no registraste movimientos en Caja todavía.'],
+  [['Caja','caja'],['Presupuestos','presupuestos'],['Indicadores','indicadores']]
+),
+'inicio-mod': mod('Panel principal','Inicio','El dashboard que resume la salud del negocio al entrar. Muestra la ganancia del mes, tu margen, cuánto te deben los clientes y si el negocio está en buen estado. Se actualiza automáticamente.',
+  ['Se abre automáticamente al entrar al sistema.','Lee Caja, Presupuestos y datos del negocio y muestra alertas de colores: verde = bien, amarillo = margen bajo, rojo = gastás más de lo que ganás.','No requiere ninguna acción — es una vista de lectura que se actualiza sola.'],
+  [],
+  ['Si el margen aparece como "bajo", significa que estás ganando menos del 20% de lo que facturás.','Los "pendientes de cobro" son presupuestos aprobados que todavía no cobraste.','Si el módulo aparece vacío, es porque no registraste movimientos en Caja todavía.'],
+  [['Caja','caja'],['Presupuestos','presupuestos'],['Indicadores','indicadores']]
+),
+caja: mod('Finanzas','Caja','Tu libro de caja digital. Registrás cada peso que entra o sale del negocio por cuenta: efectivo, banco, Mercado Pago. Ves el saldo en tiempo real de cada cuenta y el flujo completo con saldos progresivos.',
+  ['Configurás tus cuentas en Caja → Configuración (efectivo, banco, MP, etc.).','Registrás cada movimiento: ingreso o egreso con fecha, concepto y monto.','Filtrás por cuenta usando los chips de arriba para ver solo una cuenta.','Si un ingreso es facturable, hacés clic en el ícono del documento para emitir factura directamente desde acá.','El saldo de cada cuenta se actualiza automáticamente.'],
+  [['Fecha','del movimiento'],['Concepto','categoría del movimiento'],['Tipo','ingreso, egreso o transferencia entre cuentas'],['Monto','importe del movimiento'],['Cuenta','efectivo, banco, Mercado Pago, etc.']],
+  ['Las transferencias entre cuentas no son ingreso ni egreso — se mueven sin afectar el total.','Los movimientos de "apertura de caja" y "retiro de socio" no se pueden facturar.','Si aparece un tilde verde en la columna de acciones, ese ingreso ya tiene factura emitida.','El saldo total del banner excluye la cuenta "Retiros".'],
+  [['Mis Facturas','mis-facturas'],['Resumen de Ventas','resumen-ventas'],['Cierre de período','cierre'],['Inicio','inicio']]
+),
+cierre: mod('Finanzas · Solo plan Pro','Cierre de período','Te ayuda a cerrar períodos sabiendo cuánto disponible tenés, qué compromisos tenés pendientes y cómo distribuís la ganancia entre socios o reservas.',
+  ['Elegís la frecuencia del cierre y las fechas inicio-fin (se sugieren automáticamente).','El sistema calcula el disponible real sumando los saldos de tus cuentas operativas.','Revisás los compromisos cargados automáticamente y podés agregar compromisos manuales.','Configurás el porcentaje de reserva y los participantes con su porcentaje de reparto.','Guardás o usás el modo "proyección" para simular cierres futuros sin guardar.'],
+  [],
+  ['Los compromisos se cargan solos desde Proveedores y Compras.','El disponible total es solo de cuentas operativas — no incluye la cuenta "Retiros".','Solo disponible en plan Pro.'],
+  [['Caja','caja'],['Proveedores','proveedores'],['Órdenes','ordenes']]
+),
+'config-caja': mod('Finanzas','Configuración','Configurás las cuentas, los conceptos de ingreso y los conceptos de egreso que usás en Caja. Tiene dos tabs: Caja (cuentas y conceptos) y Cierre de período (frecuencia, socios y reservas).',
+  ['En el tab Caja → Cuentas: agregás tus cuentas operativas (Efectivo, Mercado Pago, Banco, etc.).','En Conceptos de ingreso: agregás categorías personalizadas además de las del sistema (Venta caja, Cobro de cliente, Apertura de caja).','En Conceptos de egreso: agregás categorías propias como Alquiler, Sueldos, Publicidad.','En el tab Cierre de período: elegís la frecuencia (Semanal / Quincenal / Mensual) y activás o desactivás el modo Proyección.','Configurás los socios o dueño (Único dueño o Sociedad) con porcentajes de reparto.','Agregás reservas del negocio: un porcentaje del resultado que se acumula en una cuenta propia.'],
+  [['Cuentas','nombre de cada cuenta operativa (Efectivo, MP, Banco, etc.)'],['Conceptos de ingreso','categorías para clasificar ingresos manuales'],['Conceptos de egreso','categorías para clasificar egresos manuales'],['Frecuencia','Semanal, Quincenal o Mensual'],['Socios','nombre y porcentaje de cada participante'],['Reservas','nombre y porcentaje de cada reserva']],
+  ['Los conceptos marcados como "sistema" no se pueden eliminar — los usa el sistema automáticamente.','Podés agregar conceptos propios: "Alquiler", "Sueldos", "Publicidad", etc.','La distribución total tiene que sumar 100% entre socios y reservas — lo que no se asigne queda como remanente operativo en caja.','El modo Proyección permite simular el cierre sin generar movimientos reales.'],
+  [['Caja','caja'],['Cierre de período','cierre']]
+),
+'mis-facturas': mod('Finanzas · Facturación ARCA','Mis Facturas','El historial de todas las facturas electrónicas que emitiste. Descargás el PDF con formato legal completo: CAE, QR ARCA y desglose de IVA según el tipo de comprobante.',
+  ['Se cargan automáticamente las últimas 100 facturas emitidas.','Los KPIs del banner muestran cuántas emitiste este mes y el total facturado.','Hacés clic en el ícono de descarga de una fila para generar el PDF.','Para emitir una factura nueva, hacés clic en "+ Nueva factura" en el banner.'],
+  [],
+  ['Solo muestra facturas ya emitidas con CAE — no borradores.','Las Facturas A discriminan IVA en la tabla del PDF; las B y C muestran "IVA Contenido" al pie según la Ley 27.743.','El QR del PDF lleva a la constatación oficial de ARCA — cualquier receptor puede verificar que la factura es válida.'],
+  [['Caja','caja'],['Datos fiscales','datos-fiscales'],['Config. ARCA','arca']]
+),
+'resumen-ventas': mod('Finanzas · Libro IVA Ventas','Resumen de Ventas','Reporta todas tus facturas de venta del mes con IVA discriminado. Exportá en formato CITI para tu contador o presentación ante AFIP.',
+  ['Seleccionás el mes en el dropdown — solo meses del año actual, hasta hoy.','Se cargan todas las facturas de ese mes automáticamente.','Los KPIs muestran: cantidad de comprobantes, total bruto, cantidad de NC y total neto.','Exportás con "↓ CITI" para el formato AFIP o "↓ Excel" para tu contador.'],
+  [],
+  ['Las notas de crédito restan del total bruto.','El CITI exporta un archivo TXT en formato estándar AFIP, listo para importar en ARCA.'],
+  [['Mis Facturas','mis-facturas']]
+),
+'resumen-compras': mod('Finanzas · Libro IVA Compras','Resumen de Compras','Reporta todas las facturas de compra del mes con desglose de IVA. Permite filtrarlo mes a mes para tener el libro IVA Compras.',
+  ['Seleccionás el mes en el dropdown.','Se cargan las facturas de todos tus proveedores de ese período.','Ves los KPIs: cantidad de facturas, total, IVA y neto.','La tabla detalla cada compra con fecha, proveedor, número de factura y desglose de IVA.'],
+  [],
+  ['Solo muestra facturas de compra, no órdenes que todavía no recibiste.'],
+  [['Proveedores','proveedores']]
+),
+clientes: mod('Comercial','Clientes','Tu cartera de clientes con cuenta corriente integrada. Guardás datos de contacto, seguís el estado de la relación, ves cuánto te debe cada uno y registrás los cobros.',
+  ['Cargás un cliente nuevo con nombre, teléfono, email, DNI/CUIT y estado.','Le creás presupuestos desde el detalle del cliente.','Cuando aprobás un presupuesto, pasa automáticamente a Cobranzas como deuda pendiente.','Registrás cobros totales o parciales desde el botón "+ Cobro" en el detalle del cliente.','El sistema actualiza en tiempo real: total presupuestado, cobrado y pendiente.'],
+  [['Nombre','obligatorio'],['Teléfono y email','para contacto y facturación'],['CUIT','necesario para emitir Facturas A'],['Estado','Potencial / Activo / En pausa / Cerrado']],
+  ['Si un cliente pagó más de lo acordado, aparece "Saldo a favor" en verde.','Podés ver la lista en formato lista o en Kanban por estado.','El sistema busca clientes por nombre cuando creás presupuestos — siempre cargalos igual.'],
+  [['Presupuestos','presupuestos'],['Cobranzas','cobranzas'],['Caja','caja']]
+),
+cobranzas: mod('Comercial','Cobranzas','Un tablero de seguimiento de cobros pendientes. Muestra solo los presupuestos aprobados que todavía no cobraste, ordenados de más viejo a más nuevo, con el contacto del cliente y acceso directo a WhatsApp.',
+  ['Se carga automáticamente — no hay nada que configurar.','Ves la tabla con cliente, teléfono, descripción del presupuesto, monto, fecha y días pendientes.','El badge de días cambia de color: verde (menos de 7 días), amarillo (7 a 30 días), rojo (más de 30 días).','Hacés clic en el botón de WhatsApp para abrir el chat directamente con el número del cliente.','Hacés clic en la fila para ir al detalle del cliente y registrar el cobro desde ahí.'],
+  [],
+  ['El total del KPI suma solo montos en ARS — los presupuestos en USD aparecen en la tabla pero no se suman.','Si un cliente no tiene teléfono cargado, el botón de WhatsApp no aparece.','Para que un presupuesto aparezca acá, el estado tiene que estar en "Aprobado" exactamente.'],
+  [['Clientes','clientes'],['Presupuestos','presupuestos']]
+),
+presupuestos: mod('Comercial','Presupuestos','Administrás todas tus cotizaciones. Cada presupuesto tiene cliente, descripción, monto, moneda y estado. Cuando está aprobado, podés emitir la factura electrónica en un clic.',
+  ['Creás un presupuesto: cliente, descripción, monto y moneda (ARS/USD).','Opcionalmente pegás el link a un PDF si lo tenés en Drive.','Cambiás el estado según avanza: Pendiente de enviar → Enviado → Consultado → Aprobado → Cobrado.','Cuando está Aprobado, aparece el botón "Emitir factura" para generar la factura en un clic.','Cuando se cobra, lo marcás "Cobrado" y sale de la lista activa.'],
+  [['Cliente','obligatorio'],['Descripción','qué incluye el presupuesto'],['Monto','obligatorio'],['Moneda','ARS o USD']],
+  ['El monto tiene que estar en el campo "monto" — no en la descripción.','Los presupuestos sin cliente vinculado no van a aparecer bien en Cobranzas.','Si subís un PDF en Drive, pegá el link de visualización, no el de descarga.'],
+  [['Clientes','clientes'],['Cobranzas','cobranzas'],['Mis Facturas','mis-facturas']]
+),
+catalogo: mod('Comercial','Catálogo','Tu lista de productos y servicios con precios. Se aplica automáticamente cuando creás presupuestos o registrás ventas en Caja.',
+  ['Creás un producto o servicio con nombre y precio.','El precio se puede editar directo en la tabla cuando cambia.','Marcás como "inactivo" si dejaste de venderlo — no se borra el historial.','Cuando creás un presupuesto o venta, el sistema autocompleta el precio.'],
+  [['Nombre','obligatorio'],['Precio','obligatorio'],['Descripción','opcional'],['Estado','activo o inactivo']],
+  ['Los cambios de precio se guardan automáticamente al salir del campo.','Si desactivás un producto, sigue apareciendo en presupuestos anteriores — solo deja de sugerirse.'],
+  [['Presupuestos','presupuestos'],['Caja','caja']]
+),
+proveedores: mod('Compras','Proveedores','Tu directorio de proveedores con cuenta corriente integrada. Por cada proveedor ves el saldo que les debés, el historial de transacciones y podés registrar pagos.',
+  ['Cargás el proveedor: nombre, teléfono, categoría y notas.','Generás necesidades y órdenes de compra asociadas a ese proveedor.','Cuando recibís la mercadería, marcás la OC como "Recibida" — queda como deuda en la CC.','Registrás el pago en la cuenta corriente — se descuenta del saldo.'],
+  [['Nombre','obligatorio'],['Teléfono','para contacto'],['Categoría','tipo de proveedor'],['Notas','información adicional']],
+  ['El saldo se calcula desde lo que llegó (OC recibidas), no desde lo que compraste.','Si el saldo aparece en verde, pagaste más de lo que te facturaron (saldo a favor).','Los proveedores con deuda activa aparecen primero en la lista.'],
+  [['Necesidades','necesidades'],['Órdenes','ordenes'],['Cierre de período','cierre'],['Resumen de Compras','resumen-compras']]
+),
+necesidades: mod('Compras','Necesidades','Antes de comprar, organizás qué necesitás por urgencia y categoría. Cotizás con múltiples proveedores antes de elegir y generás la orden de compra final.',
+  ['Creás una necesidad con categoría y urgencia (Urgente / Próxima / Programada).','Cotizás la necesidad con uno o más proveedores (precio + condiciones).','Comparás cotizaciones y elegís la mejor.','Generás la orden de compra desde la cotización elegida.'],
+  [],
+  ['Necesitás cargar primero tus "Productos de compra" en Configuración para poder seleccionarlos.','Las necesidades urgentes sin cotizar aparecen primero.','Podés generar un PDF de la necesidad para mandar a proveedores.'],
+  [['Proveedores','proveedores'],['Órdenes','ordenes']]
+),
+ordenes: mod('Compras','Órdenes de compra','Los documentos formales de compra que emitís a proveedores. El sistema numera las órdenes y lleva el estado de recepción y de pago.',
+  ['Creás la OC: proveedor, ítems (nombre, cantidad, precio unitario) y fecha.','Se genera automáticamente el número secuencial (OC-001, OC-002…).','Cuando llega la mercadería, marcás la OC como "Recibida" — eso genera la deuda en la CC del proveedor.','Registrás el pago en la CC del proveedor — descuenta del saldo.'],
+  [],
+  ['Solo las OC marcadas como "Recibidas" generan deuda en la cuenta corriente del proveedor.','Podés usar productos de texto libre sin que existan en el catálogo de compras.','Las OC pendientes de recibir aparecen como "compromisos" en el Cierre de período.'],
+  [['Necesidades','necesidades'],['Proveedores','proveedores'],['Historial','historial'],['Cierre de período','cierre']]
+),
+historial: mod('Compras','Historial','Buscador y análisis de todo lo que compraste históricamente. Cuántas veces lo compraste, a quién y a qué precio. Ideal para negociar con datos reales.',
+  ['Se carga automáticamente con todas las órdenes de compra.','Buscás un producto por nombre.','Ves todas las compras de ese producto: proveedor, fecha y precio unitario.','El sistema muestra el último precio y la variación histórica en porcentaje.'],
+  [],
+  ['Solo aparecen productos que estén en OC registradas.','Si compraste el mismo producto a dos proveedores distintos, se distingue por proveedor.'],
+  [['Órdenes','ordenes'],['Proveedores','proveedores']]
+),
+'config-compras': mod('Compras','Configuración','Configurás los productos de compra y las categorías que usás en Necesidades y Órdenes. Tener el catálogo de compras cargado hace que todo el módulo funcione más rápido y preciso.',
+  ['En "Productos de compra" agregás los insumos o materiales que comprás habitualmente.','Le ponés nombre, unidad de medida y precio de referencia.','En "Categorías" organizás los tipos de compras (ej. Insumos, Servicios, Equipamiento).','Estos productos y categorías se usan al crear Necesidades y Órdenes de compra.'],
+  [['Nombre del producto','ej. Harina, Tela, Packaging'],['Unidad de medida','kg, litros, metros, unidades, etc.'],['Precio de referencia','precio habitual de compra'],['Categoría','tipo de compra para organizar necesidades']],
+  ['Sin productos de compra cargados, las Necesidades funcionan con texto libre — menos preciso.','Los precios de referencia se usan en el Historial para detectar variaciones.','Podés desactivar un producto sin borrarlo — sigue apareciendo en el historial.'],
+  [['Necesidades','necesidades'],['Órdenes','ordenes'],['Historial','historial']]
+),
+calculador: mod('Control del negocio','Calculador de costos','Calculás el precio de venta basándote en los insumos reales más el margen que querés. Dejás de adivinar — el sistema te dice exactamente cuánto cobrar.',
+  ['Creás un nuevo cálculo con el nombre del producto o servicio.','Cargás los insumos: nombre, precio de compra, cantidad comprada y cuánto usás por unidad producida.','Definís el margen de ganancia en porcentaje.','El sistema muestra el precio sugerido, costo total y ganancia por unidad con un badge de color.'],
+  [],
+  ['El badge de color indica si tu margen es saludable: verde = más del 60%, amarillo = 20–60%, rojo = menos del 20%.','Los cálculos se actualizan en tiempo real mientras completás los campos.','Guardá el cálculo para que aparezca en el historial y en los KPIs del módulo.'],
+  [['Inicio','inicio'],['Catálogo','catalogo']]
+),
+indicadores: mod('Control del negocio','Indicadores','Gráficos mensuales de la evolución de tu negocio. Ingresos, egresos y ganancia mes a mes para ver tendencias a lo largo del año.',
+  ['Seleccionás el mes.','Ingresás el total de ingresos y egresos del mes.','El sistema calcula la ganancia automáticamente.','Con varios meses cargados, los gráficos muestran la evolución completa.'],
+  [],
+  ['Los datos de Indicadores son manuales — los ingresás vos cada mes, no se cargan solos desde Caja.','Si querés comparar meses, tenés que cargar al menos 2 o 3 registros.'],
+  [['Inicio','inicio']]
+),
+'plan-accion': mod('Gestión','Plan de acción','Un tablero Kanban para organizar las tareas del negocio. Creás listas temáticas con ítems que podés tildar a medida que los completás.',
+  ['Creás una lista con nombre (se asigna color automáticamente).','Agregás ítems de texto a cada lista.','Marcás como completado cuando terminás.','Los KPIs arriba muestran en tiempo real cuántas tareas están pendientes, en curso y completadas.'],
+  [],
+  ['Los colores de las listas se asignan automáticamente.','Los ítems completados no se borran, quedan con tilde para el historial.','El Kanban tiene drag & drop para mover tareas entre columnas.'],
+  [['Inicio','inicio']]
+),
+'datos-negocio': mod('Mi cuenta','Datos del negocio','Información básica que se usa en toda la plataforma: nombre del titular, nombre del negocio, rubro, teléfono, email, CUIT, dirección y logo. Aparecen en facturas, presupuestos y en el encabezado del sistema.',
+  ['Completás todos los campos de datos del negocio.','Subís el logo (máximo 200KB, imagen cuadrada recomendada).','Guardás — el nombre y el logo se actualizan en toda la interfaz inmediatamente.'],
+  [['Nombre del titular','como figura en AFIP'],['Nombre del negocio','el que aparece en el sistema'],['Rubro','actividad principal'],['Logo','imagen cuadrada, máximo 200KB']],
+  ['El logo se usa en los PDFs de facturas y presupuestos — subilo antes de empezar a emitir.','El CUIT acá es informativo; el que se usa para facturar ARCA se configura en Datos fiscales.'],
+  [['Datos fiscales','datos-fiscales'],['Mis Facturas','mis-facturas']]
+),
+'datos-fiscales': mod('Mi cuenta · Configuración para facturar','Datos fiscales','Los datos tributarios necesarios para emitir facturas electrónicas: tu condición ante AFIP, el número de punto de venta ARCA y el domicilio fiscal. Sin estos datos no podés emitir facturas.',
+  ['Elegís tu condición ante AFIP: Monotributista / Responsable Inscripto / Exento.','Ingresás el número de punto de venta ARCA (el que registraste en ARCA, entre 1 y 9999).','Si tu domicilio fiscal es el mismo que el comercial, tildás la opción y se completa solo.','Subís el PDF del comprobante de alta del punto de venta de ARCA y guardás.'],
+  [['Condición IVA','Monotributista, Resp. Inscripto o Exento'],['Punto de venta','número registrado en ARCA'],['Domicilio fiscal','calle, localidad, provincia, CP'],['Comprobante PDF','constancia de alta del PV (máx. 2MB)']],
+  ['Sin estos datos completos, el sistema bloquea la emisión de facturas y muestra un mensaje con un link a esta sección.','El punto de venta tiene que existir en ARCA previamente — no se puede crear desde acá.','Si tu condición es Monotributista, las facturas se emiten como Factura C.'],
+  [['Mis Facturas','mis-facturas'],['Caja','caja'],['Config. ARCA','arca']]
+),
+arca: mod('Mi cuenta · Integración automática','Configuración ARCA','La integración con AFIP/ARCA funciona automáticamente en segundo plano a través de los servidores de MB Strategy — no instalás certificados ni configurás nada en tu computadora.',
+  ['Completás tus datos fiscales en Mi cuenta.','Al emitir una factura, el sistema envía los datos a los servidores de ARCA automáticamente.','ARCA devuelve el CAE (código de autorización electrónica) y se guarda en la factura.','El PDF se genera con el CAE y el QR de verificación oficial de ARCA.'],
+  [],
+  ['Si la emisión falla, el error dice exactamente qué rechazó ARCA.','Si el punto de venta no está dado de alta en ARCA, la emisión va a fallar siempre.','El CAE tiene vencimiento — guardá el PDF generado en el momento para tener el comprobante.','Cada cliente de MB Strategy factura con su propio CUIT — la integración es delegada e independiente para cada negocio.'],
+  [['Datos fiscales','datos-fiscales'],['Mis Facturas','mis-facturas']]
+),
+membresia: mod('Mi cuenta','Membresía','Mostrás y gestionás tu suscripción: plan actual (Base o Pro), próximo cobro y opciones para cambiar de plan o cancelar. Los pagos se procesan automáticamente por Mercado Pago.',
+  ['Si no tenés plan activo, ves los botones "Suscribirme" para Base o Pro.','Hacés clic y te redirige a Mercado Pago para completar el primer pago.','Una vez activo, ves: plan, monto y fecha del próximo cobro.','Para cancelar: clic en "Cancelar suscripción" — el acceso se mantiene hasta el fin del período ya pago.'],
+  [],
+  ['El plan Pro incluye funciones bloqueadas en Base: Cierre de período y otras funciones avanzadas.','Al cancelar, no perdés el acceso inmediatamente — se mantiene hasta el vencimiento del período pagado.','Los primeros 10 días son de prueba gratuita — el cobro empieza al finalizar el período de prueba.'],
+  []
+),
+};
+
+function buildNav() {
+  const tabsEl = document.getElementById('mod-tabs');
+  MODULES.forEach(m => {
+    if(m.id === 'bienvenida') return;
+    const t = document.createElement('div');
+    t.className = 'mod-tab';
+    t.textContent = m.label;
+    t.onclick = () => goModule(m.id);
+    tabsEl.appendChild(t);
+  });
+}
+
+const MOD_META = {
+  finanzas: { desc: 'Todo sobre el dinero de tu negocio — movimientos, cierres y facturación.', subs: {
+    'caja': { icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>', desc: 'Libro de movimientos diarios' },
+    'cierre': { icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>', desc: 'Distribución de ganancias entre socios' },
+    'config-caja': { icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>', desc: 'Cuentas y conceptos de ingreso/egreso' },
+    'mis-facturas': { icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>', desc: 'Facturación electrónica ARCA' },
+    'resumen-ventas': { icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>', desc: 'Libro IVA Ventas para tu contador' },
+    'resumen-compras': { icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>', desc: 'Libro IVA Compras para tu contador' },
+  }},
+  comercial: { desc: 'Tu cartera de clientes, presupuestos y seguimiento de cobros.', subs: {
+    'clientes': { icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>', desc: 'Cartera y cuenta corriente de clientes' },
+    'cobranzas': { icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>', desc: 'Cobros pendientes con contacto directo' },
+    'presupuestos': { icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>', desc: 'Cotizaciones y seguimiento de ventas' },
+    'catalogo': { icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>', desc: 'Productos y servicios con precios' },
+  }},
+  compras: { desc: 'Todo el ciclo de compras — proveedores, necesidades, órdenes e historial.', subs: {
+    'proveedores': { icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>', desc: 'Directorio y cuenta corriente' },
+    'necesidades': { icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="12" y2="16"/></svg>', desc: 'Planificación y cotización de compras' },
+    'ordenes': { icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>', desc: 'Documentos formales de compra' },
+    'historial': { icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>', desc: 'Análisis histórico de precios y compras' },
+    'config-compras': { icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>', desc: 'Productos de compra y categorías' },
+  }},
+  control: { desc: 'Herramientas para conocer el verdadero estado financiero de tu negocio.', subs: {
+    'calculador': { icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/></svg>', desc: 'Precio de venta basado en costos reales' },
+    'indicadores': { icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>', desc: 'Gráficos de evolución mensual' },
+  }},
+  gestion: { desc: 'Organizá las tareas y prioridades de tu negocio.', subs: {
+    'plan-accion': { icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>', desc: 'Tablero Kanban de tareas' },
+  }},
+  micuenta: { desc: 'Configuración de tu cuenta, datos fiscales e integración con ARCA.', subs: {
+    'datos-negocio': { icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="10" r="3"/><path d="M7 21v-1a5 5 0 0 1 10 0v1"/></svg>', desc: 'Nombre, logo y datos de contacto' },
+    'datos-fiscales': { icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>', desc: 'Condición ante AFIP y punto de venta' },
+    'arca': { icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>', desc: 'Integración automática con AFIP/ARCA' },
+    'membresia': { icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>', desc: 'Plan activo, cobros y suscripción' },
+  }},
+};
+
+function buildModIndex(modId) {
+  const meta = MOD_META[modId];
+  const m = MODULES.find(x => x.id === modId);
+  if(!meta) return null;
+  const cards = m.subs.map(s => {
+    const sm = meta.subs[s.id] || {};
+    return `<div class="mod-index-card" onclick="goPage('${s.id}')">
+      <div class="mod-index-icon">${sm.icon||''}</div>
+      <div class="mod-index-info">
+        <div class="mod-index-name">${s.label}</div>
+        <div class="mod-index-desc">${sm.desc||''}</div>
+      </div>
+    </div>`;
+  }).join('');
+  return `
+    <h1 class="mod-index-title">${m.label}</h1>
+    <p class="mod-index-sub">${meta.desc}</p>
+    <div class="mod-index-label">¿Qué querés aprender?</div>
+    <div class="mod-index-grid">${cards}</div>
+  `;
+}
+
+function goModule(modId) {
+  currentMod = modId;
+  const m = MODULES.find(x => x.id === modId);
+  const visibleMods = MODULES.filter(x => x.id !== 'bienvenida');
+  document.querySelectorAll('.mod-tab').forEach((t,i) => t.classList.toggle('active', visibleMods[i]?.id === modId));
+  const subWrap = document.getElementById('sub-tabs-wrap');
+  subWrap.innerHTML = '';
+  if(m.subs.length > 0) {
+    subWrap.style.display = 'flex';
+    m.subs.forEach(s => {
+      const t = document.createElement('div');
+      t.className = 'sub-tab';
+      t.textContent = s.label;
+      t.onclick = () => goPage(s.id);
+      subWrap.appendChild(t);
+    });
+    // Hide sub-tabs on index page, show only inside sub-pages
+    subWrap.style.display = 'none';
+    // Show index page first
+    const content = document.getElementById('page-content');
+    content.style.opacity = '0';
+    content.style.transform = 'translateY(10px)';
+    setTimeout(() => {
+      content.innerHTML = buildModIndex(modId);
+      content.style.transition = 'opacity .3s ease, transform .3s ease';
+      content.style.opacity = '1';
+      content.style.transform = 'translateY(0)';
+      window.scrollTo(0,0);
+    }, 150);
+    document.getElementById('bottom-nav').style.display = 'none';
+  } else {
+    subWrap.style.display = 'none';
+    goPage(modId);
+  }
+}
+
+function goPage(pageId) {
+  const content = document.getElementById('page-content');
+  content.style.opacity = '0';
+  content.style.transform = 'translateY(10px)';
+  setTimeout(() => {
+    content.innerHTML = PAGES[pageId] || '<p>Contenido próximamente.</p>';
+    content.style.transition = 'opacity .3s ease, transform .3s ease';
+    content.style.opacity = '1';
+    content.style.transform = 'translateY(0)';
+    window.scrollTo(0,0);
+  }, 150);
+  // Update sub tabs
+  document.querySelectorAll('.sub-tab').forEach(t => {
+    t.classList.toggle('active', t.textContent === (MODULES.flatMap(m=>m.subs).find(s=>s.id===pageId)||{}).label);
+  });
+  // Update mod tab
+  const parentMod = MODULES.find(m => m.subs.some(s=>s.id===pageId) || m.id===pageId);
+  if(parentMod) {
+    currentMod = parentMod.id;
+    const visibleMods2 = MODULES.filter(x => x.id !== 'bienvenida');
+    document.querySelectorAll('.mod-tab').forEach((t,i) => t.classList.toggle('active', visibleMods2[i]?.id === parentMod.id));
+    // Show sub tabs
+    const subWrap = document.getElementById('sub-tabs-wrap');
+    if(parentMod.subs.length > 0 && subWrap.children.length === 0) {
+      subWrap.style.display = 'none';
+      parentMod.subs.forEach(s => {
+        const t = document.createElement('div');
+        t.className = 'sub-tab' + (s.id === pageId ? ' active' : '');
+        t.textContent = s.label;
+        t.onclick = () => goPage(s.id);
+        subWrap.appendChild(t);
+      });
+    }
+  }
+  // Bottom nav
+  updateBottomNav(pageId);
+}
+
+function updateBottomNav(pageId) {
+  const idx = ALL_PAGES.findIndex(p => p.id === pageId);
+  const bn = document.getElementById('bottom-nav');
+  if(pageId === 'bienvenida'){ bn.style.display='none'; return; }
+  bn.style.display = 'flex';
+  const prev = ALL_PAGES[idx-1];
+  const next = ALL_PAGES[idx+1];
+  document.getElementById('bn-prev-label').textContent = prev ? prev.label : '';
+  document.getElementById('bn-prev').style.opacity = prev ? '1' : '0';
+  document.getElementById('bn-next-label').textContent = next ? next.label : '';
+  document.getElementById('bn-next').style.opacity = next ? '1' : '0';
+  document.getElementById('bn-progress').textContent = `${idx} / ${ALL_PAGES.length - 1}`;
+}
+
+function goAdj(dir) {
+  const allIds = ALL_PAGES.map(p=>p.id);
+  // find current
+  const subActive = document.querySelector('.sub-tab.active');
+  let currentId = 'home';
+  if(subActive) {
+    const parentMod = MODULES.find(m=>m.id===currentMod);
+    const sub = parentMod?.subs.find(s=>s.label===subActive.textContent);
+    if(sub) currentId = sub.id;
+  } else { currentId = currentMod; }
+  const idx = allIds.indexOf(currentId);
+  const newIdx = idx + dir;
+  if(newIdx >= 0 && newIdx < allIds.length) goPage(allIds[newIdx]);
+}
+
+buildNav();
+goPage('bienvenida');
+</script>
+</body>
+</html>
