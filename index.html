@@ -2510,40 +2510,41 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 
       <!-- ── RESUMEN DE VENTAS ── -->
       <div id="ct-resumen-ventas" style="display:none;">
-        <!-- Banner -->
-        <div class="av-banner" style="background:#4a5e4d;border-radius:16px;padding:20px 24px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
-          <div>
-            <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:#fff;font-weight:400;line-height:1.1">Resumen de Ventas</div>
-            <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:4px;letter-spacing:.04em">Libro IVA Ventas · Para tu contador</div>
+        <!-- Banner + KPIs -->
+        <div style="background:#4a5e4d;border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px">
+            <div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;line-height:1.1">Resumen de Ventas</div>
+              <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:4px;letter-spacing:.04em">Libro IVA Ventas · Para tu contador</div>
+            </div>
+            <button onclick="exportarResumenVentas()" style="background:#fff;border:none;border-radius:12px;padding:9px 16px;font-size:13px;font-family:'DM Sans',sans-serif;color:#4a5e4d;cursor:pointer;font-weight:500;display:flex;align-items:center;gap:6px">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v7M4 7l2.5 2.5L9 7M2 11h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Exportar Excel
+            </button>
           </div>
-          <button onclick="exportarResumenVentas()" style="background:#fff;border:none;border-radius:12px;padding:9px 16px;font-size:13px;font-family:'DM Sans',sans-serif;color:#4a5e4d;cursor:pointer;font-weight:500;display:flex;align-items:center;gap:6px">
-            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v7M4 7l2.5 2.5L9 7M2 11h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Exportar Excel
-          </button>
+          <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;">
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
+              <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Comprobantes</div>
+              <div style="font-size:22px;font-weight:500;color:#fff;line-height:1;" id="rv-kpi-cant">—</div>
+            </div>
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
+              <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Total bruto</div>
+              <div style="font-size:22px;font-weight:500;color:#fff;line-height:1;" id="rv-kpi-bruto">—</div>
+            </div>
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
+              <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">NC emitidas</div>
+              <div style="font-size:22px;font-weight:500;color:#fff;line-height:1;" id="rv-kpi-nc">—</div>
+            </div>
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
+              <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Neto del período</div>
+              <div style="font-size:22px;font-weight:500;color:#fff;line-height:1;" id="rv-kpi-neto">—</div>
+            </div>
+          </div>
         </div>
-        <!-- KPIs -->
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
-          <div class="card" style="padding:16px 20px">
-            <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-m);margin-bottom:6px">Comprobantes</div>
-            <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--text-d)" id="rv-kpi-cant">—</div>
-          </div>
-          <div class="card" style="padding:16px 20px">
-            <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-m);margin-bottom:6px">Total bruto</div>
-            <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:#4a5e4d" id="rv-kpi-bruto">—</div>
-          </div>
-          <div class="card" style="padding:16px 20px">
-            <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-m);margin-bottom:6px">NC emitidas</div>
-            <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:#b05030" id="rv-kpi-nc">—</div>
-          </div>
-          <div class="card" style="padding:16px 20px">
-            <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-m);margin-bottom:6px">Neto del período</div>
-            <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--text-d)" id="rv-kpi-neto">—</div>
-          </div>
-        </div>
-        <!-- Selector de meses -->
-        <div style="background:#fff;border:0.5px solid var(--cream-d);border-radius:12px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-          <span style="font-size:11px;color:var(--text-m);font-weight:500;margin-right:4px">Período</span>
-          <div id="rv-meses-pills" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+        <!-- Selector de mes -->
+        <div style="background:#fff;border:0.5px solid var(--cream-d);border-radius:12px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:10px">
+          <span style="font-size:11px;color:var(--text-m);font-weight:500">Período</span>
+          <select id="rv-mes-select" onchange="rvSelectMes(this.value)" style="border:0.5px solid var(--cream-d);border-radius:8px;padding:7px 12px;font-size:12px;font-family:inherit;color:var(--text);background:#fff;cursor:pointer;outline:none"></select>
         </div>
         <!-- Tabla -->
         <div class="card" style="overflow:hidden">
@@ -2568,40 +2569,41 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 
       <!-- ── RESUMEN DE COMPRAS ── -->
       <div id="ct-resumen-compras" style="display:none;">
-        <!-- Banner -->
-        <div class="av-banner" style="background:#4a5e4d;border-radius:16px;padding:20px 24px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
-          <div>
-            <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:#fff;font-weight:400;line-height:1.1">Resumen de Compras</div>
-            <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:4px;letter-spacing:.04em">Libro IVA Compras · Para tu contador</div>
+        <!-- Banner + KPIs -->
+        <div style="background:#4a5e4d;border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px">
+            <div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;line-height:1.1">Resumen de Compras</div>
+              <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:4px;letter-spacing:.04em">Libro IVA Compras · Para tu contador</div>
+            </div>
+            <button onclick="exportarResumenCompras()" style="background:#fff;border:none;border-radius:12px;padding:9px 16px;font-size:13px;font-family:'DM Sans',sans-serif;color:#4a5e4d;cursor:pointer;font-weight:500;display:flex;align-items:center;gap:6px">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v7M4 7l2.5 2.5L9 7M2 11h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Exportar Excel
+            </button>
           </div>
-          <button onclick="exportarResumenCompras()" style="background:#fff;border:none;border-radius:12px;padding:9px 16px;font-size:13px;font-family:'DM Sans',sans-serif;color:#4a5e4d;cursor:pointer;font-weight:500;display:flex;align-items:center;gap:6px">
-            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v7M4 7l2.5 2.5L9 7M2 11h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Exportar Excel
-          </button>
+          <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;">
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
+              <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Comprobantes</div>
+              <div style="font-size:22px;font-weight:500;color:#fff;line-height:1;" id="rc-kpi-cant">—</div>
+            </div>
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
+              <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Total compras</div>
+              <div style="font-size:22px;font-weight:500;color:#fff;line-height:1;" id="rc-kpi-total">—</div>
+            </div>
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
+              <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Crédito fiscal IVA</div>
+              <div style="font-size:22px;font-weight:500;color:#fff;line-height:1;" id="rc-kpi-iva">—</div>
+            </div>
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
+              <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Neto gravado</div>
+              <div style="font-size:22px;font-weight:500;color:#fff;line-height:1;" id="rc-kpi-neto">—</div>
+            </div>
+          </div>
         </div>
-        <!-- KPIs -->
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
-          <div class="card" style="padding:16px 20px">
-            <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-m);margin-bottom:6px">Comprobantes</div>
-            <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--text-d)" id="rc-kpi-cant">—</div>
-          </div>
-          <div class="card" style="padding:16px 20px">
-            <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-m);margin-bottom:6px">Total compras</div>
-            <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:#4a5e4d" id="rc-kpi-total">—</div>
-          </div>
-          <div class="card" style="padding:16px 20px">
-            <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-m);margin-bottom:6px">Crédito fiscal IVA</div>
-            <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:#3a6a8e" id="rc-kpi-iva">—</div>
-          </div>
-          <div class="card" style="padding:16px 20px">
-            <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-m);margin-bottom:6px">Neto gravado</div>
-            <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--text-d)" id="rc-kpi-neto">—</div>
-          </div>
-        </div>
-        <!-- Selector de meses -->
-        <div style="background:#fff;border:0.5px solid var(--cream-d);border-radius:12px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-          <span style="font-size:11px;color:var(--text-m);font-weight:500;margin-right:4px">Período</span>
-          <div id="rc-meses-pills" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+        <!-- Selector de mes -->
+        <div style="background:#fff;border:0.5px solid var(--cream-d);border-radius:12px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:10px">
+          <span style="font-size:11px;color:var(--text-m);font-weight:500">Período</span>
+          <select id="rc-mes-select" onchange="rcSelectMes(this.value)" style="border:0.5px solid var(--cream-d);border-radius:8px;padding:7px 12px;font-size:12px;font-family:inherit;color:var(--text);background:#fff;cursor:pointer;outline:none"></select>
         </div>
         <!-- Tabla -->
         <div class="card" style="overflow:hidden">
@@ -11318,19 +11320,15 @@ async function loadResumenVentas() {
     const todas = snap.docs.map(d => ({id: d.id, ...d.data()}));
     const mesSel = window._rvMesSel || new Date().toISOString().slice(0,7);
     window._rvMesSel = mesSel;
-    const pillsEl = document.getElementById('rv-meses-pills');
-    if (pillsEl) {
-      const lblMes = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-      const meses = [];
+    const selectEl = document.getElementById('rv-mes-select');
+    if (selectEl) {
+      const lblMes = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
       const hoy = new Date();
-      for (let i=0; i<12; i++) {
-        const d = new Date(hoy.getFullYear(), hoy.getMonth()-i, 1);
-        const ym = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
-        meses.push({ym, lbl: lblMes[d.getMonth()] + ' ' + String(d.getFullYear()).slice(-2)});
-      }
-      pillsEl.innerHTML = meses.map(m =>
-        `<button onclick="rvSelectMes('${m.ym}')" style="padding:6px 12px;border-radius:20px;border:0.5px solid ${m.ym===mesSel?'#4a5e4d':'var(--cream-d)'};background:${m.ym===mesSel?'#4a5e4d':'#fff'};color:${m.ym===mesSel?'#fff':'var(--text-m)'};font-size:11px;font-family:inherit;cursor:pointer">${m.lbl}</button>`
-      ).join('');
+      const year = hoy.getFullYear();
+      selectEl.innerHTML = Array.from({length: hoy.getMonth()+1}, (_,m) => {
+        const ym = year + '-' + String(m+1).padStart(2,'0');
+        return `<option value="${ym}"${ym===mesSel?' selected':''}>${lblMes[m]} ${year}</option>`;
+      }).join('');
     }
     const facs = todas.filter(f => (f.creadoEn||'').slice(0,7) === mesSel);
     facs.sort((a,b)=>(a.creadoEn||'').localeCompare(b.creadoEn||''));
@@ -11364,10 +11362,10 @@ async function loadResumenVentas() {
         <td style="font-size:12px">${tipoLabels[tipo]||'Fact.'}</td>
         <td style="font-size:11px;color:var(--text-m)">${nro}</td>
         <td>${receptor}</td>
-        <td class="r" style="font-family:'Cormorant Garamond',serif;font-size:14px">${fmt(neto)}</td>
-        <td class="r" style="font-family:'Cormorant Garamond',serif;font-size:14px">${fmt(iva21)}</td>
-        <td class="r" style="font-family:'Cormorant Garamond',serif;font-size:14px">${fmt(iva105)}</td>
-        <td class="r" style="font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:500">${fmt(total)}</td>
+        <td class="r" style="font-family:inherit;font-size:13px">${fmt(neto)}</td>
+        <td class="r" style="font-family:inherit;font-size:13px">${fmt(iva21)}</td>
+        <td class="r" style="font-family:inherit;font-size:13px">${fmt(iva105)}</td>
+        <td class="r" style="font-family:inherit;font-size:13px;font-weight:500">${fmt(total)}</td>
       </tr>`;
     }).join('');
     document.getElementById('rv-kpi-cant').textContent = cantComp;
@@ -11385,10 +11383,10 @@ async function loadResumenVentas() {
       document.getElementById('rv-tbody').innerHTML = filas;
       document.getElementById('rv-tfoot').innerHTML = `<tr style="background:#f8f7f3;font-weight:600">
         <td colspan="4" style="padding:14px 12px;font-size:11px;text-transform:uppercase;letter-spacing:.06em">Totales</td>
-        <td class="r" style="font-family:'Cormorant Garamond',serif;font-size:15px;padding:14px 12px">${fmt(totNeto)}</td>
-        <td class="r" style="font-family:'Cormorant Garamond',serif;font-size:15px;padding:14px 12px">${fmt(totIva21)}</td>
-        <td class="r" style="font-family:'Cormorant Garamond',serif;font-size:15px;padding:14px 12px">${fmt(totIva105)}</td>
-        <td class="r" style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;padding:14px 12px">${fmt(totGral)}</td>
+        <td class="r" style="font-family:inherit;font-size:13px;font-weight:600;padding:14px 12px">${fmt(totNeto)}</td>
+        <td class="r" style="font-family:inherit;font-size:13px;font-weight:600;padding:14px 12px">${fmt(totIva21)}</td>
+        <td class="r" style="font-family:inherit;font-size:13px;font-weight:600;padding:14px 12px">${fmt(totIva105)}</td>
+        <td class="r" style="font-family:inherit;font-size:14px;font-weight:600;padding:14px 12px">${fmt(totGral)}</td>
       </tr>`;
     }
   } catch(e) {
@@ -11421,19 +11419,15 @@ async function loadResumenCompras() {
     const todas = facsByProv.flat().filter(f => !f.eliminado && f.esOC !== true);
     const mesSel = window._rcMesSel || new Date().toISOString().slice(0,7);
     window._rcMesSel = mesSel;
-    const pillsEl = document.getElementById('rc-meses-pills');
-    if (pillsEl) {
-      const lblMes = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-      const meses = [];
+    const selectEl = document.getElementById('rc-mes-select');
+    if (selectEl) {
+      const lblMes = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
       const hoy = new Date();
-      for (let i=0; i<12; i++) {
-        const d = new Date(hoy.getFullYear(), hoy.getMonth()-i, 1);
-        const ym = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
-        meses.push({ym, lbl: lblMes[d.getMonth()] + ' ' + String(d.getFullYear()).slice(-2)});
-      }
-      pillsEl.innerHTML = meses.map(m =>
-        `<button onclick="rcSelectMes('${m.ym}')" style="padding:6px 12px;border-radius:20px;border:0.5px solid ${m.ym===mesSel?'#4a5e4d':'var(--cream-d)'};background:${m.ym===mesSel?'#4a5e4d':'#fff'};color:${m.ym===mesSel?'#fff':'var(--text-m)'};font-size:11px;font-family:inherit;cursor:pointer">${m.lbl}</button>`
-      ).join('');
+      const year = hoy.getFullYear();
+      selectEl.innerHTML = Array.from({length: hoy.getMonth()+1}, (_,m) => {
+        const ym = year + '-' + String(m+1).padStart(2,'0');
+        return `<option value="${ym}"${ym===mesSel?' selected':''}>${lblMes[m]} ${year}</option>`;
+      }).join('');
     }
     const facs = todas.filter(f => {
       const ym = (f.fecha || f.creadoEn || '').slice(0,7);
@@ -11456,10 +11450,10 @@ async function loadResumenCompras() {
         <td>${f.provNombre}</td>
         <td style="font-size:12px">Factura</td>
         <td style="font-size:11px;color:var(--text-m)">${numero}</td>
-        <td class="r" style="font-family:'Cormorant Garamond',serif;font-size:14px">${fmt(neto)}</td>
-        <td class="r" style="font-family:'Cormorant Garamond',serif;font-size:14px">${fmt(iva21)}</td>
-        <td class="r" style="font-family:'Cormorant Garamond',serif;font-size:14px">${fmt(iva105)}</td>
-        <td class="r" style="font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:500">${fmt(total)}</td>
+        <td class="r" style="font-family:inherit;font-size:13px">${fmt(neto)}</td>
+        <td class="r" style="font-family:inherit;font-size:13px">${fmt(iva21)}</td>
+        <td class="r" style="font-family:inherit;font-size:13px">${fmt(iva105)}</td>
+        <td class="r" style="font-family:inherit;font-size:13px;font-weight:500">${fmt(total)}</td>
       </tr>`;
     }).join('');
     document.getElementById('rc-kpi-cant').textContent = cantComp;
@@ -11477,10 +11471,10 @@ async function loadResumenCompras() {
       document.getElementById('rc-tbody').innerHTML = filas;
       document.getElementById('rc-tfoot').innerHTML = `<tr style="background:#f8f7f3;font-weight:600">
         <td colspan="4" style="padding:14px 12px;font-size:11px;text-transform:uppercase;letter-spacing:.06em">Totales</td>
-        <td class="r" style="font-family:'Cormorant Garamond',serif;font-size:15px;padding:14px 12px">${fmt(totNeto)}</td>
-        <td class="r" style="font-family:'Cormorant Garamond',serif;font-size:15px;padding:14px 12px">${fmt(totIva21)}</td>
-        <td class="r" style="font-family:'Cormorant Garamond',serif;font-size:15px;padding:14px 12px">${fmt(totIva105)}</td>
-        <td class="r" style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;padding:14px 12px">${fmt(totGral)}</td>
+        <td class="r" style="font-family:inherit;font-size:13px;font-weight:600;padding:14px 12px">${fmt(totNeto)}</td>
+        <td class="r" style="font-family:inherit;font-size:13px;font-weight:600;padding:14px 12px">${fmt(totIva21)}</td>
+        <td class="r" style="font-family:inherit;font-size:13px;font-weight:600;padding:14px 12px">${fmt(totIva105)}</td>
+        <td class="r" style="font-family:inherit;font-size:14px;font-weight:600;padding:14px 12px">${fmt(totGral)}</td>
       </tr>`;
     }
   } catch(e) {
