@@ -9416,7 +9416,27 @@ function renderCajaTable(movs, facturadosMap = new Map()) {
   }
 }
 
+function _verificarDatosFiscales() {
+  const c = currentClientData || {};
+  if (c.negocioCuit && c.negocioPuntoVenta && c.negocioCondicionIVA) return true;
+  showToast('Para emitir facturas completá tus datos fiscales en Mi cuenta → Datos fiscales', 'error');
+  setTimeout(() => {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+    const t = document.createElement('div');
+    t.className = 'toast info';
+    t.style.cssText = 'cursor:pointer;text-decoration:underline;';
+    t.textContent = '→ Ir a Mi cuenta';
+    t.onclick = () => openModal('miCuentaModal');
+    container.appendChild(t);
+    requestAnimationFrame(() => { requestAnimationFrame(() => { t.classList.add('show'); }); });
+    setTimeout(() => { t.classList.remove('show'); setTimeout(() => { if(t.parentNode) t.parentNode.removeChild(t); }, 250); }, 5000);
+  }, 400);
+  return false;
+}
+
 window.abrirModalFacturaCaja = async function(movId) {
+  if (!_verificarDatosFiscales()) return;
   try {
     const { getDoc, doc } = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
     const movSnap = await getDoc(doc(db, 'libroCaja', movId));
@@ -11143,6 +11163,7 @@ window.descargarPdfFactura = async function(facturaId) {
   }
 };
 window.abrirNuevaFacturaLibre = function() {
+  if (!_verificarDatosFiscales()) return;
   document.getElementById('mf-list-view').style.display = 'none';
   const nflView = document.getElementById('nfl-view');
   nflView.style.display = 'block';
