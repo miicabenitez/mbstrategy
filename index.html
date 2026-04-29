@@ -2384,27 +2384,28 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
       <!-- ── MIS FACTURAS ── -->
       <div id="ct-mis-facturas" style="display:none;">
         <div id="mf-list-view">
-        <!-- Banner -->
-        <div class="av-banner" style="background:#4a5e4d;border-radius:16px;padding:20px 24px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
-          <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:#fff;font-weight:400">Mis Facturas</div>
-          <button onclick="abrirNuevaFacturaLibre()" style="background:#fff;border:none;border-radius:12px;padding:9px 16px;font-size:13px;font-family:'DM Sans',sans-serif;color:#4a5e4d;cursor:pointer;font-weight:500;display:flex;align-items:center;gap:6px">
-            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v9M2 6.5h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-            Nueva factura
-          </button>
-        </div>
-        <!-- KPIs -->
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">
-          <div class="card" style="padding:16px 20px">
-            <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-m);margin-bottom:6px">Emitidas este mes</div>
-            <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--text-d)" id="mf-kpi-cantidad">—</div>
+        <!-- Banner + KPIs -->
+        <div style="background:#4a5e4d;border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400">Mis Facturas</div>
+            <button onclick="abrirNuevaFacturaLibre()" style="background:#fff;border:none;border-radius:12px;padding:9px 16px;font-size:13px;font-family:'DM Sans',sans-serif;color:#4a5e4d;cursor:pointer;font-weight:500;display:flex;align-items:center;gap:6px">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v9M2 6.5h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              Nueva factura
+            </button>
           </div>
-          <div class="card" style="padding:16px 20px">
-            <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-m);margin-bottom:6px">Total facturado</div>
-            <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:#4a5e4d" id="mf-kpi-total">—</div>
-          </div>
-          <div class="card" style="padding:16px 20px">
-            <div style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-m);margin-bottom:6px">Última factura</div>
-            <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--text-d)" id="mf-kpi-ultima">—</div>
+          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;">
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
+              <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Emitidas este mes</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#fff;line-height:1;" id="mf-kpi-cantidad">—</div>
+            </div>
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
+              <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Total facturado</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#fff;line-height:1;" id="mf-kpi-total">—</div>
+            </div>
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
+              <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Última factura</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#fff;line-height:1;" id="mf-kpi-ultima">—</div>
+            </div>
           </div>
         </div>
         <!-- Tabla -->
@@ -2433,15 +2434,23 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         <div id="nfl-view" style="display:none;">
           <div style="background:linear-gradient(135deg,#2d3d30,#3a4e3d,#2d3d30);border-radius:16px;padding:20px 24px;margin-bottom:16px">
             <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:#fff;font-weight:400">Nueva factura</div>
-            <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:2px">Factura electrónica ARCA</div>
+            <div id="nfl-banner-subtitle" style="font-size:11px;color:rgba(255,255,255,.5);margin-top:2px">Factura electrónica ARCA</div>
           </div>
           <div class="card" style="margin-bottom:12px">
             <div class="ct">Emisor</div>
-            <div style="display:flex;flex-wrap:wrap;gap:6px 20px;align-items:center">
-              <div style="font-size:13px;font-weight:500;color:var(--text)" id="nfl-emisor-nombre">—</div>
-              <div style="font-size:12px;color:var(--text-l)">CUIT <span id="nfl-emisor-cuit" style="font-weight:500">—</span></div>
-              <div style="font-size:12px;color:var(--text-l)" id="nfl-emisor-pv">—</div>
-              <span style="font-size:11px;background:#e8ede8;color:#4a5e4d;padding:2px 8px;border-radius:6px;font-weight:500" id="nfl-emisor-cond">—</span>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+              <div>
+                <div style="font-size:10px;color:var(--text-l);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">Negocio</div>
+                <div style="font-size:13px;font-weight:500;color:var(--text)" id="nfl-emisor-nombre">—</div>
+              </div>
+              <div>
+                <div style="font-size:10px;color:var(--text-l);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">CUIT</div>
+                <div style="font-size:13px;font-weight:500;color:var(--text)" id="nfl-emisor-cuit">—</div>
+              </div>
+              <div>
+                <div style="font-size:10px;color:var(--text-l);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">Condición IVA</div>
+                <span style="font-size:11px;background:#e8ede8;color:#4a5e4d;padding:2px 8px;border-radius:6px;font-weight:500" id="nfl-emisor-cond">—</span>
+              </div>
             </div>
           </div>
           <div class="card" style="margin-bottom:12px">
@@ -10851,8 +10860,6 @@ async function loadMisFacturasModule() {
     document.getElementById('mf-empty').style.display = 'none';
     document.getElementById('mf-tabla').style.display = 'table';
     const tipoLabels = {1:'Factura A', 6:'Factura B', 11:'Factura C', 3:'NC A', 8:'NC B', 13:'NC C'};
-    const tipoColors = {1:'#e8f0f8', 6:'#f5ebe8', 11:'#e8ede8', 3:'#fde8d8', 8:'#fde8d8', 13:'#fde8d8'};
-    const tipoText  = {1:'#3a6a8e', 6:'#8e5a3a', 11:'#4a5e4d', 3:'#b05030', 8:'#b05030', 13:'#b05030'};
     document.getElementById('mf-tbody').innerHTML = facturas.map(f => {
       const tipo = f.tipoComprobante || 11;
       const nro = ('0000'+(f.puntoVenta||2)).slice(-4)+'-'+('00000000'+(f.nroComprobante||0)).slice(-8);
@@ -10864,7 +10871,7 @@ async function loadMisFacturasModule() {
       return `<tr>
         <td style="font-size:12px;color:var(--text-m)">${fecha}</td>
         <td>${receptor}</td>
-        <td><span style="font-size:10px;padding:2px 8px;border-radius:5px;font-weight:500;background:${tipoColors[tipo]||'#eee'};color:${tipoText[tipo]||'#666'}">${tipoLabels[tipo]||'Fact.'}</span>${ambienteBadge}</td>
+        <td><span style="font-size:10px;padding:2px 8px;border-radius:5px;font-weight:500;background:#e8ede8;color:#4a5e4d">${tipoLabels[tipo]||'Fact.'}</span>${ambienteBadge}</td>
         <td style="font-size:11px;color:var(--text-m)">${nro}</td>
         <td class="r" style="font-family:'Cormorant Garamond',serif;font-size:15px">$${Number(f.importeTotal||0).toLocaleString('es-AR')}</td>
         <td><span style="font-size:10px;padding:2px 8px;border-radius:5px;background:#e8ede8;color:#4a5e4d">Emitida</span></td>
@@ -11105,7 +11112,6 @@ window.abrirNuevaFacturaLibre = function() {
   const condMap = {monotributista:'Monotributista',responsable_inscripto:'Responsable Inscripto',exento:'Exento',consumidor_final:'Consumidor Final'};
   document.getElementById('nfl-emisor-nombre').textContent = c.negocioNombre || c.titularNombre || '—';
   document.getElementById('nfl-emisor-cuit').textContent = c.negocioCuit || '—';
-  document.getElementById('nfl-emisor-pv').textContent = c.negocioPuntoVenta ? 'PV ' + c.negocioPuntoVenta : '—';
   document.getElementById('nfl-emisor-cond').textContent = condMap[c.negocioCondicionIVA] || 'Monotributista';
   document.getElementById('nfl-prod-search').value = '';
   document.getElementById('nfl-prod-dropdown').style.display = 'none';
@@ -11119,6 +11125,38 @@ window.abrirNuevaFacturaLibre = function() {
   selectNflCond(document.querySelector('.nfl-pill[data-cond="5"]'), '5', false);
   nflRecalcular();
   if (typeof loadProductos === 'function' && !_productos.length) loadProductos().catch(()=>{});
+  const sub = document.getElementById('nfl-banner-subtitle');
+  if (sub) {
+    sub.style.color = 'rgba(255,255,255,.4)';
+    sub.textContent = 'Calculando número...';
+    const condEmisor = c.negocioCondicionIVA || 'monotributista';
+    const puntoVenta = parseInt(c.negocioPuntoVenta) || 2;
+    const tipoComp = (condEmisor === 'responsable_inscripto' || condEmisor === 'exento') ? 6 : 11;
+    const tipoLabel = {1:'Factura A', 6:'Factura B', 11:'Factura C'};
+    (async () => {
+      try {
+        const idToken = await currentUser.getIdToken(true);
+        const res = await fetch('/.netlify/functions/afip', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json','Authorization':'Bearer '+idToken},
+          body: JSON.stringify({accion:'ultimoComprobante', puntoVenta, tipoComprobante: tipoComp})
+        });
+        const data = await res.json();
+        if (res.ok && data.ok) {
+          const pv = ('0000'+puntoVenta).slice(-4);
+          const nro = ('00000000'+data.siguiente).slice(-8);
+          sub.style.color = 'rgba(255,255,255,.6)';
+          sub.textContent = (tipoLabel[tipoComp]||'Factura') + ' · ' + pv + '-' + nro;
+        } else {
+          sub.style.color = 'rgba(255,255,255,.5)';
+          sub.textContent = 'Factura electrónica ARCA';
+        }
+      } catch {
+        sub.style.color = 'rgba(255,255,255,.5)';
+        sub.textContent = 'Factura electrónica ARCA';
+      }
+    })();
+  }
 };
 
 window.volverMisFacturas = function() {
