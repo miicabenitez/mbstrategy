@@ -1218,6 +1218,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         </button>
         <div class="sb-sub" id="sbsub-ventas">
           <button class="sb-subitem" data-sub="clientes" onclick="sidebarNav('ventas','clientes')">Clientes</button>
+          <button class="sb-subitem" data-sub="cobranzas" onclick="sidebarNav('ventas','cobranzas')">Cobranzas</button>
           <button class="sb-subitem" data-sub="presupuestos" onclick="sidebarNav('ventas','presupuestos')">Presupuestos</button>
           <button class="sb-subitem" data-sub="catalogo" onclick="sidebarNav('ventas','catalogo')">Catálogo</button>
         </div>
@@ -3239,6 +3240,54 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 
         </div><!-- /mc-detalle-view -->
 
+      </div>
+
+      <!-- COBRANZAS -->
+      <div id="ct-cobranzas" style="display:none;">
+        <!-- Banner + KPIs -->
+        <div style="background:linear-gradient(135deg,#2d3d30,#3a4e3d,#2d3d30);border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;">
+          <div style="margin-bottom:16px;">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400">Cobranzas</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.55);margin-top:2px">Presupuestos aprobados pendientes de cobro</div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;">
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
+              <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Total pendiente</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#b09088;line-height:1;" id="cb-kpi-total">—</div>
+            </div>
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
+              <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Cantidad</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#fff;line-height:1;" id="cb-kpi-cantidad">—</div>
+            </div>
+          </div>
+        </div>
+        <!-- Tabla -->
+        <div class="card" style="overflow:hidden;padding:0;">
+          <div id="cb-empty" style="display:none;padding:48px 24px;text-align:center;color:var(--text-m)">
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" style="opacity:.35;margin-bottom:10px"><path d="M20 7H4a2 2 0 00-2 2v9a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/><path d="M9 13l2 2 4-4"/></svg>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--text);margin-bottom:4px">No tenés cobros pendientes</div>
+            <div style="font-size:12px">Cuando aprobes un presupuesto va a aparecer acá hasta que registres el cobro.</div>
+          </div>
+          <table class="caja-table" id="cb-tabla" style="display:none">
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th class="cb-col-tel">Teléfono</th>
+                <th>Presupuesto</th>
+                <th class="r">Monto</th>
+                <th class="cb-col-fecha">Fecha</th>
+                <th style="text-align:center">Días</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="cb-tbody"></tbody>
+          </table>
+        </div>
+        <style>
+          @media(max-width:768px){
+            #cb-tabla .cb-col-tel,#cb-tabla .cb-col-fecha,#ct-cobranzas thead .cb-col-tel,#ct-cobranzas thead .cb-col-fecha{display:none}
+          }
+        </style>
       </div>
 
       <!-- CALCULADOR -->
@@ -14154,6 +14203,89 @@ async function loadMcModule() {
   } catch(e){ console.log('loadMcModule error:', e); showAppError('No se pudieron cargar los clientes. Recargá la página.'); }
 }
 
+async function loadCobranzasModule() {
+  if(!currentClientUID) return;
+  const setEl = (id,v) => { const el = document.getElementById(id); if(el) el.textContent = v; };
+  try {
+    const csSnap = await getDocs(collection(db,'clientes',currentClientUID,'misClientes'));
+    const clientesById = new Map();
+    const clientesByName = new Map();
+    csSnap.forEach(d => {
+      const data = d.data();
+      if(data.eliminado) return;
+      const obj = {id:d.id, ...data};
+      clientesById.set(d.id, obj);
+      if(data.nombre) clientesByName.set((data.nombre||'').toLowerCase().trim(), obj);
+    });
+    const psSnap = await getDocs(collection(db,'clientes',currentClientUID,'presupuestos'));
+    const pendientes = [];
+    const hoy = new Date();
+    psSnap.forEach(d => {
+      const p = {id:d.id, ...d.data()};
+      if(p.eliminado) return;
+      if(p.estado !== 'Aprobado') return;
+      const cli = p.clienteId ? clientesById.get(p.clienteId) : (p.cliente ? clientesByName.get((p.cliente||'').toLowerCase().trim()) : null);
+      const nombre = cli?.nombre || p.cliente || '—';
+      const tel = String(cli?.tel || cli?.telefono || '').replace(/[^\d]/g,'');
+      const monto = getPresupMonto(p);
+      const fechaStr = p.fecha || p.creadoEn || '';
+      const fechaDt = fechaStr ? new Date(fechaStr) : null;
+      const dias = fechaDt && !isNaN(fechaDt) ? Math.max(0, Math.floor((hoy - fechaDt) / 86400000)) : 0;
+      pendientes.push({
+        id: p.id,
+        clienteId: cli?.id || p.clienteId || null,
+        cliente: nombre,
+        tel,
+        descripcion: p.descripcion || '—',
+        monto,
+        moneda: p.moneda || 'ARS',
+        fecha: fechaDt,
+        dias
+      });
+    });
+    pendientes.sort((a,b) => b.dias - a.dias);
+    const totalArs = pendientes.filter(p => (p.moneda||'ARS') === 'ARS').reduce((s,p) => s+p.monto, 0);
+    setEl('cb-kpi-total', '$' + totalArs.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}));
+    setEl('cb-kpi-cantidad', String(pendientes.length));
+    const empty = document.getElementById('cb-empty');
+    const tabla = document.getElementById('cb-tabla');
+    const tbody = document.getElementById('cb-tbody');
+    if(!tbody) return;
+    if(pendientes.length === 0) {
+      if(empty) empty.style.display = 'block';
+      if(tabla) tabla.style.display = 'none';
+      return;
+    }
+    if(empty) empty.style.display = 'none';
+    if(tabla) tabla.style.display = '';
+    const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    const fmtFecha = d => d && !isNaN(d) ? d.toLocaleDateString('es-AR',{day:'2-digit',month:'short'}) : '—';
+    const badgeColor = d => d > 30 ? {bg:'#fce4e4',fg:'#9a3a3a'} : d >= 7 ? {bg:'#fdf3d8',fg:'#8a6d1f'} : {bg:'#e8ede8',fg:'#4a5e4d'};
+    const waSvg = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.946C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 018.413 3.488 11.824 11.824 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884a9.86 9.86 0 001.51 5.26l-.999 3.648 3.978-1.607zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.149-.174.198-.298.298-.497.099-.198.05-.372-.025-.521-.075-.149-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/></svg>';
+    tbody.innerHTML = pendientes.map(p => {
+      const c = badgeColor(p.dias);
+      const wa = p.tel
+        ? `<a href="https://wa.me/549${esc(p.tel)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Enviar WhatsApp" style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;background:#25D366;color:#fff;text-decoration:none;">${waSvg}</a>`
+        : '';
+      const onclickRow = p.clienteId ? ` onclick="openMcDetalle('${esc(p.clienteId)}')"` : '';
+      const telDisplay = p.tel || '—';
+      const moneda = (p.moneda||'ARS') === 'USD' ? 'USD ' : '$';
+      return `<tr${onclickRow}>
+        <td>${esc(p.cliente)}</td>
+        <td class="cb-col-tel">${esc(telDisplay)}</td>
+        <td>${esc(p.descripcion)}</td>
+        <td class="r">${moneda}${p.monto.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+        <td class="cb-col-fecha">${fmtFecha(p.fecha)}</td>
+        <td style="text-align:center"><span style="display:inline-block;padding:3px 9px;border-radius:8px;background:${c.bg};color:${c.fg};font-size:11px;font-weight:500">${p.dias}d</span></td>
+        <td style="text-align:center">${wa}</td>
+      </tr>`;
+    }).join('');
+  } catch(e) {
+    console.log('loadCobranzasModule error:', e);
+  }
+}
+window.loadCobranzasModule = loadCobranzasModule;
+
 function renderMcModule() {
   const setEl=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
 
@@ -20926,6 +21058,7 @@ window.showCTab = function(tab, btn) {
   if(tab==='historial-compra') { loadOrdenesCompra().then(()=>renderHistorialCompra()); }
   if(tab==='productos') loadProductos();
   if(tab==='mclientes') loadMcModule();
+  if(tab==='cobranzas') loadCobranzasModule();
   if(tab==='clientes') {
     document.getElementById('cc-lista-view').style.display = 'block';
     document.getElementById('cc-detalle-view').style.display = 'none';
@@ -22391,6 +22524,7 @@ window.sidebarNav=function(mod,sub){
     }else if(mod==='ventas'){
       if(sub==='presupuestos')window.showCTab('presupuestos',null);
       else if(sub==='catalogo')window.showCTab('productos',null);
+      else if(sub==='cobranzas')window.showCTab('cobranzas',null);
     }else if(mod==='compras'){
       if(sub==='necesidades')window.showCTab('necesidades',null);
       else if(sub==='proveedores')window.showCTab('proveedores',null);
