@@ -10918,7 +10918,7 @@ window.descargarPdfFactura = async function(facturaId) {
     const sf = a => pdf.setFillColor(a[0],a[1],a[2]);
     const sd = a => pdf.setDrawColor(a[0],a[1],a[2]);
     const st = a => pdf.setTextColor(a[0],a[1],a[2]);
-    const fmt = v => '$' + Number(Math.round(v)||0).toLocaleString('es-AR');
+    const fmt = v => '$' + Number(v||0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
     const fmtCuit = x => { const s=String(x||'').replace(/\D/g,''); return s.length===11 ? s.slice(0,2)+'-'+s.slice(2,10)+'-'+s.slice(10) : (s||'—'); };
     const fmtFechaISO = iso => {
       try {
