@@ -1277,6 +1277,11 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
           <div class="sb-footer-sub" id="sb-plan-badge" style="display:none;"></div>
         </div>
       </button>
+      <div style="height:.5px;background:rgba(255,255,255,.1);margin:4px 8px;"></div>
+      <a href="https://sistema.mbstrategy.com.ar/instructivo.html" target="_blank" rel="noopener" class="sb-footer-btn" style="text-decoration:none;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b09088" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+        <div class="sb-footer-label" style="color:#b09088;">Manual de uso</div>
+      </a>
       <button class="sb-footer-btn" onclick="doLogout()" style="margin-top:2px;">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.5" stroke-linecap="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
         <div class="sb-footer-label" style="color:rgba(255,255,255,.5);">Cerrar sesión</div>
@@ -3943,6 +3948,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
               <div style="font-size:11px;color:var(--text-l);margin-top:2px;">Aparecen en todas tus facturas electrónicas</div>
             </div>
           </div>
+          <div id="micuenta-afip-status" style="margin-bottom:14px;"></div>
           <!-- CUIT + Punto de venta en 2 columnas -->
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
             <div class="fg" style="margin:0;"><label class="fl">CUIT</label><input type="text" class="fi" id="micuenta-negocio-cuit" placeholder="20-12345678-9" onblur="onblurCuit(this)"/></div>
@@ -16764,6 +16770,25 @@ async function loadMiCuentaPage() {
       setVal('micuenta-negocio-dir', data.negocioDir||'');
       selectMiCuentaCondicionIVA(data.negocioCondicionIVA||'');
       setVal('micuenta-punto-venta', data.negocioPuntoVenta||'');
+      const _afipStatus = document.getElementById('micuenta-afip-status');
+      if (_afipStatus) {
+        const _hasCuit = !!(data.negocioCuit||'').trim();
+        const _hasPv = !!(data.negocioPuntoVenta||'').trim();
+        const _hasCond = !!(data.negocioCondicionIVA||'').trim();
+        if (_hasCuit && _hasPv && _hasCond) {
+          _afipStatus.innerHTML = '<div style="display:flex;align-items:center;gap:8px;background:#eef5ef;border:.5px solid #c8d8c9;border-radius:10px;padding:10px 14px;font-size:12px;font-weight:500;color:#3f6149;">✅ Facturación lista — podés emitir facturas electrónicas</div>';
+        } else {
+          const _faltantes = [];
+          if (!_hasCuit) _faltantes.push('CUIT');
+          if (!_hasPv) _faltantes.push('Punto de venta ARCA');
+          if (!_hasCond) _faltantes.push('Condición IVA');
+          _afipStatus.innerHTML = '<div style="background:#fffaeb;border:.5px solid #e5d48a;border-radius:10px;padding:10px 14px;font-size:12px;">' +
+            '<div style="font-weight:600;color:#856c00;margin-bottom:4px;">⚠️ Completá tu configuración fiscal</div>' +
+            '<div style="color:#9a7c0a;margin-bottom:4px;">Falta completar: ' + _faltantes.join(', ') + '</div>' +
+            '<a href="https://sistema.mbstrategy.com.ar/instructivo.html" target="_blank" rel="noopener" style="font-size:11px;color:#4a5e4d;font-weight:500;text-decoration:underline;">Ver instructivo →</a>' +
+            '</div>';
+        }
+      }
       if (data.negocioPvComprobante) {
         document.getElementById('micuenta-pv-preview').style.display = 'block';
         document.getElementById('micuenta-pv-empty').style.display = 'none';
