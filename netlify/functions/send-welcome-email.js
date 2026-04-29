@@ -12,7 +12,7 @@ const transporter = nodemailer.createTransport({
 });
 
 function buildEmailHTML({ nombre, negocioNombre, email, password, plan, trialEnd }) {
-  const planLabel = plan === 'pro' ? 'Pro' : 'Base · 7 días gratis';
+  const planLabel = plan === 'pro' ? 'Pro' : 'Base · 10 días gratis';
   const isBase = plan !== 'pro';
   return `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
@@ -71,7 +71,7 @@ function buildEmailHTML({ nombre, negocioNombre, email, password, plan, trialEnd
 
   ${isBase ? `<!-- Trial warning -->
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#FFF8ED;border-radius:10px;border:1px solid #F5E6C8;margin-bottom:24px;"><tr><td style="padding:14px 18px;">
-    <p style="font-size:12px;line-height:1.6;color:#B08A42;margin:0;">Recordá: Tenés 7 días para explorar sin cargo. Si no cancelás, tu suscripción se activa automáticamente el <strong>${trialEnd || ''}</strong>.</p>
+    <p style="font-size:12px;line-height:1.6;color:#B08A42;margin:0;">Recordá: Tenés 10 días para explorar sin cargo. Si no cancelás, tu suscripción se activa automáticamente el <strong>${trialEnd || ''}</strong>.</p>
   </td></tr></table>` : ''}
 
   <!-- WhatsApp -->

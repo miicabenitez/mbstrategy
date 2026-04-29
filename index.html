@@ -9141,7 +9141,13 @@ async function loadCajaModule() {
     // 4. Renderizar
     renderCajaKPIs(movs);
     renderCajaChips(cuentasUnicas, todosMovs);
-    renderCajaTable(movs);
+    const facturasSnap = await getDocs(collection(db, 'clientes', uid, 'facturas'));
+    const facturadosMap = new Map();
+    facturasSnap.forEach(d => {
+      const fd = d.data();
+      if (fd.movId) facturadosMap.set(fd.movId, {nroComprobante: fd.nroComprobante, puntoVenta: fd.puntoVenta});
+    });
+    renderCajaTable(movs, facturadosMap);
     // Animación staggered de cards
     document.querySelectorAll('#ct-contabilidad .dash-card').forEach((c,i) => {
       c.classList.remove('in');
@@ -9288,7 +9294,7 @@ window.cajaFiltrarCuenta = function(nombre, _el) {
   renderCajaTable(filtrados);
 };
 
-function renderCajaTable(movs) {
+function renderCajaTable(movs, facturadosMap = new Map()) {
   const tbody = document.getElementById('caja-tbody');
   if(!tbody) return;
   const tableCard = document.getElementById('caja-table-card');
@@ -9379,8 +9385,13 @@ function renderCajaTable(movs) {
     const cuentaLabel = m.tipo==='transfer'
       ? `${m.cuentaDesde||'?'} → ${m.cuentaHacia||'?'}`
       : m.tipo==='transferencia' ? (m.cuentaOrigen||'—') : (m.cuenta||'—');
-    const accionTd = m.tipo === 'ingreso'
-      ? `<td class="c-accion" onclick="event.stopPropagation();abrirModalFacturaCaja('${m.id}')" title="Emitir factura" style="cursor:pointer;"><div style="width:32px;height:32px;border-radius:8px;border:.5px solid rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;color:#9ca3af;transition:all .15s;" onmouseover="this.style.background='#e8ede8';this.style.borderColor='#4a5e4d';this.style.color='#4a5e4d'" onmouseout="this.style.background='';this.style.borderColor='rgba(0,0,0,.08)';this.style.color='#9ca3af'"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="2.5" y="1.5" width="10" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M5 5h5M5 7.5h5M5 10h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></div></td>`
+    const noFacturable = ['apertura de caja','retiro de socio'].includes((m.concepto||'').toLowerCase()) || m.origen === 'cierre';
+    const facInfo = facturadosMap.get(m.id);
+    const facNro = facInfo ? ('0000'+(facInfo.puntoVenta||2)).slice(-4)+'-'+('00000000'+(facInfo.nroComprobante||0)).slice(-8) : '';
+    const accionTd = (m.tipo === 'ingreso' && !noFacturable)
+      ? facInfo
+        ? `<td class="c-accion"><div style="width:32px;height:32px;border-radius:8px;border:.5px solid #4a5e4d;display:flex;align-items:center;justify-content:center;color:#4a5e4d;background:#e8ede8;cursor:default;" onclick="event.stopPropagation();showToast('Factura ya generada · N° ${facNro}','info')" title="Factura ya emitida"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M3 8l3.5 3.5L12 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div></td>`
+        : `<td class="c-accion" onclick="event.stopPropagation();abrirModalFacturaCaja('${m.id}')" title="Emitir factura" style="cursor:pointer;"><div style="width:32px;height:32px;border-radius:8px;border:.5px solid rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;color:#9ca3af;transition:all .15s;" onmouseover="this.style.background='#e8ede8';this.style.borderColor='#4a5e4d';this.style.color='#4a5e4d'" onmouseout="this.style.background='';this.style.borderColor='rgba(0,0,0,.08)';this.style.color='#9ca3af'"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="2.5" y="1.5" width="10" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M5 5h5M5 7.5h5M5 10h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></div></td>`
       : `<td class="c-accion"></td>`;
     return `<tr data-tipo="${m.tipo||''}" data-concepto="${(m.concepto||'').toLowerCase()}" data-fecha="${m.fecha||''}" style="opacity:0;animation:fadeUp .3s ease both;animation-delay:${80+i*50}ms;" onclick="cajaMostrarMovimiento('${m.id}')">
       <td><span style="font-size:12px;color:#bbb;">${fechaStr}</span></td>
@@ -9509,6 +9520,10 @@ window.emitirFacturaCaja = async function() {
     });
     const data = await res.json();
     if (!res.ok || !data.ok) throw new Error(data.error || 'Error AFIP');
+    if (data.facturaId && modal.dataset.movId) {
+      const { doc: firestoreDoc, updateDoc } = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
+      await updateDoc(firestoreDoc(db, 'clientes', currentClientUID, 'facturas', data.facturaId), {movId: modal.dataset.movId}).catch(()=>{});
+    }
     showToast('Factura emitida · CAE ' + data.cae, 'success');
     closeModal('modalFacturaCaja');
   } catch(e) {
