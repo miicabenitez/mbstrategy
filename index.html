@@ -2858,7 +2858,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
             <div style="display:flex;gap:8px;">
               <button onclick="exportar('clientes','pdf')" style="display:inline-flex;align-items:center;gap:5px;padding:8px 16px;background:var(--sage-dark);color:#fff;border:none;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;"><svg width="12" height="12" viewBox="0 0 13 13" fill="none"><rect x="1" y="0.5" width="11" height="12" rx="1.5" stroke="#fff" stroke-width="1.2"/><path d="M3.5 6.5h6M3.5 9h4" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/></svg>PDF</button>
               <button onclick="exportar('clientes','excel')" style="display:inline-flex;align-items:center;gap:5px;padding:8px 16px;background:var(--white);color:var(--text-m);border:.5px solid var(--cream-d);border-radius:20px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;"><svg width="12" height="12" viewBox="0 0 13 13" fill="none"><rect x="1" y="0.5" width="11" height="12" rx="1.5" stroke="var(--text-m)" stroke-width="1.2"/><path d="M4 5h2M7.5 5h2" stroke="var(--text-m)" stroke-width="1.2" stroke-linecap="round"/></svg>Excel</button>
-              <button class="bp" onclick="openModal('newMclienteModal')">+ Nuevo cliente</button>
+              <button class="bp" onclick="abrirNuevoMcClienteModal()">+ Nuevo cliente</button>
             </div>
           </div>
 
@@ -4038,6 +4038,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
       <div class="fg"><label class="fl">DNI</label><input type="text" class="fi" id="conv-dni" placeholder="12345678"/></div>
       <div class="fg"><label class="fl">CUIT</label><input type="text" class="fi" id="conv-cuit" placeholder="20-12345678-9"/></div>
     </div>
+    <div class="fg"><label class="fl">Condición IVA</label><select class="fi" id="conv-condicion-iva"><option value="5">Consumidor Final</option><option value="6">Monotributista</option><option value="1">Resp. Inscripto</option><option value="4">Exento</option></select></div>
     <div class="fg"><label class="fl">Teléfono</label><input type="tel" class="fi" id="conv-tel" placeholder="+54 11..."/></div>
     <div class="fg"><label class="fl">Email</label><input type="email" class="fi" id="conv-email" placeholder="cliente@email.com"/></div>
     <div class="fg"><label class="fl">Dirección (opcional)</label><input type="text" class="fi" id="conv-dir" placeholder="Calle 123, Ciudad"/></div>
@@ -12624,7 +12625,7 @@ function renderMcLista(clientes) {
   if (!lista) return;
   if (!clientes || clientes.length === 0) {
     if(!_mcClientes || _mcClientes.length === 0) {
-      lista.innerHTML = createEmptyState('personas','Aún no tenés clientes','Cargá tu primer cliente para empezar a gestionar tus ventas','+ Nuevo cliente',"openModal('newMclienteModal')");
+      lista.innerHTML = createEmptyState('personas','Aún no tenés clientes','Cargá tu primer cliente para empezar a gestionar tus ventas','+ Nuevo cliente',"abrirNuevoMcClienteModal()");
     } else {
       lista.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-l);font-size:13px;">Sin clientes que coincidan.</div>';
     }
@@ -13428,6 +13429,17 @@ window.createMcCliente = async function() {
   } catch(e) { showToast('Error: '+e.message, 'error'); }
 };
 
+window.abrirNuevoMcClienteModal = function() {
+  ['mcc-nombre','mcc-apellido','mcc-dni','mcc-cuit','mcc-direccion','mcc-ciudad','mcc-tel','mcc-email','mcc-notas'].forEach(fid=>{const el=document.getElementById(fid);if(el)el.value='';});
+  const ivaPill=document.querySelector('#mcc-condicion-iva-pills .mcc-civa-pill[data-val="5"]');
+  if(ivaPill) selectMccCondicionIVA(ivaPill,'5');
+  const btn=document.querySelector('#newMclienteModal .bp');
+  if(btn){btn.textContent='Guardar';btn.onclick=createMcCliente;}
+  const mtEl=document.querySelector('#newMclienteModal .mt');
+  if(mtEl) mtEl.textContent='Nuevo cliente';
+  openModal('newMclienteModal');
+};
+
 window.editMcCliente = function(id, event) {
   if(event) event.stopPropagation();
   const c=_mcClientes.find(x=>x.id===id);
@@ -13447,6 +13459,8 @@ window.editMcCliente = function(id, event) {
   document.getElementById('mcc-notas').value = c.notas||'';
   const btn=document.querySelector('#newMclienteModal .bp');
   if(btn){btn.textContent='Guardar cambios';btn.onclick=()=>saveMcCliente(id);}
+  const mtEl=document.querySelector('#newMclienteModal .mt');
+  if(mtEl) mtEl.textContent='Editar cliente';
   openModal('newMclienteModal');
 };
 
@@ -13474,6 +13488,8 @@ window.saveMcCliente = async function(id) {
       closeModal('newMclienteModal');
       const btn=document.querySelector('#newMclienteModal .bp');
       if(btn){btn.textContent='Guardar';btn.onclick=createMcCliente;}
+      const mtEl2=document.querySelector('#newMclienteModal .mt');
+      if(mtEl2) mtEl2.textContent='Nuevo cliente';
       await loadMcModule();
       if (_currentMcClienteId === id) openMcDetalle(id);
     }, 1500);
@@ -13525,6 +13541,7 @@ function renderMcVentas(presups, clienteId) {
         </div>
       </div>
       ${btnCobro}
+      ${p.estado === 'Aprobado' ? `<button onclick="abrirFacturaDesdePresupuesto('${p.id}')" style="margin-top:6px;width:100%;padding:7px;font-size:12px;font-weight:500;border-radius:8px;border:.5px solid #4a5e4d;background:rgba(74,94,77,.08);color:#4a5e4d;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:6px;"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><rect x="2" y="1" width="12" height="14" rx="1.5" stroke="#4a5e4d" stroke-width="1.3"/><path d="M5 5.5h6M5 8h6M5 10.5h4" stroke="#4a5e4d" stroke-width="1.3" stroke-linecap="round"/></svg>Emitir factura</button>` : ''}
     </div>`;
   }).join('');
 }
@@ -14120,6 +14137,7 @@ window.confirmarConversionCliente = async function() {
       cuit:      document.getElementById('conv-cuit').value.trim(),
       tel:       document.getElementById('conv-tel').value.trim(),
       email:     document.getElementById('conv-email').value.trim(),
+      condicionIVA: document.getElementById('conv-condicion-iva').value || '5',
       direccion: document.getElementById('conv-dir').value.trim(),
       totalCobrado: 0,
       ultimoContacto: new Date().toISOString(),
