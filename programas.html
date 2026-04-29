@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Programas de Acompañamiento · MB Strategy</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream: #f5f0eb;
+    --cream-dark: #ede7df;
+    --green-dark: #2d3d30;
+    --green: #4a5e4d;
+    --green-light: #e8ede8;
+    --terra: #b09088;
+    --terra-light: #f0e8e5;
+    --terra-dark: #8a6860;
+    --gray: #8a8a8a;
+    --text: #1a1a1a;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--cream);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 20px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(245,240,235,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+  }
+
+  .logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px;
+    color: var(--green-dark);
+    letter-spacing: 0.01em;
+  }
+  .logo span { font-style: italic; }
+
+  .nav-cta {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--gray);
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 160px 48px 80px;
+    text-align: center;
+    max-width: 720px;
+    margin: 0 auto;
+    opacity: 0;
+    animation: fadeUp 0.9s ease forwards 0.1s;
+  }
+
+  .eyebrow {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--terra);
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+  .eyebrow::before, .eyebrow::after {
+    content: '';
+    width: 40px;
+    height: 1px;
+    background: var(--terra);
+    opacity: 0.4;
+  }
+
+  h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(44px, 7vw, 64px);
+    font-weight: 400;
+    line-height: 1.1;
+    color: var(--green-dark);
+    margin-bottom: 4px;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--terra);
+    font-weight: 300;
+  }
+
+  .hero-sub {
+    margin-top: 24px;
+    font-size: 15px;
+    color: var(--gray);
+    font-weight: 300;
+    line-height: 1.7;
+  }
+
+  /* ── SECTION ── */
+  .section {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 0 32px 100px;
+  }
+
+  /* ── CARDS PRINCIPALES ── */
+  .program-card {
+    background: white;
+    border-radius: 20px;
+    padding: 44px 48px;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(24px);
+    transition: box-shadow 0.3s ease;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.04);
+  }
+
+  .program-card:hover {
+    box-shadow: 0 8px 40px rgba(0,0,0,0.09);
+  }
+
+  .program-card.animate { animation: fadeUp 0.7s ease forwards; }
+  .program-card:nth-child(2) { animation-delay: 0.1s; }
+
+  .program-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--green);
+    border-radius: 4px 0 0 4px;
+  }
+
+  .program-card.dark {
+    background: var(--green-dark);
+    color: white;
+  }
+  .program-card.dark::before { background: var(--terra); }
+
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 28px;
+  }
+
+  .card-tag {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--green);
+    background: var(--green-light);
+    padding: 5px 12px;
+    border-radius: 20px;
+    display: inline-block;
+    margin-bottom: 14px;
+  }
+
+  .program-card.dark .card-tag {
+    color: var(--terra);
+    background: rgba(176,144,136,0.15);
+  }
+
+  .card-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 34px;
+    font-weight: 400;
+    color: var(--green-dark);
+    line-height: 1;
+  }
+
+  .program-card.dark .card-title { color: white; }
+
+  .price {
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .price-amount {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 36px;
+    font-weight: 500;
+    color: var(--green);
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .program-card.dark .price-amount { color: var(--terra); }
+
+  .price-label {
+    font-size: 10px;
+    color: var(--gray);
+    letter-spacing: 0.05em;
+    margin-top: 4px;
+  }
+
+  .program-card.dark .price-label { color: rgba(255,255,255,0.4); }
+
+  .card-desc {
+    font-size: 14.5px;
+    line-height: 1.75;
+    color: #555;
+    margin-bottom: 32px;
+    font-weight: 300;
+  }
+
+  .program-card.dark .card-desc { color: rgba(255,255,255,0.6); }
+
+  .divider {
+    height: 1px;
+    background: #f0ece8;
+    margin-bottom: 28px;
+  }
+
+  .program-card.dark .divider { background: rgba(255,255,255,0.08); }
+
+  .features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 24px;
+  }
+
+  .feature {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #444;
+    font-weight: 400;
+  }
+
+  .program-card.dark .feature { color: rgba(255,255,255,0.8); }
+
+  .feature-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    flex-shrink: 0;
+  }
+
+  .program-card.dark .feature-dot { background: var(--terra); }
+
+  /* ── MENSUAL ── */
+  .mensual-header {
+    text-align: center;
+    margin: 60px 0 32px;
+    opacity: 0;
+    animation: fadeUp 0.7s ease forwards 0.3s;
+  }
+
+  .mensual-eyebrow {
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gray);
+    margin-bottom: 10px;
+  }
+
+  .mensual-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--green-dark);
+    margin-bottom: 8px;
+  }
+
+  .mensual-sub {
+    font-size: 13px;
+    color: var(--gray);
+    font-weight: 300;
+  }
+
+  .mensual-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .mensual-card {
+    background: white;
+    border-radius: 16px;
+    padding: 32px 32px 28px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.04);
+    transition: box-shadow 0.3s;
+    opacity: 0;
+    animation: fadeUp 0.7s ease forwards;
+  }
+  .mensual-card:nth-child(1) { animation-delay: 0.4s; }
+  .mensual-card:nth-child(2) { animation-delay: 0.5s; }
+
+  .mensual-card:hover { box-shadow: 0 8px 32px rgba(0,0,0,0.08); }
+
+  .mensual-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 3px;
+  }
+
+  .mensual-card.esencial::before { background: var(--green); }
+  .mensual-card.activo::before { background: var(--terra); }
+
+  .mensual-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    color: var(--green-dark);
+    margin-bottom: 4px;
+  }
+
+  .mensual-price {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 500;
+    margin-bottom: 20px;
+  }
+
+  .mensual-card.esencial .mensual-price { color: var(--green); }
+  .mensual-card.activo .mensual-price { color: var(--terra-dark); }
+
+  .mensual-divider {
+    height: 1px;
+    background: #f0ece8;
+    margin-bottom: 18px;
+  }
+
+  .mensual-feature {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 300;
+  }
+
+  .mensual-card.esencial .mensual-feature::before {
+    content: '';
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--green);
+    flex-shrink: 0;
+  }
+
+  .mensual-card.activo .mensual-feature::before {
+    content: '';
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--terra);
+    flex-shrink: 0;
+  }
+
+  /* ── NOTA ── */
+  .nota {
+    margin-top: 48px;
+    padding: 28px 36px;
+    background: var(--terra-light);
+    border-radius: 16px;
+    border-left: 3px solid var(--terra);
+    opacity: 0;
+    animation: fadeUp 0.7s ease forwards 0.6s;
+  }
+
+  .nota p {
+    font-size: 13.5px;
+    color: var(--terra-dark);
+    line-height: 1.75;
+    font-style: italic;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid rgba(0,0,0,0.07);
+    padding: 32px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .footer-brand {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 15px;
+    color: var(--green-dark);
+    font-style: italic;
+  }
+
+  .footer-contact {
+    display: flex;
+    gap: 32px;
+  }
+
+  .footer-contact a {
+    font-size: 12px;
+    color: var(--gray);
+    text-decoration: none;
+    font-weight: 300;
+    transition: color 0.2s;
+  }
+
+  .footer-contact a:hover { color: var(--green); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── MOBILE ── */
+  @media (max-width: 640px) {
+    nav { padding: 18px 24px; }
+    .hero { padding: 120px 24px 60px; }
+    .section { padding: 0 20px 80px; }
+    .program-card { padding: 32px 28px; }
+    .card-top { flex-direction: column; gap: 16px; }
+    .price { text-align: left; }
+    .mensual-grid { grid-template-columns: 1fr; }
+    footer { flex-direction: column; gap: 16px; text-align: center; }
+    .footer-contact { flex-direction: column; gap: 8px; align-items: center; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo"><span>MB</span> Strategy</div>
+  <a href="https://sistema.mbstrategy.com.ar" class="nav-cta">Ir al sistema →</a>
+</nav>
+
+<div class="hero">
+  <div class="eyebrow">Programas de Acompañamiento</div>
+  <h1>Implementación real.<br><em>Resultados concretos.</em></h1>
+  <p class="hero-sub">No es consultoría teórica.<br>Es trabajo junto a vos, en tu negocio, con tu equipo.</p>
+</div>
+
+<div class="section">
+
+  <!-- 30D -->
+  <div class="program-card animate">
+    <div class="card-top">
+      <div>
+        <div class="card-tag">Arranque Estratégico</div>
+        <div class="card-title">Mentoría 30 días</div>
+      </div>
+      <div class="price">
+        <div class="price-amount">$1.200 USD</div>
+        <div class="price-label">pago único</div>
+      </div>
+    </div>
+    <p class="card-desc">Para el dueño o dueña que sabe que necesita ordenarse pero no sabe por dónde empezar. En 30 días implementamos juntos el sistema completo de gestión: caja, facturación, finanzas y control. Al final del mes operás con claridad, sin improvisar.</p>
+    <div class="divider"></div>
+    <div class="features">
+      <div class="feature"><div class="feature-dot"></div>8 sesiones</div>
+      <div class="feature"><div class="feature-dot"></div>Consultas asincrónicas por WhatsApp y Mail</div>
+      <div class="feature"><div class="feature-dot"></div>Implementación completa</div>
+      <div class="feature"><div class="feature-dot"></div>Capacitación en el sistema</div>
+      <div class="feature"><div class="feature-dot"></div>MB Strategy incluido durante el programa</div>
+    </div>
+  </div>
+
+  <!-- 90D -->
+  <div class="program-card dark animate">
+    <div class="card-top">
+      <div>
+        <div class="card-tag">Transformación Total</div>
+        <div class="card-title">Mentoría 90 días</div>
+      </div>
+      <div class="price">
+        <div class="price-amount">$3.500 USD</div>
+        <div class="price-label">pago único</div>
+      </div>
+    </div>
+    <p class="card-desc">Para empresas con estructura que necesitan un cambio real y sostenido. Tres meses de trabajo junto a vos y tu equipo: implementamos el sistema, capacitamos a las personas clave y construimos los procesos que le dan escala a tu negocio.</p>
+    <div class="divider"></div>
+    <div class="features">
+      <div class="feature"><div class="feature-dot"></div>16 a 18 sesiones · 3 fases</div>
+      <div class="feature"><div class="feature-dot"></div>Capacitación al equipo</div>
+      <div class="feature"><div class="feature-dot"></div>Seguimiento mensual</div>
+      <div class="feature"><div class="feature-dot"></div>Implementación completa</div>
+      <div class="feature"><div class="feature-dot"></div>MB Strategy incluido durante el programa</div>
+    </div>
+  </div>
+
+  <!-- MENSUAL -->
+  <div class="mensual-header">
+    <div class="mensual-eyebrow">Exclusivo para egresados de programas MB Strategy</div>
+    <div class="mensual-title">Acompañamiento Mensual</div>
+    <div class="mensual-sub">Porque el crecimiento no para cuando termina el programa.</div>
+  </div>
+
+  <div class="mensual-grid">
+    <div class="mensual-card esencial">
+      <div class="mensual-name">Esencial</div>
+      <div class="mensual-price">$350 USD<span style="font-size:16px;font-weight:300">/mes</span></div>
+      <div class="mensual-divider"></div>
+      <div class="mensual-feature">1 sesión por mes</div>
+      <div class="mensual-feature">Consultas asincrónicas por WhatsApp y Mail</div>
+    </div>
+    <div class="mensual-card activo">
+      <div class="mensual-name">Activo</div>
+      <div class="mensual-price">$550 USD<span style="font-size:16px;font-weight:300">/mes</span></div>
+      <div class="mensual-divider"></div>
+      <div class="mensual-feature">2 sesiones por mes</div>
+      <div class="mensual-feature">Consultas ilimitadas asincrónicas por WhatsApp y Mail</div>
+    </div>
+  </div>
+
+  <div class="nota">
+    <p>Todos los programas incluyen acceso completo a MB Strategy durante la duración del acompañamiento. Al finalizar, podés continuar con tu suscripción mensual y seguir operando con todo lo que construimos juntos.</p>
+  </div>
+
+</div>
+
+<footer>
+  <div class="footer-brand">MB Strategy</div>
+  <div class="footer-contact">
+    <a href="mailto:micaela@mbstrategy.com.ar">micaela@mbstrategy.com.ar</a>
+    <a href="https://wa.me/5491176553318">WhatsApp</a>
+    <a href="https://sistema.mbstrategy.com.ar">sistema.mbstrategy.com.ar</a>
+  </div>
+</footer>
+
+</body>
+</html>
