@@ -5790,6 +5790,14 @@ window.showClientUI = async function(email, clientData) {
       }).catch(function(){});
       window.showClientMod(_modToShow0, _modBtn0);
 
+      (async () => {
+        try {
+          if (window._mfFacturas && window._mfFacturas.length) return;
+          const _fgsSnap = await getDocs(query(collection(db, 'clientes', currentClientUID, 'facturas'), orderBy('creadoEn', 'desc')));
+          window._mfFacturas = _fgsSnap.docs.map(d => { const r = d.data(); return { id: d.id, tipoComprobante: r.tipoComprobante, nroComprobante: r.nroComprobante, puntoVenta: r.puntoVenta, importeTotal: r.importeTotal, razonSocialReceptor: r.razonSocialReceptor, cuitReceptor: r.cuitReceptor }; });
+        } catch(e) {}
+      })();
+
       try {
         await loadCalcItems(clientData.id);
         await loadClientContabilidad();
