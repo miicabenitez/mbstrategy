@@ -2601,6 +2601,24 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
             </table>
           </div>
         </div>
+        <!-- Resumen IVA — solo RI -->
+        <div id="rv-iva-resumen" style="display:none;margin-top:14px;">
+          <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px;">Resumen IVA — para tu contador</div>
+          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;">
+            <div style="background:#fff;border:.5px solid var(--cream-d);border-radius:12px;padding:14px 16px;">
+              <div style="font-size:10px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;">Neto gravado</div>
+              <div id="rv-iva-neto" style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--text);">—</div>
+            </div>
+            <div style="background:#fff;border:.5px solid var(--cream-d);border-radius:12px;padding:14px 16px;">
+              <div style="font-size:10px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;">IVA 21%</div>
+              <div id="rv-iva-iva" style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--text);">—</div>
+            </div>
+            <div style="background:#fff;border:.5px solid var(--cream-d);border-radius:12px;padding:14px 16px;">
+              <div style="font-size:10px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;">Total bruto</div>
+              <div id="rv-iva-total" style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#4a5e4d;">—</div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- ── RESUMEN DE COMPRAS ── -->
@@ -11741,9 +11759,11 @@ async function loadResumenVentas() {
     document.getElementById('rv-kpi-neto').textContent = fmt(totBruto - totNC);
     const empty = document.getElementById('rv-empty');
     const tabla = document.getElementById('rv-tabla');
+    const _ivaEl = document.getElementById('rv-iva-resumen');
     if (facs.length === 0) {
       empty.style.display = 'block';
       tabla.style.display = 'none';
+      if (_ivaEl) _ivaEl.style.display = 'none';
     } else {
       empty.style.display = 'none';
       tabla.style.display = 'table';
@@ -11755,6 +11775,16 @@ async function loadResumenVentas() {
         <td class="r" style="font-family:inherit;font-size:13px;font-weight:600;padding:14px 12px">${fmt(totIva105)}</td>
         <td class="r" style="font-family:inherit;font-size:14px;font-weight:600;padding:14px 12px">${fmt(totGral)}</td>
       </tr>`;
+      if (_ivaEl) {
+        if (currentClientData?.negocioCondicionIVA === 'responsable_inscripto') {
+          document.getElementById('rv-iva-neto').textContent = fmt(totNeto);
+          document.getElementById('rv-iva-iva').textContent = fmt(totIva21);
+          document.getElementById('rv-iva-total').textContent = fmt(totGral);
+          _ivaEl.style.display = 'block';
+        } else {
+          _ivaEl.style.display = 'none';
+        }
+      }
     }
   } catch(e) {
     console.error('loadResumenVentas:', e);
@@ -12755,6 +12785,29 @@ async function loadInicio() {
     // Cobrar comparison
     const ccEl = document.getElementById('inicio-comp-cobrar');
     if(ccEl) ccEl.innerHTML = porCobrar > 0 ? '<span style="color:rgba(255,255,255,.5);">pendiente de cobro</span>' : '<span style="color:#a8d8a0;">Sin pendientes</span>';
+
+    // ── Recordatorio cobranzas vencidas ──
+    try {
+      const _hoy = new Date();
+      const _venc = (window._clientPresupuestos||[]).filter(p => {
+        if (p.estado !== 'Aprobado') return false;
+        const _fd = p.fecha || p.creadoEn || '';
+        const _dt = _fd ? new Date(_fd) : null;
+        return _dt && !isNaN(_dt) && Math.floor((_hoy - _dt) / 86400000) > 7;
+      });
+      const _cbEl = document.getElementById('inicio-alertas-sistema');
+      const _prev = document.getElementById('alerta-cobranza-venc');
+      if (_prev) _prev.remove();
+      if (_venc.length > 0 && _cbEl) {
+        const _cbDiv = document.createElement('div');
+        _cbDiv.id = 'alerta-cobranza-venc';
+        _cbDiv.style.cssText = 'border-left:3px solid #b09088;background:#fff;border-radius:0 8px 8px 0;padding:12px 14px;margin-bottom:10px;display:flex;align-items:center;gap:10px;box-shadow:0 1px 3px rgba(0,0,0,.06);';
+        _cbDiv.innerHTML = '<div style="flex:1;font-size:13px;color:#2d3d30;line-height:1.5;">Tenés <strong>'+_venc.length+'</strong> presupuesto'+(_venc.length!==1?'s':'')+' aprobado'+(_venc.length!==1?'s':'')+' sin cobrar hace más de 7 días.</div>'+
+          '<button onclick="sidebarNav(\'comercial\',\'cobranzas\')" style="font-size:12px;padding:5px 12px;border-radius:20px;border:.5px solid #b09088;background:rgba(176,144,136,.1);color:#7a5a52;cursor:pointer;font-family:\'DM Sans\',sans-serif;white-space:nowrap;">Ver Cobranzas</button>';
+        _cbEl.appendChild(_cbDiv);
+        _cbEl.style.display = 'block';
+      }
+    } catch(e) { console.error('recordatorio cobranzas:', e); }
 
     // ── Salud del negocio ──
     const saludCard = document.getElementById('inicio-salud-card');
@@ -15349,6 +15402,25 @@ window.guardarCobroLibre = async function() {
   }
 };
 
+window.guardarMontoPresup = async function(el, presupId) {
+  const raw = (el.textContent || '').replace(/\$/g,'').replace(/\./g,'').replace(/,/g,'.').trim();
+  const nuevo = parseFloat(raw);
+  const orig = parseFloat(el.dataset.orig || '0');
+  if (isNaN(nuevo) || nuevo < 0) { el.textContent = '$' + orig.toLocaleString('es-AR'); return; }
+  if (nuevo === orig) { el.textContent = '$' + orig.toLocaleString('es-AR'); return; }
+  try {
+    await updateDoc(doc(db, 'clientes', currentClientUID, 'presupuestos', presupId), { monto: nuevo });
+    el.dataset.orig = String(nuevo);
+    el.textContent = '$' + nuevo.toLocaleString('es-AR');
+    const cached = (window._mcPresupuestos||[]).find(x => x.id === presupId);
+    if (cached) cached.monto = nuevo;
+    showToast('Monto actualizado', 'success');
+  } catch(e) {
+    el.textContent = '$' + orig.toLocaleString('es-AR');
+    showToast('Error al guardar: ' + e.message, 'error');
+  }
+};
+
 window.duplicarPresup = async function(presupId, clienteId, clienteNombre) {
   const p = (window._mcPresupuestos||[]).find(x => x.id === presupId);
   if (!p || !currentClientUID) return showToast('No se pudo duplicar el presupuesto', 'error');
@@ -15405,7 +15477,10 @@ function renderMcDetallePresupuestos(list, clienteId, clienteNombre) {
           <div style="font-size:11px;color:var(--text-l);">${fechaFmt}${p.validez ? ' · Válido hasta '+new Date(p.validez+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'}) : ''}</div>
         </div>
         <div style="text-align:right;flex-shrink:0;">
-          ${m > 0 ? `<div style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:500;color:var(--text);">$${m.toLocaleString('es-AR')} <span style="font-size:11px;color:var(--text-l);">${p.moneda||'ARS'}</span></div>` : ''}
+          ${m > 0 || !cobrado ? (cobrado
+            ? `<div style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:500;color:var(--text);">$${m.toLocaleString('es-AR')} <span style="font-size:11px;color:var(--text-l);">${p.moneda||'ARS'}</span></div>`
+            : `<div contenteditable="true" data-orig="${m}" onblur="guardarMontoPresup(this,'${p.id}')" onfocus="this.textContent=this.dataset.orig" style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:500;color:var(--text);outline:none;cursor:text;border-bottom:1px dashed var(--cream-d);min-width:20px;display:inline-block;">$${m.toLocaleString('es-AR')}</div><span style="font-size:11px;color:var(--text-l);margin-left:4px;">${p.moneda||'ARS'}</span>`
+          ) : ''}
         </div>
       </div>
       <div style="background:var(--cream);border-top:.5px solid var(--cream-d);padding:8px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
