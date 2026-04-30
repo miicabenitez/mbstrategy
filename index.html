@@ -9891,9 +9891,13 @@ function _mdvBuildBody(m, editing) {
     `<input type="date" class="cj-input" id="mdv-fecha" value="${m.fecha||''}">`,
     editing);
   html += _mdvField('CONCEPTO',
-    `<div class="mdv-fv">${(m.origen==='cobro_cliente'&&m.detalle?m.concepto+' · '+m.detalle:m.concepto)||'—'}</div>`,
+    `<div class="mdv-fv">${m.concepto||'—'}</div>`,
     `<select class="cj-input" id="mdv-concepto">${conceptosOpts}</select>`,
     editing);
+  if (m.origen === 'cobro_cliente' && (m.clienteNombre || m.detalle)) {
+    html += _mdvField('CLIENTE',
+      `<div class="mdv-fv">${m.clienteNombre || m.detalle}</div>`, '', false);
+  }
   html += _mdvField('MONTO',
     `<div class="mdv-fv ${montoColor}">${montoFmt(m.monto)}</div>`,
     `<input type="number" class="cj-input" id="mdv-monto" value="${m.monto||''}">`,
@@ -12901,7 +12905,7 @@ async function loadInicio() {
         const eventos = [];
 
         // 1. Caja
-        ingresos.forEach(i=>eventos.push({subtipo:'ingreso',desc:(i.origen==='cobro_cliente'&&i.detalle?i.concepto+' · '+i.detalle:i.concepto||i.categoria||'Ingreso'),monto:parseFloat(i.monto)||0,creadoEn:i.creadoEn||i.fecha||''}));
+        ingresos.forEach(i=>eventos.push({subtipo:'ingreso',desc:(i.origen==='cobro_cliente'&&(i.clienteNombre||i.detalle)?i.concepto+' · '+(i.clienteNombre||i.detalle):i.concepto||i.categoria||'Ingreso'),monto:parseFloat(i.monto)||0,creadoEn:i.creadoEn||i.fecha||''}));
         egresos.forEach(e=>eventos.push({subtipo:'egreso',desc:e.concepto||e.categoria||'Egreso',monto:parseFloat(e.monto)||0,creadoEn:e.creadoEn||e.fecha||''}));
 
         // 2. Presupuestos (ya cargados)
@@ -15049,6 +15053,8 @@ window.createMcCobro = async function() {
       cuenta   : cuentaCobro,
       monto    : parseFloat(monto)||0,
       origen   : 'cobro_cliente',
+      clienteId: clienteId,
+      clienteNombre: clienteNombre,
       ...(presupNumero ? {referenciaId: presupNumero} : {}),
       detalle  : concepto || `Cobro de ${clienteNombre}`,
       mes      : mesIngreso,
