@@ -14614,6 +14614,18 @@ window.stkRecQuitarItem = function(idx) {
 
 window._stkRecetaItemPendiente = null;
 
+function _stkConvertirABase(cantidad, unidadUsada, unidadBase) {
+  if(!unidadUsada||!unidadBase||unidadUsada===unidadBase) return parseFloat(cantidad)||0;
+  const conv={'kg':{'g':0.001},'g':{'kg':1000},'l':{'ml':0.001,'cc':0.001},'ml':{'l':1000,'cc':1},'cc':{'l':1000,'ml':1}};
+  const factor=conv[unidadBase]?.[unidadUsada];
+  return factor!=null ? (parseFloat(cantidad)||0)*factor : parseFloat(cantidad)||0;
+}
+
+function _stkUnidadesCompatibles(unidadBase) {
+  const g={'kg':['kg','g'],'g':['kg','g'],'l':['l','ml','cc'],'ml':['l','ml','cc'],'cc':['l','ml','cc']};
+  return g[unidadBase]||[unidadBase];
+}
+
 function stkRecRenderItems() {
   const lista=document.getElementById('stk-rec-items-list');
   if(!lista) return;
@@ -14629,7 +14641,7 @@ function stkRecRenderItems() {
         <div id="stk-ins-dd-${i}" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:700;max-height:160px;overflow-y:auto;"></div>
       </div>
       <input type="number" value="${it.cantidad||1}" min="0" step="any" class="fi" style="margin-top:0;font-size:12px;text-align:right;" onchange="stkRecItemCantidad(${i},this.value)"/>
-      <div style="font-size:12px;color:var(--text-m);text-align:center;">${it.unidad||'—'}</div>
+      <select onchange="stkRecItemUnidad(${i},this.value)" style="font-size:12px;color:var(--text-m);border:.5px solid var(--cream-d);border-radius:6px;padding:2px 4px;background:#fff;width:70px;box-sizing:border-box;">${(it.unidadBase||it.unidad)?_stkUnidadesCompatibles(it.unidadBase||it.unidad).map(u=>'<option value="'+u+'"'+(u===it.unidad?' selected':'')+'>'+u+'</option>').join(''):'<option value="">—</option>'}</select>
       <button onclick="stkRecQuitarItem(${i})" style="background:none;border:none;cursor:pointer;color:var(--text-l);font-size:18px;padding:0;line-height:1;">×</button>
     </div>`).join('');
 }
@@ -14664,7 +14676,7 @@ window.stkInsumoKeydown = function(e,idx) {
 window.stkSeleccionarInsumoItem = function(insumoId,idx) {
   const i=(window._stockInsumos||[]).find(x=>x.id===insumoId);
   if(!i) return;
-  window._stkRecetaItems[idx]={...window._stkRecetaItems[idx],insumoId:i.id,insumoNombre:i.nombre,unidad:i.unidad};
+  window._stkRecetaItems[idx]={...window._stkRecetaItems[idx],insumoId:i.id,insumoNombre:i.nombre,unidad:i.unidad,unidadBase:i.unidad};
   stkRecRenderItems();
   stkRecActualizarCosto();
   const dd=document.getElementById('stk-ins-dd-'+idx); if(dd) dd.style.display='none';
@@ -14672,6 +14684,11 @@ window.stkSeleccionarInsumoItem = function(insumoId,idx) {
 
 window.stkRecItemCantidad = function(idx,val) {
   if(window._stkRecetaItems[idx]) window._stkRecetaItems[idx].cantidad=parseFloat(val)||0;
+  stkRecActualizarCosto();
+};
+
+window.stkRecItemUnidad = function(idx,val) {
+  if(window._stkRecetaItems[idx]) window._stkRecetaItems[idx].unidad=val;
   stkRecActualizarCosto();
 };
 
@@ -14694,7 +14711,8 @@ function stkRecActualizarCosto() {
   const items=window._stkRecetaItems||[];
   const total=items.reduce((s,it)=>{
     const ins=(window._stockInsumos||[]).find(x=>x.id===it.insumoId);
-    return s+(parseFloat(it.cantidad||0)*parseFloat(ins?.costoUnitario||0));
+    const cantidadBase=_stkConvertirABase(it.cantidad,it.unidad||it.unidadBase||'',it.unidadBase||it.unidad||'');
+    return s+(cantidadBase*parseFloat(ins?.costoUnitario||0));
   },0);
   const el=document.getElementById('stk-rec-costo-total');
   if(el) el.textContent='$'+total.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -14713,9 +14731,13 @@ window.stkGuardarReceta = async function() {
   if(existente){err.textContent='Este producto ya tiene una receta activa.';err.style.display='block';return;}
   const costoTotal=items.reduce((s,it)=>{
     const ins=(window._stockInsumos||[]).find(x=>x.id===it.insumoId);
-    return s+(parseFloat(it.cantidad||0)*parseFloat(ins?.costoUnitario||0));
+    const cantidadBase=_stkConvertirABase(it.cantidad,it.unidad||it.unidadBase||'',it.unidadBase||it.unidad||'');
+    return s+(cantidadBase*parseFloat(ins?.costoUnitario||0));
   },0);
-  const data={productoId:prodId,productoNombre:prodNombre,items:items.filter(it=>it.insumoId),costoTotal,activo:true};
+  const itemsConvertidos=items.filter(it=>it.insumoId).map(it=>({
+    ...it,cantidadBase:_stkConvertirABase(it.cantidad,it.unidad||it.unidadBase||'',it.unidadBase||it.unidad||'')
+  }));
+  const data={productoId:prodId,productoNombre:prodNombre,items:itemsConvertidos,costoTotal,activo:true};
   try {
     if(id){
       await updateDoc(doc(db,'clientes',currentClientUID,'recetas',id),data);
@@ -14805,7 +14827,7 @@ window._triggerStockPorVenta = async function(carrito, refId) {
       if(!receta || !receta.items?.length) continue;
       for(const it of receta.items) {
         if(!it.insumoId) continue;
-        const delta = parseFloat(it.cantidad||0)*qty;
+        const delta = parseFloat(it.cantidadBase??it.cantidad??0)*qty;
         if(!delta) continue;
         try {
           // stockResultante estimado desde cache (no atómico, solo para historial)
@@ -14840,7 +14862,7 @@ window._triggerStockPorPresupuesto = async function(p) {
     if(!receta || !receta.items?.length) continue;
     for(const ri of receta.items) {
       if(!ri.insumoId) continue;
-      const delta = parseFloat(ri.cantidad||0)*qty;
+      const delta = parseFloat(ri.cantidadBase??ri.cantidad??0)*qty;
       if(!delta) continue;
       try {
         // stockResultante estimado desde cache (no atómico, solo para historial)
