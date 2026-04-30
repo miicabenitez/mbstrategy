@@ -2047,6 +2047,8 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         <span id="inicio-dias-hoy" style="display:none;"></span>
         <span id="inicio-dias-cierre" style="display:none;"></span>
 
+        <div id="inicio-alertas-sistema" style="display:none;margin-bottom:14px;"></div>
+
         <!-- Banner principal -->
         <div class="dash-card" style="background:linear-gradient(135deg,#2d3d30 0%,#3d5240 50%,#4a5e4d 100%);border-radius:16px;padding:20px 22px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;">
           <div style="display:flex;align-items:center;gap:14px;">
@@ -6508,6 +6510,14 @@ window.setAfipAprobado = async function(value) {
   if (!currentClientId) return;
   try {
     await updateDoc(doc(db, 'clientes', currentClientId), { afipAprobado: value });
+    if (value) {
+      addDoc(collection(db, 'clientes', currentClientId, 'alertas'), {
+        tipo: 'success',
+        mensaje: 'Tu configuración fiscal fue aprobada. Ya podés emitir facturas electrónicas.',
+        leida: false,
+        fecha: serverTimestamp()
+      }).catch(() => {});
+    }
     showToast(value ? '✅ Delegación ARCA aprobada' : 'Delegación revocada', value ? 'success' : 'info');
     await openClientDetail(currentClientId);
   } catch(e) { showToast('Error: ' + e.message, 'error'); }
@@ -12564,6 +12574,33 @@ async function loadInicio() {
     setTimeout(function(){ c.classList.add('in'); }, 80*i);
   });
 
+  // Alertas del sistema (Firestore: clientes/{uid}/alertas)
+  try {
+    const _alertasSistemaEl = document.getElementById('inicio-alertas-sistema');
+    if (_alertasSistemaEl) {
+      const _aSnap = await getDocs(query(
+        collection(db, 'clientes', currentClientUID, 'alertas'),
+        where('leida', '==', false)
+      ));
+      const _aDocs = [];
+      _aSnap.forEach(d => _aDocs.push({ id: d.id, ...d.data() }));
+      _aDocs.sort((a, b) => (b.fecha?.toDate?.()?.getTime() || 0) - (a.fecha?.toDate?.()?.getTime() || 0));
+      if (_aDocs.length > 0) {
+        _alertasSistemaEl.innerHTML = _aDocs.map(a => {
+          const _bc = a.tipo === 'success' ? '#4a5e4d' : '#5a7a9a';
+          return '<div id="alerta-sistema-'+a.id+'" style="border-left:3px solid '+_bc+';background:#fff;border-radius:0 8px 8px 0;padding:12px 14px;margin-bottom:10px;display:flex;align-items:flex-start;gap:10px;box-shadow:0 1px 3px rgba(0,0,0,.06);">' +
+            '<div style="flex:1;font-family:\'DM Sans\',sans-serif;font-size:14px;color:#2d3d30;line-height:1.5;">'+a.mensaje+'</div>' +
+            '<button onclick="marcarAlertaLeida(\''+a.id+'\')" style="background:none;border:none;cursor:pointer;color:#9ca3af;font-size:18px;line-height:1;padding:0 0 0 8px;flex-shrink:0;">&#215;</button>' +
+          '</div>';
+        }).join('');
+        _alertasSistemaEl.style.display = 'block';
+      } else {
+        _alertasSistemaEl.innerHTML = '';
+        _alertasSistemaEl.style.display = 'none';
+      }
+    }
+  } catch(e) { console.error('alertas sistema:', e); }
+
   // Cargar datos financieros desde libroCaja
   try {
     const cajSnap = await getDocs(query(collection(db,'libroCaja'),where('uid','==',currentClientUID)));
@@ -12927,6 +12964,17 @@ async function loadInicio() {
   }
 }
 window.loadInicio = loadInicio;
+
+window.marcarAlertaLeida = async function(alertaId) {
+  if (!currentClientUID) return;
+  try {
+    await updateDoc(doc(db, 'clientes', currentClientUID, 'alertas', alertaId), { leida: true });
+    const el = document.getElementById('alerta-sistema-' + alertaId);
+    if (el) el.remove();
+    const cont = document.getElementById('inicio-alertas-sistema');
+    if (cont && !cont.querySelector('[id^="alerta-sistema-"]')) cont.style.display = 'none';
+  } catch(e) { console.error('marcarAlertaLeida:', e); }
+};
 
 
 window.dismissAlerta = function(elId, key, days) {
@@ -17016,6 +17064,16 @@ window.guardarDatosFiscalesPage = async function() {
     if(currentClientData) Object.assign(currentClientData, data);
     const s = document.getElementById('micuenta-fiscal-saved');
     if(s){ s.style.display='block'; setTimeout(()=>s.style.display='none', 2000); }
+    const _cuitA = (document.getElementById('micuenta-negocio-cuit')?.value || '').trim();
+    const _pvA = (data.negocioPuntoVenta || '').trim();
+    if (_cuitA && _pvA) {
+      setDoc(doc(db, 'clientes', currentClientUID, 'alertas', 'solicitud-fiscal'), {
+        tipo: 'info',
+        mensaje: 'El equipo de MB Strategy recibió tu solicitud de configuración fiscal. Te avisamos cuando esté lista (24-48hs hábiles).',
+        leida: false,
+        fecha: serverTimestamp()
+      }).catch(() => {});
+    }
   } catch(e) { console.log(e); }
   // Fire-and-forget: verificar delegación ARCA en segundo plano
   const _cuit = (document.getElementById('micuenta-negocio-cuit')?.value || '').trim();
