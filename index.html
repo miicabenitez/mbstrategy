@@ -3991,13 +3991,13 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         <div id="stk-insumos-content" style="display:none;">
           <div class="card" style="overflow:hidden;">
             <div style="overflow-x:auto;border-radius:12px;">
-              <div style="display:grid;grid-template-columns:1fr 90px 90px 90px 80px 64px;gap:10px;padding:0 0 8px;border-bottom:1.5px solid var(--cream-d);margin-bottom:4px;min-width:520px;">
-                <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Insumo</span>
-                <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;text-align:right;">Unidad</span>
-                <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;text-align:right;">Stock actual</span>
-                <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;text-align:right;">Mínimo</span>
-                <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;text-align:center;">Costo unit.</span>
-                <span></span>
+              <div style="display:flex;align-items:center;box-sizing:border-box;padding:0 0 8px 16px;border-bottom:1.5px solid var(--cream-d);margin-bottom:4px;min-width:520px;">
+                <span style="flex:1;font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;box-sizing:border-box;">Insumo</span>
+                <span style="width:80px;font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;text-align:center;box-sizing:border-box;">Unidad</span>
+                <span style="width:110px;font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;text-align:right;box-sizing:border-box;">Stock actual</span>
+                <span style="width:80px;font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;text-align:right;box-sizing:border-box;">Mínimo</span>
+                <span style="width:110px;font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;text-align:right;box-sizing:border-box;">Costo unit.</span>
+                <span style="width:48px;box-sizing:border-box;"></span>
               </div>
               <div id="stk-insumos-lista" style="min-width:520px;"></div>
             </div>
@@ -14384,13 +14384,13 @@ function stkRenderInsumos() {
     const stockStr = (parseFloat(i.stockActual||0)).toLocaleString('es-AR',{maximumFractionDigits:3})+' '+i.unidad;
     const minStr = i.stockMinimo!=null && i.stockMinimo!=='' ? (parseFloat(i.stockMinimo)).toLocaleString('es-AR',{maximumFractionDigits:3}) : '—';
     const costoStr = i.costoUnitario ? '$'+parseFloat(i.costoUnitario).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) : '—';
-    return `<div onclick="stkEditarInsumo('${i.id}')" style="display:grid;grid-template-columns:1fr 90px 90px 90px 80px 64px;gap:10px;padding:10px 0;border-bottom:.5px solid var(--cream-d);min-width:520px;cursor:pointer;transition:background .1s;" onmouseover="this.style.background='#faf8f5'" onmouseout="this.style.background=''">
-      <span style="font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:6px;">${i.nombre}${bajo?'<span style="background:#c0392b;color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:20px;letter-spacing:.4px;">BAJO</span>':''}</span>
-      <span style="font-size:13px;color:var(--text-m);text-align:right;">${i.unidad}</span>
-      <span style="font-size:13px;color:${bajo?'#c0392b':'var(--text)'};font-weight:${bajo?'600':'400'};text-align:right;">${(parseFloat(i.stockActual||0)).toLocaleString('es-AR',{maximumFractionDigits:3})}</span>
-      <span style="font-size:13px;color:var(--text-m);text-align:right;">${minStr}</span>
-      <span style="font-size:13px;color:var(--text-m);text-align:center;">${costoStr}</span>
-      <span style="display:flex;justify-content:flex-end;gap:6px;align-items:center;">
+    return `<div onclick="stkEditarInsumo('${i.id}')" style="display:flex;align-items:center;box-sizing:border-box;padding:10px 0 10px 16px;border-bottom:.5px solid var(--cream-d);min-width:520px;cursor:pointer;transition:background .1s;" onmouseover="this.style.background='#faf8f5'" onmouseout="this.style.background=''">
+      <span style="flex:1;font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:6px;box-sizing:border-box;">${i.nombre}${bajo?'<span style="background:#c0392b;color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:20px;letter-spacing:.4px;">BAJO</span>':''}</span>
+      <span style="width:80px;font-size:13px;color:var(--text-m);text-align:center;box-sizing:border-box;">${i.unidad}</span>
+      <span style="width:110px;font-size:13px;color:${bajo?'#c0392b':'var(--text)'};font-weight:${bajo?'600':'400'};text-align:right;box-sizing:border-box;">${(parseFloat(i.stockActual||0)).toLocaleString('es-AR',{maximumFractionDigits:3})}</span>
+      <span style="width:80px;font-size:13px;color:var(--text-m);text-align:right;box-sizing:border-box;">${minStr}</span>
+      <span style="width:110px;font-size:13px;color:var(--text-m);text-align:right;box-sizing:border-box;">${costoStr}</span>
+      <span style="width:48px;display:flex;justify-content:flex-end;align-items:center;box-sizing:border-box;">
         <button onclick="event.stopPropagation();stkEditarInsumo('${i.id}')" title="Editar" style="background:none;border:none;cursor:pointer;padding:4px;color:var(--text-l);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
       </span>
     </div>`;
