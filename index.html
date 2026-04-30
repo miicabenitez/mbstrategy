@@ -9682,7 +9682,7 @@ window.emitirFacturaCaja = async function() {
     loadCajaModule();
   } catch(e) {
     console.error('emitirFacturaCaja:', e);
-    showToast('Error al emitir: ' + e.message, 'error');
+    showToast(traducirErrorAFIP(e.message), 'error');
   } finally {
     btn.textContent = 'Emitir factura';
     btn.disabled = false;
@@ -11558,6 +11558,17 @@ window.onblurCuit = function(inp) {
   }
 };
 
+function traducirErrorAFIP(msg) {
+  if (!msg) return 'Error desconocido al emitir la factura.';
+  const m = String(msg);
+  if (/10016|punto de venta/i.test(m))  return 'El punto de venta no está registrado en ARCA. Revisá el número en Mi cuenta → Datos fiscales.';
+  if (/10070|iva/i.test(m))             return 'Error en el cálculo de IVA. Verificá el monto y la condición del receptor.';
+  if (/10051|importe/i.test(m))         return 'El importe total no coincide con el desglose. Revisá los montos.';
+  if (/certificado|token/i.test(m))     return 'Error de autenticación con ARCA. Contactá a MB Strategy.';
+  if (/cuit|contribuyente/i.test(m))    return 'El CUIT del receptor no existe o no está activo en AFIP.';
+  return 'Error AFIP: ' + m;
+}
+
 window.emitirFacturaLibre = async function() {
   const nflView = document.getElementById('nfl-view');
   const total = parseFloat(nflView.dataset.totalImporte) || 0;
@@ -11619,7 +11630,7 @@ window.emitirFacturaLibre = async function() {
     volverMisFacturas();
   } catch(e) {
     console.error('emitirFacturaLibre:', e);
-    showToast('Error al emitir: ' + e.message, 'error');
+    showToast(traducirErrorAFIP(e.message), 'error');
   } finally {
     btn.textContent = 'Emitir factura';
     btn.disabled = false;
