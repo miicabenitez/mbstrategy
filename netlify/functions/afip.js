@@ -344,6 +344,10 @@ exports.handler = async function(event) {
       const nroComprobante = lastVoucher + 1;
       const fechaHoy = fechaAfip();
 
+      const esConIva = [3, 8].includes(tipoNotaCredito);
+      const netoGravado = esConIva ? Math.round((importeTotal / 1.21) * 100) / 100 : importeTotal;
+      const importeIva = esConIva ? Math.round((netoGravado * 0.21) * 100) / 100 : 0;
+
       const ncDetRequest = {
         Concepto: 2,
         DocTipo: cuitReceptor ? 80 : 99,
@@ -353,16 +357,25 @@ exports.handler = async function(event) {
         CbteFch: fechaHoy,
         ImpTotal: importeTotal,
         ImpTotConc: 0,
-        ImpNeto: importeTotal,
+        ImpNeto: netoGravado,
         ImpOpEx: 0,
         ImpTrib: 0,
-        ImpIVA: 0,
+        ImpIVA: importeIva,
         MonId: 'PES',
         MonCotiz: 1,
         CondicionIVAReceptorId: cuitReceptor ? (body.condicionIVAReceptor || 1) : 5,
         FchServDesde: fechaHoy,
         FchServHasta: fechaHoy,
         FchVtoPago: fechaHoy,
+        ...(esConIva ? {
+          Iva: {
+            AlicIva: {
+              Id: 5,
+              BaseImp: netoGravado,
+              Importe: importeIva
+            }
+          }
+        } : {}),
         CbtesAsoc: {
           CbteAsoc: [{
             Tipo: tipoComprobanteOriginal,
