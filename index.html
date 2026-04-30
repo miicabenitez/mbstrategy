@@ -24378,7 +24378,7 @@ window.doResetPassword = async function(){
   window.gsKeydown = function(e) {
     if (e.key === 'ArrowDown') { e.preventDefault(); gsNav(1); }
     else if (e.key === 'ArrowUp') { e.preventDefault(); gsNav(-1); }
-    else if (e.key === 'Enter') { e.preventDefault(); if (window._gsActive >= 0) gsSelect(window._gsActive); }
+    else if (e.key === 'Enter') { e.preventDefault(); const i = window._gsActive >= 0 ? window._gsActive : 0; if (window._gsItems.length) gsSelect(i); }
     else if (e.key === 'Escape') { gsClose(); }
   };
 
@@ -24457,7 +24457,7 @@ window.doResetPassword = async function(){
     }))});
 
     window._gsItems = groups.flatMap(g => g.items);
-    window._gsActive = window._gsItems.length ? 0 : -1;
+    window._gsActive = -1;
     gsRender(groups);
   };
 
@@ -24468,7 +24468,7 @@ window.doResetPassword = async function(){
     el.innerHTML = groups.map(g => {
       const items = g.items.map(item => {
         const idx = gi++;
-        return `<div class="gs-item" onclick="gsSelect(${idx})" style="padding:9px 16px;cursor:pointer;display:flex;flex-direction:column;gap:2px;border-radius:0;transition:background .1s;"><div style="font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);">${item.text}</div>${item.sub?`<div style="font-size:11px;color:var(--text-l);">${item.sub}</div>`:''}</div>`;
+        return `<div class="gs-item" onclick="gsSelect(${idx})" onmouseenter="gsHover(${idx})" style="padding:9px 16px;cursor:pointer;display:flex;flex-direction:column;gap:2px;border-radius:0;transition:background .1s;"><div style="font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);">${item.text}</div>${item.sub?`<div style="font-size:11px;color:var(--text-l);">${item.sub}</div>`:''}</div>`;
       }).join('');
       return `<div style="padding:6px 16px 2px;font-size:9px;font-weight:700;letter-spacing:1.2px;color:#9ca3af;text-transform:uppercase;">${g.label}</div>${items}`;
     }).join('');
