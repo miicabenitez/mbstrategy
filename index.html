@@ -13503,13 +13503,15 @@ window.vrcGuardar = async function() {
   const btnSave = document.getElementById('vrc-btn-save');
   try {
     if(btnSave){btnSave.disabled=true;btnSave.innerHTML='<span style="display:flex;align-items:center;justify-content:center;gap:8px;">Registrando...</span>';}
-    await addDoc(collection(db,'libroCaja'), {
+    const _vcDocRef = await addDoc(collection(db,'libroCaja'), {
       uid:currentClientUID,
       fecha:hoy, tipo:'ingreso', concepto:'Venta caja',
       cuenta:_vrcMetodo||'Efectivo', monto:Math.round(total*100)/100,
       productos, mes, origen:'venta_caja', eliminado:false, creadoEn:new Date().toISOString()
     });
+    const _vcCarritoSnap = {..._vrcCarrito};
     vrcCerrar();
+    if(window._triggerStockPorVenta) window._triggerStockPorVenta(_vcCarritoSnap, _vcDocRef.id).catch(()=>{});
     loadCajaModule();
   } catch(e){
     console.log('vrcGuardar:',e);
@@ -14683,6 +14685,85 @@ window.stkGuardarInsumo = async function() {
     if(ultimo) stkSeleccionarInsumoItem(ultimo.id, idx);
     openModal('stock-receta-modal');
   }
+};
+
+window.loadMovimientosStock = async function() {
+  if(!currentClientUID) return;
+  try {
+    const { limit: fsLimit } = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
+    const snap = await getDocs(query(collection(db,'clientes',currentClientUID,'movimientosStock'), orderBy('fecha','desc'), fsLimit(100)));
+    const movs = snap.docs.map(d=>({id:d.id,...d.data()}));
+    const mesActual = new Date().toISOString().slice(0,7);
+    const delMes = movs.filter(m=>(m.fecha||'').slice(0,7)===mesActual);
+    const kpiMovs = document.getElementById('stk-kpi-movs');
+    const kpiEnt = document.getElementById('stk-kpi-entradas');
+    const kpiSal = document.getElementById('stk-kpi-salidas');
+    if(kpiMovs) kpiMovs.textContent = delMes.length;
+    if(kpiEnt) kpiEnt.textContent = delMes.filter(m=>m.tipo==='entrada').length;
+    if(kpiSal) kpiSal.textContent = delMes.filter(m=>m.tipo==='salida').length;
+    const welcome = document.getElementById('stk-movs-welcome');
+    const content = document.getElementById('stk-movs-content');
+    if(!movs.length) {
+      if(welcome) welcome.style.display='block';
+      if(content) content.style.display='none';
+      return;
+    }
+    if(welcome) welcome.style.display='none';
+    if(content) content.style.display='block';
+    const origenLabel = {compra:'Compra',venta:'Venta caja',presupuesto:'Presupuesto',ajuste:'Ajuste manual'};
+    const lista = document.getElementById('stk-movs-lista');
+    if(!lista) return;
+    lista.innerHTML = movs.map(m=>{
+      const esEntrada = m.tipo==='entrada';
+      const esAjuste = m.tipo==='ajuste';
+      const badgeBg = esEntrada ? 'rgba(74,94,77,.1)' : esAjuste ? 'rgba(156,163,175,.15)' : 'rgba(176,144,136,.15)';
+      const badgeColor = esEntrada ? '#3d6644' : esAjuste ? '#6b7280' : '#7a4e46';
+      const badgeLabel = esEntrada ? 'Entrada' : esAjuste ? 'Ajuste' : 'Salida';
+      const signo = esEntrada ? '+' : '−';
+      const signoColor = esEntrada ? '#3d6644' : '#c0392b';
+      const cantStr = (parseFloat(m.cantidad||0)).toLocaleString('es-AR',{maximumFractionDigits:3})+' '+(m.unidad||'');
+      return `<div style="display:grid;grid-template-columns:90px 80px 1fr 90px 100px 120px;gap:10px;padding:10px 0;border-bottom:.5px solid var(--cream-d);min-width:560px;align-items:center;">
+        <span style="font-size:12px;color:var(--text-m);">${(m.fecha||'').slice(0,10)}</span>
+        <span style="display:inline-flex;"><span style="background:${badgeBg};color:${badgeColor};font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;letter-spacing:.3px;">${badgeLabel}</span></span>
+        <span style="font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;">${m.insumoNombre||'—'}</span>
+        <span style="font-size:13px;color:${signoColor};font-weight:600;text-align:right;">${signo}${cantStr}</span>
+        <span style="font-size:12px;color:var(--text-m);">${origenLabel[m.origen]||m.origen||'—'}</span>
+        <span style="font-size:12px;color:var(--text-m);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${(m.notas||'').replace(/"/g,'&quot;')}">${m.notas||'—'}</span>
+      </div>`;
+    }).join('');
+  } catch(e) { console.log('loadMovimientosStock:',e); }
+};
+
+window._triggerStockPorVenta = async function(carrito, refId) {
+  if(!currentClientUID) return;
+  try {
+    if(!window._stockRecetas || !window._stockRecetas.length) {
+      const snap = await getDocs(query(collection(db,'clientes',currentClientUID,'recetas'), where('activo','==',true)));
+      window._stockRecetas = snap.docs.map(d=>({id:d.id,...d.data()}));
+    }
+    const hoy = new Date().toISOString().split('T')[0];
+    for(const productoId of Object.keys(carrito)) {
+      const entry = carrito[productoId];
+      const qty = parseFloat(entry.qty)||1;
+      const nombreProd = entry.producto?.nombre||'';
+      const receta = (window._stockRecetas||[]).find(r=>r.productoId===productoId);
+      if(!receta || !receta.items?.length) continue;
+      for(const it of receta.items) {
+        if(!it.insumoId) continue;
+        const delta = parseFloat(it.cantidad||0)*qty;
+        if(!delta) continue;
+        try {
+          await updateDoc(doc(db,'clientes',currentClientUID,'insumos',it.insumoId),{stockActual:increment(-delta)});
+          await addDoc(collection(db,'clientes',currentClientUID,'movimientosStock'),{
+            tipo:'salida', insumoId:it.insumoId, insumoNombre:it.insumoNombre||'', cantidad:delta,
+            unidad:it.unidad||'', stockResultante:null, origen:'venta', referenciaId:refId||'',
+            notas:nombreProd, fecha:hoy, creadoEn:new Date().toISOString()
+          });
+        } catch(eItem) { console.error('_triggerStockPorVenta insumo error:',it.insumoId, eItem); }
+      }
+    }
+    if(window._stockInsumos?.length) await window.loadStockModule();
+  } catch(e) { console.error('_triggerStockPorVenta error:',e); }
 };
 
 window.loadContentAdmin = loadContentAdmin;
