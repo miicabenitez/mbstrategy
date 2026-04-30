@@ -1246,6 +1246,19 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
           </div>
         </div>
       </div>
+      <!-- Stock -->
+      <div class="sb-group" id="sbg-stock">
+        <button class="sb-btn sb-has-sub" onclick="sidebarToggle('stock')">
+          <svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+          <span class="sb-label">Stock</span>
+          <svg class="sb-arrow" viewBox="0 0 16 16" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+        </button>
+        <div class="sb-sub" id="sbsub-stock">
+          <button class="sb-subitem" data-sub="insumos" onclick="sidebarNav('stock','insumos')">Insumos</button>
+          <button class="sb-subitem" data-sub="recetas" onclick="sidebarNav('stock','recetas')">Recetas</button>
+          <button class="sb-subitem" data-sub="movimientos" onclick="sidebarNav('stock','movimientos')">Movimientos</button>
+        </div>
+      </div>
       <!-- Herramientas → Control del negocio -->
       <div class="sb-group" id="sbg-herramientas">
         <button class="sb-btn sb-has-sub" onclick="sidebarToggle('herramientas')">
@@ -2030,6 +2043,13 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         <button class="subctab" onclick="showCTab('historial-compra',this)">Historial</button>
         <button class="subctab" onclick="showCTab('prod-compra',this)">Productos</button>
         <button class="subctab" onclick="showCTab('categorias-compra',this)">Categorías</button>
+      </div>
+
+      <!-- SUB-NAV Stock -->
+      <div id="subnav-stock" class="mod-subnav" style="display:none;gap:4px;margin-bottom:14px;">
+        <button class="subctab active" onclick="showCTab('insumos',this)">Insumos</button>
+        <button class="subctab" onclick="showCTab('recetas',this)">Recetas</button>
+        <button class="subctab" onclick="showCTab('movimientos-stock',this)">Movimientos</button>
       </div>
 
       <!-- SUB-NAV Herramientas -->
@@ -3914,6 +3934,178 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
             </div>
           </div>
           <div id="prov-cats-lista"></div>
+        </div>
+      </div>
+
+      <!-- STOCK — Insumos -->
+      <div id="ct-insumos" style="display:none;">
+        <div style="background:#4a5e4d;border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;">Insumos</div>
+            <button onclick="if(window.stkNuevoInsumo)stkNuevoInsumo()" style="background:#fff;border:none;border-radius:12px;padding:9px 16px;font-size:13px;font-family:'DM Sans',sans-serif;color:#4a5e4d;cursor:pointer;font-weight:500;display:flex;align-items:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v9M2 6.5h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Insumo</button>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;">
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
+              <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Total insumos</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#fff;line-height:1;" id="stk-kpi-total">—</div>
+            </div>
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
+              <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Stock crítico</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#fff;line-height:1;" id="stk-kpi-critico">—</div>
+            </div>
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
+              <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Costo inventario</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#fff;line-height:1;" id="stk-kpi-costo">—</div>
+            </div>
+          </div>
+        </div>
+        <div id="stk-insumos-welcome" style="display:none;padding:40px 16px;text-align:center;">
+          <div style="width:56px;height:56px;border-radius:50%;background:rgba(74,94,77,.08);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#4a5e4d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+          </div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:#2c2c2c;margin-bottom:8px;">Control de stock</div>
+          <div style="font-size:13px;color:var(--text-m);margin-bottom:28px;">Registrá tus insumos para que el sistema controle el inventario solo</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:520px;margin:0 auto 28px;">
+            <div style="background:#fff;border:.5px solid var(--cream-d);border-radius:12px;padding:16px 14px;">
+              <div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:1px;margin-bottom:8px;">01</div>
+              <div style="font-size:13px;color:var(--text);line-height:1.5;">Cargá tus insumos</div>
+            </div>
+            <div style="background:#fff;border:.5px solid var(--cream-d);border-radius:12px;padding:16px 14px;">
+              <div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:1px;margin-bottom:8px;">02</div>
+              <div style="font-size:13px;color:var(--text);line-height:1.5;">Creá tus recetas</div>
+            </div>
+            <div style="background:#fff;border:.5px solid var(--cream-d);border-radius:12px;padding:16px 14px;">
+              <div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:1px;margin-bottom:8px;">03</div>
+              <div style="font-size:13px;color:var(--text);line-height:1.5;">El sistema controla el stock solo</div>
+            </div>
+          </div>
+          <button onclick="if(window.stkNuevoInsumo)stkNuevoInsumo()" style="padding:10px 22px;background:linear-gradient(135deg,#3d5240 0%,#4a5e4d 45%,#5e7562 70%,#4a5e4d 100%);color:#e8f0e9;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">+ Primer insumo</button>
+        </div>
+        <div id="stk-insumos-content" style="display:none;">
+          <div class="card" style="overflow:hidden;">
+            <div style="overflow-x:auto;border-radius:12px;">
+              <div style="display:grid;grid-template-columns:1fr 90px 90px 90px 80px 64px;gap:10px;padding:0 0 8px;border-bottom:1.5px solid var(--cream-d);margin-bottom:4px;min-width:520px;">
+                <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Insumo</span>
+                <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;text-align:right;">Stock actual</span>
+                <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;text-align:right;">Mínimo</span>
+                <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;text-align:right;">Costo unit.</span>
+                <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;text-align:center;">Unidad</span>
+                <span></span>
+              </div>
+              <div id="stk-insumos-lista" style="min-width:520px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STOCK — Recetas -->
+      <div id="ct-recetas" style="display:none;">
+        <div style="background:#4a5e4d;border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;">Recetas</div>
+            <button onclick="if(window.stkNuevaReceta)stkNuevaReceta()" style="background:#fff;border:none;border-radius:12px;padding:9px 16px;font-size:13px;font-family:'DM Sans',sans-serif;color:#4a5e4d;cursor:pointer;font-weight:500;display:flex;align-items:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v9M2 6.5h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Receta</button>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;">
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
+              <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Recetas activas</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#fff;line-height:1;" id="stk-kpi-recetas">—</div>
+            </div>
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
+              <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Costo promedio</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#fff;line-height:1;" id="stk-kpi-costo-rec">—</div>
+            </div>
+          </div>
+        </div>
+        <div id="stk-recetas-welcome" style="display:none;padding:40px 16px;text-align:center;">
+          <div style="width:56px;height:56px;border-radius:50%;background:rgba(74,94,77,.08);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#4a5e4d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+          </div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:#2c2c2c;margin-bottom:8px;">Recetas de producción</div>
+          <div style="font-size:13px;color:var(--text-m);margin-bottom:28px;">Vinculá cada producto del catálogo con sus insumos</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:520px;margin:0 auto 28px;">
+            <div style="background:#fff;border:.5px solid var(--cream-d);border-radius:12px;padding:16px 14px;">
+              <div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:1px;margin-bottom:8px;">01</div>
+              <div style="font-size:13px;color:var(--text);line-height:1.5;">Seleccioná un producto del catálogo</div>
+            </div>
+            <div style="background:#fff;border:.5px solid var(--cream-d);border-radius:12px;padding:16px 14px;">
+              <div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:1px;margin-bottom:8px;">02</div>
+              <div style="font-size:13px;color:var(--text);line-height:1.5;">Definí sus ingredientes</div>
+            </div>
+            <div style="background:#fff;border:.5px solid var(--cream-d);border-radius:12px;padding:16px 14px;">
+              <div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:1px;margin-bottom:8px;">03</div>
+              <div style="font-size:13px;color:var(--text);line-height:1.5;">El costo se calcula solo</div>
+            </div>
+          </div>
+          <button onclick="if(window.stkNuevaReceta)stkNuevaReceta()" style="padding:10px 22px;background:linear-gradient(135deg,#3d5240 0%,#4a5e4d 45%,#5e7562 70%,#4a5e4d 100%);color:#e8f0e9;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">+ Primera receta</button>
+        </div>
+        <div id="stk-recetas-content" style="display:none;">
+          <div class="card" style="overflow:hidden;">
+            <div style="overflow-x:auto;border-radius:12px;">
+              <div style="display:grid;grid-template-columns:1fr 140px 100px 64px;gap:10px;padding:0 0 8px;border-bottom:1.5px solid var(--cream-d);margin-bottom:4px;min-width:400px;">
+                <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Producto</span>
+                <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Insumos</span>
+                <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;text-align:right;">Costo receta</span>
+                <span></span>
+              </div>
+              <div id="stk-recetas-lista" style="min-width:400px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STOCK — Movimientos -->
+      <div id="ct-movimientos-stock" style="display:none;">
+        <div style="background:#4a5e4d;border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;margin-bottom:16px;">Movimientos de stock</div>
+          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;">
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
+              <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Total movimientos</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#fff;line-height:1;" id="stk-kpi-movs">—</div>
+            </div>
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
+              <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Entradas</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#fff;line-height:1;" id="stk-kpi-entradas">—</div>
+            </div>
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
+              <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Salidas</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#fff;line-height:1;" id="stk-kpi-salidas">—</div>
+            </div>
+          </div>
+        </div>
+        <div id="stk-movs-welcome" style="display:none;padding:40px 16px;text-align:center;">
+          <div style="width:56px;height:56px;border-radius:50%;background:rgba(74,94,77,.08);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#4a5e4d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
+          </div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:#2c2c2c;margin-bottom:8px;">Historial de movimientos</div>
+          <div style="font-size:13px;color:var(--text-m);margin-bottom:28px;">Cada entrada y salida queda registrada automáticamente</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:520px;margin:0 auto;">
+            <div style="background:#fff;border:.5px solid var(--cream-d);border-radius:12px;padding:16px 14px;">
+              <div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:1px;margin-bottom:8px;">01</div>
+              <div style="font-size:13px;color:var(--text);line-height:1.5;">Cada compra recibida entra</div>
+            </div>
+            <div style="background:#fff;border:.5px solid var(--cream-d);border-radius:12px;padding:16px 14px;">
+              <div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:1px;margin-bottom:8px;">02</div>
+              <div style="font-size:13px;color:var(--text);line-height:1.5;">Cada venta descuenta</div>
+            </div>
+            <div style="background:#fff;border:.5px solid var(--cream-d);border-radius:12px;padding:16px 14px;">
+              <div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:1px;margin-bottom:8px;">03</div>
+              <div style="font-size:13px;color:var(--text);line-height:1.5;">Ajustá si hacés inventario</div>
+            </div>
+          </div>
+        </div>
+        <div id="stk-movs-content" style="display:none;">
+          <div class="card" style="overflow:hidden;">
+            <div style="overflow-x:auto;border-radius:12px;">
+              <div style="display:grid;grid-template-columns:90px 80px 1fr 90px 100px;gap:10px;padding:0 0 8px;border-bottom:1.5px solid var(--cream-d);margin-bottom:4px;min-width:480px;">
+                <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Fecha</span>
+                <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Tipo</span>
+                <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Insumo</span>
+                <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;text-align:right;">Cantidad</span>
+                <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Origen</span>
+              </div>
+              <div id="stk-movs-lista" style="min-width:480px;"></div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -14061,6 +14253,7 @@ window.renderCkKpis = renderCkKpis;
 window.renderHistorialCompra = renderHistorialCompra;
 window.loadClientPresupuestos = loadClientPresupuestos;
 window.loadMcModule = loadMcModule;
+window.loadStockModule = function() {};
 window.loadContentAdmin = loadContentAdmin;
 
 window.toggleCkMesDrop = function() {
@@ -22165,6 +22358,10 @@ window.showClientMod = function(mod, btn) {
   } else if(mod === 'herramientas') {
     showSubnav('subnav-herramientas');
     showCTab('calculador', null);
+  } else if(mod === 'stock') {
+    showSubnav('subnav-stock');
+    showCTab('insumos', null);
+    if(window.loadStockModule) loadStockModule();
   }
 };
 
@@ -22253,7 +22450,7 @@ window.showCTab = function(tab, btn) {
     if(ccv && ccv.style.display !== 'none') cerrarCCView();
   }
   // Ocultar subnavs de módulos distintos al que corresponde este tab
-  const _tabToMod = {contabilidad:'finanzas','cierre-periodo':'finanzas','caja-config':'finanzas','finanzas-pro-lock':'finanzas',mclientes:'ventas',presupuestos:'ventas',productos:'ventas',necesidades:'compras',proveedores:'compras','ordenes-compra':'compras','historial-compra':'compras','prod-compra':'compras','categorias-compra':'compras',calculador:'herramientas',kpis:'herramientas',tareas:'herramientas'};
+  const _tabToMod = {contabilidad:'finanzas','cierre-periodo':'finanzas','caja-config':'finanzas','finanzas-pro-lock':'finanzas',mclientes:'ventas',presupuestos:'ventas',productos:'ventas',necesidades:'compras',proveedores:'compras','ordenes-compra':'compras','historial-compra':'compras','prod-compra':'compras','categorias-compra':'compras',calculador:'herramientas',kpis:'herramientas',tareas:'herramientas',insumos:'stock',recetas:'stock','movimientos-stock':'stock'};
   const _thisMod = _tabToMod[tab];
   document.querySelectorAll('.mod-subnav').forEach(sn => {
     if(_thisMod && sn.id === 'subnav-'+_thisMod) return;
@@ -23789,6 +23986,10 @@ window.sidebarNav=function(mod,sub){
       window.showClientMod('herramientas',null);
       window._sbNavInProgress=false;
       if(sub==='planaccion')window.showCTab('tareas',null);
+    }else if(mod==='stock'){
+      if(sub==='insumos')window.showCTab('insumos',null);
+      else if(sub==='recetas')window.showCTab('recetas',null);
+      else if(sub==='movimientos')window.showCTab('movimientos-stock',null);
     }
   });
 };
