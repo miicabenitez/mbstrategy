@@ -39,7 +39,7 @@ service cloud.firestore {
              'negocioFiscalCp','negocioPvComprobante','logoNegocio'
            ]));
 
-      match /{subcollection}/{docId} {
+      match /{path=**} {
         allow read, write: if isAdmin() ||
           (isAuthenticated() && request.auth.uid == clienteId);
       }
