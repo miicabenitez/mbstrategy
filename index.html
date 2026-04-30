@@ -24331,6 +24331,7 @@ window.doResetPassword = async function(){
     </div>
   </div>
 </div>
+<style>.gs-item:hover{background:#f5f5f3;}.gs-item.gs-active{background:#e8ede8;color:#4a5e4d;}</style>
 <!-- Búsqueda global ⌘K -->
 <div class="mo" id="global-search-modal" onclick="if(event.target===this)gsClose()" style="z-index:800;">
   <div style="background:#fff;border-radius:16px;width:100%;max-width:560px;box-shadow:0 24px 80px rgba(0,0,0,.18);overflow:hidden;margin:0 16px;">
@@ -24393,7 +24394,7 @@ window.doResetPassword = async function(){
 
   window.gsHighlight = function() {
     document.querySelectorAll('.gs-item').forEach((el, i) => {
-      el.style.background = i === window._gsActive ? '#f0f4f0' : '';
+      el.classList.toggle('gs-active', i === window._gsActive);
       if (i === window._gsActive) el.scrollIntoView({ block: 'nearest' });
     });
   };
@@ -24467,7 +24468,7 @@ window.doResetPassword = async function(){
     el.innerHTML = groups.map(g => {
       const items = g.items.map(item => {
         const idx = gi++;
-        return `<div class="gs-item" onclick="gsSelect(${idx})" onmouseover="gsHover(${idx})" style="padding:9px 16px;cursor:pointer;display:flex;flex-direction:column;gap:2px;border-radius:0;transition:background .1s;"><div style="font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);">${item.text}</div>${item.sub?`<div style="font-size:11px;color:var(--text-l);">${item.sub}</div>`:''}</div>`;
+        return `<div class="gs-item" onclick="gsSelect(${idx})" style="padding:9px 16px;cursor:pointer;display:flex;flex-direction:column;gap:2px;border-radius:0;transition:background .1s;"><div style="font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);">${item.text}</div>${item.sub?`<div style="font-size:11px;color:var(--text-l);">${item.sub}</div>`:''}</div>`;
       }).join('');
       return `<div style="padding:6px 16px 2px;font-size:9px;font-weight:700;letter-spacing:1.2px;color:#9ca3af;text-transform:uppercase;">${g.label}</div>${items}`;
     }).join('');
