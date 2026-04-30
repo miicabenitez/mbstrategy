@@ -11206,16 +11206,140 @@ window.cierreGenerarPDF = cierreGenerarPDF;
 // Expose main entry point
 window.loadCierrePeriodo = loadCierrePeriodo;
 
+window.mfToggleNuevoMenu = function() {
+  const menu = document.getElementById('mf-nuevo-menu');
+  const isOpen = menu.style.display !== 'none';
+  menu.style.display = isOpen ? 'none' : 'block';
+  if (!isOpen) {
+    const close = e => {
+      if (!document.getElementById('mf-nuevo-wrapper').contains(e.target)) {
+        menu.style.display = 'none';
+        document.removeEventListener('click', close);
+      }
+    };
+    setTimeout(() => document.addEventListener('click', close), 0);
+  }
+};
+
+window.mfNuevoOpcion = function(tipo) {
+  document.getElementById('mf-nuevo-menu').style.display = 'none';
+  if (tipo === 'factura') { abrirNuevaFacturaLibre(); return; }
+  const esNc = tipo === 'nc';
+  document.getElementById('mf-ncnd-titulo').textContent = esNc ? 'Nota de Crédito' : 'Nota de Débito';
+  document.getElementById('mf-ncnd-tipo').value = tipo;
+  document.getElementById('mf-ncnd-btn-emitir').textContent = esNc ? 'Emitir NC' : 'Emitir ND';
+  const facturas = (window._mfFacturas || []).filter(f =>
+    [1, 6, 11].includes(f.tipoComprobante || 11) &&
+    (f.creadoEn||'').slice(0,7) === window._mfMesSel
+  );
+  const tipoLabels = {1:'Factura A', 6:'Factura B', 11:'Factura C'};
+  const sel = document.getElementById('mf-ncnd-factura-sel');
+  sel.innerHTML = '<option value="">— Seleccioná una factura —</option>' +
+    facturas.map(f => {
+      const nro = ('0000'+(f.puntoVenta||2)).slice(-4)+'-'+('00000000'+(f.nroComprobante||0)).slice(-8);
+      const fecha = (f.creadoEn||'').slice(0,10);
+      const monto = '$' + Number(f.importeTotal||0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
+      return `<option value="${f.id}">${fecha} · ${tipoLabels[f.tipoComprobante||11]} ${nro} · ${monto}</option>`;
+    }).join('');
+  document.getElementById('mf-ncnd-info').style.display = 'none';
+  document.getElementById('mf-ncnd-monto').value = '';
+  document.getElementById('mf-ncnd-motivo').value = '';
+  openModal('mf-ncnd-modal');
+};
+
+window.mfNcNdSelFactura = function() {
+  const facturaId = document.getElementById('mf-ncnd-factura-sel').value;
+  if (!facturaId) {
+    document.getElementById('mf-ncnd-info').style.display = 'none';
+    document.getElementById('mf-ncnd-monto').value = '';
+    return;
+  }
+  const f = (window._mfFacturas || []).find(x => x.id === facturaId);
+  if (!f) return;
+  const tipoLabels = {1:'Factura A', 6:'Factura B', 11:'Factura C'};
+  const nro = ('0000'+(f.puntoVenta||2)).slice(-4)+'-'+('00000000'+(f.nroComprobante||0)).slice(-8);
+  document.getElementById('mf-ncnd-info-tipo').textContent = tipoLabels[f.tipoComprobante||11] || 'Factura';
+  document.getElementById('mf-ncnd-info-nro').textContent = 'N° ' + nro;
+  document.getElementById('mf-ncnd-info-receptor').textContent = f.razonSocialReceptor || f.cuitReceptor || 'Consumidor Final';
+  document.getElementById('mf-ncnd-monto').value = Number(f.importeTotal||0).toFixed(2);
+  document.getElementById('mf-ncnd-info').style.display = 'block';
+};
+
+window.mfEmitirNcNd = async function() {
+  const tipo = document.getElementById('mf-ncnd-tipo').value;
+  const facturaId = document.getElementById('mf-ncnd-factura-sel').value;
+  const monto = parseFloat(document.getElementById('mf-ncnd-monto').value) || 0;
+  if (!facturaId) return showToast('Seleccioná una factura', 'error');
+  if (!monto) return showToast('Ingresá el monto', 'error');
+  const f = (window._mfFacturas || []).find(x => x.id === facturaId);
+  if (!f) return showToast('Factura no encontrada', 'error');
+  const listaClave = tipo === 'nc' ? '_mfNcList' : '_mfNdList';
+  const imputados = (window[listaClave] || [])
+    .filter(x => x.facturaId === facturaId)
+    .reduce((s, x) => s + (x.importeTotal || 0), 0);
+  if (imputados >= Number(f.importeTotal||0)) {
+    return showToast('Esta factura ya tiene ' + (tipo==='nc'?'NC':'ND') + ' por el monto total', 'error');
+  }
+  const tipoMap = tipo === 'nc' ? {1:3, 6:8, 11:13} : {1:2, 6:7, 11:12};
+  const tipoComp = tipoMap[f.tipoComprobante || 11] || (tipo === 'nc' ? 13 : 12);
+  const accion = tipo === 'nc' ? 'emitirNotaCredito' : 'emitirNotaDebito';
+  const tipoKey = tipo === 'nc' ? 'tipoNotaCredito' : 'tipoNotaDebito';
+  const btn = document.getElementById('mf-ncnd-btn-emitir');
+  btn.textContent = 'Emitiendo...'; btn.disabled = true;
+  try {
+    const idToken = await currentUser.getIdToken(true);
+    const res = await fetch('/.netlify/functions/afip', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+idToken},
+      body: JSON.stringify({
+        accion,
+        puntoVenta: f.puntoVenta || parseInt(currentClientData?.negocioPuntoVenta) || 2,
+        [tipoKey]: tipoComp,
+        importeTotal: monto,
+        caeOriginal: f.cae,
+        nroComprobanteOriginal: f.nroComprobante,
+        tipoComprobanteOriginal: f.tipoComprobante || 11,
+        cuitReceptor: f.cuitReceptor || null,
+        condicionIVAReceptor: f.condicionIVAReceptor || 5,
+        facturaId
+      })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.error || 'Error AFIP');
+    const label = tipo === 'nc' ? 'Nota de Crédito' : 'Nota de Débito';
+    showToast(label + ' emitida · CAE ' + data.cae, 'success');
+    closeModal('mf-ncnd-modal');
+    loadMisFacturasModule();
+  } catch(e) {
+    showToast(traducirErrorAFIP(e.message), 'error');
+  } finally {
+    btn.textContent = tipo === 'nc' ? 'Emitir NC' : 'Emitir ND';
+    btn.disabled = false;
+  }
+};
+
+window.mfToggleSubRow = function(facturaId) {
+  const sub = document.getElementById('mf-sub-' + facturaId);
+  const svg = document.getElementById('mf-exp-svg-' + facturaId);
+  if (!sub) return;
+  const isOpen = sub.style.display !== 'none';
+  sub.style.display = isOpen ? 'none' : 'table-row';
+  if (svg) svg.style.transform = isOpen ? '' : 'rotate(180deg)';
+};
+
 async function loadMisFacturasModule() {
   try {
     const { getDocs, collection, orderBy, query, limit } = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
-    const q = query(
-      collection(db, 'clientes', currentClientUID, 'facturas'),
-      orderBy('creadoEn', 'desc'),
-      limit(200)
-    );
-    const snap = await getDocs(q);
-    const facturas = snap.docs.map(d => ({id: d.id, ...d.data()}));
+    const [facSnap, ncSnap, ndSnap] = await Promise.all([
+      getDocs(query(collection(db, 'clientes', currentClientUID, 'facturas'), orderBy('creadoEn', 'desc'), limit(200))),
+      getDocs(collection(db, 'clientes', currentClientUID, 'notasCredito')),
+      getDocs(collection(db, 'clientes', currentClientUID, 'notasDebito'))
+    ]);
+    const facturas = facSnap.docs.map(d => ({id: d.id, ...d.data()}));
+    const ncList = ncSnap.docs.map(d => ({id: d.id, ...d.data()}));
+    const ndList = ndSnap.docs.map(d => ({id: d.id, ...d.data()}));
+    window._mfNcList = ncList;
+    window._mfNdList = ndList;
     const mesActual = new Date().toISOString().slice(0,7);
     const mesSel = window._mfMesSel || mesActual;
     window._mfMesSel = mesSel;
@@ -11249,6 +11373,7 @@ async function loadMisFacturasModule() {
     document.getElementById('mf-tabla').style.display = 'table';
     const tipoLabels = {1:'Factura A', 6:'Factura B', 11:'Factura C', 3:'NC A', 8:'NC B', 13:'NC C'};
     window._mfFacturas = facturas;
+    const pdfIcon = `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 9v2h9V9M6.5 2v7M4 7l2.5 2.5L9 7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
     document.getElementById('mf-tbody').innerHTML = delMes.map(f => {
       const tipo = f.tipoComprobante || 11;
       const nro = ('0000'+(f.puntoVenta||2)).slice(-4)+'-'+('00000000'+(f.nroComprobante||0)).slice(-8);
@@ -11257,6 +11382,36 @@ async function loadMisFacturasModule() {
       const ambienteBadge = f.ambiente === 'homologacion'
         ? `<span style="font-size:9px;background:rgba(200,160,0,.12);color:#a07000;padding:2px 6px;border-radius:4px;margin-left:4px">homo</span>`
         : '';
+      const facNc = ncList.filter(x => x.facturaId === f.id);
+      const facNd = ndList.filter(x => x.facturaId === f.id);
+      const hasSubRows = facNc.length > 0 || facNd.length > 0;
+      const subItems = [
+        ...facNc.map(nc => {
+          const ncNro = ('0000'+(nc.puntoVenta||2)).slice(-4)+'-'+('00000000'+(nc.nroComprobante||0)).slice(-8);
+          const ncLabel = {3:'NC A',8:'NC B',13:'NC C'}[nc.tipoNotaCredito] || 'NC';
+          return `<div style="display:flex;align-items:center;gap:10px;padding:5px 14px;font-size:12px;">
+            <span style="color:var(--text-l);font-size:10px;">└─</span>
+            <span style="background:#fce8e8;color:#c0392b;border-radius:4px;padding:1px 7px;font-size:10px;font-weight:500;">${ncLabel}</span>
+            <span style="color:var(--text-m)">${ncNro}</span>
+            <span style="font-family:'Cormorant Garamond',serif;font-size:14px;">$${Number(nc.importeTotal||0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})}</span>
+            <span style="color:var(--text-l);font-size:11px;">${(nc.creadoEn||'').slice(0,10)}</span>
+            <button onclick="descargarPdfNcNd('notasCredito','${nc.id}')" title="Descargar PDF" style="background:none;border:.5px solid rgba(0,0,0,.08);border-radius:7px;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-m);">${pdfIcon}</button>
+          </div>`;
+        }),
+        ...facNd.map(nd => {
+          const ndNro = ('0000'+(nd.puntoVenta||2)).slice(-4)+'-'+('00000000'+(nd.nroComprobante||0)).slice(-8);
+          const ndLabel = {2:'ND A',7:'ND B',12:'ND C'}[nd.tipoNotaDebito] || 'ND';
+          return `<div style="display:flex;align-items:center;gap:10px;padding:5px 14px;font-size:12px;">
+            <span style="color:var(--text-l);font-size:10px;">└─</span>
+            <span style="background:#fef3e2;color:#b07800;border-radius:4px;padding:1px 7px;font-size:10px;font-weight:500;">${ndLabel}</span>
+            <span style="color:var(--text-m)">${ndNro}</span>
+            <span style="font-family:'Cormorant Garamond',serif;font-size:14px;">$${Number(nd.importeTotal||0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})}</span>
+            <span style="color:var(--text-l);font-size:11px;">${(nd.creadoEn||'').slice(0,10)}</span>
+            <button onclick="descargarPdfNcNd('notasDebito','${nd.id}')" title="Descargar PDF" style="background:none;border:.5px solid rgba(0,0,0,.08);border-radius:7px;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-m);">${pdfIcon}</button>
+          </div>`;
+        })
+      ].join('');
+      const expandBtn = `<button onclick="event.stopPropagation();mfToggleSubRow('${f.id}')" title="Ver NC / ND" style="background:none;border:.5px solid rgba(0,0,0,.08);border-radius:7px;width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:${hasSubRows?'#4a5e4d':'var(--text-l)'};margin-left:4px;"><svg width="10" height="6" viewBox="0 0 10 6" fill="none" id="mf-exp-svg-${f.id}" style="transition:transform .2s"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`;
       return `<tr>
         <td style="font-size:12px;color:var(--text-m)">${fecha}</td>
         <td>${receptor}</td>
@@ -11264,9 +11419,10 @@ async function loadMisFacturasModule() {
         <td style="font-size:11px;color:var(--text-m)">${nro}</td>
         <td class="r" style="font-family:'Cormorant Garamond',serif;font-size:15px;padding-right:12px">$${Number(f.importeTotal||0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
         <td style="padding-left:12px"><span style="font-size:10px;padding:2px 8px;border-radius:5px;background:#e8ede8;color:#4a5e4d">Emitida</span></td>
-        <td style="white-space:nowrap;"><button onclick="descargarPdfFactura('${f.id}')" title="Descargar PDF" style="background:none;border:.5px solid rgba(0,0,0,.08);border-radius:7px;width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-m)">
-          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 9v2h9V9M6.5 2v7M4 7l2.5 2.5L9 7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button></td>
+        <td style="white-space:nowrap;"><button onclick="descargarPdfFactura('${f.id}')" title="Descargar PDF" style="background:none;border:.5px solid rgba(0,0,0,.08);border-radius:7px;width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-m)">${pdfIcon}</button>${expandBtn}</td>
+      </tr>
+      <tr id="mf-sub-${f.id}" style="display:none;background:#faf8f6;">
+        <td colspan="7" style="padding:4px 0;border-top:.5px solid var(--cream-d);">${subItems || '<div style="padding:8px 14px;font-size:12px;color:var(--text-l);">Sin NC/ND emitidas</div>'}</td>
       </tr>`;
     }).join('');
   } catch(e) {
@@ -11285,6 +11441,14 @@ window.descargarPdfFactura = async function(facturaId) {
     if (!facSnap.exists()) return showToast('Factura no encontrada', 'error');
     const f = { id: facSnap.id, ...facSnap.data() };
     const c = clientSnap.data() || {};
+    await _generarPdfComprobante(f, c);
+    showToast('PDF descargado', 'success');
+  } catch(e) {
+    console.error('descargarPdfFactura:', e);
+    showToast('Error al generar PDF: ' + e.message, 'error');
+  }
+};
+async function _generarPdfComprobante(f, c) {
     if (!window.jspdf) {
       await new Promise((res, rej) => {
         const s = document.createElement('script');
@@ -11506,10 +11670,39 @@ window.descargarPdfFactura = async function(facturaId) {
     pdf.text(String(f.cae||''), W-6, 287, {align:'right'});
     pdf.setFont('helvetica','normal'); pdf.setFontSize(7);
     pdf.text('Fecha de Vto. del CAE: ' + caeFechaVtoFmt, W-6, 293, {align:'right'});
-    pdf.save('factura-' + nro + '-' + fechaEmisionISO + '.pdf');
+    const prefix = [3,8,13].includes(tipo) ? 'nc' : [2,7,12].includes(tipo) ? 'nd' : 'factura';
+    pdf.save(prefix + '-' + nro + '-' + fechaEmisionISO + '.pdf');
+}
+window.descargarPdfNcNd = async function(coleccion, docId) {
+  try {
+    showToast('Generando PDF...', 'info');
+    const { getDoc, doc } = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
+    const [ncSnap, clientSnap] = await Promise.all([
+      getDoc(doc(db, 'clientes', currentClientUID, coleccion, docId)),
+      getDoc(doc(db, 'clientes', currentClientUID))
+    ]);
+    if (!ncSnap.exists()) return showToast('Comprobante no encontrado', 'error');
+    const nc = ncSnap.data();
+    const c = clientSnap.data() || {};
+    const f = {
+      id: ncSnap.id,
+      tipoComprobante: nc.tipoNotaCredito || nc.tipoNotaDebito,
+      puntoVenta: nc.puntoVenta,
+      nroComprobante: nc.nroComprobante,
+      cae: nc.cae,
+      caeFechaVto: nc.caeFechaVto,
+      importeTotal: nc.importeTotal,
+      creadoEn: nc.creadoEn,
+      ambiente: nc.ambiente,
+      cuitReceptor: null,
+      razonSocialReceptor: null,
+      descripcion: nc.tipoNotaCredito ? 'Nota de Crédito' : 'Nota de Débito',
+      items: null
+    };
+    await _generarPdfComprobante(f, c);
     showToast('PDF descargado', 'success');
   } catch(e) {
-    console.error('descargarPdfFactura:', e);
+    console.error('descargarPdfNcNd:', e);
     showToast('Error al generar PDF: ' + e.message, 'error');
   }
 };
