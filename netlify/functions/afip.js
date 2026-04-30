@@ -472,7 +472,7 @@ exports.handler = async function(event) {
       const nroComprobante = lastVoucher + 1;
       const fechaHoy = fechaAfip();
 
-      const esConIva = [2].includes(tipoNotaDebito);
+      const esConIva = [2, 7].includes(tipoNotaDebito);
       const netoGravado = esConIva ? Math.round((importeTotal / 1.21) * 100) / 100 : importeTotal;
       const importeIva = esConIva ? Math.round((netoGravado * 0.21) * 100) / 100 : 0;
 

@@ -2575,7 +2575,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
               </button>
             </div>
           </div>
-          <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;">
+          <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;">
             <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
               <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Comprobantes</div>
               <div style="font-size:22px;font-weight:500;color:#fff;line-height:1;" id="rv-kpi-cant">—</div>
@@ -2587,6 +2587,10 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
             <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
               <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">NC emitidas</div>
               <div style="font-size:22px;font-weight:500;color:#fff;line-height:1;" id="rv-kpi-nc">—</div>
+            </div>
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
+              <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">ND emitidas</div>
+              <div style="font-size:22px;font-weight:500;color:#fff;line-height:1;" id="rv-kpi-nd">—</div>
             </div>
             <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
               <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Neto del período</div>
@@ -11362,8 +11366,10 @@ async function loadMisFacturasModule() {
     const totalBruto = delMes.reduce((s,f) => s + (f.importeTotal||0), 0);
     const totalNcMes = ncList.filter(x => (x.creadoEn||'').slice(0,7) === window._mfMesSel)
       .reduce((s,x) => s + (x.importeTotal||0), 0);
+    const totalNdMes = ndList.filter(x => (x.creadoEn||'').slice(0,7) === window._mfMesSel)
+      .reduce((s,x) => s + (x.importeTotal||0), 0);
     document.getElementById('mf-kpi-cantidad').textContent = delMes.length;
-    document.getElementById('mf-kpi-total').textContent = '$' + (totalBruto - totalNcMes).toLocaleString('es-AR');
+    document.getElementById('mf-kpi-total').textContent = '$' + (totalBruto - totalNcMes + totalNdMes).toLocaleString('es-AR');
     document.getElementById('mf-kpi-ultima').textContent = facturas.length > 0 ? (facturas[0].creadoEn||'').slice(0,10) : '—';
 
     if (delMes.length === 0) {
@@ -12033,37 +12039,41 @@ async function loadResumenVentas() {
         return `<option value="${ym}"${ym===mesSel?' selected':''}>${lblMes[m]} ${year}</option>`;
       }).join('');
     }
-    const [facSnap, ncSnap] = await Promise.all([
+    const [facSnap, ncSnap, ndSnap] = await Promise.all([
       getDocs(query(collection(db, 'clientes', currentClientUID, 'facturas'), orderBy('creadoEn', 'desc'), limit(500))),
-      getDocs(collection(db, 'clientes', currentClientUID, 'notasCredito'))
+      getDocs(collection(db, 'clientes', currentClientUID, 'notasCredito')),
+      getDocs(collection(db, 'clientes', currentClientUID, 'notasDebito'))
     ]);
     const todasFacs = facSnap.docs.map(d => ({id: d.id, ...d.data()}));
     const todasNc = ncSnap.docs.map(d => ({id: d.id, ...d.data()}));
+    const todasNd = ndSnap.docs.map(d => ({id: d.id, ...d.data()}));
     const facs = todasFacs.filter(f => (f.creadoEn||'').slice(0,7) === mesSel);
-    const ncsDelMes = todasNc
-      .filter(nc => (nc.creadoEn||'').slice(0,7) === mesSel)
-      .map(nc => ({
-        id: nc.id,
-        tipoComprobante: nc.tipoNotaCredito,
-        puntoVenta: nc.puntoVenta,
-        nroComprobante: nc.nroComprobante,
-        importeTotal: nc.importeTotal,
-        creadoEn: nc.creadoEn,
-        razonSocialReceptor: null,
-        cuitReceptor: null,
-        netoGravado: null,
-        iva: null
-      }));
-    const todos = [...facs, ...ncsDelMes];
+    const normalizar = (doc, tipoKey) => ({
+      id: doc.id,
+      tipoComprobante: doc[tipoKey],
+      puntoVenta: doc.puntoVenta,
+      nroComprobante: doc.nroComprobante,
+      importeTotal: doc.importeTotal,
+      creadoEn: doc.creadoEn,
+      razonSocialReceptor: null,
+      cuitReceptor: null,
+      netoGravado: null,
+      iva: null
+    });
+    const ncsDelMes = todasNc.filter(x => (x.creadoEn||'').slice(0,7) === mesSel).map(x => normalizar(x, 'tipoNotaCredito'));
+    const ndsDelMes = todasNd.filter(x => (x.creadoEn||'').slice(0,7) === mesSel).map(x => normalizar(x, 'tipoNotaDebito'));
+    const todos = [...facs, ...ncsDelMes, ...ndsDelMes];
     todos.sort((a,b) => (a.creadoEn||'').localeCompare(b.creadoEn||''));
     const tipoNC = [3, 8, 13];
-    const tipoLabels = {1:'Factura A', 6:'Factura B', 11:'Factura C', 3:'NC A', 8:'NC B', 13:'NC C'};
-    let totBruto = 0, totNC = 0, totNeto = 0, totIva21 = 0, totIva105 = 0, totGral = 0;
-    let cantComp = 0, cantNC = 0;
+    const tipoND = [2, 7, 12];
+    const tipoLabels = {1:'Factura A', 6:'Factura B', 11:'Factura C', 3:'NC A', 8:'NC B', 13:'NC C', 2:'ND A', 7:'ND B', 12:'ND C'};
+    let totBruto = 0, totNC = 0, totND = 0, totNeto = 0, totIva21 = 0, totIva105 = 0, totGral = 0;
+    let cantComp = 0, cantNC = 0, cantND = 0;
     const fmt = v => '$' + Math.round(v).toLocaleString('es-AR');
     const filas = todos.map(f => {
       const tipo = f.tipoComprobante || 11;
       const esNC = tipoNC.includes(tipo);
+      const esND = tipoND.includes(tipo);
       const signo = esNC ? -1 : 1;
       const total = (f.importeTotal||0) * signo;
       let neto = 0, iva21 = 0, iva105 = 0;
@@ -12075,13 +12085,14 @@ async function loadResumenVentas() {
         iva21 = total - neto;
       }
       if (esNC) { cantNC++; totNC += Math.abs(total); }
+      else if (esND) { cantND++; totND += total; totBruto += total; }
       else { cantComp++; totBruto += total; }
       totNeto += neto; totIva21 += iva21; totIva105 += iva105; totGral += total;
       const nro = ('0000'+(f.puntoVenta||2)).slice(-4)+'-'+('00000000'+(f.nroComprobante||0)).slice(-8);
       const receptor = f.razonSocialReceptor || (f.cuitReceptor || 'Consumidor Final');
       const fecha = (f.creadoEn||'').slice(0,10);
-      const bg = esNC ? 'background:rgba(232,160,144,.06);' : '';
-      const colorTipo = esNC ? 'color:#c0392b;' : '';
+      const bg = esNC ? 'background:rgba(232,160,144,.06);' : esND ? 'background:rgba(254,243,226,.5);' : '';
+      const colorTipo = esNC ? 'color:#c0392b;' : esND ? 'color:#b07800;' : '';
       return `<tr style="${bg}">
         <td style="font-size:12px;color:var(--text-m)">${fecha}</td>
         <td style="font-size:12px;${colorTipo}">${tipoLabels[tipo]||'Fact.'}</td>
@@ -12096,7 +12107,8 @@ async function loadResumenVentas() {
     document.getElementById('rv-kpi-cant').textContent = cantComp;
     document.getElementById('rv-kpi-bruto').textContent = fmt(totBruto);
     document.getElementById('rv-kpi-nc').textContent = cantNC;
-    document.getElementById('rv-kpi-neto').textContent = fmt(totBruto - totNC);
+    document.getElementById('rv-kpi-nd').textContent = cantND;
+    document.getElementById('rv-kpi-neto').textContent = fmt(totGral);
     const empty = document.getElementById('rv-empty');
     const tabla = document.getElementById('rv-tabla');
     const _ivaEl = document.getElementById('rv-iva-resumen');
