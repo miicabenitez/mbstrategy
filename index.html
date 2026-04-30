@@ -14511,10 +14511,13 @@ window.stkGuardarAjuste = async function() {
 window.loadRecetasModule = async function() {
   if(!currentClientUID) return;
   try {
-    const snap = await getDocs(query(collection(db,'clientes',currentClientUID,'recetas'), where('activo','==',true), orderBy('productoNombre','asc')));
-    window._stockRecetas = snap.docs.map(d=>({id:d.id,...d.data()}));
-    stkRenderRecetas();
-  } catch(e) { console.log('loadRecetasModule:',e); }
+    const snap = await getDocs(query(collection(db,'clientes',currentClientUID,'recetas'), where('activo','==',true)));
+    window._stockRecetas = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.productoNombre||'').localeCompare(b.productoNombre||'','es'));
+  } catch(e) {
+    console.log('loadRecetasModule:',e);
+    window._stockRecetas = window._stockRecetas || [];
+  }
+  stkRenderRecetas();
 };
 
 function stkRenderRecetas() {
