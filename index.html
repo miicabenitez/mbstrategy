@@ -4520,27 +4520,6 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
   </div>
 </div>
 
-<!-- Modal Nota de Crédito -->
-<div class="mo" id="mf-nc-modal">
-  <div class="md" style="max-width:460px;">
-    <button class="mc2" onclick="closeModal('mf-nc-modal')">×</button>
-    <div class="mt">Nota de Crédito</div>
-    <input type="hidden" id="nc-factura-id">
-    <div style="background:#f5f0eb;border-radius:10px;padding:12px;margin-bottom:14px;">
-      <div style="font-size:11px;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Factura original</div>
-      <div style="font-size:13px;font-weight:500;color:var(--text)" id="nc-info-tipo">—</div>
-      <div style="font-size:12px;color:var(--text-m);margin-top:2px" id="nc-info-nro">—</div>
-      <div style="font-size:12px;color:var(--text-m);margin-top:2px" id="nc-info-receptor">—</div>
-    </div>
-    <div class="fg"><label class="fl">Monto de la NC ($)</label><input type="number" class="fi" id="nc-monto" placeholder="0.00" min="0.01" step="0.01"></div>
-    <div class="fg"><label class="fl">Motivo (opcional)</label><input type="text" class="fi" id="nc-motivo" placeholder="Ej: Devolución, error en facturación..."></div>
-    <div class="br2">
-      <button class="bp" id="nc-btn-emitir" onclick="emitirNC()">Emitir NC</button>
-      <button class="bs" onclick="closeModal('mf-nc-modal')">Cancelar</button>
-    </div>
-  </div>
-</div>
-
 <!-- Modal nuevo pendiente (mis clientes) -->
 <div class="mo" id="newMcPendienteModal">
   <div class="md" style="max-width:420px;">
@@ -11189,58 +11168,6 @@ window.cierreGenerarPDF = cierreGenerarPDF;
 // Expose main entry point
 window.loadCierrePeriodo = loadCierrePeriodo;
 
-window.abrirNcModal = function(facturaId) {
-  const f = (window._mfFacturas || []).find(x => x.id === facturaId);
-  if (!f) return showToast('Factura no encontrada', 'error');
-  const tipoLabels = {1:'Factura A', 6:'Factura B', 11:'Factura C'};
-  const nro = ('0000'+(f.puntoVenta||2)).slice(-4)+'-'+('00000000'+(f.nroComprobante||0)).slice(-8);
-  document.getElementById('nc-factura-id').value = facturaId;
-  document.getElementById('nc-info-tipo').textContent = tipoLabels[f.tipoComprobante||11] || 'Factura';
-  document.getElementById('nc-info-nro').textContent = 'N° ' + nro;
-  document.getElementById('nc-info-receptor').textContent = f.razonSocialReceptor || f.cuitReceptor || 'Consumidor Final';
-  document.getElementById('nc-monto').value = Number(f.importeTotal||0).toFixed(2);
-  document.getElementById('nc-motivo').value = '';
-  openModal('mf-nc-modal');
-};
-
-window.emitirNC = async function() {
-  const facturaId = document.getElementById('nc-factura-id').value;
-  const monto = parseFloat(document.getElementById('nc-monto').value) || 0;
-  if (!monto) return showToast('Ingresá el monto de la NC', 'error');
-  const f = (window._mfFacturas || []).find(x => x.id === facturaId);
-  if (!f) return showToast('Factura no encontrada', 'error');
-  const tipoNC = ({1:3, 6:8, 11:13})[f.tipoComprobante||11] || 13;
-  const btn = document.getElementById('nc-btn-emitir');
-  btn.textContent = 'Emitiendo...'; btn.disabled = true;
-  try {
-    const idToken = await currentUser.getIdToken(true);
-    const res = await fetch('/.netlify/functions/afip', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer '+idToken},
-      body: JSON.stringify({
-        accion: 'emitirNotaCredito',
-        puntoVenta: f.puntoVenta || parseInt(currentClientData?.negocioPuntoVenta) || 2,
-        tipoNotaCredito: tipoNC,
-        importeTotal: monto,
-        caeOriginal: f.cae,
-        nroComprobanteOriginal: f.nroComprobante,
-        tipoComprobanteOriginal: f.tipoComprobante || 11,
-        cuitReceptor: f.cuitReceptor || null,
-        condicionIVAReceptor: f.condicionIVAReceptor || 5
-      })
-    });
-    const data = await res.json();
-    if (!res.ok || !data.ok) throw new Error(data.error || 'Error AFIP');
-    showToast('Nota de Crédito emitida · CAE ' + data.cae, 'success');
-    closeModal('mf-nc-modal');
-    loadMisFacturasModule();
-  } catch(e) {
-    showToast(traducirErrorAFIP(e.message), 'error');
-  } finally {
-    btn.textContent = 'Emitir NC'; btn.disabled = false;
-  }
-};
-
 async function loadMisFacturasModule() {
   try {
     const { getDocs, collection, orderBy, query, limit } = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
@@ -11292,10 +11219,6 @@ async function loadMisFacturasModule() {
       const ambienteBadge = f.ambiente === 'homologacion'
         ? `<span style="font-size:9px;background:rgba(200,160,0,.12);color:#a07000;padding:2px 6px;border-radius:4px;margin-left:4px">homo</span>`
         : '';
-      const esFactura = [1, 6, 11].includes(tipo);
-      const ncBtn = esFactura
-        ? `<button onclick="abrirNcModal('${f.id}')" title="Emitir Nota de Crédito" style="background:none;border:.5px solid rgba(176,144,136,.4);border-radius:7px;height:28px;padding:0 8px;font-size:11px;font-weight:600;font-family:'DM Sans',sans-serif;color:#b09088;cursor:pointer;margin-left:4px;">NC</button>`
-        : '';
       return `<tr>
         <td style="font-size:12px;color:var(--text-m)">${fecha}</td>
         <td>${receptor}</td>
@@ -11305,7 +11228,7 @@ async function loadMisFacturasModule() {
         <td style="padding-left:12px"><span style="font-size:10px;padding:2px 8px;border-radius:5px;background:#e8ede8;color:#4a5e4d">Emitida</span></td>
         <td style="white-space:nowrap;"><button onclick="descargarPdfFactura('${f.id}')" title="Descargar PDF" style="background:none;border:.5px solid rgba(0,0,0,.08);border-radius:7px;width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-m)">
           <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 9v2h9V9M6.5 2v7M4 7l2.5 2.5L9 7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>${ncBtn}</td>
+        </button></td>
       </tr>`;
     }).join('');
   } catch(e) {
