@@ -5445,6 +5445,22 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
   </div>
 </div>
 
+<div class="mo" id="mfEmailModal">
+  <div class="md" style="max-width:400px;">
+    <button class="mc2" onclick="closeModal('mfEmailModal')">×</button>
+    <div class="mt">Enviar por email</div>
+    <div id="mf-email-info" style="font-size:12px;color:var(--text-m);margin-bottom:12px;"></div>
+    <div class="fg"><label class="fl">Email destino</label>
+      <input type="email" class="fi" id="mf-email-destino" placeholder="cliente@email.com"/>
+    </div>
+    <div id="mf-email-error" style="display:none;background:var(--err-bg);color:var(--err);font-size:12px;padding:9px 12px;border-radius:7px;margin-top:8px;"></div>
+    <div class="br2">
+      <button class="bp" id="mf-email-btn" onclick="mfEnviarEmail()">Enviar</button>
+      <button class="bs" onclick="closeModal('mfEmailModal')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <div class="mo" id="newPresupModal">
   <div class="md">
     <button class="mc2" onclick="closeModal('newPresupModal')">×</button>
@@ -11255,6 +11271,124 @@ window.mfNuevoOpcion = function(tipo) {
   openModal('mf-ncnd-modal');
 };
 
+window.mfToggleAcciones = function(id, event) {
+  event.stopPropagation();
+  const menuId = 'mf-acc-' + id;
+  document.querySelectorAll('[id^="mf-acc-"]').forEach(el => {
+    if (el.id !== menuId) el.style.display = 'none';
+  });
+  const menu = document.getElementById(menuId);
+  if (!menu) return;
+  const isOpen = menu.style.display !== 'none';
+  menu.style.display = isOpen ? 'none' : 'block';
+  if (!isOpen) {
+    const close = e => {
+      if (!menu.parentElement?.contains(e.target)) {
+        menu.style.display = 'none';
+        document.removeEventListener('click', close);
+      }
+    };
+    setTimeout(() => document.addEventListener('click', close), 0);
+  }
+};
+window.mfCloseAcciones = function(id) {
+  const m = document.getElementById('mf-acc-' + id); if (m) m.style.display = 'none';
+};
+window.mfWhatsApp = function(facturaId) {
+  const f = (window._mfFacturas||[]).find(x => x.id === facturaId);
+  if (!f) return;
+  const tipoLabels = {1:'Factura A',6:'Factura B',11:'Factura C',3:'NC A',8:'NC B',13:'NC C',2:'ND A',7:'ND B',12:'ND C'};
+  const tipo = tipoLabels[f.tipoComprobante||11]||'Factura';
+  const nro = ('0000'+(f.puntoVenta||2)).slice(-4)+'-'+('00000000'+(f.nroComprobante||0)).slice(-8);
+  const monto = '$'+Number(f.importeTotal||0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const receptor = f.razonSocialReceptor || '';
+  const cuitLimpio = String(f.cuitReceptor||'').replace(/\D/g,'');
+  const cliente = cuitLimpio ? (window._mcClientes||[]).find(c => String(c.cuit||'').replace(/\D/g,'') === cuitLimpio) : null;
+  let tel = String(cliente?.tel||cliente?.telefono||'').replace(/[^\d]/g,'');
+  if (!tel) tel = (prompt('Ingresá el teléfono de '+(receptor||'el cliente')+' (sin 0 ni 15, ej: 1144556677):')||'').replace(/[^\d]/g,'');
+  if (!tel) return;
+  const nombreCorto = receptor ? ' '+receptor.split(' ')[0] : '';
+  const msg = encodeURIComponent('Hola'+nombreCorto+'! Te comparto tu '+tipo+' N° '+nro+' por '+monto+'.');
+  window.open('https://wa.me/549'+tel+'?text='+msg, '_blank');
+};
+window.mfWhatsAppDoc = function(coleccion, docId) {
+  const lista = coleccion === 'notasCredito' ? (window._mfNcList||[]) : (window._mfNdList||[]);
+  const d = lista.find(x => x.id === docId);
+  if (!d) return;
+  const tipoLabels = {3:'NC A',8:'NC B',13:'NC C',2:'ND A',7:'ND B',12:'ND C'};
+  const tipoKey = coleccion === 'notasCredito' ? 'tipoNotaCredito' : 'tipoNotaDebito';
+  const tipo = tipoLabels[d[tipoKey]]||(coleccion==='notasCredito'?'NC':'ND');
+  const nro = ('0000'+(d.puntoVenta||2)).slice(-4)+'-'+('00000000'+(d.nroComprobante||0)).slice(-8);
+  const monto = '$'+Number(d.importeTotal||0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const factura = (window._mfFacturas||[]).find(f => f.id === d.facturaId);
+  const cuitLimpio = String(factura?.cuitReceptor||'').replace(/\D/g,'');
+  const cliente = cuitLimpio ? (window._mcClientes||[]).find(c => String(c.cuit||'').replace(/\D/g,'') === cuitLimpio) : null;
+  let tel = String(cliente?.tel||cliente?.telefono||'').replace(/[^\d]/g,'');
+  if (!tel) tel = (prompt('Ingresá el teléfono (sin 0 ni 15, ej: 1144556677):')||'').replace(/[^\d]/g,'');
+  if (!tel) return;
+  const msg = encodeURIComponent('Hola! Te comparto tu '+tipo+' N° '+nro+' por '+monto+'.');
+  window.open('https://wa.me/549'+tel+'?text='+msg, '_blank');
+};
+window.mfEmailModal = function(facturaId) {
+  const f = (window._mfFacturas||[]).find(x => x.id === facturaId);
+  if (!f) return;
+  window._mfEmailFacturaId = facturaId;
+  const tipoLabels = {1:'Factura A',6:'Factura B',11:'Factura C',3:'NC A',8:'NC B',13:'NC C',2:'ND A',7:'ND B',12:'ND C'};
+  const tipo = tipoLabels[f.tipoComprobante||11]||'Factura';
+  const nro = ('0000'+(f.puntoVenta||2)).slice(-4)+'-'+('00000000'+(f.nroComprobante||0)).slice(-8);
+  const monto = '$'+Number(f.importeTotal||0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const cuitLimpio = String(f.cuitReceptor||'').replace(/\D/g,'');
+  const cliente = cuitLimpio ? (window._mcClientes||[]).find(c => String(c.cuit||'').replace(/\D/g,'') === cuitLimpio) : null;
+  document.getElementById('mf-email-info').textContent = tipo+' N° '+nro+' · '+monto;
+  document.getElementById('mf-email-destino').value = cliente?.email||'';
+  document.getElementById('mf-email-error').style.display = 'none';
+  const btn = document.getElementById('mf-email-btn');
+  btn.disabled = false; btn.textContent = 'Enviar';
+  openModal('mfEmailModal');
+};
+window.mfEnviarEmail = async function() {
+  const facturaId = window._mfEmailFacturaId;
+  const emailDestino = document.getElementById('mf-email-destino').value.trim();
+  const errEl = document.getElementById('mf-email-error');
+  if (!emailDestino || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailDestino)) {
+    errEl.textContent = 'Ingresá un email válido'; errEl.style.display = 'block'; return;
+  }
+  const btn = document.getElementById('mf-email-btn');
+  btn.disabled = true; btn.textContent = 'Enviando...'; errEl.style.display = 'none';
+  try {
+    const { getDoc, doc } = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
+    const [facSnap, clientSnap] = await Promise.all([
+      getDoc(doc(db, 'clientes', currentClientUID, 'facturas', facturaId)),
+      getDoc(doc(db, 'clientes', currentClientUID))
+    ]);
+    if (!facSnap.exists()) throw new Error('Factura no encontrada');
+    const f = { id: facSnap.id, ...facSnap.data() };
+    const c = clientSnap.data() || {};
+    const b64 = await _generarPdfComprobante(f, c, { returnBase64: true });
+    const tipoLabels = {1:'Factura A',6:'Factura B',11:'Factura C',3:'NC A',8:'NC B',13:'NC C',2:'ND A',7:'ND B',12:'ND C'};
+    const tipo = tipoLabels[f.tipoComprobante||11]||'Factura';
+    const nro = ('0000'+(f.puntoVenta||2)).slice(-4)+'-'+('00000000'+(f.nroComprobante||0)).slice(-8);
+    const monto = '$'+Number(f.importeTotal||0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
+    const idToken = await currentUser.getIdToken(true);
+    const res = await fetch('/.netlify/functions/send-factura-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + idToken },
+      body: JSON.stringify({
+        emailDestino, pdfBase64: b64,
+        nombreArchivo: (tipo+'-'+nro).replace(/ /g,'-')+'.pdf',
+        asunto: 'Tu '+tipo+' N° '+nro+' — '+(c.negocioNombre||'MB Strategy'),
+        cuerpo: 'Te compartimos tu '+tipo+' N° '+nro+' por '+monto+'. Encontrás el comprobante adjunto en este email.'
+      })
+    });
+    if (!res.ok) throw new Error((await res.json()).error||'Error al enviar');
+    closeModal('mfEmailModal');
+    showToast('Email enviado a '+emailDestino, 'success');
+  } catch(e) {
+    errEl.textContent = 'Error: '+e.message; errEl.style.display = 'block';
+    btn.disabled = false; btn.textContent = 'Enviar';
+  }
+};
+
 window.mfNcNdSelFactura = function() {
   const facturaId = document.getElementById('mf-ncnd-factura-sel').value;
   if (!facturaId) {
@@ -11407,7 +11541,13 @@ async function loadMisFacturasModule() {
             <span style="color:var(--text-m)">${ncNro}</span>
             <span style="font-family:'Cormorant Garamond',serif;font-size:14px;">$${Number(nc.importeTotal||0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})}</span>
             <span style="color:var(--text-l);font-size:11px;">${(nc.creadoEn||'').slice(0,10)}</span>
-            <button onclick="descargarPdfNcNd('notasCredito','${nc.id}')" title="Descargar PDF" style="background:none;border:.5px solid rgba(0,0,0,.08);border-radius:7px;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-m);">${pdfIcon}</button>
+            <div style="position:relative;display:inline-flex;">
+              <button onclick="mfToggleAcciones('nc-${nc.id}',event)" title="Acciones" style="background:none;border:.5px solid rgba(0,0,0,.08);border-radius:7px;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-m);">${pdfIcon}</button>
+              <div id="mf-acc-nc-${nc.id}" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:#fff;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.12);min-width:160px;overflow:hidden;z-index:300;">
+                <button onclick="descargarPdfNcNd('notasCredito','${nc.id}');mfCloseAcciones('nc-${nc.id}')" style="width:100%;background:none;border:none;border-bottom:.5px solid var(--cream-d);padding:10px 14px;text-align:left;font-size:12px;font-family:'DM Sans',sans-serif;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:8px;">↓ Descargar</button>
+                <button onclick="mfWhatsAppDoc('notasCredito','${nc.id}')" style="width:100%;background:none;border:none;padding:10px 14px;text-align:left;font-size:12px;font-family:'DM Sans',sans-serif;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:8px;">💬 WhatsApp</button>
+              </div>
+            </div>
           </div>`;
         }),
         ...facNd.map(nd => {
@@ -11419,7 +11559,13 @@ async function loadMisFacturasModule() {
             <span style="color:var(--text-m)">${ndNro}</span>
             <span style="font-family:'Cormorant Garamond',serif;font-size:14px;">$${Number(nd.importeTotal||0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})}</span>
             <span style="color:var(--text-l);font-size:11px;">${(nd.creadoEn||'').slice(0,10)}</span>
-            <button onclick="descargarPdfNcNd('notasDebito','${nd.id}')" title="Descargar PDF" style="background:none;border:.5px solid rgba(0,0,0,.08);border-radius:7px;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-m);">${pdfIcon}</button>
+            <div style="position:relative;display:inline-flex;">
+              <button onclick="mfToggleAcciones('nd-${nd.id}',event)" title="Acciones" style="background:none;border:.5px solid rgba(0,0,0,.08);border-radius:7px;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-m);">${pdfIcon}</button>
+              <div id="mf-acc-nd-${nd.id}" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:#fff;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.12);min-width:160px;overflow:hidden;z-index:300;">
+                <button onclick="descargarPdfNcNd('notasDebito','${nd.id}');mfCloseAcciones('nd-${nd.id}')" style="width:100%;background:none;border:none;border-bottom:.5px solid var(--cream-d);padding:10px 14px;text-align:left;font-size:12px;font-family:'DM Sans',sans-serif;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:8px;">↓ Descargar</button>
+                <button onclick="mfWhatsAppDoc('notasDebito','${nd.id}')" style="width:100%;background:none;border:none;padding:10px 14px;text-align:left;font-size:12px;font-family:'DM Sans',sans-serif;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:8px;">💬 WhatsApp</button>
+              </div>
+            </div>
           </div>`;
         })
       ].join('');
@@ -11433,7 +11579,7 @@ async function loadMisFacturasModule() {
         <td style="font-size:11px;color:var(--text-m)">${nro}</td>
         <td class="r" style="font-family:'Cormorant Garamond',serif;font-size:15px;padding-right:12px">$${Number(f.importeTotal||0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
         <td style="padding-left:12px"><span style="font-size:10px;padding:2px 8px;border-radius:5px;background:#e8ede8;color:#4a5e4d">Emitida</span></td>
-        <td style="white-space:nowrap;vertical-align:middle;"><button onclick="descargarPdfFactura('${f.id}')" title="Descargar PDF" style="background:none;border:.5px solid rgba(0,0,0,.08);border-radius:7px;width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;cursor:pointer;color:var(--text-m)">${pdfIcon}</button>${expandBtn}</td>
+        <td style="white-space:nowrap;vertical-align:middle;"><div style="position:relative;display:inline-flex;vertical-align:middle;"><button onclick="mfToggleAcciones('${f.id}',event)" title="Acciones" style="background:none;border:.5px solid rgba(0,0,0,.08);border-radius:7px;width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-m)">${pdfIcon}</button><div id="mf-acc-${f.id}" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:#fff;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.12);min-width:170px;overflow:hidden;z-index:300;"><button onclick="descargarPdfFactura('${f.id}');mfCloseAcciones('${f.id}')" style="width:100%;background:none;border:none;border-bottom:.5px solid var(--cream-d);padding:10px 14px;text-align:left;font-size:12px;font-family:'DM Sans',sans-serif;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:8px;">↓ Descargar</button><button onclick="mfWhatsApp('${f.id}')" style="width:100%;background:none;border:none;border-bottom:.5px solid var(--cream-d);padding:10px 14px;text-align:left;font-size:12px;font-family:'DM Sans',sans-serif;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:8px;">💬 WhatsApp</button><button onclick="mfEmailModal('${f.id}')" style="width:100%;background:none;border:none;padding:10px 14px;text-align:left;font-size:12px;font-family:'DM Sans',sans-serif;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:8px;">✉️ Email</button></div></div>${expandBtn}</td>
       </tr>
       <tr id="mf-sub-${f.id}" style="display:none;background:#faf8f6;">
         <td colspan="7" style="padding:4px 0;border-top:.5px solid var(--cream-d);">${subItems || '<div style="padding:8px 14px;font-size:12px;color:var(--text-l);">Sin NC/ND emitidas</div>'}</td>
@@ -11462,7 +11608,7 @@ window.descargarPdfFactura = async function(facturaId) {
     showToast('Error al generar PDF: ' + e.message, 'error');
   }
 };
-async function _generarPdfComprobante(f, c) {
+async function _generarPdfComprobante(f, c, opts) {
     if (!window.jspdf) {
       await new Promise((res, rej) => {
         const s = document.createElement('script');
@@ -11685,6 +11831,7 @@ async function _generarPdfComprobante(f, c) {
     pdf.setFont('helvetica','normal'); pdf.setFontSize(7);
     pdf.text('Fecha de Vto. del CAE: ' + caeFechaVtoFmt, W-6, 293, {align:'right'});
     const prefix = [3,8,13].includes(tipo) ? 'nc' : [2,7,12].includes(tipo) ? 'nd' : 'factura';
+    if (opts?.returnBase64) return pdf.output('datauristring').split(',')[1];
     pdf.save(prefix + '-' + nro + '-' + fechaEmisionISO + '.pdf');
 }
 window.descargarPdfNcNd = async function(coleccion, docId) {
