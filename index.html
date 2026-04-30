@@ -5460,6 +5460,20 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
     </div>
   </div>
 </div>
+<div class="mo" id="mf-wa-modal">
+  <div class="md" style="max-width:380px;">
+    <button class="mc2" onclick="closeModal('mf-wa-modal')">×</button>
+    <div class="mt">Enviar por WhatsApp</div>
+    <div id="mf-wa-info" style="font-size:12px;color:var(--text-m);margin-bottom:12px;"></div>
+    <div class="fg"><label class="fl">Teléfono</label>
+      <input type="tel" class="fi" id="mf-wa-tel" placeholder="Ej: 1144556677 (sin 0 ni 15)"/>
+    </div>
+    <div class="br2">
+      <button class="bp" onclick="mfConfirmarWa()">Abrir WhatsApp</button>
+      <button class="bs" onclick="closeModal('mf-wa-modal')">Cancelar</button>
+    </div>
+  </div>
+</div>
 
 <div class="mo" id="newPresupModal">
   <div class="md">
@@ -11304,12 +11318,14 @@ window.mfWhatsApp = function(facturaId) {
   const receptor = f.razonSocialReceptor || '';
   const cuitLimpio = String(f.cuitReceptor||'').replace(/\D/g,'');
   const cliente = cuitLimpio ? (window._mcClientes||[]).find(c => String(c.cuit||'').replace(/\D/g,'') === cuitLimpio) : null;
-  let tel = String(cliente?.tel||cliente?.telefono||'').replace(/[^\d]/g,'');
-  if (!tel) tel = (prompt('Ingresá el teléfono de '+(receptor||'el cliente')+' (sin 0 ni 15, ej: 1144556677):')||'').replace(/[^\d]/g,'');
-  if (!tel) return;
+  const tel = String(cliente?.tel||cliente?.telefono||'').replace(/[^\d]/g,'');
   const nombreCorto = receptor ? ' '+receptor.split(' ')[0] : '';
-  const msg = encodeURIComponent('Hola'+nombreCorto+'! Te comparto tu '+tipo+' N° '+nro+' por '+monto+'.');
-  window.open('https://wa.me/549'+tel+'?text='+msg, '_blank');
+  const msg = 'Hola'+nombreCorto+'! Te comparto tu '+tipo+' N° '+nro+' por '+monto+'.';
+  if (tel) { window.open('https://wa.me/549'+tel+'?text='+encodeURIComponent(msg), '_blank'); return; }
+  window._mfWaPendingMsg = msg;
+  document.getElementById('mf-wa-info').textContent = tipo+' N° '+nro+' · '+monto;
+  document.getElementById('mf-wa-tel').value = '';
+  openModal('mf-wa-modal');
 };
 window.mfWhatsAppDoc = function(coleccion, docId) {
   const lista = coleccion === 'notasCredito' ? (window._mfNcList||[]) : (window._mfNdList||[]);
@@ -11323,11 +11339,19 @@ window.mfWhatsAppDoc = function(coleccion, docId) {
   const factura = (window._mfFacturas||[]).find(f => f.id === d.facturaId);
   const cuitLimpio = String(factura?.cuitReceptor||'').replace(/\D/g,'');
   const cliente = cuitLimpio ? (window._mcClientes||[]).find(c => String(c.cuit||'').replace(/\D/g,'') === cuitLimpio) : null;
-  let tel = String(cliente?.tel||cliente?.telefono||'').replace(/[^\d]/g,'');
-  if (!tel) tel = (prompt('Ingresá el teléfono (sin 0 ni 15, ej: 1144556677):')||'').replace(/[^\d]/g,'');
-  if (!tel) return;
-  const msg = encodeURIComponent('Hola! Te comparto tu '+tipo+' N° '+nro+' por '+monto+'.');
-  window.open('https://wa.me/549'+tel+'?text='+msg, '_blank');
+  const tel = String(cliente?.tel||cliente?.telefono||'').replace(/[^\d]/g,'');
+  const msg = 'Hola! Te comparto tu '+tipo+' N° '+nro+' por '+monto+'.';
+  if (tel) { window.open('https://wa.me/549'+tel+'?text='+encodeURIComponent(msg), '_blank'); return; }
+  window._mfWaPendingMsg = msg;
+  document.getElementById('mf-wa-info').textContent = tipo+' N° '+nro+' · '+monto;
+  document.getElementById('mf-wa-tel').value = '';
+  openModal('mf-wa-modal');
+};
+window.mfConfirmarWa = function() {
+  const tel = document.getElementById('mf-wa-tel').value.replace(/[^\d]/g,'');
+  if (!tel) { document.getElementById('mf-wa-tel').focus(); return; }
+  closeModal('mf-wa-modal');
+  window.open('https://wa.me/549'+tel+'?text='+encodeURIComponent(window._mfWaPendingMsg||''), '_blank');
 };
 window.mfEmailModal = function(facturaId) {
   const f = (window._mfFacturas||[]).find(x => x.id === facturaId);
