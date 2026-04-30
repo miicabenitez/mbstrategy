@@ -14624,6 +14624,7 @@ function stkRecRenderItems() {
       <div style="position:relative;">
         <input type="text" value="${(it.insumoNombre||'').replace(/"/g,'&quot;')}" placeholder="Buscá un insumo..." class="fi" style="margin-top:0;font-size:12px;" autocomplete="off"
           oninput="stkBuscarInsumoItem(this.value,${i})"
+          onkeydown="stkInsumoKeydown(event,${i})"
           onblur="setTimeout(()=>{const d=document.getElementById('stk-ins-dd-${i}');if(d)d.style.display='none';},180)"/>
         <div id="stk-ins-dd-${i}" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:700;max-height:160px;overflow-y:auto;"></div>
       </div>
@@ -14637,10 +14638,27 @@ window.stkBuscarInsumoItem = function(q,idx) {
   const dd=document.getElementById('stk-ins-dd-'+idx);
   if(!dd) return;
   const ins=(window._stockInsumos||[]).filter(i=>(i.nombre||'').toLowerCase().includes((q||'').toLowerCase())).slice(0,6);
-  const rows=ins.map(i=>`<div onclick="stkSeleccionarInsumoItem('${i.id}',${idx})" style="padding:9px 12px;cursor:pointer;border-bottom:.5px solid var(--cream-d);font-size:12px;" onmouseenter="this.style.background='var(--cream)'" onmouseleave="this.style.background=''"><span style="font-weight:500;">${i.nombre}</span> <span style="color:var(--text-l);">(${i.unidad})</span></div>`);
-  if(q.trim()) rows.push(`<div onclick="stkCrearInsumoDesdeReceta('${q.replace(/'/g,"\\'")}',${idx})" style="padding:9px 12px;cursor:pointer;font-size:12px;color:#4a5e4d;font-weight:500;" onmouseenter="this.style.background='var(--cream)'" onmouseleave="this.style.background=''">+ Crear "${q}" como insumo nuevo</div>`);
+  const rows=ins.map(i=>`<div class="stk-ins-opt" onclick="stkSeleccionarInsumoItem('${i.id}',${idx})" style="padding:9px 12px;cursor:pointer;border-bottom:.5px solid var(--cream-d);font-size:12px;" onmouseenter="this.style.background='var(--cream)'" onmouseleave="this.style.background=''"><span style="font-weight:500;">${i.nombre}</span> <span style="color:var(--text-l);">(${i.unidad})</span></div>`);
+  if(q.trim()) rows.push(`<div class="stk-ins-opt" onclick="stkCrearInsumoDesdeReceta('${q.replace(/'/g,"\\'")}',${idx})" style="padding:9px 12px;cursor:pointer;font-size:12px;color:#4a5e4d;font-weight:500;" onmouseenter="this.style.background='var(--cream)'" onmouseleave="this.style.background=''">+ Crear "${q}" como insumo nuevo</div>`);
   dd.innerHTML=rows.join('');
+  dd.dataset.active='-1';
   dd.style.display=rows.length?'block':'none';
+};
+
+window.stkInsumoKeydown = function(e,idx) {
+  const dd=document.getElementById('stk-ins-dd-'+idx);
+  if(!dd||dd.style.display==='none') return;
+  const opts=dd.querySelectorAll('.stk-ins-opt');
+  if(!opts.length) return;
+  let active=parseInt(dd.dataset.active??'-1');
+  if(e.key==='ArrowDown'){e.preventDefault();active=Math.min(active+1,opts.length-1);}
+  else if(e.key==='ArrowUp'){e.preventDefault();active=Math.max(active-1,0);}
+  else if(e.key==='Enter'){e.preventDefault();if(active>=0&&opts[active])opts[active].click();return;}
+  else if(e.key==='Escape'){dd.style.display='none';return;}
+  else return;
+  dd.dataset.active=active;
+  opts.forEach((o,i)=>{o.style.background=i===active?'var(--cream)':'';});
+  if(opts[active])opts[active].scrollIntoView({block:'nearest'});
 };
 
 window.stkSeleccionarInsumoItem = function(insumoId,idx) {
