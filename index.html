@@ -2070,6 +2070,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         <span id="inicio-dias-cierre" style="display:none;"></span>
 
         <div id="inicio-alertas-sistema" style="display:none;margin-bottom:14px;"></div>
+        <div id="inicio-stock-critico" style="display:none;margin-bottom:14px;"></div>
 
         <!-- Banner principal -->
         <div class="dash-card" style="background:linear-gradient(135deg,#2d3d30 0%,#3d5240 50%,#4a5e4d 100%);border-radius:16px;padding:20px 22px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;">
@@ -13642,6 +13643,26 @@ async function loadInicio() {
     }
   } catch(e) { console.error('alertas sistema:', e); }
 
+  // Stock crítico
+  try {
+    const _stkCritEl = document.getElementById('inicio-stock-critico');
+    if(_stkCritEl) {
+      let _insumos = window._stockInsumos?.length ? window._stockInsumos : null;
+      if(!_insumos) {
+        const _iSnap = await getDocs(query(collection(db,'clientes',currentClientUID,'insumos'), where('activo','==',true)));
+        _insumos = _iSnap.docs.map(d=>({id:d.id,...d.data()}));
+      }
+      const _criticos = _insumos.filter(i=>typeof i.stockMinimo==='number'&&i.stockMinimo>0&&(parseFloat(i.stockActual)||0)<=i.stockMinimo);
+      if(_criticos.length) {
+        _stkCritEl.innerHTML = '<div style="border-left:3px solid #b09088;background:#fff;border-radius:0 8px 8px 0;padding:12px 14px;margin-bottom:0;box-shadow:0 1px 3px rgba(0,0,0,.06);"><div style="font-family:\'DM Sans\',sans-serif;font-size:13px;font-weight:500;color:#7a4e46;margin-bottom:4px;">⚠ '+_criticos.length+' insumo'+(_criticos.length!==1?'s':'')+' con stock crítico</div><div style="font-size:12px;color:var(--text-m);line-height:1.6;">'+_criticos.map(i=>i.nombre).join(' · ')+'</div></div>';
+        _stkCritEl.style.display = 'block';
+      } else {
+        _stkCritEl.innerHTML = '';
+        _stkCritEl.style.display = 'none';
+      }
+    }
+  } catch(e) { console.error('stock critico inicio:', e); }
+
   // Cargar datos financieros desde libroCaja
   try {
     const cajSnap = await getDocs(query(collection(db,'libroCaja'),where('uid','==',currentClientUID)));
@@ -14764,6 +14785,75 @@ window._triggerStockPorVenta = async function(carrito, refId) {
     }
     if(window._stockInsumos?.length) await window.loadStockModule();
   } catch(e) { console.error('_triggerStockPorVenta error:',e); }
+};
+
+window._triggerStockPorPresupuesto = async function(p) {
+  if(!currentClientUID) return;
+  try {
+    if(!window._stockRecetas || !window._stockRecetas.length) {
+      const snap = await getDocs(query(collection(db,'clientes',currentClientUID,'recetas'), where('activo','==',true)));
+      window._stockRecetas = snap.docs.map(d=>({id:d.id,...d.data()}));
+    }
+    const hoy = new Date().toISOString().split('T')[0];
+    for(const it of (p.items||[])) {
+      if(!it.productoId) continue;
+      const qty = parseFloat(it.cant)||1;
+      const nombreProd = it.desc||'';
+      const receta = (window._stockRecetas||[]).find(r=>r.productoId===it.productoId);
+      if(!receta || !receta.items?.length) continue;
+      for(const ri of receta.items) {
+        if(!ri.insumoId) continue;
+        const delta = parseFloat(ri.cantidad||0)*qty;
+        if(!delta) continue;
+        try {
+          await updateDoc(doc(db,'clientes',currentClientUID,'insumos',ri.insumoId),{stockActual:increment(-delta)});
+          await addDoc(collection(db,'clientes',currentClientUID,'movimientosStock'),{
+            tipo:'salida', insumoId:ri.insumoId, insumoNombre:ri.insumoNombre||'', cantidad:delta,
+            unidad:ri.unidad||'', stockResultante:null, origen:'presupuesto', referenciaId:p.id||'',
+            notas:nombreProd, fecha:hoy, creadoEn:new Date().toISOString()
+          });
+        } catch(eItem) { console.error('_triggerStockPorPresupuesto insumo error:',ri.insumoId, eItem); }
+      }
+    }
+    if(window._stockInsumos?.length) await window.loadStockModule();
+  } catch(e) { console.error('_triggerStockPorPresupuesto error:',e); }
+};
+
+window.stkDescontarPresupuesto = async function(presupId) {
+  if(!currentClientUID) return;
+  const presup = [...(_mcPresupuestos||[]), ...(window._clientPresupuestos||[])].find(x=>x.id===presupId);
+  if(!presup) return;
+  if(!window._stockRecetas || !window._stockRecetas.length) {
+    try {
+      const snap = await getDocs(query(collection(db,'clientes',currentClientUID,'recetas'), where('activo','==',true)));
+      window._stockRecetas = snap.docs.map(d=>({id:d.id,...d.data()}));
+    } catch(e) {}
+  }
+  const lineas = [];
+  for(const it of (presup.items||[])) {
+    if(!it.productoId) continue;
+    const receta = (window._stockRecetas||[]).find(r=>r.productoId===it.productoId);
+    if(!receta?.items?.length) continue;
+    const qty = parseFloat(it.cant)||1;
+    for(const ri of receta.items) {
+      if(!ri.insumoId) continue;
+      const delta = parseFloat(ri.cantidad||0)*qty;
+      if(delta) lineas.push(`${ri.insumoNombre||ri.insumoId}: ${delta.toLocaleString('es-AR')} ${ri.unidad||''}`);
+    }
+  }
+  if(!lineas.length) { showToast('Ningún ítem del presupuesto tiene receta activa con insumos', 'info'); return; }
+  showConfirm(
+    'Se van a descontar del stock:\n\n' + lineas.join('\n'),
+    async () => {
+      await window._triggerStockPorPresupuesto(presup).catch(()=>{});
+      try {
+        await updateDoc(doc(db,'clientes',currentClientUID,'presupuestos',presupId),{stockDescontado:true});
+      } catch(e) { console.error('stkDescontarPresupuesto updateDoc:',e); }
+      await loadMcModule();
+      if(window._currentMcClienteId) openMcDetalle(window._currentMcClienteId);
+    },
+    'Descontar stock'
+  );
 };
 
 window.loadContentAdmin = loadContentAdmin;
@@ -16874,7 +16964,11 @@ function renderMcDetallePresupuestos(list, clienteId, clienteNombre) {
       <div style="background:var(--cream);border-top:.5px solid var(--cream-d);padding:8px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
         <div style="display:flex;gap:4px;flex-wrap:wrap;">
           ${cobrado
-            ? `<span style="font-size:11px;color:#1A6637;font-weight:500;">✓ Cobrado — cerrado</span>`
+            ? p.stockDescontado
+              ? `<span style="font-size:11px;color:#1A6637;font-weight:500;">✓ Cobrado · ✓ Stock descontado</span>`
+              : (p.items||[]).some(it=>it.productoId)
+                ? `<span style="font-size:11px;color:#1A6637;font-weight:500;">✓ Cobrado</span><button onclick="stkDescontarPresupuesto('${p.id}')" style="font-size:11px;padding:3px 9px;border-radius:20px;border:.5px solid #b09088;background:rgba(176,144,136,.1);color:#7a4e46;cursor:pointer;font-family:'DM Sans',sans-serif;margin-left:6px;">Descontar stock</button>`
+                : `<span style="font-size:11px;color:#1A6637;font-weight:500;">✓ Cobrado — cerrado</span>`
             : estados.filter(s=>s!==p.estado).map(s=>`<button onclick="updateMcPresupEstado('${p.id}','${s}')" style="font-size:11px;padding:3px 9px;border-radius:20px;border:.5px solid var(--cream-d);background:var(--white);color:var(--text-m);cursor:pointer;font-family:'DM Sans',sans-serif;">${estadoLabel[s]}</button>`).join('')
           }
         </div>
