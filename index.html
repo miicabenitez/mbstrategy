@@ -2485,15 +2485,20 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
             </div>
           </div>
           <div class="card" style="margin-bottom:12px">
-            <div class="ct">Producto o servicio</div>
-            <div style="position:relative;margin-bottom:14px">
-              <input class="fi" type="text" id="nfl-prod-search" placeholder="Buscá en catálogo o describí el servicio" oninput="nflBuscarProducto(this.value)" autocomplete="off">
-              <input type="hidden" id="nfl-prod-id">
-              <div id="nfl-prod-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:.5px solid var(--cream-d);border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.1);z-index:10;overflow:hidden;margin-top:4px"></div>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-              <div class="fg"><label class="fl">Cantidad</label><input class="fi" type="number" id="nfl-cantidad" value="1" min="1" step="1" oninput="nflRecalcular()"></div>
-              <div class="fg" style="margin-bottom:0"><label class="fl">Precio unitario ($)</label><input class="fi" type="number" id="nfl-precio" placeholder="0.00" min="0" step="0.01" oninput="nflRecalcular()"></div>
+            <div class="ct">Ítems a facturar</div>
+            <div id="nfl-items-list" style="margin-bottom:8px"></div>
+            <div style="border:.5px solid var(--cream-d);border-radius:10px;padding:12px;">
+              <div style="font-size:11px;color:var(--text-l);margin-bottom:8px;font-weight:500;text-transform:uppercase;letter-spacing:.04em;">Agregar ítem</div>
+              <div style="position:relative;margin-bottom:10px">
+                <input class="fi" type="text" id="nfl-prod-search" placeholder="Buscá en catálogo o describí el servicio" oninput="nflBuscarProducto(this.value)" autocomplete="off">
+                <input type="hidden" id="nfl-prod-id">
+                <div id="nfl-prod-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:.5px solid var(--cream-d);border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.1);z-index:10;overflow:hidden;margin-top:4px"></div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px">
+                <div class="fg"><label class="fl">Cantidad</label><input class="fi" type="number" id="nfl-cantidad" value="1" min="1" step="1"></div>
+                <div class="fg" style="margin-bottom:0"><label class="fl">Precio unitario ($)</label><input class="fi" type="number" id="nfl-precio" placeholder="0.00" min="0" step="0.01"></div>
+              </div>
+              <button onclick="nflAgregarItem()" style="width:100%;background:#4a5e4d;border:none;border-radius:10px;padding:10px;font-size:12px;font-family:'DM Sans',sans-serif;color:#fff;cursor:pointer;font-weight:500;">+ Agregar ítem</button>
             </div>
           </div>
           <div class="card" style="margin-bottom:12px">
@@ -11349,7 +11354,9 @@ window.descargarPdfFactura = async function(facturaId) {
     const emisorRI = c.negocioCondicionIVA === 'responsable_inscripto';
     const neto = (discrimina || (tipo === 6 && emisorRI)) ? Math.round(importeTotal/1.21) : importeTotal;
     const iva21 = importeTotal - neto;
-    const desc = f.descripcion || (f.concepto===1 ? 'Productos' : 'Servicios');
+    const itemsToPdf = (f.items && f.items.length)
+      ? f.items
+      : [{desc: f.descripcion || (f.concepto===1 ? 'Productos' : 'Servicios'), cantidad: 1, precio: importeTotal}];
     sf(GREEN); pdf.rect(0,86,W,8,'F');
     st([255,255,255]); pdf.setFont('helvetica','bold'); pdf.setFontSize(7.5);
     pdf.text('Cód.', 6, 91.5);
@@ -11366,22 +11373,31 @@ window.descargarPdfFactura = async function(facturaId) {
       pdf.text('Importe', 204, 91.5, {align:'right'});
     }
     st(TEXT); pdf.setFont('helvetica','normal'); pdf.setFontSize(8);
-    pdf.text('001', 6, 100);
-    pdf.text(desc.slice(0,55), 18, 100);
-    pdf.text('1,00', 113, 100, {align:'right'});
-    pdf.text('unidades', 124, 100);
-    if (discrimina) {
-      pdf.text(fmt(neto), 158, 100, {align:'right'});
-      pdf.text(fmt(neto), 176, 100, {align:'right'});
-      pdf.text('21%', 188, 100, {align:'right'});
-      pdf.text(fmt(importeTotal), 204, 100, {align:'right'});
-    } else {
-      pdf.text(fmt(importeTotal), 168, 100, {align:'right'});
-      pdf.text(fmt(importeTotal), 204, 100, {align:'right'});
-    }
-    // ── 6. Totales (y=210..250) ──
-    sd(BORDER); pdf.line(0,210,W,210);
-    let yT = 215;
+    let yRow = 100;
+    itemsToPdf.forEach((it, idx) => {
+      const cant = Number(it.cantidad) || 1;
+      const prec = Number(it.precio) || 0;
+      const itTotal = Math.round(cant * prec * 100) / 100;
+      pdf.text(String(idx+1).padStart(3,'0'), 6, yRow);
+      pdf.text((it.desc||'').slice(0,55), 18, yRow);
+      pdf.text(cant.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}), 113, yRow, {align:'right'});
+      pdf.text('unidades', 124, yRow);
+      if (discrimina) {
+        const itNeto = Math.round(itTotal / 1.21 * 100) / 100;
+        pdf.text(fmt(prec), 158, yRow, {align:'right'});
+        pdf.text(fmt(itNeto), 176, yRow, {align:'right'});
+        pdf.text('21%', 188, yRow, {align:'right'});
+        pdf.text(fmt(itTotal), 204, yRow, {align:'right'});
+      } else {
+        pdf.text(fmt(prec), 168, yRow, {align:'right'});
+        pdf.text(fmt(itTotal), 204, yRow, {align:'right'});
+      }
+      yRow += 8;
+    });
+    // ── 6. Totales (posición dinámica según cantidad de ítems) ──
+    const yTotSep = Math.min(Math.max(yRow + 6, 140), 220);
+    sd(BORDER); pdf.line(0,yTotSep,W,yTotSep);
+    let yT = yTotSep + 5;
     const totalRow = (lbl, val, big) => {
       st(TEXT_L); pdf.setFont('helvetica', big?'bold':'normal'); pdf.setFontSize(big?10:8);
       pdf.text(lbl, 110, yT);
@@ -11472,6 +11488,7 @@ window.abrirNuevaFacturaLibre = function() {
   document.getElementById('nfl-emisor-nombre').textContent = c.negocioNombre || c.titularNombre || '—';
   document.getElementById('nfl-emisor-cuit').textContent = c.negocioCuit || '—';
   document.getElementById('nfl-emisor-cond').textContent = condMap[c.negocioCondicionIVA] || 'Monotributista';
+  window._nflItems = [];
   document.getElementById('nfl-prod-search').value = '';
   document.getElementById('nfl-prod-dropdown').style.display = 'none';
   document.getElementById('nfl-prod-id').value = '';
@@ -11482,7 +11499,7 @@ window.abrirNuevaFacturaLibre = function() {
   document.getElementById('nfl-receptor-extra').style.display = 'none';
   window._updateNflPillLabels();
   selectNflCond(document.querySelector('.nfl-pill[data-cond="5"]'), '5', false);
-  nflRecalcular();
+  nflRenderItems();
   if (typeof loadProductos === 'function' && !_productos.length) loadProductos().catch(()=>{});
   const sub = document.getElementById('nfl-banner-subtitle');
   if (sub) {
@@ -11567,13 +11584,54 @@ window.nflSeleccionarProducto = function(id) {
   document.getElementById('nfl-prod-search').value = prod.nombre || '';
   document.getElementById('nfl-prod-dropdown').style.display = 'none';
   document.getElementById('nfl-precio').value = prod.precio || '';
+};
+
+window._nflItems = window._nflItems || [];
+
+window.nflRenderItems = function() {
+  const list = document.getElementById('nfl-items-list');
+  if (!list) return;
+  const items = window._nflItems || [];
+  const fmtN = v => '$' + Number(v).toLocaleString('es-AR', {minimumFractionDigits:2, maximumFractionDigits:2});
+  if (!items.length) {
+    list.innerHTML = '<div style="font-size:12px;color:var(--text-l);text-align:center;padding:10px 0 4px;">Sin ítems — agregá uno abajo</div>';
+  } else {
+    list.innerHTML = items.map((it, i) => `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:.5px solid var(--cream-d);">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;color:var(--text);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(it.desc)}</div>
+        <div style="font-size:11px;color:var(--text-l);">${Number(it.cantidad).toLocaleString('es-AR')} × ${fmtN(it.precio)}</div>
+      </div>
+      <div style="font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;">${fmtN(it.cantidad * it.precio)}</div>
+      <button onclick="nflQuitarItem(${i})" title="Quitar" style="background:none;border:none;cursor:pointer;color:var(--text-l);font-size:18px;padding:0 4px;line-height:1;font-family:sans-serif;">×</button>
+    </div>`).join('');
+  }
   nflRecalcular();
 };
 
-window.nflRecalcular = function() {
+window.nflAgregarItem = function() {
+  const desc = document.getElementById('nfl-prod-search').value.trim();
   const cantidad = parseFloat(document.getElementById('nfl-cantidad').value) || 1;
   const precio = parseFloat(document.getElementById('nfl-precio').value) || 0;
-  const total = Math.round(cantidad * precio * 100) / 100;
+  if (!desc) return showToast('Escribí una descripción del ítem', 'error');
+  if (!precio) return showToast('Ingresá el precio unitario', 'error');
+  window._nflItems = window._nflItems || [];
+  window._nflItems.push({desc, cantidad, precio});
+  document.getElementById('nfl-prod-search').value = '';
+  document.getElementById('nfl-prod-id').value = '';
+  document.getElementById('nfl-cantidad').value = '1';
+  document.getElementById('nfl-precio').value = '';
+  document.getElementById('nfl-prod-dropdown').style.display = 'none';
+  nflRenderItems();
+};
+
+window.nflQuitarItem = function(i) {
+  window._nflItems = (window._nflItems || []).filter((_,idx) => idx !== i);
+  nflRenderItems();
+};
+
+window.nflRecalcular = function() {
+  const items = window._nflItems || [];
+  const total = Math.round(items.reduce((s, it) => s + it.cantidad * it.precio, 0) * 100) / 100;
   const nflView = document.getElementById('nfl-view');
   const tipo = nflView?.dataset.tipoComp || 'C';
   const tipoNum = tipo === 'A' ? 1 : tipo === 'B' ? 6 : 11;
@@ -11660,9 +11718,11 @@ window.emitirFacturaLibre = async function() {
   } else if (condEmisor === 'exento') {
     tipoComprobante = 6;
   }
+  const items = window._nflItems || [];
+  if (!items.length) return showToast('Agregá al menos un ítem antes de emitir', 'error');
   const cuitReceptor = document.getElementById('nfl-cuit-receptor').value.replace(/\D/g,'') || null;
   const razonSocial = document.getElementById('nfl-razon-receptor').value.trim() || null;
-  const descripcion = document.getElementById('nfl-prod-search').value.trim() || null;
+  const descripcion = items.map(it => it.desc).join(' / ') || null;
   if (['6','1','4'].includes(condReceptor) && !cuitReceptor) {
     return showToast('Ingresá el CUIT del receptor', 'error');
   }
@@ -11683,12 +11743,18 @@ window.emitirFacturaLibre = async function() {
         condicionIVAReceptor: parseInt(condReceptor),
         cuitReceptor: cuitReceptor || null,
         razonSocialReceptor: razonSocial,
-        descripcion
+        descripcion,
+        items: items.map(it => ({desc: it.desc, cantidad: it.cantidad, precio: it.precio}))
       })
     });
     const data = await res.json();
     if (!res.ok || !data.ok) throw new Error(data.error || 'Error AFIP');
     showToast('Factura emitida · CAE ' + data.cae, 'success');
+    if (data.facturaId && currentClientUID) {
+      updateDoc(doc(db,'clientes',currentClientUID,'facturas',data.facturaId), {
+        items: items.map(it => ({desc: it.desc, cantidad: it.cantidad, precio: it.precio}))
+      }).catch(()=>{});
+    }
     if (window._nflPresupId && currentClientUID) {
       const _tn = tipoComprobante === 1 ? 'A' : tipoComprobante === 6 ? 'B' : 'C';
       const _nro = ('0000'+puntoVenta).slice(-4)+'-'+('00000000'+data.nroComprobante).slice(-8);
@@ -16040,9 +16106,8 @@ window.abrirFacturaDesdePresupuesto = async function(presupId) {
   sidebarNav('finanzas', 'mis-facturas');
   await new Promise(r => setTimeout(r, 300));
   abrirNuevaFacturaLibre();
-  document.getElementById('nfl-prod-search').value = p.descripcion || '';
-  document.getElementById('nfl-precio').value = getPresupMonto(p);
-  document.getElementById('nfl-cantidad').value = '1';
+  window._nflItems = [{desc: p.descripcion || 'Servicio', cantidad: 1, precio: getPresupMonto(p)}];
+  nflRenderItems();
   if (p.clienteId) {
     const cli = (_mcClientes||[]).find(c => c.id === p.clienteId);
     const cuit = cli?.cuit || '';
