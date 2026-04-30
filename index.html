@@ -9675,9 +9675,11 @@ window.emitirFacturaCaja = async function() {
     if (data.facturaId && modal.dataset.movId) {
       const { doc: firestoreDoc, updateDoc } = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
       await updateDoc(firestoreDoc(db, 'clientes', currentClientUID, 'facturas', data.facturaId), {movId: modal.dataset.movId}).catch(()=>{});
+      updateDoc(doc(db, 'libroCaja', modal.dataset.movId), {facturado: true, facturaId: data.facturaId}).catch(()=>{});
     }
     showToast('Factura emitida · CAE ' + data.cae, 'success');
     closeModal('modalFacturaCaja');
+    loadCajaModule();
   } catch(e) {
     console.error('emitirFacturaCaja:', e);
     showToast('Error al emitir: ' + e.message, 'error');
