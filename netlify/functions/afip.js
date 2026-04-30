@@ -321,7 +321,7 @@ exports.handler = async function(event) {
     // ACCIÓN: emitirNotaCredito
     // ════════════════════════════════════════
     if (accion === 'emitirNotaCredito') {
-      const { puntoVenta, tipoNotaCredito, importeTotal, caeOriginal, nroComprobanteOriginal, tipoComprobanteOriginal, cuitReceptor } = body;
+      const { puntoVenta, tipoNotaCredito, importeTotal, caeOriginal, nroComprobanteOriginal, tipoComprobanteOriginal, cuitReceptor, facturaId } = body;
 
       if (!puntoVenta || !tipoNotaCredito || !importeTotal || !caeOriginal) {
         return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: 'Faltan datos: puntoVenta, tipoNotaCredito, importeTotal, caeOriginal' }) };
@@ -430,6 +430,8 @@ exports.handler = async function(event) {
         importeTotal,
         caeOriginal,
         nroComprobanteOriginal,
+        tipoComprobanteOriginal,
+        ...(facturaId ? { facturaId } : {}),
         fechaEmision: admin.firestore.FieldValue.serverTimestamp(),
         ambiente,
         estado: 'emitida',
@@ -440,6 +442,134 @@ exports.handler = async function(event) {
         statusCode: 200,
         headers: corsHeaders,
         body: JSON.stringify({ ok: true, cae, caeFechaVto: caeFchVto, nroComprobante, ncId: ncRef.id })
+      };
+    }
+
+    // ════════════════════════════════════════
+    // ACCIÓN: emitirNotaDebito
+    // ════════════════════════════════════════
+    if (accion === 'emitirNotaDebito') {
+      const { puntoVenta, tipoNotaDebito, importeTotal, caeOriginal, nroComprobanteOriginal, tipoComprobanteOriginal, cuitReceptor, facturaId } = body;
+
+      if (!puntoVenta || !tipoNotaDebito || !importeTotal || !caeOriginal) {
+        return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: 'Faltan datos: puntoVenta, tipoNotaDebito, importeTotal, caeOriginal' }) };
+      }
+
+      const permitido = await checkRateLimit(uid);
+      if (!permitido) {
+        return { statusCode: 429, headers: corsHeaders, body: JSON.stringify({ error: 'Límite diario alcanzado' }) };
+      }
+
+      const lastResp = await wsfe.FECompUltimoAutorizado({
+        PtoVta: puntoVenta,
+        CbteTipo: tipoNotaDebito
+      });
+      const lastErrors = checkAfipErrors(lastResp, ['FECompUltimoAutorizadoResult', 'FECompUltimoAutozizadoResult']);
+      if (lastErrors) {
+        return { statusCode: 422, headers: corsHeaders, body: JSON.stringify({ error: 'AFIP rechazó consulta de último comprobante', afipErrors: lastErrors }) };
+      }
+      const lastVoucher = getUltimoAutorizadoResult(lastResp).CbteNro || 0;
+      const nroComprobante = lastVoucher + 1;
+      const fechaHoy = fechaAfip();
+
+      const esConIva = [2].includes(tipoNotaDebito);
+      const netoGravado = esConIva ? Math.round((importeTotal / 1.21) * 100) / 100 : importeTotal;
+      const importeIva = esConIva ? Math.round((netoGravado * 0.21) * 100) / 100 : 0;
+
+      const ndDetRequest = {
+        Concepto: 2,
+        DocTipo: cuitReceptor ? 80 : 99,
+        DocNro: cuitReceptor ? parseInt(cuitReceptor) : 0,
+        CbteDesde: nroComprobante,
+        CbteHasta: nroComprobante,
+        CbteFch: fechaHoy,
+        ImpTotal: importeTotal,
+        ImpTotConc: 0,
+        ImpNeto: netoGravado,
+        ImpOpEx: 0,
+        ImpTrib: 0,
+        ImpIVA: importeIva,
+        MonId: 'PES',
+        MonCotiz: 1,
+        CondicionIVAReceptorId: cuitReceptor ? (body.condicionIVAReceptor || 1) : 5,
+        FchServDesde: fechaHoy,
+        FchServHasta: fechaHoy,
+        FchVtoPago: fechaHoy,
+        ...(esConIva ? {
+          Iva: {
+            AlicIva: {
+              Id: 5,
+              BaseImp: netoGravado,
+              Importe: importeIva
+            }
+          }
+        } : {}),
+        CbtesAsoc: {
+          CbteAsoc: [{
+            Tipo: tipoComprobanteOriginal,
+            PtoVta: puntoVenta,
+            Nro: nroComprobanteOriginal,
+            Cuit: clienteCuit || 0
+          }]
+        }
+      };
+
+      const ndFactura = {
+        FeCAEReq: {
+          FeCabReq: { CantReg: 1, PtoVta: puntoVenta, CbteTipo: tipoNotaDebito },
+          FeDetReq: { FECAEDetRequest: ndDetRequest }
+        }
+      };
+
+      const result = await wsfe.FECAESolicitar(ndFactura);
+      const caeErrors = checkAfipErrors(result, 'FECAESolicitar');
+      if (caeErrors) {
+        return { statusCode: 422, headers: corsHeaders, body: JSON.stringify({ error: 'AFIP rechazó la nota de débito', afipErrors: caeErrors }) };
+      }
+
+      const detail = extractFECAEDetail(result);
+      const cae = detail.CAE;
+      const caeFchVto = detail.CAEFchVto;
+      const resultado = detail.Resultado;
+
+      if (resultado !== 'A' || !cae) {
+        const obs = detail.Observaciones && detail.Observaciones.Obs;
+        const obsArr = obs ? (Array.isArray(obs) ? obs : [obs]) : [];
+        return {
+          statusCode: 422,
+          headers: corsHeaders,
+          body: JSON.stringify({
+            error: 'AFIP no aprobó la nota de débito',
+            resultado,
+            observaciones: obsArr.map(o => ({ code: o.Code, msg: o.Msg }))
+          })
+        };
+      }
+
+      const ndRef = db.collection('clientes').doc(uid).collection('notasDebito').doc();
+      await ndRef.set({
+        id: ndRef.id,
+        uid,
+        puntoVenta,
+        tipoNotaDebito,
+        nroComprobante,
+        cae,
+        caeFechaVto: caeFchVto,
+        importeTotal,
+        caeOriginal,
+        nroComprobanteOriginal,
+        tipoComprobanteOriginal,
+        ...(facturaId ? { facturaId } : {}),
+        fechaEmision: admin.firestore.FieldValue.serverTimestamp(),
+        ambiente,
+        estado: 'emitida',
+        creadoEn: new Date().toISOString()
+      });
+
+      return {
+        statusCode: 200,
+        headers: corsHeaders,
+        body: JSON.stringify({ ok: true, cae, caeFechaVto: caeFchVto, nroComprobante, ndId: ndRef.id })
       };
     }
 
