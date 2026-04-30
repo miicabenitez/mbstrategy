@@ -14704,7 +14704,7 @@ async function loadCobranzasModule() {
         <td class="r">${moneda}${p.monto.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
         <td class="cb-col-fecha">${fmtFecha(p.fecha)}</td>
         <td style="text-align:center"><span style="display:inline-block;padding:3px 9px;border-radius:8px;background:${c.bg};color:${c.fg};font-size:11px;font-weight:500">${p.dias}d</span></td>
-        <td style="text-align:center">${wa}</td>
+        <td style="text-align:center;white-space:nowrap;">${p.clienteId ? `<button onclick="event.stopPropagation();openMcCobroModal('${esc(p.clienteId)}','${esc(p.id)}','${(p.descripcion||'').replace(/'/g,"\\'")}',${p.monto})" title="Registrar cobro" style="display:inline-flex;align-items:center;justify-content:center;height:30px;padding:0 10px;border-radius:8px;background:#4a5e4d;color:#fff;border:none;font-size:11px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;margin-right:4px;">Cobrar</button>` : ''}${wa}</td>
       </tr>`;
     }).join('');
   } catch(e) {
