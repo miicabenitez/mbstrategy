@@ -11491,9 +11491,9 @@ async function _generarPdfComprobante(f, c) {
       } catch(e) { return ''; }
     };
     const fmtFechaAfip = a => { if(!a||a.length<8) return ''; return `${a.slice(6,8)}/${a.slice(4,6)}/${a.slice(0,4)}`; };
-    const tipoNombre = {1:'Factura',6:'Factura',11:'Factura',3:'Nota de Crédito',8:'Nota de Crédito',13:'Nota de Crédito'};
-    const tipoLetra  = {1:'A',6:'B',11:'C',3:'A',8:'B',13:'C'};
-    const tipoCod    = {1:'01',6:'06',11:'11',3:'03',8:'08',13:'13'};
+    const tipoNombre = {1:'Factura',6:'Factura',11:'Factura',3:'Nota de Crédito',8:'Nota de Crédito',13:'Nota de Crédito',2:'Nota de Débito',7:'Nota de Débito',12:'Nota de Débito'};
+    const tipoLetra  = {1:'A',6:'B',11:'C',3:'A',8:'B',13:'C',2:'A',7:'B',12:'C'};
+    const tipoCod    = {1:'01',6:'06',11:'11',3:'03',8:'08',13:'13',2:'02',7:'07',12:'12'};
     const condNombre = {monotributista:'Monotributista',responsable_inscripto:'Responsable Inscripto',exento:'Exento'};
     const tipo = f.tipoComprobante || 11;
     const nro = ('0000'+(f.puntoVenta||2)).slice(-4)+'-'+('00000000'+(f.nroComprobante||0)).slice(-8);
