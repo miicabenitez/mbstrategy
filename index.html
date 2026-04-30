@@ -5703,6 +5703,33 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
     </div>
   </div>
 </div>
+<div class="mo" id="stock-receta-modal">
+  <div class="md" style="max-width:500px;">
+    <button class="mc2" onclick="closeModal('stock-receta-modal')">×</button>
+    <div class="mt" id="stk-rec-titulo">Nueva receta</div>
+    <input type="hidden" id="stk-rec-id">
+    <input type="hidden" id="stk-rec-prod-id">
+    <div class="fg" style="position:relative;">
+      <label class="fl">Producto del catálogo</label>
+      <input type="text" class="fi" id="stk-rec-prod-search" placeholder="Buscá un producto..." autocomplete="off" oninput="stkBuscarProductoRec(this.value)" onblur="setTimeout(()=>{ const d=document.getElementById('stk-rec-prod-dropdown'); if(d) d.style.display='none'; },180)"/>
+      <div id="stk-rec-prod-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.12);z-index:600;max-height:200px;overflow-y:auto;"></div>
+    </div>
+    <div class="fg">
+      <label class="fl">Insumos de la receta</label>
+      <div id="stk-rec-items-list" style="margin-bottom:8px;"></div>
+      <button onclick="stkRecAgregarItem()" style="background:none;border:.5px solid var(--cream-d);border-radius:8px;padding:6px 14px;font-size:12px;font-family:'DM Sans',sans-serif;color:var(--text-m);cursor:pointer;">+ Agregar insumo</button>
+    </div>
+    <div style="background:rgba(74,94,77,.06);border-radius:10px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <span style="font-size:12px;color:var(--text-m);font-family:'DM Sans',sans-serif;">Costo total de la receta</span>
+      <span style="font-size:18px;font-family:'Cormorant Garamond',serif;color:#4a5e4d;font-weight:500;" id="stk-rec-costo-total">$0</span>
+    </div>
+    <div id="stk-rec-error" style="display:none;color:#c0392b;font-size:12px;margin-bottom:8px;"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px;">
+      <button class="bs" onclick="closeModal('stock-receta-modal')">Cancelar</button>
+      <button class="bp" onclick="stkGuardarReceta()">Guardar receta</button>
+    </div>
+  </div>
+</div>
 
 <div class="mo" id="newPresupModal">
   <div class="md">
@@ -14447,6 +14474,217 @@ window.stkGuardarAjuste = async function() {
     await window.loadStockModule();
   } catch(e) { err.textContent='Error: '+e.message; err.style.display='block'; }
 };
+window.loadRecetasModule = async function() {
+  if(!currentClientUID) return;
+  try {
+    const snap = await getDocs(query(collection(db,'clientes',currentClientUID,'recetas'), where('activo','==',true), orderBy('productoNombre','asc')));
+    window._stockRecetas = snap.docs.map(d=>({id:d.id,...d.data()}));
+    stkRenderRecetas();
+  } catch(e) { console.log('loadRecetasModule:',e); }
+};
+
+function stkRenderRecetas() {
+  const recs = window._stockRecetas || [];
+  const welcome = document.getElementById('stk-recetas-welcome');
+  const content = document.getElementById('stk-recetas-content');
+  const kpiRec = document.getElementById('stk-kpi-recetas');
+  const kpiCosto = document.getElementById('stk-kpi-costo-rec');
+  if(!recs.length) {
+    if(welcome) welcome.style.display='block';
+    if(content) content.style.display='none';
+    if(kpiRec) kpiRec.textContent='0';
+    if(kpiCosto) kpiCosto.textContent='$0';
+    return;
+  }
+  if(welcome) welcome.style.display='none';
+  if(content) content.style.display='block';
+  const costos = recs.map(r=>parseFloat(r.costoTotal||0));
+  const promedio = costos.reduce((a,b)=>a+b,0)/costos.length;
+  if(kpiRec) kpiRec.textContent=recs.length;
+  if(kpiCosto) kpiCosto.textContent='$'+promedio.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const lista = document.getElementById('stk-recetas-lista');
+  if(!lista) return;
+  lista.innerHTML = recs.map(r=>{
+    const resumen = (r.items||[]).map(it=>it.insumoNombre).filter(Boolean).join(', ').slice(0,60)||'—';
+    const costoStr = '$'+parseFloat(r.costoTotal||0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
+    return `<div onclick="stkEditarReceta('${r.id}')" style="display:grid;grid-template-columns:1fr 140px 100px 64px;gap:10px;padding:10px 0;border-bottom:.5px solid var(--cream-d);min-width:400px;cursor:pointer;transition:background .1s;" onmouseover="this.style.background='#faf8f5'" onmouseout="this.style.background=''">
+      <span style="font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;font-weight:500;">${r.productoNombre||'—'}</span>
+      <span style="font-size:12px;color:var(--text-m);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${resumen}</span>
+      <span style="font-size:13px;color:var(--text);text-align:right;">${costoStr}</span>
+      <span style="display:flex;justify-content:flex-end;align-items:center;">
+        <button onclick="event.stopPropagation();stkEditarReceta('${r.id}')" title="Editar" style="background:none;border:none;cursor:pointer;padding:4px;color:var(--text-l);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+      </span>
+    </div>`;
+  }).join('');
+}
+
+window._stkRecetaItems = [];
+
+window.stkNuevaReceta = function() {
+  document.getElementById('stk-rec-titulo').textContent='Nueva receta';
+  document.getElementById('stk-rec-id').value='';
+  document.getElementById('stk-rec-prod-id').value='';
+  document.getElementById('stk-rec-prod-search').value='';
+  window._stkRecetaItems=[];
+  stkRecRenderItems();
+  stkRecActualizarCosto();
+  const err=document.getElementById('stk-rec-error'); if(err){err.style.display='none';err.textContent='';}
+  openModal('stock-receta-modal');
+};
+
+window.stkEditarReceta = function(id) {
+  const r=(window._stockRecetas||[]).find(x=>x.id===id);
+  if(!r) return;
+  document.getElementById('stk-rec-titulo').textContent='Editar receta';
+  document.getElementById('stk-rec-id').value=id;
+  document.getElementById('stk-rec-prod-id').value=r.productoId||'';
+  document.getElementById('stk-rec-prod-search').value=r.productoNombre||'';
+  window._stkRecetaItems=(r.items||[]).map(it=>({...it}));
+  stkRecRenderItems();
+  stkRecActualizarCosto();
+  const err=document.getElementById('stk-rec-error'); if(err){err.style.display='none';err.textContent='';}
+  openModal('stock-receta-modal');
+};
+
+window.stkBuscarProductoRec = function(q) {
+  const dd=document.getElementById('stk-rec-prod-dropdown');
+  if(!q.trim()){dd.style.display='none';return;}
+  const prods=(window._productos||_productos||[]).filter(p=>p.activo!==false&&(p.nombre||'').toLowerCase().includes(q.toLowerCase())).slice(0,6);
+  if(!prods.length){dd.style.display='none';return;}
+  dd.innerHTML=prods.map(p=>`<div onclick="stkSeleccionarProductoRec('${p.id}')" style="padding:10px 14px;cursor:pointer;border-bottom:.5px solid var(--cream-d);font-size:13px;" onmouseenter="this.style.background='var(--cream)'" onmouseleave="this.style.background=''"><div style="font-weight:500;color:var(--text);">${p.nombre||''}</div></div>`).join('');
+  dd.style.display='block';
+};
+
+window.stkSeleccionarProductoRec = function(id) {
+  const p=(window._productos||_productos||[]).find(x=>x.id===id);
+  if(!p) return;
+  document.getElementById('stk-rec-prod-id').value=id;
+  document.getElementById('stk-rec-prod-search').value=p.nombre||'';
+  document.getElementById('stk-rec-prod-dropdown').style.display='none';
+};
+
+window.stkRecAgregarItem = function() {
+  window._stkRecetaItems.push({insumoId:'',insumoNombre:'',cantidad:1,unidad:''});
+  stkRecRenderItems();
+};
+
+window.stkRecQuitarItem = function(idx) {
+  window._stkRecetaItems.splice(idx,1);
+  stkRecRenderItems();
+  stkRecActualizarCosto();
+};
+
+window._stkRecetaItemPendiente = null;
+
+function stkRecRenderItems() {
+  const lista=document.getElementById('stk-rec-items-list');
+  if(!lista) return;
+  const items=window._stkRecetaItems||[];
+  if(!items.length){lista.innerHTML='<div style="font-size:12px;color:var(--text-l);padding:8px 0 4px;">Sin insumos — agregá uno abajo</div>';return;}
+  lista.innerHTML=items.map((it,i)=>`
+    <div style="display:grid;grid-template-columns:1fr 80px 70px 28px;gap:6px;align-items:center;padding:6px 0;border-bottom:.5px solid var(--cream-d);position:relative;">
+      <div style="position:relative;">
+        <input type="text" value="${(it.insumoNombre||'').replace(/"/g,'&quot;')}" placeholder="Buscá un insumo..." class="fi" style="margin-top:0;font-size:12px;" autocomplete="off"
+          oninput="stkBuscarInsumoItem(this.value,${i})"
+          onblur="setTimeout(()=>{const d=document.getElementById('stk-ins-dd-${i}');if(d)d.style.display='none';},180)"/>
+        <div id="stk-ins-dd-${i}" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:700;max-height:160px;overflow-y:auto;"></div>
+      </div>
+      <input type="number" value="${it.cantidad||1}" min="0" step="any" class="fi" style="margin-top:0;font-size:12px;text-align:right;" onchange="stkRecItemCantidad(${i},this.value)"/>
+      <div style="font-size:12px;color:var(--text-m);text-align:center;">${it.unidad||'—'}</div>
+      <button onclick="stkRecQuitarItem(${i})" style="background:none;border:none;cursor:pointer;color:var(--text-l);font-size:18px;padding:0;line-height:1;">×</button>
+    </div>`).join('');
+}
+
+window.stkBuscarInsumoItem = function(q,idx) {
+  const dd=document.getElementById('stk-ins-dd-'+idx);
+  if(!dd) return;
+  const ins=(window._stockInsumos||[]).filter(i=>(i.nombre||'').toLowerCase().includes((q||'').toLowerCase())).slice(0,6);
+  const rows=ins.map(i=>`<div onclick="stkSeleccionarInsumoItem('${i.id}',${idx})" style="padding:9px 12px;cursor:pointer;border-bottom:.5px solid var(--cream-d);font-size:12px;" onmouseenter="this.style.background='var(--cream)'" onmouseleave="this.style.background=''"><span style="font-weight:500;">${i.nombre}</span> <span style="color:var(--text-l);">(${i.unidad})</span></div>`);
+  if(q.trim()) rows.push(`<div onclick="stkCrearInsumoDesdeReceta('${q.replace(/'/g,"\\'")}',${idx})" style="padding:9px 12px;cursor:pointer;font-size:12px;color:#4a5e4d;font-weight:500;" onmouseenter="this.style.background='var(--cream)'" onmouseleave="this.style.background=''">+ Crear "${q}" como insumo nuevo</div>`);
+  dd.innerHTML=rows.join('');
+  dd.style.display=rows.length?'block':'none';
+};
+
+window.stkSeleccionarInsumoItem = function(insumoId,idx) {
+  const i=(window._stockInsumos||[]).find(x=>x.id===insumoId);
+  if(!i) return;
+  window._stkRecetaItems[idx]={...window._stkRecetaItems[idx],insumoId:i.id,insumoNombre:i.nombre,unidad:i.unidad};
+  stkRecRenderItems();
+  stkRecActualizarCosto();
+  const dd=document.getElementById('stk-ins-dd-'+idx); if(dd) dd.style.display='none';
+};
+
+window.stkRecItemCantidad = function(idx,val) {
+  if(window._stkRecetaItems[idx]) window._stkRecetaItems[idx].cantidad=parseFloat(val)||0;
+  stkRecActualizarCosto();
+};
+
+window.stkCrearInsumoDesdeReceta = function(nombre,idx) {
+  window._stkRecetaItemPendiente=idx;
+  const dd=document.getElementById('stk-ins-dd-'+idx); if(dd) dd.style.display='none';
+  document.getElementById('stk-modal-titulo').textContent='Nuevo insumo';
+  document.getElementById('stk-insumo-id').value='';
+  document.getElementById('stk-nombre').value=nombre;
+  document.getElementById('stk-unidad').value='kg';
+  document.getElementById('stk-stock-inicial').value='';
+  document.getElementById('stk-stock-minimo').value='';
+  document.getElementById('stk-costo').value='';
+  document.getElementById('stk-btn-eliminar').style.display='none';
+  const err=document.getElementById('stk-insumo-error'); if(err){err.style.display='none';err.textContent='';}
+  openModal('stock-insumo-modal');
+};
+
+function stkRecActualizarCosto() {
+  const items=window._stkRecetaItems||[];
+  const total=items.reduce((s,it)=>{
+    const ins=(window._stockInsumos||[]).find(x=>x.id===it.insumoId);
+    return s+(parseFloat(it.cantidad||0)*parseFloat(ins?.costoUnitario||0));
+  },0);
+  const el=document.getElementById('stk-rec-costo-total');
+  if(el) el.textContent='$'+total.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+window.stkGuardarReceta = async function() {
+  const prodId=document.getElementById('stk-rec-prod-id').value;
+  const prodNombre=document.getElementById('stk-rec-prod-search').value.trim();
+  const err=document.getElementById('stk-rec-error');
+  if(!prodId){err.textContent='Seleccioná un producto del catálogo.';err.style.display='block';return;}
+  const items=window._stkRecetaItems||[];
+  if(!items.length||!items.some(it=>it.insumoId)){err.textContent='Agregá al menos un insumo.';err.style.display='block';return;}
+  err.style.display='none';
+  const id=document.getElementById('stk-rec-id').value;
+  const existente=(window._stockRecetas||[]).find(r=>r.productoId===prodId&&r.id!==id);
+  if(existente){err.textContent='Este producto ya tiene una receta activa.';err.style.display='block';return;}
+  const costoTotal=items.reduce((s,it)=>{
+    const ins=(window._stockInsumos||[]).find(x=>x.id===it.insumoId);
+    return s+(parseFloat(it.cantidad||0)*parseFloat(ins?.costoUnitario||0));
+  },0);
+  const data={productoId:prodId,productoNombre:prodNombre,items:items.filter(it=>it.insumoId),costoTotal,activo:true};
+  try {
+    if(id){
+      await updateDoc(doc(db,'clientes',currentClientUID,'recetas',id),data);
+    } else {
+      data.creadoEn=new Date().toISOString();
+      await addDoc(collection(db,'clientes',currentClientUID,'recetas'),data);
+    }
+    closeModal('stock-receta-modal');
+    await window.loadRecetasModule();
+  } catch(e){err.textContent='Error: '+e.message;err.style.display='block';}
+};
+
+const _stkGuardarInsumoOrig = window.stkGuardarInsumo;
+window.stkGuardarInsumo = async function() {
+  await _stkGuardarInsumoOrig();
+  const idx = window._stkRecetaItemPendiente;
+  if(idx != null) {
+    window._stkRecetaItemPendiente = null;
+    const ins = (window._stockInsumos||[]);
+    const ultimo = ins[ins.length-1];
+    if(ultimo) stkSeleccionarInsumoItem(ultimo.id, idx);
+    openModal('stock-receta-modal');
+  }
+};
+
 window.loadContentAdmin = loadContentAdmin;
 
 window.toggleCkMesDrop = function() {
@@ -22714,6 +22952,9 @@ window.showCTab = function(tab, btn) {
   if(tab==='resumen-ventas') { loadResumenVentas(); }
   if(tab==='resumen-compras') { loadResumenCompras(); }
   if(tab==='tareas') { if(typeof loadListas==='function') loadListas(); }
+  if(tab==='insumos') { if(window.loadStockModule) loadStockModule(); }
+  if(tab==='recetas') { if(window.loadRecetasModule) loadRecetasModule(); }
+  if(tab==='movimientos-stock') { if(window.loadMovimientosStock) loadMovimientosStock(); }
 };
 
 window._proLockEnTab = function(containerId, titulo, noNav) {
