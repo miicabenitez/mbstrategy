@@ -16841,7 +16841,7 @@ async function loadMiCuentaPage() {
           '</div>';
         const _msgs = {
           1: ['#fffaeb','#e5d48a','#856c00','⚠️ Completá tu CUIT y punto de venta ARCA para activar la facturación.'],
-          2: ['#eff6ff','#bfdbfe','#1e40af','📨 Datos recibidos. Ahora necesitás hacer la delegación en ARCA — te mandamos las instrucciones por email.'],
+          2: ['#eff6ff','#bfdbfe','#1e40af','🕐 Datos recibidos. Estamos verificando tu configuración con ARCA — te avisamos cuando esté lista (24-48hs hábiles).'],
           3: ['#eff6ff','#bfdbfe','#1e40af','🕐 MB Strategy está verificando tu delegación con ARCA. Te avisamos cuando esté lista (24-48hs hábiles).'],
           4: ['#eef5ef','#c8d8c9','#3f6149','✅ Tu facturación electrónica está activa. Ya podés emitir facturas.']
         };
@@ -17017,6 +17017,18 @@ window.guardarDatosFiscalesPage = async function() {
     const s = document.getElementById('micuenta-fiscal-saved');
     if(s){ s.style.display='block'; setTimeout(()=>s.style.display='none', 2000); }
   } catch(e) { console.log(e); }
+  // Fire-and-forget: verificar delegación ARCA en segundo plano
+  const _cuit = (document.getElementById('micuenta-negocio-cuit')?.value || '').trim();
+  const _pv = (document.getElementById('micuenta-punto-venta')?.value || '').trim();
+  if (_cuit && _pv && currentUser) {
+    currentUser.getIdToken().then(token => {
+      fetch('/.netlify/functions/verificar-delegacion', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ negocioCuit: _cuit, negocioPuntoVenta: _pv })
+      }).catch(() => {});
+    }).catch(() => {});
+  }
 };
 
 window.confirmarPrimerLogin = async function() {
