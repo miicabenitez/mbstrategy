@@ -11591,6 +11591,7 @@ window._nflItems = window._nflItems || [];
 window.nflRenderItems = function() {
   const list = document.getElementById('nfl-items-list');
   if (!list) return;
+  const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   const items = window._nflItems || [];
   const fmtN = v => '$' + Number(v).toLocaleString('es-AR', {minimumFractionDigits:2, maximumFractionDigits:2});
   if (!items.length) {
