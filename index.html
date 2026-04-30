@@ -14763,6 +14763,7 @@ window._triggerStockPorVenta = async function(carrito, refId) {
       window._stockRecetas = snap.docs.map(d=>({id:d.id,...d.data()}));
     }
     const hoy = new Date().toISOString().split('T')[0];
+    let _errCount = 0;
     for(const productoId of Object.keys(carrito)) {
       const entry = carrito[productoId];
       const qty = parseFloat(entry.qty)||1;
@@ -14774,49 +14775,54 @@ window._triggerStockPorVenta = async function(carrito, refId) {
         const delta = parseFloat(it.cantidad||0)*qty;
         if(!delta) continue;
         try {
+          // stockResultante estimado desde cache (no atómico, solo para historial)
+          const _cached = (window._stockInsumos||[]).find(x=>x.id===it.insumoId);
+          const stockResultante = _cached ? (parseFloat(_cached.stockActual||0) - delta) : null;
           await updateDoc(doc(db,'clientes',currentClientUID,'insumos',it.insumoId),{stockActual:increment(-delta)});
           await addDoc(collection(db,'clientes',currentClientUID,'movimientosStock'),{
             tipo:'salida', insumoId:it.insumoId, insumoNombre:it.insumoNombre||'', cantidad:delta,
-            unidad:it.unidad||'', stockResultante:null, origen:'venta', referenciaId:refId||'',
+            unidad:it.unidad||'', stockResultante, origen:'venta', referenciaId:refId||'',
             notas:nombreProd, fecha:hoy, creadoEn:new Date().toISOString()
           });
-        } catch(eItem) { console.error('_triggerStockPorVenta insumo error:',it.insumoId, eItem); }
+        } catch(eItem) { console.error('_triggerStockPorVenta insumo error:',it.insumoId, eItem); _errCount++; }
       }
     }
+    if(_errCount > 0) showToast('La venta se registró pero hubo un error al actualizar el stock. Revisá Movimientos.', 'warning');
     if(window._stockInsumos?.length) await window.loadStockModule();
   } catch(e) { console.error('_triggerStockPorVenta error:',e); }
 };
 
 window._triggerStockPorPresupuesto = async function(p) {
   if(!currentClientUID) return;
-  try {
-    if(!window._stockRecetas || !window._stockRecetas.length) {
-      const snap = await getDocs(query(collection(db,'clientes',currentClientUID,'recetas'), where('activo','==',true)));
-      window._stockRecetas = snap.docs.map(d=>({id:d.id,...d.data()}));
+  if(!window._stockRecetas || !window._stockRecetas.length) {
+    const snap = await getDocs(query(collection(db,'clientes',currentClientUID,'recetas'), where('activo','==',true)));
+    window._stockRecetas = snap.docs.map(d=>({id:d.id,...d.data()}));
+  }
+  const hoy = new Date().toISOString().split('T')[0];
+  for(const it of (p.items||[])) {
+    if(!it.productoId) continue;
+    const qty = parseFloat(it.cant)||1;
+    const nombreProd = it.desc||'';
+    const receta = (window._stockRecetas||[]).find(r=>r.productoId===it.productoId);
+    if(!receta || !receta.items?.length) continue;
+    for(const ri of receta.items) {
+      if(!ri.insumoId) continue;
+      const delta = parseFloat(ri.cantidad||0)*qty;
+      if(!delta) continue;
+      try {
+        // stockResultante estimado desde cache (no atómico, solo para historial)
+        const _cached = (window._stockInsumos||[]).find(x=>x.id===ri.insumoId);
+        const stockResultante = _cached ? (parseFloat(_cached.stockActual||0) - delta) : null;
+        await updateDoc(doc(db,'clientes',currentClientUID,'insumos',ri.insumoId),{stockActual:increment(-delta)});
+        await addDoc(collection(db,'clientes',currentClientUID,'movimientosStock'),{
+          tipo:'salida', insumoId:ri.insumoId, insumoNombre:ri.insumoNombre||'', cantidad:delta,
+          unidad:ri.unidad||'', stockResultante, origen:'presupuesto', referenciaId:p.id||'',
+          notas:nombreProd, fecha:hoy, creadoEn:new Date().toISOString()
+        });
+      } catch(eItem) { console.error('_triggerStockPorPresupuesto insumo error:',ri.insumoId, eItem); }
     }
-    const hoy = new Date().toISOString().split('T')[0];
-    for(const it of (p.items||[])) {
-      if(!it.productoId) continue;
-      const qty = parseFloat(it.cant)||1;
-      const nombreProd = it.desc||'';
-      const receta = (window._stockRecetas||[]).find(r=>r.productoId===it.productoId);
-      if(!receta || !receta.items?.length) continue;
-      for(const ri of receta.items) {
-        if(!ri.insumoId) continue;
-        const delta = parseFloat(ri.cantidad||0)*qty;
-        if(!delta) continue;
-        try {
-          await updateDoc(doc(db,'clientes',currentClientUID,'insumos',ri.insumoId),{stockActual:increment(-delta)});
-          await addDoc(collection(db,'clientes',currentClientUID,'movimientosStock'),{
-            tipo:'salida', insumoId:ri.insumoId, insumoNombre:ri.insumoNombre||'', cantidad:delta,
-            unidad:ri.unidad||'', stockResultante:null, origen:'presupuesto', referenciaId:p.id||'',
-            notas:nombreProd, fecha:hoy, creadoEn:new Date().toISOString()
-          });
-        } catch(eItem) { console.error('_triggerStockPorPresupuesto insumo error:',ri.insumoId, eItem); }
-      }
-    }
-    if(window._stockInsumos?.length) await window.loadStockModule();
-  } catch(e) { console.error('_triggerStockPorPresupuesto error:',e); }
+  }
+  if(window._stockInsumos?.length) await window.loadStockModule();
 };
 
 window.stkDescontarPresupuesto = async function(presupId) {
@@ -14845,12 +14851,18 @@ window.stkDescontarPresupuesto = async function(presupId) {
   showConfirm(
     'Se van a descontar del stock:\n\n' + lineas.join('\n'),
     async () => {
-      await window._triggerStockPorPresupuesto(presup).catch(()=>{});
+      const _btnDesk = document.querySelector(`[onclick="stkDescontarPresupuesto('${presupId}')"]`);
+      if(_btnDesk) { _btnDesk.disabled = true; _btnDesk.style.opacity = '0.6'; }
       try {
+        await window._triggerStockPorPresupuesto(presup);
         await updateDoc(doc(db,'clientes',currentClientUID,'presupuestos',presupId),{stockDescontado:true});
-      } catch(e) { console.error('stkDescontarPresupuesto updateDoc:',e); }
-      await loadMcModule();
-      if(window._currentMcClienteId) openMcDetalle(window._currentMcClienteId);
+        await loadMcModule();
+        if(window._currentMcClienteId) openMcDetalle(window._currentMcClienteId);
+      } catch(e) {
+        console.error('stkDescontarPresupuesto:',e);
+        showToast('Error al descontar stock. Intentá de nuevo.', 'error');
+        if(_btnDesk) { _btnDesk.disabled = false; _btnDesk.style.opacity = '1'; }
+      }
     },
     'Descontar stock'
   );
