@@ -23762,7 +23762,7 @@ async function createProducto() {
   if(!nombre){ showToast('Ingresá un nombre', 'info'); return; }
   const data = {
     nombre,
-    precio:      _mvmParseMonto('prod-precio'),
+    precio:      parseFloat((document.getElementById('prod-precio')?.value||'').replace(/\./g,'').replace(',','.')) || 0,
     descripcion: document.getElementById('prod-desc').value,
     activo: true,
     updatedAt: new Date().toISOString(),
