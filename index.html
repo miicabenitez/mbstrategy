@@ -24428,7 +24428,7 @@ window.doResetPassword = async function(){
     if (clientes.length) groups.push({ label:'CLIENTES', items: clientes.map(c => ({
       text: [c.nombre,c.apellido].filter(Boolean).join(' '),
       sub: c.email||c.tel||'',
-      action: () => { if(window.openMcDetalle) openMcDetalle(c.id); else sidebarNav('comercial','mis-clientes'); }
+      action: () => { if(window.openMcDetalle) openMcDetalle(c.id); else sidebarNav('ventas',null); }
     }))});
 
     const allPresups = (window._clientPresupuestos||[]).concat(window._mcPresupuestos||[]);
@@ -24438,7 +24438,7 @@ window.doResetPassword = async function(){
     if (presups.length) groups.push({ label:'PRESUPUESTOS', items: presups.map(p => ({
       text: p.cliente||p.descripcion||'Presupuesto',
       sub: [p.descripcion, p.monto?'$'+Number(p.monto).toLocaleString('es-AR'):'', p.estado].filter(Boolean).join(' · '),
-      action: () => sidebarNav('comercial','presupuestos')
+      action: () => sidebarNav('ventas','presupuestos')
     }))});
 
     const tl = {1:'Factura A',6:'Factura B',11:'Factura C',3:'NC A',8:'NC B',13:'NC C',2:'ND A',7:'ND B',12:'ND C'};
