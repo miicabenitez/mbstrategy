@@ -1975,6 +1975,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
               <button id="det-fiscal-aprobar-btn" onclick="setAfipAprobado(true)" style="background:#4a5e4d;border:none;border-radius:10px;padding:7px 14px;font-size:12px;font-family:inherit;color:#fff;cursor:pointer;">✅ Aprobar delegación</button>
               <button id="det-fiscal-revocar-btn" onclick="setAfipAprobado(false)" style="display:none;background:#fff;border:.5px solid #c05050;border-radius:10px;padding:7px 14px;font-size:12px;font-family:inherit;color:#c05050;cursor:pointer;">Revocar</button>
             </div>
+            <div id="det-cert-alerta" style="display:none;margin-top:12px;padding:10px 13px;background:#fdf5ec;border-left:3px solid #b09088;border-radius:0 8px 8px 0;font-size:12px;color:#7a4e2a;line-height:1.5;"></div>
           </div>
         </div>
       </div>
@@ -6610,6 +6611,27 @@ window.openClientDetail = async function(clientId) {
     }
     if (aprobarBtn) aprobarBtn.style.display = _aprobadoAdmin ? 'none' : '';
     if (revocarBtn) revocarBtn.style.display = _aprobadoAdmin ? '' : 'none';
+    // Alerta vencimiento certificado AFIP
+    try {
+      const _certEl = document.getElementById('det-cert-alerta');
+      if (_certEl) {
+        const _taSnap = await getDoc(doc(db, 'config', 'afipTA'));
+        const _taExp = _taSnap.exists() ? _taSnap.data().expirationTime : null;
+        if (_taExp) {
+          const _expDate = new Date(_taExp);
+          const _diasRest = Math.floor((_expDate - Date.now()) / 86400000);
+          if (_diasRest < 30) {
+            const _expFmt = _expDate.toLocaleDateString('es-AR', {day:'numeric', month:'long', year:'numeric'});
+            _certEl.textContent = `⚠️ El certificado AFIP vence el ${_expFmt}. Renovarlo antes de esa fecha para no interrumpir la facturación.`;
+            _certEl.style.display = 'block';
+          } else {
+            _certEl.style.display = 'none';
+          }
+        } else {
+          _certEl.style.display = 'none';
+        }
+      }
+    } catch(e) { console.error('cert alerta:', e); }
     await loadNotas(clientId);
     await loadNotasClienteAdmin(clientId);
     await loadContentAdmin(clientId);
@@ -15409,11 +15431,11 @@ window.guardarMontoPresup = async function(el, presupId) {
   if (isNaN(nuevo) || nuevo < 0) { el.textContent = '$' + orig.toLocaleString('es-AR'); return; }
   if (nuevo === orig) { el.textContent = '$' + orig.toLocaleString('es-AR'); return; }
   try {
-    await updateDoc(doc(db, 'clientes', currentClientUID, 'presupuestos', presupId), { monto: nuevo });
+    await updateDoc(doc(db, 'clientes', currentClientUID, 'presupuestos', presupId), { monto: nuevo, items: [] });
     el.dataset.orig = String(nuevo);
     el.textContent = '$' + nuevo.toLocaleString('es-AR');
     const cached = (window._mcPresupuestos||[]).find(x => x.id === presupId);
-    if (cached) cached.monto = nuevo;
+    if (cached) { cached.monto = nuevo; cached.items = []; }
     showToast('Monto actualizado', 'success');
   } catch(e) {
     el.textContent = '$' + orig.toLocaleString('es-AR');
@@ -15663,6 +15685,12 @@ window.createMcPresup = async function() {
   };
   try {
     await addDoc(collection(db,'clientes',currentClientUID,'presupuestos'),data);
+    addDoc(collection(db,'clientes',currentClientUID,'alertas'), {
+      tipo: 'info',
+      mensaje: `Nuevo presupuesto creado: "${desc||'sin descripción'}" por $${total.toLocaleString('es-AR')}. Estado: ${data.estado}.`,
+      leida: false,
+      fecha: serverTimestamp()
+    }).catch(()=>{});
     // Solo agregar historial si tiene cliente real
     if(clienteId) {
       await addHistorialEntry(clienteId,`Presupuesto ${data.numero} creado: ${desc||'sin descripción'} · $${total.toLocaleString('es-AR')}`);
