@@ -14448,13 +14448,15 @@ window.stkGuardarInsumo = async function() {
 window.stkEliminarInsumo = function() {
   const id = document.getElementById('stk-insumo-id').value;
   if(!id) return;
-  showConfirm('¿Eliminar este insumo? Sus movimientos históricos se preservan.', async()=>{
-    try {
-      await updateDoc(doc(db,'clientes',currentClientUID,'insumos',id),{activo:false});
-      closeModal('stock-insumo-modal');
-      await window.loadStockModule();
-    } catch(e) { showToast('Error al eliminar: '+e.message,'error'); }
-  },'Eliminar insumo');
+  closeModal('stock-insumo-modal');
+  setTimeout(()=>{
+    showConfirm('¿Eliminar este insumo? Sus movimientos históricos se preservan.', async()=>{
+      try {
+        await updateDoc(doc(db,'clientes',currentClientUID,'insumos',id),{activo:false});
+        await window.loadStockModule();
+      } catch(e) { showToast('Error al eliminar: '+e.message,'error'); }
+    },'Eliminar insumo');
+  }, 300);
 };
 
 window.stkAjusteModal = function() {
