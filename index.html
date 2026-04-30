@@ -11359,9 +11359,11 @@ async function loadMisFacturasModule() {
     }
 
     const delMes = facturas.filter(f => (f.creadoEn||'').slice(0,7) === window._mfMesSel);
-    const totalMes = delMes.reduce((s,f) => s + (f.importeTotal||0), 0);
+    const totalBruto = delMes.reduce((s,f) => s + (f.importeTotal||0), 0);
+    const totalNcMes = ncList.filter(x => (x.creadoEn||'').slice(0,7) === window._mfMesSel)
+      .reduce((s,x) => s + (x.importeTotal||0), 0);
     document.getElementById('mf-kpi-cantidad').textContent = delMes.length;
-    document.getElementById('mf-kpi-total').textContent = '$' + totalMes.toLocaleString('es-AR');
+    document.getElementById('mf-kpi-total').textContent = '$' + (totalBruto - totalNcMes).toLocaleString('es-AR');
     document.getElementById('mf-kpi-ultima').textContent = facturas.length > 0 ? (facturas[0].creadoEn||'').slice(0,10) : '—';
 
     if (delMes.length === 0) {
@@ -11411,7 +11413,9 @@ async function loadMisFacturasModule() {
           </div>`;
         })
       ].join('');
-      const expandBtn = `<button onclick="event.stopPropagation();mfToggleSubRow('${f.id}')" title="Ver NC / ND" style="background:none;border:.5px solid rgba(0,0,0,.08);border-radius:7px;width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:${hasSubRows?'#4a5e4d':'var(--text-l)'};margin-left:4px;"><svg width="10" height="6" viewBox="0 0 10 6" fill="none" id="mf-exp-svg-${f.id}" style="transition:transform .2s"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`;
+      const expandBtn = hasSubRows
+        ? `<button onclick="event.stopPropagation();mfToggleSubRow('${f.id}')" title="Ver NC / ND" style="background:none;border:.5px solid rgba(0,0,0,.08);border-radius:7px;width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;cursor:pointer;color:#4a5e4d;margin-left:4px;"><svg width="10" height="6" viewBox="0 0 10 6" fill="none" id="mf-exp-svg-${f.id}" style="transition:transform .2s"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`
+        : '';
       return `<tr>
         <td style="font-size:12px;color:var(--text-m)">${fecha}</td>
         <td>${receptor}</td>
@@ -12017,13 +12021,6 @@ window.loadMisFacturasModule = loadMisFacturasModule;
 async function loadResumenVentas() {
   try {
     const { getDocs, collection, orderBy, query, limit } = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
-    const q = query(
-      collection(db, 'clientes', currentClientUID, 'facturas'),
-      orderBy('creadoEn', 'desc'),
-      limit(500)
-    );
-    const snap = await getDocs(q);
-    const todas = snap.docs.map(d => ({id: d.id, ...d.data()}));
     const mesSel = window._rvMesSel || new Date().toISOString().slice(0,7);
     window._rvMesSel = mesSel;
     const selectEl = document.getElementById('rv-mes-select');
@@ -12036,14 +12033,35 @@ async function loadResumenVentas() {
         return `<option value="${ym}"${ym===mesSel?' selected':''}>${lblMes[m]} ${year}</option>`;
       }).join('');
     }
-    const facs = todas.filter(f => (f.creadoEn||'').slice(0,7) === mesSel);
-    facs.sort((a,b)=>(a.creadoEn||'').localeCompare(b.creadoEn||''));
+    const [facSnap, ncSnap] = await Promise.all([
+      getDocs(query(collection(db, 'clientes', currentClientUID, 'facturas'), orderBy('creadoEn', 'desc'), limit(500))),
+      getDocs(collection(db, 'clientes', currentClientUID, 'notasCredito'))
+    ]);
+    const todasFacs = facSnap.docs.map(d => ({id: d.id, ...d.data()}));
+    const todasNc = ncSnap.docs.map(d => ({id: d.id, ...d.data()}));
+    const facs = todasFacs.filter(f => (f.creadoEn||'').slice(0,7) === mesSel);
+    const ncsDelMes = todasNc
+      .filter(nc => (nc.creadoEn||'').slice(0,7) === mesSel)
+      .map(nc => ({
+        id: nc.id,
+        tipoComprobante: nc.tipoNotaCredito,
+        puntoVenta: nc.puntoVenta,
+        nroComprobante: nc.nroComprobante,
+        importeTotal: nc.importeTotal,
+        creadoEn: nc.creadoEn,
+        razonSocialReceptor: null,
+        cuitReceptor: null,
+        netoGravado: null,
+        iva: null
+      }));
+    const todos = [...facs, ...ncsDelMes];
+    todos.sort((a,b) => (a.creadoEn||'').localeCompare(b.creadoEn||''));
     const tipoNC = [3, 8, 13];
     const tipoLabels = {1:'Factura A', 6:'Factura B', 11:'Factura C', 3:'NC A', 8:'NC B', 13:'NC C'};
     let totBruto = 0, totNC = 0, totNeto = 0, totIva21 = 0, totIva105 = 0, totGral = 0;
     let cantComp = 0, cantNC = 0;
     const fmt = v => '$' + Math.round(v).toLocaleString('es-AR');
-    const filas = facs.map(f => {
+    const filas = todos.map(f => {
       const tipo = f.tipoComprobante || 11;
       const esNC = tipoNC.includes(tipo);
       const signo = esNC ? -1 : 1;
@@ -12063,9 +12081,10 @@ async function loadResumenVentas() {
       const receptor = f.razonSocialReceptor || (f.cuitReceptor || 'Consumidor Final');
       const fecha = (f.creadoEn||'').slice(0,10);
       const bg = esNC ? 'background:rgba(232,160,144,.06);' : '';
+      const colorTipo = esNC ? 'color:#c0392b;' : '';
       return `<tr style="${bg}">
         <td style="font-size:12px;color:var(--text-m)">${fecha}</td>
-        <td style="font-size:12px">${tipoLabels[tipo]||'Fact.'}</td>
+        <td style="font-size:12px;${colorTipo}">${tipoLabels[tipo]||'Fact.'}</td>
         <td style="font-size:11px;color:var(--text-m)">${nro}</td>
         <td>${receptor}</td>
         <td class="r" style="font-family:inherit;font-size:13px">${fmt(neto)}</td>
