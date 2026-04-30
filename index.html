@@ -3942,7 +3942,10 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         <div style="background:#4a5e4d;border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
             <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;">Insumos</div>
-            <button onclick="if(window.stkNuevoInsumo)stkNuevoInsumo()" style="background:#fff;border:none;border-radius:12px;padding:9px 16px;font-size:13px;font-family:'DM Sans',sans-serif;color:#4a5e4d;cursor:pointer;font-weight:500;display:flex;align-items:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v9M2 6.5h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Insumo</button>
+            <div style="display:flex;gap:8px;">
+              <button onclick="if(window.stkAjusteModal)stkAjusteModal()" style="background:rgba(255,255,255,.15);border:.5px solid rgba(255,255,255,.3);border-radius:12px;padding:9px 16px;font-size:13px;font-family:'DM Sans',sans-serif;color:#fff;cursor:pointer;font-weight:500;">Ajuste de stock</button>
+              <button onclick="if(window.stkNuevoInsumo)stkNuevoInsumo()" style="background:#fff;border:none;border-radius:12px;padding:9px 16px;font-size:13px;font-family:'DM Sans',sans-serif;color:#4a5e4d;cursor:pointer;font-weight:500;display:flex;align-items:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v9M2 6.5h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Insumo</button>
+            </div>
           </div>
           <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;">
             <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
@@ -5666,6 +5669,40 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
     </div>
   </div>
 </div>
+<div class="mo" id="stock-insumo-modal">
+  <div class="md" style="max-width:420px;">
+    <button class="mc2" onclick="closeModal('stock-insumo-modal')">×</button>
+    <div class="mt" id="stk-modal-titulo">Nuevo insumo</div>
+    <input type="hidden" id="stk-insumo-id">
+    <div class="fg"><label class="fl">Nombre</label><input type="text" class="fi" id="stk-nombre" placeholder="Ej: Harina 000"/></div>
+    <div class="fg"><label class="fl">Unidad</label><select class="fi" id="stk-unidad" style="margin-top:0;"><option value="kg">kg</option><option value="g">g</option><option value="l">l</option><option value="ml">ml</option><option value="cc">cc</option><option value="unidad">unidad</option><option value="docena">docena</option><option value="porción">porción</option><option value="caja">caja</option></select></div>
+    <div class="fg"><label class="fl">Stock inicial</label><input type="number" class="fi" id="stk-stock-inicial" placeholder="0" min="0" step="any"/></div>
+    <div class="fg"><label class="fl">Stock mínimo <span style="color:var(--text-l);font-weight:400;">(opcional)</span></label><input type="number" class="fi" id="stk-stock-minimo" placeholder="Ej: 500 (te avisamos cuando baje de este número)" min="0" step="any"/></div>
+    <div class="fg"><label class="fl">Costo unitario <span style="color:var(--text-l);font-weight:400;">(opcional)</span></label><input type="number" class="fi" id="stk-costo" placeholder="$ por unidad" min="0" step="any"/></div>
+    <div id="stk-insumo-error" style="display:none;color:#c0392b;font-size:12px;margin-bottom:8px;"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px;">
+      <button id="stk-btn-eliminar" class="bs" style="display:none;margin-right:auto;" onclick="stkEliminarInsumo()">Eliminar</button>
+      <button class="bs" onclick="closeModal('stock-insumo-modal')">Cancelar</button>
+      <button class="bp" id="stk-btn-guardar" onclick="stkGuardarInsumo()">Guardar</button>
+    </div>
+  </div>
+</div>
+<div class="mo" id="stock-ajuste-modal">
+  <div class="md" style="max-width:420px;">
+    <button class="mc2" onclick="closeModal('stock-ajuste-modal')">×</button>
+    <div class="mt">Ajuste de stock</div>
+    <div class="fg"><label class="fl">Insumo</label><select class="fi" id="stk-aj-insumo" style="margin-top:0;"></select></div>
+    <div class="fg"><label class="fl">Tipo</label><select class="fi" id="stk-aj-tipo" style="margin-top:0;"><option value="entrada">Entrada</option><option value="salida">Salida</option></select></div>
+    <div class="fg"><label class="fl">Cantidad</label><input type="number" class="fi" id="stk-aj-cantidad" placeholder="0" min="0" step="any"/></div>
+    <div class="fg"><label class="fl">Motivo <span style="color:var(--text-l);font-weight:400;">(opcional)</span></label><select class="fi" id="stk-aj-motivo" style="margin-top:0;" onchange="document.getElementById('stk-aj-motivo-otro').style.display=this.value==='Otro'?'block':'none'"><option value="">— Sin especificar —</option><option value="Merma">Merma</option><option value="Error de conteo">Error de conteo</option><option value="Devolución">Devolución</option><option value="Robo o pérdida">Robo o pérdida</option><option value="Otro">Otro</option></select></div>
+    <input type="text" class="fi" id="stk-aj-motivo-otro" placeholder="Describí el motivo..." style="display:none;margin-bottom:12px;"/>
+    <div id="stk-ajuste-error" style="display:none;color:#c0392b;font-size:12px;margin-bottom:8px;"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px;">
+      <button class="bs" onclick="closeModal('stock-ajuste-modal')">Cancelar</button>
+      <button class="bp" onclick="stkGuardarAjuste()">Guardar ajuste</button>
+    </div>
+  </div>
+</div>
 
 <div class="mo" id="newPresupModal">
   <div class="md">
@@ -5686,7 +5723,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, confirmPasswordReset } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, addDoc, collection, getDocs, query, where, orderBy, updateDoc, deleteDoc, deleteField, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, addDoc, collection, getDocs, query, where, orderBy, updateDoc, deleteDoc, deleteField, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 // Expose firestore db globally for cross-block access
 
 const cfg = {apiKey:"AIzaSyCZr_VAn5fumCzkrfxb1oK9-W2_cADnGTI",authDomain:"mb-strategy.firebaseapp.com",projectId:"mb-strategy",storageBucket:"mb-strategy.firebasestorage.app",messagingSenderId:"1055393429525",appId:"1:1055393429525:web:0f40fa5869ef5aa8bb761c"};
@@ -14253,7 +14290,163 @@ window.renderCkKpis = renderCkKpis;
 window.renderHistorialCompra = renderHistorialCompra;
 window.loadClientPresupuestos = loadClientPresupuestos;
 window.loadMcModule = loadMcModule;
-window.loadStockModule = function() {};
+window.loadStockModule = async function() {
+  if(!currentClientUID) return;
+  try {
+    const snap = await getDocs(query(collection(db,'clientes',currentClientUID,'insumos'), where('activo','==',true), orderBy('nombre','asc')));
+    window._stockInsumos = snap.docs.map(d=>({id:d.id,...d.data()}));
+    stkRenderInsumos();
+  } catch(e) { console.log('loadStockModule:',e); }
+};
+
+function stkRenderInsumos() {
+  const ins = window._stockInsumos || [];
+  const welcome = document.getElementById('stk-insumos-welcome');
+  const content = document.getElementById('stk-insumos-content');
+  if(!ins.length) {
+    if(welcome) welcome.style.display='block';
+    if(content) content.style.display='none';
+    const t=document.getElementById('stk-kpi-total'); if(t) t.textContent='0';
+    const cr=document.getElementById('stk-kpi-critico'); if(cr) cr.textContent='0';
+    const co=document.getElementById('stk-kpi-costo'); if(co) co.textContent='$0';
+    return;
+  }
+  if(welcome) welcome.style.display='none';
+  if(content) content.style.display='block';
+  const criticos = ins.filter(i=>i.stockMinimo!=null && i.stockMinimo!=='' && parseFloat(i.stockActual||0)<=parseFloat(i.stockMinimo));
+  const valorTotal = ins.reduce((s,i)=>s+(parseFloat(i.stockActual||0)*parseFloat(i.costoUnitario||0)),0);
+  const t=document.getElementById('stk-kpi-total'); if(t) t.textContent=ins.length;
+  const cr=document.getElementById('stk-kpi-critico'); if(cr) cr.textContent=criticos.length;
+  const co=document.getElementById('stk-kpi-costo'); if(co) co.textContent='$'+valorTotal.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const lista = document.getElementById('stk-insumos-lista');
+  if(!lista) return;
+  lista.innerHTML = ins.map(i=>{
+    const bajo = i.stockMinimo!=null && i.stockMinimo!=='' && parseFloat(i.stockActual||0)<=parseFloat(i.stockMinimo);
+    const stockStr = (parseFloat(i.stockActual||0)).toLocaleString('es-AR',{maximumFractionDigits:3})+' '+i.unidad;
+    const minStr = i.stockMinimo!=null && i.stockMinimo!=='' ? (parseFloat(i.stockMinimo)).toLocaleString('es-AR',{maximumFractionDigits:3}) : '—';
+    const costoStr = i.costoUnitario ? '$'+parseFloat(i.costoUnitario).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) : '—';
+    return `<div onclick="stkEditarInsumo('${i.id}')" style="display:grid;grid-template-columns:1fr 90px 90px 90px 80px 64px;gap:10px;padding:10px 0;border-bottom:.5px solid var(--cream-d);min-width:520px;cursor:pointer;transition:background .1s;" onmouseover="this.style.background='#faf8f5'" onmouseout="this.style.background=''">
+      <span style="font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:6px;">${i.nombre}${bajo?'<span style="background:#c0392b;color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:20px;letter-spacing:.4px;">BAJO</span>':''}</span>
+      <span style="font-size:13px;color:var(--text-m);text-align:right;">${i.unidad}</span>
+      <span style="font-size:13px;color:${bajo?'#c0392b':'var(--text)'};font-weight:${bajo?'600':'400'};text-align:right;">${(parseFloat(i.stockActual||0)).toLocaleString('es-AR',{maximumFractionDigits:3})}</span>
+      <span style="font-size:13px;color:var(--text-m);text-align:right;">${minStr}</span>
+      <span style="font-size:13px;color:var(--text-m);text-align:center;">${costoStr}</span>
+      <span style="display:flex;justify-content:flex-end;gap:6px;align-items:center;">
+        <button onclick="event.stopPropagation();stkEditarInsumo('${i.id}')" title="Editar" style="background:none;border:none;cursor:pointer;padding:4px;color:var(--text-l);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+      </span>
+    </div>`;
+  }).join('');
+}
+
+window.stkNuevoInsumo = function() {
+  document.getElementById('stk-modal-titulo').textContent = 'Nuevo insumo';
+  document.getElementById('stk-insumo-id').value = '';
+  document.getElementById('stk-nombre').value = '';
+  document.getElementById('stk-unidad').value = 'kg';
+  document.getElementById('stk-stock-inicial').value = '';
+  document.getElementById('stk-stock-minimo').value = '';
+  document.getElementById('stk-costo').value = '';
+  document.getElementById('stk-btn-eliminar').style.display = 'none';
+  const err = document.getElementById('stk-insumo-error'); if(err) { err.style.display='none'; err.textContent=''; }
+  openModal('stock-insumo-modal');
+};
+
+window.stkEditarInsumo = function(id) {
+  const i = (window._stockInsumos||[]).find(x=>x.id===id);
+  if(!i) return;
+  document.getElementById('stk-modal-titulo').textContent = 'Editar insumo';
+  document.getElementById('stk-insumo-id').value = id;
+  document.getElementById('stk-nombre').value = i.nombre||'';
+  document.getElementById('stk-unidad').value = i.unidad||'kg';
+  document.getElementById('stk-stock-inicial').value = i.stockActual!=null ? i.stockActual : '';
+  document.getElementById('stk-stock-minimo').value = i.stockMinimo!=null ? i.stockMinimo : '';
+  document.getElementById('stk-costo').value = i.costoUnitario!=null ? i.costoUnitario : '';
+  document.getElementById('stk-btn-eliminar').style.display = 'inline-flex';
+  const err = document.getElementById('stk-insumo-error'); if(err) { err.style.display='none'; err.textContent=''; }
+  openModal('stock-insumo-modal');
+};
+
+window.stkGuardarInsumo = async function() {
+  const nombre = (document.getElementById('stk-nombre').value||'').trim();
+  const err = document.getElementById('stk-insumo-error');
+  if(!nombre) { err.textContent='El nombre es obligatorio.'; err.style.display='block'; return; }
+  err.style.display='none';
+  const btn = document.getElementById('stk-btn-guardar');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  const id = document.getElementById('stk-insumo-id').value;
+  const data = {
+    nombre,
+    unidad: document.getElementById('stk-unidad').value,
+    stockMinimo: document.getElementById('stk-stock-minimo').value!=='' ? parseFloat(document.getElementById('stk-stock-minimo').value) : null,
+    costoUnitario: document.getElementById('stk-costo').value!=='' ? parseFloat(document.getElementById('stk-costo').value) : null,
+    activo: true
+  };
+  try {
+    if(id) {
+      await updateDoc(doc(db,'clientes',currentClientUID,'insumos',id), data);
+    } else {
+      data.stockActual = parseFloat(document.getElementById('stk-stock-inicial').value)||0;
+      data.creadoEn = new Date().toISOString();
+      await addDoc(collection(db,'clientes',currentClientUID,'insumos'), data);
+    }
+    closeModal('stock-insumo-modal');
+    await window.loadStockModule();
+  } catch(e) { err.textContent='Error al guardar: '+e.message; err.style.display='block'; }
+  btn.disabled = false; btn.textContent = 'Guardar';
+};
+
+window.stkEliminarInsumo = function() {
+  const id = document.getElementById('stk-insumo-id').value;
+  if(!id) return;
+  showConfirm('¿Eliminar este insumo? Sus movimientos históricos se preservan.', async()=>{
+    try {
+      await updateDoc(doc(db,'clientes',currentClientUID,'insumos',id),{activo:false});
+      closeModal('stock-insumo-modal');
+      await window.loadStockModule();
+    } catch(e) { showToast('Error al eliminar: '+e.message,'error'); }
+  },'Eliminar insumo');
+};
+
+window.stkAjusteModal = function() {
+  const ins = window._stockInsumos||[];
+  const sel = document.getElementById('stk-aj-insumo');
+  sel.innerHTML = ins.length ? ins.map(i=>`<option value="${i.id}">${i.nombre} (${i.unidad})</option>`).join('') : '<option value="">— Sin insumos cargados —</option>';
+  document.getElementById('stk-aj-tipo').value = 'entrada';
+  document.getElementById('stk-aj-cantidad').value = '';
+  document.getElementById('stk-aj-motivo').value = '';
+  document.getElementById('stk-aj-motivo-otro').value = '';
+  document.getElementById('stk-aj-motivo-otro').style.display = 'none';
+  const err = document.getElementById('stk-ajuste-error'); if(err){ err.style.display='none'; err.textContent=''; }
+  openModal('stock-ajuste-modal');
+};
+
+window.stkGuardarAjuste = async function() {
+  const insumoId = document.getElementById('stk-aj-insumo').value;
+  const tipo = document.getElementById('stk-aj-tipo').value;
+  const cantidad = parseFloat(document.getElementById('stk-aj-cantidad').value);
+  const err = document.getElementById('stk-ajuste-error');
+  if(!insumoId) { err.textContent='Seleccioná un insumo.'; err.style.display='block'; return; }
+  if(!cantidad || cantidad<=0) { err.textContent='Ingresá una cantidad válida.'; err.style.display='block'; return; }
+  err.style.display='none';
+  const insumo = (window._stockInsumos||[]).find(x=>x.id===insumoId);
+  if(!insumo) return;
+  const motivoSel = document.getElementById('stk-aj-motivo').value;
+  const motivoOtro = document.getElementById('stk-aj-motivo-otro').value.trim();
+  const notas = motivoSel === 'Otro' ? (motivoOtro||'Otro') : (motivoSel||'');
+  const delta = tipo==='entrada' ? cantidad : -cantidad;
+  const stockResultante = parseFloat(insumo.stockActual||0) + delta;
+  try {
+    await updateDoc(doc(db,'clientes',currentClientUID,'insumos',insumoId), {stockActual: increment(delta)});
+    await addDoc(collection(db,'clientes',currentClientUID,'movimientosStock'),{
+      tipo:'ajuste', insumoId, insumoNombre:insumo.nombre, cantidad, unidad:insumo.unidad,
+      stockResultante, origen:'ajuste', referenciaId:'', notas,
+      fecha:new Date().toISOString().split('T')[0], creadoEn:new Date().toISOString()
+    });
+    if(stockResultante < 0) showToast('Stock en negativo para '+insumo.nombre+'. Revisá el inventario.','warning');
+    closeModal('stock-ajuste-modal');
+    await window.loadStockModule();
+  } catch(e) { err.textContent='Error: '+e.message; err.style.display='block'; }
+};
 window.loadContentAdmin = loadContentAdmin;
 
 window.toggleCkMesDrop = function() {
