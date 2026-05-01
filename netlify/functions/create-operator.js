@@ -60,6 +60,10 @@ exports.handler = async function(event) {
       if (!nombre || !usuario || !password || !rol) {
         return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: 'Faltan campos: nombre, usuario, password, rol' }) };
       }
+      const ROLES_VALIDOS = ['cajero', 'compras', 'comercial', 'vendedor'];
+      if (!ROLES_VALIDOS.includes(rol)) {
+        return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: `Rol inválido. Debe ser uno de: ${ROLES_VALIDOS.join(', ')}` }) };
+      }
       if (/\s|@/.test(usuario)) {
         return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: 'El usuario no puede tener espacios ni @' }) };
       }

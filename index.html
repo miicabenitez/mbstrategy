@@ -1912,6 +1912,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
               <option value="cajero">Cajero</option>
               <option value="compras">Compras</option>
               <option value="comercial">Comercial</option>
+              <option value="vendedor">Vendedor — Caja + Comercial</option>
             </select>
             <div id="usr-modal-error" style="display:none;color:#e53e3e;font-size:12px;margin-bottom:12px;"></div>
             <div style="display:flex;gap:8px;justify-content:flex-end;">
@@ -4564,6 +4565,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
               <option value="cajero">Cajero</option>
               <option value="compras">Compras</option>
               <option value="comercial">Comercial</option>
+              <option value="vendedor">Vendedor — Caja + Comercial</option>
             </select>
             <div id="equipo-modal-error" style="display:none;color:#e53e3e;font-size:12px;margin-bottom:12px;"></div>
             <div style="display:flex;gap:8px;justify-content:flex-end;">
@@ -24292,7 +24294,8 @@ window._aplicarRestriccionesRol = function() {
   var _ocultar = {
     cajero:   ['sbg-ventas','sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion'],
     compras:  ['sbg-finanzas','sbg-ventas','sbg-herramientas','sbg-gestion'],
-    comercial:['sbg-finanzas','sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion']
+    comercial:['sbg-finanzas','sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion'],
+    vendedor: ['sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion']
   }[rol] || [];
   _ocultar.forEach(function(id) {
     var el = document.getElementById(id);
