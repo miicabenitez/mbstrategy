@@ -2015,6 +2015,35 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         <button class="subctab active" onclick="showCTab('contabilidad',this)">Caja</button>
         <button class="subctab" onclick="_checkProTab('cierre-periodo',this)">Cierre</button>
         <button class="subctab" onclick="showCTab('caja-config',this)">Configuración</button>
+        <button id="btn-cajero-retiro" class="subctab" style="display:none;" onclick="cajaRetiroShow()">Retiro</button>
+        <button id="btn-cajero-cierre" class="subctab" style="display:none;" onclick="cajaCierreShow()">Cerrar caja</button>
+      </div>
+
+      <!-- MODAL Retiro a caja general (cajero) -->
+      <div id="cajero-retiro-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9998;display:none;align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:14px;padding:28px 24px;width:320px;box-shadow:0 8px 32px rgba(0,0,0,.18);">
+          <div style="font-weight:700;font-size:15px;margin-bottom:16px;">Retiro a caja general</div>
+          <label style="font-size:12px;color:#666;display:block;margin-bottom:4px;">Monto a retirar</label>
+          <input id="cajero-retiro-monto" type="number" min="0" step="any" placeholder="0.00" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:16px;">
+          <label style="font-size:12px;color:#666;display:block;margin-bottom:4px;">Observación (opcional)</label>
+          <input id="cajero-retiro-obs" type="text" placeholder="" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:20px;">
+          <div style="display:flex;gap:8px;justify-content:flex-end;">
+            <button onclick="cajaRetiroCerrar()" style="padding:8px 18px;border-radius:8px;border:1px solid #ddd;background:#fff;font-size:13px;cursor:pointer;">Cancelar</button>
+            <button id="cajero-retiro-btn" onclick="cajaRetiroGuardar()" style="padding:8px 18px;border-radius:8px;border:none;background:#4a5e4d;color:#fff;font-size:13px;font-weight:600;cursor:pointer;">Retirar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODAL Cierre de caja cajero -->
+      <div id="cajero-cierre-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9998;align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:14px;padding:28px 24px;width:340px;box-shadow:0 8px 32px rgba(0,0,0,.18);">
+          <div style="font-weight:700;font-size:15px;margin-bottom:4px;">Cierre de caja</div>
+          <div id="cajero-cierre-resumen" style="font-size:13px;color:#555;margin-bottom:16px;"></div>
+          <div style="display:flex;gap:8px;justify-content:flex-end;">
+            <button onclick="cajaCierreCerrar()" style="padding:8px 18px;border-radius:8px;border:1px solid #ddd;background:#fff;font-size:13px;cursor:pointer;">Cancelar</button>
+            <button id="cajero-cierre-btn" onclick="cajaCierreConfirmar()" style="padding:8px 18px;border-radius:8px;border:none;background:#4a5e4d;color:#fff;font-size:13px;font-weight:600;cursor:pointer;">Confirmar cierre</button>
+          </div>
+        </div>
       </div>
 
       <!-- PRO LOCK — Finanzas -->
@@ -9741,8 +9770,12 @@ async function loadCajaModule() {
     cuentasUnicas.sort((a,b)=>(a.orden||0)-(b.orden||0));
     // 3. Cargar todos los movimientos desde libroCaja
     const movsSnap = await getDocs(query(collection(db,'libroCaja'), where('uid','==',uid)));
-    const todosMovs = [];
+    let todosMovs = [];
     movsSnap.forEach(d => { const data = d.data(); if(!data.eliminado) todosMovs.push({id:d.id,...data}); });
+    // Cajero: solo ve movimientos de su turno (desde que inició sesión)
+    if(window.currentRol === 'cajero' && window.turnoInicio) {
+      todosMovs = todosMovs.filter(m => (m.creadoEn||'') >= window.turnoInicio);
+    }
     // Filtrar por mes para tabla y KPIs
     const movs = todosMovs.filter(m => m.mes === mes.stored);
     movs.sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')||((a.creadoEn||'').localeCompare(b.creadoEn||'')));
@@ -9798,7 +9831,11 @@ function renderCajaChips(cuentas, movs) {
   const container = document.getElementById('caja-chips');
   if(!container) return;
   const seen = new Set();
-  const cuentasUnicas = cuentas.filter(c => { if(seen.has(c.nombre)) return false; seen.add(c.nombre); return true; });
+  let cuentasUnicas = cuentas.filter(c => { if(seen.has(c.nombre)) return false; seen.add(c.nombre); return true; });
+  // Cajero: solo ve cuenta Efectivo
+  if(window.currentRol === 'cajero') {
+    cuentasUnicas = cuentasUnicas.filter(c => c.tipo === 'efectivo' || c.nombre === 'Efectivo');
+  }
   const saldos = {};
   cuentasUnicas.forEach(c => { saldos[c.nombre] = 0; });
   movs.forEach(m => {
@@ -11266,7 +11303,7 @@ async function _cierreEjecutarCierre(movimientos, provPagos, retiroPagos) {
     const mes = mesHoyARG(fecha);
     const creadoEn = new Date().toISOString();
     // Guardar movimientos en libroCaja con metadata completa
-    const movsConMeta = movimientos.map(m=>({...m, uid, fecha, mes, origen:'cierre', referenciaId:cierreRef.id, eliminado:false, creadoEn}));
+    const movsConMeta = movimientos.map(m=>({...m, uid, fecha, mes, origen:'cierre', referenciaId:cierreRef.id, eliminado:false, creadoEn, creadoPor: window.currentOperadorNombre || 'Admin'}));
     await Promise.all(movsConMeta.map(m=>addDoc(collection(db,'libroCaja'),m)));
     // Registrar pagos en CC de proveedores (compromisos)
     if(provPagos && provPagos.length) {
@@ -13117,7 +13154,8 @@ window.ccfgCuentaGuardar = async function() {
         detalle: 'Saldo inicial',
         mes,
         eliminado: false,
-        creadoEn: new Date().toISOString()
+        creadoEn: new Date().toISOString(),
+        creadoPor: window.currentOperadorNombre || 'Admin'
       });
     }
     } // end else (agregar)
@@ -13394,15 +13432,15 @@ window.mvmGuardar = async function() {
         const contado = _mvmParseMonto('mvm-contado');
         if(!contado) return;
         const diff = contado - _mvmEfectivoSaldo;
-        docs.push({fecha,tipo:'egreso',concepto:'Cierre de caja',cuenta,monto:contado,montoContado:contado,saldoEsperado:_mvmEfectivoSaldo,detalle,mes:mesFecha,origen:'manual',eliminado:false,creadoEn:new Date().toISOString()});
+        docs.push({fecha,tipo:'egreso',concepto:'Cierre de caja',cuenta,monto:contado,montoContado:contado,saldoEsperado:_mvmEfectivoSaldo,detalle,mes:mesFecha,origen:'manual',eliminado:false,creadoEn:new Date().toISOString(),creadoPor:window.currentOperadorNombre||'Admin'});
         if(Math.abs(diff)>0.009) {
-          if(diff>0) docs.push({fecha,tipo:'ingreso',concepto:'Sobrante',cuenta,monto:Math.round(diff*100)/100,detalle:'Auto-generado por cierre de caja',mes:mesFecha,origen:'manual',eliminado:false,creadoEn:new Date().toISOString()});
-          else docs.push({fecha,tipo:'egreso',concepto:'Faltante',cuenta,monto:Math.round(Math.abs(diff)*100)/100,detalle:'Auto-generado por cierre de caja',mes:mesFecha,origen:'manual',eliminado:false,creadoEn:new Date().toISOString()});
+          if(diff>0) docs.push({fecha,tipo:'ingreso',concepto:'Sobrante',cuenta,monto:Math.round(diff*100)/100,detalle:'Auto-generado por cierre de caja',mes:mesFecha,origen:'manual',eliminado:false,creadoEn:new Date().toISOString(),creadoPor:window.currentOperadorNombre||'Admin'});
+          else docs.push({fecha,tipo:'egreso',concepto:'Faltante',cuenta,monto:Math.round(Math.abs(diff)*100)/100,detalle:'Auto-generado por cierre de caja',mes:mesFecha,origen:'manual',eliminado:false,creadoEn:new Date().toISOString(),creadoPor:window.currentOperadorNombre||'Admin'});
         }
       } else {
         const monto = _mvmParseMonto('mvm-monto');
         if(!monto||!_mvmConceptoSel) return;
-        docs.push({fecha,tipo:_mvmTipo,concepto:_mvmConceptoSel,cuenta,monto,detalle,mes:mesFecha,origen:'manual',eliminado:false,creadoEn:new Date().toISOString()});
+        docs.push({fecha,tipo:_mvmTipo,concepto:_mvmConceptoSel,cuenta,monto,detalle,mes:mesFecha,origen:'manual',eliminado:false,creadoEn:new Date().toISOString(),creadoPor:window.currentOperadorNombre||'Admin'});
       }
     }
     const btnSave = document.getElementById('mvm-btn-save');
@@ -13588,7 +13626,8 @@ window.vrcGuardar = async function() {
       uid:currentClientUID,
       fecha:hoy, tipo:'ingreso', concepto:'Venta caja',
       cuenta:_vrcMetodo||'Efectivo', monto:Math.round(total*100)/100,
-      productos, mes, origen:'venta_caja', eliminado:false, creadoEn:new Date().toISOString()
+      productos, mes, origen:'venta_caja', eliminado:false, creadoEn:new Date().toISOString(),
+      creadoPor: window.currentOperadorNombre || 'Admin'
     });
     const _vcCarritoSnap = {..._vrcCarrito};
     vrcCerrar();
@@ -16989,7 +17028,8 @@ window.createMcCobro = async function() {
       detalle  : concepto || `Cobro de ${clienteNombre}`,
       mes      : mesIngreso,
       eliminado: false,
-      creadoEn : new Date().toISOString()
+      creadoEn : new Date().toISOString(),
+      creadoPor: window.currentOperadorNombre || 'Admin'
     });
 
     // 5. Recargar ingresos en contabilidad para que aparezca solo
@@ -21355,7 +21395,8 @@ window.savePagoProveedor = async function() {
       detalle    : `Pago a ${provNombre}${concepto ? ' · '+concepto : ''}`,
       mes        : mesEgreso,
       eliminado  : false,
-      creadoEn   : new Date().toISOString()
+      creadoEn   : new Date().toISOString(),
+      creadoPor  : window.currentOperadorNombre || 'Admin'
     });
 
     const saved = document.getElementById('npp-saved');
@@ -23663,6 +23704,191 @@ window._aplicarLocksPlanBase = function(clientData) {
   if(btnCfgCierre) btnCfgCierre.innerHTML = esBase ? _lockSvg + 'Cierre de período' : 'Cierre de período';
 };
 
+// ─── CAJERO: Retiro a caja general ───────────────────────────
+window.cajaRetiroShow = function() {
+  var ov = document.getElementById('cajero-retiro-overlay');
+  if(!ov) return;
+  document.getElementById('cajero-retiro-monto').value = '';
+  document.getElementById('cajero-retiro-obs').value = '';
+  ov.style.display = 'flex';
+};
+window.cajaRetiroCerrar = function() {
+  var ov = document.getElementById('cajero-retiro-overlay');
+  if(ov) ov.style.display = 'none';
+};
+window.cajaRetiroGuardar = async function() {
+  var monto = parseFloat(document.getElementById('cajero-retiro-monto').value)||0;
+  if(monto <= 0) { showToast('Ingresá un monto válido','error'); return; }
+  var obs = document.getElementById('cajero-retiro-obs').value.trim();
+  var btn = document.getElementById('cajero-retiro-btn');
+  if(btn) { btn.disabled=true; btn.textContent='Guardando...'; }
+  try {
+    var hoy = fechaHoyARG();
+    var mes = mesHoyARG(hoy);
+    var uid = currentClientUID;
+    var operador = window.currentOperadorNombre || 'Cajero';
+    // Egreso del cajero
+    await addDoc(collection(db,'libroCaja'),{
+      tipo:'egreso', cuenta:'Efectivo', monto:monto,
+      concepto:'Retiro a caja general', origen:'retiro_cajero',
+      creadoPor: operador, detalle: obs||'',
+      fecha: hoy, mes: mes, uid: uid, eliminado: false, creadoEn: new Date().toISOString()
+    });
+    // Ingreso para admin
+    await addDoc(collection(db,'libroCaja'),{
+      tipo:'ingreso', cuenta:'Efectivo', monto:monto,
+      concepto:'Retiro de '+operador, origen:'retiro_cajero',
+      creadoPor: 'Admin', detalle: obs||'',
+      fecha: hoy, mes: mes, uid: uid, eliminado: false, creadoEn: new Date().toISOString()
+    });
+    cajaRetiroCerrar();
+    showToast('Retiro registrado','success');
+    loadCajaModule();
+  } catch(e) {
+    showToast('Error: '+(e?.message||e),'error');
+    if(btn) { btn.disabled=false; btn.textContent='Retirar'; }
+  }
+};
+
+// ─── CAJERO: Cierre de caja ──────────────────────────────────
+window.cajaCierreShow = function() {
+  var ov = document.getElementById('cajero-cierre-overlay');
+  if(!ov) return;
+  var movs = (window._cajaMovimientos || []).filter(function(m){ return m.cuenta==='Efectivo'||m.cuentaHacia==='Efectivo'||m.cuentaDesde==='Efectivo'; });
+  var ingresos = movs.filter(function(m){return m.tipo==='ingreso';}).reduce(function(a,m){return a+(parseFloat(m.monto)||0);},0);
+  var egresos  = movs.filter(function(m){return m.tipo==='egreso';}).reduce(function(a,m){return a+(parseFloat(m.monto)||0);},0);
+  var saldo = ingresos - egresos;
+  var resumen = document.getElementById('cajero-cierre-resumen');
+  if(resumen) resumen.innerHTML =
+    '<b>Turno:</b> '+new Date(window.turnoInicio||Date.now()).toLocaleString('es-AR')+'<br>'+
+    '<b>Ingresos:</b> $'+ingresos.toLocaleString('es-AR')+'<br>'+
+    '<b>Egresos:</b> $'+egresos.toLocaleString('es-AR')+'<br>'+
+    '<b>Saldo efectivo:</b> $'+saldo.toLocaleString('es-AR');
+  ov.style.display = 'flex';
+};
+window.cajaCierreCerrar = function() {
+  var ov = document.getElementById('cajero-cierre-overlay');
+  if(ov) ov.style.display = 'none';
+};
+window.cajaCierreConfirmar = async function() {
+  var btn = document.getElementById('cajero-cierre-btn');
+  if(btn) { btn.disabled=true; btn.textContent='Cerrando...'; }
+  try {
+    var movs = (window._cajaMovimientos || []).filter(function(m){ return m.cuenta==='Efectivo'||m.cuentaHacia==='Efectivo'||m.cuentaDesde==='Efectivo'; });
+    var ingresos = movs.filter(function(m){return m.tipo==='ingreso';}).reduce(function(a,m){return a+(parseFloat(m.monto)||0);},0);
+    var egresos  = movs.filter(function(m){return m.tipo==='egreso';}).reduce(function(a,m){return a+(parseFloat(m.monto)||0);},0);
+    var saldo = ingresos - egresos;
+    var operador = window.currentOperadorNombre || 'Cajero';
+    // Generar PDF del turno
+    var pdfBase64 = await turnoGenerarPDF(operador, ingresos, egresos, saldo, movs);
+    // Enviar por email al admin del negocio
+    if(pdfBase64 && window.currentClientData?.email) {
+      var hoyStr = new Date().toLocaleDateString('es-AR');
+      await fetch('/.netlify/functions/send-factura-email', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          emailDestino: window.currentClientData.email,
+          pdfBase64: pdfBase64,
+          nombreArchivo: 'cierre-turno-'+operador+'.pdf',
+          asunto: 'Cierre de caja — '+operador+' — '+hoyStr,
+          cuerpo: 'Se adjunta el resumen del turno de '+operador+' del '+hoyStr+'.'
+        })
+      });
+    }
+    cajaCierreCerrar();
+    showToast('Caja cerrada. Se envió el resumen al admin.','success');
+    // Resetear turnoInicio para que al recargar el cajero no vea movs anteriores
+    window.turnoInicio = new Date().toISOString();
+    loadCajaModule();
+  } catch(e) {
+    showToast('Error al cerrar caja: '+(e?.message||e),'error');
+    if(btn) { btn.disabled=false; btn.textContent='Confirmar cierre'; }
+  }
+};
+
+// ─── CAJERO: PDF de cierre de turno ──────────────────────────
+async function turnoGenerarPDF(operador, ingresos, egresos, saldo, movs) {
+  try {
+    if(!window.jspdf) {
+      await new Promise(function(res,rej){ var s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'; s.onload=res; s.onerror=rej; document.head.appendChild(s); });
+    }
+    var negocioNombre = 'Mi negocio';
+    try {
+      var negDoc = await getDoc(doc(db,'clientes',currentClientUID));
+      if(negDoc.exists()) negocioNombre = negDoc.data().negocioNombre || negDoc.data().nombre || negocioNombre;
+    } catch(e) {}
+    var { jsPDF } = window.jspdf;
+    var pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+    var W=210, M=20, cW=W-M*2;
+    var SAGE=[122,142,125], CREAM=[245,246,243], TEXT=[44,44,44], TEXT_L=[136,135,128], WHITE=[255,255,255], HEAD2=[220,230,222];
+    pdf.setLineWidth(0.3);
+    // Header
+    pdf.setFillColor(122,142,125); pdf.rect(0,0,W,28,'F');
+    pdf.setTextColor(255,255,255); pdf.setFontSize(13); pdf.setFont('helvetica','bold');
+    pdf.text(negocioNombre, M, 13);
+    pdf.setFontSize(9); pdf.setFont('helvetica','normal'); pdf.setTextColor(220,230,222);
+    pdf.text('MB Strategy · sistema.mbstrategy.com.ar', M, 20);
+    pdf.setTextColor(255,255,255); pdf.setFontSize(14); pdf.setFont('helvetica','bold');
+    pdf.text('CIERRE DE TURNO', W-M, 13, {align:'right'});
+    pdf.setFontSize(9); pdf.setFont('helvetica','normal'); pdf.setTextColor(220,230,222);
+    var ahora = new Date().toLocaleString('es-AR');
+    pdf.text(ahora, W-M, 20, {align:'right'});
+    var y = 36;
+    // Operador / turno
+    pdf.setFillColor(245,246,243); pdf.rect(M,y,cW,8,'F');
+    pdf.setTextColor(136,135,128); pdf.setFontSize(7); pdf.setFont('helvetica','bold');
+    pdf.text('OPERADOR / TURNO', M+3, y+5.5); y+=8;
+    pdf.setFillColor(255,255,255); pdf.rect(M,y,cW,8,'F');
+    pdf.setTextColor(44,44,44); pdf.setFontSize(9); pdf.setFont('helvetica','normal');
+    pdf.text('Operador', M+3, y+5.5);
+    pdf.text(operador, W-M-3, y+5.5, {align:'right'}); y+=8;
+    pdf.setFillColor(245,246,243); pdf.rect(M,y,cW,8,'F');
+    pdf.text('Inicio de turno', M+3, y+5.5);
+    pdf.text(window.turnoInicio ? new Date(window.turnoInicio).toLocaleString('es-AR') : '—', W-M-3, y+5.5, {align:'right'}); y+=8;
+    y+=4;
+    // Resumen
+    pdf.setFillColor(245,246,243); pdf.rect(M,y,cW,8,'F');
+    pdf.setTextColor(136,135,128); pdf.setFontSize(7); pdf.setFont('helvetica','bold');
+    pdf.text('RESUMEN EFECTIVO', M+3, y+5.5); y+=8;
+    var rows = [['Ingresos','$'+ingresos.toLocaleString('es-AR')],['Egresos','$'+egresos.toLocaleString('es-AR')]];
+    rows.forEach(function(r,i){
+      pdf.setFillColor(i%2===0?255:245,i%2===0?255:246,i%2===0?255:243);
+      pdf.rect(M,y,cW,8,'F');
+      pdf.setTextColor(44,44,44); pdf.setFontSize(9); pdf.setFont('helvetica','normal');
+      pdf.text(r[0],M+3,y+5.5); pdf.text(r[1],W-M-3,y+5.5,{align:'right'}); y+=8;
+    });
+    pdf.setFillColor(122,142,125); pdf.rect(M,y,cW,10,'F');
+    pdf.setTextColor(255,255,255); pdf.setFontSize(10); pdf.setFont('helvetica','bold');
+    pdf.text('SALDO FINAL',M+4,y+7); pdf.text('$'+saldo.toLocaleString('es-AR'),W-M-3,y+7,{align:'right'}); y+=14;
+    // Detalle movimientos
+    if(movs && movs.length>0) {
+      y+=2;
+      pdf.setFillColor(245,246,243); pdf.rect(M,y,cW,8,'F');
+      pdf.setTextColor(136,135,128); pdf.setFontSize(7); pdf.setFont('helvetica','bold');
+      pdf.text('MOVIMIENTOS DEL TURNO', M+3, y+5.5); y+=8;
+      pdf.setFillColor(122,142,125); pdf.rect(M,y,cW,8,'F');
+      pdf.setTextColor(255,255,255); pdf.setFontSize(8); pdf.setFont('helvetica','bold');
+      pdf.text('Concepto',M+3,y+5.5); pdf.text('Tipo',M+100,y+5.5); pdf.text('Monto',W-M-3,y+5.5,{align:'right'}); y+=8;
+      movs.slice(0,30).forEach(function(m,i){
+        pdf.setFillColor(i%2===0?255:245,i%2===0?255:246,i%2===0?255:243);
+        pdf.rect(M,y,cW,7,'F');
+        pdf.setTextColor(44,44,44); pdf.setFontSize(8); pdf.setFont('helvetica','normal');
+        var concepto = (m.concepto||'').substring(0,35);
+        pdf.text(concepto,M+3,y+5); pdf.text(m.tipo||'',M+100,y+5);
+        pdf.text('$'+(parseFloat(m.monto)||0).toLocaleString('es-AR'),W-M-3,y+5,{align:'right'}); y+=7;
+        if(y>270){ pdf.addPage(); y=20; }
+      });
+    }
+    // Footer
+    pdf.setFillColor(122,142,125); pdf.rect(0,277,W,20,'F');
+    pdf.setTextColor(220,230,222); pdf.setFontSize(8); pdf.setFont('helvetica','normal');
+    pdf.text('MB Strategy · sistema.mbstrategy.com.ar', W/2, 287, {align:'center'});
+    // Retornar base64
+    return pdf.output('datauristring').split(',')[1];
+  } catch(e) { console.log('turnoGenerarPDF error:',e); return null; }
+}
+
 window._aplicarRestriccionesRol = function() {
   var rol = window.currentRol || 'admin';
   var _ocultar = {
@@ -23674,6 +23900,19 @@ window._aplicarRestriccionesRol = function() {
     var el = document.getElementById(id);
     if (el) el.style.display = 'none';
   });
+  if (rol === 'cajero') {
+    // Mostrar botones de cajero en subnav-finanzas
+    var btnRetiro = document.getElementById('btn-cajero-retiro');
+    var btnCierre = document.getElementById('btn-cajero-cierre');
+    if (btnRetiro) btnRetiro.style.display = '';
+    if (btnCierre) btnCierre.style.display = '';
+    // Ocultar Configuración y Cierre de período al cajero
+    var subnavBtns = document.querySelectorAll('#subnav-finanzas .subctab');
+    subnavBtns.forEach(function(b) {
+      var t = b.textContent.trim();
+      if (t === 'Configuración' || t === 'Cierre') b.style.display = 'none';
+    });
+  }
 };
 
 // Abre un PDF guardado como Base64 en nueva pestaña
@@ -24575,12 +24814,12 @@ async function embiEjecutarAccion(tipo,datos){
     var mesTxt=d.toLocaleDateString('es-AR',{month:'long',year:'numeric'});
     mesTxt=mesTxt.charAt(0).toUpperCase()+mesTxt.slice(1);
     if(tipo==='INGRESO'){
-      await window._addDoc(window._collection(window.db,'libroCaja'),{uid:currentClientUID,fecha:datos.fecha||hoy,tipo:'ingreso',concepto:datos.concepto||'Ingreso',cuenta:datos.cuenta||'',monto:parseFloat(datos.monto)||0,detalle:datos.detalle||'',mes:mesTxt,origen:'embi',eliminado:false,creadoEn:new Date().toISOString()});
+      await window._addDoc(window._collection(window.db,'libroCaja'),{uid:currentClientUID,fecha:datos.fecha||hoy,tipo:'ingreso',concepto:datos.concepto||'Ingreso',cuenta:datos.cuenta||'',monto:parseFloat(datos.monto)||0,detalle:datos.detalle||'',mes:mesTxt,origen:'embi',eliminado:false,creadoEn:new Date().toISOString(),creadoPor:window.currentOperadorNombre||'Admin'});
       if(window.loadCajaModule)window.loadCajaModule();
       if(window.loadInicio)window.loadInicio();
       embiAddMsg('bot','Ingreso de $'+parseFloat(datos.monto).toLocaleString('es-AR')+' registrado en Finanzas.');
     }else if(tipo==='EGRESO'){
-      await window._addDoc(window._collection(window.db,'libroCaja'),{uid:currentClientUID,fecha:datos.fecha||hoy,tipo:'egreso',concepto:datos.concepto||'Egreso',cuenta:datos.cuenta||'',monto:parseFloat(datos.monto)||0,detalle:datos.detalle||'',mes:mesTxt,origen:'embi',eliminado:false,creadoEn:new Date().toISOString()});
+      await window._addDoc(window._collection(window.db,'libroCaja'),{uid:currentClientUID,fecha:datos.fecha||hoy,tipo:'egreso',concepto:datos.concepto||'Egreso',cuenta:datos.cuenta||'',monto:parseFloat(datos.monto)||0,detalle:datos.detalle||'',mes:mesTxt,origen:'embi',eliminado:false,creadoEn:new Date().toISOString(),creadoPor:window.currentOperadorNombre||'Admin'});
       if(window.loadCajaModule)window.loadCajaModule();
       if(window.loadInicio)window.loadInicio();
       embiAddMsg('bot','Egreso de $'+parseFloat(datos.monto).toLocaleString('es-AR')+' registrado en Finanzas.');
@@ -24688,7 +24927,7 @@ async function embiEjecutarAccion(tipo,datos){
       var _cbConcepto='Cobro presupuesto '+datos.cliente;
       var _cbMesStr=mesHoyARG(_cbFecha);
       await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'cobros'),{concepto:_cbConcepto,monto:_cbMonto,estado:'Cobrado',fecha:_cbFecha,saldoPendiente:0,totalAcumulado:_cbMonto,origen:'embi'});
-      await window._addDoc(window._collection(window.db,'libroCaja'),{uid:currentClientUID,fecha:_cbFecha,tipo:'ingreso',concepto:'Cobro '+datos.cliente,cuenta:datos.cuenta||'',monto:_cbMonto,origen:'embi',detalle:'Cobro presupuesto',mes:_cbMesStr,eliminado:false,creadoEn:new Date().toISOString()});
+      await window._addDoc(window._collection(window.db,'libroCaja'),{uid:currentClientUID,fecha:_cbFecha,tipo:'ingreso',concepto:'Cobro '+datos.cliente,cuenta:datos.cuenta||'',monto:_cbMonto,origen:'embi',detalle:'Cobro presupuesto',mes:_cbMesStr,eliminado:false,creadoEn:new Date().toISOString(),creadoPor:window.currentOperadorNombre||'Admin'});
       if(datos.presupuestoId)await window._updateDoc(window._doc(window.db,'clientes',currentClientUID,'presupuestos',datos.presupuestoId),{estado:'Cobrado',actualizadoEn:new Date().toISOString()});
       if(window.loadClientPresupuestos)await window.loadClientPresupuestos();
       if(window.loadClientContabilidad)await window.loadClientContabilidad();
@@ -24702,7 +24941,7 @@ async function embiEjecutarAccion(tipo,datos){
       var _ppMesStr=mesHoyARG(_ppFecha);
       var _ppProvId=datos.proveedorId||((window._proveedores||[]).find(function(p){return p.nombre===datos.proveedor;})||{}).id||'';
       if(_ppProvId)await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'proveedores',_ppProvId,'pagos'),{tipo:'pago',monto:_ppMonto,fecha:_ppFecha,medio:datos.cuenta||'',concepto:_ppConcepto,creadoEn:new Date().toISOString()});
-      await window._addDoc(window._collection(window.db,'libroCaja'),{uid:currentClientUID,fecha:_ppFecha,tipo:'egreso',concepto:_ppConcepto,cuenta:datos.cuenta||'',monto:_ppMonto,origen:'embi',detalle:'Pago proveedor: '+datos.proveedor,mes:_ppMesStr,eliminado:false,creadoEn:new Date().toISOString()});
+      await window._addDoc(window._collection(window.db,'libroCaja'),{uid:currentClientUID,fecha:_ppFecha,tipo:'egreso',concepto:_ppConcepto,cuenta:datos.cuenta||'',monto:_ppMonto,origen:'embi',detalle:'Pago proveedor: '+datos.proveedor,mes:_ppMesStr,eliminado:false,creadoEn:new Date().toISOString(),creadoPor:window.currentOperadorNombre||'Admin'});
       if(window.loadProveedores)await window.loadProveedores();
       if(window._ccProvId && _ppProvId && window._ccProvId===_ppProvId && window.abrirCuentaCorriente) await window.abrirCuentaCorriente(_ppProvId);
       if(window.loadCajaModule)window.loadCajaModule();
