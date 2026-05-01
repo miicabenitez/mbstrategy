@@ -1286,6 +1286,10 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
       </div>
     </nav>
     <div class="sb-footer">
+      <button id="sb-equipo-btn" class="sb-footer-btn" style="display:none;" onclick="navigateToEquipo()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><path d="M16 3.13a4 4 0 010 7.75"/><path d="M21 21v-2a4 4 0 00-3-3.87"/></svg>
+        <div class="sb-footer-label">Equipo</div>
+      </button>
       <button class="sb-footer-btn" onclick="navigateToMiCuenta()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg>
         <div>
@@ -4511,6 +4515,62 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         <div style="display:flex;flex-direction:column;gap:10px;margin-top:6px;margin-bottom:20px;">
           <button class="bp" onclick="guardarMiCuentaPage();guardarDatosFiscalesPage();" style="width:100%;">Guardar cambios</button>
           <button onclick="doLogout()" style="width:100%;background:#fff;border:.5px solid #C4786A;color:#C4786A;border-radius:10px;padding:11px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;">Cerrar sesión</button>
+        </div>
+
+      </div>
+
+      <!-- EQUIPO (dueño del negocio gestiona su equipo) -->
+      <div id="ct-equipo" style="display:none;">
+
+        <button onclick="showClientMod('inicio',null)" style="display:inline-flex;align-items:center;gap:6px;background:none;border:none;font-size:13px;color:var(--sage-dark);font-family:'DM Sans',sans-serif;cursor:pointer;padding:0;margin-bottom:14px;font-weight:500;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          Volver
+        </button>
+
+        <div style="background:linear-gradient(135deg,#4a5e4d,#3a4e3d,#5a6e5d);border-radius:20px;padding:22px 22px 18px;margin:0 0 18px;color:#fff;overflow:hidden;position:relative;">
+          <div style="position:absolute;right:30px;bottom:-20px;width:70px;height:70px;border-radius:50%;background:rgba(255,255,255,.04);"></div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;line-height:1.1;margin-bottom:14px;">Equipo</div>
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">
+            <div style="background:rgba(255,255,255,.08);border:.5px solid rgba(255,255,255,.12);border-radius:12px;padding:9px 10px;">
+              <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">Total</div>
+              <div id="equipo-kpi-total" style="font-size:18px;font-weight:600;line-height:1.1;">—</div>
+            </div>
+            <div style="background:rgba(255,255,255,.08);border:.5px solid rgba(255,255,255,.12);border-radius:12px;padding:9px 10px;">
+              <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">Activos</div>
+              <div id="equipo-kpi-activos" style="font-size:18px;font-weight:600;line-height:1.1;">—</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;margin-bottom:14px;">
+          <button onclick="equipoNuevoUsuarioShow()" style="background:#4a5e4d;color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;">+ Nuevo usuario</button>
+        </div>
+
+        <div id="equipo-contenido"><div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Cargando...</div></div>
+
+        <!-- MODAL nuevo usuario (equipo) -->
+        <div id="equipo-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;">
+          <div style="background:#fff;border-radius:14px;padding:28px 24px;width:340px;box-shadow:0 8px 32px rgba(0,0,0,.18);">
+            <div style="font-weight:700;font-size:15px;margin-bottom:18px;">Nuevo usuario</div>
+            <label style="font-size:12px;color:#666;display:block;margin-bottom:4px;">Nombre completo</label>
+            <input id="equipo-nombre" type="text" placeholder="Ej: María González" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;margin-bottom:12px;">
+            <label style="font-size:12px;color:#666;display:block;margin-bottom:4px;">Usuario (sin espacios ni @)</label>
+            <input id="equipo-usuario" type="text" placeholder="Ej: maria" oninput="equipoUsuarioValidar(this)" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;margin-bottom:2px;">
+            <div id="equipo-usuario-hint" style="font-size:11px;color:#888;margin-bottom:12px;">Se usará para iniciar sesión</div>
+            <label style="font-size:12px;color:#666;display:block;margin-bottom:4px;">Contraseña</label>
+            <input id="equipo-password" type="text" placeholder="Mínimo 6 caracteres" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;margin-bottom:12px;">
+            <label style="font-size:12px;color:#666;display:block;margin-bottom:4px;">Rol</label>
+            <select id="equipo-rol" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;margin-bottom:20px;font-family:'DM Sans',sans-serif;">
+              <option value="cajero">Cajero</option>
+              <option value="compras">Compras</option>
+              <option value="comercial">Comercial</option>
+            </select>
+            <div id="equipo-modal-error" style="display:none;color:#e53e3e;font-size:12px;margin-bottom:12px;"></div>
+            <div style="display:flex;gap:8px;justify-content:flex-end;">
+              <button onclick="equipoNuevoUsuarioCerrar()" style="padding:8px 18px;border-radius:8px;border:1px solid #ddd;background:#fff;font-size:13px;cursor:pointer;">Cancelar</button>
+              <button id="equipo-modal-btn" onclick="equipoNuevoUsuarioGuardar()" style="padding:8px 18px;border-radius:8px;border:none;background:#4a5e4d;color:#fff;font-size:13px;font-weight:600;cursor:pointer;">Crear usuario</button>
+            </div>
+          </div>
         </div>
 
       </div>
@@ -23752,6 +23812,164 @@ window._aplicarLocksPlanBase = function(clientData) {
   if(btnCfgCierre) btnCfgCierre.innerHTML = esBase ? _lockSvg + 'Cierre de período' : 'Cierre de período';
 };
 
+// ─── EQUIPO (cliente): gestión de operadores desde el negocio ─
+window.navigateToEquipo = function() {
+  document.querySelectorAll('[id^="ct-"]').forEach(el => el.style.display = 'none');
+  const el = document.getElementById('ct-equipo');
+  if(el) el.style.display = 'block';
+  document.querySelectorAll('#cNav .nt').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.mod-subnav').forEach(el => { el.style.display = 'none'; el.classList.remove('visible'); });
+  loadEquipoModule();
+};
+
+window.loadEquipoModule = async function() {
+  const cont = document.getElementById('equipo-contenido');
+  if(!cont) return;
+  cont.innerHTML = '<div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Cargando...</div>';
+  try {
+    const snap = await getDocs(collection(db,'clientes',currentClientUID,'operadores'));
+    const ops = [];
+    snap.forEach(d => ops.push({id:d.id,...d.data()}));
+    const total = ops.length;
+    const activos = ops.filter(o => o.activo !== false).length;
+    const kEl = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
+    kEl('equipo-kpi-total', total);
+    kEl('equipo-kpi-activos', activos);
+    if(!ops.length) {
+      cont.innerHTML = `<div style="background:#fff;border-radius:16px;padding:40px 24px;text-align:center;">
+  <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:#1a1a1a;margin-bottom:8px;line-height:1.2;">Tu equipo,<br>en un lugar</div>
+  <div style="font-size:13px;color:#6b7280;line-height:1.65;margin-bottom:28px;max-width:360px;margin-left:auto;margin-right:auto;">Dale acceso a tu negocio a cada persona con el nivel justo. Sin compartir tu contraseña.</div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px;text-align:left;">
+    <div style="background:#e8ede8;border-radius:14px;padding:18px 16px;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:36px;color:#4a5e4d;line-height:1;margin-bottom:8px;">01</div>
+      <div style="font-size:13px;font-weight:500;color:#2d4a30;margin-bottom:4px;">Creá un cajero</div>
+      <div style="font-size:11px;color:#5a7a5d;line-height:1.5;">Dale acceso solo a la caja de tu negocio</div>
+    </div>
+    <div style="background:#f5ebe8;border-radius:14px;padding:18px 16px;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:36px;color:#b09088;line-height:1;margin-bottom:8px;">02</div>
+      <div style="font-size:13px;font-weight:500;color:#7a5850;margin-bottom:4px;">Asignale un rol</div>
+      <div style="font-size:11px;color:#906860;line-height:1.5;">Cajero, Compras o Comercial según su función</div>
+    </div>
+    <div style="background:#4a5e4d;border-radius:14px;padding:18px 16px;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:36px;color:#e8c4b8;line-height:1;margin-bottom:8px;">03</div>
+      <div style="font-size:13px;font-weight:500;color:#fff;margin-bottom:4px;">Controlá el acceso</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.65);line-height:1.5;">Desactivalo cuando quieras sin perder el historial</div>
+    </div>
+  </div>
+  <button onclick="equipoNuevoUsuarioShow()" style="background:#4a5e4d;color:#fff;border:none;border-radius:12px;padding:12px 24px;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;font-weight:500;">+ Crear primer usuario</button>
+</div>`;
+      return;
+    }
+    const ROL_LABEL = {cajero:'Cajero',compras:'Compras',comercial:'Comercial',admin:'Admin'};
+    const filas = ops.map(o => {
+      const activo = o.activo !== false;
+      const badge = activo
+        ? '<span style="background:#dcfce7;color:#15803d;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600;">Activo</span>'
+        : '<span style="background:#fee2e2;color:#dc2626;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600;">Inactivo</span>';
+      const btnDesact = activo
+        ? `<button onclick="equipoDesactivar('${o.id}','${(o.usuario||'').replace(/'/g,"\\'")}','${(o.uid||'').replace(/'/g,"\\'")}',this)" style="padding:5px 12px;border-radius:6px;border:1px solid #fca5a5;background:#fff;color:#dc2626;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;">Desactivar</button>`
+        : '<span style="color:var(--text-l);font-size:11px;">—</span>';
+      return `<tr style="border-bottom:1px solid var(--cream-d);">
+        <td style="padding:10px 8px;font-size:13px;">${o.nombre||'—'}</td>
+        <td style="padding:10px 8px;font-size:12px;color:var(--text-l);">${o.usuario||'—'}</td>
+        <td style="padding:10px 8px;font-size:12px;">${ROL_LABEL[o.rol]||o.rol||'—'}</td>
+        <td style="padding:10px 8px;">${badge}</td>
+        <td style="padding:10px 8px;">${btnDesact}</td>
+      </tr>`;
+    }).join('');
+    cont.innerHTML = `<div class="card"><div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;">
+        <thead><tr style="border-bottom:2px solid var(--cream-d);">
+          <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-l);font-weight:600;">Nombre</th>
+          <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-l);font-weight:600;">Usuario</th>
+          <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-l);font-weight:600;">Rol</th>
+          <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-l);font-weight:600;">Estado</th>
+          <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-l);font-weight:600;">Acciones</th>
+        </tr></thead>
+        <tbody>${filas}</tbody>
+      </table></div></div>`;
+  } catch(e) {
+    cont.innerHTML = '<div style="color:#dc2626;padding:20px;font-size:13px;">Error: '+(e?.message||e)+'</div>';
+  }
+};
+
+window.equipoNuevoUsuarioShow = function() {
+  var ov = document.getElementById('equipo-modal-overlay');
+  if(!ov) return;
+  ['equipo-nombre','equipo-usuario','equipo-password'].forEach(id => { var el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('equipo-rol').value = 'cajero';
+  var hint = document.getElementById('equipo-usuario-hint');
+  if(hint) { hint.textContent='Se usará para iniciar sesión'; hint.style.color='#888'; }
+  var errEl = document.getElementById('equipo-modal-error');
+  if(errEl) errEl.style.display='none';
+  var btn = document.getElementById('equipo-modal-btn');
+  if(btn) { btn.disabled=false; btn.textContent='Crear usuario'; }
+  ov.style.display = 'flex';
+};
+window.equipoNuevoUsuarioCerrar = function() {
+  var ov = document.getElementById('equipo-modal-overlay');
+  if(ov) ov.style.display = 'none';
+};
+window.equipoUsuarioValidar = function(input) {
+  var v = input.value.replace(/\s|@/g,'');
+  input.value = v;
+  var hint = document.getElementById('equipo-usuario-hint');
+  if(!hint) return;
+  if(!v) { hint.textContent='Se usará para iniciar sesión'; hint.style.color='#888'; return; }
+  hint.textContent = v+'@'+currentClientUID+'.op.mbstrategy.internal';
+  hint.style.color = '#4a5e4d';
+};
+window.equipoNuevoUsuarioGuardar = async function() {
+  var nombre   = document.getElementById('equipo-nombre').value.trim();
+  var usuario  = document.getElementById('equipo-usuario').value.trim();
+  var password = document.getElementById('equipo-password').value;
+  var rol      = document.getElementById('equipo-rol').value;
+  var errEl    = document.getElementById('equipo-modal-error');
+  var btn      = document.getElementById('equipo-modal-btn');
+  errEl.style.display = 'none';
+  if(!nombre||!usuario||!password||!rol) { errEl.textContent='Completá todos los campos.'; errEl.style.display='block'; return; }
+  if(password.length < 6) { errEl.textContent='La contraseña debe tener al menos 6 caracteres.'; errEl.style.display='block'; return; }
+  if(/\s|@/.test(usuario)) { errEl.textContent='El usuario no puede tener espacios ni @.'; errEl.style.display='block'; return; }
+  btn.disabled=true; btn.textContent='Creando...';
+  try {
+    const idToken = await currentUser.getIdToken(true);
+    const res = await fetch('/.netlify/functions/create-operator', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+idToken,'X-Cliente-UID':currentClientUID},
+      body: JSON.stringify({accion:'crear', nombre, usuario, password, rol, clienteUID:currentClientUID})
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error || 'Error del servidor');
+    equipoNuevoUsuarioCerrar();
+    showToast('Usuario '+nombre+' creado','success');
+    loadEquipoModule();
+  } catch(e) {
+    errEl.textContent = e.message || 'Error al crear el usuario.';
+    errEl.style.display = 'block';
+    btn.disabled=false; btn.textContent='Crear usuario';
+  }
+};
+window.equipoDesactivar = async function(docId, usuarioNombre, uid, btnEl) {
+  if(!confirm('¿Desactivar a "'+usuarioNombre+'"? Ya no podrá iniciar sesión.')) return;
+  if(btnEl) { btnEl.disabled=true; btnEl.textContent='...'; }
+  try {
+    const idToken = await currentUser.getIdToken(true);
+    const res = await fetch('/.netlify/functions/create-operator', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+idToken,'X-Cliente-UID':currentClientUID},
+      body: JSON.stringify({accion:'desactivar', docId, usuario:usuarioNombre, uid})
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error || 'Error del servidor');
+    showToast('Usuario desactivado','success');
+    loadEquipoModule();
+  } catch(e) {
+    showToast('Error: '+(e?.message||e),'error');
+    if(btnEl) { btnEl.disabled=false; btnEl.textContent='Desactivar'; }
+  }
+};
+
 // ─── ADMIN: Panel de usuarios ────────────────────────────────
 window.loadAdminUsuarios = async function() {
   const cont = document.getElementById('usr-tabla-container');
@@ -24080,6 +24298,11 @@ window._aplicarRestriccionesRol = function() {
     var el = document.getElementById(id);
     if (el) el.style.display = 'none';
   });
+  if (rol === 'admin') {
+    // Mostrar botón Equipo solo para el dueño del negocio
+    var btnEquipo = document.getElementById('sb-equipo-btn');
+    if (btnEquipo) btnEquipo.style.display = '';
+  }
   if (rol === 'cajero') {
     // Mostrar botones de cajero en subnav-finanzas
     var btnRetiro = document.getElementById('btn-cajero-retiro');
