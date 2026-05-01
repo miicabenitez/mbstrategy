@@ -9899,7 +9899,33 @@ async function loadCajaModule() {
     const movsSnap = await getDocs(query(collection(db,'libroCaja'), where('uid','==',uid)));
     let todosMovs = [];
     movsSnap.forEach(d => { const data = d.data(); if(!data.eliminado) todosMovs.push({id:d.id,...data}); });
-    // Cajero: tabla muestra solo movimientos del turno; chips/saldo usan histórico completo
+    // Cajero: registrar apertura de turno una sola vez (saldo Efectivo al inicio del turno)
+    if(window.currentRol === 'cajero' && window.turnoInicio && !window.turnoAperturaRegistrada) {
+      window.turnoAperturaRegistrada = true;
+      try {
+        let _saldoEfect = 0;
+        todosMovs.forEach(function(m) {
+          if(m.origen === 'apertura_turno') return;
+          if(m.tipo==='ingreso' && m.cuenta==='Efectivo') _saldoEfect += parseFloat(m.monto)||0;
+          else if(m.tipo==='egreso' && m.cuenta==='Efectivo') _saldoEfect -= parseFloat(m.monto)||0;
+          else if(m.tipo==='transfer') {
+            if(m.cuentaDesde==='Efectivo') _saldoEfect -= parseFloat(m.monto)||0;
+            if(m.cuentaHacia==='Efectivo') _saldoEfect += parseFloat(m.monto)||0;
+          }
+        });
+        const _hoy = fechaHoyARG();
+        const _aperturaCreadoEn = new Date().toISOString();
+        const _aperturaDoc = {
+          tipo:'ingreso', concepto:'Apertura de turno', cuenta:'Efectivo',
+          monto: Math.round(Math.max(0,_saldoEfect)*100)/100, origen:'apertura_turno',
+          creadoPor: window.currentOperadorNombre||'Cajero',
+          uid, fecha:_hoy, mes:mesHoyARG(_hoy), eliminado:false, creadoEn:_aperturaCreadoEn
+        };
+        const _aperturaRef = await addDoc(collection(db,'libroCaja'), _aperturaDoc);
+        todosMovs.push({id:_aperturaRef.id, ..._aperturaDoc});
+      } catch(_ae) { console.log('apertura turno error:', _ae); }
+    }
+    // Cajero: tabla/chips usan movimientos del turno (incluye apertura); admin usa histórico completo
     let movsVista = todosMovs;
     if(window.currentRol === 'cajero' && window.turnoInicio) {
       movsVista = todosMovs.filter(m => (m.creadoEn||'') >= window.turnoInicio);
@@ -9910,7 +9936,7 @@ async function loadCajaModule() {
     window._cajaMovimientos = movs;
     // 4. Renderizar
     renderCajaKPIs(movs);
-    renderCajaChips(cuentasUnicas, todosMovs);
+    renderCajaChips(cuentasUnicas, movsVista);
     const facturasSnap = await getDocs(collection(db, 'clientes', uid, 'facturas'));
     const facturadosMap = new Map();
     facturasSnap.forEach(d => {
