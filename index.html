@@ -16698,7 +16698,7 @@ window.openMcCobroModal = async function(clienteId, presupId, concepto, monto) {
   document.getElementById('mcc-cobro-concepto').value    = concepto  || '';
   document.getElementById('mcc-cobro-monto').value       = monto     || '';
   document.getElementById('mcc-cobro-notas').value       = '';
-  document.getElementById('mcc-cobro-fecha').value       = new Date().toISOString().split('T')[0];
+  document.getElementById('mcc-cobro-fecha').value       = fechaHoyARG();
   // Cargar cuentas activas
   const cuentaSel = document.getElementById('mcc-cobro-cuenta');
   if(cuentaSel && currentClientUID) {
@@ -16891,7 +16891,7 @@ window.abrirModalCobroLibre = function(clienteId, clienteNombre) {
   document.getElementById('mcl-cobro-cliente-nombre').value = clienteNombre || '';
   document.getElementById('mcl-cobro-monto').value = '';
   document.getElementById('mcl-cobro-concepto').value = '';
-  document.getElementById('mcl-cobro-fecha').value = new Date().toISOString().split('T')[0];
+  document.getElementById('mcl-cobro-fecha').value = fechaHoyARG();
   document.getElementById('mcl-cobro-forma').value = 'Transferencia';
   // Checkbox vincular a presupuesto
   const chk = document.getElementById('mcl-vincular-check');
@@ -20003,7 +20003,7 @@ window.abrirNuevaOCDirecta = async function() {
   }
   // Set today's date
   const fechaEl = document.getElementById('noc-fecha');
-  if(fechaEl) fechaEl.value = new Date().toISOString().split('T')[0];
+  if(fechaEl) fechaEl.value = fechaHoyARG();
   // Clear fields
   const notasEl = document.getElementById('noc-notas');
   if(notasEl) notasEl.value = '';
@@ -23543,7 +23543,7 @@ window.openModal = function(id) {
       sel.innerHTML='<option value="">Sin OC asociada</option>'+ocsDelProv.map(o=>`<option value="${o.id}">OC-${String(o.numero||0).padStart(3,'0')} — $${(parseFloat(o.total)||0).toLocaleString('es-AR')}</option>`).join('');
     }
     const fechaEl=document.getElementById('fac-fecha');
-    if(fechaEl&&!fechaEl.value) fechaEl.value=new Date().toISOString().split('T')[0];
+    if(fechaEl&&!fechaEl.value) fechaEl.value=fechaHoyARG();
   }
   if(id === 'newProveedorModal') { renderCatSelect(); loadCatsProveedor(); document.getElementById('nueva-cat-form').style.display='none'; const t=document.querySelector('#newProveedorModal .mt'); if(t) t.textContent='Nuevo proveedor'; }
   if(id === 'newNecesidadModal') {
@@ -23572,7 +23572,7 @@ window.openModal = function(id) {
     if (sel && _mcClientes.length > 0) {
       sel.innerHTML = _mcClientes.map(c => `<option value="${c.id}">${sanitize(c.nombre)}</option>`).join('');
     }
-    document.getElementById('mcp-presup-fecha').value = new Date().toISOString().split('T')[0];
+    document.getElementById('mcp-presup-fecha').value = fechaHoyARG();
   }
 };
 window.closeModal = function(id) { document.getElementById(id).classList.remove('open'); };
