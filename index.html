@@ -4556,8 +4556,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
             <label style="font-size:12px;color:#666;display:block;margin-bottom:4px;">Nombre completo</label>
             <input id="equipo-nombre" type="text" placeholder="Ej: María González" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;margin-bottom:12px;">
             <label style="font-size:12px;color:#666;display:block;margin-bottom:4px;">Usuario (sin espacios ni @)</label>
-            <input id="equipo-usuario" type="text" placeholder="Ej: maria" oninput="equipoUsuarioValidar(this)" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;margin-bottom:2px;">
-            <div id="equipo-usuario-hint" style="font-size:11px;color:#888;margin-bottom:12px;">Se usará para iniciar sesión</div>
+            <input id="equipo-usuario" type="text" placeholder="Ej: maria" oninput="equipoUsuarioValidar(this)" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;margin-bottom:12px;">
             <label style="font-size:12px;color:#666;display:block;margin-bottom:4px;">Contraseña</label>
             <input id="equipo-password" type="text" placeholder="Mínimo 6 caracteres" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;margin-bottom:12px;">
             <label style="font-size:12px;color:#666;display:block;margin-bottom:4px;">Rol</label>
@@ -10281,7 +10280,7 @@ window.emitirFacturaCaja = async function() {
   btn.textContent = 'Emitiendo...';
   btn.disabled = true;
   try {
-    const idToken = await currentUser.getIdToken(true);
+    const idToken = await window._auth?.currentUser?.getIdToken(true);
     const res = await fetch('/.netlify/functions/afip', {
       method: 'POST',
       headers: {
@@ -11884,7 +11883,7 @@ window.mfEnviarEmail = async function() {
     const tipo = tipoLabels[f.tipoComprobante||11]||'Factura';
     const nro = ('0000'+(f.puntoVenta||2)).slice(-4)+'-'+('00000000'+(f.nroComprobante||0)).slice(-8);
     const monto = '$'+Number(f.importeTotal||0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
-    const idToken = await currentUser.getIdToken(true);
+    const idToken = await window._auth?.currentUser?.getIdToken(true);
     const res = await fetch('/.netlify/functions/send-factura-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + idToken },
@@ -11944,7 +11943,7 @@ window.mfEmitirNcNd = async function() {
   const btn = document.getElementById('mf-ncnd-btn-emitir');
   btn.textContent = 'Emitiendo...'; btn.disabled = true;
   try {
-    const idToken = await currentUser.getIdToken(true);
+    const idToken = await window._auth?.currentUser?.getIdToken(true);
     const res = await fetch('/.netlify/functions/afip', {
       method: 'POST',
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+idToken,'X-Cliente-UID':window.currentClientUID||''},
@@ -12418,7 +12417,7 @@ window.abrirNuevaFacturaLibre = function() {
     const tipoLabel = {1:'Factura A', 6:'Factura B', 11:'Factura C'};
     (async () => {
       try {
-        const idToken = await currentUser.getIdToken(true);
+        const idToken = await window._auth?.currentUser?.getIdToken(true);
         const res = await fetch('/.netlify/functions/afip', {
           method: 'POST',
           headers: {'Content-Type':'application/json','Authorization':'Bearer '+idToken,'X-Cliente-UID':window.currentClientUID||''},
@@ -12638,7 +12637,7 @@ window.emitirFacturaLibre = async function() {
   btn.textContent = 'Emitiendo...';
   btn.disabled = true;
   try {
-    const idToken = await currentUser.getIdToken(true);
+    const idToken = await window._auth?.currentUser?.getIdToken(true);
     const res = await fetch('/.netlify/functions/afip', {
       method: 'POST',
       headers: {'Content-Type':'application/json','Authorization':'Bearer '+idToken,'X-Cliente-UID':window.currentClientUID||''},
@@ -19316,7 +19315,7 @@ window.accederComoCliente = async function() {
     const clienteData = {id:clienteDoc.id,...clienteDoc.data()};
 
     // Obtener token del admin logueado
-    const idToken = await currentUser.getIdToken(true);
+    const idToken = await window._auth?.currentUser?.getIdToken(true);
 
     // Llamar a la Netlify Function con el token de Firebase
     const res = await fetch('/.netlify/functions/impersonate', {
@@ -23901,8 +23900,6 @@ window.equipoNuevoUsuarioShow = function() {
   if(!ov) return;
   ['equipo-nombre','equipo-usuario','equipo-password'].forEach(id => { var el=document.getElementById(id); if(el) el.value=''; });
   document.getElementById('equipo-rol').value = 'cajero';
-  var hint = document.getElementById('equipo-usuario-hint');
-  if(hint) { hint.textContent='Se usará para iniciar sesión'; hint.style.color='#888'; }
   var errEl = document.getElementById('equipo-modal-error');
   if(errEl) errEl.style.display='none';
   var btn = document.getElementById('equipo-modal-btn');
@@ -23914,13 +23911,7 @@ window.equipoNuevoUsuarioCerrar = function() {
   if(ov) ov.style.display = 'none';
 };
 window.equipoUsuarioValidar = function(input) {
-  var v = input.value.replace(/\s|@/g,'');
-  input.value = v;
-  var hint = document.getElementById('equipo-usuario-hint');
-  if(!hint) return;
-  if(!v) { hint.textContent='Se usará para iniciar sesión'; hint.style.color='#888'; return; }
-  hint.textContent = v+'@'+currentClientUID+'.op.mbstrategy.internal';
-  hint.style.color = '#4a5e4d';
+  input.value = input.value.replace(/\s|@/g,'');
 };
 window.equipoNuevoUsuarioGuardar = async function() {
   var nombre   = document.getElementById('equipo-nombre').value.trim();
@@ -23935,7 +23926,7 @@ window.equipoNuevoUsuarioGuardar = async function() {
   if(/\s|@/.test(usuario)) { errEl.textContent='El usuario no puede tener espacios ni @.'; errEl.style.display='block'; return; }
   btn.disabled=true; btn.textContent='Creando...';
   try {
-    const idToken = await currentUser.getIdToken(true);
+    const idToken = await window._auth?.currentUser?.getIdToken(true);
     const res = await fetch('/.netlify/functions/create-operator', {
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+idToken,'X-Cliente-UID':currentClientUID},
@@ -23956,7 +23947,7 @@ window.equipoDesactivar = async function(docId, usuarioNombre, uid, btnEl) {
   if(!confirm('¿Desactivar a "'+usuarioNombre+'"? Ya no podrá iniciar sesión.')) return;
   if(btnEl) { btnEl.disabled=true; btnEl.textContent='...'; }
   try {
-    const idToken = await currentUser.getIdToken(true);
+    const idToken = await window._auth?.currentUser?.getIdToken(true);
     const res = await fetch('/.netlify/functions/create-operator', {
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+idToken,'X-Cliente-UID':currentClientUID},
@@ -24066,7 +24057,7 @@ window.adminNuevoUsuarioGuardar = async function() {
   if(/\s|@/.test(usuario)) { errEl.textContent='El usuario no puede tener espacios ni @.'; errEl.style.display='block'; return; }
   btn.disabled=true; btn.textContent='Creando...';
   try {
-    const idToken = await currentUser.getIdToken(true);
+    const idToken = await window._auth?.currentUser?.getIdToken(true);
     const res = await fetch('/.netlify/functions/create-operator', {
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+idToken,'X-Cliente-UID':currentClientUID},
@@ -24088,7 +24079,7 @@ window.adminUsuarioDesactivar = async function(docId, usuarioNombre, uid, btnEl)
   if(!confirm('¿Desactivar al usuario "'+usuarioNombre+'"? Ya no podrá iniciar sesión.')) return;
   if(btnEl) { btnEl.disabled=true; btnEl.textContent='...'; }
   try {
-    const idToken = await currentUser.getIdToken(true);
+    const idToken = await window._auth?.currentUser?.getIdToken(true);
     const res = await fetch('/.netlify/functions/create-operator', {
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+idToken,'X-Cliente-UID':currentClientUID},
