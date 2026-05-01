@@ -5962,7 +5962,7 @@ window.doLogin = async function() {
     if (inputVal.includes('@')) {
       await signInWithEmailAndPassword(auth, inputVal, p);
     } else {
-      const _lookupSnap = await getDoc(doc(db, 'operadoresLookup', inputVal));
+      const _lookupSnap = await getDoc(doc(db, 'operadoresLookup', inputVal.toLowerCase()));
       if (!_lookupSnap.exists()) throw new Error('Usuario no encontrado');
       const _emailSintetico = _lookupSnap.data().emailSintetico;
       await signInWithEmailAndPassword(auth, _emailSintetico, p);

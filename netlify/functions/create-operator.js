@@ -56,10 +56,11 @@ exports.handler = async function(event) {
 
     // ── ACCIÓN: crear operador ────────────────────────────────
     if (accion === 'crear') {
-      const { nombre, usuario, password, rol } = body;
-      if (!nombre || !usuario || !password || !rol) {
+      const { nombre, usuario: usuarioRaw, password, rol } = body;
+      if (!nombre || !usuarioRaw || !password || !rol) {
         return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: 'Faltan campos: nombre, usuario, password, rol' }) };
       }
+      const usuario = usuarioRaw.toLowerCase().trim();
       const ROLES_VALIDOS = ['cajero', 'compras', 'comercial', 'vendedor'];
       if (!ROLES_VALIDOS.includes(rol)) {
         return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: `Rol inválido. Debe ser uno de: ${ROLES_VALIDOS.join(', ')}` }) };
@@ -109,7 +110,8 @@ exports.handler = async function(event) {
 
     // ── ACCIÓN: desactivar operador ───────────────────────────
     if (accion === 'desactivar') {
-      const { docId, usuario, uid: opUid } = body;
+      const { docId, usuario: usuarioRawD, uid: opUid } = body;
+      const usuario = usuarioRawD ? usuarioRawD.toLowerCase().trim() : '';
       if (!docId) return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: 'Falta docId' }) };
 
       // Marcar como inactivo en Firestore
