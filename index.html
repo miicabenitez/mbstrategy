@@ -2070,8 +2070,6 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         <span id="inicio-dias-hoy" style="display:none;"></span>
         <span id="inicio-dias-cierre" style="display:none;"></span>
 
-        <div id="inicio-alertas-sistema" style="display:none;margin-bottom:14px;"></div>
-
         <!-- Banner principal -->
         <div class="dash-card" style="background:linear-gradient(135deg,#2d3d30 0%,#3d5240 50%,#4a5e4d 100%);border-radius:16px;padding:20px 22px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;">
           <div style="display:flex;align-items:center;gap:14px;">
@@ -2150,6 +2148,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         <!-- Alertas -->
         <div class="dash-card" style="background:var(--white);border:.5px solid var(--cream-d);border-radius:13px;padding:18px;margin-bottom:14px;">
           <div style="font-size:13px;font-weight:500;margin-bottom:12px;">Alertas</div>
+          <div id="inicio-alertas-sistema" style="display:none;"></div>
           <div id="inicio-stock-critico" style="display:none;margin-bottom:8px;"></div>
           <div id="inicio-alertas">
             <div style="display:flex;align-items:center;gap:10px;padding:8px 0;font-size:13px;color:var(--text-l);">Cargando...</div>
@@ -13649,10 +13648,11 @@ async function loadInicio() {
       _aDocs.sort((a, b) => (b.fecha?.toDate?.()?.getTime() || 0) - (a.fecha?.toDate?.()?.getTime() || 0));
       if (_aDocs.length > 0) {
         _alertasSistemaEl.innerHTML = _aDocs.map(a => {
-          const _bc = a.tipo === 'success' ? '#4a5e4d' : '#5a7a9a';
-          return '<div id="alerta-sistema-'+a.id+'" style="border-left:3px solid '+_bc+';background:#fff;border-radius:0 8px 8px 0;padding:12px 14px;margin-bottom:10px;display:flex;align-items:flex-start;gap:10px;box-shadow:0 1px 3px rgba(0,0,0,.06);">' +
-            '<div style="flex:1;font-family:\'DM Sans\',sans-serif;font-size:14px;color:#2d3d30;line-height:1.5;">'+a.mensaje+'</div>' +
-            '<button onclick="marcarAlertaLeida(\''+a.id+'\')" style="background:none;border:none;cursor:pointer;color:#9ca3af;font-size:18px;line-height:1;padding:0 0 0 8px;flex-shrink:0;">&#215;</button>' +
+          return '<div id="alerta-sistema-'+a.id+'" style="display:flex;align-items:flex-start;gap:0;border-radius:10px;overflow:hidden;background:#f5eeec;border-left:4px solid #b09088;margin-bottom:8px;">' +
+            '<div style="padding:12px 12px 12px 14px;flex:1;min-width:0;">' +
+              '<div style="font-family:\'DM Sans\',sans-serif;font-size:13px;color:var(--text);line-height:1.5;">'+a.mensaje+'</div>' +
+            '</div>' +
+            '<button onclick="marcarAlertaLeida(\''+a.id+'\')" style="background:none;border:none;cursor:pointer;color:#9ca3af;font-size:18px;line-height:1;padding:12px 12px 12px 0;flex-shrink:0;">&#215;</button>' +
           '</div>';
         }).join('');
         _alertasSistemaEl.style.display = 'block';
@@ -13782,9 +13782,11 @@ async function loadInicio() {
       if (_venc.length > 0 && _cbEl) {
         const _cbDiv = document.createElement('div');
         _cbDiv.id = 'alerta-cobranza-venc';
-        _cbDiv.style.cssText = 'border-left:3px solid #b09088;background:#fff;border-radius:0 8px 8px 0;padding:12px 14px;margin-bottom:10px;display:flex;align-items:center;gap:10px;box-shadow:0 1px 3px rgba(0,0,0,.06);';
-        _cbDiv.innerHTML = '<div style="flex:1;font-size:13px;color:#2d3d30;line-height:1.5;">Tenés <strong>'+_venc.length+'</strong> presupuesto'+(_venc.length!==1?'s':'')+' aprobado'+(_venc.length!==1?'s':'')+' sin cobrar hace más de 7 días.</div>'+
-          '<button onclick="sidebarNav(\'comercial\',\'cobranzas\')" style="font-size:12px;padding:5px 12px;border-radius:20px;border:.5px solid #b09088;background:rgba(176,144,136,.1);color:#7a5a52;cursor:pointer;font-family:\'DM Sans\',sans-serif;white-space:nowrap;">Ver Cobranzas</button>';
+        _cbDiv.style.cssText = 'display:flex;align-items:flex-start;gap:0;border-radius:10px;overflow:hidden;background:#f5eeec;border-left:4px solid #b09088;margin-bottom:8px;';
+        _cbDiv.innerHTML = '<div style="padding:12px 12px 12px 14px;flex:1;min-width:0;">' +
+          '<div style="font-size:13px;color:var(--text);line-height:1.5;margin-bottom:8px;">Tenés <strong>'+_venc.length+'</strong> presupuesto'+(_venc.length!==1?'s':'')+' aprobado'+(_venc.length!==1?'s':'')+' sin cobrar hace más de 7 días.</div>' +
+          '<button onclick="sidebarNav(\'comercial\',\'cobranzas\')" style="font-size:12px;padding:6px 14px;border-radius:20px;border:none;background:linear-gradient(135deg,#9a7870 0%,#b09088 45%,#ccb0a8 65%,#b09088 100%);color:#fff;cursor:pointer;font-family:\'DM Sans\',sans-serif;white-space:nowrap;">Ver Cobranzas</button>' +
+          '</div>';
         _cbEl.appendChild(_cbDiv);
         _cbEl.style.display = 'block';
       }
