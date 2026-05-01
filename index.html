@@ -11192,7 +11192,7 @@ async function _cierreEjecutarCierre(movimientos, provPagos, retiroPagos) {
   doc_.cerradoEn = new Date().toISOString();
   try {
     const cierreRef = await addDoc(collection(db,'cierres'), doc_);
-    const fecha = document.getElementById('cierre-fecha-fin')?.value || new Date().toISOString().split('T')[0];
+    const fecha = document.getElementById('cierre-fecha-fin')?.value || new Date().toLocaleDateString('es-AR',{timeZone:'America/Argentina/Buenos_Aires'}).split('/').reverse().map(p=>p.padStart(2,'0')).join('-');
     const _mD11=new Date(fecha+'T12:00:00');const _mn11=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];const mes=_mn11[_mD11.getMonth()].replace(/^\w/,c=>c.toUpperCase())+' de '+_mD11.getFullYear();
     const creadoEn = new Date().toISOString();
     // Guardar movimientos en libroCaja con metadata completa
@@ -13034,7 +13034,7 @@ window.ccfgCuentaGuardar = async function() {
       });
     // Si hay saldo inicial, crear movimiento apertura en libroCaja
     if(saldo > 0) {
-      const hoy = new Date().toISOString().split('T')[0];
+      const hoy = new Date().toLocaleDateString('es-AR',{timeZone:'America/Argentina/Buenos_Aires'}).split('/').reverse().map(p=>p.padStart(2,'0')).join('-');
       const _mD13=new Date(hoy+'T12:00:00');const _mn13=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];const mes=_mn13[_mD13.getMonth()].replace(/^\w/,c=>c.toUpperCase())+' de '+_mD13.getFullYear();
       await addDoc(collection(db,'libroCaja'), {
         uid: currentClientUID,
@@ -13509,7 +13509,7 @@ window.vrcGuardar = async function() {
     total += sub;
     return {nombre:item.producto.nombre, qty:item.qty, precioUnitario:precio, subtotal:sub};
   });
-  const hoy = new Date().toISOString().split('T')[0];
+  const hoy = new Date().toLocaleDateString('es-AR',{timeZone:'America/Argentina/Buenos_Aires'}).split('/').reverse().map(p=>p.padStart(2,'0')).join('-');
   const _mD=new Date(hoy+'T12:00:00');const _mn=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];const mes=_mn[_mD.getMonth()].replace(/^\w/,c=>c.toUpperCase())+' de '+_mD.getFullYear();
   const btnSave = document.getElementById('vrc-btn-save');
   try {
