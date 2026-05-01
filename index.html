@@ -11193,7 +11193,7 @@ async function _cierreEjecutarCierre(movimientos, provPagos, retiroPagos) {
   try {
     const cierreRef = await addDoc(collection(db,'cierres'), doc_);
     const fecha = document.getElementById('cierre-fecha-fin')?.value || new Date().toISOString().split('T')[0];
-    const mes   = new Date(fecha+'T12:00:00').toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase());
+    const _mD11=new Date(fecha+'T12:00:00');const _mn11=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];const mes=_mn11[_mD11.getMonth()].replace(/^\w/,c=>c.toUpperCase())+' de '+_mD11.getFullYear();
     const creadoEn = new Date().toISOString();
     // Guardar movimientos en libroCaja con metadata completa
     const movsConMeta = movimientos.map(m=>({...m, uid, fecha, mes, origen:'cierre', referenciaId:cierreRef.id, eliminado:false, creadoEn}));
@@ -13035,7 +13035,7 @@ window.ccfgCuentaGuardar = async function() {
     // Si hay saldo inicial, crear movimiento apertura en libroCaja
     if(saldo > 0) {
       const hoy = new Date().toISOString().split('T')[0];
-      const mes = new Date().toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,ch=>ch.toUpperCase());
+      const _mD13=new Date(hoy+'T12:00:00');const _mn13=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];const mes=_mn13[_mD13.getMonth()].replace(/^\w/,c=>c.toUpperCase())+' de '+_mD13.getFullYear();
       await addDoc(collection(db,'libroCaja'), {
         uid: currentClientUID,
         fecha: hoy,
@@ -13510,7 +13510,7 @@ window.vrcGuardar = async function() {
     return {nombre:item.producto.nombre, qty:item.qty, precioUnitario:precio, subtotal:sub};
   });
   const hoy = new Date().toISOString().split('T')[0];
-  const mes = new Date(hoy+'T12:00:00').toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase());
+  const _mD=new Date(hoy+'T12:00:00');const _mn=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];const mes=_mn[_mD.getMonth()].replace(/^\w/,c=>c.toUpperCase())+' de '+_mD.getFullYear();
   const btnSave = document.getElementById('vrc-btn-save');
   try {
     if(btnSave){btnSave.disabled=true;btnSave.innerHTML='<span style="display:flex;align-items:center;justify-content:center;gap:8px;">Registrando...</span>';}
