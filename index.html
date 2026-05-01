@@ -19877,7 +19877,34 @@ function renderOrdenesCompra() {
   setEl('bn-oc-pend','$'+pendientePago.toLocaleString('es-AR'));
   setEl('bn-oc-pagado','$'+pagado.toLocaleString('es-AR'));
   const el=document.getElementById('oc-lista');if(!el)return;
-  if(_ordenesCompra.length===0){el.innerHTML=createEmptyState('documento-sello','Sin órdenes de compra','Creá tu primera orden directamente o desde una necesidad cotizada.','+ Nueva OC','abrirNuevaOCDirecta()');return;}
+  if(_ordenesCompra.length===0){
+    el.innerHTML='<div style="padding:40px 28px;text-align:center;">'
+      +'<div style="display:flex;justify-content:center;margin-bottom:24px;">'
+      +'<svg width="64" height="64" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="30" fill="#e8ede8" stroke="#c8d4c8" stroke-width="1"/><rect x="18" y="14" width="28" height="36" rx="4" fill="#fff" stroke="#c8d4c8" stroke-width="1"/><path d="M24 24h16M24 30h12M24 36h9" stroke="#4a5e4d" stroke-width="1.5" stroke-linecap="round"/><circle cx="46" cy="46" r="10" fill="#4a5e4d"/><path d="M43 46l2 2 4-4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+      +'</div>'
+      +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:28px;color:#1a1a1a;margin-bottom:8px;line-height:1.2;">Sin órdenes de compra</div>'
+      +'<div style="font-size:13px;color:#6b7280;line-height:1.65;margin-bottom:28px;max-width:400px;margin-left:auto;margin-right:auto;">Creá tu primera orden directamente o desde una necesidad cotizada.</div>'
+      +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;text-align:left;">'
+        +'<div style="background:#e8ede8;border-radius:14px;padding:18px 16px;">'
+          +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:36px;color:#4a5e4d;line-height:1;margin-bottom:8px;">01</div>'
+          +'<div style="font-size:13px;font-weight:500;color:#2d4a30;margin-bottom:4px;">Creá la orden</div>'
+          +'<div style="font-size:11px;color:#5a7a5d;line-height:1.5;">Elegí el proveedor y los productos que necesitás</div>'
+        +'</div>'
+        +'<div style="background:#f5ebe8;border-radius:14px;padding:18px 16px;">'
+          +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:36px;color:#b09088;line-height:1;margin-bottom:8px;">02</div>'
+          +'<div style="font-size:13px;font-weight:500;color:#7a5850;margin-bottom:4px;">Vinculá con stock</div>'
+          +'<div style="font-size:11px;color:#906860;line-height:1.5;">Asociá cada ítem con un insumo para actualizar el inventario</div>'
+        +'</div>'
+        +'<div style="background:#4a5e4d;border-radius:14px;padding:18px 16px;">'
+          +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:36px;color:#e8c4b8;line-height:1;margin-bottom:8px;">03</div>'
+          +'<div style="font-size:13px;font-weight:500;color:#fff;margin-bottom:4px;">Marcala como recibida</div>'
+          +'<div style="font-size:11px;color:rgba(255,255,255,.65);line-height:1.5;">El stock sube automáticamente cuando llega la mercadería</div>'
+        +'</div>'
+      +'</div>'
+      +'<button onclick="abrirNuevaOCDirecta()" style="background:var(--topbar);color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:13px;font-family:\'DM Sans\',sans-serif;cursor:pointer;font-weight:500;">+ Nueva OC</button>'
+      +'</div>';
+    return;
+  }
   // Aplicar filtros
   const searchQ=(document.getElementById('oc-search')?.value||'').toLowerCase();
   const filtroRec=document.getElementById('oc-filtro-recepcion')?.value||'';
