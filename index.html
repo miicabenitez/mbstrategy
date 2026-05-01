@@ -6140,19 +6140,22 @@ async function getClientByAuth(user) {
     }
   } catch(e) { console.log('[getClientByAuth] fallback3 error:', e); }
 
-  // Fallback 4: email sintético de operador — extraer negocioId del dominio
+  // Fallback 4 — email sintético de operador
   try {
+    console.log('[getClientByAuth] intentando fallback sintético:', user.email);
     if (user.email && user.email.includes('.op.mbstrategy.internal')) {
       const _negocioId = user.email.split('@')[1].replace('.op.mbstrategy.internal', '');
+      console.log('[getClientByAuth] negocioId extraído:', _negocioId);
       if (_negocioId) {
-        const _negDoc = await getDoc(doc(db, 'clientes', _negocioId)).catch(() => null);
-        if (_negDoc && _negDoc.exists()) {
+        const _negDoc = await getDoc(doc(db, 'clientes', _negocioId));
+        if (_negDoc.exists()) {
           const _negData = _negDoc.data();
+          console.log('[getClientByAuth] negocio encontrado:', _negocioId);
           return { id: _negocioId, ..._negData, plan: _negData.plan || _negData.membresia?.plan || 'base' };
         }
       }
     }
-  } catch(e) { console.log('[getClientByAuth] fallback4 error:', e); }
+  } catch(_e) { console.log('[getClientByAuth] fallback4 error:', _e); }
 
   console.log('[getClientByAuth] WARN: retornando null — cliente no encontrado');
   return null;
