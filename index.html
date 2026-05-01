@@ -6140,18 +6140,21 @@ async function getClientByAuth(user) {
     }
   } catch(e) { console.log('[getClientByAuth] fallback3 error:', e); }
 
-  // Fallback 4 — email sintético de operador
+  // Fallback 4 — email sintético: recuperar clienteUID desde operadoresLookup
   try {
     console.log('[getClientByAuth] intentando fallback sintético:', user.email);
     if (user.email && user.email.includes('.op.mbstrategy.internal')) {
-      const _negocioId = user.email.split('@')[1].replace('.op.mbstrategy.internal', '');
-      console.log('[getClientByAuth] negocioId extraído:', _negocioId);
-      if (_negocioId) {
-        const _negDoc = await getDoc(doc(db, 'clientes', _negocioId));
+      const _opQuery = query(collection(db, 'operadoresLookup'), where('emailSintetico', '==', user.email));
+      const _opSnap = await getDocs(_opQuery);
+      console.log('[getClientByAuth] operadoresLookup query empty:', _opSnap.empty);
+      if (!_opSnap.empty) {
+        const _clienteUID = _opSnap.docs[0].data().clienteUID;
+        console.log('[getClientByAuth] clienteUID recuperado:', _clienteUID);
+        const _negDoc = await getDoc(doc(db, 'clientes', _clienteUID));
         if (_negDoc.exists()) {
           const _negData = _negDoc.data();
-          console.log('[getClientByAuth] negocio encontrado:', _negocioId);
-          return { id: _negocioId, ..._negData, plan: _negData.plan || _negData.membresia?.plan || 'base' };
+          console.log('[getClientByAuth] negocio encontrado:', _clienteUID);
+          return { id: _clienteUID, ..._negData, plan: _negData.plan || _negData.membresia?.plan || 'base' };
         }
       }
     }

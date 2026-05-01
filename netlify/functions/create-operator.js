@@ -101,7 +101,7 @@ exports.handler = async function(event) {
 
       // Guardar en operadoresLookup/{usuario} para login lookup O(1)
       await db.collection('operadoresLookup').doc(usuario).set({
-        emailSintetico,
+        emailSintetico: emailSintetico.toLowerCase(),
         clienteUID
       });
 
