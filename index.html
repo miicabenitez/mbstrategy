@@ -6095,8 +6095,8 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 async function getClientByAuth(user) {
+  // Fallback 1: búsqueda por uid (preferida)
   try {
-    // Búsqueda por uid (preferida, matchea con Security Rules)
     console.log('[getClientByAuth] buscando uid:', user.uid);
     const qUid = query(collection(db, 'clientes'), where('uid', '==', user.uid));
     const snapUid = await getDocs(qUid);
@@ -6106,19 +6106,24 @@ async function getClientByAuth(user) {
       const _data = d.data();
       return { id: d.id, ..._data, plan: _data.plan || _data.membresia?.plan || 'base' };
     }
-    // Fallback: búsqueda por email (para clientes que aún no tienen uid)
+  } catch(e) { console.log('[getClientByAuth] fallback1 error:', e); }
+
+  // Fallback 2: búsqueda por email exacto
+  try {
     console.log('[getClientByAuth] fallback email:', user.email);
     const q = query(collection(db, 'clientes'), where('email', '==', user.email));
     const snap = await getDocs(q);
     console.log('[getClientByAuth] snap email empty:', snap.empty);
     if (!snap.empty) {
       const d = snap.docs[0];
-      // Auto-fix: agregar uid al documento si no lo tiene
       try { await updateDoc(doc(db, 'clientes', d.id), { uid: user.uid }); } catch(e) {}
       const _data = d.data();
       return { id: d.id, ..._data, plan: _data.plan || _data.membresia?.plan || 'base' };
     }
-    // Fallback 2: email en minúsculas
+  } catch(e) { console.log('[getClientByAuth] fallback2 error:', e); }
+
+  // Fallback 3: email en minúsculas
+  try {
     console.log('[getClientByAuth] fallback email lowercase:', user.email.toLowerCase());
     const qLower = query(collection(db, 'clientes'), where('email', '==', user.email.toLowerCase()));
     const snapLower = await getDocs(qLower);
@@ -6129,7 +6134,10 @@ async function getClientByAuth(user) {
       const _data2 = d.data();
       return { id: d.id, ..._data2, plan: _data2.plan || _data2.membresia?.plan || 'base' };
     }
-    // Fallback 3: email sintético de operador — extraer negocioId del dominio
+  } catch(e) { console.log('[getClientByAuth] fallback3 error:', e); }
+
+  // Fallback 4: email sintético de operador — extraer negocioId del dominio
+  try {
     if (user.email && user.email.includes('.op.mbstrategy.internal')) {
       const _negocioId = user.email.split('@')[1].replace('.op.mbstrategy.internal', '');
       if (_negocioId) {
@@ -6140,8 +6148,9 @@ async function getClientByAuth(user) {
         }
       }
     }
-    console.log('[getClientByAuth] WARN: retornando null — cliente no encontrado');
-  } catch(e) { console.log('getClientByAuth error:', e); }
+  } catch(e) { console.log('[getClientByAuth] fallback4 error:', e); }
+
+  console.log('[getClientByAuth] WARN: retornando null — cliente no encontrado');
   return null;
 }
 

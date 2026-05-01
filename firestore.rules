@@ -22,11 +22,16 @@ service cloud.firestore {
         request.resource.data.uid == request.auth.uid;
     }
 
+    function isOperatorOf(clienteId) {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/clientes/$(clienteId)/operadores/$(request.auth.uid));
+    }
+
     // ── Reglas existentes ──────────────────────────────────────
     match /clientes/{clienteId} {
-      allow get: if request.auth != null && resource.data.uid == request.auth.uid;
+      allow get: if request.auth != null && (resource.data.uid == request.auth.uid || isOperatorOf(clienteId));
       allow list: if request.auth != null;
-      allow read: if isAdmin() || (request.auth != null && resource.data.uid == request.auth.uid);
+      allow read: if isAdmin() || (request.auth != null && resource.data.uid == request.auth.uid) || isOperatorOf(clienteId);
       allow create, delete: if isAdmin();
       allow update: if isAdmin() ||
         (request.auth != null && resource.data.uid == request.auth.uid &&
@@ -41,7 +46,8 @@ service cloud.firestore {
 
       match /{path=**} {
         allow read, write: if isAdmin() ||
-          (isAuthenticated() && request.auth.uid == clienteId);
+          (isAuthenticated() && request.auth.uid == clienteId) ||
+          isOperatorOf(clienteId);
       }
     }
 
