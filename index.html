@@ -23871,12 +23871,13 @@ window.loadEquipoModule = async function() {
       const btnDesact = activo
         ? `<button onclick="equipoDesactivar('${o.id}','${(o.usuario||'').replace(/'/g,"\\'")}','${(o.uid||'').replace(/'/g,"\\'")}',this)" style="padding:5px 12px;border-radius:6px;border:1px solid #fca5a5;background:#fff;color:#dc2626;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;">Desactivar</button>`
         : '<span style="color:var(--text-l);font-size:11px;">—</span>';
+      const btnEliminar = `<button onclick="equipoEliminar('${o.id}','${(o.usuario||'').replace(/'/g,"\\'")}','${(o.uid||'').replace(/'/g,"\\'")}',this)" style="padding:5px 12px;border-radius:6px;border:1px solid #fca5a5;background:#fee2e2;color:#991b1b;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;">Eliminar</button>`;
       return `<tr style="border-bottom:1px solid var(--cream-d);">
         <td style="padding:10px 8px;font-size:13px;">${o.nombre||'—'}</td>
         <td style="padding:10px 8px;font-size:12px;color:var(--text-l);">${o.usuario||'—'}</td>
         <td style="padding:10px 8px;font-size:12px;">${ROL_LABEL[o.rol]||o.rol||'—'}</td>
         <td style="padding:10px 8px;">${badge}</td>
-        <td style="padding:10px 8px;">${btnDesact}</td>
+        <td style="padding:10px 8px;"><div style="display:flex;gap:6px;flex-wrap:wrap;">${btnDesact}${btnEliminar}</div></td>
       </tr>`;
     }).join('');
     cont.innerHTML = `<div class="card"><div style="overflow-x:auto;">
@@ -23960,6 +23961,25 @@ window.equipoDesactivar = async function(docId, usuarioNombre, uid, btnEl) {
   } catch(e) {
     showToast('Error: '+(e?.message||e),'error');
     if(btnEl) { btnEl.disabled=false; btnEl.textContent='Desactivar'; }
+  }
+};
+window.equipoEliminar = async function(docId, usuarioNombre, uid, btnEl) {
+  if(!confirm('¿Eliminar permanentemente a "'+usuarioNombre+'"? Esta acción no se puede deshacer.')) return;
+  if(btnEl) { btnEl.disabled=true; btnEl.textContent='...'; }
+  try {
+    const idToken = await window._auth?.currentUser?.getIdToken(true);
+    const res = await fetch('/.netlify/functions/create-operator', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+idToken,'X-Cliente-UID':currentClientUID},
+      body: JSON.stringify({accion:'eliminar', docId, usuario:usuarioNombre, uid})
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error || 'Error del servidor');
+    showToast('Usuario eliminado','success');
+    loadEquipoModule();
+  } catch(e) {
+    showToast('Error: '+(e?.message||e),'error');
+    if(btnEl) { btnEl.disabled=false; btnEl.textContent='Eliminar'; }
   }
 };
 

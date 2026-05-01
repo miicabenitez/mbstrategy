@@ -133,6 +133,28 @@ exports.handler = async function(event) {
       return { statusCode: 200, headers: corsHeaders, body: JSON.stringify({ ok: true }) };
     }
 
+    // ── ACCIÓN: eliminar operador ─────────────────────────────
+    if (accion === 'eliminar') {
+      const { docId, usuario: usuarioRawE, uid: opUid } = body;
+      const usuario = usuarioRawE ? usuarioRawE.toLowerCase().trim() : '';
+      if (!docId) return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: 'Falta docId' }) };
+
+      // Eliminar doc de operadores
+      await db.collection('clientes').doc(clienteUID).collection('operadores').doc(docId).delete().catch(() => {});
+
+      // Eliminar de operadoresLookup
+      if (usuario) {
+        await db.collection('operadoresLookup').doc(usuario).delete().catch(() => {});
+      }
+
+      // Eliminar de Firebase Auth
+      if (opUid) {
+        await admin.auth().deleteUser(opUid).catch(() => {});
+      }
+
+      return { statusCode: 200, headers: corsHeaders, body: JSON.stringify({ ok: true }) };
+    }
+
     return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: 'Acción no reconocida' }) };
 
   } catch(e) {
