@@ -20492,30 +20492,30 @@ function renderHistorialCompra(q) {
   const filtro=(q!==undefined?q:(input?.value||'')).toLowerCase().trim();
 
   if(_ordenesCompra.length===0){
-    el.innerHTML=`<div style="background:#fff;border-radius:16px;padding:36px 28px;text-align:center;">
-      <div style="width:64px;height:64px;border-radius:50%;background:rgba(74,94,77,.08);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
-        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#4a5e4d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-      </div>
-      <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:#2c2c2c;margin-bottom:8px;">Historial vacío</div>
-      <div style="font-size:13px;color:#6b7280;line-height:1.65;margin-bottom:24px;max-width:360px;margin-left:auto;margin-right:auto;">El historial se completa automáticamente cuando confirmás una cotización y se generan órdenes de compra.</div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;text-align:left;">
-        <div style="background:#e8ede8;border-radius:14px;padding:18px 16px;">
-          <div style="font-family:'Cormorant Garamond',serif;font-size:36px;color:#4a5e4d;line-height:1;margin-bottom:8px;">01</div>
-          <div style="font-size:13px;font-weight:500;color:#2d4a30;margin-bottom:4px;">Creás un presupuesto</div>
-          <div style="font-size:11px;color:#5a7a5d;line-height:1.5;">Cargás los productos con sus insumos y cantidades</div>
-        </div>
-        <div style="background:#f5ebe8;border-radius:14px;padding:18px 16px;">
-          <div style="font-family:'Cormorant Garamond',serif;font-size:36px;color:#b09088;line-height:1;margin-bottom:8px;">02</div>
-          <div style="font-size:13px;font-weight:500;color:#7a5850;margin-bottom:4px;">Lo confirmás</div>
-          <div style="font-size:11px;color:#906860;line-height:1.5;">Se generan automáticamente las órdenes de compra necesarias</div>
-        </div>
-        <div style="background:#2d3d30;border-radius:14px;padding:18px 16px;">
-          <div style="font-family:'Cormorant Garamond',serif;font-size:36px;color:#e8c4b8;line-height:1;margin-bottom:8px;">03</div>
-          <div style="font-size:13px;font-weight:500;color:#f5f0eb;margin-bottom:4px;">Aparece aquí</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.65);line-height:1.5;">Podés filtrar por producto y ver el historial completo de compras</div>
-        </div>
-      </div>
-    </div>`;
+    el.innerHTML='<div style="padding:40px 28px;text-align:center;">'
+      +'<div style="display:flex;justify-content:center;margin-bottom:24px;">'
+      +'<svg width="64" height="64" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="30" fill="#e8ede8" stroke="#c8d4c8" stroke-width="1"/><path d="M20 22h24M20 30h18M20 38h12" stroke="#4a5e4d" stroke-width="1.5" stroke-linecap="round"/><circle cx="46" cy="46" r="10" fill="#b09088"/><path d="M46 41v10M41 46h10" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>'
+      +'</div>'
+      +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:28px;color:#1a1a1a;margin-bottom:8px;line-height:1.2;">Sin historial de compras</div>'
+      +'<div style="font-size:13px;color:#6b7280;line-height:1.65;margin-bottom:28px;max-width:400px;margin-left:auto;margin-right:auto;">Creá una orden de compra, marcala como recibida y aparece acá automáticamente.</div>'
+      +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:8px;text-align:left;">'
+        +'<div style="background:#e8ede8;border-radius:14px;padding:18px 16px;">'
+          +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:36px;color:#4a5e4d;line-height:1;margin-bottom:8px;">01</div>'
+          +'<div style="font-size:13px;font-weight:500;color:#2d4a30;margin-bottom:4px;">Hacé tu primera compra</div>'
+          +'<div style="font-size:11px;color:#5a7a5d;line-height:1.5;">Creá una orden de compra y marcala como recibida</div>'
+        +'</div>'
+        +'<div style="background:#f5ebe8;border-radius:14px;padding:18px 16px;">'
+          +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:36px;color:#b09088;line-height:1;margin-bottom:8px;">02</div>'
+          +'<div style="font-size:13px;font-weight:500;color:#7a5850;margin-bottom:4px;">Seguí comprando</div>'
+          +'<div style="font-size:11px;color:#906860;line-height:1.5;">Cada compra recibida queda registrada automáticamente</div>'
+        +'</div>'
+        +'<div style="background:#4a5e4d;border-radius:14px;padding:18px 16px;">'
+          +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:36px;color:#e8c4b8;line-height:1;margin-bottom:8px;">03</div>'
+          +'<div style="font-size:13px;font-weight:500;color:#fff;margin-bottom:4px;">Consultá tu historial</div>'
+          +'<div style="font-size:11px;color:rgba(255,255,255,.65);line-height:1.5;">Filtrá por producto y analizá tus compras anteriores</div>'
+        +'</div>'
+      +'</div>'
+      +'</div>';
     return;
   }
 
