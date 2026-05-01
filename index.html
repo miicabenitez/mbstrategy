@@ -5962,9 +5962,13 @@ window.doLogin = async function() {
     if (inputVal.includes('@')) {
       await signInWithEmailAndPassword(auth, inputVal, p);
     } else {
+      console.log('[doLogin] buscando operador:', inputVal.toLowerCase());
       const _lookupSnap = await getDoc(doc(db, 'operadoresLookup', inputVal.toLowerCase()));
+      console.log('[doLogin] lookupSnap exists:', _lookupSnap.exists());
       if (!_lookupSnap.exists()) throw new Error('Usuario no encontrado');
       const _emailSintetico = _lookupSnap.data().emailSintetico;
+      console.log('[doLogin] emailSintetico:', _emailSintetico);
+      console.log('[doLogin] signIn llamado con:', _emailSintetico);
       await signInWithEmailAndPassword(auth, _emailSintetico, p);
     }
   }
