@@ -13302,8 +13302,8 @@ window.mvmActualizarCierre = function() {
 window.mvmGuardar = async function() {
   if(!currentClientUID) return;
   const uid = currentClientUID;
-  const hoy = new Date().toISOString().split('T')[0];
-  const mkMes = f => new Date(f+'T12:00:00').toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase());
+  const hoy = new Date().toLocaleDateString('es-AR',{timeZone:'America/Argentina/Buenos_Aires'}).split('/').reverse().map(p=>p.padStart(2,'0')).join('-');
+  const mkMes = f => { const _d=new Date(f+'T12:00:00');const _m=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];return _m[_d.getMonth()].replace(/^\w/,c=>c.toUpperCase())+' de '+_d.getFullYear(); };
   const docs = [];
   try {
     if(_mvmTipo==='transferencia') {
@@ -14502,7 +14502,7 @@ window.stkGuardarAjuste = async function() {
     await addDoc(collection(db,'clientes',currentClientUID,'movimientosStock'),{
       tipo:'ajuste', insumoId, insumoNombre:insumo.nombre, cantidad, unidad:insumo.unidad,
       stockResultante, origen:'ajuste', referenciaId:'', notas,
-      fecha:new Date().toISOString().split('T')[0], creadoEn:new Date().toISOString()
+      fecha:new Date().toLocaleDateString('es-AR',{timeZone:'America/Argentina/Buenos_Aires'}).split('/').reverse().map(p=>p.padStart(2,'0')).join('-'), creadoEn:new Date().toISOString()
     });
     if(stockResultante < 0) showToast('Stock en negativo para '+insumo.nombre+'. Revisá el inventario.','warning');
     closeModal('stock-ajuste-modal');
@@ -14820,7 +14820,7 @@ window._triggerStockPorVenta = async function(carrito, refId) {
       const snap = await getDocs(query(collection(db,'clientes',currentClientUID,'recetas'), where('activo','==',true)));
       window._stockRecetas = snap.docs.map(d=>({id:d.id,...d.data()}));
     }
-    const hoy = new Date().toISOString().split('T')[0];
+    const hoy = new Date().toLocaleDateString('es-AR',{timeZone:'America/Argentina/Buenos_Aires'}).split('/').reverse().map(p=>p.padStart(2,'0')).join('-');
     let _errCount = 0;
     for(const productoId of Object.keys(carrito)) {
       const entry = carrito[productoId];
@@ -14856,7 +14856,7 @@ window._triggerStockPorPresupuesto = async function(p) {
     const snap = await getDocs(query(collection(db,'clientes',currentClientUID,'recetas'), where('activo','==',true)));
     window._stockRecetas = snap.docs.map(d=>({id:d.id,...d.data()}));
   }
-  const hoy = new Date().toISOString().split('T')[0];
+  const hoy = new Date().toLocaleDateString('es-AR',{timeZone:'America/Argentina/Buenos_Aires'}).split('/').reverse().map(p=>p.padStart(2,'0')).join('-');
   for(const it of (p.items||[])) {
     if(!it.productoId) continue;
     const qty = parseFloat(it.cant)||1;
@@ -16760,9 +16760,7 @@ window.createMcCobro = async function() {
     }
 
     // 4. DISPARAR INGRESO en contabilidad automáticamente
-    const mesIngreso = fecha
-      ? new Date(fecha+'T12:00:00').toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,ch=>ch.toUpperCase())
-      : new Date().toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,ch=>ch.toUpperCase());
+    const _miD=new Date((fecha||new Date().toLocaleDateString('es-AR',{timeZone:'America/Argentina/Buenos_Aires'}).split('/').reverse().map(p=>p.padStart(2,'0')).join('-'))+'T12:00:00');const _miMn=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];const mesIngreso=_miMn[_miD.getMonth()].replace(/^\w/,c=>c.toUpperCase())+' de '+_miD.getFullYear();
     await addDoc(collection(db,'clientes',currentClientUID,'ingresos'), {
       concepto : concepto || `Cobro de ${clienteNombre}`,
       categoria: 'Cobro de cliente',
@@ -16779,7 +16777,7 @@ window.createMcCobro = async function() {
     const presupNumero = document.getElementById('mcc-cobro-presup-id')?.value || '';
     await addDoc(collection(db,'libroCaja'), {
       uid      : currentClientUID,
-      fecha    : fecha || new Date().toISOString().split('T')[0],
+      fecha    : fecha || new Date().toLocaleDateString('es-AR',{timeZone:'America/Argentina/Buenos_Aires'}).split('/').reverse().map(p=>p.padStart(2,'0')).join('-'),
       tipo     : 'ingreso',
       concepto : 'Cobro de cliente',
       cuenta   : cuentaCobro,
@@ -16923,7 +16921,7 @@ window.guardarCobroLibre = async function() {
   const clienteNombre = document.getElementById('mcl-cobro-cliente-nombre').value;
   const monto = parseFloat(document.getElementById('mcl-cobro-monto').value)||0;
   if(!monto) { showToast('Ingresá el monto.', 'info'); return; }
-  const fecha = document.getElementById('mcl-cobro-fecha').value || new Date().toISOString().split('T')[0];
+  const fecha = document.getElementById('mcl-cobro-fecha').value || new Date().toLocaleDateString('es-AR',{timeZone:'America/Argentina/Buenos_Aires'}).split('/').reverse().map(p=>p.padStart(2,'0')).join('-');
   const concepto = document.getElementById('mcl-cobro-concepto').value.trim() || ('Cobro de '+clienteNombre);
   const formaPago = document.getElementById('mcl-cobro-forma').value;
   const presupId = (document.getElementById('mcl-vincular-check')?.checked)
@@ -17000,7 +16998,7 @@ window.duplicarPresup = async function(presupId, clienteId, clienteNombre) {
   const p = (window._mcPresupuestos||[]).find(x => x.id === presupId);
   if (!p || !currentClientUID) return showToast('No se pudo duplicar el presupuesto', 'error');
   try {
-    const hoy = new Date().toISOString().split('T')[0];
+    const hoy = new Date().toLocaleDateString('es-AR',{timeZone:'America/Argentina/Buenos_Aires'}).split('/').reverse().map(p=>p.padStart(2,'0')).join('-');
     await addDoc(collection(db,'clientes',currentClientUID,'presupuestos'), {
       descripcion: p.descripcion || '',
       items: p.items || [],
@@ -19621,7 +19619,7 @@ window.confirmarOC = async function() {
   if(ocsAEmitir.length===0){ showToast('No hay ítems con precio para emitir.', 'info'); return; }
   const btn = document.getElementById('btn-confirmar-oc');
   if(btn){ btn.disabled=true; btn.textContent='Emitiendo...'; }
-  const hoy = new Date().toISOString().split('T')[0];
+  const hoy = new Date().toLocaleDateString('es-AR',{timeZone:'America/Argentina/Buenos_Aires'}).split('/').reverse().map(p=>p.padStart(2,'0')).join('-');
   try {
     for(const oc of ocsAEmitir) {
       await addDoc(collection(db,'clientes',currentClientUID,'ordenesCompra'),{
@@ -20136,7 +20134,7 @@ window.marcarOCRecibida = async function(ocId) {
       if(oc.eliminado) return;
       if(oc.estadoRecepcion === 'recibida') { showToast('Esta OC ya fue marcada como recibida.', 'info'); return; }
       if((oc.estadoRecepcion||'emitida') !== 'emitida') { showToast('Solo se puede marcar como recibida una OC que esté emitida.', 'info'); return; }
-      const hoy = new Date().toISOString().split('T')[0];
+      const hoy = new Date().toLocaleDateString('es-AR',{timeZone:'America/Argentina/Buenos_Aires'}).split('/').reverse().map(p=>p.padStart(2,'0')).join('-');
 
       // 1. Actualizar estado de recepción en la OC
       await updateDoc(doc(db,'clientes',currentClientUID,'ordenesCompra',ocId),{
@@ -20997,12 +20995,10 @@ window.savePagoProveedor = async function() {
     });
 
     // Escribir en libroCaja
-    const mesEgreso = fecha
-      ? new Date(fecha+'T12:00:00').toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,ch=>ch.toUpperCase())
-      : new Date().toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,ch=>ch.toUpperCase());
+    const _meD=new Date((fecha||new Date().toLocaleDateString('es-AR',{timeZone:'America/Argentina/Buenos_Aires'}).split('/').reverse().map(p=>p.padStart(2,'0')).join('-'))+'T12:00:00');const _meMn=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];const mesEgreso=_meMn[_meD.getMonth()].replace(/^\w/,c=>c.toUpperCase())+' de '+_meD.getFullYear();
     await addDoc(collection(db,'libroCaja'), {
       uid        : currentClientUID,
-      fecha      : fecha || new Date().toISOString().split('T')[0],
+      fecha      : fecha || new Date().toLocaleDateString('es-AR',{timeZone:'America/Argentina/Buenos_Aires'}).split('/').reverse().map(p=>p.padStart(2,'0')).join('-'),
       tipo       : 'egreso',
       concepto   : 'Proveedor',
       cuenta     : cuentaPago,
@@ -24289,7 +24285,7 @@ async function embiEjecutarAccion(tipo,datos){
       await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'presupuestos'),{
         cliente:datos.cliente||'',clienteId:null,prospecto:true,
         descripcion:datos.descripcion||'',items:_items,monto:_total,
-        moneda:'ARS',estado:'Pendiente de enviar',fecha:new Date().toISOString().split('T')[0],
+        moneda:'ARS',estado:'Pendiente de enviar',fecha:new Date().toLocaleDateString('es-AR',{timeZone:'America/Argentina/Buenos_Aires'}).split('/').reverse().map(p=>p.padStart(2,'0')).join('-'),
         notas:datos.notas||'',origen:'embi',creadoEn:new Date().toISOString()
       });
       if(window.loadClientPresupuestos)await window.loadClientPresupuestos();
@@ -24302,7 +24298,7 @@ async function embiEjecutarAccion(tipo,datos){
       var _ocNum=_ocSnap.size+1;
       await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'ordenesCompra'),{
         numero:_ocNum,proveedor:datos.proveedor||'',proveedorId:datos.proveedorId||null,
-        items:_ocItems,total:_ocTotal,fecha:datos.fecha||new Date().toISOString().split('T')[0],
+        items:_ocItems,total:_ocTotal,fecha:datos.fecha||new Date().toLocaleDateString('es-AR',{timeZone:'America/Argentina/Buenos_Aires'}).split('/').reverse().map(p=>p.padStart(2,'0')).join('-'),
         ncId:null,notas:datos.notas||null,estadoPago:'pendiente',estadoRecepcion:'emitida',
         creadoEn:new Date().toISOString()
       });
@@ -24327,10 +24323,10 @@ async function embiEjecutarAccion(tipo,datos){
         embiAddMsg('bot','Presupuesto de '+datos.cliente+' actualizado a "'+datos.estadoNuevo+'".');
       }
     }else if(tipo==='COBRO_PRESUPUESTO'){
-      var _cbFecha=datos.fecha||new Date().toISOString().split('T')[0];
+      var _cbFecha=datos.fecha||new Date().toLocaleDateString('es-AR',{timeZone:'America/Argentina/Buenos_Aires'}).split('/').reverse().map(function(p){return p.padStart(2,'0');}).join('-');
       var _cbMonto=parseFloat(datos.monto)||0;
       var _cbConcepto='Cobro presupuesto '+datos.cliente;
-      var _cbMesStr=new Date(_cbFecha+'T12:00:00').toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,function(c){return c.toUpperCase();});
+      var _cbD=new Date(_cbFecha+'T12:00:00');var _cbMn=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];var _cbMesStr=_cbMn[_cbD.getMonth()].replace(/^\w/,function(c){return c.toUpperCase();})+' de '+_cbD.getFullYear();
       await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'cobros'),{concepto:_cbConcepto,monto:_cbMonto,estado:'Cobrado',fecha:_cbFecha,saldoPendiente:0,totalAcumulado:_cbMonto,origen:'embi'});
       await window._addDoc(window._collection(window.db,'libroCaja'),{uid:currentClientUID,fecha:_cbFecha,tipo:'ingreso',concepto:'Cobro '+datos.cliente,cuenta:datos.cuenta||'',monto:_cbMonto,origen:'embi',detalle:'Cobro presupuesto',mes:_cbMesStr,eliminado:false,creadoEn:new Date().toISOString()});
       if(datos.presupuestoId)await window._updateDoc(window._doc(window.db,'clientes',currentClientUID,'presupuestos',datos.presupuestoId),{estado:'Cobrado',actualizadoEn:new Date().toISOString()});
@@ -24340,10 +24336,10 @@ async function embiEjecutarAccion(tipo,datos){
       embiAddMsg('bot','Cobro de $'+_cbMonto.toLocaleString('es-AR')+' de '+datos.cliente+' registrado. Presupuesto marcado como Cobrado.');
     }else if(tipo==='PAGAR_PROVEEDOR'){
       console.log('[PAGAR_PROVEEDOR] datos:', JSON.stringify(datos));
-      var _ppFecha=datos.fecha||new Date().toISOString().split('T')[0];
+      var _ppFecha=datos.fecha||new Date().toLocaleDateString('es-AR',{timeZone:'America/Argentina/Buenos_Aires'}).split('/').reverse().map(function(p){return p.padStart(2,'0');}).join('-');
       var _ppMonto=parseFloat(datos.monto)||0;
       var _ppConcepto='Pago a '+datos.proveedor;
-      var _ppMesStr=new Date(_ppFecha+'T12:00:00').toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,function(c){return c.toUpperCase();});
+      var _ppD=new Date(_ppFecha+'T12:00:00');var _ppMn=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];var _ppMesStr=_ppMn[_ppD.getMonth()].replace(/^\w/,function(c){return c.toUpperCase();})+' de '+_ppD.getFullYear();
       var _ppProvId=datos.proveedorId||((window._proveedores||[]).find(function(p){return p.nombre===datos.proveedor;})||{}).id||'';
       if(_ppProvId)await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'proveedores',_ppProvId,'pagos'),{tipo:'pago',monto:_ppMonto,fecha:_ppFecha,medio:datos.cuenta||'',concepto:_ppConcepto,creadoEn:new Date().toISOString()});
       await window._addDoc(window._collection(window.db,'libroCaja'),{uid:currentClientUID,fecha:_ppFecha,tipo:'egreso',concepto:_ppConcepto,cuenta:datos.cuenta||'',monto:_ppMonto,origen:'embi',detalle:'Pago proveedor: '+datos.proveedor,mes:_ppMesStr,eliminado:false,creadoEn:new Date().toISOString()});
