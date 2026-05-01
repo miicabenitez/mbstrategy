@@ -1151,6 +1151,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         <button class="nt" onclick="showATab('embi',this)">Embi ✦</button>
         <button class="nt" onclick="showATab('embiusage',this)">Uso de Embi</button>
         <button class="nt" onclick="showATab('papelera',this)">Papelera</button>
+        <button class="nt" onclick="showATab('usuarios',this)">Usuarios</button>
       </div>
       <div class="nav-tabs" id="cNav" style="display:none;">
         <button class="nt active" onclick="showClientMod('inicio',this)">Inicio</button>
@@ -1868,6 +1869,52 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
             <button onclick="loadPapelera()" style="background:none;border:none;font-size:12px;color:var(--text-l);cursor:pointer;font-family:'DM Sans',sans-serif;">↺ Actualizar</button>
           </div>
           <div id="papelera-lista"><div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Cargando...</div></div>
+        </div>
+      </div>
+
+      <!-- USUARIOS (multi-usuario admin) -->
+      <div class="view" id="av-usuarios">
+        <div style="background:linear-gradient(135deg,#3d5240 0%,#4a6347 30%,#5a7a5d 50%,#4a6347 70%,#3d5240 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,0.15),inset 0 -1px 0 rgba(0,0,0,0.2);border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;">
+          <div style="position:absolute;right:50px;bottom:-30px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04);"></div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:22px;">Usuarios</div>
+          <div style="font-size:12px;opacity:.65;margin-top:4px;">Operadores del negocio. Cada uno tiene su propio acceso y rol.</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px;">
+            <div style="border-radius:8px;padding:10px 12px;background:rgba(255,255,255,.1);"><div style="font-size:8px;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:3px;">Total</div><div id="usr-kpi-total" style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;color:#f4f0ea;">—</div></div>
+            <div style="border-radius:8px;padding:10px 12px;background:rgba(255,255,255,.1);"><div style="font-size:8px;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:3px;">Activos</div><div id="usr-kpi-activos" style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;color:#a8d5a2;">—</div></div>
+            <div style="border-radius:8px;padding:10px 12px;background:rgba(255,255,255,.1);"><div style="font-size:8px;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:3px;">Roles</div><div id="usr-kpi-roles" style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;color:#f4f0ea;">—</div></div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;margin-bottom:14px;">
+          <button onclick="adminNuevoUsuarioShow()" style="background:#4a5e4d;color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;">+ Nuevo usuario</button>
+        </div>
+        <div class="card">
+          <div class="ct" style="margin-bottom:14px;">Operadores</div>
+          <div id="usr-tabla-container"><div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Cargando...</div></div>
+        </div>
+
+        <!-- MODAL nuevo usuario -->
+        <div id="usr-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;">
+          <div style="background:#fff;border-radius:14px;padding:28px 24px;width:340px;box-shadow:0 8px 32px rgba(0,0,0,.18);">
+            <div style="font-weight:700;font-size:15px;margin-bottom:18px;">Nuevo usuario</div>
+            <label style="font-size:12px;color:#666;display:block;margin-bottom:4px;">Nombre completo</label>
+            <input id="usr-nombre" type="text" placeholder="Ej: María González" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;margin-bottom:12px;">
+            <label style="font-size:12px;color:#666;display:block;margin-bottom:4px;">Usuario (sin espacios ni @)</label>
+            <input id="usr-usuario" type="text" placeholder="Ej: maria" oninput="adminUsuarioValidar(this)" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;margin-bottom:2px;">
+            <div id="usr-usuario-hint" style="font-size:11px;color:#888;margin-bottom:12px;">Se usará para iniciar sesión</div>
+            <label style="font-size:12px;color:#666;display:block;margin-bottom:4px;">Contraseña</label>
+            <input id="usr-password" type="text" placeholder="Mínimo 6 caracteres" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;margin-bottom:12px;">
+            <label style="font-size:12px;color:#666;display:block;margin-bottom:4px;">Rol</label>
+            <select id="usr-rol" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;margin-bottom:20px;font-family:'DM Sans',sans-serif;">
+              <option value="cajero">Cajero</option>
+              <option value="compras">Compras</option>
+              <option value="comercial">Comercial</option>
+            </select>
+            <div id="usr-modal-error" style="display:none;color:#e53e3e;font-size:12px;margin-bottom:12px;"></div>
+            <div style="display:flex;gap:8px;justify-content:flex-end;">
+              <button onclick="adminNuevoUsuarioCerrar()" style="padding:8px 18px;border-radius:8px;border:1px solid #ddd;background:#fff;font-size:13px;cursor:pointer;">Cancelar</button>
+              <button id="usr-modal-btn" onclick="adminNuevoUsuarioGuardar()" style="padding:8px 18px;border-radius:8px;border:none;background:#4a5e4d;color:#fff;font-size:13px;font-weight:600;cursor:pointer;">Crear usuario</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -23261,6 +23308,7 @@ window.showATab = function(tab, btn) {
   if (tab === 'embi') setTimeout(() => { loadEmbiReports(); }, 100);
   if (tab === 'embiusage') loadEmbiUsage();
   if (tab === 'papelera') setTimeout(() => { loadPapelera(); }, 100);
+  if (tab === 'usuarios') loadAdminUsuarios();
   if (tab === 'inicio') {
     if(window._allClients?.length && window.renderAdminDashboard) {
       setTimeout(()=>{ window.renderAdminDashboard(); }, 50);
@@ -23702,6 +23750,138 @@ window._aplicarLocksPlanBase = function(clientData) {
   if(tabCierre) tabCierre.innerHTML = esBase ? _lockSvg + 'Cierre de período' : 'Cierre';
   var btnCfgCierre = document.getElementById('cprd-cfg-tab-cierre');
   if(btnCfgCierre) btnCfgCierre.innerHTML = esBase ? _lockSvg + 'Cierre de período' : 'Cierre de período';
+};
+
+// ─── ADMIN: Panel de usuarios ────────────────────────────────
+window.loadAdminUsuarios = async function() {
+  const cont = document.getElementById('usr-tabla-container');
+  if(!cont) return;
+  cont.innerHTML = '<div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Cargando...</div>';
+  try {
+    const snap = await getDocs(collection(db,'clientes',currentClientUID,'operadores'));
+    const ops = [];
+    snap.forEach(d => ops.push({id:d.id,...d.data()}));
+    // KPIs
+    const total = ops.length;
+    const activos = ops.filter(o=>o.activo!==false).length;
+    const roles = [...new Set(ops.map(o=>o.rol).filter(Boolean))].length;
+    const kpiEl = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+    kpiEl('usr-kpi-total', total);
+    kpiEl('usr-kpi-activos', activos);
+    kpiEl('usr-kpi-roles', roles);
+    // Tabla
+    if(!ops.length) {
+      cont.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-l);font-size:13px;">No hay operadores todavía.<br><span style="font-size:12px;">Usá "+ Nuevo usuario" para agregar uno.</span></div>';
+      return;
+    }
+    const ROL_LABEL = {cajero:'Cajero',compras:'Compras',comercial:'Comercial',admin:'Admin'};
+    const filas = ops.map(o => {
+      const activo = o.activo !== false;
+      const badge = activo
+        ? '<span style="background:#dcfce7;color:#15803d;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600;">Activo</span>'
+        : '<span style="background:#fee2e2;color:#dc2626;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600;">Inactivo</span>';
+      const btnDesact = activo
+        ? `<button onclick="adminUsuarioDesactivar('${o.id}','${(o.usuario||'').replace(/'/g,"\\'")}','${(o.uid||'').replace(/'/g,"\\'")}',this)" style="padding:5px 12px;border-radius:6px;border:1px solid #fca5a5;background:#fff;color:#dc2626;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;">Desactivar</button>`
+        : '<span style="color:var(--text-l);font-size:11px;">—</span>';
+      return `<tr style="border-bottom:1px solid var(--cream-d);">
+        <td style="padding:10px 8px;font-size:13px;">${o.nombre||'—'}</td>
+        <td style="padding:10px 8px;font-size:12px;color:var(--text-l);">${o.usuario||'—'}</td>
+        <td style="padding:10px 8px;font-size:12px;">${ROL_LABEL[o.rol]||o.rol||'—'}</td>
+        <td style="padding:10px 8px;">${badge}</td>
+        <td style="padding:10px 8px;">${btnDesact}</td>
+      </tr>`;
+    }).join('');
+    cont.innerHTML = `<div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;">
+        <thead><tr style="border-bottom:2px solid var(--cream-d);">
+          <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-l);font-weight:600;">Nombre</th>
+          <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-l);font-weight:600;">Usuario</th>
+          <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-l);font-weight:600;">Rol</th>
+          <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-l);font-weight:600;">Estado</th>
+          <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-l);font-weight:600;">Acciones</th>
+        </tr></thead>
+        <tbody>${filas}</tbody>
+      </table></div>`;
+  } catch(e) {
+    cont.innerHTML = '<div style="color:#dc2626;padding:20px;font-size:13px;">Error al cargar operadores: '+(e?.message||e)+'</div>';
+  }
+};
+
+window.adminNuevoUsuarioShow = function() {
+  var ov = document.getElementById('usr-modal-overlay');
+  if(!ov) return;
+  document.getElementById('usr-nombre').value = '';
+  document.getElementById('usr-usuario').value = '';
+  document.getElementById('usr-password').value = '';
+  document.getElementById('usr-rol').value = 'cajero';
+  document.getElementById('usr-usuario-hint').textContent = 'Se usará para iniciar sesión';
+  document.getElementById('usr-usuario-hint').style.color = '#888';
+  document.getElementById('usr-modal-error').style.display = 'none';
+  var btn = document.getElementById('usr-modal-btn');
+  if(btn) { btn.disabled=false; btn.textContent='Crear usuario'; }
+  ov.style.display = 'flex';
+};
+window.adminNuevoUsuarioCerrar = function() {
+  var ov = document.getElementById('usr-modal-overlay');
+  if(ov) ov.style.display = 'none';
+};
+window.adminUsuarioValidar = function(input) {
+  var v = input.value.replace(/\s|@/g,'');
+  input.value = v;
+  var hint = document.getElementById('usr-usuario-hint');
+  if(!v) { hint.textContent='Se usará para iniciar sesión'; hint.style.color='#888'; return; }
+  hint.textContent = v+'@'+currentClientUID+'.op.mbstrategy.internal';
+  hint.style.color = '#4a5e4d';
+};
+window.adminNuevoUsuarioGuardar = async function() {
+  var nombre   = document.getElementById('usr-nombre').value.trim();
+  var usuario  = document.getElementById('usr-usuario').value.trim();
+  var password = document.getElementById('usr-password').value;
+  var rol      = document.getElementById('usr-rol').value;
+  var errEl    = document.getElementById('usr-modal-error');
+  var btn      = document.getElementById('usr-modal-btn');
+  errEl.style.display = 'none';
+  if(!nombre||!usuario||!password||!rol) { errEl.textContent='Completá todos los campos.'; errEl.style.display='block'; return; }
+  if(password.length < 6) { errEl.textContent='La contraseña debe tener al menos 6 caracteres.'; errEl.style.display='block'; return; }
+  if(/\s|@/.test(usuario)) { errEl.textContent='El usuario no puede tener espacios ni @.'; errEl.style.display='block'; return; }
+  btn.disabled=true; btn.textContent='Creando...';
+  try {
+    const idToken = await currentUser.getIdToken(true);
+    const res = await fetch('/.netlify/functions/create-operator', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+idToken,'X-Cliente-UID':currentClientUID},
+      body: JSON.stringify({accion:'crear', nombre, usuario, password, rol, clienteUID:currentClientUID})
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error || 'Error del servidor');
+    adminNuevoUsuarioCerrar();
+    showToast('Usuario '+nombre+' creado con éxito','success');
+    loadAdminUsuarios();
+  } catch(e) {
+    errEl.textContent = e.message || 'Error al crear el usuario.';
+    errEl.style.display = 'block';
+    btn.disabled=false; btn.textContent='Crear usuario';
+  }
+};
+
+window.adminUsuarioDesactivar = async function(docId, usuarioNombre, uid, btnEl) {
+  if(!confirm('¿Desactivar al usuario "'+usuarioNombre+'"? Ya no podrá iniciar sesión.')) return;
+  if(btnEl) { btnEl.disabled=true; btnEl.textContent='...'; }
+  try {
+    const idToken = await currentUser.getIdToken(true);
+    const res = await fetch('/.netlify/functions/create-operator', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+idToken,'X-Cliente-UID':currentClientUID},
+      body: JSON.stringify({accion:'desactivar', docId, usuario:usuarioNombre, uid})
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error || 'Error del servidor');
+    showToast('Usuario desactivado','success');
+    loadAdminUsuarios();
+  } catch(e) {
+    showToast('Error: '+(e?.message||e),'error');
+    if(btnEl) { btnEl.disabled=false; btnEl.textContent='Desactivar'; }
+  }
 };
 
 // ─── CAJERO: Retiro a caja general ───────────────────────────
