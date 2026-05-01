@@ -3944,6 +3944,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
             <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;">Insumos</div>
             <div style="display:flex;gap:8px;">
+              <button onclick="exportarStkInsumosExcel()" style="background:rgba(255,255,255,.15);border:.5px solid rgba(255,255,255,.3);border-radius:12px;padding:9px 16px;font-size:13px;font-family:'DM Sans',sans-serif;color:#fff;cursor:pointer;font-weight:500;display:flex;align-items:center;gap:6px;">↓ Excel</button>
               <button onclick="if(window.stkAjusteModal)stkAjusteModal()" style="background:rgba(255,255,255,.15);border:.5px solid rgba(255,255,255,.3);border-radius:12px;padding:9px 16px;font-size:13px;font-family:'DM Sans',sans-serif;color:#fff;cursor:pointer;font-weight:500;">Ajuste de stock</button>
               <button onclick="if(window.stkNuevoInsumo)stkNuevoInsumo()" style="background:#fff;border:none;border-radius:12px;padding:9px 16px;font-size:13px;font-family:'DM Sans',sans-serif;color:#4a5e4d;cursor:pointer;font-weight:500;display:flex;align-items:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v9M2 6.5h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Insumo</button>
             </div>
@@ -4066,7 +4067,13 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
       <!-- STOCK — Movimientos -->
       <div id="ct-movimientos-stock" style="display:none;">
         <div style="background:#4a5e4d;border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;">
-          <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;margin-bottom:16px;">Movimientos de stock</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;">Movimientos de stock</div>
+            <div style="display:flex;gap:8px;">
+              <button onclick="exportarStkMovsExcel()" style="height:32px;padding:0 14px;background:#fff;color:#4a5e4d;border:none;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;">↓ Excel</button>
+              <button onclick="exportarStkMovsCsv()" style="height:32px;padding:0 14px;background:rgba(255,255,255,.12);color:#fff;border:0.5px solid rgba(255,255,255,.25);border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;">↓ CSV</button>
+            </div>
+          </div>
           <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;">
             <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
               <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Total movimientos</div>
@@ -4079,6 +4086,15 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
             <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
               <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Salidas</div>
               <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#fff;line-height:1;" id="stk-kpi-salidas">—</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:14px;flex-wrap:wrap;">
+            <select id="stk-mov-mes-sel" onchange="stkMovFiltrar()" style="border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-family:inherit;color:#2d3d30;background:rgba(255,255,255,.9);cursor:pointer;outline:none;"></select>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <button class="stk-mov-chip" data-tipo="" onclick="stkMovChip(this,'')" style="background:rgba(255,255,255,.9);color:#2d3d30;font-weight:600;border:none;border-radius:20px;padding:5px 14px;font-size:12px;cursor:pointer;font-family:inherit;">Todos</button>
+              <button class="stk-mov-chip" data-tipo="entrada" onclick="stkMovChip(this,'entrada')" style="background:rgba(255,255,255,.15);color:rgba(255,255,255,.8);font-weight:400;border:none;border-radius:20px;padding:5px 14px;font-size:12px;cursor:pointer;font-family:inherit;">Entradas</button>
+              <button class="stk-mov-chip" data-tipo="salida" onclick="stkMovChip(this,'salida')" style="background:rgba(255,255,255,.15);color:rgba(255,255,255,.8);font-weight:400;border:none;border-radius:20px;padding:5px 14px;font-size:12px;cursor:pointer;font-family:inherit;">Salidas</button>
+              <button class="stk-mov-chip" data-tipo="ajuste" onclick="stkMovChip(this,'ajuste')" style="background:rgba(255,255,255,.15);color:rgba(255,255,255,.8);font-weight:400;border:none;border-radius:20px;padding:5px 14px;font-size:12px;cursor:pointer;font-family:inherit;">Ajustes</button>
             </div>
           </div>
         </div>
@@ -14784,7 +14800,18 @@ window.loadMovimientosStock = async function() {
     const { limit: fsLimit } = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
     const snap = await getDocs(query(collection(db,'clientes',currentClientUID,'movimientosStock'), orderBy('fecha','desc'), fsLimit(100)));
     const movs = snap.docs.map(d=>({id:d.id,...d.data()}));
-    const mesActual = new Date().toISOString().slice(0,7);
+    window._stkMovs = movs;
+    const mesActual = fechaHoyARG().slice(0,7);
+    const lblMes = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    const selEl = document.getElementById('stk-mov-mes-sel');
+    if(selEl) {
+      const hoy = new Date(); const year = hoy.getFullYear();
+      selEl.innerHTML = Array.from({length: hoy.getMonth()+1}, (_,m) => {
+        const ym = year+'-'+String(m+1).padStart(2,'0');
+        return '<option value="'+ym+'"'+(ym===mesActual?' selected':'')+'>'+lblMes[m]+' '+year+'</option>';
+      }).reverse().join('');
+      window._stkMovMes = mesActual;
+    }
     const delMes = movs.filter(m=>(m.fecha||'').slice(0,7)===mesActual);
     const kpiMovs = document.getElementById('stk-kpi-movs');
     const kpiEnt = document.getElementById('stk-kpi-entradas');
@@ -14801,28 +14828,144 @@ window.loadMovimientosStock = async function() {
     }
     if(welcome) welcome.style.display='none';
     if(content) content.style.display='block';
-    const origenLabel = {compra:'Compra',venta:'Venta caja',presupuesto:'Presupuesto',ajuste:'Ajuste manual'};
-    const lista = document.getElementById('stk-movs-lista');
-    if(!lista) return;
-    lista.innerHTML = movs.map(m=>{
-      const esEntrada = m.tipo==='entrada';
-      const esAjuste = m.tipo==='ajuste';
-      const badgeBg = esEntrada ? 'rgba(74,94,77,.1)' : esAjuste ? 'rgba(156,163,175,.15)' : 'rgba(176,144,136,.15)';
-      const badgeColor = esEntrada ? '#3d6644' : esAjuste ? '#6b7280' : '#7a4e46';
-      const badgeLabel = esEntrada ? 'Entrada' : esAjuste ? 'Ajuste' : 'Salida';
-      const signo = esEntrada ? '+' : '−';
-      const signoColor = esEntrada ? '#3d6644' : '#c0392b';
-      const cantStr = (parseFloat(m.cantidad||0)).toLocaleString('es-AR',{maximumFractionDigits:3})+' '+(m.unidad||'');
-      return `<div style="display:grid;grid-template-columns:90px 80px 1fr 90px 100px 120px;gap:10px;padding:10px 0;border-bottom:.5px solid var(--cream-d);min-width:560px;align-items:center;">
-        <span style="font-size:12px;color:var(--text-m);">${(m.fecha||'').slice(0,10)}</span>
-        <span style="display:inline-flex;"><span style="background:${badgeBg};color:${badgeColor};font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;letter-spacing:.3px;">${badgeLabel}</span></span>
-        <span style="font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;">${m.insumoNombre||'—'}</span>
-        <span style="font-size:13px;color:${signoColor};font-weight:600;text-align:right;">${signo}${cantStr}</span>
-        <span style="font-size:12px;color:var(--text-m);">${origenLabel[m.origen]||m.origen||'—'}</span>
-        <span style="font-size:12px;color:var(--text-m);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${(m.notas||'').replace(/"/g,'&quot;')}">${m.notas||'—'}</span>
-      </div>`;
-    }).join('');
+    window._stkMovTipo = window._stkMovTipo || '';
+    _stkRenderMovs(mesActual, window._stkMovTipo);
   } catch(e) { console.log('loadMovimientosStock:',e); }
+};
+function _stkRenderMovs(mes, tipo) {
+  const lista = document.getElementById('stk-movs-lista');
+  if(!lista) return;
+  const movs = (window._stkMovs||[]).filter(m => {
+    if((m.fecha||'').slice(0,7) !== mes) return false;
+    if(tipo && m.tipo !== tipo) return false;
+    return true;
+  });
+  if(!movs.length) {
+    lista.innerHTML = '<div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Sin movimientos para este período.</div>';
+    return;
+  }
+  const origenLabel = {compra:'Compra',venta:'Venta caja',presupuesto:'Presupuesto',ajuste:'Ajuste manual'};
+  lista.innerHTML = movs.map(m=>{
+    const esEntrada = m.tipo==='entrada';
+    const esAjuste = m.tipo==='ajuste';
+    const badgeBg = esEntrada ? 'rgba(74,94,77,.1)' : esAjuste ? 'rgba(156,163,175,.15)' : 'rgba(176,144,136,.15)';
+    const badgeColor = esEntrada ? '#3d6644' : esAjuste ? '#6b7280' : '#7a4e46';
+    const badgeLabel = esEntrada ? 'Entrada' : esAjuste ? 'Ajuste' : 'Salida';
+    const signo = esEntrada ? '+' : '−';
+    const signoColor = esEntrada ? '#3d6644' : '#c0392b';
+    const cantStr = (parseFloat(m.cantidad||0)).toLocaleString('es-AR',{maximumFractionDigits:3})+' '+(m.unidad||'');
+    return `<div style="display:grid;grid-template-columns:90px 80px 1fr 90px 100px 120px;gap:10px;padding:10px 0;border-bottom:.5px solid var(--cream-d);min-width:560px;align-items:center;">
+      <span style="font-size:12px;color:var(--text-m);">${(m.fecha||'').slice(0,10)}</span>
+      <span style="display:inline-flex;"><span style="background:${badgeBg};color:${badgeColor};font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;letter-spacing:.3px;">${badgeLabel}</span></span>
+      <span style="font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;">${m.insumoNombre||'—'}</span>
+      <span style="font-size:13px;color:${signoColor};font-weight:600;text-align:right;">${signo}${cantStr}</span>
+      <span style="font-size:12px;color:var(--text-m);">${origenLabel[m.origen]||m.origen||'—'}</span>
+      <span style="font-size:12px;color:var(--text-m);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${(m.notas||'').replace(/"/g,'&quot;')}">${m.notas||'—'}</span>
+    </div>`;
+  }).join('');
+}
+window.stkMovFiltrar = function() {
+  const mes = document.getElementById('stk-mov-mes-sel')?.value || fechaHoyARG().slice(0,7);
+  window._stkMovMes = mes;
+  _stkRenderMovs(mes, window._stkMovTipo||'');
+};
+window.stkMovChip = function(el, tipo) {
+  window._stkMovTipo = tipo;
+  document.querySelectorAll('.stk-mov-chip').forEach(c => {
+    const active = c.dataset.tipo === tipo;
+    c.style.background = active ? 'rgba(255,255,255,.9)' : 'rgba(255,255,255,.15)';
+    c.style.color = active ? '#2d3d30' : 'rgba(255,255,255,.8)';
+    c.style.fontWeight = active ? '600' : '400';
+  });
+  _stkRenderMovs(window._stkMovMes || fechaHoyARG().slice(0,7), tipo);
+};
+window.exportarStkMovsExcel = async function() {
+  const mes = window._stkMovMes || fechaHoyARG().slice(0,7);
+  const movs = (window._stkMovs||[]).filter(m=>(m.fecha||'').slice(0,7)===mes);
+  if(!movs.length) return showToast('Sin movimientos en el período','info');
+  if(!window.ExcelJS) {
+    await new Promise((res,rej)=>{ const s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js'; s.onload=res; s.onerror=rej; document.head.appendChild(s); });
+  }
+  const SAGE_DK='4A5E4D', CREAM='F5F6F3', TEXT='2C2C2C';
+  const sHead={font:{bold:true,size:10,color:{argb:'FFFFFFFF'}},fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FF'+SAGE_DK}},alignment:{horizontal:'center',vertical:'middle'}};
+  const sData=(alt)=>({font:{size:10,color:{argb:'FF'+TEXT}},fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FF'+(alt?CREAM:'FFFFFF')}},alignment:{vertical:'middle'}});
+  const origenLabel={compra:'Compra',venta:'Venta caja',presupuesto:'Presupuesto',ajuste:'Ajuste manual'};
+  const wb=new ExcelJS.Workbook(); wb.creator='MB Strategy'; wb.created=new Date();
+  const ws=wb.addWorksheet('Movimientos de Stock');
+  const headers=['Fecha','Tipo','Insumo','Cantidad','Unidad','Origen','Notas'];
+  const filas=movs.map(m=>[
+    m.fecha||'',
+    m.tipo==='entrada'?'Entrada':m.tipo==='ajuste'?'Ajuste':'Salida',
+    m.insumoNombre||'',
+    parseFloat(m.cantidad)||0,
+    m.unidad||'',
+    origenLabel[m.origen]||m.origen||'',
+    m.notas||''
+  ]);
+  ws.columns=headers.map((h,i)=>({width:Math.max(h.length,...filas.map(r=>String(r[i]||'').length))+4}));
+  ws.addRow(headers); ws.getRow(1).height=18;
+  headers.forEach((_,ci)=>ws.getRow(1).getCell(ci+1).style=sHead);
+  filas.forEach((row,ri)=>{ ws.addRow(row); const r=ws.getRow(ri+2); r.height=15; row.forEach((_,ci)=>r.getCell(ci+1).style=sData(ri%2===1)); });
+  const buffer=await wb.xlsx.writeBuffer();
+  const blob=new Blob([buffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='Movimientos_Stock_'+mes.replace('-','_')+'.xlsx'; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  showToast('Excel exportado','ok');
+};
+window.exportarStkMovsCsv = function() {
+  const mes = window._stkMovMes || fechaHoyARG().slice(0,7);
+  const movs = (window._stkMovs||[]).filter(m=>(m.fecha||'').slice(0,7)===mes);
+  if(!movs.length) return showToast('Sin movimientos en el período','info');
+  const origenLabel={compra:'Compra',venta:'Venta caja',presupuesto:'Presupuesto',ajuste:'Ajuste manual'};
+  const headers=['Fecha','Tipo','Insumo','Cantidad','Unidad','Origen','Notas'];
+  const rows=movs.map(m=>[
+    m.fecha||'',
+    m.tipo==='entrada'?'Entrada':m.tipo==='ajuste'?'Ajuste':'Salida',
+    '"'+(m.insumoNombre||'').replace(/"/g,'""')+'"',
+    parseFloat(m.cantidad)||0,
+    m.unidad||'',
+    origenLabel[m.origen]||m.origen||'',
+    '"'+(m.notas||'').replace(/"/g,'""')+'"'
+  ]);
+  const csv=[headers.join(','),...rows.map(r=>r.join(','))].join('\r\n');
+  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='Movimientos_Stock_'+mes.replace('-','_')+'.csv'; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  showToast('CSV exportado','ok');
+};
+window.exportarStkInsumosExcel = async function() {
+  const ins = window._stockInsumos||[];
+  if(!ins.length) return showToast('Sin insumos cargados','info');
+  if(!window.ExcelJS) {
+    await new Promise((res,rej)=>{ const s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js'; s.onload=res; s.onerror=rej; document.head.appendChild(s); });
+  }
+  const SAGE_DK='4A5E4D', CREAM='F5F6F3', TEXT='2C2C2C';
+  const sHead={font:{bold:true,size:10,color:{argb:'FFFFFFFF'}},fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FF'+SAGE_DK}},alignment:{horizontal:'center',vertical:'middle'}};
+  const sData=(alt)=>({font:{size:10,color:{argb:'FF'+TEXT}},fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FF'+(alt?CREAM:'FFFFFF')}},alignment:{vertical:'middle'}});
+  const sNum=(alt)=>({font:{size:10,color:{argb:'FF'+TEXT}},fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FF'+(alt?CREAM:'FFFFFF')}},alignment:{horizontal:'right',vertical:'middle'}});
+  const wb=new ExcelJS.Workbook(); wb.creator='MB Strategy'; wb.created=new Date();
+  const ws=wb.addWorksheet('Insumos');
+  const headers=['Insumo','Unidad','Stock actual','Mínimo','Costo unitario','Valor total'];
+  const filas=ins.map(i=>[
+    i.nombre||'', i.unidad||'',
+    parseFloat(i.stockActual)||0, parseFloat(i.stockMinimo)||0,
+    parseFloat(i.costoUnitario)||0,
+    (parseFloat(i.stockActual)||0)*(parseFloat(i.costoUnitario)||0)
+  ]);
+  ws.columns=headers.map((h,ci)=>({width:Math.max(h.length,...filas.map(r=>String(r[ci]||'').length))+4}));
+  ws.addRow(headers); ws.getRow(1).height=18;
+  headers.forEach((_,ci)=>ws.getRow(1).getCell(ci+1).style=sHead);
+  filas.forEach((row,ri)=>{
+    ws.addRow(row); const r=ws.getRow(ri+2); r.height=15; const alt=ri%2===1;
+    [0,1].forEach(ci=>r.getCell(ci+1).style=sData(alt));
+    [2,3].forEach(ci=>{ r.getCell(ci+1).style=sNum(alt); r.getCell(ci+1).numFmt='#,##0.00'; });
+    [4,5].forEach(ci=>{ r.getCell(ci+1).style=sNum(alt); r.getCell(ci+1).numFmt='"$"#,##0.00'; });
+  });
+  const buffer=await wb.xlsx.writeBuffer();
+  const blob=new Blob([buffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='Insumos_'+fechaHoyARG()+'.xlsx'; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  showToast('Excel exportado','ok');
 };
 
 window._triggerStockPorVenta = async function(carrito, refId) {
