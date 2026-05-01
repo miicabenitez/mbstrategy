@@ -14577,7 +14577,10 @@ window.stkEditarReceta = function(id) {
   document.getElementById('stk-rec-id').value=id;
   document.getElementById('stk-rec-prod-id').value=r.productoId||'';
   document.getElementById('stk-rec-prod-search').value=r.productoNombre||'';
-  window._stkRecetaItems=(r.items||[]).map(it=>({...it}));
+  window._stkRecetaItems=(r.items||[]).map(it=>{
+    const insumo=(window._stockInsumos||[]).find(x=>x.id===it.insumoId);
+    return {...it,unidadBase:it.unidadBase||insumo?.unidad||'',unidad:it.unidad||insumo?.unidad||''};
+  });
   stkRecRenderItems();
   stkRecActualizarCosto();
   const err=document.getElementById('stk-rec-error'); if(err){err.style.display='none';err.textContent='';}
