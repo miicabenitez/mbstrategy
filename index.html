@@ -24157,16 +24157,23 @@ window.cajaRetiroGuardar = async function() {
     var mes = mesHoyARG(hoy);
     var uid = currentClientUID;
     var operador = window.currentOperadorNombre || 'Cajero';
-    // Egreso del cajero
+    // Asegurar que existe la cuenta "Caja general"
+    var _cuentasSnap = await getDocs(collection(db,'clientes',uid,'cuentas'));
+    var _tieneCajaGeneral = false;
+    _cuentasSnap.forEach(function(d){ if((d.data().nombre||'').toLowerCase()==='caja general') _tieneCajaGeneral=true; });
+    if(!_tieneCajaGeneral) {
+      await addDoc(collection(db,'clientes',uid,'cuentas'),{nombre:'Caja general',saldoInicial:0,orden:99,activo:true});
+    }
+    // Egreso del cajero (sale de Efectivo)
     await addDoc(collection(db,'libroCaja'),{
       tipo:'egreso', cuenta:'Efectivo', monto:monto,
       concepto:'Retiro a caja general', origen:'retiro_cajero',
       creadoPor: operador, detalle: obs||'',
       fecha: hoy, mes: mes, uid: uid, eliminado: false, creadoEn: new Date().toISOString()
     });
-    // Ingreso para admin
+    // Ingreso en Caja general
     await addDoc(collection(db,'libroCaja'),{
-      tipo:'ingreso', cuenta:'Efectivo', monto:monto,
+      tipo:'ingreso', cuenta:'Caja general', monto:monto,
       concepto:'Retiro de '+operador, origen:'retiro_cajero',
       creadoPor: 'Admin', detalle: obs||'',
       fecha: hoy, mes: mes, uid: uid, eliminado: false, creadoEn: new Date().toISOString()
@@ -24342,11 +24349,18 @@ window._aplicarRestriccionesRol = function() {
     var btnCierre = document.getElementById('btn-cajero-cierre');
     if (btnRetiro) btnRetiro.style.display = '';
     if (btnCierre) btnCierre.style.display = '';
-    // Ocultar Configuración y Cierre de período al cajero
+    // Ocultar sub-items del sidebar de Finanzas excepto Caja
+    var sbsubFinanzas = document.getElementById('sbsub-finanzas');
+    if (sbsubFinanzas) {
+      sbsubFinanzas.querySelectorAll('.sb-subitem').forEach(function(btn) {
+        if (btn.dataset.sub !== 'caja') btn.style.display = 'none';
+      });
+    }
+    // Ocultar tabs del subnav-finanzas que el cajero no debe ver
     var subnavBtns = document.querySelectorAll('#subnav-finanzas .subctab');
     subnavBtns.forEach(function(b) {
-      var t = b.textContent.trim();
-      if (t === 'Configuración' || t === 'Cierre') b.style.display = 'none';
+      var esCajeroBtn = b.id === 'btn-cajero-retiro' || b.id === 'btn-cajero-cierre';
+      if (!esCajeroBtn && b.textContent.trim() !== 'Caja') b.style.display = 'none';
     });
   }
 };
