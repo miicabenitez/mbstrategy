@@ -1021,7 +1021,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
     <div class="login-card">
       <div class="login-title">Bienvenido/a</div>
       <div class="login-sub">Ingresá a tu cuenta para continuar.</div>
-      <div class="fg"><label class="fl">Email</label><input type="email" class="fi" id="le" placeholder="tu@email.com"/></div>
+      <div class="fg"><label class="fl">Usuario</label><input type="text" class="fi" id="le" placeholder="tu_usuario"/></div>
       <div class="fg"><label class="fl">Contraseña</label><div style="position:relative;"><input type="password" class="fi" id="lp2" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" style="padding-right:44px;"/><button type="button" id="lp2-toggle" onclick="(function(){var i=document.getElementById('lp2'),b=document.getElementById('lp2-toggle');i.type=i.type==='password'?'text':'password';b.innerHTML=i.type==='password'?'<svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;#9ca3af&quot; stroke-width=&quot;1.8&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z&quot;/><circle cx=&quot;12&quot; cy=&quot;12&quot; r=&quot;3&quot;/></svg>':'<svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;#9ca3af&quot; stroke-width=&quot;1.8&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24&quot;/><line x1=&quot;1&quot; y1=&quot;1&quot; x2=&quot;23&quot; y2=&quot;23&quot;/></svg>';})()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;line-height:0;display:flex;align-items:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin:8px 0 20px;"><a href="/terminos.html" target="_blank" style="font-size:12px;color:#aaa;text-decoration:none;">Términos y condiciones</a><a href="#" onclick="resetPassword()" style="font-size:12px;color:#aaa;text-decoration:none;">¿Olvidaste tu contraseña?</a></div>
       <button class="btn-login" onclick="doLogin()">Ingresar</button>
@@ -5816,13 +5816,25 @@ function sanitize(str) {
 window.sanitize = sanitize;
 
 window.doLogin = async function() {
-  const e = document.getElementById('le').value;
+  const inputVal = document.getElementById('le').value.trim();
   const p = document.getElementById('lp2').value;
   const err = document.getElementById('lerr');
   err.style.display = 'none';
-  if (!e || !p) { err.textContent = 'Completa todos los campos'; err.style.display = 'block'; return; }
-  try { await signInWithEmailAndPassword(auth, e, p); }
-  catch(ex) { err.textContent = 'Email o contraseña incorrectos'; err.style.display = 'block'; }
+  if (!inputVal || !p) { err.textContent = 'Completá todos los campos'; err.style.display = 'block'; return; }
+  try {
+    if (inputVal.includes('@')) {
+      await signInWithEmailAndPassword(auth, inputVal, p);
+    } else {
+      const _lookupSnap = await getDoc(doc(db, 'operadoresLookup', inputVal));
+      if (!_lookupSnap.exists()) throw new Error('Usuario no encontrado');
+      const _emailSintetico = _lookupSnap.data().emailSintetico;
+      await signInWithEmailAndPassword(auth, _emailSintetico, p);
+    }
+  }
+  catch(ex) {
+    err.textContent = ex.message === 'Usuario no encontrado' ? 'Usuario no encontrado' : 'Usuario o contraseña incorrectos';
+    err.style.display = 'block';
+  }
 };
 
 window.doLogout = async function() {
@@ -5980,6 +5992,17 @@ async function getClientByAuth(user) {
       const _data2 = d.data();
       return { id: d.id, ..._data2, plan: _data2.plan || _data2.membresia?.plan || 'base' };
     }
+    // Fallback 3: email sintético de operador — extraer negocioId del dominio
+    if (user.email && user.email.includes('.op.mbstrategy.internal')) {
+      const _negocioId = user.email.split('@')[1].replace('.op.mbstrategy.internal', '');
+      if (_negocioId) {
+        const _negDoc = await getDoc(doc(db, 'clientes', _negocioId)).catch(() => null);
+        if (_negDoc && _negDoc.exists()) {
+          const _negData = _negDoc.data();
+          return { id: _negocioId, ..._negData, plan: _negData.plan || _negData.membresia?.plan || 'base' };
+        }
+      }
+    }
     console.log('[getClientByAuth] WARN: retornando null — cliente no encontrado');
   } catch(e) { console.log('getClientByAuth error:', e); }
   return null;
@@ -6071,6 +6094,26 @@ window.showClientUI = async function(email, clientData) {
       currentClientData = clientData;
       window.currentClientData = clientData;
 
+      // Resolución de rol del operador
+      window.currentRol = 'admin';
+      window.currentOperadorNombre = 'Admin';
+      window.currentOperadorId = null;
+      if (currentUser && currentUser.uid !== clientData.uid) {
+        try {
+          const _opSnap = await getDocs(query(
+            collection(db, 'clientes', currentClientUID, 'operadores'),
+            where('uid', '==', currentUser.uid)
+          ));
+          if (!_opSnap.empty) {
+            const _op = _opSnap.docs[0].data();
+            window.currentRol = _op.rol;
+            window.currentOperadorNombre = _op.nombre;
+            window.currentOperadorId = _op.uid;
+            window.turnoInicio = new Date().toISOString();
+          }
+        } catch(_e) { console.log('resolución rol:', _e); }
+      }
+
       // Mostrar módulo inicial inmediatamente, sin esperar los awaits de datos
       const _savedMod0 = (() => { try { return localStorage.getItem('mbst_lastmod'); } catch(e) { return null; } })();
       const _modToShow0 = _savedMod0 || 'inicio';
@@ -6123,6 +6166,7 @@ window.showClientUI = async function(email, clientData) {
     }
     if(window.embiShow) window.embiShow(true, clientData.plan === 'pro' ? 'operativo' : 'explicativo');
     if(window.sidebarInit) window.sidebarInit();
+    if(window._aplicarRestriccionesRol) window._aplicarRestriccionesRol();
     if(window.embiPrecargarContexto) window.embiPrecargarContexto();
     if(window._aplicarLocksPlanBase) window._aplicarLocksPlanBase(clientData);
     // módulo ya mostrado antes de los awaits (ver arriba)
@@ -10096,7 +10140,8 @@ window.emitirFacturaCaja = async function() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + idToken
+        'Authorization': 'Bearer ' + idToken,
+        'X-Cliente-UID': window.currentClientUID || ''
       },
       body: JSON.stringify({
         accion: 'emitirFactura',
@@ -11756,7 +11801,7 @@ window.mfEmitirNcNd = async function() {
     const idToken = await currentUser.getIdToken(true);
     const res = await fetch('/.netlify/functions/afip', {
       method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer '+idToken},
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+idToken,'X-Cliente-UID':window.currentClientUID||''},
       body: JSON.stringify({
         accion,
         puntoVenta: f.puntoVenta || parseInt(currentClientData?.negocioPuntoVenta) || 2,
@@ -12230,7 +12275,7 @@ window.abrirNuevaFacturaLibre = function() {
         const idToken = await currentUser.getIdToken(true);
         const res = await fetch('/.netlify/functions/afip', {
           method: 'POST',
-          headers: {'Content-Type':'application/json','Authorization':'Bearer '+idToken},
+          headers: {'Content-Type':'application/json','Authorization':'Bearer '+idToken,'X-Cliente-UID':window.currentClientUID||''},
           body: JSON.stringify({accion:'ultimoComprobante', puntoVenta, tipoComprobante: tipoComp})
         });
         const data = await res.json();
@@ -12450,7 +12495,7 @@ window.emitirFacturaLibre = async function() {
     const idToken = await currentUser.getIdToken(true);
     const res = await fetch('/.netlify/functions/afip', {
       method: 'POST',
-      headers: {'Content-Type':'application/json','Authorization':'Bearer '+idToken},
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+idToken,'X-Cliente-UID':window.currentClientUID||''},
       body: JSON.stringify({
         accion: 'emitirFactura',
         puntoVenta,
@@ -23616,6 +23661,19 @@ window._aplicarLocksPlanBase = function(clientData) {
   if(tabCierre) tabCierre.innerHTML = esBase ? _lockSvg + 'Cierre de período' : 'Cierre';
   var btnCfgCierre = document.getElementById('cprd-cfg-tab-cierre');
   if(btnCfgCierre) btnCfgCierre.innerHTML = esBase ? _lockSvg + 'Cierre de período' : 'Cierre de período';
+};
+
+window._aplicarRestriccionesRol = function() {
+  var rol = window.currentRol || 'admin';
+  var _ocultar = {
+    cajero:   ['sbg-ventas','sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion'],
+    compras:  ['sbg-finanzas','sbg-ventas','sbg-herramientas','sbg-gestion'],
+    comercial:['sbg-finanzas','sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion']
+  }[rol] || [];
+  _ocultar.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
 };
 
 // Abre un PDF guardado como Base64 en nueva pestaña

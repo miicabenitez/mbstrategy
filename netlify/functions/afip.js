@@ -121,6 +121,7 @@ exports.handler = async function(event) {
     if (!idToken) return { statusCode: 401, headers: corsHeaders, body: JSON.stringify({ error: 'No autorizado' }) };
     const decoded = await admin.auth().verifyIdToken(idToken);
     const uid = decoded.uid;
+    const clienteUID = event.headers?.['x-cliente-uid'] || uid;
 
     // ── Parsear body ──
     const body = JSON.parse(event.body || '{}');
@@ -128,7 +129,7 @@ exports.handler = async function(event) {
     if (!accion) return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: 'Falta accion' }) };
 
     // ── Verificar que el cliente existe y está activo en Firestore ──
-    const clienteSnap = await db.collection('clientes').doc(uid).get();
+    const clienteSnap = await db.collection('clientes').doc(clienteUID).get();
     if (!clienteSnap.exists) return { statusCode: 403, headers: corsHeaders, body: JSON.stringify({ error: 'Cliente no encontrado' }) };
     const clienteData = clienteSnap.data();
     if (clienteData.estado === 'inactivo' || clienteData.estado === 'suspendido') {
@@ -268,7 +269,7 @@ exports.handler = async function(event) {
       }
 
       // Guardar en Firestore
-      const facturaRef = db.collection('clientes').doc(uid).collection('facturas').doc();
+      const facturaRef = db.collection('clientes').doc(clienteUID).collection('facturas').doc();
       const facturaData = {
         id: facturaRef.id,
         uid,
@@ -418,7 +419,7 @@ exports.handler = async function(event) {
         };
       }
 
-      const ncRef = db.collection('clientes').doc(uid).collection('notasCredito').doc();
+      const ncRef = db.collection('clientes').doc(clienteUID).collection('notasCredito').doc();
       await ncRef.set({
         id: ncRef.id,
         uid,
@@ -546,7 +547,7 @@ exports.handler = async function(event) {
         };
       }
 
-      const ndRef = db.collection('clientes').doc(uid).collection('notasDebito').doc();
+      const ndRef = db.collection('clientes').doc(clienteUID).collection('notasDebito').doc();
       await ndRef.set({
         id: ndRef.id,
         uid,
@@ -597,7 +598,7 @@ exports.handler = async function(event) {
     // ACCIÓN: listarFacturas
     // ════════════════════════════════════════
     if (accion === 'listarFacturas') {
-      const snap = await db.collection('clientes').doc(uid).collection('facturas')
+      const snap = await db.collection('clientes').doc(clienteUID).collection('facturas')
         .orderBy('creadoEn', 'desc').limit(100).get();
       const facturas = snap.docs.map(d => d.data());
       return { statusCode: 200, headers: corsHeaders, body: JSON.stringify({ ok: true, facturas }) };
