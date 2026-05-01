@@ -13664,7 +13664,7 @@ async function loadInicio() {
       }
       const _criticos = _insumos.filter(i=>typeof i.stockMinimo==='number'&&i.stockMinimo>0&&(parseFloat(i.stockActual)||0)<=i.stockMinimo);
       if(_criticos.length) {
-        _stkCritEl.innerHTML = '<div style="border-left:3px solid #b09088;background:#fff;border-radius:0 8px 8px 0;padding:12px 14px;margin-bottom:0;box-shadow:0 1px 3px rgba(0,0,0,.06);"><div style="font-family:\'DM Sans\',sans-serif;font-size:13px;font-weight:500;color:#7a4e46;margin-bottom:4px;">⚠ '+_criticos.length+' insumo'+(_criticos.length!==1?'s':'')+' con stock crítico</div><div style="font-size:12px;color:var(--text-m);line-height:1.6;">'+_criticos.map(i=>i.nombre).join(' · ')+'</div></div>';
+        _stkCritEl.innerHTML = '<div style="display:flex;align-items:flex-start;gap:0;border-radius:10px;overflow:hidden;background:#f5eeec;border-left:4px solid #b09088;"><div style="padding:12px 12px 12px 14px;flex:1;min-width:0;"><div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px;">⚠ '+_criticos.length+' insumo'+(_criticos.length!==1?'s':'')+' con stock crítico</div><div style="font-size:12px;color:var(--text-l);margin-bottom:8px;">'+_criticos.map(i=>i.nombre).join(' · ')+'</div><button onclick="sidebarNav(\'stock\',\'insumos\')" style="font-size:11px;font-weight:600;color:#fff;background:linear-gradient(135deg,#9a7870 0%,#b09088 45%,#ccb0a8 65%,#b09088 100%);border:none;border-radius:6px;padding:5px 12px;cursor:pointer;font-family:inherit;">Ver insumos →</button></div></div>';
         _stkCritEl.style.display = 'block';
       } else {
         _stkCritEl.innerHTML = '';
