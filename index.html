@@ -10017,9 +10017,10 @@ function renderCajaChips(cuentas, movs) {
     </div>`;
   }).join('');
 
-  window._cajaSaldoTotal = cuentasUnicas
-    .filter(c => c.tipo !== 'retiros')
-    .reduce((a,c) => a + (saldos[c.nombre]||0), 0);
+  const _cuentasParaSaldo = window.currentRol === 'cajero'
+    ? cuentasUnicas.filter(c => c.nombre === 'Caja mostrador')
+    : cuentasUnicas.filter(c => c.tipo !== 'retiros');
+  window._cajaSaldoTotal = _cuentasParaSaldo.reduce((a,c) => a + (saldos[c.nombre]||0), 0);
   const dispEl = document.getElementById('cont-disponible');
   if(dispEl) dispEl.textContent = '$'+Math.round(window._cajaSaldoTotal).toLocaleString('es-AR');
   const _kpiSaldo = document.getElementById('caja-kpi-saldo-cajero');
