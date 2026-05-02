@@ -2102,7 +2102,8 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
       <div id="cajero-apertura-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;">
         <div style="background:#fff;border-radius:14px;padding:28px 24px;width:340px;box-shadow:0 8px 32px rgba(0,0,0,.18);">
           <div style="font-weight:700;font-size:15px;margin-bottom:4px;">Apertura de turno</div>
-          <div style="font-size:13px;color:#555;margin-bottom:16px;">Ingresá el monto en caja al inicio del turno.</div>
+          <div style="font-size:13px;color:#555;margin-bottom:12px;">Ingresá el monto en caja al inicio del turno.</div>
+          <div id="cajero-apertura-saldo-sistema" style="font-size:12px;color:#888;margin-bottom:12px;padding:8px 10px;background:#f5f6f3;border-radius:8px;"></div>
           <div style="margin-bottom:16px;">
             <label style="font-size:12px;color:#777;display:block;margin-bottom:4px;">Monto inicial en Caja mostrador</label>
             <input id="cajero-apertura-monto" type="number" min="0" step="0.01" placeholder="0.00" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;" />
@@ -6297,10 +6298,7 @@ window.showClientUI = async function(email, clientData) {
               const _td = _turnosSnap.docs[0];
               window.turnoActual = { id: _td.id, ..._td.data() };
             } else {
-              setTimeout(() => {
-                const _ov = document.getElementById('cajero-apertura-overlay');
-                if (_ov) _ov.style.display = 'flex';
-              }, 400);
+              setTimeout(() => { if(window.cajaAperturaShow) window.cajaAperturaShow(); }, 400);
             }
           }
         } catch(_e) { console.log('resolución rol:', _e); }
@@ -9909,6 +9907,10 @@ async function _cajaMaybeInit(uid) {
 
 async function loadCajaModule() {
   if(!currentClientUID) return;
+  if(window.currentRol === 'cajero' && !window.turnoActual) {
+    if(window.cajaAperturaShow) window.cajaAperturaShow();
+    return;
+  }
   const uid = currentClientUID;
   const tbody = document.getElementById('caja-tbody');
   if(tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:28px;color:#bbb;font-size:13px;">Cargando...</td></tr>';
@@ -9935,6 +9937,9 @@ async function loadCajaModule() {
     const movsSnap = await getDocs(collection(db,'clientes',uid,'libroCaja'));
     let todosMovs = [];
     movsSnap.forEach(d => { const data = d.data(); if(!data.eliminado) todosMovs.push({id:d.id,...data}); });
+    if(window.currentRol === 'cajero') {
+      todosMovs = todosMovs.filter(m => m.cuenta==='Caja mostrador' || m.cuentaHacia==='Caja mostrador' || m.cuentaDesde==='Caja mostrador');
+    }
     // Cajero: tabla/chips usan movimientos del turno; admin usa histórico completo
     let movsVista = todosMovs;
     const _turnoStart = window.turnoActual?.apertura?.creadoEn;
@@ -9996,7 +10001,8 @@ function renderCajaKPIs(movs) {
   const _kpiSF = document.getElementById('caja-kpi-saldo-final');
   const _kpiSFVal = document.getElementById('caja-kpi-saldo-final-val');
   if(_kpiSF) _kpiSF.style.display = (window.currentRol === 'cajero') ? '' : 'none';
-  if(_kpiSFVal) _kpiSFVal.textContent = '$'+Math.round(Math.max(0,(window._cajaSaldoTotal||0)+resultado)).toLocaleString('es-AR');
+  var _saldoBase = window.currentRol==='cajero' ? (window.turnoActual&&window.turnoActual.apertura ? window.turnoActual.apertura.monto : 0) : (window._cajaSaldoTotal||0);
+  if(_kpiSFVal) _kpiSFVal.textContent = '$'+Math.round(Math.max(0, _saldoBase + resultado)).toLocaleString('es-AR');
 }
 
 let _cajaCuentaFiltro = null; // null = todas
@@ -10056,7 +10062,7 @@ function renderCajaChips(cuentas, movs) {
   const _kpiSaldo = document.getElementById('caja-kpi-saldo-cajero');
   const _kpiSaldoVal = document.getElementById('caja-kpi-saldo-cajero-val');
   if(_kpiSaldo) _kpiSaldo.style.display = (window.currentRol === 'cajero') ? '' : 'none';
-  if(_kpiSaldoVal) _kpiSaldoVal.textContent = '$'+Math.round(window._cajaSaldoTotal).toLocaleString('es-AR');
+  if(_kpiSaldoVal) _kpiSaldoVal.textContent = '$'+Math.round(window.turnoActual&&window.turnoActual.apertura ? window.turnoActual.apertura.monto : 0).toLocaleString('es-AR');
   container.innerHTML = chipTodas + chipsCuentas;
 }
 
@@ -24308,6 +24314,30 @@ window.cajaCierreConfirmar = async function() {
 };
 
 // ─── CAJERO: Apertura de turno ───────────────────────────────
+window.cajaAperturaShow = async function() {
+  var _ov = document.getElementById('cajero-apertura-overlay');
+  if(!_ov) return;
+  var _saldoEl = document.getElementById('cajero-apertura-saldo-sistema');
+  var _montoInput = document.getElementById('cajero-apertura-monto');
+  if(_saldoEl) _saldoEl.textContent = 'Calculando saldo...';
+  try {
+    var _movsSnap = await getDocs(collection(db,'clientes',currentClientUID,'libroCaja'));
+    var _saldo = 0;
+    _movsSnap.forEach(function(d) {
+      var _m = d.data(); if(_m.eliminado) return;
+      if(_m.tipo==='ingreso'  && _m.cuenta==='Caja mostrador')    _saldo += parseFloat(_m.monto)||0;
+      else if(_m.tipo==='egreso' && _m.cuenta==='Caja mostrador') _saldo -= parseFloat(_m.monto)||0;
+      else if(_m.tipo==='transfer') {
+        if(_m.cuentaDesde==='Caja mostrador') _saldo -= parseFloat(_m.monto)||0;
+        if(_m.cuentaHacia==='Caja mostrador') _saldo += parseFloat(_m.monto)||0;
+      }
+    });
+    if(_saldoEl) _saldoEl.textContent = 'Saldo en sistema: $'+Math.round(_saldo).toLocaleString('es-AR');
+    if(_montoInput) _montoInput.value = Math.max(0, Math.round(_saldo));
+  } catch(_e) { if(_saldoEl) _saldoEl.textContent = ''; }
+  _ov.style.display = 'flex';
+};
+
 window.cajaAperturaConfirmar = async function() {
   var btn = document.getElementById('cajero-apertura-btn');
   if(btn) { btn.disabled=true; btn.textContent='Abriendo...'; }
