@@ -9908,6 +9908,9 @@ async function loadCajaModule() {
     const movs = movsVista.filter(m => m.mes === mes.stored);
     movs.sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')||((a.creadoEn||'').localeCompare(b.creadoEn||'')));
     window._cajaMovimientos = movs;
+    // Verificar si hay cajeros activos → alias "Caja general" para Efectivo
+    const _opSnap = await getDocs(query(collection(db,'clientes',uid,'operadores'), where('activo','==',true)));
+    window._tieneOperadores = !_opSnap.empty;
     // 4. Renderizar
     renderCajaKPIs(movs);
     renderCajaChips(cuentasUnicas, movsVista);
@@ -9997,7 +10000,7 @@ function renderCajaChips(cuentas, movs) {
     const dotColor = sel ? 'white' : color;
     return `<div class="caja-chip${sel?' caja-chip-activo':''}" style="${chipStyle}display:flex;align-items:center;gap:6px;animation:fadeUp .3s ease both;animation-delay:${(i+1)*60}ms;" data-cuenta="${nombreSafe}" onclick="cajaFiltrarCuenta(this.dataset.cuenta,this)">
       <div style="width:7px;height:7px;border-radius:50%;background:${dotColor};flex-shrink:0;" data-color="${color}"></div>
-      <span>${c.nombre||'Sin nombre'}</span>
+      <span>${(window._tieneOperadores && c.nombre==='Efectivo') ? 'Caja general' : (c.nombre||'Sin nombre')}</span>
     </div>`;
   }).join('');
 
@@ -10165,9 +10168,10 @@ function renderCajaTable(movs, facturadosMap = new Map()) {
     const salidaHtml = (m.tipo==='egreso'||m.tipo==='transferencia'||esTransferSalida)
       ? `<span style="font-size:13px;font-weight:600;color:#993C1D;display:block;text-align:right;">$${Math.round(monto).toLocaleString('es-AR')}</span>`
       : `<span style="font-size:13px;color:#e0e0e0;display:block;text-align:right;">—</span>`;
+    const _aliasEfectivo = (n) => (window._tieneOperadores && n==='Efectivo') ? 'Caja general' : n;
     const cuentaLabel = m.tipo==='transfer'
-      ? `${m.cuentaDesde||'?'} → ${m.cuentaHacia||'?'}`
-      : m.tipo==='transferencia' ? (m.cuentaOrigen||'—') : (m.cuenta||'—');
+      ? `${_aliasEfectivo(m.cuentaDesde||'?')} → ${_aliasEfectivo(m.cuentaHacia||'?')}`
+      : m.tipo==='transferencia' ? (m.cuentaOrigen||'—') : (_aliasEfectivo(m.cuenta||'—'));
     const noFacturable = ['apertura de caja','retiro de socio'].includes((m.concepto||'').toLowerCase()) || m.origen === 'cierre';
     const facInfo = facturadosMap.get(m.id);
     const facNro = facInfo ? ('0000'+(facInfo.puntoVenta||2)).slice(-4)+'-'+('00000000'+(facInfo.nroComprobante||0)).slice(-8) : '';
