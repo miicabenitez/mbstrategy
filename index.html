@@ -2098,6 +2098,21 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         </div>
       </div>
 
+      <!-- MODAL Apertura de turno cajero -->
+      <div id="cajero-apertura-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:14px;padding:28px 24px;width:340px;box-shadow:0 8px 32px rgba(0,0,0,.18);">
+          <div style="font-weight:700;font-size:15px;margin-bottom:4px;">Apertura de turno</div>
+          <div style="font-size:13px;color:#555;margin-bottom:16px;">Ingresá el monto en caja al inicio del turno.</div>
+          <div style="margin-bottom:16px;">
+            <label style="font-size:12px;color:#777;display:block;margin-bottom:4px;">Monto inicial en Caja mostrador</label>
+            <input id="cajero-apertura-monto" type="number" min="0" step="0.01" placeholder="0.00" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;" />
+          </div>
+          <div style="display:flex;gap:8px;justify-content:flex-end;">
+            <button id="cajero-apertura-btn" onclick="cajaAperturaConfirmar()" style="padding:8px 18px;border-radius:8px;border:none;background:#4a5e4d;color:#fff;font-size:13px;font-weight:600;cursor:pointer;">Iniciar turno</button>
+          </div>
+        </div>
+      </div>
+
       <!-- PRO LOCK — Finanzas -->
       <div id="ct-finanzas-pro-lock" style="display:none;padding:60px 24px;">
         <div style="background:#fff;border-radius:12px;padding:36px 24px;text-align:center;max-width:280px;margin:0 auto;box-shadow:0 2px 16px rgba(0,0,0,0.08);">
@@ -6272,7 +6287,21 @@ window.showClientUI = async function(email, clientData) {
             window.currentRol = _op.rol;
             window.currentOperadorNombre = _op.nombre;
             window.currentOperadorId = _op.uid;
-            window.turnoInicio = new Date().toISOString();
+            window.turnoActual = null;
+            const _turnosSnap = await getDocs(query(
+              collection(db, 'clientes', currentClientUID, 'turnos'),
+              where('cajeroUid', '==', currentUser.uid),
+              where('estado', '==', 'abierto')
+            ));
+            if (!_turnosSnap.empty) {
+              const _td = _turnosSnap.docs[0];
+              window.turnoActual = { id: _td.id, ..._td.data() };
+            } else {
+              setTimeout(() => {
+                const _ov = document.getElementById('cajero-apertura-overlay');
+                if (_ov) _ov.style.display = 'flex';
+              }, 400);
+            }
           }
         } catch(_e) { console.log('resolución rol:', _e); }
       }
@@ -9908,8 +9937,9 @@ async function loadCajaModule() {
     movsSnap.forEach(d => { const data = d.data(); if(!data.eliminado) todosMovs.push({id:d.id,...data}); });
     // Cajero: tabla/chips usan movimientos del turno; admin usa histórico completo
     let movsVista = todosMovs;
-    if(window.currentRol === 'cajero' && window.turnoInicio) {
-      movsVista = todosMovs.filter(m => (m.creadoEn||'') >= window.turnoInicio);
+    const _turnoStart = window.turnoActual?.apertura?.creadoEn;
+    if(window.currentRol === 'cajero' && _turnoStart) {
+      movsVista = todosMovs.filter(m => (m.creadoEn||'') >= _turnoStart);
     }
     // Filtrar por mes para tabla y KPIs
     const movs = movsVista.filter(m => m.mes === mes.stored);
@@ -24222,7 +24252,7 @@ window.cajaCierreShow = function() {
   var saldo = ingresos - egresos;
   var resumen = document.getElementById('cajero-cierre-resumen');
   if(resumen) resumen.innerHTML =
-    '<b>Turno:</b> '+new Date(window.turnoInicio||Date.now()).toLocaleString('es-AR')+'<br>'+
+    '<b>Turno:</b> '+new Date((window.turnoActual&&window.turnoActual.apertura&&window.turnoActual.apertura.creadoEn)||Date.now()).toLocaleString('es-AR')+'<br>'+
     '<b>Ingresos:</b> $'+ingresos.toLocaleString('es-AR')+'<br>'+
     '<b>Egresos:</b> $'+egresos.toLocaleString('es-AR')+'<br>'+
     '<b>Saldo efectivo:</b> $'+saldo.toLocaleString('es-AR');
@@ -24260,12 +24290,47 @@ window.cajaCierreConfirmar = async function() {
     }
     cajaCierreCerrar();
     showToast('Caja cerrada. Se envió el resumen al admin.','success');
-    // Resetear turnoInicio para que al recargar el cajero no vea movs anteriores
-    window.turnoInicio = new Date().toISOString();
+    if (window.turnoActual && window.turnoActual.id) {
+      try {
+        var _turnoRef = doc(db,'clientes',currentClientUID,'turnos',window.turnoActual.id);
+        await updateDoc(_turnoRef, {
+          estado: 'cerrado',
+          cierre: { monto: saldo, fecha: new Date().toISOString(), creadoEn: new Date().toISOString() }
+        });
+      } catch(_ce) {}
+      window.turnoActual = null;
+    }
     loadCajaModule();
   } catch(e) {
     showToast('Error al cerrar caja: '+(e?.message||e),'error');
     if(btn) { btn.disabled=false; btn.textContent='Confirmar cierre'; }
+  }
+};
+
+// ─── CAJERO: Apertura de turno ───────────────────────────────
+window.cajaAperturaConfirmar = async function() {
+  var btn = document.getElementById('cajero-apertura-btn');
+  if(btn) { btn.disabled=true; btn.textContent='Abriendo...'; }
+  try {
+    var monto = parseFloat(document.getElementById('cajero-apertura-monto').value)||0;
+    var ahora = new Date().toISOString();
+    var turnoData = {
+      cajeroUid: window.currentOperadorId || '',
+      cajeroNombre: window.currentOperadorNombre || 'Cajero',
+      estado: 'abierto',
+      apertura: { monto: monto, fecha: ahora, creadoEn: ahora },
+      cierre: null,
+      creadoEn: ahora
+    };
+    var turnoRef = await addDoc(collection(db,'clientes',currentClientUID,'turnos'), turnoData);
+    window.turnoActual = { id: turnoRef.id, ...turnoData };
+    var _ov = document.getElementById('cajero-apertura-overlay');
+    if(_ov) _ov.style.display = 'none';
+    showToast('Turno iniciado','success');
+    loadCajaModule();
+  } catch(e) {
+    showToast('Error al iniciar turno: '+(e?.message||e),'error');
+    if(btn) { btn.disabled=false; btn.textContent='Iniciar turno'; }
   }
 };
 
@@ -24307,7 +24372,8 @@ async function turnoGenerarPDF(operador, ingresos, egresos, saldo, movs) {
     pdf.text(operador, W-M-3, y+5.5, {align:'right'}); y+=8;
     pdf.setFillColor(245,246,243); pdf.rect(M,y,cW,8,'F');
     pdf.text('Inicio de turno', M+3, y+5.5);
-    pdf.text(window.turnoInicio ? new Date(window.turnoInicio).toLocaleString('es-AR') : '—', W-M-3, y+5.5, {align:'right'}); y+=8;
+    var _turnoInicioStr = (window.turnoActual&&window.turnoActual.apertura&&window.turnoActual.apertura.creadoEn) ? new Date(window.turnoActual.apertura.creadoEn).toLocaleString('es-AR') : '—';
+    pdf.text(_turnoInicioStr, W-M-3, y+5.5, {align:'right'}); y+=8;
     y+=4;
     // Resumen
     pdf.setFillColor(245,246,243); pdf.rect(M,y,cW,8,'F');
