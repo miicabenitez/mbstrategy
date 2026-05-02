@@ -2108,7 +2108,8 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
             <label style="font-size:12px;color:#777;display:block;margin-bottom:4px;">Monto inicial en Caja mostrador</label>
             <input id="cajero-apertura-monto" type="number" min="0" step="0.01" placeholder="0.00" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;" />
           </div>
-          <div style="display:flex;gap:8px;justify-content:flex-end;">
+          <div style="display:flex;gap:8px;justify-content:space-between;align-items:center;">
+            <button onclick="doLogout()" style="padding:8px 14px;border-radius:8px;border:1px solid #ddd;background:#fff;font-size:12px;color:#999;cursor:pointer;">Cerrar sesión</button>
             <button id="cajero-apertura-btn" onclick="cajaAperturaConfirmar()" style="padding:8px 18px;border-radius:8px;border:none;background:#4a5e4d;color:#fff;font-size:13px;font-weight:600;cursor:pointer;">Iniciar turno</button>
           </div>
         </div>
@@ -24309,7 +24310,8 @@ window.cajaCierreConfirmar = async function() {
       } catch(_ce) {}
       window.turnoActual = null;
     }
-    loadCajaModule();
+    if (window.showClientMod) window.showClientMod('inicio');
+    else loadCajaModule();
   } catch(e) {
     showToast('Error al cerrar caja: '+(e?.message||e),'error');
     if(btn) { btn.disabled=false; btn.textContent='Confirmar cierre'; }
