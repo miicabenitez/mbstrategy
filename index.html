@@ -13563,7 +13563,7 @@ window.mvmGuardar = async function() {
       const detalle = document.getElementById('mvm-tr-detalle')?.value||'';
       if(!monto) return;
       if(desde===hacia){showToast('Las cuentas no pueden ser iguales.', 'info');return;}
-      docs.push({fecha,tipo:'transferencia',concepto:'Transferencia entre cuentas',cuentaOrigen:desde,cuentaDestino:hacia,monto,detalle,mes:mkMes(fecha),origen:'manual',eliminado:false,creadoEn:new Date().toISOString()});
+      docs.push({fecha,tipo:'transfer',concepto:'Transferencia entre cuentas',cuentaDesde:desde,cuentaHacia:hacia,monto,detalle,mes:mkMes(fecha),origen:'manual',eliminado:false,creadoEn:new Date().toISOString()});
     } else {
       const fecha = document.getElementById('mvm-fecha')?.value||hoy;
       const cuenta = document.getElementById('mvm-cuenta')?.value||'';
