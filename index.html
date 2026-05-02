@@ -2315,7 +2315,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
     </div>
     <div id="caja-kpi-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
       <div id="caja-kpi-saldo-cajero" style="display:none;background:rgba(255,255,255,.08);border-radius:10px;padding:16px 20px;border:0.5px solid rgba(106,160,110,.4);">
-        <div style="font-size:9px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px;">Saldo en caja</div>
+        <div style="font-size:9px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px;">Saldo inicial</div>
         <div id="caja-kpi-saldo-cajero-val" style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;color:#a8d4ac;">—</div>
       </div>
       <div style="background:rgba(255,255,255,.08);border-radius:10px;padding:16px 20px;border:0.5px solid rgba(106,160,110,.4);">
@@ -2333,10 +2333,12 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
           <div id="caja-kpi-resultado" style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;color:#fff;">—</div>
         </div>
       </div>
+      <div id="caja-kpi-saldo-final" style="display:none;background:rgba(255,255,255,.08);border-radius:10px;padding:16px 20px;border:0.5px solid rgba(106,160,110,.4);">
+        <div style="font-size:9px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px;">Saldo final</div>
+        <div id="caja-kpi-saldo-final-val" style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;color:#a8d4ac;">—</div>
+      </div>
     </div>
   </div>
-
-  <!-- Barra de filtros -->
   <div style="background:var(--white);border:0.5px solid var(--cream-d);border-radius:12px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
     <span style="font-size:11px;color:var(--text-l);font-weight:500;white-space:nowrap;">Filtrar</span>
     <div style="display:flex;gap:6px;flex-wrap:wrap;" id="caja-filter-tipo">
@@ -9959,6 +9961,10 @@ function renderCajaKPIs(movs) {
   }
   if(kpiRS) kpiRS.style.color = resultado < 0 ? '#e8a090' : 'transparent';
   if(kpiRS) kpiRS.textContent = resultado < 0 ? '−' : '';
+  const _kpiSF = document.getElementById('caja-kpi-saldo-final');
+  const _kpiSFVal = document.getElementById('caja-kpi-saldo-final-val');
+  if(_kpiSF) _kpiSF.style.display = (window.currentRol === 'cajero') ? '' : 'none';
+  if(_kpiSFVal) _kpiSFVal.textContent = '$'+Math.round(Math.max(0,(window._cajaSaldoTotal||0)+resultado)).toLocaleString('es-AR');
 }
 
 let _cajaCuentaFiltro = null; // null = todas
