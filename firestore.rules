@@ -51,12 +51,6 @@ service cloud.firestore {
       }
     }
 
-    match /libroCaja/{docId} {
-      allow read: if isAuthenticated() && (isAdmin() || isOwner(resource) || isOperatorOf(resource.data.uid));
-      allow create: if isAuthenticated() && (isOwnerWrite() || isOperatorOf(request.resource.data.uid));
-      allow update, delete: if isAuthenticated() && (isAdmin() || isOwner(resource) || isOperatorOf(resource.data.uid));
-    }
-
     // ── BUG-002: Cierre de Período ─────────────────────────────
     match /cierres/{docId} {
       allow read: if isAuthenticated() && (isAdmin() || isOwner(resource));

@@ -9799,7 +9799,7 @@ async function loadClientContabilidad() {
   if(!currentClientUID) return;
   try {
     const snap = await getDocs(
-      query(collection(db,'libroCaja'), where('uid','==',currentClientUID))
+      query(collection(db,'clientes',currentClientUID,'libroCaja'))
     );
     const ingresos = [], egresos = [];
     snap.forEach(d => {
@@ -9897,7 +9897,7 @@ async function loadCajaModule() {
     const seenC = new Set(); const cuentasUnicas = cuentas.filter(c=>{ if(seenC.has(c.nombre))return false; seenC.add(c.nombre); return true; });
     cuentasUnicas.sort((a,b)=>(a.orden||0)-(b.orden||0));
     // 3. Cargar todos los movimientos desde libroCaja
-    const movsSnap = await getDocs(query(collection(db,'libroCaja'), where('uid','==',uid)));
+    const movsSnap = await getDocs(collection(db,'clientes',uid,'libroCaja'));
     let todosMovs = [];
     movsSnap.forEach(d => { const data = d.data(); if(!data.eliminado) todosMovs.push({id:d.id,...data}); });
     // Cajero: tabla/chips usan movimientos del turno; admin usa histórico completo
@@ -10020,7 +10020,7 @@ async function preloadCajaSaldo(uid) {
     cuentasSnap.forEach(d => cuentas.push({id:d.id,...d.data()}));
     const seen = new Set();
     const cuentasUnicas = cuentas.filter(c => { if(seen.has(c.nombre)) return false; seen.add(c.nombre); return true; });
-    const movsSnap = await getDocs(query(collection(db,'libroCaja'), where('uid','==',uid)));
+    const movsSnap = await getDocs(collection(db,'clientes',uid,'libroCaja'));
     const saldos = {};
     cuentasUnicas.forEach(c => { saldos[c.nombre] = 0; });
     movsSnap.forEach(d => {
@@ -10234,7 +10234,7 @@ window.abrirModalFacturaCaja = async function(movId) {
   if (!_verificarDatosFiscales()) return;
   try {
     const { getDoc, doc } = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
-    const movSnap = await getDoc(doc(db, 'libroCaja', movId));
+    const movSnap = await getDoc(doc(db, 'clientes', currentClientUID, 'libroCaja', movId));
     if (!movSnap.exists()) return showToast('Movimiento no encontrado', 'error');
     const mov = { id: movSnap.id, ...movSnap.data() };
     document.getElementById('mfc-monto-txt').textContent = '$' + Number(mov.monto).toLocaleString('es-AR');
@@ -10339,7 +10339,7 @@ window.emitirFacturaCaja = async function() {
     if (data.facturaId && modal.dataset.movId) {
       const { doc: firestoreDoc, updateDoc } = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
       await updateDoc(firestoreDoc(db, 'clientes', currentClientUID, 'facturas', data.facturaId), {movId: modal.dataset.movId}).catch(()=>{});
-      updateDoc(doc(db, 'libroCaja', modal.dataset.movId), {facturado: true, facturaId: data.facturaId}).catch(()=>{});
+      updateDoc(doc(db, 'clientes', currentClientUID, 'libroCaja', modal.dataset.movId), {facturado: true, facturaId: data.facturaId}).catch(()=>{});
     }
     showToast('Factura emitida · CAE ' + data.cae, 'success');
     closeModal('modalFacturaCaja');
@@ -10638,7 +10638,7 @@ window.mdvEliminar = async function() {
   const ok = confirm('¿Eliminar este movimiento? Esta acción no se puede deshacer.');
   if(!ok) return;
   try {
-    await updateDoc(doc(db,'libroCaja',m.id), {eliminado:true});
+    await updateDoc(doc(db,'clientes',currentClientUID,'libroCaja',m.id), {eliminado:true});
     window.mdvCerrar();
     loadCajaModule();
   } catch(e) {
@@ -10686,7 +10686,7 @@ window.mdvGuardar = async function() {
   if(btnGuardar) { btnGuardar.disabled=true; btnGuardar.textContent='Guardando...'; }
 
   try {
-    await updateDoc(doc(db,'libroCaja',m.id), updates);
+    await updateDoc(doc(db,'clientes',currentClientUID,'libroCaja',m.id), updates);
     window.mdvCerrar();
     loadCajaModule();
   } catch(e) {
@@ -10710,7 +10710,7 @@ async function loadCajaConfig() {
     const [cuentasSnap, conceptosSnap, movsSnap] = await Promise.all([
       getDocs(collection(db,'clientes',uid,'cuentas')),
       getDocs(collection(db,'clientes',uid,'conceptos')),
-      getDocs(query(collection(db,'libroCaja'), where('uid','==',uid)))
+      getDocs(collection(db,'clientes',uid,'libroCaja'))
     ]);
     console.log('[loadCajaConfig] cuentas:', cuentasSnap.size, 'conceptos:', conceptosSnap.size, 'movs:', movsSnap.size);
 
@@ -11126,7 +11126,7 @@ async function loadCierrePeriodo() {
     });
     // 4. Calcular saldo real de cada cuenta desde libroCaja
     // Nota: se filtra eliminado en cliente (igual que Caja) para evitar requerir índice compuesto en Firestore
-    const movsSnap = await getDocs(query(collection(db,'libroCaja'),where('uid','==',uid)));
+    const movsSnap = await getDocs(collection(db,'clientes',uid,'libroCaja'));
     const saldos = {};
     _cierreCuentas.forEach(c=>{ saldos[c.nombre] = 0; });
     movsSnap.forEach(d=>{
@@ -11446,7 +11446,7 @@ async function _cierreEjecutarCierre(movimientos, provPagos, retiroPagos) {
     const creadoEn = new Date().toISOString();
     // Guardar movimientos en libroCaja con metadata completa
     const movsConMeta = movimientos.map(m=>({...m, uid, fecha, mes, origen:'cierre', referenciaId:cierreRef.id, eliminado:false, creadoEn, creadoPor: window.currentOperadorNombre || 'Admin'}));
-    await Promise.all(movsConMeta.map(m=>addDoc(collection(db,'libroCaja'),m)));
+    await Promise.all(movsConMeta.map(m=>addDoc(collection(db,'clientes',uid,'libroCaja'),m)));
     // Registrar pagos en CC de proveedores (compromisos)
     if(provPagos && provPagos.length) {
       await Promise.all(provPagos.map(p=>addDoc(
@@ -13237,7 +13237,7 @@ window.ccfgAbrirEditarCuenta = async function(id, nombre, tipo, banco, saldo) {
   let tieneMovimientos = false;
   if(id && currentClientUID) {
     try {
-      const snap = await getDocs(query(collection(db,'libroCaja'),where('uid','==',currentClientUID)));
+      const snap = await getDocs(collection(db,'clientes',currentClientUID,'libroCaja'));
       snap.forEach(d => { if(!d.data().eliminado && d.data().cuenta === nombre) tieneMovimientos = true; });
     } catch(e) {}
   }
@@ -13285,7 +13285,7 @@ window.ccfgCuentaGuardar = async function() {
     if(saldo > 0) {
       const hoy = fechaHoyARG();
       const mes = mesHoyARG(hoy);
-      await addDoc(collection(db,'libroCaja'), {
+      await addDoc(collection(db,'clientes',currentClientUID,'libroCaja'), {
         uid: currentClientUID,
         fecha: hoy,
         tipo: 'ingreso',
@@ -13399,7 +13399,7 @@ window.cajaNuevoMovimiento = async function() {
     const [cuentasSnap, conceptosSnap, movsSnap] = await Promise.all([
       getDocs(collection(db,'clientes',uid,'cuentas')),
       getDocs(collection(db,'clientes',uid,'conceptos')),
-      getDocs(query(collection(db,'libroCaja'), where('uid','==',uid)))
+      getDocs(collection(db,'clientes',uid,'libroCaja'))
     ]);
     const seenC = new Set();
     _mvmCuentas = [];
@@ -13587,7 +13587,7 @@ window.mvmGuardar = async function() {
     }
     const btnSave = document.getElementById('mvm-btn-save');
     if(btnSave){btnSave.disabled=true;btnSave.textContent='Guardando...';}
-    await Promise.all(docs.map(d=>addDoc(collection(db,'libroCaja'),{uid,...d})));
+    await Promise.all(docs.map(d=>addDoc(collection(db,'clientes',uid,'libroCaja'),{uid,...d})));
     mvmCerrar();
     loadCajaModule();
   } catch(e){
@@ -13764,7 +13764,7 @@ window.vrcGuardar = async function() {
   const btnSave = document.getElementById('vrc-btn-save');
   try {
     if(btnSave){btnSave.disabled=true;btnSave.innerHTML='<span style="display:flex;align-items:center;justify-content:center;gap:8px;">Registrando...</span>';}
-    const _vcDocRef = await addDoc(collection(db,'libroCaja'), {
+    const _vcDocRef = await addDoc(collection(db,'clientes',currentClientUID,'libroCaja'), {
       uid:currentClientUID,
       fecha:hoy, tipo:'ingreso', concepto:'Venta caja',
       cuenta:_vrcMetodo||'Efectivo', monto:Math.round(total*100)/100,
@@ -13927,7 +13927,7 @@ async function loadInicio() {
 
   // Cargar datos financieros desde libroCaja
   try {
-    const cajSnap = await getDocs(query(collection(db,'libroCaja'),where('uid','==',currentClientUID)));
+    const cajSnap = await getDocs(collection(db,'clientes',currentClientUID,'libroCaja'));
     const ingresos = [], egresos = [];
     cajSnap.forEach(d => {
       const data = d.data();
@@ -14423,7 +14423,7 @@ async function renderOnboardingChecklist() {
     try {
       let cajMovs = window._cajaMovimientos;
       if(!cajMovs) {
-        const snap = await getDocs(query(collection(db,'libroCaja'),where('uid','==',currentClientUID)));
+        const snap = await getDocs(collection(db,'clientes',currentClientUID,'libroCaja'));
         cajMovs = [];
         snap.forEach(doc => { const m = doc.data(); if(!m.eliminado) cajMovs.push(m); });
       }
@@ -17156,7 +17156,7 @@ window.createMcCobro = async function() {
     // 4b. Escribir en libroCaja
     const cuentaCobro = document.getElementById('mcc-cobro-cuenta')?.value || formaPago;
     const presupNumero = document.getElementById('mcc-cobro-presup-id')?.value || '';
-    await addDoc(collection(db,'libroCaja'), {
+    await addDoc(collection(db,'clientes',currentClientUID,'libroCaja'), {
       uid      : currentClientUID,
       fecha    : fecha || fechaHoyARG(),
       tipo     : 'ingreso',
@@ -21525,7 +21525,7 @@ window.savePagoProveedor = async function() {
 
     // Escribir en libroCaja
     const mesEgreso = mesHoyARG(fecha||fechaHoyARG());
-    await addDoc(collection(db,'libroCaja'), {
+    await addDoc(collection(db,'clientes',currentClientUID,'libroCaja'), {
       uid        : currentClientUID,
       fecha      : fecha || fechaHoyARG(),
       tipo       : 'egreso',
@@ -21858,8 +21858,8 @@ window.eliminarOP = async function(pagoId) {
       if(fac.esOC&&fac.ocId){try{await updateDoc(doc(db,'clientes',currentClientUID,'ordenesCompra',fac.ocId),{estadoPago:nuevoEstado});const oc=(_ordenesCompra||window._ordenesCompra||[]).find(o=>o.id===fac.ocId);if(oc)oc.estadoPago=nuevoEstado;}catch(e){}}
     }
     try{
-      const lbSnap=await getDocs(query(collection(db,'libroCaja'),where('referenciaId','==',pagoId)));
-      for(const d of lbSnap.docs) await updateDoc(doc(db,'libroCaja',d.id),{eliminado:true});
+      const lbSnap=await getDocs(query(collection(db,'clientes',currentClientUID,'libroCaja'),where('referenciaId','==',pagoId)));
+      for(const d of lbSnap.docs) await updateDoc(doc(db,'clientes',currentClientUID,'libroCaja',d.id),{eliminado:true});
     }catch(e){}
     const idx=(_ccPagos||[]).findIndex(p=>p.id===pagoId);
     if(idx>=0) _ccPagos.splice(idx,1);
@@ -21946,8 +21946,8 @@ window.guardarEdicionOP = async function(pagoId) {
       facturasIds:newFacturasIds,facturasNombres:newFacturasNombres,facturasMontos:newFacturasMontos
     });
     try{
-      const lbSnap=await getDocs(query(collection(db,'libroCaja'),where('referenciaId','==',pagoId)));
-      for(const d of lbSnap.docs) await updateDoc(doc(db,'libroCaja',d.id),{monto:nuevoMonto,fecha:nuevaFecha});
+      const lbSnap=await getDocs(query(collection(db,'clientes',currentClientUID,'libroCaja'),where('referenciaId','==',pagoId)));
+      for(const d of lbSnap.docs) await updateDoc(doc(db,'clientes',currentClientUID,'libroCaja',d.id),{monto:nuevoMonto,fecha:nuevaFecha});
     }catch(e){}
     Object.assign(pago,{monto:nuevoMonto,medio:nuevoMedio,fecha:nuevaFecha,facturasIds:newFacturasIds,facturasNombres:newFacturasNombres,facturasMontos:newFacturasMontos});
     window._ccOpActual={...pago};
@@ -24173,14 +24173,14 @@ window.cajaRetiroGuardar = async function() {
     var uid = currentClientUID;
     var operador = window.currentOperadorNombre || 'Cajero';
     // Egreso del cajero (sale de Caja mostrador)
-    await addDoc(collection(db,'libroCaja'),{
+    await addDoc(collection(db,'clientes',uid,'libroCaja'),{
       tipo:'egreso', cuenta:'Caja mostrador', monto:monto,
       concepto:'Retiro a caja general', origen:'retiro_cajero',
       creadoPor: operador, detalle: obs||'',
       fecha: hoy, mes: mes, uid: uid, eliminado: false, creadoEn: new Date().toISOString()
     });
     // Ingreso en Efectivo (caja del dueño)
-    await addDoc(collection(db,'libroCaja'),{
+    await addDoc(collection(db,'clientes',uid,'libroCaja'),{
       tipo:'ingreso', cuenta:'Efectivo', monto:monto,
       concepto:'Retiro de '+operador, origen:'retiro_cajero',
       creadoPor: 'Admin', detalle: obs||'',
@@ -24818,7 +24818,7 @@ async function loadProductos() {
     // Ítem más rentable — leer directamente de libroCaja
     const rentabilidad = {};
     try {
-      const cajSnap = await fsi.getDocs(fsi.query(fsi.collection(fdb,'libroCaja'), fsi.where('uid','==',uid)));
+      const cajSnap = await fsi.getDocs(fsi.collection(fdb,'clientes',uid,'libroCaja'));
       cajSnap.forEach(function(d){
         const m = d.data();
         if(m.eliminado) return;
@@ -25272,12 +25272,12 @@ async function embiEjecutarAccion(tipo,datos){
     var mesTxt=d.toLocaleDateString('es-AR',{month:'long',year:'numeric'});
     mesTxt=mesTxt.charAt(0).toUpperCase()+mesTxt.slice(1);
     if(tipo==='INGRESO'){
-      await window._addDoc(window._collection(window.db,'libroCaja'),{uid:currentClientUID,fecha:datos.fecha||hoy,tipo:'ingreso',concepto:datos.concepto||'Ingreso',cuenta:datos.cuenta||'',monto:parseFloat(datos.monto)||0,detalle:datos.detalle||'',mes:mesTxt,origen:'embi',eliminado:false,creadoEn:new Date().toISOString(),creadoPor:window.currentOperadorNombre||'Admin'});
+      await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'libroCaja'),{uid:currentClientUID,fecha:datos.fecha||hoy,tipo:'ingreso',concepto:datos.concepto||'Ingreso',cuenta:datos.cuenta||'',monto:parseFloat(datos.monto)||0,detalle:datos.detalle||'',mes:mesTxt,origen:'embi',eliminado:false,creadoEn:new Date().toISOString(),creadoPor:window.currentOperadorNombre||'Admin'});
       if(window.loadCajaModule)window.loadCajaModule();
       if(window.loadInicio)window.loadInicio();
       embiAddMsg('bot','Ingreso de $'+parseFloat(datos.monto).toLocaleString('es-AR')+' registrado en Finanzas.');
     }else if(tipo==='EGRESO'){
-      await window._addDoc(window._collection(window.db,'libroCaja'),{uid:currentClientUID,fecha:datos.fecha||hoy,tipo:'egreso',concepto:datos.concepto||'Egreso',cuenta:datos.cuenta||'',monto:parseFloat(datos.monto)||0,detalle:datos.detalle||'',mes:mesTxt,origen:'embi',eliminado:false,creadoEn:new Date().toISOString(),creadoPor:window.currentOperadorNombre||'Admin'});
+      await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'libroCaja'),{uid:currentClientUID,fecha:datos.fecha||hoy,tipo:'egreso',concepto:datos.concepto||'Egreso',cuenta:datos.cuenta||'',monto:parseFloat(datos.monto)||0,detalle:datos.detalle||'',mes:mesTxt,origen:'embi',eliminado:false,creadoEn:new Date().toISOString(),creadoPor:window.currentOperadorNombre||'Admin'});
       if(window.loadCajaModule)window.loadCajaModule();
       if(window.loadInicio)window.loadInicio();
       embiAddMsg('bot','Egreso de $'+parseFloat(datos.monto).toLocaleString('es-AR')+' registrado en Finanzas.');
@@ -25385,7 +25385,7 @@ async function embiEjecutarAccion(tipo,datos){
       var _cbConcepto='Cobro presupuesto '+datos.cliente;
       var _cbMesStr=mesHoyARG(_cbFecha);
       await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'cobros'),{concepto:_cbConcepto,monto:_cbMonto,estado:'Cobrado',fecha:_cbFecha,saldoPendiente:0,totalAcumulado:_cbMonto,origen:'embi'});
-      await window._addDoc(window._collection(window.db,'libroCaja'),{uid:currentClientUID,fecha:_cbFecha,tipo:'ingreso',concepto:'Cobro '+datos.cliente,cuenta:datos.cuenta||'',monto:_cbMonto,origen:'embi',detalle:'Cobro presupuesto',mes:_cbMesStr,eliminado:false,creadoEn:new Date().toISOString(),creadoPor:window.currentOperadorNombre||'Admin'});
+      await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'libroCaja'),{uid:currentClientUID,fecha:_cbFecha,tipo:'ingreso',concepto:'Cobro '+datos.cliente,cuenta:datos.cuenta||'',monto:_cbMonto,origen:'embi',detalle:'Cobro presupuesto',mes:_cbMesStr,eliminado:false,creadoEn:new Date().toISOString(),creadoPor:window.currentOperadorNombre||'Admin'});
       if(datos.presupuestoId)await window._updateDoc(window._doc(window.db,'clientes',currentClientUID,'presupuestos',datos.presupuestoId),{estado:'Cobrado',actualizadoEn:new Date().toISOString()});
       if(window.loadClientPresupuestos)await window.loadClientPresupuestos();
       if(window.loadClientContabilidad)await window.loadClientContabilidad();
@@ -25399,7 +25399,7 @@ async function embiEjecutarAccion(tipo,datos){
       var _ppMesStr=mesHoyARG(_ppFecha);
       var _ppProvId=datos.proveedorId||((window._proveedores||[]).find(function(p){return p.nombre===datos.proveedor;})||{}).id||'';
       if(_ppProvId)await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'proveedores',_ppProvId,'pagos'),{tipo:'pago',monto:_ppMonto,fecha:_ppFecha,medio:datos.cuenta||'',concepto:_ppConcepto,creadoEn:new Date().toISOString()});
-      await window._addDoc(window._collection(window.db,'libroCaja'),{uid:currentClientUID,fecha:_ppFecha,tipo:'egreso',concepto:_ppConcepto,cuenta:datos.cuenta||'',monto:_ppMonto,origen:'embi',detalle:'Pago proveedor: '+datos.proveedor,mes:_ppMesStr,eliminado:false,creadoEn:new Date().toISOString(),creadoPor:window.currentOperadorNombre||'Admin'});
+      await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'libroCaja'),{uid:currentClientUID,fecha:_ppFecha,tipo:'egreso',concepto:_ppConcepto,cuenta:datos.cuenta||'',monto:_ppMonto,origen:'embi',detalle:'Pago proveedor: '+datos.proveedor,mes:_ppMesStr,eliminado:false,creadoEn:new Date().toISOString(),creadoPor:window.currentOperadorNombre||'Admin'});
       if(window.loadProveedores)await window.loadProveedores();
       if(window._ccProvId && _ppProvId && window._ccProvId===_ppProvId && window.abrirCuentaCorriente) await window.abrirCuentaCorriente(_ppProvId);
       if(window.loadCajaModule)window.loadCajaModule();
