@@ -24257,7 +24257,8 @@ window.cajaCierreShow = function() {
   var movs = (window._cajaMovimientos || []).filter(function(m){ return m.cuenta==='Caja mostrador'||m.cuentaHacia==='Caja mostrador'||m.cuentaDesde==='Caja mostrador'; });
   var ingresos = movs.filter(function(m){return m.tipo==='ingreso';}).reduce(function(a,m){return a+(parseFloat(m.monto)||0);},0);
   var egresos  = movs.filter(function(m){return m.tipo==='egreso';}).reduce(function(a,m){return a+(parseFloat(m.monto)||0);},0);
-  var saldo = ingresos - egresos;
+  var _saldoBase = (window.currentRol === 'cajero' && window.turnoActual && window.turnoActual.apertura && window.turnoActual.apertura.monto) ? window.turnoActual.apertura.monto : 0;
+  var saldo = _saldoBase + ingresos - egresos;
   var resumen = document.getElementById('cajero-cierre-resumen');
   if(resumen) resumen.innerHTML =
     '<b>Turno:</b> '+new Date((window.turnoActual&&window.turnoActual.apertura&&window.turnoActual.apertura.creadoEn)||Date.now()).toLocaleString('es-AR')+'<br>'+
