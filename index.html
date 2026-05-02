@@ -2327,6 +2327,8 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         </button>
         <button onclick="exportarCajaExcel()" style="height:32px;padding:0 14px;background:#fff;color:#4a5e4d;border:none;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;">↓ Excel</button>
         <button onclick="exportarCajaCsv()" style="height:32px;padding:0 14px;background:rgba(255,255,255,.12);color:#fff;border:0.5px solid rgba(255,255,255,.25);border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;">↓ CSV</button>
+        <button id="btn-cajero-retiro-banner" onclick="cajaRetiroShow()" style="display:none;height:32px;padding:0 14px;background:rgba(255,255,255,.12);color:#fff;border:0.5px solid rgba(255,255,255,.25);border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;">Retiro</button>
+        <button id="btn-cajero-cierre-banner" onclick="cajaCierreShow()" style="display:none;height:32px;padding:0 14px;background:#fff;color:#4a5e4d;border:none;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;">Cerrar caja</button>
       </div>
     </div>
     <div id="caja-kpi-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
@@ -24480,6 +24482,10 @@ window._aplicarRestriccionesRol = function() {
     var btnCierre = document.getElementById('btn-cajero-cierre');
     if (btnRetiro) btnRetiro.style.display = '';
     if (btnCierre) btnCierre.style.display = '';
+    var btnRetiroBanner = document.getElementById('btn-cajero-retiro-banner');
+    var btnCierreBanner = document.getElementById('btn-cajero-cierre-banner');
+    if (btnRetiroBanner) btnRetiroBanner.style.display = '';
+    if (btnCierreBanner) btnCierreBanner.style.display = '';
     // Ocultar sub-items del sidebar de Finanzas excepto Caja
     var sbsubFinanzas = document.getElementById('sbsub-finanzas');
     if (sbsubFinanzas) {
