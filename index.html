@@ -24228,14 +24228,14 @@ window.cajaRetiroGuardar = async function() {
     var uid = currentClientUID;
     var operador = window.currentOperadorNombre || 'Cajero';
     // Egreso del cajero (sale de Caja mostrador)
-    await addDoc(collection(db,'clientes',uid,'libroCaja'),{
+    await window._addDoc(window._collection(window.db,'clientes',uid,'libroCaja'),{
       tipo:'egreso', cuenta:'Caja mostrador', monto:monto,
       concepto:'Retiro a caja general', origen:'retiro_cajero',
       creadoPor: operador, detalle: obs||'',
       fecha: hoy, mes: mes, uid: uid, eliminado: false, creadoEn: new Date().toISOString()
     });
     // Ingreso en Efectivo (caja del dueño)
-    await addDoc(collection(db,'clientes',uid,'libroCaja'),{
+    await window._addDoc(window._collection(window.db,'clientes',uid,'libroCaja'),{
       tipo:'ingreso', cuenta:'Efectivo', monto:monto,
       concepto:'Retiro de '+operador, origen:'retiro_cajero',
       creadoPor: 'Admin', detalle: obs||'',
