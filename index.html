@@ -24327,7 +24327,9 @@ window.cajaAperturaShow = async function() {
   }
   if(_saldoEl) _saldoEl.textContent = 'Calculando saldo...';
   try {
+    console.log('[cajaAperturaShow] haciendo getDocs...');
     var _movsSnap = await getDocs(collection(db,'clientes',currentClientUID,'libroCaja'));
+    console.log('[cajaAperturaShow] docs:', _movsSnap.size);
     var _saldo = 0;
     _movsSnap.forEach(function(d) {
       var _m = d.data(); if(_m.eliminado) return;
@@ -24338,9 +24340,11 @@ window.cajaAperturaShow = async function() {
         if(_m.cuentaHacia==='Caja mostrador') _saldo += parseFloat(_m.monto)||0;
       }
     });
+    console.log('[cajaAperturaShow] saldo calculado:', _saldo);
     if(_saldoEl) _saldoEl.textContent = 'Saldo en sistema: $'+Math.round(_saldo).toLocaleString('es-AR');
+    console.log('[cajaAperturaShow] textContent seteado:', _saldoEl?.textContent);
     if(_montoInput) _montoInput.value = Math.max(0, Math.round(_saldo));
-  } catch(_e) { if(_saldoEl) _saldoEl.textContent = ''; }
+  } catch(_e) { console.log('[cajaAperturaShow] ERROR:', _e); if(_saldoEl) _saldoEl.textContent = ''; }
   _ov.style.display = 'flex';
 };
 
