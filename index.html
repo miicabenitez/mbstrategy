@@ -2326,7 +2326,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         <div style="font-size:9px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px;">Salidas</div>
         <div id="caja-kpi-salidas" style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;color:#e8a090;">—</div>
       </div>
-      <div style="background:rgba(255,255,255,.08);border-radius:10px;padding:16px 20px;border:0.5px solid rgba(255,255,255,.1);">
+      <div id="caja-kpi-resultado-wrap" style="background:rgba(255,255,255,.08);border-radius:10px;padding:16px 20px;border:0.5px solid rgba(255,255,255,.1);">
         <div style="font-size:9px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px;">Resultado</div>
         <div style="display:flex;align-items:baseline;gap:1px;">
           <span id="caja-kpi-resultado-signo" style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;color:#e8a090;"></span>
@@ -9961,6 +9961,8 @@ function renderCajaKPIs(movs) {
   }
   if(kpiRS) kpiRS.style.color = resultado < 0 ? '#e8a090' : 'transparent';
   if(kpiRS) kpiRS.textContent = resultado < 0 ? '−' : '';
+  const _kpiRWrap = document.getElementById('caja-kpi-resultado-wrap');
+  if(_kpiRWrap) _kpiRWrap.style.display = (window.currentRol === 'cajero') ? 'none' : '';
   const _kpiSF = document.getElementById('caja-kpi-saldo-final');
   const _kpiSFVal = document.getElementById('caja-kpi-saldo-final-val');
   if(_kpiSF) _kpiSF.style.display = (window.currentRol === 'cajero') ? '' : 'none';
