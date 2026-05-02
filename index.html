@@ -24315,10 +24315,16 @@ window.cajaCierreConfirmar = async function() {
 
 // ─── CAJERO: Apertura de turno ───────────────────────────────
 window.cajaAperturaShow = async function() {
+  console.log('[cajaAperturaShow] currentClientUID:', currentClientUID);
   var _ov = document.getElementById('cajero-apertura-overlay');
   if(!_ov) return;
   var _saldoEl = document.getElementById('cajero-apertura-saldo-sistema');
   var _montoInput = document.getElementById('cajero-apertura-monto');
+  if(!currentClientUID) {
+    await new Promise(r => setTimeout(r, 500));
+    console.log('[cajaAperturaShow] retry — currentClientUID:', currentClientUID);
+    if(!currentClientUID) { _ov.style.display = 'flex'; return; }
+  }
   if(_saldoEl) _saldoEl.textContent = 'Calculando saldo...';
   try {
     var _movsSnap = await getDocs(collection(db,'clientes',currentClientUID,'libroCaja'));
