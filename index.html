@@ -2314,6 +2314,10 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
       </div>
     </div>
     <div id="caja-kpi-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+      <div id="caja-kpi-saldo-cajero" style="display:none;background:rgba(255,255,255,.08);border-radius:10px;padding:16px 20px;border:0.5px solid rgba(106,160,110,.4);">
+        <div style="font-size:9px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px;">Saldo en caja</div>
+        <div id="caja-kpi-saldo-cajero-val" style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;color:#a8d4ac;">—</div>
+      </div>
       <div style="background:rgba(255,255,255,.08);border-radius:10px;padding:16px 20px;border:0.5px solid rgba(106,160,110,.4);">
         <div style="font-size:9px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px;">Entradas</div>
         <div id="caja-kpi-entradas" style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;color:#a8d4ac;">—</div>
@@ -10010,6 +10014,10 @@ function renderCajaChips(cuentas, movs) {
     .reduce((a,c) => a + (saldos[c.nombre]||0), 0);
   const dispEl = document.getElementById('cont-disponible');
   if(dispEl) dispEl.textContent = '$'+Math.round(window._cajaSaldoTotal).toLocaleString('es-AR');
+  const _kpiSaldo = document.getElementById('caja-kpi-saldo-cajero');
+  const _kpiSaldoVal = document.getElementById('caja-kpi-saldo-cajero-val');
+  if(_kpiSaldo) _kpiSaldo.style.display = (window.currentRol === 'cajero') ? '' : 'none';
+  if(_kpiSaldoVal) _kpiSaldoVal.textContent = '$'+Math.round(window._cajaSaldoTotal).toLocaleString('es-AR');
   container.innerHTML = chipTodas + chipsCuentas;
 }
 
