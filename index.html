@@ -24298,8 +24298,8 @@ window.cajaCierreConfirmar = async function() {
     showToast('Caja cerrada. Se envió el resumen al admin.','success');
     if (window.turnoActual && window.turnoActual.id) {
       try {
-        var _turnoRef = doc(db,'clientes',currentClientUID,'turnos',window.turnoActual.id);
-        await updateDoc(_turnoRef, {
+        var _turnoRef = window._doc(window.db,'clientes',currentClientUID,'turnos',window.turnoActual.id);
+        await window._updateDoc(_turnoRef, {
           estado: 'cerrado',
           cierre: { monto: saldo, fecha: new Date().toISOString(), creadoEn: new Date().toISOString() }
         });
@@ -24362,7 +24362,7 @@ window.cajaAperturaConfirmar = async function() {
       cierre: null,
       creadoEn: ahora
     };
-    var turnoRef = await addDoc(collection(db,'clientes',currentClientUID,'turnos'), turnoData);
+    var turnoRef = await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'turnos'), turnoData);
     window.turnoActual = { id: turnoRef.id, ...turnoData };
     var _ov = document.getElementById('cajero-apertura-overlay');
     if(_ov) _ov.style.display = 'none';
