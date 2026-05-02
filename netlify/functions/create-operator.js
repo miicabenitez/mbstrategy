@@ -105,6 +105,23 @@ exports.handler = async function(event) {
         clienteUID
       });
 
+      // Si es cajero, asegurar que existen "Caja mostrador" y "Caja general"
+      if (rol === 'cajero') {
+        const cuentasSnap = await db.collection('clientes').doc(clienteUID).collection('cuentas').get();
+        const nombresExistentes = new Set(cuentasSnap.docs.map(d => (d.data().nombre || '').toLowerCase()));
+        const ahora = new Date().toISOString();
+        if (!nombresExistentes.has('caja mostrador')) {
+          await db.collection('clientes').doc(clienteUID).collection('cuentas').add({
+            nombre: 'Caja mostrador', tipo: 'efectivo', saldoInicial: 0, orden: 10, activo: true, creadoEn: ahora
+          });
+        }
+        if (!nombresExistentes.has('caja general')) {
+          await db.collection('clientes').doc(clienteUID).collection('cuentas').add({
+            nombre: 'Caja general', tipo: 'efectivo', saldoInicial: 0, orden: 11, activo: true, creadoEn: ahora
+          });
+        }
+      }
+
       return { statusCode: 200, headers: corsHeaders, body: JSON.stringify({ ok: true, uid: newUid }) };
     }
 

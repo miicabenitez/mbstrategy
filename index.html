@@ -9899,33 +9899,7 @@ async function loadCajaModule() {
     const movsSnap = await getDocs(query(collection(db,'libroCaja'), where('uid','==',uid)));
     let todosMovs = [];
     movsSnap.forEach(d => { const data = d.data(); if(!data.eliminado) todosMovs.push({id:d.id,...data}); });
-    // Cajero: registrar apertura de turno una sola vez (saldo Efectivo al inicio del turno)
-    if(window.currentRol === 'cajero' && window.turnoInicio && !window.turnoAperturaRegistrada) {
-      window.turnoAperturaRegistrada = true;
-      try {
-        let _saldoEfect = 0;
-        todosMovs.forEach(function(m) {
-          if(m.origen === 'apertura_turno') return;
-          if(m.tipo==='ingreso' && m.cuenta==='Efectivo') _saldoEfect += parseFloat(m.monto)||0;
-          else if(m.tipo==='egreso' && m.cuenta==='Efectivo') _saldoEfect -= parseFloat(m.monto)||0;
-          else if(m.tipo==='transfer') {
-            if(m.cuentaDesde==='Efectivo') _saldoEfect -= parseFloat(m.monto)||0;
-            if(m.cuentaHacia==='Efectivo') _saldoEfect += parseFloat(m.monto)||0;
-          }
-        });
-        const _hoy = fechaHoyARG();
-        const _aperturaCreadoEn = new Date().toISOString();
-        const _aperturaDoc = {
-          tipo:'ingreso', concepto:'Apertura de turno', cuenta:'Efectivo',
-          monto: Math.round(Math.max(0,_saldoEfect)*100)/100, origen:'apertura_turno',
-          creadoPor: window.currentOperadorNombre||'Cajero',
-          uid, fecha:_hoy, mes:mesHoyARG(_hoy), eliminado:false, creadoEn:_aperturaCreadoEn
-        };
-        const _aperturaRef = await addDoc(collection(db,'libroCaja'), _aperturaDoc);
-        todosMovs.push({id:_aperturaRef.id, ..._aperturaDoc});
-      } catch(_ae) { console.log('apertura turno error:', _ae); }
-    }
-    // Cajero: tabla/chips usan movimientos del turno (incluye apertura); admin usa histórico completo
+    // Cajero: tabla/chips usan movimientos del turno; admin usa histórico completo
     let movsVista = todosMovs;
     if(window.currentRol === 'cajero' && window.turnoInicio) {
       movsVista = todosMovs.filter(m => (m.creadoEn||'') >= window.turnoInicio);
@@ -9986,9 +9960,9 @@ function renderCajaChips(cuentas, movs) {
   if(!container) return;
   const seen = new Set();
   let cuentasUnicas = cuentas.filter(c => { if(seen.has(c.nombre)) return false; seen.add(c.nombre); return true; });
-  // Cajero: solo ve cuenta Efectivo
+  // Cajero: solo ve Caja mostrador
   if(window.currentRol === 'cajero') {
-    cuentasUnicas = cuentasUnicas.filter(c => c.tipo === 'efectivo' || c.nombre === 'Efectivo');
+    cuentasUnicas = cuentasUnicas.filter(c => c.nombre === 'Caja mostrador');
   }
   const saldos = {};
   cuentasUnicas.forEach(c => { saldos[c.nombre] = 0; });
@@ -24200,9 +24174,9 @@ window.cajaRetiroGuardar = async function() {
     if(!_tieneCajaGeneral) {
       await addDoc(collection(db,'clientes',uid,'cuentas'),{nombre:'Caja general',saldoInicial:0,orden:99,activo:true});
     }
-    // Egreso del cajero (sale de Efectivo)
+    // Egreso del cajero (sale de Caja mostrador)
     await addDoc(collection(db,'libroCaja'),{
-      tipo:'egreso', cuenta:'Efectivo', monto:monto,
+      tipo:'egreso', cuenta:'Caja mostrador', monto:monto,
       concepto:'Retiro a caja general', origen:'retiro_cajero',
       creadoPor: operador, detalle: obs||'',
       fecha: hoy, mes: mes, uid: uid, eliminado: false, creadoEn: new Date().toISOString()
@@ -24227,7 +24201,7 @@ window.cajaRetiroGuardar = async function() {
 window.cajaCierreShow = function() {
   var ov = document.getElementById('cajero-cierre-overlay');
   if(!ov) return;
-  var movs = (window._cajaMovimientos || []).filter(function(m){ return m.cuenta==='Efectivo'||m.cuentaHacia==='Efectivo'||m.cuentaDesde==='Efectivo'; });
+  var movs = (window._cajaMovimientos || []).filter(function(m){ return m.cuenta==='Caja mostrador'||m.cuentaHacia==='Caja mostrador'||m.cuentaDesde==='Caja mostrador'; });
   var ingresos = movs.filter(function(m){return m.tipo==='ingreso';}).reduce(function(a,m){return a+(parseFloat(m.monto)||0);},0);
   var egresos  = movs.filter(function(m){return m.tipo==='egreso';}).reduce(function(a,m){return a+(parseFloat(m.monto)||0);},0);
   var saldo = ingresos - egresos;
@@ -24247,7 +24221,7 @@ window.cajaCierreConfirmar = async function() {
   var btn = document.getElementById('cajero-cierre-btn');
   if(btn) { btn.disabled=true; btn.textContent='Cerrando...'; }
   try {
-    var movs = (window._cajaMovimientos || []).filter(function(m){ return m.cuenta==='Efectivo'||m.cuentaHacia==='Efectivo'||m.cuentaDesde==='Efectivo'; });
+    var movs = (window._cajaMovimientos || []).filter(function(m){ return m.cuenta==='Caja mostrador'||m.cuentaHacia==='Caja mostrador'||m.cuentaDesde==='Caja mostrador'; });
     var ingresos = movs.filter(function(m){return m.tipo==='ingreso';}).reduce(function(a,m){return a+(parseFloat(m.monto)||0);},0);
     var egresos  = movs.filter(function(m){return m.tipo==='egreso';}).reduce(function(a,m){return a+(parseFloat(m.monto)||0);},0);
     var saldo = ingresos - egresos;
