@@ -24167,13 +24167,6 @@ window.cajaRetiroGuardar = async function() {
     var mes = mesHoyARG(hoy);
     var uid = currentClientUID;
     var operador = window.currentOperadorNombre || 'Cajero';
-    // Asegurar que existe la cuenta "Caja general"
-    var _cuentasSnap = await getDocs(collection(db,'clientes',uid,'cuentas'));
-    var _tieneCajaGeneral = false;
-    _cuentasSnap.forEach(function(d){ if((d.data().nombre||'').toLowerCase()==='caja general') _tieneCajaGeneral=true; });
-    if(!_tieneCajaGeneral) {
-      await addDoc(collection(db,'clientes',uid,'cuentas'),{nombre:'Caja general',saldoInicial:0,orden:99,activo:true});
-    }
     // Egreso del cajero (sale de Caja mostrador)
     await addDoc(collection(db,'libroCaja'),{
       tipo:'egreso', cuenta:'Caja mostrador', monto:monto,
@@ -24181,9 +24174,9 @@ window.cajaRetiroGuardar = async function() {
       creadoPor: operador, detalle: obs||'',
       fecha: hoy, mes: mes, uid: uid, eliminado: false, creadoEn: new Date().toISOString()
     });
-    // Ingreso en Caja general
+    // Ingreso en Efectivo (caja del dueño)
     await addDoc(collection(db,'libroCaja'),{
-      tipo:'ingreso', cuenta:'Caja general', monto:monto,
+      tipo:'ingreso', cuenta:'Efectivo', monto:monto,
       concepto:'Retiro de '+operador, origen:'retiro_cajero',
       creadoPor: 'Admin', detalle: obs||'',
       fecha: hoy, mes: mes, uid: uid, eliminado: false, creadoEn: new Date().toISOString()
