@@ -24328,7 +24328,7 @@ window.cajaAperturaShow = async function() {
   if(_saldoEl) _saldoEl.textContent = 'Calculando saldo...';
   try {
     console.log('[cajaAperturaShow] haciendo getDocs...');
-    var _movsSnap = await getDocs(collection(db,'clientes',currentClientUID,'libroCaja'));
+    var _movsSnap = await window._getDocs(window._collection(window.db,'clientes',currentClientUID,'libroCaja'));
     console.log('[cajaAperturaShow] docs:', _movsSnap.size);
     var _saldo = 0;
     _movsSnap.forEach(function(d) {
