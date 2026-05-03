@@ -9936,8 +9936,11 @@ function renderCajaCajero() {
       '.cv-btn-mov{background:#ede7db;color:#6a7a68;border:1.5px solid #d8d0c0;}',
       '.cv-btn-retiro{background:#f8f0ee;color:#b09088;border:1.5px solid rgba(176,144,136,.35);}',
       '.cv-btn-cerrar{background:linear-gradient(135deg,#a08078 0%,#c4a098 45%,#b89090 70%,#a08078 100%);color:#fff8f5;box-shadow:0 4px 16px rgba(160,128,120,.35),inset 0 1px 0 rgba(255,255,255,.2);}',
-      '.cajero-mode .sidebar{transform:translateX(-100%);transition:transform 0.25s ease;}',
-      '.cajero-mode .sidebar:hover{transform:translateX(0);box-shadow:4px 0 24px rgba(0,0,0,0.2);}'
+      '#cajero-sidebar-trigger{position:fixed;left:0;top:0;bottom:0;width:8px;z-index:201;cursor:pointer;}',
+      '#cajero-sidebar-trigger::after{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);width:4px;height:60px;background:rgba(61,82,64,0.35);border-radius:0 4px 4px 0;transition:opacity 0.2s,width 0.2s;}',
+      '#cajero-sidebar-trigger:hover::after{opacity:0;}',
+      '.cajero-mode .sidebar{transform:translateX(-210px);transition:transform 0.25s ease;}',
+      '.cajero-mode #cajero-sidebar-trigger:hover~.sidebar,.cajero-mode .sidebar:hover{transform:translateX(0);box-shadow:4px 0 24px rgba(0,0,0,0.2);}'
     ].join('');
     document.head.appendChild(st);
   }
@@ -9950,6 +9953,13 @@ function renderCajaCajero() {
   cv.innerHTML = '<div class="cv-top"><div class="cv-top-row1"><div class="cv-turno-info"><div class="cv-turno-top"><div class="cv-dot-live"></div><span class="cv-turno-nombre">'+operador+'</span></div><div class="cv-turno-sub">Turno activo · Apertura '+aperturaTime+' · '+aperturaDate+'</div></div></div><div class="cv-top-row2" id="cv-medios-row"></div></div><div class="cv-movimientos" id="cv-tx-feed"><div class="cv-mov-title">Movimientos</div><div id="cv-tx-list"></div></div><div class="cv-bottom-bar"><button class="cv-btn cv-btn-venta" onclick="cajaVentaRapida()"><svg width="14" height="14" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="#e8f2e8" stroke-width="1.8"/><path d="M10 6v8M6 10h8" stroke="#e8f2e8" stroke-width="1.8" stroke-linecap="round"/></svg>Nueva venta</button><button class="cv-btn cv-btn-mov" onclick="cajaNuevoMovimiento()">+ Movimiento</button><button class="cv-btn cv-btn-retiro" onclick="cajaRetiroShow()">Retiro</button><button class="cv-btn cv-btn-cerrar" onclick="cajaCierreShow()">Cerrar caja</button></div>';
   cv.style.display = 'flex';
   document.body.classList.add('cajero-mode');
+  if (!document.getElementById('cajero-sidebar-trigger')) {
+    var trigger = document.createElement('div');
+    trigger.id = 'cajero-sidebar-trigger';
+    var sb = document.getElementById('clientSidebar');
+    if (sb) document.body.insertBefore(trigger, sb);
+    else document.body.appendChild(trigger);
+  }
   var mes = new Date().toISOString().substring(0,7);
   if(_cajeroOnSnap){ _cajeroOnSnap(); _cajeroOnSnap = null; }
   _cajeroOnSnap = onSnapshot(collection(db,'clientes',currentClientUID,'libroCaja'), function(snap) {
