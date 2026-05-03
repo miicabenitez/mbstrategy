@@ -2097,8 +2097,31 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
             <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:#fff;letter-spacing:-.3px;line-height:1.1;margin-bottom:6px;position:relative;">Cierre de caja</div>
             <div style="font-size:12px;color:rgba(255,255,255,.45);line-height:1.4;position:relative;">Resumen del turno antes de cerrar.</div>
           </div>
-          <div style="padding:24px 28px;">
-            <div id="cajero-cierre-resumen" style="font-size:13px;color:#6a7a68;line-height:2.2;"></div>
+          <div id="cajero-cierre-resumen" style="padding:20px 28px 12px;">
+            <div style="margin-bottom:16px;">
+              <div id="cajero-cierre-turno-pill" style="display:inline-flex;align-items:center;gap:7px;background:#ede7db;border:1px solid #d8d0c0;border-radius:20px;padding:5px 12px 5px 8px;">
+                <svg width="13" height="13" viewBox="0 0 20 20" fill="none"><path d="M10 5v5l3.5 2" stroke="#6a7a68" stroke-width="1.6" stroke-linecap="round"/><circle cx="10" cy="10" r="8" stroke="#6a7a68" stroke-width="1.6"/></svg>
+                <span id="cajero-cierre-turno-texto" style="font-size:12px;font-weight:600;color:#6a7a68;font-family:'DM Sans',sans-serif;"></span>
+              </div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid #e8e2d8;">
+                <span style="font-size:13px;color:#6a7a68;font-family:'DM Sans',sans-serif;">Saldo inicial</span>
+                <span id="cajero-cierre-saldo-ini" style="font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;color:#1e2a1c;font-variant-numeric:tabular-nums;">—</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid #e8e2d8;">
+                <span style="font-size:13px;color:#6a7a68;font-family:'DM Sans',sans-serif;">Ingresos</span>
+                <span id="cajero-cierre-ingresos-val" style="font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;color:#2a5030;font-variant-numeric:tabular-nums;">—</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid #e8e2d8;">
+                <span style="font-size:13px;color:#6a7a68;font-family:'DM Sans',sans-serif;">Egresos</span>
+                <span id="cajero-cierre-egresos-val" style="font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;color:#b09088;font-variant-numeric:tabular-nums;">—</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0 2px;">
+                <span style="font-size:14px;font-weight:700;color:#1e2a1c;font-family:'DM Sans',sans-serif;">Saldo final</span>
+                <span id="cajero-cierre-saldo-fin" style="font-family:'Outfit',sans-serif;font-size:20px;font-weight:900;color:#1e2a1c;font-variant-numeric:tabular-nums;letter-spacing:-.5px;">—</span>
+              </div>
+            </div>
           </div>
           <div style="padding:0 28px 28px;display:flex;gap:10px;">
             <button onclick="cajaCierreCerrar()" style="flex:1;padding:15px;border-radius:14px;font-family:'Outfit',sans-serif;font-size:14px;font-weight:800;cursor:pointer;background:#ede7db;color:#6a7a68;border:1.5px solid #d8d0c0;">Cancelar</button>
@@ -9912,7 +9935,9 @@ function renderCajaCajero() {
       '.cv-btn-venta{background:linear-gradient(160deg,#4a6e4e 0%,#3d5240 60%,#334638 100%);color:#e8f2e8;flex:2;box-shadow:0 4px 16px rgba(61,82,64,.3),inset 0 1px 0 rgba(255,255,255,.12);}',
       '.cv-btn-mov{background:#ede7db;color:#6a7a68;border:1.5px solid #d8d0c0;}',
       '.cv-btn-retiro{background:#f8f0ee;color:#b09088;border:1.5px solid rgba(176,144,136,.35);}',
-      '.cv-btn-cerrar{background:linear-gradient(135deg,#a08078 0%,#c4a098 45%,#b89090 70%,#a08078 100%);color:#fff8f5;box-shadow:0 4px 16px rgba(160,128,120,.35),inset 0 1px 0 rgba(255,255,255,.2);}'
+      '.cv-btn-cerrar{background:linear-gradient(135deg,#a08078 0%,#c4a098 45%,#b89090 70%,#a08078 100%);color:#fff8f5;box-shadow:0 4px 16px rgba(160,128,120,.35),inset 0 1px 0 rgba(255,255,255,.2);}',
+      '.cajero-mode #sidebar{transform:translateX(-100%);transition:transform 0.25s ease;}',
+      '.cajero-mode #sidebar:hover{transform:translateX(0);box-shadow:4px 0 24px rgba(0,0,0,0.2);}'
     ].join('');
     document.head.appendChild(st);
   }
@@ -9921,8 +9946,10 @@ function renderCajaCajero() {
   var aperturaTime = (turno.apertura && turno.apertura.creadoEn) ? new Date(turno.apertura.creadoEn).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}) : '—';
   var aperturaDate = (turno.apertura && turno.apertura.creadoEn) ? new Date(turno.apertura.creadoEn).toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'}) : '—';
   var operador = window.currentOperadorNombre || 'Cajero';
+  var ctc = document.getElementById('ct-contabilidad'); if(ctc) ctc.innerHTML = '';
   cv.innerHTML = '<div class="cv-top"><div class="cv-top-row1"><div class="cv-turno-info"><div class="cv-turno-top"><div class="cv-dot-live"></div><span class="cv-turno-nombre">'+operador+'</span></div><div class="cv-turno-sub">Turno activo · Apertura '+aperturaTime+' · '+aperturaDate+'</div></div></div><div class="cv-top-row2" id="cv-medios-row"></div></div><div class="cv-movimientos" id="cv-tx-feed"><div class="cv-mov-title">Movimientos</div><div id="cv-tx-list"></div></div><div class="cv-bottom-bar"><button class="cv-btn cv-btn-venta" onclick="cajaVentaRapida()"><svg width="14" height="14" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="#e8f2e8" stroke-width="1.8"/><path d="M10 6v8M6 10h8" stroke="#e8f2e8" stroke-width="1.8" stroke-linecap="round"/></svg>Nueva venta</button><button class="cv-btn cv-btn-mov" onclick="cajaNuevoMovimiento()">+ Movimiento</button><button class="cv-btn cv-btn-retiro" onclick="cajaRetiroShow()">Retiro</button><button class="cv-btn cv-btn-cerrar" onclick="cajaCierreShow()">Cerrar caja</button></div>';
   cv.style.display = 'flex';
+  document.body.classList.add('cajero-mode');
   var mes = new Date().toISOString().substring(0,7);
   if(_cajeroOnSnap){ _cajeroOnSnap(); _cajeroOnSnap = null; }
   _cajeroOnSnap = onSnapshot(collection(db,'clientes',currentClientUID,'libroCaja'), function(snap) {
@@ -24410,12 +24437,18 @@ window.cajaCierreShow = function() {
   var egresos  = movs.filter(function(m){return m.tipo==='egreso';}).reduce(function(a,m){return a+(parseFloat(m.monto)||0);},0);
   var _saldoBase = (window.currentRol === 'cajero' && window.turnoActual && window.turnoActual.apertura && window.turnoActual.apertura.monto) ? window.turnoActual.apertura.monto : 0;
   var saldo = _saldoBase + ingresos - egresos;
-  var resumen = document.getElementById('cajero-cierre-resumen');
-  if(resumen) resumen.innerHTML =
-    '<b>Turno:</b> '+new Date((window.turnoActual&&window.turnoActual.apertura&&window.turnoActual.apertura.creadoEn)||Date.now()).toLocaleString('es-AR')+'<br>'+
-    '<b>Ingresos:</b> $'+ingresos.toLocaleString('es-AR')+'<br>'+
-    '<b>Egresos:</b> $'+egresos.toLocaleString('es-AR')+'<br>'+
-    '<b>Saldo efectivo:</b> $'+saldo.toLocaleString('es-AR');
+  var fmt = function(n){ return '$'+Math.round(n).toLocaleString('es-AR'); };
+  var _turnoText = new Date((window.turnoActual&&window.turnoActual.apertura&&window.turnoActual.apertura.creadoEn)||Date.now()).toLocaleString('es-AR',{day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'});
+  var _pilEl = document.getElementById('cajero-cierre-turno-texto');
+  var _iniEl = document.getElementById('cajero-cierre-saldo-ini');
+  var _ingEl = document.getElementById('cajero-cierre-ingresos-val');
+  var _egEl  = document.getElementById('cajero-cierre-egresos-val');
+  var _finEl = document.getElementById('cajero-cierre-saldo-fin');
+  if(_pilEl) _pilEl.textContent = 'Apertura · '+_turnoText;
+  if(_iniEl) _iniEl.textContent = fmt(_saldoBase);
+  if(_ingEl) _ingEl.textContent = '+'+fmt(ingresos);
+  if(_egEl)  _egEl.textContent  = '−'+fmt(egresos);
+  if(_finEl) _finEl.textContent = fmt(saldo);
   ov.style.display = 'flex';
 };
 window.cajaCierreCerrar = function() {
@@ -24460,6 +24493,8 @@ window.cajaCierreConfirmar = async function() {
       } catch(_ce) {}
       window.turnoActual = null;
     }
+    var _cmv = document.getElementById('cajero-main-view'); if(_cmv) _cmv.style.display = 'none';
+    document.body.classList.remove('cajero-mode');
     if (window.showClientMod) window.showClientMod('inicio');
     else loadCajaModule();
   } catch(e) {
