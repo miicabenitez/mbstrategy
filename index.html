@@ -9939,8 +9939,7 @@ function renderCajaCajero() {
       '#cajero-sidebar-trigger{position:fixed;left:0;top:0;bottom:0;width:8px;z-index:201;cursor:pointer;}',
       '#cajero-sidebar-trigger::after{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);width:4px;height:60px;background:rgba(61,82,64,0.35);border-radius:0 4px 4px 0;transition:opacity 0.2s,width 0.2s;}',
       '#cajero-sidebar-trigger:hover::after{opacity:0;}',
-      '.cajero-mode .sidebar{transform:translateX(-210px);transition:transform 0.25s ease;}',
-      '.cajero-mode #cajero-sidebar-trigger:hover~.sidebar,.cajero-mode .sidebar:hover{transform:translateX(0);box-shadow:4px 0 24px rgba(0,0,0,0.2);}'
+      '.cajero-mode .sidebar{transform:translateX(-220px);transition:transform 0.25s ease;}'
     ].join('');
     document.head.appendChild(st);
   }
@@ -9956,9 +9955,26 @@ function renderCajaCajero() {
   if (!document.getElementById('cajero-sidebar-trigger')) {
     var trigger = document.createElement('div');
     trigger.id = 'cajero-sidebar-trigger';
-    var sb = document.getElementById('clientSidebar');
-    if (sb) document.body.insertBefore(trigger, sb);
-    else document.body.appendChild(trigger);
+    document.body.appendChild(trigger);
+  }
+  var _csTrigger = document.getElementById('cajero-sidebar-trigger');
+  var _csSb = document.getElementById('clientSidebar');
+  if (_csTrigger && _csSb) {
+    _csTrigger.addEventListener('mouseenter', function() {
+      _csSb.style.transform = 'translateX(0)';
+      _csSb.style.boxShadow = '4px 0 24px rgba(0,0,0,0.2)';
+    });
+    _csTrigger.addEventListener('mouseleave', function() {
+      _csSb.style.transform = 'translateX(-220px)';
+      _csSb.style.boxShadow = 'none';
+    });
+    _csSb.addEventListener('mouseenter', function() {
+      _csSb.style.transform = 'translateX(0)';
+    });
+    _csSb.addEventListener('mouseleave', function() {
+      _csSb.style.transform = 'translateX(-220px)';
+      _csSb.style.boxShadow = 'none';
+    });
   }
   var mes = new Date().toISOString().substring(0,7);
   if(_cajeroOnSnap){ _cajeroOnSnap(); _cajeroOnSnap = null; }
