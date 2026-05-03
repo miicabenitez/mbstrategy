@@ -9883,6 +9883,7 @@ function checkMembresiaBadge(semActual, totalSemanas) {
 // Cargar contabilidad cliente desde Firebase
 // ─── CAJERO: Vista principal ─────────────────────────────────
 let _cajeroOnSnap = null;
+window._cvUnsub = null;
 
 function renderCajaCajero() {
   var cv = document.getElementById('cajero-main-view');
@@ -9979,8 +9980,9 @@ function renderCajaCajero() {
     });
   }
   var mes = new Date().toISOString().substring(0,7);
+  if(window._cvUnsub){ window._cvUnsub(); window._cvUnsub = null; }
   if(_cajeroOnSnap){ _cajeroOnSnap(); _cajeroOnSnap = null; }
-  _cajeroOnSnap = onSnapshot(collection(db,'clientes',currentClientUID,'libroCaja'), function(snap) {
+  window._cvUnsub = _cajeroOnSnap = onSnapshot(collection(db,'clientes',currentClientUID,'libroCaja'), function(snap) {
     var movs = [];
     snap.forEach(function(d) {
       var m = d.data(); if(m.eliminado) return;
@@ -24523,6 +24525,7 @@ window.cajaCierreConfirmar = async function() {
       } catch(_ce) {}
       window.turnoActual = null;
     }
+    if (window._cvUnsub) { window._cvUnsub(); window._cvUnsub = null; }
     var _cmv = document.getElementById('cajero-main-view'); if(_cmv) _cmv.style.display = 'none';
     document.body.classList.remove('cajero-mode');
     if (window.showClientMod) window.showClientMod('inicio');
