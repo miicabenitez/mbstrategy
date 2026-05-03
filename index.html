@@ -9905,6 +9905,8 @@ function renderCajaCajero() {
       '.cv-zero{background:rgba(255,255,255,.03)!important;border-color:rgba(255,255,255,.05)!important;}',
       '.cv-saldo-card{background:rgba(255,255,255,.13)!important;border:1.5px solid #b09088!important;animation:cvSaldoPulse 3s ease-in-out 1s infinite;}',
       '@keyframes cvSaldoPulse{0%,100%{box-shadow:0 0 0 0 rgba(176,144,136,0);}50%{box-shadow:0 0 12px 3px rgba(176,144,136,.35);}}',
+      '.cv-saldo-card.bump{animation:cvSaldoBump 0.4s cubic-bezier(0.22,1,0.36,1),cvSaldoPulse 3s ease-in-out 0.4s infinite;}',
+      '@keyframes cvSaldoBump{0%{transform:scale(1);}40%{transform:scale(1.04);}100%{transform:scale(1);}}',
       '.cv-medio-icon{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;}',
       '.cv-medio-nombre{font-size:10px;font-weight:600;color:rgba(255,255,255,.55);white-space:nowrap;}',
       '.cv-zero .cv-medio-nombre{color:rgba(255,255,255,.2);}',
@@ -9995,6 +9997,8 @@ function renderCajaCajero() {
     });
     _cvRenderMedios(medios, aperturaMonto+totalIng-totalEg);
     _cvRenderMovs(movs);
+    var sc = document.querySelector('.cv-saldo-card');
+    if (sc) { sc.classList.remove('bump'); void sc.offsetWidth; sc.classList.add('bump'); }
   });
 }
 
