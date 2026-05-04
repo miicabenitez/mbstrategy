@@ -10010,9 +10010,14 @@ function renderCajaCajero() {
         '<button class="cv-btn cv-btn-cerrar" onclick="cajaCierreShow()">Cerrar caja</button>' +
       '</div>' +
     '</div>';
+  void ct.offsetWidth;
   if (_hasBump) {
-    var _sv = ct.querySelector('.cv-saldo-monto');
-    if (_sv) { _sv.classList.remove('cv-bump'); void _sv.offsetWidth; _sv.classList.add('cv-bump'); }
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() {
+        var _sv = ct.querySelector('.cv-saldo-monto');
+        if (_sv) { _sv.classList.remove('cv-bump'); void _sv.offsetWidth; _sv.classList.add('cv-bump'); }
+      });
+    });
   }
   if (!document.getElementById('cv-sidebar-overlay')) {
     var overlay = document.createElement('div');
