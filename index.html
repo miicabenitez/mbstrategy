@@ -198,8 +198,7 @@ body.cajero-mode #ct-contabilidad{padding:0 !important;margin:0 !important;}
 .cv-movimientos{flex:1;overflow-y:auto;overflow-x:hidden;padding:14px 20px 10px;scrollbar-width:thin;scrollbar-color:#d8d0c0 transparent;}
 .cv-movimientos::-webkit-scrollbar{width:4px;}.cv-movimientos::-webkit-scrollbar-thumb{background:#d8d0c0;border-radius:4px;}
 .cv-mov-title{font-family:'Outfit',sans-serif;font-size:15px;font-weight:800;color:#1e2a1c;letter-spacing:-.3px;margin-bottom:10px;padding-left:2px;}
-.cv-tx-card{display:grid;grid-template-columns:10px 80px 56px 1fr 110px 98px;align-items:center;padding:13px 16px;border-radius:14px;margin-bottom:7px;background:#f5f0e8;border:1px solid #d8d0c0;border-left:none;gap:10px;min-width:0;position:relative;overflow:hidden;opacity:0;animation:cvTxSlide 0.45s cubic-bezier(0.22,1,0.36,1) forwards;}
-@keyframes cvTxSlide{from{opacity:0;transform:translateX(14px);}to{opacity:1;transform:translateX(0);}}
+.cv-tx-card{display:grid;grid-template-columns:10px 80px 56px 1fr 110px 98px;align-items:center;padding:13px 16px;border-radius:14px;margin-bottom:7px;background:#f5f0e8;border:1px solid #d8d0c0;border-left:none;gap:10px;min-width:0;position:relative;overflow:hidden;opacity:0;transform:translateX(14px);}
 .cv-tx-card.cv-nueva{animation:cvTxNueva 0.5s cubic-bezier(0.22,1,0.36,1) forwards;}
 @keyframes cvTxNueva{0%{opacity:0;transform:translateY(-16px);background:#e8f5e9;}60%{background:#f0faf0;}100%{opacity:1;transform:translateY(0);background:#f5f0e8;}}
 .cv-tx-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;}
@@ -10011,6 +10010,15 @@ function renderCajaCajero() {
       '</div>' +
     '</div>';
   void ct.offsetWidth;
+  setTimeout(function() {
+    var cards = ct.querySelectorAll('.cv-tx-card');
+    cards.forEach(function(card, i) {
+      card.style.transition = 'opacity 0.4s ease, transform 0.4s cubic-bezier(0.22,1,0.36,1)';
+      card.style.transitionDelay = (i * 0.07) + 's';
+      card.style.opacity = '1';
+      card.style.transform = 'translateX(0)';
+    });
+  }, 50);
   if (_hasBump) {
     requestAnimationFrame(function() {
       requestAnimationFrame(function() {
