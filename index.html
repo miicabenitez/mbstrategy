@@ -157,7 +157,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
   body.client-view .topbar-logo{display:none;}
 }
 /* ─── CAJERO MODE — sidebar colapsable ─── */
-body.cajero-mode .app{padding-left:0 !important;}
+body.cajero-mode .app{padding-left:0 !important;overflow:visible !important;}
 body.cajero-mode #clientSidebar{transform:translateX(-220px);transition:transform 0.25s cubic-bezier(0.22,1,0.36,1),box-shadow 0.25s ease;}
 body.cajero-mode #clientSidebar:hover{transform:translateX(0);box-shadow:4px 0 32px rgba(0,0,0,0.25);}
 /* ─── CAJERO VISTA — clases cv-* ─── */
@@ -9946,14 +9946,18 @@ function renderCajaCajero() {
   var aperturaDate = (turno.apertura && turno.apertura.creadoEn) ? new Date(turno.apertura.creadoEn).toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'}) : '—';
   var operador = window.currentOperadorNombre || 'Cajero';
   var medios = {}, totalIng = 0, totalEg = 0;
+  var mediosDef = ['Efectivo','Transferencia','Mercado Pago','Tarjeta'];
   movs.forEach(function(m) {
     var v = parseFloat(m.monto) || 0;
-    if(m.tipo === 'ingreso') { totalIng += v; var k = m.cuenta || 'Efectivo'; medios[k] = (medios[k]||0) + v; }
+    if(m.tipo === 'ingreso') {
+      totalIng += v;
+      var k = m.cuenta || 'Efectivo';
+      if(mediosDef.indexOf(k) !== -1) medios[k] = (medios[k]||0) + v;
+    }
     else if(m.tipo === 'egreso') totalEg += v;
   });
   var saldoTurno = aperturaMonto + totalIng - totalEg;
   var fmt = function(n){ return '$' + Math.round(n).toLocaleString('es-AR'); };
-  var mediosDef = ['Efectivo','Transferencia','Mercado Pago','Tarjeta'];
   var icons = {
     'Efectivo':'<svg width="16" height="16" viewBox="0 0 20 20" fill="none"><rect x="2" y="5" width="16" height="11" rx="2.5" stroke="rgba(255,255,255,0.7)" stroke-width="1.5"/><circle cx="10" cy="10.5" r="2.5" stroke="rgba(255,255,255,0.7)" stroke-width="1.4"/></svg>',
     'Transferencia':'<svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M3 7h14M3 13h14M6 4l-3 3 3 3M14 10l3 3-3 3" stroke="rgba(255,255,255,0.7)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
