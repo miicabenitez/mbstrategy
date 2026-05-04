@@ -190,7 +190,7 @@ body.cajero-mode #clientSidebar:hover{transform:translateX(0);box-shadow:4px 0 3
 .cv-movimientos{flex:1;overflow-y:auto;overflow-x:hidden;padding:14px 20px 10px;scrollbar-width:thin;scrollbar-color:#d8d0c0 transparent;}
 .cv-movimientos::-webkit-scrollbar{width:4px;}.cv-movimientos::-webkit-scrollbar-thumb{background:#d8d0c0;border-radius:4px;}
 .cv-mov-title{font-family:'Outfit',sans-serif;font-size:15px;font-weight:800;color:#1e2a1c;letter-spacing:-.3px;margin-bottom:10px;padding-left:2px;}
-.cv-tx-card{display:grid;grid-template-columns:10px 52px 56px 1fr 110px 98px;align-items:center;padding:13px 16px;border-radius:14px;margin-bottom:7px;background:#f5f0e8;border:1px solid #d8d0c0;border-left:none;gap:10px;min-width:0;position:relative;overflow:hidden;opacity:0;animation:cvSlideCard 0.4s cubic-bezier(0.22,1,0.36,1) forwards;}
+.cv-tx-card{display:grid;grid-template-columns:10px 80px 56px 1fr 110px 98px;align-items:center;padding:13px 16px;border-radius:14px;margin-bottom:7px;background:#f5f0e8;border:1px solid #d8d0c0;border-left:none;gap:10px;min-width:0;position:relative;overflow:hidden;opacity:0;animation:cvSlideCard 0.4s cubic-bezier(0.22,1,0.36,1) forwards;}
 @keyframes cvSlideCard{from{opacity:0;transform:translateX(8px);}to{opacity:1;transform:translateX(0);}}
 .cv-tx-card.cv-nueva{animation:cvNewCard 0.45s cubic-bezier(0.22,1,0.36,1) forwards;}
 @keyframes cvNewCard{from{opacity:0;transform:translateY(-8px);background:#eaf4eb;}to{opacity:1;transform:translateY(0);background:#f5f0e8;}}
@@ -9979,7 +9979,8 @@ function renderCajaCajero() {
     var tipoLabel = isIng ? 'Venta' : (m.origen==='retiro_cajero' ? 'Retiro' : 'Egreso');
     var montoStr = (isIng ? '+' : '−') + fmt(v);
     var delay = Math.min(i * 0.06, 0.5);
-    return '<div class="cv-tx-card cv-'+(isIng?'ing':'eg')+'" style="animation-delay:'+delay+'s"><div class="cv-tx-dot cv-'+(isIng?'ing':'eg')+'"></div><div class="cv-tx-hora">'+hora+'</div><div class="cv-tx-tipo">'+tipoLabel+'</div><div class="cv-tx-desc"><div class="cv-tx-desc-main">'+(m.concepto||'—')+'</div>'+(m.detalle?'<div class="cv-tx-desc-sub">'+m.detalle+'</div>':'')+'</div><div class="cv-tx-medio">'+(m.cuenta||'—')+'</div><div class="cv-tx-monto cv-'+(isIng?'ing':'eg')+'">'+montoStr+'</div></div>';
+    var medioLabel = (m.medioPago && m.medioPago !== 'Caja mostrador') ? m.medioPago : (m.cuenta && m.cuenta !== 'Caja mostrador' ? m.cuenta : '—');
+    return '<div class="cv-tx-card cv-'+(isIng?'ing':'eg')+'" style="animation-delay:'+delay+'s"><div class="cv-tx-dot cv-'+(isIng?'ing':'eg')+'"></div><div class="cv-tx-hora">'+hora+'</div><div class="cv-tx-tipo">'+tipoLabel+'</div><div class="cv-tx-desc"><div class="cv-tx-desc-main">'+(m.concepto||'—')+'</div>'+(m.detalle?'<div class="cv-tx-desc-sub">'+m.detalle+'</div>':'')+'</div><div class="cv-tx-medio">'+medioLabel+'</div><div class="cv-tx-monto cv-'+(isIng?'ing':'eg')+'">'+montoStr+'</div></div>';
   }).join('') : '<div style="text-align:center;padding:32px 0;color:#aab8a8;font-size:13px;">Sin movimientos en este turno</div>';
   ct.innerHTML =
     '<div class="cv-wrap">' +
