@@ -159,11 +159,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 /* ─── CAJERO MODE — sidebar colapsable ─── */
 body.cajero-mode #clientSidebar{transform:translateX(-220px);transition:transform 0.28s cubic-bezier(0.22,1,0.36,1),box-shadow 0.28s ease;}
 body.cajero-mode #clientSidebar.cv-sidebar-open{transform:translateX(0);box-shadow:4px 0 32px rgba(0,0,0,0.25);}
-body.cajero-mode .app{overflow:visible !important;}
+body.cajero-mode .app{padding-left:0 !important;overflow:visible !important;}
 #cv-sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:198;opacity:0;pointer-events:none;transition:opacity 0.25s ease;}
 #cv-sidebar-overlay.visible{opacity:1;pointer-events:all;}
-#cv-hamburger{position:fixed;top:12px;left:12px;width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:199;transition:background 0.15s,opacity 0.25s;}
-#cv-hamburger:hover{background:rgba(255,255,255,0.25);}
+#cv-hamburger{position:fixed;top:12px;left:12px;width:36px;height:36px;border-radius:10px;background:#3d5240;border:1px solid rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:199;transition:background 0.15s,opacity 0.25s;box-shadow:0 2px 8px rgba(0,0,0,0.2);}
+#cv-hamburger:hover{background:#4a6e4e;}
 #cv-hamburger.hidden{opacity:0;pointer-events:none;}
 .cv-ham-line{width:16px;height:1.5px;background:rgba(255,255,255,0.85);border-radius:2px;margin:2.5px 0;}
 /* ─── CAJERO VISTA — clases cv-* ─── */
@@ -24559,7 +24559,7 @@ window.cajaAperturaShow = async function() {
       }
     });
     console.log('[cajaAperturaShow] saldo calculado:', _saldo);
-    if(_saldoEl) _saldoEl.textContent = 'Saldo en sistema: $'+Math.round(_saldo).toLocaleString('es-AR');
+    if(_saldoEl) _saldoEl.textContent = '$'+Math.round(_saldo).toLocaleString('es-AR');
     console.log('[cajaAperturaShow] textContent seteado:', _saldoEl?.textContent);
     if(_montoInput) _montoInput.value = Math.max(0, Math.round(_saldo));
   } catch(_e) { console.log('[cajaAperturaShow] ERROR:', _e); if(_saldoEl) _saldoEl.textContent = ''; }
