@@ -164,15 +164,15 @@ body.cajero-mode .content{padding:0 !important;max-width:100% !important;margin:
 body.cajero-mode #ct-contabilidad{padding:0 !important;margin:0 !important;}
 #cv-sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:198;opacity:0;pointer-events:none;transition:opacity 0.25s ease;}
 #cv-sidebar-overlay.visible{opacity:1;pointer-events:all;}
-#cv-hamburger{position:fixed;top:12px;left:12px;width:36px;height:36px;border-radius:10px;background:#3d5240;border:1px solid rgba(255,255,255,0.2);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;z-index:201;transition:background 0.15s,opacity 0.25s;box-shadow:0 2px 8px rgba(0,0,0,0.2);}
-#cv-hamburger:hover{background:#4a6e4e;}
-#cv-hamburger.hidden{opacity:0;pointer-events:none;}
+#cv-hamburger{flex-shrink:0;width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;margin-right:12px;transition:background 0.15s,opacity 0.25s;}
+#cv-hamburger:hover{background:rgba(255,255,255,0.2);}
+#cv-hamburger.hidden{opacity:0;pointer-events:none;width:0;margin-right:0;overflow:hidden;}
 .cv-ham-line{width:16px;height:1.5px;background:rgba(255,255,255,0.85);border-radius:2px;margin:2.5px 0;}
 /* ─── CAJERO VISTA — clases cv-* ─── */
 .cv-wrap{display:flex;flex-direction:column;height:calc(100vh - 0px);overflow:hidden;font-family:'DM Sans',sans-serif;color:#1e2a1c;}
 .cv-top-panel{background:#3d5240;flex-shrink:0;position:relative;overflow:visible;}
 .cv-top-panel::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 100% 100%,rgba(0,0,0,.12) 0%,transparent 55%);pointer-events:none;}
-.cv-top-row1{display:flex;align-items:center;padding:14px 24px 12px;border-bottom:1px solid rgba(255,255,255,.07);height:51px;}
+.cv-top-row1{display:flex;align-items:center;padding:12px 24px 12px 12px;border-bottom:1px solid rgba(255,255,255,.07);height:51px;}
 .cv-turno-info{display:flex;flex-direction:column;gap:3px;}
 .cv-turno-top{display:flex;align-items:center;gap:8px;}
 .cv-dot-live{width:8px;height:8px;border-radius:50%;background:#7de88a;animation:cvBreathe 2.5s ease-in-out infinite;flex-shrink:0;}
@@ -10019,13 +10019,16 @@ function renderCajaCajero() {
     overlay.onclick = function() { window._cvCloseSidebar(); };
     document.body.appendChild(overlay);
   }
-  if (!document.getElementById('cv-hamburger')) {
+  var _row1 = ct.querySelector('.cv-top-row1');
+  var _existingHam = document.getElementById('cv-hamburger');
+  if (_existingHam) _existingHam.remove();
+  if (_row1) {
     var ham = document.createElement('button');
     ham.id = 'cv-hamburger';
     ham.type = 'button';
     ham.innerHTML = '<div class="cv-ham-line"></div><div class="cv-ham-line"></div><div class="cv-ham-line"></div>';
     ham.onclick = function() { window._cvOpenSidebar(); };
-    document.body.appendChild(ham);
+    _row1.insertBefore(ham, _row1.firstChild);
   }
   window._cvOpenSidebar = function() {
     document.getElementById('clientSidebar').classList.add('cv-sidebar-open');
