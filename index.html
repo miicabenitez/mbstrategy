@@ -157,9 +157,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
   body.client-view .topbar-logo{display:none;}
 }
 /* ─── CAJERO MODE — sidebar colapsable ─── */
-body.cajero-mode .app{padding-left:0 !important;overflow:visible !important;}
-body.cajero-mode #clientSidebar{transform:translateX(-220px);transition:transform 0.25s cubic-bezier(0.22,1,0.36,1),box-shadow 0.25s ease;}
-body.cajero-mode #clientSidebar:hover{transform:translateX(0);box-shadow:4px 0 32px rgba(0,0,0,0.25);}
+body.cajero-mode #clientSidebar{transform:translateX(-220px);transition:transform 0.28s cubic-bezier(0.22,1,0.36,1),box-shadow 0.28s ease;}
+body.cajero-mode #clientSidebar.cv-sidebar-open{transform:translateX(0);box-shadow:4px 0 32px rgba(0,0,0,0.25);}
+body.cajero-mode .app{overflow:visible !important;}
+#cv-sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:198;opacity:0;pointer-events:none;transition:opacity 0.25s ease;}
+#cv-sidebar-overlay.visible{opacity:1;pointer-events:all;}
+#cv-hamburger{position:fixed;top:12px;left:12px;width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:199;transition:background 0.15s,opacity 0.25s;}
+#cv-hamburger:hover{background:rgba(255,255,255,0.25);}
+#cv-hamburger.hidden{opacity:0;pointer-events:none;}
+.cv-ham-line{width:16px;height:1.5px;background:rgba(255,255,255,0.85);border-radius:2px;margin:2.5px 0;}
 /* ─── CAJERO VISTA — clases cv-* ─── */
 .cv-wrap{display:flex;flex-direction:column;height:calc(100vh - 0px);overflow:hidden;font-family:'DM Sans',sans-serif;color:#1e2a1c;}
 .cv-top-panel{background:#3d5240;flex-shrink:0;position:relative;}
@@ -9996,11 +10002,32 @@ function renderCajaCajero() {
         '<button class="cv-btn cv-btn-cerrar" onclick="cajaCierreShow()">Cerrar caja</button>' +
       '</div>' +
     '</div>';
+  if (!document.getElementById('cv-sidebar-overlay')) {
+    var overlay = document.createElement('div');
+    overlay.id = 'cv-sidebar-overlay';
+    overlay.onclick = function() { window._cvCloseSidebar(); };
+    document.body.appendChild(overlay);
+  }
+  if (!document.getElementById('cv-hamburger')) {
+    var ham = document.createElement('button');
+    ham.id = 'cv-hamburger';
+    ham.innerHTML = '<div class="cv-ham-line"></div><div class="cv-ham-line"></div><div class="cv-ham-line"></div>';
+    ham.onclick = function() { window._cvOpenSidebar(); };
+    document.body.appendChild(ham);
+  }
+  window._cvOpenSidebar = function() {
+    document.getElementById('clientSidebar').classList.add('cv-sidebar-open');
+    document.getElementById('cv-sidebar-overlay').classList.add('visible');
+    document.getElementById('cv-hamburger').classList.add('hidden');
+  };
+  window._cvCloseSidebar = function() {
+    document.getElementById('clientSidebar').classList.remove('cv-sidebar-open');
+    document.getElementById('cv-sidebar-overlay').classList.remove('visible');
+    document.getElementById('cv-hamburger').classList.remove('hidden');
+  };
   var sb = document.getElementById('clientSidebar');
-  if(sb && !sb._cvHover) {
-    sb._cvHover = true;
-    sb.addEventListener('mouseenter', function(){ if(document.body.classList.contains('cajero-mode')){ sb.style.transform='translateX(0)'; sb.style.boxShadow='4px 0 32px rgba(0,0,0,0.25)'; } });
-    sb.addEventListener('mouseleave', function(){ if(document.body.classList.contains('cajero-mode')){ sb.style.transform='translateX(-220px)'; sb.style.boxShadow='none'; } });
+  if (sb && sb._cvHover) {
+    sb._cvHover = false;
   }
 }
 
@@ -24490,6 +24517,12 @@ window.cajaCierreConfirmar = async function() {
       } catch(_ce) {}
       window.turnoActual = null;
     }
+    var _ov2 = document.getElementById('cv-sidebar-overlay');
+    var _hb2 = document.getElementById('cv-hamburger');
+    if (_ov2) _ov2.remove();
+    if (_hb2) _hb2.remove();
+    var _sb2 = document.getElementById('clientSidebar');
+    if (_sb2) _sb2.classList.remove('cv-sidebar-open');
     if (window.showClientMod) window.showClientMod('inicio');
     else loadCajaModule();
   } catch(e) {
