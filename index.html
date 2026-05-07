@@ -10001,9 +10001,7 @@ function renderCajaCajero() {
   var defIcon = '<svg width="16" height="16" viewBox="0 0 20 20" fill="none"><rect x="2" y="4" width="16" height="12" rx="2.5" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/></svg>';
   var allMedios = Array.from(new Set(mediosDef.concat(Object.keys(medios))));
   var _pend = window._cvPendiente || {total:0, count:0};
-  var cobrarCardHtml = _pend.total > 0
-    ? '<div class="cv-medio-card cv-cobrar-card" id="cv-cobrar-card" onclick="sidebarNav(\'ventas\',\'cobranzas\')"><div class="cv-medio-icon" style="background:rgba(176,144,136,0.2)"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke="rgba(255,200,180,0.85)" stroke-width="1.5"/><path d="M3 17c0-3.314 3.134-6 7-6s7 2.686 7 6" stroke="rgba(255,200,180,0.85)" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="cv-medio-nombre">A cobrar ('+_pend.count+')</div><div class="cv-medio-monto cv-cobrar-val">'+fmt(_pend.total)+'</div></div>'
-    : '<div class="cv-medio-card cv-cobrar-card" id="cv-cobrar-card" style="display:none;" onclick="sidebarNav(\'ventas\',\'cobranzas\')"></div>';
+  var cobrarCardHtml = '<div class="cv-medio-card cv-cobrar-card" id="cv-cobrar-card"'+(_pend.total>0?'':' style="display:none;"')+' onclick="sidebarNav(\'ventas\',\'cobranzas\')"><div class="cv-medio-icon" style="background:rgba(176,144,136,0.2)"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke="rgba(255,200,180,0.85)" stroke-width="1.5"/><path d="M3 17c0-3.314 3.134-6 7-6s7 2.686 7 6" stroke="rgba(255,200,180,0.85)" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="cv-medio-nombre">A cobrar ('+_pend.count+')</div><div class="cv-medio-monto cv-cobrar-val">'+fmt(_pend.total)+'</div></div>';
   var mediosHtml = allMedios.map(function(n) {
     var v = medios[n] || 0; var z = v === 0;
     return '<div class="cv-medio-card'+(z?' cv-zero':'')+'"><div class="cv-medio-icon">'+(icons[n]||defIcon)+'</div><div class="cv-medio-nombre">'+n+'</div><div class="cv-medio-monto'+(z?' cv-zero-m':'')+'">'+fmt(v)+'</div></div>';
