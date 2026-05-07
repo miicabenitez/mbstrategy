@@ -9971,6 +9971,7 @@ function renderCajaCajero() {
     }
     else if(m.tipo === 'egreso') totalEg += v;
   });
+  if(aperturaMonto > 0) medios['Efectivo'] = (medios['Efectivo']||0) + aperturaMonto;
   var saldoTurno = aperturaMonto + totalIng - totalEg;
   var fmt = function(n){ return '$' + Math.round(n).toLocaleString('es-AR'); };
   var icons = {
