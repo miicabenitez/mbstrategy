@@ -3577,7 +3577,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         <div style="background:linear-gradient(135deg,#2d3d30,#3a4e3d,#2d3d30);border-radius:14px;padding:20px 24px;margin-bottom:14px;color:#fff;">
           <div style="margin-bottom:16px;">
             <div style="display:flex;align-items:center;">
-              <button id="cb-hamburger" type="button" onclick="window._cvOpenSidebar&&window._cvOpenSidebar()" style="display:none;flex-shrink:0;width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);flex-direction:column;align-items:center;justify-content:center;cursor:pointer;margin-right:12px;transition:background 0.15s;"><div class="cv-ham-line"></div><div class="cv-ham-line"></div><div class="cv-ham-line"></div></button>
+              <button id="cb-hamburger" type="button" onclick="window._cvOpenSidebar&&window._cvOpenSidebar()"><div class="cv-ham-line"></div><div class="cv-ham-line"></div><div class="cv-ham-line"></div></button>
             <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400">Cobranzas</div>
             </div>
             <div style="font-size:11px;color:rgba(255,255,255,.55);margin-top:2px">Presupuestos aprobados pendientes de cobro</div>
@@ -13971,6 +13971,10 @@ window.cajaVentaRapida = async function() {
     _vrcCuentas = [];
     cuentasSnap.forEach(d=>{const data=d.data();if(data.nombre&&!seenC.has(data.nombre)){seenC.add(data.nombre);_vrcCuentas.push({id:d.id,...data});}});
     _vrcCuentas.sort((a,b)=>(a.orden||0)-(b.orden||0));
+    if(window.currentRol === 'cajero') {
+      _vrcCuentas = _vrcCuentas.filter(c => c.nombre === 'Caja mostrador');
+      _vrcCuentas.forEach(c => { c._label = 'Efectivo'; });
+    }
     _vrcMetodo = _vrcCuentas[0]?.nombre || 'Efectivo';
     const buscarEl = document.getElementById('vrc-buscar');
     if(buscarEl) buscarEl.value = '';
@@ -13998,7 +14002,7 @@ function _vrcRenderMetodos() {
     const safe = c.nombre.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
     return `<button class="vrc-metodo-btn${isSel?' sel':''}" onclick="vrcSetMetodo('${safe}')">
       <div style="margin-bottom:5px;">${icons[c.nombre]||defIcon}</div>
-      <div class="vrc-mlabel">${c.nombre}</div>
+      <div class="vrc-mlabel">${c._label||c.nombre}</div>
     </button>`;
   }).join('') + `<button class="vrc-metodo-btn${isCta?' sel':''}" onclick="vrcSetMetodo('__cta__')" style="border-color:rgba(176,144,136,0.5);color:#b09088;">
     <div style="margin-bottom:5px;"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 17c0-3.314 3.134-6 7-6s7 2.686 7 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
