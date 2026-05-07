@@ -9970,6 +9970,7 @@ function renderCajaCajero() {
     }
     else if(m.tipo === 'egreso') totalEg += v;
   });
+  if(aperturaMonto > 0) medios['Efectivo'] = (medios['Efectivo']||0) + aperturaMonto;
   var saldoTurno = aperturaMonto + totalIng - totalEg;
   var fmt = function(n){ return '$' + Math.round(n).toLocaleString('es-AR'); };
   var icons = {
@@ -24613,6 +24614,14 @@ window.cajaAperturaConfirmar = async function() {
     };
     var turnoRef = await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'turnos'), turnoData);
     window.turnoActual = { id: turnoRef.id, ...turnoData };
+    if(monto > 0) {
+      var _hoy = fechaHoyARG(); var _mes = mesHoyARG(_hoy);
+      await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'libroCaja'), {
+        uid:currentClientUID, fecha:_hoy, tipo:'ingreso', concepto:'Apertura de turno',
+        cuenta:'Caja mostrador', monto:monto, mes:_mes, origen:'apertura_turno',
+        eliminado:false, creadoEn:ahora, creadoPor:window.currentOperadorNombre||'Cajero'
+      });
+    }
     var _ov = document.getElementById('cajero-apertura-overlay');
     if(_ov) _ov.style.display = 'none';
     showToast('Turno iniciado','success');
