@@ -212,7 +212,13 @@ body.cajero-mode #ct-contabilidad{padding:0 !important;margin:0 !important;}
 .cv-tx-desc-main{font-size:13px;font-weight:600;color:#1e2a1c;white-space:nowrap;flex-shrink:0;}
 .cv-tx-desc-sep{color:#aab8a8;font-size:13px;flex-shrink:0;padding:0 6px;}
 .cv-tx-desc-sub{font-size:12px;color:#6a7a68;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.cv-tx-medio{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#aab8a8;text-align:right;white-space:nowrap;}
+.cv-tx-medio{text-align:right;white-space:nowrap;}
+.cv-medio-pill{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;}
+.cv-medio-pill.ef{background:#e8f5e9;color:#2d6a33;border:1px solid rgba(45,106,51,0.2);}
+.cv-medio-pill.tf{background:#e8eaf5;color:#3a4a8a;border:1px solid rgba(58,74,138,0.2);}
+.cv-medio-pill.mp{background:#f0e8f5;color:#6a3a8a;border:1px solid rgba(106,58,138,0.2);}
+.cv-medio-pill.td{background:#f5f0e8;color:#8a7040;border:1px solid rgba(138,112,64,0.2);}
+.cv-medio-pill.def{background:var(--cream);color:var(--text-2);border:1px solid var(--border);}
 .cv-tx-monto{font-family:'Outfit',sans-serif;font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.5px;text-align:right;white-space:nowrap;}
 .cv-tx-monto.cv-ing{color:#2a2e28;}.cv-tx-monto.cv-eg{color:#b09088;}
 .cv-bottom-bar{flex-shrink:0;background:#f5f0e8;border-top:1px solid #d8d0c0;padding:14px 20px;display:flex;gap:10px;}
@@ -9984,6 +9990,11 @@ function renderCajaCajero() {
   var _cvPrevId = window._cvLastMovId;
   window._cvLastMovId = movsDesc.length ? (movsDesc[0].id || null) : null;
   var _hasBump = _cvPrevId && window._cvLastMovId && _cvPrevId !== window._cvLastMovId;
+  function pillMedio(label) {
+    var map = {'Efectivo':'ef','Transferencia':'tf','Mercado Pago':'mp','Tarjeta':'td'};
+    var cls = map[label] || 'def';
+    return '<span class="cv-medio-pill '+cls+'">'+label+'</span>';
+  }
   var movsHtml = movsDesc.length ? movsDesc.map(function(m, i) {
     var v = parseFloat(m.monto) || 0;
     var isIng = m.tipo === 'ingreso';
@@ -9993,7 +10004,7 @@ function renderCajaCajero() {
     var delay = _cvDelays[i] !== undefined ? _cvDelays[i] : 0.36;
     var isNueva = i === 0 && _cvPrevId && (m.id || null) !== _cvPrevId;
     var medioLabel = (m.medioPago && m.medioPago !== 'Caja mostrador') ? m.medioPago : (m.cuenta && m.cuenta !== 'Caja mostrador' ? m.cuenta : 'Efectivo');
-    return '<div class="cv-tx-card cv-'+(isIng?'ing':'eg')+(isNueva?' cv-nueva':'')+'" style="animation-delay:'+delay+'s"><div class="cv-tx-dot cv-'+(isIng?'ing':'eg')+'"></div><div class="cv-tx-hora">'+hora+'</div><div class="cv-tx-tipo">'+tipoLabel+'</div><div class="cv-tx-desc"><span class="cv-tx-desc-main">'+(m.concepto||'—')+'</span>'+(m.detalle?'<span class="cv-tx-desc-sep"> · </span><span class="cv-tx-desc-sub">'+m.detalle+'</span>':'')+'</div><div class="cv-tx-medio">'+medioLabel+'</div><div class="cv-tx-monto cv-'+(isIng?'ing':'eg')+'">'+montoStr+'</div></div>';
+    return '<div class="cv-tx-card cv-'+(isIng?'ing':'eg')+(isNueva?' cv-nueva':'')+'" style="animation-delay:'+delay+'s"><div class="cv-tx-dot cv-'+(isIng?'ing':'eg')+'"></div><div class="cv-tx-hora">'+hora+'</div><div class="cv-tx-tipo">'+tipoLabel+'</div><div class="cv-tx-desc"><span class="cv-tx-desc-main">'+(m.concepto||'—')+'</span>'+(m.detalle?'<span class="cv-tx-desc-sep"> · </span><span class="cv-tx-desc-sub">'+m.detalle+'</span>':'')+'</div><div class="cv-tx-medio">'+pillMedio(medioLabel)+'</div><div class="cv-tx-monto cv-'+(isIng?'ing':'eg')+'">'+montoStr+'</div></div>';
   }).join('') : '<div style="text-align:center;padding:32px 0;color:#aab8a8;font-size:13px;">Sin movimientos en este turno</div>';
   ct.innerHTML =
     '<div class="cv-wrap">' +
