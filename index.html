@@ -9962,6 +9962,7 @@ function renderCajaCajero() {
   var medios = {}, totalIng = 0, totalEg = 0;
   var mediosDef = ['Efectivo','Transferencia','Mercado Pago','Tarjeta'];
   movs.forEach(function(m) {
+    if(m.origen === 'apertura_turno') return;
     var v = parseFloat(m.monto) || 0;
     if(m.tipo === 'ingreso') {
       totalIng += v;
@@ -9970,7 +9971,6 @@ function renderCajaCajero() {
     }
     else if(m.tipo === 'egreso') totalEg += v;
   });
-  if(aperturaMonto > 0) medios['Efectivo'] = (medios['Efectivo']||0) + aperturaMonto;
   var saldoTurno = aperturaMonto + totalIng - totalEg;
   var fmt = function(n){ return '$' + Math.round(n).toLocaleString('es-AR'); };
   var icons = {
