@@ -14134,6 +14134,14 @@ window.vrcGuardar = async function() {
         fecha:hoy, creadoEn:new Date().toISOString(),
         origen:'caja_cajero', creadoPor:window.currentOperadorNombre||'Cajero'
       });
+      await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'libroCaja'), {
+        uid:currentClientUID, fecha:hoy, mes:mes,
+        tipo:'pedido_cta', concepto:'Cuenta cliente',
+        detalle:cli.nombre, cuenta:'Caja mostrador',
+        monto:Math.round(total*100)/100, estado:'pendiente',
+        clienteId:cli.id, clienteNombre:cli.nombre,
+        origen:'caja_cajero', eliminado:false, creadoEn:new Date().toISOString()
+      });
       const _vcCarritoSnap = {..._vrcCarrito};
       vrcCerrar();
       if(window._triggerStockPorVenta) window._triggerStockPorVenta(_vcCarritoSnap, null).catch(()=>{});
