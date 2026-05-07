@@ -24842,7 +24842,7 @@ async function turnoGenerarPDF(operador, ingresos, egresos, saldo, movs) {
 window._aplicarRestriccionesRol = function() {
   var rol = window.currentRol || 'admin';
   var _ocultar = {
-    cajero:   ['sbg-inicio','sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion'],
+    cajero:   ['sbg-inicio','sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion','btn-mi-cuenta'],
     compras:  ['sbg-finanzas','sbg-ventas','sbg-herramientas','sbg-gestion'],
     comercial:['sbg-finanzas','sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion'],
     vendedor: ['sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion']
@@ -24877,7 +24877,7 @@ window._aplicarRestriccionesRol = function() {
     var sbsubVentas = document.getElementById('sbsub-ventas');
     if (sbsubVentas) {
       sbsubVentas.querySelectorAll('.sb-subitem').forEach(function(btn) {
-        if (btn.dataset.sub !== 'cobranzas') btn.style.display = 'none';
+        if (btn.dataset.sub !== 'cobranzas' && btn.dataset.sub !== 'clientes') btn.style.display = 'none';
       });
     }
     // Ocultar tabs del subnav-finanzas que el cajero no debe ver
