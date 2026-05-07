@@ -210,9 +210,11 @@ body.cajero-mode #ct-contabilidad{padding:0 !important;margin:0 !important;}
 .cv-tx-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;}
 .cv-tx-card.cv-ing::before{background:linear-gradient(180deg,#9ed89e 0%,#2d5e32 35%,#72c272 65%,#2a5030 100%);}
 .cv-tx-card.cv-eg::before{background:linear-gradient(180deg,#d89e9e 0%,#6e2d2d 35%,#c27272 65%,#5a2828 100%);}
+.cv-tx-card.cv-pend::before{background:linear-gradient(180deg,#e8c4b0 0%,#9a6050 35%,#d4a090 65%,#8a5040 100%);}
 .cv-tx-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
 .cv-tx-dot.cv-ing{background:radial-gradient(circle at 38% 32%,#b0dab0,#2e5e34 70%);}
 .cv-tx-dot.cv-eg{background:radial-gradient(circle at 38% 32%,#dab0b0,#6e2e2e 70%);}
+.cv-tx-dot.cv-pend{background:radial-gradient(circle at 38% 32%,#e8c0a8,#9a5040 70%);}
 .cv-tx-hora{font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;color:#6a7a68;font-variant-numeric:tabular-nums;letter-spacing:-.3px;white-space:nowrap;}
 .cv-tx-tipo{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#aab8a8;white-space:nowrap;}
 .cv-tx-desc{display:flex;align-items:center;min-width:0;overflow:hidden;}
@@ -226,8 +228,9 @@ body.cajero-mode #ct-contabilidad{padding:0 !important;margin:0 !important;}
 .cv-medio-pill.mp{background:#f0e8f5;color:#6a3a8a;border:1px solid rgba(106,58,138,0.2);}
 .cv-medio-pill.td{background:#f5f0e8;color:#8a7040;border:1px solid rgba(138,112,64,0.2);}
 .cv-medio-pill.def{background:var(--cream);color:var(--text-2);border:1px solid var(--border);}
+.cv-medio-pill.pend{background:#fdf0eb;color:#9a5040;border:1px solid rgba(154,80,64,0.25);}
 .cv-tx-monto{font-family:'Outfit',sans-serif;font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.5px;text-align:right;white-space:nowrap;}
-.cv-tx-monto.cv-ing{color:#2a2e28;}.cv-tx-monto.cv-eg{color:#b09088;}
+.cv-tx-monto.cv-ing{color:#2a2e28;}.cv-tx-monto.cv-eg{color:#b09088;}.cv-tx-monto.cv-pend{color:#9a6050;}
 .cv-bottom-bar{flex-shrink:0;background:#f5f0e8;border-top:1px solid #d8d0c0;padding:14px 20px;display:flex;gap:10px;}
 .cv-btn{flex:1;padding:18px 16px;border-radius:16px;font-family:'Outfit',sans-serif;font-size:15px;font-weight:800;cursor:pointer;border:none;display:flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;transition:transform .1s,box-shadow .15s;letter-spacing:.1px;}
 .cv-btn:active{transform:scale(.97);}
@@ -10012,20 +10015,22 @@ function renderCajaCajero() {
   window._cvLastMovId = movsDesc.length ? (movsDesc[0].id || null) : null;
   var _hasBump = _cvPrevId && window._cvLastMovId && _cvPrevId !== window._cvLastMovId;
   function pillMedio(label) {
-    var map = {'Efectivo':'ef','Transferencia':'tf','Mercado Pago':'mp','Tarjeta':'td'};
+    var map = {'Efectivo':'ef','Transferencia':'tf','Mercado Pago':'mp','Tarjeta':'td','Pendiente':'pend'};
     var cls = map[label] || 'def';
     return '<span class="cv-medio-pill '+cls+'">'+label+'</span>';
   }
   var movsHtml = movsDesc.length ? movsDesc.map(function(m, i) {
     var v = parseFloat(m.monto) || 0;
+    var isPend = m.tipo === 'pedido_cta';
     var isIng = m.tipo === 'ingreso';
+    var colorKey = isPend ? 'pend' : (isIng ? 'ing' : 'eg');
     var hora = m.creadoEn ? new Date(m.creadoEn).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}) : '—';
-    var tipoLabel = isIng ? 'Venta' : (m.origen==='retiro_cajero' ? 'Retiro' : 'Egreso');
-    var montoStr = (isIng ? '+' : '−') + fmt(v);
+    var tipoLabel = isPend ? 'Pendiente' : (isIng ? 'Venta' : (m.origen==='retiro_cajero' ? 'Retiro' : 'Egreso'));
+    var montoStr = (isIng ? '+' : (isPend ? '' : '−')) + fmt(v);
     var delay = _cvDelays[i] !== undefined ? _cvDelays[i] : 0.36;
     var isNueva = i === 0 && _cvPrevId && (m.id || null) !== _cvPrevId;
-    var medioLabel = (m.medioPago && m.medioPago !== 'Caja mostrador') ? m.medioPago : (m.cuenta && m.cuenta !== 'Caja mostrador' ? m.cuenta : 'Efectivo');
-    return '<div class="cv-tx-card cv-'+(isIng?'ing':'eg')+(isNueva?' cv-nueva':'')+'" style="animation-delay:'+delay+'s"><div class="cv-tx-dot cv-'+(isIng?'ing':'eg')+'"></div><div class="cv-tx-hora">'+hora+'</div><div class="cv-tx-tipo">'+tipoLabel+'</div><div class="cv-tx-desc"><span class="cv-tx-desc-main">'+(m.concepto||'—')+'</span>'+(m.detalle?'<span class="cv-tx-desc-sep"> · </span><span class="cv-tx-desc-sub">'+m.detalle+'</span>':'')+'</div><div class="cv-tx-medio">'+pillMedio(medioLabel)+'</div><div class="cv-tx-monto cv-'+(isIng?'ing':'eg')+'">'+montoStr+'</div></div>';
+    var medioLabel = isPend ? 'Pendiente' : ((m.medioPago && m.medioPago !== 'Caja mostrador') ? m.medioPago : (m.cuenta && m.cuenta !== 'Caja mostrador' ? m.cuenta : 'Efectivo'));
+    return '<div class="cv-tx-card cv-'+colorKey+(isNueva?' cv-nueva':'')+'" style="animation-delay:'+delay+'s"><div class="cv-tx-dot cv-'+colorKey+'"></div><div class="cv-tx-hora">'+hora+'</div><div class="cv-tx-tipo">'+tipoLabel+'</div><div class="cv-tx-desc"><span class="cv-tx-desc-main">'+(m.concepto||'—')+'</span>'+(m.detalle?'<span class="cv-tx-desc-sep"> · </span><span class="cv-tx-desc-sub">'+m.detalle+'</span>':'')+'</div><div class="cv-tx-medio">'+pillMedio(medioLabel)+'</div><div class="cv-tx-monto cv-'+colorKey+'">'+montoStr+'</div></div>';
   }).join('') : '<div style="text-align:center;padding:32px 0;color:#aab8a8;font-size:13px;">Sin movimientos en este turno</div>';
   ct.innerHTML =
     '<div class="cv-wrap">' +
