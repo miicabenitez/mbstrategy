@@ -196,7 +196,7 @@ body.cajero-mode #ct-contabilidad{padding:0 !important;margin:0 !important;}
 .cv-movimientos{flex:1;overflow-y:auto;overflow-x:hidden;padding:14px 20px 10px;scrollbar-width:thin;scrollbar-color:#d8d0c0 transparent;}
 .cv-movimientos::-webkit-scrollbar{width:4px;}.cv-movimientos::-webkit-scrollbar-thumb{background:#d8d0c0;border-radius:4px;}
 .cv-mov-title{font-family:'Outfit',sans-serif;font-size:15px;font-weight:800;color:#1e2a1c;letter-spacing:-.3px;margin-bottom:10px;padding-left:2px;}
-.cv-tx-card{display:grid;grid-template-columns:10px 72px 52px 1fr auto 100px;align-items:center;padding:13px 16px;border-radius:14px;margin-bottom:7px;background:#f5f0e8;border:1px solid #d8d0c0;border-left:none;gap:10px;min-width:0;position:relative;overflow:hidden;opacity:1;transform:none;transition:box-shadow 0.15s,transform 0.15s;}
+.cv-tx-card{display:grid;grid-template-columns:10px 90px 60px 1fr auto 110px;align-items:center;padding:13px 16px;border-radius:14px;margin-bottom:7px;background:#f5f0e8;border:1px solid #d8d0c0;border-left:none;gap:16px;min-width:0;position:relative;overflow:hidden;opacity:1;transform:none;transition:box-shadow 0.15s,transform 0.15s;}
 .cv-tx-card:hover{box-shadow:0 4px 20px rgba(0,0,0,0.07);transform:translateX(3px);}
 .cv-tx-card.cv-nueva{animation:cvTxNueva 0.5s cubic-bezier(0.22,1,0.36,1) forwards;}
 @keyframes cvTxNueva{0%{opacity:0;transform:translateY(-16px);background:#e8f5e9;}60%{background:#f0faf0;}100%{opacity:1;transform:translateY(0);background:#f5f0e8;}}
@@ -208,9 +208,10 @@ body.cajero-mode #ct-contabilidad{padding:0 !important;margin:0 !important;}
 .cv-tx-dot.cv-eg{background:radial-gradient(circle at 38% 32%,#dab0b0,#6e2e2e 70%);}
 .cv-tx-hora{font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;color:#6a7a68;font-variant-numeric:tabular-nums;letter-spacing:-.3px;white-space:nowrap;}
 .cv-tx-tipo{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#aab8a8;white-space:nowrap;}
-.cv-tx-desc{min-width:0;}
-.cv-tx-desc-main{font-size:13px;font-weight:600;color:#1e2a1c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.cv-tx-desc-sub{font-size:11px;color:#6a7a68;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cv-tx-desc{display:flex;align-items:center;min-width:0;overflow:hidden;}
+.cv-tx-desc-main{font-size:13px;font-weight:600;color:#1e2a1c;white-space:nowrap;flex-shrink:0;}
+.cv-tx-desc-sep{color:#aab8a8;font-size:13px;flex-shrink:0;padding:0 6px;}
+.cv-tx-desc-sub{font-size:12px;color:#6a7a68;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .cv-tx-medio{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#aab8a8;text-align:right;white-space:nowrap;}
 .cv-tx-monto{font-family:'Outfit',sans-serif;font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.5px;text-align:right;white-space:nowrap;}
 .cv-tx-monto.cv-ing{color:#2a2e28;}.cv-tx-monto.cv-eg{color:#b09088;}
@@ -9992,7 +9993,7 @@ function renderCajaCajero() {
     var delay = _cvDelays[i] !== undefined ? _cvDelays[i] : 0.36;
     var isNueva = i === 0 && _cvPrevId && (m.id || null) !== _cvPrevId;
     var medioLabel = (m.medioPago && m.medioPago !== 'Caja mostrador') ? m.medioPago : (m.cuenta && m.cuenta !== 'Caja mostrador' ? m.cuenta : '—');
-    return '<div class="cv-tx-card cv-'+(isIng?'ing':'eg')+(isNueva?' cv-nueva':'')+'" style="animation-delay:'+delay+'s"><div class="cv-tx-dot cv-'+(isIng?'ing':'eg')+'"></div><div class="cv-tx-hora">'+hora+'</div><div class="cv-tx-tipo">'+tipoLabel+'</div><div class="cv-tx-desc"><div class="cv-tx-desc-main">'+(m.concepto||'—')+'</div>'+(m.detalle?'<div class="cv-tx-desc-sub">'+m.detalle+'</div>':'')+'</div><div class="cv-tx-medio">'+medioLabel+'</div><div class="cv-tx-monto cv-'+(isIng?'ing':'eg')+'">'+montoStr+'</div></div>';
+    return '<div class="cv-tx-card cv-'+(isIng?'ing':'eg')+(isNueva?' cv-nueva':'')+'" style="animation-delay:'+delay+'s"><div class="cv-tx-dot cv-'+(isIng?'ing':'eg')+'"></div><div class="cv-tx-hora">'+hora+'</div><div class="cv-tx-tipo">'+tipoLabel+'</div><div class="cv-tx-desc"><span class="cv-tx-desc-main">'+(m.concepto||'—')+'</span>'+(m.detalle?'<span class="cv-tx-desc-sep"> · </span><span class="cv-tx-desc-sub">'+m.detalle+'</span>':'')+'</div><div class="cv-tx-medio">'+medioLabel+'</div><div class="cv-tx-monto cv-'+(isIng?'ing':'eg')+'">'+montoStr+'</div></div>';
   }).join('') : '<div style="text-align:center;padding:32px 0;color:#aab8a8;font-size:13px;">Sin movimientos en este turno</div>';
   ct.innerHTML =
     '<div class="cv-wrap">' +
