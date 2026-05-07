@@ -6420,7 +6420,7 @@ window.showClientUI = async function(email, clientData) {
 
       // Mostrar módulo inicial inmediatamente, sin esperar los awaits de datos
       const _savedMod0 = (() => { try { return localStorage.getItem('mbst_lastmod'); } catch(e) { return null; } })();
-      const _modToShow0 = _savedMod0 || 'inicio';
+      const _modToShow0 = window.currentRol === 'cajero' ? 'finanzas' : (_savedMod0 || 'inicio');
       const _modBtn0 = document.querySelector('#cNav .nt[onclick*="\''+_modToShow0+'\'"]') || document.querySelector('#cNav .nt');
       getDocs(collection(db,'clientes',currentClientUID,'tareas')).then(function(_tSnap){
         window._clientTareas=[];
