@@ -193,6 +193,10 @@ body.cajero-mode #ct-contabilidad{padding:0 !important;margin:0 !important;}
 .cv-medio-nombre{font-size:10px;font-weight:600;color:rgba(255,255,255,.55);white-space:nowrap;}
 .cv-medio-card.cv-zero .cv-medio-nombre{color:rgba(255,255,255,.2);}
 .cv-medio-card.cv-saldo-card .cv-medio-nombre{color:rgba(255,255,255,.8);}
+.cv-medio-card.cv-cobrar-card{cursor:pointer;border:1px solid rgba(176,144,136,0.3);background:rgba(176,144,136,0.12);transition:background 0.15s,transform 0.15s;}
+.cv-medio-card.cv-cobrar-card:hover{background:rgba(176,144,136,0.22);transform:translateY(-2px);}
+.cv-medio-card.cv-cobrar-card .cv-medio-nombre{color:rgba(255,200,180,.7);}
+.cv-medio-card.cv-cobrar-card .cv-medio-monto{color:#f0c8b8;}
 .cv-medio-monto{font-family:'Outfit',sans-serif;font-size:20px;font-weight:900;color:#fff;font-variant-numeric:tabular-nums;letter-spacing:-.8px;line-height:1;}
 .cv-medio-monto.cv-zero-m{color:rgba(255,255,255,.25);font-size:17px;}
 .cv-medio-monto.cv-saldo-val{font-size:30px;letter-spacing:-1.5px;}
@@ -6061,7 +6065,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, confirmPasswordReset } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, addDoc, collection, getDocs, query, where, orderBy, updateDoc, deleteDoc, deleteField, serverTimestamp, increment, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, addDoc, collection, getDocs, query, where, orderBy, updateDoc, deleteDoc, deleteField, serverTimestamp, increment, writeBatch, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 // Expose firestore db globally for cross-block access
 
 const cfg = {apiKey:"AIzaSyCZr_VAn5fumCzkrfxb1oK9-W2_cADnGTI",authDomain:"mb-strategy.firebaseapp.com",projectId:"mb-strategy",storageBucket:"mb-strategy.firebasestorage.app",messagingSenderId:"1055393429525",appId:"1:1055393429525:web:0f40fa5869ef5aa8bb761c"};
@@ -9990,10 +9994,14 @@ function renderCajaCajero() {
   };
   var defIcon = '<svg width="16" height="16" viewBox="0 0 20 20" fill="none"><rect x="2" y="4" width="16" height="12" rx="2.5" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/></svg>';
   var allMedios = Array.from(new Set(mediosDef.concat(Object.keys(medios))));
+  var _pend = window._cvPendiente || {total:0, count:0};
+  var cobrarCardHtml = _pend.total > 0
+    ? '<div class="cv-medio-card cv-cobrar-card" id="cv-cobrar-card" onclick="sidebarNav(\'ventas\',\'cobranzas\')"><div class="cv-medio-icon" style="background:rgba(176,144,136,0.2)"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke="rgba(255,200,180,0.85)" stroke-width="1.5"/><path d="M3 17c0-3.314 3.134-6 7-6s7 2.686 7 6" stroke="rgba(255,200,180,0.85)" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="cv-medio-nombre">A cobrar ('+_pend.count+')</div><div class="cv-medio-monto cv-cobrar-val">'+fmt(_pend.total)+'</div></div>'
+    : '<div class="cv-medio-card cv-cobrar-card" id="cv-cobrar-card" style="display:none;" onclick="sidebarNav(\'ventas\',\'cobranzas\')"></div>';
   var mediosHtml = allMedios.map(function(n) {
     var v = medios[n] || 0; var z = v === 0;
     return '<div class="cv-medio-card'+(z?' cv-zero':'')+'"><div class="cv-medio-icon">'+(icons[n]||defIcon)+'</div><div class="cv-medio-nombre">'+n+'</div><div class="cv-medio-monto'+(z?' cv-zero-m':'')+'">'+fmt(v)+'</div></div>';
-  }).join('') +
+  }).join('') + cobrarCardHtml +
   '<div class="cv-medio-card cv-saldo-card"><div class="cv-medio-icon" style="background:rgba(255,255,255,0.15)"><svg width="18" height="16" viewBox="0 0 24 20" fill="none"><rect x="2" y="4" width="20" height="14" rx="2.5" stroke="rgba(255,255,255,0.9)" stroke-width="1.6"/><path d="M2 9h20" stroke="rgba(255,255,255,0.9)" stroke-width="1.4"/><rect x="15" y="12" width="4" height="3" rx="1" fill="rgba(255,255,255,0.9)"/></svg></div><div class="cv-medio-nombre">Saldo del turno</div><div class="cv-medio-monto cv-saldo-val cv-saldo-monto">'+fmt(saldoTurno)+'</div></div>';
   var movsDesc = movs.slice().sort(function(a,b){ return (b.creadoEn||'').localeCompare(a.creadoEn||''); });
   var _cvDelays = [0, 0.08, 0.15, 0.22, 0.29, 0.36];
@@ -10194,7 +10202,32 @@ async function loadCajaModule() {
     const movs = movsVista.filter(m => m.mes === mes.stored);
     movs.sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')||((a.creadoEn||'').localeCompare(b.creadoEn||'')));
     window._cajaMovimientos = movs;
-    if(window.currentRol === 'cajero') { renderCajaCajero(); return; }
+    if(window.currentRol === 'cajero') {
+      renderCajaCajero();
+      if(!window._cvCobranzasUnsub) {
+        window._cvCobranzasUnsub = onSnapshot(
+          query(collection(db,'clientes',uid,'cobros'), where('estado','==','pendiente')),
+          function(snap) {
+            var total = 0, count = 0;
+            snap.forEach(function(d){ total += parseFloat(d.data().monto)||0; count++; });
+            window._cvPendiente = {total:Math.round(total), count:count};
+            var cardEl = document.getElementById('cv-cobrar-card');
+            if(cardEl) {
+              if(total > 0) {
+                cardEl.style.display = '';
+                var valEl = cardEl.querySelector('.cv-cobrar-val');
+                var nomEl = cardEl.querySelector('.cv-medio-nombre');
+                if(valEl) valEl.textContent = '$'+Math.round(total).toLocaleString('es-AR');
+                if(nomEl) nomEl.textContent = 'A cobrar ('+count+')';
+              } else {
+                cardEl.style.display = 'none';
+              }
+            }
+          }
+        );
+      }
+      return;
+    }
     // Verificar si hay cajeros activos → alias "Caja general" para Efectivo
     const _opSnap = await getDocs(query(collection(db,'clientes',uid,'operadores'), where('activo','==',true)));
     window._tieneOperadores = !_opSnap.empty;
@@ -13915,6 +13948,7 @@ function _mvmParseMonto(id) {
 
 // ─── MODAL VENTA RÁPIDA ───
 let _vrcCarrito = {}, _vrcMetodo = null, _vrcProductos = [], _vrcCuentas = [];
+window._vrcClienteSeleccionado = null;
 
 window.cajaVentaRapida = async function() {
   if(!currentClientUID) return;
@@ -13951,7 +13985,8 @@ function _vrcRenderMetodos() {
     'Transferencia':'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>'
   };
   const defIcon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>';
-  container.style.gridTemplateColumns = `repeat(${Math.min(_vrcCuentas.length,4)},1fr)`;
+  const isCta = _vrcMetodo === '__cta__';
+  container.style.gridTemplateColumns = `repeat(${Math.min(_vrcCuentas.length+1,4)},1fr)`;
   container.innerHTML = _vrcCuentas.map(c=>{
     const isSel = c.nombre === _vrcMetodo;
     const safe = c.nombre.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
@@ -13959,8 +13994,32 @@ function _vrcRenderMetodos() {
       <div style="margin-bottom:5px;">${icons[c.nombre]||defIcon}</div>
       <div class="vrc-mlabel">${c.nombre}</div>
     </button>`;
-  }).join('');
+  }).join('') + `<button class="vrc-metodo-btn${isCta?' sel':''}" onclick="vrcSetMetodo('__cta__')" style="border-color:rgba(176,144,136,0.5);color:#b09088;">
+    <div style="margin-bottom:5px;font-size:18px;">👤</div>
+    <div class="vrc-mlabel">Cuenta cliente</div>
+  </button>`;
+  const ctaDiv = document.getElementById('vrc-cta-search');
+  if(ctaDiv) {
+    if(isCta) {
+      const sel = window._vrcClienteSeleccionado;
+      ctaDiv.style.display = 'block';
+      ctaDiv.innerHTML = `<div style="margin-top:10px;">${sel?`<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f0f7f0;border-radius:10px;margin-bottom:8px;font-size:13px;color:#3a5a3c;font-weight:500;">👤 ${sel.nombre} <button onclick="window._vrcClienteSeleccionado=null;_vrcRenderMetodos()" style="margin-left:auto;background:none;border:none;cursor:pointer;color:#aaa;font-size:16px;line-height:1;">×</button></div>`:''}<input id="vrc-cta-input" type="text" placeholder="Buscar cliente..." oninput="_vrcFiltrarCta(this.value)" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #e0e0e0;border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:6px;"><div id="vrc-cta-list" style="max-height:130px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;"></div><button onclick="openModal('newMclienteModal')" style="margin-top:6px;width:100%;background:none;border:1px dashed #ccc;border-radius:10px;padding:8px;font-size:12px;color:#999;cursor:pointer;font-family:'DM Sans',sans-serif;">+ Nuevo cliente</button></div>`;
+      _vrcFiltrarCta('');
+    } else {
+      ctaDiv.style.display = 'none';
+    }
+  }
 }
+
+window._vrcFiltrarCta = function(q) {
+  const list = document.getElementById('vrc-cta-list');
+  if(!list) return;
+  const clis = (window._mcClientes || []).filter(c => !c.eliminado && (!q || (c.nombre||'').toLowerCase().includes(q.toLowerCase())));
+  list.innerHTML = clis.slice(0,8).map(c => {
+    const data = JSON.stringify({id:c.id,nombre:c.nombre}).replace(/\\/g,'\\\\').replace(/"/g,'&quot;');
+    return `<button onclick='window._vrcClienteSeleccionado=${data.replace(/'/g,"\\'")}; _vrcRenderMetodos()' style="text-align:left;background:#fff;border:1px solid #eee;border-radius:8px;padding:7px 12px;font-size:13px;font-family:inherit;cursor:pointer;color:#222;width:100%;">${c.nombre}${c.tel?'<span style="color:#aaa;font-size:11px;margin-left:8px;">'+c.tel+'</span>':''}</button>`;
+  }).join('') || '<div style="text-align:center;padding:12px;font-size:12px;color:#aaa;">Sin resultados</div>';
+};
 
 function _vrcRenderProductos(lista) {
   const container = document.getElementById('vrc-prod-list');
@@ -14060,25 +14119,42 @@ window.vrcGuardar = async function() {
   const hoy = fechaHoyARG();
   const mes = mesHoyARG(hoy);
   const btnSave = document.getElementById('vrc-btn-save');
+  const _btnReset = () => { if(btnSave){btnSave.disabled=false;btnSave.innerHTML='<span style="display:flex;align-items:center;justify-content:center;gap:8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Registrar venta</span>';} };
   try {
     if(btnSave){btnSave.disabled=true;btnSave.innerHTML='<span style="display:flex;align-items:center;justify-content:center;gap:8px;">Registrando...</span>';}
-    const _vcDocRef = await addDoc(collection(db,'clientes',currentClientUID,'libroCaja'), {
-      uid:currentClientUID,
-      fecha:hoy, tipo:'ingreso', concepto:'Venta caja',
-      cuenta:_vrcMetodo||'Efectivo', monto:Math.round(total*100)/100,
-      productos, mes, origen:'venta_caja', eliminado:false, creadoEn:new Date().toISOString(),
-      creadoPor: window.currentOperadorNombre || 'Admin'
-    });
-    const _vcCarritoSnap = {..._vrcCarrito};
-    vrcCerrar();
-    if(window._triggerStockPorVenta) window._triggerStockPorVenta(_vcCarritoSnap, _vcDocRef.id).catch(()=>{});
-    loadCajaModule();
+    if(_vrcMetodo === '__cta__') {
+      const cli = window._vrcClienteSeleccionado;
+      if(!cli) { showToast('Seleccioná un cliente','info'); _btnReset(); return; }
+      await addDoc(collection(db,'clientes',currentClientUID,'cobros'), {
+        clienteId:cli.id, clienteNombre:cli.nombre, concepto:'Pedido caja',
+        productos, monto:Math.round(total*100)/100, estado:'pendiente',
+        fecha:hoy, creadoEn:new Date().toISOString(),
+        origen:'caja_cajero', creadoPor:window.currentOperadorNombre||'Cajero'
+      });
+      const _vcCarritoSnap = {..._vrcCarrito};
+      vrcCerrar();
+      if(window._triggerStockPorVenta) window._triggerStockPorVenta(_vcCarritoSnap, null).catch(()=>{});
+      showToast('Pedido registrado a cuenta de '+cli.nombre,'success');
+      loadCajaModule();
+    } else {
+      const _vcDocRef = await addDoc(collection(db,'clientes',currentClientUID,'libroCaja'), {
+        uid:currentClientUID,
+        fecha:hoy, tipo:'ingreso', concepto:'Venta caja',
+        cuenta:_vrcMetodo||'Efectivo', monto:Math.round(total*100)/100,
+        productos, mes, origen:'venta_caja', eliminado:false, creadoEn:new Date().toISOString(),
+        creadoPor: window.currentOperadorNombre || 'Admin'
+      });
+      const _vcCarritoSnap = {..._vrcCarrito};
+      vrcCerrar();
+      if(window._triggerStockPorVenta) window._triggerStockPorVenta(_vcCarritoSnap, _vcDocRef.id).catch(()=>{});
+      loadCajaModule();
+    }
   } catch(e){
     console.log('vrcGuardar:',e);
-    if(btnSave){btnSave.disabled=false;btnSave.innerHTML='<span style="display:flex;align-items:center;justify-content:center;gap:8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Registrar venta</span>';}
+    _btnReset();
   }
 };
-window.vrcCerrar = function() { const ov=document.getElementById('vrc-overlay'); if(ov)ov.style.display='none'; };
+window.vrcCerrar = function() { const ov=document.getElementById('vrc-overlay'); if(ov)ov.style.display='none'; window._vrcClienteSeleccionado=null; };
 
 window.showClientContView = function(view, btn) {
   loadCajaModule();
@@ -16856,9 +16932,26 @@ async function loadCobranzasModule() {
       clientesById.set(d.id, obj);
       if(data.nombre) clientesByName.set((data.nombre||'').toLowerCase().trim(), obj);
     });
-    const psSnap = await getDocs(collection(db,'clientes',currentClientUID,'presupuestos'));
+    const [psSnap, cobrosSnap] = await Promise.all([
+      getDocs(collection(db,'clientes',currentClientUID,'presupuestos')),
+      getDocs(query(collection(db,'clientes',currentClientUID,'cobros'), where('estado','==','pendiente')))
+    ]);
     const pendientes = [];
     const hoy = new Date();
+    cobrosSnap.forEach(d => {
+      const c = {id:d.id, ...d.data()};
+      const cli = c.clienteId ? clientesById.get(c.clienteId) : null;
+      const tel = String(cli?.tel||cli?.telefono||'').replace(/[^\d]/g,'');
+      const fechaDt = c.creadoEn ? new Date(c.creadoEn) : null;
+      const dias = fechaDt && !isNaN(fechaDt) ? Math.max(0, Math.floor((hoy - fechaDt) / 86400000)) : 0;
+      pendientes.push({
+        id: c.id, clienteId: c.clienteId||null,
+        cliente: c.clienteNombre||'—', tel,
+        descripcion: c.concepto||'Pedido caja',
+        monto: parseFloat(c.monto)||0, moneda:'ARS',
+        fecha: fechaDt, dias, _esCobro: true
+      });
+    });
     psSnap.forEach(d => {
       const p = {id:d.id, ...d.data()};
       if(p.eliminado) return;
@@ -24727,7 +24820,7 @@ async function turnoGenerarPDF(operador, ingresos, egresos, saldo, movs) {
 window._aplicarRestriccionesRol = function() {
   var rol = window.currentRol || 'admin';
   var _ocultar = {
-    cajero:   ['sbg-inicio','sbg-ventas','sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion'],
+    cajero:   ['sbg-inicio','sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion'],
     compras:  ['sbg-finanzas','sbg-ventas','sbg-herramientas','sbg-gestion'],
     comercial:['sbg-finanzas','sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion'],
     vendedor: ['sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion']
@@ -24751,11 +24844,18 @@ window._aplicarRestriccionesRol = function() {
     var btnCierreBanner = document.getElementById('btn-cajero-cierre-banner');
     if (btnRetiroBanner) btnRetiroBanner.style.display = '';
     if (btnCierreBanner) btnCierreBanner.style.display = '';
-    // Ocultar sub-items del sidebar de Finanzas excepto Caja
+    // Ocultar sub-items del sidebar de Finanzas excepto Caja y Mis Facturas
     var sbsubFinanzas = document.getElementById('sbsub-finanzas');
     if (sbsubFinanzas) {
       sbsubFinanzas.querySelectorAll('.sb-subitem').forEach(function(btn) {
         if (btn.dataset.sub !== 'caja' && btn.dataset.sub !== 'mis-facturas') btn.style.display = 'none';
+      });
+    }
+    // Ocultar sub-items de Ventas excepto Cobranzas
+    var sbsubVentas = document.getElementById('sbsub-ventas');
+    if (sbsubVentas) {
+      sbsubVentas.querySelectorAll('.sb-subitem').forEach(function(btn) {
+        if (btn.dataset.sub !== 'cobranzas') btn.style.display = 'none';
       });
     }
     // Ocultar tabs del subnav-finanzas que el cajero no debe ver
@@ -26460,6 +26560,7 @@ window.doResetPassword = async function(){
       <div>
         <span class="cj-slabel">MÉTODO DE PAGO</span>
         <div id="vrc-metodos" style="display:grid;gap:8px;grid-template-columns:1fr 1fr 1fr;margin-top:0;"></div>
+        <div id="vrc-cta-search" style="display:none;"></div>
       </div>
     </div>
     <div class="cj-mfooter">
