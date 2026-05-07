@@ -9965,7 +9965,7 @@ function renderCajaCajero() {
     var v = parseFloat(m.monto) || 0;
     if(m.tipo === 'ingreso') {
       totalIng += v;
-      var k = m.cuenta || 'Efectivo';
+      var k = (m.medioPago && m.medioPago !== 'Caja mostrador') ? m.medioPago : (m.cuenta && m.cuenta !== 'Caja mostrador' ? m.cuenta : 'Efectivo');
       if(mediosDef.indexOf(k) !== -1) medios[k] = (medios[k]||0) + v;
     }
     else if(m.tipo === 'egreso') totalEg += v;
