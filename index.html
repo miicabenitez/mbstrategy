@@ -9992,8 +9992,7 @@ function renderCajaCajero() {
     var montoStr = (isIng ? '+' : '−') + fmt(v);
     var delay = _cvDelays[i] !== undefined ? _cvDelays[i] : 0.36;
     var isNueva = i === 0 && _cvPrevId && (m.id || null) !== _cvPrevId;
-    console.log('[cvMov]', JSON.stringify({medioPago:m.medioPago, cuenta:m.cuenta, cuentaDesde:m.cuentaDesde, cuentaHacia:m.cuentaHacia, tipo:m.tipo}));
-    var medioLabel = (m.medioPago && m.medioPago !== 'Caja mostrador') ? m.medioPago : (m.cuenta && m.cuenta !== 'Caja mostrador' ? m.cuenta : '—');
+    var medioLabel = (m.medioPago && m.medioPago !== 'Caja mostrador') ? m.medioPago : (m.cuenta && m.cuenta !== 'Caja mostrador' ? m.cuenta : 'Efectivo');
     return '<div class="cv-tx-card cv-'+(isIng?'ing':'eg')+(isNueva?' cv-nueva':'')+'" style="animation-delay:'+delay+'s"><div class="cv-tx-dot cv-'+(isIng?'ing':'eg')+'"></div><div class="cv-tx-hora">'+hora+'</div><div class="cv-tx-tipo">'+tipoLabel+'</div><div class="cv-tx-desc"><span class="cv-tx-desc-main">'+(m.concepto||'—')+'</span>'+(m.detalle?'<span class="cv-tx-desc-sep"> · </span><span class="cv-tx-desc-sub">'+m.detalle+'</span>':'')+'</div><div class="cv-tx-medio">'+medioLabel+'</div><div class="cv-tx-monto cv-'+(isIng?'ing':'eg')+'">'+montoStr+'</div></div>';
   }).join('') : '<div style="text-align:center;padding:32px 0;color:#aab8a8;font-size:13px;">Sin movimientos en este turno</div>';
   ct.innerHTML =
