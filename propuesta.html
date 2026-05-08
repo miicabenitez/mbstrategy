@@ -4,589 +4,856 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MB Strategy — Propuesta de Inversión</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --cream: #f2ede4; --cream-2: #e8e1d4;
-    --green: #4a5e4d; --green-dark: #3a4e3d;
-    --terra: #b09088;
-    --terra-g: linear-gradient(135deg, #a08078 0%, #c4a098 40%, #ccb0a8 65%, #a08078 100%);
-    --text: #1e2a1c; --text-2: #5a6a58; --text-3: #9aaa98;
-    --border: #ddd6c8;
-    --serif: 'Cormorant Garamond', serif;
-    --sans: 'DM Sans', sans-serif;
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-  body { background: var(--cream); color: var(--text); font-family: var(--sans); font-size: 15px; line-height: 1.7; overflow-x: hidden; }
+:root{
+  --cream:#f2ede4;--cream-2:#e8e1d4;
+  --green:#4a5e4d;--green-dark:#3a4e3d;
+  --terra:#b09088;
+  --terra-g:linear-gradient(135deg,#a08078 0%,#c4a098 40%,#ccb0a8 65%,#a08078 100%);
+  --text:#1e2a1c;--text-2:#5a6a58;--text-3:#9aaa98;
+  --border:#ddd6c8;
+  --serif:'Cormorant Garamond',serif;
+  --sans:'DM Sans',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--cream);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.7;overflow-x:hidden;}
 
-  /* HERO */
-  .hero { background: var(--green-dark); min-height: 100vh; display: flex; flex-direction: column; justify-content: flex-end; position: relative; overflow: hidden; }
-  .hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 15% 70%, rgba(176,144,136,0.18) 0%, transparent 50%), radial-gradient(ellipse at 85% 15%, rgba(74,94,77,0.25) 0%, transparent 50%), radial-gradient(ellipse at 50% 100%, rgba(0,0,0,0.3) 0%, transparent 60%); }
-  .hero-logo { position: absolute; top: 48px; left: 64px; display: flex; align-items: center; gap: 12px; z-index: 2; }
-  .hero-logo-mb { font-family: var(--serif); font-size: 28px; font-weight: 600; color: rgba(255,255,255,0.9); letter-spacing: -0.5px; }
-  .hero-logo-sep { width: 1px; height: 24px; background: rgba(255,255,255,0.2); }
-  .hero-logo-text { font-family: var(--sans); font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.4); letter-spacing: 1.5px; text-transform: uppercase; }
-  .hero-badge { position: absolute; top: 52px; right: 64px; font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,0.35); border: 1px solid rgba(255,255,255,0.15); padding: 6px 14px; border-radius: 20px; z-index: 2; }
-  .hero-content { position: relative; z-index: 2; padding: 0 64px 80px; max-width: 920px; }
-  .hero-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--terra); margin-bottom: 24px; opacity: 0; animation: fadeUp 0.8s ease 0.3s forwards; }
-  .hero-title { font-family: var(--serif); font-size: clamp(52px, 7vw, 90px); font-weight: 300; color: #fff; line-height: 1; letter-spacing: -2px; margin-bottom: 32px; opacity: 0; animation: fadeUp 0.9s ease 0.5s forwards; }
-  .hero-title em { font-style: italic; color: rgba(255,255,255,0.45); }
-  .hero-desc { font-size: 16px; font-weight: 300; color: rgba(255,255,255,0.5); max-width: 540px; line-height: 1.85; opacity: 0; animation: fadeUp 0.9s ease 0.7s forwards; }
-  .hero-stats { display: flex; gap: 0; margin-top: 56px; opacity: 0; animation: fadeUp 0.9s ease 0.9s forwards; }
-  .hero-stat { padding: 0 48px 0 0; }
-  .hero-stat:not(:last-child) { border-right: 1px solid rgba(255,255,255,0.1); margin-right: 48px; }
-  .hero-stat-num { font-family: var(--serif); font-size: 38px; font-weight: 300; color: #fff; letter-spacing: -1.5px; line-height: 1; }
-  .hero-stat-label { font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 6px; letter-spacing: 0.3px; }
-  .hero-scroll { position: absolute; bottom: 48px; right: 64px; display: flex; align-items: center; gap: 10px; color: rgba(255,255,255,0.25); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; z-index: 2; opacity: 0; animation: fadeUp 0.8s ease 1.1s forwards; }
-  .hero-scroll-line { width: 40px; height: 1px; background: rgba(255,255,255,0.15); }
+/* HERO */
+.hero{background:var(--green-dark);min-height:100svh;display:flex;flex-direction:column;justify-content:flex-end;position:relative;overflow:hidden;padding:0 clamp(24px,6vw,80px) clamp(48px,8vh,96px);}
+.hero-orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;animation:float 8s ease-in-out infinite;}
+.hero-orb-1{width:500px;height:500px;background:rgba(176,144,136,.12);top:-100px;right:-80px;animation-delay:0s;}
+.hero-orb-2{width:350px;height:350px;background:rgba(74,94,77,.18);bottom:100px;left:-60px;animation-delay:-4s;}
+@keyframes float{0%,100%{transform:translateY(0) scale(1);}50%{transform:translateY(-30px) scale(1.05);}}
+.hero-top{position:absolute;top:clamp(24px,4vh,48px);left:clamp(24px,6vw,80px);right:clamp(24px,6vw,80px);display:flex;justify-content:space-between;align-items:center;z-index:2;}
+.hero-logo{display:flex;align-items:center;gap:10px;}
+.hero-logo-mb{font-family:var(--serif);font-size:24px;font-weight:600;color:rgba(255,255,255,.9);}
+.hero-logo-sep{width:1px;height:20px;background:rgba(255,255,255,.2);}
+.hero-logo-tag{font-size:11px;font-weight:500;color:rgba(255,255,255,.35);letter-spacing:1.5px;text-transform:uppercase;}
+.hero-badge{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.3);border:1px solid rgba(255,255,255,.12);padding:5px 12px;border-radius:20px;}
+.hero-content{position:relative;z-index:2;max-width:860px;}
+.hero-eyebrow{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--terra);margin-bottom:20px;opacity:0;animation:fadeUp .8s ease .2s forwards;}
+.hero-title{font-family:var(--serif);font-size:clamp(44px,9vw,108px);font-weight:300;color:#fff;line-height:.92;letter-spacing:-3px;margin-bottom:36px;opacity:0;animation:fadeUp .9s ease .4s forwards;}
+.hero-title em{font-style:italic;color:rgba(255,255,255,.35);}
+.hero-sub{font-size:clamp(16px,2vw,19px);font-weight:300;color:rgba(255,255,255,.5);max-width:540px;line-height:1.8;margin-bottom:56px;opacity:0;animation:fadeUp .9s ease .6s forwards;}
+.hero-stats{display:flex;flex-wrap:wrap;gap:0;opacity:0;animation:fadeUp .9s ease .8s forwards;}
+.hero-stat{padding:0 clamp(24px,4vw,52px) 0 0;margin-right:clamp(24px,4vw,52px);}
+.hero-stat:not(:last-child){border-right:1px solid rgba(255,255,255,.1);}
+.hero-stat:last-child{padding:0;margin:0;}
+.hero-stat-num{font-family:var(--serif);font-size:clamp(30px,4vw,44px);font-weight:300;color:#fff;letter-spacing:-1px;line-height:1;}
+.hero-stat-label{font-size:11px;color:rgba(255,255,255,.28);margin-top:5px;}
+/* Floating pill in hero */
+.hero-pill{position:absolute;top:clamp(80px,12vh,140px);right:clamp(24px,6vw,80px);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);padding:16px 24px;z-index:2;animation:pillFloat 6s ease-in-out infinite;display:flex;flex-direction:column;gap:4px;}
+@keyframes pillFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-12px);}}
+.hero-pill-label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.25);}
+.hero-pill-num{font-family:var(--serif);font-size:28px;font-weight:300;color:#fff;letter-spacing:-1px;}
 
-  /* LAYOUT */
-  section { padding: 100px 64px; max-width: 1100px; margin: 0 auto; }
-  .section-label { font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--terra); margin-bottom: 16px; display: flex; align-items: center; gap: 12px; }
-  .section-label::after { content: ''; display: block; width: 32px; height: 1px; background: var(--terra); opacity: 0.5; }
-  .section-title { font-family: var(--serif); font-size: clamp(36px, 4vw, 52px); font-weight: 400; color: var(--text); line-height: 1.15; letter-spacing: -1px; margin-bottom: 48px; }
-  .section-title em { font-style: italic; color: var(--text-2); }
-  .divider { max-width: 1100px; margin: 0 auto; padding: 0 64px; height: 1px; background: var(--border); }
+/* LAYOUT */
+.wrap{padding:clamp(60px,8vh,100px) clamp(24px,6vw,80px);max-width:1180px;margin:0 auto;}
+.eyebrow{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--terra);margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+.eyebrow::after{content:'';display:block;width:28px;height:1px;background:var(--terra);opacity:.5;}
+.stitle{font-family:var(--serif);font-size:clamp(32px,4vw,54px);font-weight:400;color:var(--text);line-height:1.08;letter-spacing:-1px;margin-bottom:40px;}
+.stitle em{font-style:italic;color:var(--text-2);}
+.divider{max-width:1180px;margin:0 auto;padding:0 clamp(24px,6vw,80px);height:1px;background:var(--border);}
 
-  /* PROBLEMA */
-  .problema-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
-  .problema-item { background: var(--cream-2); padding: 32px 36px; border-left: 2px solid transparent; transition: border-color 0.3s; }
-  .problema-item:hover { border-left-color: var(--terra); }
-  .problema-item h4 { font-family: var(--serif); font-size: 20px; font-weight: 500; color: var(--text); margin-bottom: 8px; }
-  .problema-item p { font-size: 13px; color: var(--text-2); line-height: 1.7; }
+/* PROBLEMA */
+.prob-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:2px;}
+.prob-item{background:var(--cream-2);padding:clamp(28px,3vw,40px);border-left:3px solid transparent;transition:border-color .3s,transform .3s;}
+.prob-item:hover{border-left-color:var(--terra);transform:translateX(4px);}
+.prob-num{font-family:var(--serif);font-size:52px;font-weight:300;color:var(--terra);opacity:.55;line-height:1;margin-bottom:14px;}
+.prob-item h4{font-family:var(--serif);font-size:21px;font-weight:500;color:var(--text);margin-bottom:8px;}
+.prob-item p{font-size:13px;color:var(--text-2);line-height:1.7;}
 
-  /* SOLUCIÓN */
-  .solucion-wrap { background: var(--green-dark); padding: 100px 64px; position: relative; overflow: hidden; }
-  .solucion-wrap::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 80% 50%, rgba(176,144,136,0.1) 0%, transparent 60%); }
-  .solucion-inner { max-width: 1100px; margin: 0 auto; }
-  .solucion-wrap .section-label { color: rgba(176,144,136,0.8); }
-  .solucion-wrap .section-label::after { background: var(--terra); }
-  .solucion-wrap .section-title { color: #fff; }
-  .solucion-features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: rgba(255,255,255,0.05); }
-  .feat { background: var(--green-dark); padding: 36px 32px; position: relative; }
-  .feat::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: var(--terra-g); opacity: 0; transition: opacity 0.3s; }
-  .feat:hover::before { opacity: 1; }
-  .feat-num { font-family: var(--serif); font-size: 48px; font-weight: 300; color: rgba(255,255,255,0.06); line-height: 1; margin-bottom: 20px; }
-  .feat h4 { font-family: var(--serif); font-size: 20px; font-weight: 500; color: rgba(255,255,255,0.85); margin-bottom: 10px; }
-  .feat p { font-size: 13px; color: rgba(255,255,255,0.38); line-height: 1.7; }
+/* SOLUCIÓN */
+.sol-wrap{background:var(--green-dark);padding:clamp(60px,8vh,100px) clamp(24px,6vw,80px);position:relative;overflow:hidden;}
+.sol-orb{position:absolute;width:400px;height:400px;border-radius:50%;filter:blur(100px);background:rgba(176,144,136,.08);right:-80px;bottom:-80px;animation:float 10s ease-in-out infinite;}
+.sol-inner{max-width:1180px;margin:0 auto;position:relative;z-index:1;}
+.sol-wrap .eyebrow{color:rgba(176,144,136,.7);}
+.sol-wrap .eyebrow::after{background:var(--terra);}
+.sol-wrap .stitle{color:#fff;}
+.sol-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1px;background:rgba(255,255,255,.06);}
+.feat{background:var(--green-dark);padding:clamp(24px,3vw,36px) clamp(20px,2.5vw,32px);position:relative;transition:background .3s;}
+.feat:hover{background:rgba(255,255,255,.03);}
+.feat::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:var(--terra-g);opacity:0;transition:opacity .3s;}
+.feat:hover::before{opacity:1;}
+.feat-num{font-family:var(--serif);font-size:44px;font-weight:300;color:var(--terra);opacity:.5;line-height:1;margin-bottom:16px;}
+.feat h4{font-family:var(--serif);font-size:19px;font-weight:500;color:rgba(255,255,255,.88);margin-bottom:8px;}
+.feat p{font-size:13px;color:rgba(255,255,255,.38);line-height:1.7;}
 
-  /* ESTADO */
-  .estado-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; }
-  .estado-item { padding: 32px 28px; background: var(--cream-2); text-align: center; }
-  .estado-icon { width: 40px; height: 40px; border-radius: 50%; background: rgba(74,94,77,0.08); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
-  .estado-icon svg { color: var(--green); }
-  .estado-item h4 { font-family: var(--serif); font-size: 16px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
-  .estado-item p { font-size: 12px; color: var(--text-3); line-height: 1.5; }
+/* ESTADO */
+.estado-wrap{position:relative;overflow:hidden;}
+.estado-bg{background:var(--green-dark);padding:clamp(60px,8vh,100px) clamp(24px,6vw,80px);}
+.estado-orb{position:absolute;width:600px;height:600px;border-radius:50%;filter:blur(120px);background:rgba(176,144,136,.07);top:-200px;left:50%;transform:translateX(-50%);pointer-events:none;}
+.estado-inner{max-width:1180px;margin:0 auto;position:relative;z-index:1;}
+.estado-wrap .eyebrow{color:rgba(176,144,136,.7);}
+.estado-wrap .eyebrow::after{background:var(--terra);}
+.estado-wrap .stitle{color:#fff;}
+.estado-quote{font-family:var(--serif);font-size:clamp(18px,2.5vw,26px);font-weight:300;color:rgba(255,255,255,.45);line-height:1.45;margin-bottom:52px;max-width:660px;font-style:italic;padding-left:20px;border-left:2px solid rgba(176,144,136,.35);}
+.estado-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(255,255,255,.06);}
+.estado-item{background:var(--green-dark);padding:clamp(28px,3vw,40px) clamp(20px,2.5vw,32px);transition:background .3s;}
+.estado-item:hover{background:rgba(255,255,255,.03);}
+.estado-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(176,144,136,.15);color:var(--terra);font-size:10px;font-weight:600;letter-spacing:.5px;padding:4px 12px;border-radius:20px;margin-bottom:14px;}
+.estado-num{font-family:var(--serif);font-size:52px;font-weight:300;color:var(--terra);opacity:.4;line-height:1;margin-bottom:14px;}
+.estado-item h4{font-family:var(--serif);font-size:20px;font-weight:500;color:rgba(255,255,255,.9);margin-bottom:8px;}
+.estado-item p{font-size:13px;color:rgba(255,255,255,.38);line-height:1.7;}
 
-  /* COMPETENCIA */
-  .comp-wrap { background: var(--cream-2); padding: 100px 64px; }
-  .comp-inner { max-width: 1100px; margin: 0 auto; }
-  .comp-table { width: 100%; border-collapse: collapse; }
-  .comp-table th { text-align: left; font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-3); padding: 0 20px 16px; border-bottom: 1px solid var(--border); }
-  .comp-table th:first-child { padding-left: 0; }
-  .comp-table td { padding: 20px; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--text-2); vertical-align: middle; }
-  .comp-table td:first-child { padding-left: 0; font-family: var(--serif); font-size: 18px; font-weight: 500; color: var(--text); }
-  .comp-table tr.mb-row td { background: rgba(74,94,77,0.05); }
-  .comp-table tr.mb-row td:first-child { color: var(--green); }
-  .comp-price { font-family: var(--serif); font-size: 18px; font-weight: 500; color: var(--text); }
-  .comp-price.mb { color: var(--green); }
-  .check { color: var(--green); }
-  .cross { color: var(--text-3); }
-  .comp-badge { display: inline-flex; font-size: 9px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; padding: 3px 8px; border-radius: 20px; background: rgba(74,94,77,0.1); color: var(--green); margin-left: 8px; }
-  .comp-nota { margin-top: 20px; font-size: 12px; color: var(--text-3); font-style: italic; }
-  .comp-diferencial { margin-top: 28px; background: var(--cream); padding: 28px 32px; border-left: 2px solid var(--terra); }
-  .comp-diferencial-label { font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--terra); margin-bottom: 10px; }
-  .comp-diferencial p { font-size: 14px; color: var(--text-2); line-height: 1.8; }
+/* COMPETENCIA */
+.comp-wrap{background:var(--cream-2);padding:clamp(60px,8vh,100px) clamp(24px,6vw,80px);}
+.comp-inner{max-width:1180px;margin:0 auto;}
+.comp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:2px;margin-bottom:20px;}
+.comp-card{background:var(--cream);padding:clamp(28px,3vw,40px) clamp(20px,2.5vw,32px);transition:transform .3s;}
+.comp-card:hover{transform:translateY(-4px);}
+.comp-card.mb{background:var(--green-dark);position:relative;}
+.comp-card.mb::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--terra-g);}
+.comp-tag{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-3);margin-bottom:14px;}
+.comp-card.mb .comp-tag{color:var(--terra);}
+.comp-name{font-family:var(--serif);font-size:28px;font-weight:500;color:var(--text);margin-bottom:3px;}
+.comp-card.mb .comp-name{color:#fff;}
+.comp-desc{font-size:12px;color:var(--text-3);margin-bottom:6px;}
+.comp-card.mb .comp-desc{color:rgba(255,255,255,.3);}
+.comp-subs{font-size:13px;font-weight:600;color:var(--green);margin-bottom:4px;}
+.comp-card.mb .comp-subs{color:rgba(255,255,255,.5);}
+.comp-revenue{font-size:11px;color:var(--text-3);margin-bottom:20px;font-style:italic;}
+.comp-card.mb .comp-revenue{color:rgba(255,255,255,.25);}
+.comp-price{font-family:var(--serif);font-size:36px;font-weight:300;color:var(--text);letter-spacing:-1px;line-height:1;margin-bottom:3px;}
+.comp-card.mb .comp-price{color:#fff;}
+.comp-price-sub{font-size:11px;color:var(--text-3);margin-bottom:28px;}
+.comp-card.mb .comp-price-sub{color:rgba(255,255,255,.25);}
+.comp-feats{display:flex;flex-direction:column;gap:10px;}
+.comp-feat{display:flex;align-items:center;gap:9px;font-size:13px;}
+.comp-feat.ok{color:var(--text-2);}.comp-feat.ok .ic{color:var(--green);font-weight:700;}
+.comp-feat.no{color:var(--text-3);opacity:.8;}
+.comp-feat.mbok{color:rgba(255,255,255,.8);}.comp-feat.mbok .ic{color:#7de88a;font-weight:700;}
+.comp-nota{font-size:12px;color:var(--text-3);font-style:italic;margin-bottom:20px;}
+.comp-dif{background:var(--cream);padding:24px 28px;border-left:2px solid var(--terra);}
+.comp-dif-label{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--terra);margin-bottom:8px;}
+.comp-dif p{font-size:14px;color:var(--text-2);line-height:1.8;}
 
-  /* MODELO */
-  .modelo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin-bottom: 2px; }
-  .modelo-card { padding: 44px 48px; background: var(--cream-2); position: relative; overflow: hidden; }
-  .modelo-card.dark { background: var(--green-dark); }
-  .modelo-card::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--terra-g); transform: scaleX(0); transform-origin: left; transition: transform 0.4s; }
-  .modelo-card:hover::after { transform: scaleX(1); }
-  .modelo-tag { font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--terra); margin-bottom: 16px; }
-  .modelo-titulo { font-family: var(--serif); font-size: 28px; font-weight: 400; color: var(--text); margin-bottom: 8px; }
-  .modelo-card.dark .modelo-titulo { color: #fff; }
-  .modelo-precio { font-family: var(--serif); font-size: 48px; font-weight: 300; color: var(--green); letter-spacing: -2px; line-height: 1; margin-bottom: 6px; }
-  .modelo-card.dark .modelo-precio { color: rgba(255,255,255,0.9); }
-  .modelo-sub { font-size: 12px; color: var(--text-3); margin-bottom: 28px; }
-  .modelo-card.dark .modelo-sub { color: rgba(255,255,255,0.3); }
-  .modelo-items { list-style: none; display: flex; flex-direction: column; gap: 9px; }
-  .modelo-items li { font-size: 13px; color: var(--text-2); padding-left: 14px; position: relative; }
-  .modelo-items li::before { content: '—'; position: absolute; left: 0; color: var(--terra); font-size: 11px; }
-  .modelo-card.dark .modelo-items li { color: rgba(255,255,255,0.45); }
-  .modelo-mrr { background: var(--green-dark); padding: 48px; display: flex; align-items: center; justify-content: space-between; gap: 40px; position: relative; }
-  .modelo-mrr::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--terra-g); }
-  .mrr-left h3 { font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-bottom: 12px; }
-  .mrr-num { font-family: var(--serif); font-size: 52px; font-weight: 300; color: #fff; letter-spacing: -2px; line-height: 1; }
-  .mrr-sub { font-size: 12px; color: rgba(255,255,255,0.3); margin-top: 8px; }
-  .mrr-planes { display: flex; gap: 40px; flex-shrink: 0; }
-  .mrr-plan { text-align: center; }
-  .mrr-plan-num { font-family: var(--serif); font-size: 26px; font-weight: 300; color: rgba(255,255,255,0.8); letter-spacing: -0.5px; }
-  .mrr-plan-label { font-size: 11px; color: rgba(255,255,255,0.25); margin-top: 4px; }
+/* MODELO */
+.mod-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:2px;margin-bottom:2px;}
+.mod-card{padding:clamp(32px,4vw,48px) clamp(24px,3vw,44px);background:var(--cream-2);position:relative;overflow:hidden;transition:transform .3s;}
+.mod-card:hover{transform:translateY(-3px);}
+.mod-card.dark{background:var(--green-dark);}
+.mod-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--terra-g);transform:scaleX(0);transform-origin:left;transition:transform .4s;}
+.mod-card:hover::after{transform:scaleX(1);}
+.mod-tag{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--terra);margin-bottom:14px;}
+.mod-titulo{font-family:var(--serif);font-size:26px;font-weight:400;color:var(--text);margin-bottom:10px;}
+.mod-card.dark .mod-titulo{color:#fff;}
+.mod-precio{font-family:var(--serif);font-size:52px;font-weight:300;color:var(--green);letter-spacing:-2px;line-height:1;margin-bottom:5px;}
+.mod-card.dark .mod-precio{color:#fff;}
+.mod-sub{font-size:12px;color:var(--text-3);margin-bottom:24px;}
+.mod-card.dark .mod-sub{color:rgba(255,255,255,.3);}
+.mod-items{list-style:none;display:flex;flex-direction:column;gap:9px;}
+.mod-items li{font-size:13px;color:var(--text-2);padding-left:14px;position:relative;}
+.mod-items li::before{content:'—';position:absolute;left:0;color:var(--terra);font-size:11px;}
+.mod-card.dark .mod-items li{color:rgba(255,255,255,.45);}
+.mrr-bar{background:var(--green-dark);padding:clamp(32px,4vw,52px) clamp(24px,3vw,52px);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:28px;position:relative;}
+.mrr-bar::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--terra-g);}
+.mrr-label{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:10px;}
+.mrr-num{font-family:var(--serif);font-size:clamp(40px,5vw,58px);font-weight:300;color:#fff;letter-spacing:-2px;line-height:1;}
+.mrr-sub{font-size:12px;color:rgba(255,255,255,.28);margin-top:6px;}
+.mrr-planes{display:flex;gap:clamp(24px,4vw,48px);flex-wrap:wrap;}
+.mrr-plan-num{font-family:var(--serif);font-size:28px;font-weight:300;color:rgba(255,255,255,.8);letter-spacing:-.5px;}
+.mrr-plan-label{font-size:11px;color:rgba(255,255,255,.22);margin-top:3px;}
+.acomp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:2px;margin-top:2px;}
+.acomp-card{padding:clamp(28px,3vw,40px) clamp(24px,3vw,44px);border-top:2px solid var(--terra);}
+.acomp-card.light{background:var(--cream-2);}
+.acomp-card.dark2{background:var(--green-dark);}
+.acomp-precio{font-family:var(--serif);font-size:36px;font-weight:300;letter-spacing:-1px;line-height:1;margin-bottom:5px;}
+.acomp-card.light .acomp-precio{color:var(--green);}
+.acomp-card.dark2 .acomp-precio{color:rgba(255,255,255,.9);}
 
-  /* PROYECCIÓN */
-  .proyeccion-wrap { background: var(--cream-2); padding: 100px 64px; }
-  .proyeccion-inner { max-width: 1100px; margin: 0 auto; }
-  .proyeccion-anos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; margin-bottom: 2px; }
-  .ano-card { background: var(--cream); padding: 40px 36px; position: relative; overflow: hidden; }
-  .ano-card::before { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: var(--terra-g); transform: scaleX(0); transform-origin: left; transition: transform 0.4s; }
-  .ano-card:hover::before { transform: scaleX(1); }
-  .ano-label { font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--terra); margin-bottom: 16px; }
-  .ano-clientes { font-family: var(--serif); font-size: 56px; font-weight: 300; color: var(--text); line-height: 1; letter-spacing: -2px; margin-bottom: 4px; }
-  .ano-clientes-label { font-size: 12px; color: var(--text-3); margin-bottom: 28px; }
-  .ano-breakdown { display: flex; flex-direction: column; gap: 7px; margin-bottom: 16px; }
-  .ano-breakdown-item { display: flex; justify-content: space-between; font-size: 12px; }
-  .ano-breakdown-item span:first-child { color: var(--text-3); }
-  .ano-breakdown-item span:last-child { color: var(--text-2); font-weight: 500; }
-  .ano-sep { height: 1px; background: var(--border); margin: 4px 0 8px; }
-  .ano-total { font-family: var(--serif); font-size: 28px; font-weight: 500; color: var(--green); letter-spacing: -0.5px; }
-  .ano-total-label { font-size: 11px; color: var(--text-3); margin-top: 2px; }
-  .valuacion-banner { background: var(--green-dark); padding: 56px 64px; display: flex; align-items: center; justify-content: space-between; gap: 40px; position: relative; }
-  .valuacion-banner::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--terra-g); }
-  .val-left h3 { font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-bottom: 12px; }
-  .val-monto { font-family: var(--serif); font-size: clamp(42px, 5vw, 64px); font-weight: 300; color: #fff; letter-spacing: -2px; line-height: 1; }
-  .val-sub { font-size: 13px; color: rgba(255,255,255,0.3); margin-top: 8px; }
-  .val-right p { font-size: 13px; color: rgba(255,255,255,0.35); line-height: 1.9; max-width: 300px; text-align: right; }
+/* PROYECCIÓN */
+.proy-wrap{background:var(--cream-2);padding:clamp(60px,8vh,100px) clamp(24px,6vw,80px);}
+.proy-inner{max-width:1180px;margin:0 auto;}
+.canales{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:2px;margin-bottom:2px;}
+.canal{background:var(--cream);padding:20px 24px;}
+.canal-label{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;}
+.c1{border-left:2px solid var(--terra);}.c1 .canal-label{color:var(--terra);}
+.c2{border-left:2px solid var(--green);}.c2 .canal-label{color:var(--green);}
+.c3{border-left:2px solid #8a7060;}.c3 .canal-label{color:#8a7060;}
+.canal p{font-size:13px;color:var(--text-2);line-height:1.6;}
+.anos{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:2px;}
+.ano{background:var(--cream);padding:clamp(28px,3vw,44px) clamp(20px,2.5vw,36px);position:relative;overflow:hidden;transition:transform .3s;}
+.ano:hover{transform:translateY(-4px);}
+.ano::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--terra-g);transform:scaleX(0);transform-origin:left;transition:transform .4s;}
+.ano:hover::after{transform:scaleX(1);}
+.ano-label{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--terra);margin-bottom:16px;}
+.ano-subs{font-family:var(--serif);font-size:clamp(56px,7vw,80px);font-weight:300;color:var(--green-dark);line-height:1;letter-spacing:-3px;margin-bottom:4px;}
+.ano-subs-label{font-size:12px;color:var(--text-3);margin-bottom:24px;}
+.ano-rows{border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:12px 0;margin-bottom:16px;}
+.ano-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:12px;}
+.ano-row-lbl{color:var(--text-3);}
+.ano-row-val{color:var(--text-2);font-weight:600;}
+.ano-total{font-family:var(--serif);font-size:clamp(28px,3.5vw,38px);font-weight:500;color:var(--green);letter-spacing:-1px;line-height:1;}
+.ano-total-label{font-size:11px;color:var(--text-3);margin-top:3px;}
+.val-banner{background:var(--green-dark);padding:clamp(40px,5vw,60px) clamp(24px,6vw,64px);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:28px;position:relative;}
+.val-banner::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--terra-g);}
+.val-label{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:10px;}
+.val-num{font-family:var(--serif);font-size:clamp(40px,6vw,68px);font-weight:300;color:#fff;letter-spacing:-2px;line-height:1;}
+.val-sub{font-size:13px;color:rgba(255,255,255,.28);margin-top:6px;}
+.val-right{font-size:14px;color:rgba(255,255,255,.35);line-height:1.9;max-width:280px;}
 
-  /* PROPUESTA */
-  .propuesta-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
-  .prop-card { padding: 52px 48px; background: var(--cream-2); position: relative; }
-  .prop-card.featured { background: var(--green-dark); }
-  .prop-card.featured::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--terra-g); }
-  .prop-label { font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--terra); margin-bottom: 20px; }
-  .prop-monto { font-family: var(--serif); font-size: 52px; font-weight: 300; color: var(--text); letter-spacing: -2px; line-height: 1; margin-bottom: 8px; }
-  .prop-card.featured .prop-monto { color: #fff; }
-  .prop-sub { font-size: 13px; color: var(--text-3); margin-bottom: 36px; }
-  .prop-card.featured .prop-sub { color: rgba(255,255,255,0.3); }
-  .prop-items { list-style: none; display: flex; flex-direction: column; gap: 14px; }
-  .prop-items li { font-size: 13px; color: var(--text-2); padding-left: 16px; position: relative; line-height: 1.6; }
-  .prop-items li::before { content: '—'; position: absolute; left: 0; color: var(--terra); font-size: 11px; }
-  .prop-card.featured .prop-items li { color: rgba(255,255,255,0.5); }
-  .fondos-bars { margin-top: 32px; display: flex; flex-direction: column; gap: 16px; }
-  .fondo-bar-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 7px; }
-  .fondo-bar-label span:first-child { color: rgba(255,255,255,0.45); }
-  .fondo-bar-label span:last-child { color: rgba(255,255,255,0.7); font-weight: 600; }
-  .fondo-bar-track { height: 3px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; }
-  .fondo-bar-fill { height: 100%; background: var(--terra-g); border-radius: 2px; }
+/* CALCULADOR WOW */
+.calc-wrap{background:var(--green-dark);padding:clamp(60px,8vh,100px) clamp(24px,6vw,80px);position:relative;overflow:hidden;}
+.calc-orb-1{position:absolute;width:700px;height:700px;border-radius:50%;filter:blur(140px);background:rgba(176,144,136,.1);top:-200px;right:-200px;animation:float 12s ease-in-out infinite;}
+.calc-orb-2{position:absolute;width:400px;height:400px;border-radius:50%;filter:blur(100px);background:rgba(74,94,77,.2);bottom:-100px;left:-100px;animation:float 9s ease-in-out infinite;animation-delay:-5s;}
+.calc-inner{max-width:1180px;margin:0 auto;position:relative;z-index:1;}
+.calc-wrap .eyebrow{color:rgba(176,144,136,.7);}
+.calc-wrap .eyebrow::after{background:var(--terra);}
+.calc-wrap .stitle{color:#fff;font-size:clamp(40px,7vw,80px);letter-spacing:-2px;}
+.calc-inv-row{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:24px;}
+.calc-inv-lbl{font-size:14px;color:rgba(255,255,255,.35);}
+.calc-inv-num{display:flex;align-items:baseline;gap:10px;line-height:1;}
+.calc-inv-curr{font-family:var(--sans);font-size:clamp(14px,1.5vw,18px);font-weight:400;color:rgba(255,255,255,.4);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;flex-shrink:0;}
+.calc-inv-digits{font-family:var(--serif);font-size:clamp(52px,8vw,88px);font-weight:300;color:#fff;letter-spacing:-3px;line-height:1;}
+.calc-track-wrap{position:relative;padding:14px 0;}
+.calc-track{height:4px;border-radius:2px;background:rgba(255,255,255,.1);cursor:pointer;position:relative;}
+.calc-fill{height:4px;border-radius:2px;background:var(--terra-g);position:absolute;top:0;left:0;pointer-events:none;}
+.calc-thumb{width:32px;height:32px;border-radius:50%;background:#fff;box-shadow:0 0 0 5px rgba(176,144,136,.25),0 6px 20px rgba(0,0,0,.35);position:absolute;top:50%;transform:translate(-50%,-50%);cursor:grab;touch-action:none;transition:box-shadow .2s;}
+.calc-thumb:hover{box-shadow:0 0 0 8px rgba(176,144,136,.3),0 6px 24px rgba(0,0,0,.4);}
+.calc-thumb:active{cursor:grabbing;}
+.calc-hints{display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,.18);margin-top:10px;margin-bottom:40px;}
+.calc-pct-row{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);padding:18px 28px;display:flex;justify-content:space-between;align-items:center;margin-bottom:40px;flex-wrap:wrap;gap:8px;}
+.calc-pct-lbl{font-size:13px;color:rgba(255,255,255,.35);}
+.calc-pct-val{font-family:var(--serif);font-size:40px;font-weight:300;color:#fff;letter-spacing:-1px;}
+.calc-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:2px;}
+.calc-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);padding:clamp(28px,4vw,48px) clamp(24px,3vw,36px);transition:background .3s;}
+.calc-card:hover{background:rgba(255,255,255,.07);}
+.calc-card.hi{background:rgba(176,144,136,.12);border-color:rgba(176,144,136,.25);position:relative;}
+.calc-card.hi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--terra-g);}
+.calc-card-year{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.25);margin-bottom:20px;}
+.calc-card.hi .calc-card-year{color:var(--terra);}
+.calc-company{font-size:12px;color:rgba(255,255,255,.22);margin-bottom:3px;}
+.calc-company-val{font-family:var(--serif);font-size:19px;color:rgba(255,255,255,.35);margin-bottom:18px;}
+.calc-divider{height:1px;background:rgba(255,255,255,.07);margin-bottom:16px;}
+.calc-part-lbl{font-size:12px;color:rgba(255,255,255,.25);margin-bottom:8px;}
+.calc-part-val{display:flex;align-items:baseline;gap:6px;flex-wrap:nowrap;line-height:1;}
+.calc-part-curr{font-family:var(--sans);font-size:12px;font-weight:500;color:rgba(255,255,255,.4);letter-spacing:.5px;flex-shrink:0;}
+.calc-part-digits{font-family:var(--serif);font-size:clamp(30px,4vw,44px);font-weight:300;color:#fff;letter-spacing:-1.5px;line-height:1;}
+.calc-card.hi .calc-part-curr{color:rgba(176,144,136,.6);}
+.calc-card.hi .calc-part-digits{font-size:clamp(34px,5vw,52px);color:var(--terra);}
+.calc-nota{margin-top:24px;font-size:12px;color:rgba(255,255,255,.18);font-style:italic;text-align:center;}
 
-  /* FUNDADORA */
-  .fundadora-wrap { max-width: 1100px; margin: 0 auto; padding: 100px 64px; display: grid; grid-template-columns: 260px 1fr; gap: 80px; align-items: center; }
-  .fundadora-avatar { width: 100%; aspect-ratio: 3/4; background: var(--green-dark); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
-  .fundadora-avatar::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 40% 30%, rgba(176,144,136,0.15) 0%, transparent 60%); }
-  .fundadora-initials { font-family: var(--serif); font-size: 80px; font-weight: 300; color: rgba(255,255,255,0.1); letter-spacing: -2px; position: relative; z-index: 1; }
-  .fundadora-tag { font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--terra); margin-bottom: 12px; }
-  .fundadora-nombre { font-family: var(--serif); font-size: 38px; font-weight: 400; color: var(--text); line-height: 1.1; letter-spacing: -1px; margin-bottom: 24px; }
-  .fundadora-desc { font-size: 15px; color: var(--text-2); line-height: 1.85; }
-  .fundadora-highlight { margin-top: 28px; padding: 20px 24px; background: var(--cream-2); border-left: 2px solid var(--terra); }
-  .fundadora-highlight p { font-family: var(--serif); font-size: 17px; font-weight: 400; color: var(--text); line-height: 1.5; font-style: italic; }
+/* PROPUESTA */
+.prop-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:2px;}
+.prop-card{padding:clamp(36px,5vw,56px) clamp(24px,4vw,48px);background:var(--cream-2);position:relative;}
+.prop-card.dark{background:var(--green-dark);}
+.prop-card.dark::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--terra-g);}
+.prop-tag{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--terra);margin-bottom:18px;}
+.prop-num{font-family:var(--serif);font-size:clamp(44px,5vw,60px);font-weight:300;color:var(--text);letter-spacing:-2px;line-height:1;margin-bottom:6px;}
+.prop-card.dark .prop-num{color:#fff;}
+.prop-sub{font-size:13px;color:var(--text-3);margin-bottom:32px;}
+.prop-card.dark .prop-sub{color:rgba(255,255,255,.28);}
+.prop-items{list-style:none;display:flex;flex-direction:column;gap:13px;}
+.prop-items li{font-size:13px;color:var(--text-2);padding-left:15px;position:relative;line-height:1.6;}
+.prop-items li::before{content:'—';position:absolute;left:0;color:var(--terra);font-size:11px;}
+.prop-card.dark .prop-items li{color:rgba(255,255,255,.45);}
+.fondos{display:flex;flex-direction:column;gap:18px;margin-top:28px;}
+.fondo-label{display:flex;justify-content:space-between;font-size:12px;margin-bottom:7px;}
+.fondo-label span:first-child{color:rgba(255,255,255,.4);}
+.fondo-label span:last-child{color:rgba(255,255,255,.8);font-weight:600;}
+.fondo-track{height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;}
+.fondo-fill{height:100%;background:var(--terra-g);border-radius:2px;}
 
-  /* CIERRE */
-  .cierre { background: var(--green-dark); padding: 120px 64px; text-align: center; position: relative; overflow: hidden; }
-  .cierre::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 30% 50%, rgba(176,144,136,0.1) 0%, transparent 60%), radial-gradient(ellipse at 70% 30%, rgba(74,94,77,0.2) 0%, transparent 50%); }
-  .cierre-content { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; }
-  .cierre-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--terra); margin-bottom: 28px; }
-  .cierre-title { font-family: var(--serif); font-size: clamp(42px, 5vw, 68px); font-weight: 300; color: #fff; line-height: 1.1; letter-spacing: -2px; margin-bottom: 32px; }
-  .cierre-title em { font-style: italic; color: rgba(255,255,255,0.4); }
-  .cierre-p { font-size: 15px; color: rgba(255,255,255,0.4); line-height: 1.85; margin-bottom: 56px; max-width: 560px; margin-left: auto; margin-right: auto; }
-  .cierre-contact { display: inline-flex; align-items: center; gap: 12px; background: var(--terra-g); color: #fff; font-size: 13px; font-weight: 600; letter-spacing: 0.5px; padding: 18px 40px; position: relative; overflow: hidden; }
-  .cierre-contact::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: rgba(255,255,255,0.3); }
+/* Fondo-fill target widths */
+#f1-bar{--target-w:40%;}#f2-bar{--target-w:35%;}#f3-bar{--target-w:15%;}#f4-bar{--target-w:10%;}
+.fund-wrap{max-width:1180px;margin:0 auto;padding:clamp(60px,8vh,100px) clamp(24px,6vw,80px);display:grid;grid-template-columns:clamp(160px,22vw,260px) 1fr;gap:clamp(40px,6vw,80px);align-items:center;}
+.fund-avatar{width:100%;aspect-ratio:3/4;background:var(--green-dark);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.fund-avatar::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 40% 30%,rgba(176,144,136,.15) 0%,transparent 60%);}
+.fund-initials{font-family:var(--serif);font-size:clamp(48px,8vw,80px);font-weight:300;color:rgba(255,255,255,.09);position:relative;z-index:1;letter-spacing:-2px;}
+.fund-tag{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--terra);margin-bottom:10px;}
+.fund-name{font-family:var(--serif);font-size:clamp(28px,4vw,42px);font-weight:400;color:var(--text);line-height:1.1;letter-spacing:-1px;margin-bottom:20px;}
+.fund-desc{font-size:14px;color:var(--text-2);line-height:1.85;}
+.fund-quote{margin-top:24px;padding:18px 22px;background:var(--cream-2);border-left:2px solid var(--terra);}
+.fund-quote p{font-family:var(--serif);font-size:16px;color:var(--text);line-height:1.5;font-style:italic;}
 
-  @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
-  .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.7s ease, transform 0.7s ease; }
-  .reveal.visible { opacity: 1; transform: translateY(0); }
+/* CIERRE */
+.cierre{background:var(--green-dark);padding:clamp(80px,10vh,130px) clamp(24px,6vw,80px);text-align:center;position:relative;overflow:hidden;}
+.cierre-orb{position:absolute;width:600px;height:600px;border-radius:50%;filter:blur(120px);background:rgba(176,144,136,.08);top:50%;left:50%;transform:translate(-50%,-50%);animation:float 10s ease-in-out infinite;}
+.cierre-inner{position:relative;z-index:1;max-width:680px;margin:0 auto;}
+.cierre-eyebrow{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--terra);margin-bottom:24px;}
+.cierre-title{font-family:var(--serif);font-size:clamp(40px,6vw,76px);font-weight:300;color:#fff;line-height:1.0;letter-spacing:-2px;margin-bottom:28px;}
+.cierre-title em{font-style:italic;color:rgba(255,255,255,.38);}
+.cierre-p{font-size:clamp(14px,1.8vw,16px);color:rgba(255,255,255,.38);line-height:1.85;margin-bottom:52px;max-width:480px;margin-left:auto;margin-right:auto;}
+.cierre-stats{display:flex;justify-content:center;flex-wrap:wrap;gap:0;margin-bottom:52px;}
+.cierre-stat{padding:0 clamp(20px,3vw,44px);}
+.cierre-stat:not(:last-child){border-right:1px solid rgba(255,255,255,.1);}
+.cierre-stat-num{font-family:var(--serif);font-size:clamp(28px,4vw,44px);font-weight:300;color:#fff;letter-spacing:-1px;line-height:1;}
+.cierre-stat-lbl{font-size:11px;color:rgba(255,255,255,.25);margin-top:5px;}
+.cierre-cta{display:inline-block;background:var(--terra-g);color:#fff;font-size:14px;font-weight:600;letter-spacing:.5px;padding:20px 56px;text-decoration:none;position:relative;overflow:hidden;transition:opacity .2s;}
+.cierre-cta:hover{opacity:.9;}
+.cierre-cta::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:rgba(255,255,255,.3);}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px);}to{opacity:1;transform:translateY(0);}}
+.reveal{opacity:0;transform:translateY(20px);transition:opacity .8s ease,transform .8s ease;}
+.reveal.visible{opacity:1;transform:translateY(0);}
+.reveal-delay-1{transition-delay:.1s;}
+.reveal-delay-2{transition-delay:.2s;}
+.reveal-delay-3{transition-delay:.3s;}
+
+/* prop-curr */
+.prop-curr{font-family:var(--sans);font-size:14px;font-weight:500;color:var(--text-3);vertical-align:super;margin-right:3px;letter-spacing:0;}
+.prop-card.dark .prop-curr{color:rgba(255,255,255,.3);}
+
+/* Barras animadas — parten de 0 */
+.fondo-fill{width:0!important;transition:width 1.4s cubic-bezier(0.22,1,0.36,1);}
+.fondo-fill.filled{width:var(--target-w)!important;}
+
+/* Count-up flash */
+.countup-flash{animation:numFlash .3s ease;}
+@keyframes numFlash{0%{opacity:.4;transform:translateY(6px);}100%{opacity:1;transform:translateY(0);}}
+
+/* Feat stagger — activado por padre */
+.feat{opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s ease;}
+.reveal.visible .feat{opacity:1;transform:translateY(0);}
+.reveal.visible .feat:nth-child(1){transition-delay:.05s;}
+.reveal.visible .feat:nth-child(2){transition-delay:.13s;}
+.reveal.visible .feat:nth-child(3){transition-delay:.21s;}
+.reveal.visible .feat:nth-child(4){transition-delay:.29s;}
+.reveal.visible .feat:nth-child(5){transition-delay:.37s;}
+.reveal.visible .feat:nth-child(6){transition-delay:.45s;}
+
+/* Estado stagger — activado por padre */
+.estado-item{opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s ease,background .3s;}
+.reveal.visible .estado-item{opacity:1;transform:translateY(0);}
+.reveal.visible .estado-item:nth-child(1){transition-delay:.05s;}
+.reveal.visible .estado-item:nth-child(2){transition-delay:.17s;}
+.reveal.visible .estado-item:nth-child(3){transition-delay:.29s;}
+.reveal.visible .estado-item:nth-child(4){transition-delay:.41s;}
+
+/* Prob stagger — activado por padre */
+.prob-item{opacity:0;transform:translateX(-12px);transition:opacity .6s ease,transform .6s ease,border-color .3s;}
+.reveal.visible .prob-item{opacity:1;transform:translateX(0);}
+.reveal.visible .prob-item:nth-child(1){transition-delay:.05s;}
+.reveal.visible .prob-item:nth-child(2){transition-delay:.15s;}
+.reveal.visible .prob-item:nth-child(3){transition-delay:.25s;}
+.reveal.visible .prob-item:nth-child(4){transition-delay:.35s;}
+
+/* Año stagger — activado por padre */
+.ano{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease;}
+.reveal.visible .ano{opacity:1;transform:translateY(0);}
+.reveal.visible .ano:nth-child(1){transition-delay:.05s;}
+.reveal.visible .ano:nth-child(2){transition-delay:.2s;}
+.reveal.visible .ano:nth-child(3){transition-delay:.35s;}
+
+/* Calc card stagger — activado por padre */
+.calc-card{opacity:0;transform:translateY(20px);transition:opacity .6s ease,transform .6s ease,background .3s;}
+.reveal.visible .calc-card{opacity:1;transform:translateY(0);}
+.reveal.visible .calc-card:nth-child(1){transition-delay:.05s;}
+.reveal.visible .calc-card:nth-child(2){transition-delay:.18s;}
+.reveal.visible .calc-card:nth-child(3){transition-delay:.31s;}
+
+/* Hero title word reveal */
+.hero-word{display:inline-block;opacity:0;transform:translateY(20px);animation:fadeUp .7s ease forwards;}
+.hw1{animation-delay:.4s;}.hw2{animation-delay:.55s;}.hw3{animation-delay:.7s;}.hw4{animation-delay:.85s;}
+
+/* Mobile fixes */
+@media(max-width:480px){
+  .calc-pct-row{flex-direction:column;gap:4px;}
+  .calc-pct-val{font-size:28px;}
+  .calc-cards{grid-template-columns:1fr;}
+  .comp-grid{grid-template-columns:1fr;}
+  .anos{grid-template-columns:1fr;}
+  .estado-grid{grid-template-columns:1fr;}
+  .mrr-planes{gap:16px;}
+  .hero-title{letter-spacing:-2px;}
+  .cierre-cta{padding:16px 32px;}
+  /* Sol-grid en 2 cols compactas en mobile */
+  .sol-grid{grid-template-columns:1fr 1fr;}
+  .feat{padding:20px 16px;}
+  .feat-num{font-size:32px;}
+  /* Mrr bar compacto */
+  .mrr-bar{padding:28px 20px;}
+  .mrr-num{font-size:32px;}
+  /* Modelo cards compactas */
+  .mod-precio{font-size:40px;}
+  /* Acomp en columna */
+  .acomp-grid{grid-template-columns:1fr;}
+  /* Canales en columna */
+  .canales{grid-template-columns:1fr;}
+  /* Propuesta en columna */
+  .prop-grid{grid-template-columns:1fr;}
+  /* Fund-wrap en columna */
+  .fund-wrap{grid-template-columns:1fr;}
+  .fund-avatar{aspect-ratio:2/1;max-height:180px;}
+  /* Cierre stats */
+  .cierre-stats{flex-direction:column;gap:20px;align-items:center;}
+  .cierre-stat{border:none!important;padding:0!important;}
+  /* Hero stats */
+  .hero-stats{flex-direction:column;gap:20px;}
+  .hero-stat{border:none!important;padding:0!important;margin:0!important;}
+  .hero-badge{display:none;}
+  .hero-pill{display:none;}
+  /* Val banner */
+  .val-banner{flex-direction:column;}
+  .val-right{max-width:100%;}
+  .calc-hints{font-size:9px;gap:2px;}
+  .mrr-bar{flex-direction:column;gap:24px;}
+}
+
+@media(max-width:640px){
+  .hero-badge,.hero-pill{display:none;}
+  .hero-stats{flex-direction:column;gap:20px;}
+  .hero-stat{border:none!important;padding:0!important;margin:0!important;}
+  .estado-grid{grid-template-columns:1fr;}
+  .mrr-bar,.val-banner{flex-direction:column;}
+  .val-right{max-width:100%;}
+  .fund-wrap{grid-template-columns:1fr;gap:32px;}
+  .fund-avatar{aspect-ratio:2/1;max-height:200px;}
+  .cierre-stats{flex-direction:column;gap:20px;align-items:center;}
+  .cierre-stat{border:none!important;padding:0!important;}
+}
 </style>
 </head>
 <body>
 
 <!-- HERO -->
 <div class="hero">
-  <div class="hero-logo">
-    <span class="hero-logo-mb">MB</span>
-    <div class="hero-logo-sep"></div>
-    <span class="hero-logo-text">Strategy</span>
+  <div class="hero-orb hero-orb-1"></div>
+  <div class="hero-orb hero-orb-2"></div>
+  <div class="hero-top">
+    <div class="hero-logo"><span class="hero-logo-mb">MB</span><div class="hero-logo-sep"></div><span class="hero-logo-tag">Strategy</span></div>
+    <div class="hero-badge">Propuesta Confidencial · 2026</div>
   </div>
-  <div class="hero-badge">Propuesta Confidencial · 2026</div>
+  <div class="hero-pill">
+    <span class="hero-pill-label">Valuación actual</span>
+    <span class="hero-pill-num">USD 2M+</span>
+  </div>
   <div class="hero-content">
-    <div class="hero-eyebrow">Propuesta de Inversión</div>
-    <h1 class="hero-title">El sistema operativo<br><em>para las PyMEs</em><br>de Latinoamérica.</h1>
-    <p class="hero-desc">Un sistema integral ya desarrollado, funcional y listo para su lanzamiento comercial. La inversión no construye el producto — lo lleva al mercado.</p>
+    <div class="hero-eyebrow">Sistema de gestión para PyMEs</div>
+    <h1 class="hero-title">MB Strategy.<br><em>El sistema que<br>las PyMEs necesitan.</em></h1>
+    <p class="hero-sub">Control total del negocio en una sola plataforma. Finanzas, stock, ventas, AFIP e inteligencia artificial — todo integrado, funcionando hoy.</p>
     <div class="hero-stats">
-      <div class="hero-stat">
-        <div class="hero-stat-num">USD 200K</div>
-        <div class="hero-stat-label">Inversión solicitada</div>
-      </div>
-      <div class="hero-stat">
-        <div class="hero-stat-num">8–10%</div>
-        <div class="hero-stat-label">Participación ofrecida</div>
-      </div>
-      <div class="hero-stat">
-        <div class="hero-stat-num">USD 2M+</div>
-        <div class="hero-stat-label">Valuación actual</div>
-      </div>
+      <div class="hero-stat"><div class="hero-stat-num">USD 200K</div><div class="hero-stat-label">Inversión solicitada</div></div>
+      <div class="hero-stat"><div class="hero-stat-num" id="hero-pct-stat">10%</div><div class="hero-stat-label">Participación disponible</div></div>
+      <div class="hero-stat"><div class="hero-stat-num">USD 15M+</div><div class="hero-stat-label">Valuación proyectada año 3</div></div>
     </div>
   </div>
-  <div class="hero-scroll"><div class="hero-scroll-line"></div>Continuar</div>
 </div>
 
 <!-- PROBLEMA -->
-<section class="reveal">
-  <div class="section-label">El problema</div>
-  <h2 class="section-title">Las PyMEs operan<br><em>a ciegas.</em></h2>
-  <div class="problema-grid">
-    <div class="problema-item">
-      <h4>Información fragmentada</h4>
-      <p>Planillas, WhatsApp, cuadernos. Cada área del negocio vive en un lugar distinto. No existe una visión unificada en ningún momento del día.</p>
-    </div>
-    <div class="problema-item">
-      <h4>Sin control financiero real</h4>
-      <p>No saben cuánto ganan realmente. Los costos por insumos son invisibles. La rentabilidad es siempre una estimación, nunca un número concreto.</p>
-    </div>
-    <div class="problema-item">
-      <h4>Errores operativos constantes</h4>
-      <p>Pedidos perdidos, stock incorrecto, facturas mal emitidas. El error humano es inevitable sin un sistema que lo prevenga desde la raíz.</p>
-    </div>
-    <div class="problema-item">
-      <h4>Imposible escalar</h4>
-      <p>Sin datos, sin procesos, sin automatización. El crecimiento genera más caos, no más negocio. El dueño siempre está apagando incendios.</p>
-    </div>
+<div class="wrap reveal">
+  <div class="eyebrow">El problema</div>
+  <h2 class="stitle">Millones de PyMEs.<br><em>Sin sistema real.</em></h2>
+  <div class="prob-grid">
+    <div class="prob-item reveal reveal-delay-1"><div class="prob-num">01</div><h4>Operan a ciegas</h4><p>Planillas, WhatsApp, cuadernos. No existe una visión unificada. Las decisiones se toman sin datos.</p></div>
+    <div class="prob-item reveal reveal-delay-2"><div class="prob-num">02</div><h4>No conocen su rentabilidad</h4><p>Los costos reales son invisibles. La ganancia es siempre una estimación. Nunca un número concreto.</p></div>
+    <div class="prob-item reveal reveal-delay-1"><div class="prob-num">03</div><h4>No pueden delegar</h4><p>Sin sistema, sin procesos. El dueño lo hace todo. El negocio no crece — el dueño aguanta.</p></div>
+    <div class="prob-item reveal reveal-delay-2"><div class="prob-num">04</div><h4>Las soluciones existentes no sirven</h4><p>Contabilium es para contadores. Bistrosoft es para gastronomía. Nadie construyó esto para el dueño operativo.</p></div>
   </div>
-</section>
+</div>
 
 <div class="divider"></div>
 
 <!-- SOLUCIÓN -->
-<div class="solucion-wrap reveal">
-  <div class="solucion-inner">
-    <div class="section-label">La solución</div>
-    <h2 class="section-title">Un sistema que centraliza,<br><em>automatiza y escala.</em></h2>
-    <div class="solucion-features">
-      <div class="feat"><div class="feat-num">01</div><h4>Ventas y facturación AFIP</h4><p>Facturación electrónica integrada directamente. Sin pasos extra, sin herramientas externas, sin errores manuales.</p></div>
-      <div class="feat"><div class="feat-num">02</div><h4>Stock inteligente por insumos</h4><p>Control de inventario con cálculo automático de costos por receta. Cada producto tiene su costo real, siempre actualizado.</p></div>
-      <div class="feat"><div class="feat-num">03</div><h4>Control financiero total</h4><p>Caja con turnos, compras, cobranzas y resultados en tiempo real. Una sola pantalla para todas las finanzas.</p></div>
-      <div class="feat"><div class="feat-num">04</div><h4>Multi-usuario con roles</h4><p>Cajeros, vendedores, compras, administradores. Cada persona ve y opera solo lo que le corresponde.</p></div>
-      <div class="feat"><div class="feat-num">05</div><h4>Indicadores y KPIs</h4><p>Rentabilidad, tendencias, flujos. El dueño tiene visibilidad total de su negocio en segundos, no en días.</p></div>
-      <div class="feat"><div class="feat-num">06</div><h4>Embi ✦ — IA operativa</h4><p>Inteligencia artificial que lee datos reales del negocio y ejecuta acciones. No es un chatbot — es un operador digital.</p></div>
+<div class="sol-wrap reveal">
+  <div class="sol-orb"></div>
+  <div class="sol-inner">
+    <div class="eyebrow">La solución</div>
+    <h2 class="stitle">Todo el negocio,<br><em>en una sola pantalla.</em></h2>
+    <div class="sol-grid">
+      <div class="feat"><div class="feat-num">01</div><h4>Ventas y AFIP</h4><p>Facturación electrónica desde el sistema. Sin pasos extra. Sin herramientas externas.</p></div>
+      <div class="feat"><div class="feat-num">02</div><h4>Stock por insumos</h4><p>Costo automático por producto con recetas. Siempre actualizado. Sin calcular nada a mano.</p></div>
+      <div class="feat"><div class="feat-num">03</div><h4>Caja con turnos y roles</h4><p>Cada cajero opera su turno. El dueño ve todo en tiempo real desde cualquier lugar.</p></div>
+      <div class="feat"><div class="feat-num">04</div><h4>Comercial y cobranzas</h4><p>CRM, presupuestos, cuenta corriente de clientes. Todo el ciclo comercial en un solo lugar.</p></div>
+      <div class="feat"><div class="feat-num">05</div><h4>Compras y proveedores</h4><p>Cuenta corriente, órdenes de compra, historial. Control total del egreso operativo.</p></div>
+      <div class="feat"><div class="feat-num">06</div><h4>Embi ✦ — IA operativa</h4><p>Lee datos reales del negocio y actúa. No es un chatbot. Es un operador digital.</p></div>
     </div>
   </div>
 </div>
 
 <!-- ESTADO ACTUAL -->
-<section class="reveal">
-  <div class="section-label">Estado actual</div>
-  <h2 class="section-title">Desarrollado.<br><em>Funcionando. Listo.</em></h2>
-  <div class="estado-grid">
-    <div class="estado-item">
-      <div class="estado-icon"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M4 10l4 4 8-8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-      <h4>Sistema completo</h4>
-      <p>Todos los módulos operativos, probados y funcionando en producción</p>
-    </div>
-    <div class="estado-item">
-      <div class="estado-icon"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M4 10l4 4 8-8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-      <h4>AFIP integrado</h4>
-      <p>Facturación electrónica activa y probada con negocios reales</p>
-    </div>
-    <div class="estado-item">
-      <div class="estado-icon"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M4 10l4 4 8-8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-      <h4>Infraestructura cloud</h4>
-      <p>Firebase + Netlify. Costo operativo mínimo, escala sin inversión adicional en tecnología</p>
-    </div>
-    <div class="estado-item">
-      <div class="estado-icon"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M4 10l4 4 8-8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-      <h4>Listo para lanzar</h4>
-      <p>En etapa final de optimización previa al lanzamiento comercial</p>
+<div class="estado-wrap reveal">
+  <div class="estado-orb"></div>
+  <div class="estado-bg">
+    <div class="estado-inner">
+      <div class="eyebrow">Estado actual</div>
+      <h2 class="stitle">No es una promesa.<br><em>Está funcionando hoy.</em></h2>
+      <p class="estado-quote">"El riesgo de esta inversión no es si el producto va a funcionar — el producto ya funciona. El riesgo es qué tan rápido crece."</p>
+      <div class="estado-grid">
+        <div class="estado-item">
+          <div class="estado-pill">✓ Operativo</div>
+          <div class="estado-num">01</div>
+          <h4>Sistema completo</h4>
+          <p>Todos los módulos operativos y probados en producción real con negocios argentinos.</p>
+        </div>
+        <div class="estado-item">
+          <div class="estado-pill">✓ Activo</div>
+          <div class="estado-num">02</div>
+          <h4>AFIP integrado</h4>
+          <p>Facturación electrónica funcionando. Emitiendo comprobantes reales desde el sistema.</p>
+        </div>
+        <div class="estado-item">
+          <div class="estado-pill">✓ En producción</div>
+          <div class="estado-num">03</div>
+          <h4>IA operativa activa</h4>
+          <p>Embi ✦ integrado con contexto real de negocio. Lee datos y ejecuta acciones.</p>
+        </div>
+        <div class="estado-item">
+          <div class="estado-pill">✓ Listo</div>
+          <div class="estado-num">04</div>
+          <h4>Listo para escalar</h4>
+          <p>La infraestructura aguanta miles de usuarios. El producto está terminado. Solo falta el capital para salir al mercado.</p>
+        </div>
+      </div>
     </div>
   </div>
-</section>
-
-<div class="divider"></div>
+</div>
 
 <!-- COMPETENCIA -->
 <div class="comp-wrap reveal">
   <div class="comp-inner">
-    <div class="section-label">Competencia</div>
-    <h2 class="section-title">El mismo precio.<br><em>El doble de producto.</em></h2>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;margin-bottom:24px;">
-      <div style="background:var(--cream);padding:36px 32px;">
-        <div style="font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-3);margin-bottom:16px;">Competidor</div>
-        <div style="font-family:var(--serif);font-size:26px;font-weight:500;color:var(--text);margin-bottom:4px;">Bistrosoft</div>
-        <div style="font-size:12px;color:var(--text-3);margin-bottom:8px;">Solo gastronomía / POS</div>
-        <div style="font-size:12px;font-weight:600;color:var(--green);margin-bottom:24px;">+25.000 locales en 8 países</div>
-        <div style="font-family:var(--serif);font-size:36px;font-weight:300;color:var(--text);letter-spacing:-1px;line-height:1;margin-bottom:4px;">$194.000</div>
-        <div style="font-size:11px;color:var(--text-3);margin-bottom:28px;">por mes sin IVA</div>
-        <div style="display:flex;flex-direction:column;gap:10px;">
-          <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-2);"><span style="color:var(--green);">✓</span> AFIP</div>
-          <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-2);"><span style="color:var(--green);">✓</span> Punto de venta / Caja</div>
-          <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-3);"><span>✗</span> Stock por insumos</div>
-          <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-3);"><span>✗</span> IA operativa</div>
-          <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-3);"><span>✗</span> Gestión integral</div>
-          <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-3);"><span>✗</span> Cierre de período</div>
-          <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-3);"><span>✗</span> Cta. cte. proveedores</div>
+    <div class="eyebrow">Competencia</div>
+    <h2 class="stitle">El mismo precio.<br><em>El doble de producto.</em></h2>
+    <div class="comp-grid">
+      <div class="comp-card">
+        <div class="comp-tag">Competidor</div>
+        <div class="comp-name">Bistrosoft</div>
+        <div class="comp-desc">Solo gastronomía / POS</div>
+        <div class="comp-subs">+25.000 suscriptores</div>
+        <div class="comp-revenue">Facturación estimada: ~USD 3,7M/mes</div>
+        <div class="comp-price">$194.000</div>
+        <div class="comp-price-sub">por suscriptor / mes sin IVA</div>
+        <div class="comp-feats">
+          <div class="comp-feat ok"><span class="ic">✓</span> AFIP</div>
+          <div class="comp-feat ok"><span class="ic">✓</span> Punto de venta / Caja</div>
+          <div class="comp-feat no"><span>✗</span> Stock por insumos</div>
+          <div class="comp-feat no"><span>✗</span> IA operativa</div>
+          <div class="comp-feat no"><span>✗</span> Gestión integral</div>
+          <div class="comp-feat no"><span>✗</span> Cierre de período</div>
+          <div class="comp-feat no"><span>✗</span> Cta. cte. proveedores</div>
         </div>
       </div>
-      <div style="background:var(--cream);padding:36px 32px;">
-        <div style="font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-3);margin-bottom:16px;">Competidor</div>
-        <div style="font-family:var(--serif);font-size:26px;font-weight:500;color:var(--text);margin-bottom:4px;">Contabilium Pro</div>
-        <div style="font-size:12px;color:var(--text-3);margin-bottom:8px;">Orientado a contadores</div>
-        <div style="font-size:12px;font-weight:600;color:var(--green);margin-bottom:24px;">+7.000 empresas en Argentina</div>
-        <div style="font-family:var(--serif);font-size:36px;font-weight:300;color:var(--text);letter-spacing:-1px;line-height:1;margin-bottom:4px;">$160.000</div>
-        <div style="font-size:11px;color:var(--text-3);margin-bottom:28px;">por mes sin IVA</div>
-        <div style="display:flex;flex-direction:column;gap:10px;">
-          <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-2);"><span style="color:var(--green);">✓</span> AFIP</div>
-          <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-2);"><span style="color:var(--green);">✓</span> Punto de venta / Caja</div>
-          <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-3);"><span>✗</span> Stock por insumos</div>
-          <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-3);"><span>✗</span> IA operativa</div>
-          <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-2);"><span style="color:var(--green);">✓</span> Gestión integral</div>
-          <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-3);"><span>✗</span> Cierre de período operativo</div>
-          <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-2);"><span style="color:var(--green);">✓</span> Cta. cte. proveedores</div>
+      <div class="comp-card">
+        <div class="comp-tag">Competidor</div>
+        <div class="comp-name">Contabilium Pro</div>
+        <div class="comp-desc">Orientado a contadores</div>
+        <div class="comp-subs">+7.000 suscriptores</div>
+        <div class="comp-revenue">Facturación estimada: ~USD 860K/mes</div>
+        <div class="comp-price">$160.000</div>
+        <div class="comp-price-sub">por suscriptor / mes sin IVA</div>
+        <div class="comp-feats">
+          <div class="comp-feat ok"><span class="ic">✓</span> AFIP</div>
+          <div class="comp-feat ok"><span class="ic">✓</span> Caja básica</div>
+          <div class="comp-feat no"><span>✗</span> Stock por insumos</div>
+          <div class="comp-feat no"><span>✗</span> IA operativa</div>
+          <div class="comp-feat ok"><span class="ic">✓</span> Gestión integral</div>
+          <div class="comp-feat no"><span>✗</span> Cierre de período operativo</div>
+          <div class="comp-feat ok"><span class="ic">✓</span> Cta. cte. proveedores</div>
         </div>
       </div>
-      <div style="background:var(--green-dark);padding:36px 32px;position:relative;">
-        <div style="position:absolute;top:0;left:0;right:0;height:2px;background:var(--terra-g);"></div>
-        <div style="font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--terra);margin-bottom:16px;">Nuestro producto</div>
-        <div style="font-family:var(--serif);font-size:26px;font-weight:500;color:#fff;margin-bottom:4px;">MB Strategy Pro</div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.35);margin-bottom:24px;">Para el dueño de la PyME</div>
-        <div style="font-family:var(--serif);font-size:36px;font-weight:300;color:#fff;letter-spacing:-1px;line-height:1;margin-bottom:4px;">$160.000</div>
-        <div style="font-size:11px;color:rgba(255,255,255,0.3);margin-bottom:28px;">por mes sin IVA</div>
-        <div style="display:flex;flex-direction:column;gap:10px;">
-          <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(255,255,255,0.8);"><span style="color:#7de88a;">✓</span> AFIP</div>
-          <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(255,255,255,0.8);"><span style="color:#7de88a;">✓</span> Punto de venta / Caja con turnos</div>
-          <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(255,255,255,0.8);"><span style="color:#7de88a;">✓</span> Stock por insumos</div>
-          <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(255,255,255,0.8);"><span style="color:#7de88a;">✓</span> IA operativa (Embi ✦)</div>
-          <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(255,255,255,0.8);"><span style="color:#7de88a;">✓</span> Gestión integral</div>
-          <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(255,255,255,0.8);"><span style="color:#7de88a;">✓</span> Cierre de período</div>
-          <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(255,255,255,0.8);"><span style="color:#7de88a;">✓</span> Cta. cte. proveedores</div>
+      <div class="comp-card mb">
+        <div class="comp-tag">Nuestro producto</div>
+        <div class="comp-name">MB Strategy Pro</div>
+        <div class="comp-desc">Para el dueño de la PyME</div>
+        <div class="comp-subs" style="color:rgba(255,255,255,.45)">En lanzamiento · 2026</div>
+        <div class="comp-revenue">Proyección año 1: +400 suscriptores</div>
+        <div class="comp-price">$160.000</div>
+        <div class="comp-price-sub">por suscriptor / mes sin IVA</div>
+        <div class="comp-feats">
+          <div class="comp-feat mbok"><span class="ic">✓</span> AFIP</div>
+          <div class="comp-feat mbok"><span class="ic">✓</span> Caja con turnos y roles</div>
+          <div class="comp-feat mbok"><span class="ic">✓</span> Stock por insumos</div>
+          <div class="comp-feat mbok"><span class="ic">✓</span> IA operativa (Embi ✦)</div>
+          <div class="comp-feat mbok"><span class="ic">✓</span> Gestión integral</div>
+          <div class="comp-feat mbok"><span class="ic">✓</span> Cierre de período</div>
+          <div class="comp-feat mbok"><span class="ic">✓</span> Cta. cte. proveedores</div>
         </div>
       </div>
     </div>
-    <p class="comp-nota">Precios verificados mayo 2026 sin IVA. Fuentes: facturación real Plan Advance Bistrosoft y página oficial de planes Contabilium.</p>
-    <div class="comp-diferencial">
-      <div class="comp-diferencial-label">El diferencial que nadie más tiene</div>
-      <p>Bistrosoft es un sistema de punto de venta para gastronomía — no gestiona el negocio completo. Contabilium está orientado a contadores, no al dueño operativo. MB Strategy es el único sistema diseñado para que el dueño de una PyME tenga control total: operaciones, finanzas, stock, costos e IA en una sola plataforma. Al mismo precio que Contabilium Pro.</p>
+    <p class="comp-nota">Precios verificados mayo 2026 sin IVA. Facturación estimada basada en precio de plan × suscriptores declarados.</p>
+    <div class="comp-dif">
+      <div class="comp-dif-label">El diferencial que nadie más tiene</div>
+      <p>Bistrosoft factura ~USD 3,7M por mes con un producto enfocado solo en gastronomía. Contabilium factura ~USD 860K por mes con un producto orientado a contadores. MB Strategy apunta a un segmento más amplio, con más funcionalidades y al mismo precio. El mercado ya está probado — el producto mejor aún no existe.</p>
     </div>
   </div>
 </div>
 
-<!-- MODELO DE NEGOCIO -->
-<section class="reveal">
-  <div class="section-label">Modelo de negocio</div>
-  <h2 class="section-title">Implementación más<br><em>suscripción recurrente.</em></h2>
-  <div class="modelo-grid">
-    <div class="modelo-card">
-      <div class="modelo-tag">Programa 30 días</div>
-      <div class="modelo-titulo">Mentoría 30D</div>
-      <div class="modelo-precio">USD 1.200</div>
-      <div class="modelo-sub">pago único · para el dueño o dueña</div>
-      <ul class="modelo-items">
+<!-- MODELO -->
+<div class="wrap reveal">
+  <div class="eyebrow">Modelo de negocio</div>
+  <h2 class="stitle">Tres canales.<br><em>Ingresos desde el día uno.</em></h2>
+  <div class="mod-grid">
+    <div class="mod-card">
+      <div class="mod-tag">Programa 30 días</div>
+      <div class="mod-titulo">Mentoría 30D</div>
+      <div class="mod-precio">USD 1.200</div>
+      <div class="mod-sub">pago único · para el dueño o dueña</div>
+      <ul class="mod-items">
         <li>8 sesiones de implementación guiada</li>
-        <li>Consultas asincrónicas por WhatsApp y mail</li>
-        <li>Implementación completa del sistema</li>
-        <li>Capacitación en el uso del sistema</li>
+        <li>Consultas por WhatsApp y mail</li>
+        <li>Sistema configurado y operativo</li>
         <li>Al finalizar: suscripción mensual</li>
       </ul>
     </div>
-    <div class="modelo-card dark">
-      <div class="modelo-tag">Programa 90 días</div>
-      <div class="modelo-titulo">Mentoría 90D</div>
-      <div class="modelo-precio">USD 3.500</div>
-      <div class="modelo-sub">pago único · para empresas con equipo</div>
-      <ul class="modelo-items">
-        <li>16 a 18 sesiones en 3 fases estructuradas</li>
-        <li>Capacitación al equipo completo</li>
-        <li>Implementación y configuración profunda</li>
-        <li>Construcción de procesos de gestión</li>
+    <div class="mod-card dark">
+      <div class="mod-tag">Programa 90 días</div>
+      <div class="mod-titulo">Mentoría 90D</div>
+      <div class="mod-precio">USD 3.500</div>
+      <div class="mod-sub">pago único · para empresas con equipo</div>
+      <ul class="mod-items">
+        <li>16 a 18 sesiones en 3 fases</li>
+        <li>Capacitación de todo el equipo</li>
+        <li>Procesos de gestión documentados</li>
         <li>Al finalizar: suscripción mensual</li>
       </ul>
     </div>
   </div>
-  <div class="modelo-mrr">
-    <div class="mrr-left">
-      <h3>Suscripción mensual post-programa</h3>
+  <div class="mrr-bar">
+    <div>
+      <div class="mrr-label">Suscripción mensual post-programa</div>
       <div class="mrr-num">desde $95.000</div>
-      <div class="mrr-sub">ARS + IVA por mes — ingresos recurrentes y predecibles</div>
+      <div class="mrr-sub">ARS + IVA / mes — recurrente y automático</div>
     </div>
     <div class="mrr-planes">
-      <div class="mrr-plan"><div class="mrr-plan-num">$95K</div><div class="mrr-plan-label">Strategy Esencial</div></div>
-      <div class="mrr-plan"><div class="mrr-plan-num">$160K</div><div class="mrr-plan-label">Strategy Pro</div></div>
-      <div class="mrr-plan"><div class="mrr-plan-num">$240K</div><div class="mrr-plan-label">Strategy Full</div></div>
+      <div><div class="mrr-plan-num">$95K</div><div class="mrr-plan-label">Esencial</div></div>
+      <div><div class="mrr-plan-num">$160K</div><div class="mrr-plan-label">Pro</div></div>
+      <div><div class="mrr-plan-num">$240K</div><div class="mrr-plan-label">Full</div></div>
     </div>
   </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-top:2px;">
-    <div style="background:var(--cream-2);padding:40px 44px;border-top:2px solid var(--terra);position:relative;">
-      <div class="modelo-tag">Acompañamiento mensual — Esencial</div>
-      <div class="modelo-titulo">Seguimiento mensual</div>
-      <div style="font-family:var(--serif);font-size:36px;font-weight:300;color:var(--green);letter-spacing:-1px;line-height:1;margin-bottom:6px;">USD 350<span style="font-size:14px;font-family:var(--sans);font-weight:400;color:var(--text-3)">/mes</span></div>
-      <div class="modelo-sub">Exclusivo para egresados de programas MB Strategy</div>
-      <ul class="modelo-items">
-        <li>1 sesión mensual de seguimiento</li>
-        <li>Consultas asincrónicas por WhatsApp y mail</li>
-        <li>Sistema incluido</li>
-      </ul>
+  <div class="acomp-grid">
+    <div class="acomp-card light">
+      <div class="mod-tag">Acompañamiento Esencial</div>
+      <div class="acomp-precio">USD 350<span style="font-size:14px;font-family:var(--sans);color:var(--text-3)">/mes</span></div>
+      <div class="mod-sub">1 sesión mensual + consultas async · sistema incluido</div>
     </div>
-    <div style="background:var(--green-dark);padding:40px 44px;border-top:2px solid var(--terra);position:relative;">
-      <div class="modelo-tag">Acompañamiento mensual — Activo</div>
-      <div style="font-family:var(--serif);font-size:28px;font-weight:400;color:#fff;margin-bottom:8px;">Seguimiento intensivo</div>
-      <div style="font-family:var(--serif);font-size:36px;font-weight:300;color:rgba(255,255,255,0.9);letter-spacing:-1px;line-height:1;margin-bottom:6px;">USD 550<span style="font-size:14px;font-family:var(--sans);font-weight:400;color:rgba(255,255,255,0.3)">/mes</span></div>
-      <div style="font-size:12px;color:rgba(255,255,255,0.3);margin-bottom:28px;">Exclusivo para egresados de programas MB Strategy</div>
-      <ul class="modelo-items">
-        <li>2 sesiones mensuales de seguimiento</li>
-        <li>Consultas ilimitadas asincrónicas</li>
-        <li>Sistema incluido</li>
-      </ul>
+    <div class="acomp-card dark2">
+      <div class="mod-tag">Acompañamiento Activo</div>
+      <div class="acomp-precio">USD 550<span style="font-size:14px;font-family:var(--sans);color:rgba(255,255,255,.3)">/mes</span></div>
+      <div class="mod-sub" style="color:rgba(255,255,255,.28)">2 sesiones + consultas ilimitadas · sistema incluido</div>
     </div>
   </div>
-</section>
+</div>
 
 <!-- PROYECCIÓN -->
-<div class="proyeccion-wrap reveal">
-  <div class="proyeccion-inner">
-    <div class="section-label">Proyección</div>
-    <h2 class="section-title">Dos canales de ingreso.<br><em>Crecimiento compuesto.</em></h2>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;margin-bottom:2px;">
-      <div style="background:var(--cream);padding:24px 28px;border-left:2px solid var(--terra);">
-        <div style="font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--terra);margin-bottom:8px;">Canal 1 — Programas</div>
-        <p style="font-size:13px;color:var(--text-2);line-height:1.7;">30D (USD 1.200) y 90D (USD 3.500). Ticket alto, retención máxima. Escala con equipo desde año 2.</p>
-      </div>
-      <div style="background:var(--cream);padding:24px 28px;border-left:2px solid var(--green);">
-        <div style="font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--green);margin-bottom:8px;">Canal 2 — Suscripción directa</div>
-        <p style="font-size:13px;color:var(--text-2);line-height:1.7;">Trial 10 días gratuito → suscripción automática. Sin límite de escala. Conversión estimada 20%.</p>
-      </div>
-      <div style="background:var(--cream);padding:24px 28px;border-left:2px solid #8a7060;">
-        <div style="font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#8a7060;margin-bottom:8px;">Canal 3 — Acompañamiento</div>
-        <p style="font-size:13px;color:var(--text-2);line-height:1.7;">USD 350–550/mes para egresados de programas. Ingreso recurrente de alta retención.</p>
-      </div>
+<div class="proy-wrap reveal">
+  <div class="proy-inner">
+    <div class="eyebrow">Proyección</div>
+    <h2 class="stitle">Tres canales.<br><em>Crecimiento compuesto.</em></h2>
+    <div class="canales">
+      <div class="canal c1"><div class="canal-label">Canal 1 — Programas</div><p>30D (USD 1.200) y 90D (USD 3.500). Ticket alto y retención máxima.</p></div>
+      <div class="canal c2"><div class="canal-label">Canal 2 — Suscripción directa</div><p>Trial 10 días → conversión automática. Sin límite de escala.</p></div>
+      <div class="canal c3"><div class="canal-label">Canal 3 — Acompañamiento</div><p>USD 350–550/mes para egresados. Recurrente y de alta retención.</p></div>
     </div>
-    <div class="proyeccion-anos">
-      <div class="ano-card">
+    <div class="anos">
+      <div class="ano reveal reveal-delay-1">
         <div class="ano-label">Año 1</div>
-        <div class="ano-clientes">400</div>
-        <div class="ano-clientes-label">suscriptores activos al cierre</div>
-        <div class="ano-breakdown">
-          <div class="ano-breakdown-item"><span>Suscripciones acumuladas mes a mes</span><span>USD 180.000</span></div>
-          <div class="ano-breakdown-item"><span>28 programas (20×30D + 8×90D)</span><span>USD 52.000</span></div>
-          <div class="ano-breakdown-item"><span>Acompañamientos × USD 450 avg</span><span>USD 45.000</span></div>
-          <div class="ano-sep"></div>
+        <div class="ano-subs">400</div>
+        <div class="ano-subs-label">suscriptores activos</div>
+        <div class="ano-rows">
+          <div class="ano-row"><span class="ano-row-lbl">Suscripciones</span><span class="ano-row-val">USD 180.000</span></div>
+          <div class="ano-row"><span class="ano-row-lbl">Programas</span><span class="ano-row-val">USD 52.000</span></div>
+          <div class="ano-row"><span class="ano-row-lbl">Acompañamientos</span><span class="ano-row-val">USD 45.000</span></div>
         </div>
         <div class="ano-total">USD 277.000</div>
-        <div class="ano-total-label">ingresos totales año 1</div>
+        <div class="ano-total-label">ingresos totales</div>
       </div>
-      <div class="ano-card">
+      <div class="ano reveal reveal-delay-2">
         <div class="ano-label">Año 2</div>
-        <div class="ano-clientes">1.200</div>
-        <div class="ano-clientes-label">suscriptores activos al cierre</div>
-        <div class="ano-breakdown">
-          <div class="ano-breakdown-item"><span>Suscripciones acumuladas mes a mes</span><span>USD 648.000</span></div>
-          <div class="ano-breakdown-item"><span>80 programas mix × USD 2.100 avg</span><span>USD 168.000</span></div>
-          <div class="ano-breakdown-item"><span>50 acompañamientos × USD 450 × 12m</span><span>USD 270.000</span></div>
-          <div class="ano-sep"></div>
+        <div class="ano-subs">1.200</div>
+        <div class="ano-subs-label">suscriptores activos</div>
+        <div class="ano-rows">
+          <div class="ano-row"><span class="ano-row-lbl">Suscripciones</span><span class="ano-row-val">USD 648.000</span></div>
+          <div class="ano-row"><span class="ano-row-lbl">Programas</span><span class="ano-row-val">USD 168.000</span></div>
+          <div class="ano-row"><span class="ano-row-lbl">Acompañamientos</span><span class="ano-row-val">USD 270.000</span></div>
         </div>
         <div class="ano-total">USD 1.086.000</div>
-        <div class="ano-total-label">ingresos totales año 2</div>
+        <div class="ano-total-label">ingresos totales</div>
       </div>
-      <div class="ano-card">
+      <div class="ano reveal reveal-delay-3">
         <div class="ano-label">Año 3</div>
-        <div class="ano-clientes">2.500</div>
-        <div class="ano-clientes-label">suscriptores activos al cierre</div>
-        <div class="ano-breakdown">
-          <div class="ano-breakdown-item"><span>Suscripciones acumuladas mes a mes</span><span>USD 1.620.000</span></div>
-          <div class="ano-breakdown-item"><span>150 programas mix × USD 2.300 avg</span><span>USD 345.000</span></div>
-          <div class="ano-breakdown-item"><span>100 acompañamientos × USD 450 × 12m</span><span>USD 540.000</span></div>
-          <div class="ano-sep"></div>
+        <div class="ano-subs">2.500</div>
+        <div class="ano-subs-label">suscriptores activos</div>
+        <div class="ano-rows">
+          <div class="ano-row"><span class="ano-row-lbl">Suscripciones</span><span class="ano-row-val">USD 1.620.000</span></div>
+          <div class="ano-row"><span class="ano-row-lbl">Programas</span><span class="ano-row-val">USD 345.000</span></div>
+          <div class="ano-row"><span class="ano-row-lbl">Acompañamientos</span><span class="ano-row-val">USD 540.000</span></div>
         </div>
         <div class="ano-total">USD 2.505.000</div>
-        <div class="ano-total-label">ingresos totales año 3</div>
+        <div class="ano-total-label">ingresos totales</div>
       </div>
     </div>
-    <div class="valuacion-banner">
-      <div class="val-left">
-        <h3>Valuación proyectada año 3</h3>
-        <div class="val-monto">USD 15M – 25M</div>
-        <div class="val-sub">Múltiplo 6–10x ARR · conservador para SaaS latinoamericano con IA</div>
+    <div class="val-banner">
+      <div>
+        <div class="val-label">Valuación proyectada año 3</div>
+        <div class="val-num">USD 15M – 25M</div>
+        <div class="val-sub">Múltiplo 6–10x ARR · conservador para SaaS con IA en Latam</div>
       </div>
-      <div class="val-right">
-        <p>Con 2.500 suscriptores activos y ARR de ~USD 2.5M, la valuación mínima supera los USD 15M. La participación del inversor se valoriza entre 7x y 12x sobre la inversión inicial en 3 años.</p>
+      <div class="val-right">Con ARR de ~USD 2.5M en año 3, la valuación mínima supera los USD 15M. La participación se valoriza de forma significativa.</div>
+    </div>
+  </div>
+</div>
+
+<!-- CALCULADOR WOW -->
+<div class="calc-wrap reveal">
+  <div class="calc-orb-1"></div>
+  <div class="calc-orb-2"></div>
+  <div class="calc-inner">
+    <div class="eyebrow">Calculador de inversión</div>
+    <h2 class="stitle">¿Cuánto querés<br><em>invertir?</em></h2>
+    <div class="calc-inv-row">
+      <span class="calc-inv-lbl">Monto que invertís</span>
+      <span class="calc-inv-num"><span class="calc-inv-curr">USD</span><span class="calc-inv-digits" id="c-amount">200.000</span></span>
+    </div>
+    <div class="calc-track-wrap">
+      <div class="calc-track" id="c-track">
+        <div class="calc-fill" id="c-fill"></div>
+        <div class="calc-thumb" id="c-thumb"></div>
       </div>
     </div>
+    <div class="calc-hints"><span>USD 20.000</span><span>USD 80.000</span><span>USD 140.000</span><span>USD 200.000</span></div>
+    <div class="calc-pct-row">
+      <span class="calc-pct-lbl">Tu participación en MB Strategy</span>
+      <span class="calc-pct-val" id="c-pct">10%</span>
+    </div>
+    <div class="calc-cards">
+      <div class="calc-card">
+        <div class="calc-card-year">Hoy</div>
+        <div class="calc-company">MB Strategy vale</div>
+        <div class="calc-company-val">USD 2.000.000</div>
+        <div class="calc-divider"></div>
+        <div class="calc-part-lbl">Tu participación vale</div>
+        <div class="calc-part-val"><span class="calc-part-curr">USD</span><span class="calc-part-digits" id="c-hoy">200.000</span></div>
+      </div>
+      <div class="calc-card">
+        <div class="calc-card-year">Año 2</div>
+        <div class="calc-company">MB Strategy vale</div>
+        <div class="calc-company-val">USD 8.000.000</div>
+        <div class="calc-divider"></div>
+        <div class="calc-part-lbl">Tu participación vale</div>
+        <div class="calc-part-val"><span class="calc-part-curr">USD</span><span class="calc-part-digits" id="c-y2">800.000</span></div>
+      </div>
+      <div class="calc-card hi">
+        <div class="calc-card-year">Año 3</div>
+        <div class="calc-company">MB Strategy vale</div>
+        <div class="calc-company-val">USD 15.000.000</div>
+        <div class="calc-divider"></div>
+        <div class="calc-part-lbl">Tu participación vale</div>
+        <div class="calc-part-val"><span class="calc-part-curr">USD</span><span class="calc-part-digits" id="c-y3">1,50M</span></div>
+      </div>
+    </div>
+    <p class="calc-nota">Proyección conservadora basada en múltiplo 6x–8x ARR. No constituye garantía de retorno.</p>
+    <p style="font-size:11px;color:rgba(255,255,255,.15);text-align:center;margin-top:8px;">Simulador orientativo. La propuesta formal contempla inversiones desde USD 20.000.</p>
   </div>
 </div>
 
 <!-- PROPUESTA -->
-<section class="reveal">
-  <div class="section-label">La propuesta</div>
-  <h2 class="section-title">Una oportunidad<br><em>bien definida.</em></h2>
-  <div class="propuesta-layout">
+<div class="wrap reveal">
+  <div class="eyebrow">La propuesta</div>
+  <h2 class="stitle">Simple.<br><em>Bien definida.</em></h2>
+  <div class="prop-grid">
     <div class="prop-card">
-      <div class="prop-label">Inversión y condiciones</div>
-      <div class="prop-monto">USD 200K</div>
-      <div class="prop-sub">Participación: 8% – 10% · Valuación implícita: USD 2M – 2.5M</div>
+      <div class="prop-tag">Inversión y condiciones</div>
+      <div class="prop-num"><span class="prop-curr">USD</span> <span id="prop-inv-num">200K</span></div>
+      <div class="prop-sub" id="prop-inv-sub">10% · Valuación implícita USD 2M</div>
       <ul class="prop-items">
-        <li>Participación accionaria en SAS a constituir formalmente</li>
+        <li>Participación accionaria en SAS a constituir</li>
         <li>Derecho de preferencia ante venta de participaciones</li>
-        <li>Opción de recompra futura contemplada en el acuerdo</li>
-        <li>Sin rol operativo — el inversor acompaña sin interferir en la gestión</li>
-        <li>La fundadora mantiene control estratégico y operativo total</li>
-        <li>Retorno vía valorización del negocio + distribución de utilidades en etapa de madurez</li>
+        <li>Opción de recompra futura en el acuerdo</li>
+        <li>Sin rol operativo — acompaña sin interferir</li>
+        <li>La fundadora mantiene control total</li>
+        <li>Retorno vía valorización + utilidades en madurez</li>
       </ul>
     </div>
-    <div class="prop-card featured">
-      <div class="prop-label">Uso de los fondos</div>
-      <div class="prop-monto">USD 200K</div>
-      <div class="prop-sub">distribuidos estratégicamente para maximizar crecimiento</div>
-      <div class="fondos-bars">
-        <div>
-          <div class="fondo-bar-label"><span>Marketing y adquisición de clientes</span><span>40% · USD 80K</span></div>
-          <div class="fondo-bar-track"><div class="fondo-bar-fill" style="width:40%"></div></div>
-        </div>
-        <div>
-          <div class="fondo-bar-label"><span>Equipo: ventas e implementación</span><span>35% · USD 70K</span></div>
-          <div class="fondo-bar-track"><div class="fondo-bar-fill" style="width:35%"></div></div>
-        </div>
-        <div>
-          <div class="fondo-bar-label"><span>Operaciones y estabilidad</span><span>15% · USD 30K</span></div>
-          <div class="fondo-bar-track"><div class="fondo-bar-fill" style="width:15%"></div></div>
-        </div>
-        <div>
-          <div class="fondo-bar-label"><span>Reserva estratégica</span><span>10% · USD 20K</span></div>
-          <div class="fondo-bar-track"><div class="fondo-bar-fill" style="width:10%"></div></div>
-        </div>
+    <div class="prop-card dark">
+      <div class="prop-tag">Uso de los fondos</div>
+      <div class="prop-num"><span class="prop-curr">USD</span> <span id="prop-fondos-num">200K</span></div>
+      <div class="prop-sub">distribuidos para maximizar crecimiento desde el día uno</div>
+      <div class="fondos">
+        <div><div class="fondo-label"><span>Marketing y adquisición</span><span>40% · <span id="f1">USD 80K</span></span></div><div class="fondo-track"><div id="f1-bar" class="fondo-fill"></div></div></div>
+        <div><div class="fondo-label"><span>Equipo: ventas e implementación</span><span>35% · <span id="f2">USD 70K</span></span></div><div class="fondo-track"><div id="f2-bar" class="fondo-fill"></div></div></div>
+        <div><div class="fondo-label"><span>Operaciones y estabilidad</span><span>15% · <span id="f3">USD 30K</span></span></div><div class="fondo-track"><div id="f3-bar" class="fondo-fill"></div></div></div>
+        <div><div class="fondo-label"><span>Reserva estratégica</span><span>10% · <span id="f4">USD 20K</span></span></div><div class="fondo-track"><div id="f4-bar" class="fondo-fill"></div></div></div>
       </div>
     </div>
   </div>
-</section>
+</div>
+
+<div class="divider"></div>
 
 <!-- FUNDADORA -->
-<div class="divider"></div>
-<div class="fundadora-wrap reveal">
-  <div class="fundadora-avatar">
-    <div class="fundadora-initials">MB</div>
-  </div>
+<div class="fund-wrap reveal">
+  <div class="fund-avatar"><div class="fund-initials">MB</div></div>
   <div>
-    <div class="fundadora-tag">Fundadora</div>
-    <h3 class="fundadora-nombre">Micaela<br>Benitez</h3>
-    <p class="fundadora-desc">Consultora de negocios especializada en PyMEs argentinas. Con experiencia directa acompañando empresas en su gestión y crecimiento, identificó una necesidad real en el mercado e impulsó el desarrollo de MB Strategy desde cero.</p>
-    <p class="fundadora-desc" style="margin-top:16px;">Combina visión estratégica de negocio con capacidad de ejecución. Mantiene el control operativo y estratégico del proyecto, y lidera personalmente la implementación con cada cliente.</p>
-    <div class="fundadora-highlight">
-      <p>"Conozco el problema desde adentro porque trabajé con estos negocios. MB Strategy es la herramienta que siempre faltó."</p>
-    </div>
+    <div class="fund-tag">Fundadora</div>
+    <h3 class="fund-name">Micaela<br>Benitez</h3>
+    <p class="fund-desc">Consultora de negocios especializada en PyMEs argentinas. Identificó una necesidad real en el mercado e impulsó el desarrollo de MB Strategy desde cero — combinando visión estratégica con capacidad de ejecución real.</p>
+    <p class="fund-desc" style="margin-top:14px;">Lidera personalmente la implementación con cada cliente y mantiene el control operativo y estratégico del proyecto.</p>
+    <div class="fund-quote"><p>"Conozco el problema desde adentro porque trabajé con estos negocios. MB Strategy es la herramienta que siempre faltó."</p></div>
   </div>
 </div>
 
 <!-- CIERRE -->
 <div class="cierre">
-  <div class="cierre-content">
+  <div class="cierre-orb"></div>
+  <div class="cierre-inner">
     <div class="cierre-eyebrow">El momento es ahora</div>
-    <h2 class="cierre-title">No es una idea.<br><em>Es un sistema listo</em><br>para escalar.</h2>
-    <p class="cierre-p">MB Strategy está completamente desarrollado y listo para su lanzamiento comercial. La inversión no financia construir el producto — financia ponerlo en el mercado. Eso cambia completamente el riesgo de la ecuación.</p>
+    <h2 class="cierre-title">No financiás<br><em>una idea.</em><br>Financiás tracción.</h2>
+    <p class="cierre-p">El mercado está listo. El producto también. Solo queda elegir con quién escalar.</p>
+    <div class="cierre-stats">
+      <div class="cierre-stat"><div class="cierre-stat-num" id="cierre-inv">USD 200K</div><div class="cierre-stat-lbl">Inversión</div></div>
+      <div class="cierre-stat"><div class="cierre-stat-num" id="cierre-pct">8–10%</div><div class="cierre-stat-lbl">Participación</div></div>
+      <div class="cierre-stat"><div class="cierre-stat-num">USD 15M+</div><div class="cierre-stat-lbl">Valuación proyectada año 3</div></div>
+    </div>
+
   </div>
 </div>
 
 <script>
-  const reveals = document.querySelectorAll('.reveal');
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
-  }, { threshold: 0.08 });
-  reveals.forEach(el => observer.observe(el));
+const MIN=20000,MAX=200000,V0=2000000,V2=8000000,V3=15000000;
+let inv=MAX,drag=false;
+const track=document.getElementById('c-track');
+const thumb=document.getElementById('c-thumb');
+const fill=document.getElementById('c-fill');
+function fmtK(n){return'USD '+(n>=1000000?(n/1000000).toFixed(1)+'M':Math.round(n/1000)+'K');}
+function fmtNum(n){return Math.round(n).toLocaleString('es-AR');}
+function render(){
+  const p=(inv-MIN)/(MAX-MIN);
+  const tw=track.offsetWidth;
+  fill.style.width=(p*100)+'%';
+  thumb.style.left=(p*tw)+'px';
+  const pct=Math.round(inv/V0*1000)/10;
+  const pctStr=pct+'%';
+  // Calculador
+  document.getElementById('c-amount').textContent=Math.round(inv).toLocaleString('es-AR');
+  document.getElementById('c-pct').textContent=pctStr;
+  document.getElementById('c-hoy').textContent=fmtNum(inv);
+  document.getElementById('c-y2').textContent=fmtNum(V2*inv/V0);
+  document.getElementById('c-y3').textContent=fmtNum(V3*inv/V0);
+  // Propuesta — inversión
+  document.getElementById('prop-inv-num').textContent=fmtK(inv).replace('USD ','');
+  document.getElementById('prop-inv-sub').textContent=pctStr+' · Valuación implícita USD 2M';
+  // Propuesta — fondos
+  document.getElementById('f1').textContent=fmtK(inv*0.4);
+  document.getElementById('f2').textContent=fmtK(inv*0.35);
+  document.getElementById('f3').textContent=fmtK(inv*0.15);
+  document.getElementById('f4').textContent=fmtK(inv*0.10);
+  // Fondos subtitle
+  document.getElementById('prop-fondos-num').textContent=fmtK(inv).replace('USD ','');
+  // Cierre
+  document.getElementById('cierre-inv').textContent=fmtK(inv);
+  document.getElementById('cierre-pct').textContent=pctStr;
+}
+function setX(x){
+  const r=track.getBoundingClientRect();
+  const ratio=Math.max(0,Math.min(1,(x-r.left)/r.width));
+  inv=Math.round((MIN+ratio*(MAX-MIN))/10000)*10000;
+  render();
+}
+thumb.addEventListener('mousedown',e=>{drag=true;e.preventDefault();});
+document.addEventListener('mousemove',e=>{if(drag)setX(e.clientX);});
+document.addEventListener('mouseup',()=>{drag=false;});
+thumb.addEventListener('touchstart',()=>{drag=true;},{passive:true});
+document.addEventListener('touchmove',e=>{if(drag)setX(e.touches[0].clientX);},{passive:true});
+document.addEventListener('touchend',()=>{drag=false;});
+track.addEventListener('click',e=>setX(e.clientX));
+window.addEventListener('resize',render);
+setTimeout(render,60);
+
+const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});},{threshold:0.06});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
 </script>
 </body>
 </html>
