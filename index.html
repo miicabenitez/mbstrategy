@@ -6252,20 +6252,17 @@ window.mostrarPantallaEspera = function() {
       </div>
       <button onclick="mb_mostrarEspera()" style="background:none;border:none;color:rgba(244,240,234,0.2);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;margin-top:14px;">← volver</button>
     </div>
-    <script>
-    (function(){
-      var _txt = 'Strategy';
-      var _el = document.getElementById('mb-typed-text');
-      var _cur = document.getElementById('mb-cursor');
-      var _i = 0;
-      setTimeout(function _type(){
-        if(_i < _txt.length){ _el.textContent += _txt[_i++]; setTimeout(_type, 110); }
-        else { setTimeout(function(){ if(_cur) _cur.style.display='none'; }, 1200); }
-      }, 400);
-    })();
-    </script>
   `;
   document.body.appendChild(div);
+  (function(){
+    var _el = document.getElementById('mb-typed-text');
+    var _cur = document.getElementById('mb-cursor');
+    var _txt = 'Strategy'; var _i = 0;
+    setTimeout(function _type(){
+      if(_i < _txt.length){ _el.textContent += _txt[_i++]; setTimeout(_type,110); }
+      else { setTimeout(function(){ if(_cur) _cur.style.display='none'; },1200); }
+    },400);
+  })();
 };
 window.mb_mostrarLogin = function() {
   document.getElementById('mb-espera-content').style.display = 'none';
