@@ -2170,8 +2170,16 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 
       <!-- MODAL Depósito cajero -->
       <div id="cajero-deposito-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9998;align-items:center;justify-content:center;">
-        <div style="background:#fff;border-radius:14px;padding:28px 24px;width:320px;box-shadow:0 8px 32px rgba(0,0,0,.18);">
-          <div style="font-weight:700;font-size:15px;margin-bottom:16px;">Depósito de efectivo</div>
+        <div style="background:#fff;border-radius:14px;width:320px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.18);">
+          <div style="height:3px;background:linear-gradient(90deg,#b09088,#c4a098,#b09088)"></div>
+          <div style="background:#3a4e3d;padding:22px 28px;display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div style="font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:4px;">Cajero</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#fff;letter-spacing:-.3px;">Depósito de efectivo</div>
+            </div>
+            <i class="ti ti-moneybag" style="font-size:36px;color:#b09088;opacity:.85;"></i>
+          </div>
+          <div style="padding:24px 28px;">
           <label style="font-size:12px;color:#666;display:block;margin-bottom:4px;">Monto</label>
           <input id="cajero-deposito-monto" type="number" min="0" step="any" placeholder="0.00" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:16px;">
           <label style="font-size:12px;color:#666;display:block;margin-bottom:4px;">Observación (opcional)</label>
@@ -2180,13 +2188,22 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
             <button onclick="cajaDepositoCerrar()" style="padding:8px 18px;border-radius:8px;border:1px solid #ddd;background:#fff;font-size:13px;cursor:pointer;">Cancelar</button>
             <button id="cajero-deposito-btn" onclick="cajaDepositoGuardar()" style="padding:8px 18px;border-radius:8px;border:none;background:#4a5e4d;color:#fff;font-size:13px;font-weight:600;cursor:pointer;">Guardar</button>
           </div>
+          </div>
         </div>
       </div>
 
       <!-- MODAL Egreso cajero con motivo -->
       <div id="cajero-egreso-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9998;align-items:center;justify-content:center;">
-        <div style="background:#fff;border-radius:14px;padding:28px 24px;width:320px;box-shadow:0 8px 32px rgba(0,0,0,.18);">
-          <div style="font-weight:700;font-size:15px;margin-bottom:16px;">Retiro de caja</div>
+        <div style="background:#fff;border-radius:14px;width:320px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.18);">
+          <div style="height:3px;background:linear-gradient(90deg,#b09088,#c4a098,#b09088)"></div>
+          <div style="background:#3a4e3d;padding:22px 28px;display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div id="cajero-egreso-header-label" style="font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:4px;">Cajero</div>
+              <div id="cajero-egreso-header-title" style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#fff;letter-spacing:-.3px;">Retiro de caja</div>
+            </div>
+            <i class="ti ti-coins" style="font-size:36px;color:#b09088;opacity:.85;"></i>
+          </div>
+          <div style="padding:24px 28px;">
           <div id="cajero-egreso-step1">
             <div style="font-size:12px;color:#666;margin-bottom:12px;">¿Motivo del retiro?</div>
             <div style="display:flex;flex-direction:column;gap:8px;">
@@ -2200,15 +2217,18 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
             </div>
           </div>
           <div id="cajero-egreso-step2" style="display:none;">
-            <div id="cajero-egreso-motivo-label" style="font-size:13px;font-weight:600;color:#4a5e4d;margin-bottom:16px;"></div>
-            <label style="font-size:12px;color:#666;display:block;margin-bottom:4px;">Monto</label>
-            <input id="cajero-egreso-monto" type="number" min="0" step="any" placeholder="0.00" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:16px;">
-            <label style="font-size:12px;color:#666;display:block;margin-bottom:4px;">Observación (opcional)</label>
-            <input id="cajero-egreso-obs" type="text" placeholder="" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:20px;">
-            <div style="display:flex;gap:8px;justify-content:flex-end;">
-              <button onclick="cajaEgresoVolver()" style="padding:8px 18px;border-radius:8px;border:1px solid #ddd;background:#fff;font-size:13px;cursor:pointer;">Volver</button>
-              <button id="cajero-egreso-btn" onclick="cajaEgresoGuardar()" style="padding:8px 18px;border-radius:8px;border:none;background:#b09088;color:#fff;font-size:13px;font-weight:600;cursor:pointer;">Guardar</button>
+            <label style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#9aaa98;display:block;margin-bottom:8px;">Monto</label>
+            <div style="display:flex;align-items:baseline;gap:6px;border:1.5px solid #ddd;border-radius:10px;padding:10px 14px;margin-bottom:16px;background:#fafafa;">
+              <span style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;color:#9aaa98;">$</span>
+              <input id="cajero-egreso-monto" type="number" min="0" step="any" placeholder="0" style="flex:1;border:none;background:transparent;font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:400;color:#1e2a1c;outline:none;width:100%;line-height:1;">
             </div>
+            <label style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#9aaa98;display:block;margin-bottom:8px;">Observación (opcional)</label>
+            <input id="cajero-egreso-obs" type="text" placeholder="Observación (opcional)" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;margin-bottom:20px;font-family:inherit;background:#fafafa;outline:none;">
+            <div style="display:flex;gap:8px;">
+              <button onclick="cajaEgresoVolver()" style="flex:1;padding:11px 0;border-radius:9px;border:1.5px solid #ddd;background:#fff;font-size:13px;cursor:pointer;font-family:inherit;">← Volver</button>
+              <button id="cajero-egreso-btn" onclick="cajaEgresoGuardar()" style="flex:2;padding:11px 0;border-radius:9px;border:none;background:#b09088;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Guardar</button>
+            </div>
+          </div>
           </div>
         </div>
       </div>
@@ -24672,6 +24692,10 @@ window.cajaEgresoCerrar = function() {
 window.cajaEgresoVolver = function() {
   document.getElementById('cajero-egreso-step1').style.display = '';
   document.getElementById('cajero-egreso-step2').style.display = 'none';
+  var lbl = document.getElementById('cajero-egreso-header-label');
+  var ttl = document.getElementById('cajero-egreso-header-title');
+  if(lbl) lbl.textContent = 'Cajero';
+  if(ttl) ttl.textContent = 'Retiro de caja';
 };
 window.cajaEgresoSelMotivo = function(motivo) {
   if(motivo === '__cierre__') {
@@ -24685,7 +24709,10 @@ window.cajaEgresoSelMotivo = function(motivo) {
     return;
   }
   _cajaEgresoMotivo = motivo;
-  document.getElementById('cajero-egreso-motivo-label').textContent = motivo;
+  var lbl = document.getElementById('cajero-egreso-header-label');
+  var ttl = document.getElementById('cajero-egreso-header-title');
+  if(lbl) lbl.textContent = 'Retiro · ' + motivo;
+  if(ttl) ttl.textContent = '¿Cuánto retirás?';
   document.getElementById('cajero-egreso-monto').value = '';
   document.getElementById('cajero-egreso-obs').value = '';
   document.getElementById('cajero-egreso-step1').style.display = 'none';
