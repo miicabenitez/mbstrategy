@@ -24741,15 +24741,18 @@ window.cajaEgresoGuardar = async function() {
     var hoy = fechaHoyARG();
     var mes = mesHoyARG(hoy);
     var uid = currentClientUID;
+    var operador = window.currentOperadorNombre || 'Cajero';
     await window._addDoc(window._collection(window.db,'clientes',uid,'libroCaja'),{
       tipo:'egreso', cuenta:'Caja mostrador', monto:monto,
       concepto:_cajaEgresoMotivo, detalle: obs||'',
-      fecha: hoy, mes: mes, eliminado: false, creadoEn: new Date().toISOString()
+      fecha: hoy, mes: mes, uid: uid, eliminado: false,
+      creadoEn: new Date().toISOString(), creadoPor: operador
     });
     cajaEgresoCerrar();
     showToast('Egreso registrado','success');
     loadCajaModule();
   } catch(e) {
+    console.error('[cajaEgresoGuardar]', e);
     showToast('Error: '+(e?.message||e),'error');
     if(btn) { btn.disabled=false; btn.textContent='Guardar'; }
   }
