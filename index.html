@@ -13815,6 +13815,7 @@ window.cajaNuevoMovimiento = async function() {
       _mvmCuentas = _mvmCuentas.filter(c => {
         if (c.tipo === 'retiros' || c.tipo === 'reserva') return false;
         if (c.tipo === 'efectivo' && c.nombre !== 'Caja mostrador') return false;
+        if (!c.tipo && c.nombre !== 'Caja mostrador') return false;
         return true;
       });
     }
@@ -14048,10 +14049,10 @@ window.cajaVentaRapida = async function() {
     cuentasSnap.forEach(d=>{const data=d.data();if(data.nombre&&!seenC.has(data.nombre)){seenC.add(data.nombre);_vrcCuentas.push({id:d.id,...data});}});
     _vrcCuentas.sort((a,b)=>(a.orden||0)-(b.orden||0));
     if(window.currentRol === 'cajero') {
-      console.log('[cajero cuentas]', _vrcCuentas.map(c=>({n:c.nombre,t:c.tipo})));
       _vrcCuentas = _vrcCuentas.filter(c => {
         if (c.tipo === 'retiros' || c.tipo === 'reserva') return false;
         if (c.tipo === 'efectivo' && c.nombre !== 'Caja mostrador') return false;
+        if (!c.tipo && c.nombre !== 'Caja mostrador') return false;
         return true;
       });
       _vrcCuentas.forEach(c => { if(c.nombre === 'Caja mostrador') c._label = 'Efectivo'; });
