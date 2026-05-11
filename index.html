@@ -5113,20 +5113,51 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 
 <!-- Modal cobro por cliente (mis clientes) -->
 <div class="mo" id="newMcCobroModal">
-  <div class="md" style="max-width:440px;">
-    <button class="mc2" onclick="closeModal('newMcCobroModal')">×</button>
-    <div class="mt">Registrar cobro</div>
+  <div class="md" style="max-width:380px;padding:0;border-radius:20px;overflow:hidden;background:#f4f0ea;">
     <input type="hidden" id="mcc-cobro-cliente-id"/>
     <input type="hidden" id="mcc-cobro-presup-id"/>
-    <div class="fg"><label class="fl">Concepto</label><input type="text" class="fi" id="mcc-cobro-concepto" placeholder="Ej: 1er pago, seña, cuota 2..."/></div>
-    <div class="fg"><label class="fl">Forma de pago</label><select class="fi" id="mcc-cobro-forma" style="margin-top:0;"><option value="Transferencia">Transferencia</option><option value="Efectivo">Efectivo</option><option value="Tarjeta">Tarjeta</option><option value="QR">QR</option></select></div>
-    <div class="fg"><label class="fl">Cuenta de cobro</label><select class="fi" id="mcc-cobro-cuenta" style="margin-top:0;"><option value="">Cargando...</option></select></div>
-    <div class="fg"><label class="fl">Monto</label><input type="number" class="fi" id="mcc-cobro-monto" placeholder="0"/></div>
-    <div class="fg"><label class="fl">Moneda</label><select class="fi" id="mcc-cobro-moneda" style="margin-top:0;"><option>ARS</option><option>USD</option></select></div>
-    <div class="fg"><label class="fl">Fecha</label><input type="date" id="mcc-cobro-fecha" style="margin-top:0;"/></div>
-    <div class="fg"><label class="fl">Notas</label><textarea class="na" id="mcc-cobro-notas" style="min-height:40px;" placeholder="Observaciones..."></textarea></div>
-    <div class="br2"><button class="bp" onclick="createMcCobro()">Registrar</button><button class="bs" onclick="closeModal('newMcCobroModal')">Cancelar</button></div>
-    <div class="saved-msg" id="mcc-cobro-saved">✓ Cobro registrado</div>
+    <div style="height:3px;background:linear-gradient(90deg,#b09088,#c4a098,#b09088)"></div>
+    <div style="background:#3a4e3d;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-size:10px;letter-spacing:2px;color:rgba(244,240,234,0.5);text-transform:uppercase;font-family:'DM Sans',sans-serif;margin-bottom:4px;">Cajero · Cobranzas</div>
+        <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:22px;font-weight:400;color:#f4f0ea;line-height:1;">Registrar cobro</div>
+        <div id="mcc-cobro-subtitle" style="font-size:11px;color:rgba(244,240,234,0.4);font-family:'DM Sans',sans-serif;margin-top:4px;"></div>
+      </div>
+      <i class="ti ti-circle-check" style="color:#b09088;font-size:36px;opacity:.85;flex-shrink:0;margin-left:12px;"></i>
+    </div>
+    <div style="padding:22px 24px;display:flex;flex-direction:column;gap:14px;">
+      <div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#b09088;margin-bottom:6px;font-family:'DM Sans',sans-serif;">Monto a cobrar</div>
+        <div style="background:#fff;border:1.5px solid rgba(176,144,136,0.25);border-radius:10px;padding:11px 14px;font-family:'Cormorant Garamond',Georgia,serif;font-size:22px;color:#3a4e3d;" id="mcc-cobro-monto-display"></div>
+        <input type="hidden" id="mcc-cobro-monto"/>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#b09088;margin-bottom:8px;font-family:'DM Sans',sans-serif;">Medio de pago</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;" id="mcc-cobro-medios">
+          <button type="button" onclick="mccSelMedio(this,'Efectivo')" class="mcc-medio active" style="padding:9px 16px;border-radius:20px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border:1.5px solid #4a5e4d;background:#4a5e4d;color:#f4f0ea;">Efectivo</button>
+          <button type="button" onclick="mccSelMedio(this,'Transferencia')" class="mcc-medio" style="padding:9px 16px;border-radius:20px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border:1.5px solid rgba(176,144,136,0.3);background:#fff;color:#6a7a68;">Transferencia</button>
+          <button type="button" onclick="mccSelMedio(this,'Mercado Pago')" class="mcc-medio" style="padding:9px 16px;border-radius:20px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border:1.5px solid rgba(176,144,136,0.3);background:#fff;color:#6a7a68;">Mercado Pago</button>
+          <button type="button" onclick="mccSelMedio(this,'Tarjeta')" class="mcc-medio" style="padding:9px 16px;border-radius:20px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border:1.5px solid rgba(176,144,136,0.3);background:#fff;color:#6a7a68;">Tarjeta</button>
+        </div>
+        <input type="hidden" id="mcc-cobro-forma" value="Efectivo"/>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#b09088;margin-bottom:6px;font-family:'DM Sans',sans-serif;">Observación <span style="opacity:.5;font-weight:400">(opcional)</span></div>
+        <textarea id="mcc-cobro-notas" style="width:100%;box-sizing:border-box;background:#fff;border:1.5px solid rgba(176,144,136,0.25);border-radius:10px;padding:11px 14px;font-family:'DM Sans',sans-serif;font-size:13px;color:#3a4e3d;outline:none;resize:none;min-height:44px;" placeholder="Ej: pagó con billete de 500"></textarea>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-family:'DM Sans',sans-serif;font-size:12px;color:#9aaa98;">
+        <span>Fecha</span><span id="mcc-cobro-fecha-display"></span>
+      </div>
+      <input type="hidden" id="mcc-cobro-fecha"/>
+      <input type="hidden" id="mcc-cobro-cuenta"/>
+      <input type="hidden" id="mcc-cobro-moneda" value="ARS"/>
+      <input type="hidden" id="mcc-cobro-concepto"/>
+      <div style="display:flex;gap:8px;">
+        <button onclick="closeModal('newMcCobroModal')" style="flex:.6;padding:14px;background:transparent;color:#6a7a68;border:1.5px solid rgba(176,144,136,0.35);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;">Cancelar</button>
+        <button onclick="createMcCobro()" style="flex:1;padding:14px;background:#4a5e4d;color:#f4f0ea;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;">Registrar cobro</button>
+      </div>
+      <div class="saved-msg" id="mcc-cobro-saved">✓ Cobro registrado</div>
+    </div>
   </div>
 </div>
 
@@ -17686,7 +17717,25 @@ window.openMcCobroModal = async function(clienteId, presupId, concepto, monto) {
       cuentaSel.innerHTML = cuentas.map(c=>`<option value="${sanitize(c.nombre)}">${sanitize(c.nombre)}</option>`).join('');
     } catch(e) { cuentaSel.innerHTML = '<option value="Efectivo">Efectivo</option>'; }
   }
+  // poblar nuevo diseño
+  var hoy = fechaHoyARG();
+  document.getElementById('mcc-cobro-fecha').value = hoy;
+  document.getElementById('mcc-cobro-fecha-display').textContent = 'Hoy · ' + hoy;
+  document.getElementById('mcc-cobro-monto-display').textContent = '$ ' + (monto||0).toLocaleString('es-AR');
+  document.getElementById('mcc-cobro-subtitle').textContent = (concepto||'') + (monto ? ' · $' + parseFloat(monto).toLocaleString('es-AR') : '');
+  document.getElementById('mcc-cobro-concepto').value = concepto || '';
+  mccSelMedio(document.querySelector('.mcc-medio'), 'Efectivo');
   openModal('newMcCobroModal');
+};
+
+window.mccSelMedio = function(el, medio) {
+  document.querySelectorAll('.mcc-medio').forEach(function(b){
+    b.style.background='#fff'; b.style.color='#6a7a68'; b.style.borderColor='rgba(176,144,136,0.3)';
+  });
+  el.style.background='#4a5e4d'; el.style.color='#f4f0ea'; el.style.borderColor='#4a5e4d';
+  document.getElementById('mcc-cobro-forma').value = medio;
+  var cuenta = medio === 'Efectivo' ? 'Caja mostrador' : medio;
+  document.getElementById('mcc-cobro-cuenta').value = cuenta;
 };
 
 window.createMcCobro = async function() {
