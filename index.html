@@ -6233,8 +6233,19 @@ window.mostrarPantallaEspera = function() {
       </div>
       <div style="font-family:'DM Sans',sans-serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:rgba(244,240,234,0.28);margin-top:14px;animation:mbFadeUp .5s ease 2.5s both;">Sistema de gestión</div>
       <div style="width:40px;height:1px;background:rgba(176,144,136,0.4);margin:28px auto;animation:mbFadeUp .5s ease 2.7s both;"></div>
-      <button onclick="document.getElementById('mb-pantalla-espera').style.display='none'; document.getElementById('lp').style.display='flex';" style="background:#b09088;color:#f4f0ea;border:none;border-radius:12px;padding:15px 48px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;animation:mbFadeUp .5s ease 2.9s both;">Iniciar sesión</button>
+      <button onclick="mb_mostrarLogin()" style="background:#b09088;color:#f4f0ea;border:none;border-radius:12px;padding:15px 48px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;animation:mbFadeUp .5s ease 2.9s both;">Iniciar sesión</button>
       <div style="font-family:'DM Sans',sans-serif;font-size:12px;color:rgba(244,240,234,0.2);margin-top:16px;animation:mbFadeUp .5s ease 3.1s both;">Sistema activo · Turno cerrado</div>
+    </div>
+    <div id="mb-login-content" style="display:none;flex-direction:column;align-items:center;width:100%;max-width:320px;position:relative;z-index:2;animation:mbFadeUp .5s ease both;">
+      <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(244,240,234,0.1);border-radius:16px;padding:28px 24px;width:100%;box-sizing:border-box;">
+        <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(244,240,234,0.4);margin-bottom:6px;font-family:'DM Sans',sans-serif;">Usuario</div>
+        <input id="mb-le" type="text" placeholder="Tu nombre de usuario" style="width:100%;box-sizing:border-box;padding:12px 14px;background:rgba(255,255,255,0.07);border:1px solid rgba(244,240,234,0.15);border-radius:10px;color:#f4f0ea;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;margin-bottom:16px;" onkeydown="if(event.key==='Enter')mb_doLogin()">
+        <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(244,240,234,0.4);margin-bottom:6px;font-family:'DM Sans',sans-serif;">Contraseña</div>
+        <input id="mb-lp" type="password" placeholder="••••••••" style="width:100%;box-sizing:border-box;padding:12px 14px;background:rgba(255,255,255,0.07);border:1px solid rgba(244,240,234,0.15);border-radius:10px;color:#f4f0ea;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;margin-bottom:20px;" onkeydown="if(event.key==='Enter')mb_doLogin()">
+        <button onclick="mb_doLogin()" style="width:100%;padding:14px;background:#b09088;color:#f4f0ea;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;">Ingresar</button>
+        <div id="mb-login-err" style="display:none;font-size:12px;color:#e09080;margin-top:10px;text-align:center;font-family:'DM Sans',sans-serif;"></div>
+      </div>
+      <button onclick="document.getElementById('mb-login-content').style.display='none';document.getElementById('mb-espera-content').style.display='flex';" style="background:none;border:none;color:rgba(244,240,234,0.2);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;margin-top:14px;">← volver</button>
     </div>
   `;
   document.body.appendChild(div);
@@ -6247,6 +6258,18 @@ window.mostrarPantallaEspera = function() {
       else { setTimeout(function(){ if(_cur) _cur.style.display='none'; },1200); }
     },400);
   })();
+};
+
+window.mb_mostrarLogin = function() {
+  document.getElementById('mb-espera-content').style.display = 'none';
+  document.getElementById('mb-login-content').style.display = 'flex';
+};
+window.mb_doLogin = function() {
+  var usuario = document.getElementById('mb-le').value.trim();
+  var pass = document.getElementById('mb-lp').value;
+  document.getElementById('le').value = usuario;
+  document.getElementById('lp2').value = pass;
+  doLogin();
 };
 
 window.doLogout = async function() {
