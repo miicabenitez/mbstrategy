@@ -6274,7 +6274,11 @@ window.mb_doLogin = function() {
 };
 
 window.doLogout = async function() {
-  if(window.currentRol === 'cajero') mostrarPantallaEspera();
+  if(window.currentRol === 'cajero') {
+    try { await signOut(auth); } catch(ex) {}
+    mostrarPantallaEspera();
+    return;
+  }
   try { await signOut(auth); } catch(ex) {}
   document.getElementById('lp').style.display = 'flex';
   document.getElementById('app').classList.remove('visible');
