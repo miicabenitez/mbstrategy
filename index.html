@@ -6265,6 +6265,8 @@ window.mb_mostrarLogin = function() {
   document.getElementById('mb-login-content').style.display = 'flex';
 };
 window.mb_doLogin = function() {
+  if(window._mbLoginInProgress) return;
+  window._mbLoginInProgress = true;
   var usuario = document.getElementById('mb-le').value.trim();
   var pass = document.getElementById('mb-lp').value;
   document.getElementById('le').value = usuario;
@@ -6356,6 +6358,7 @@ onAuthStateChanged(auth, async (user) => {
   const lo = document.getElementById('lo');
   if(lo){ lo.style.opacity='0'; lo.style.display='none'; }
   if (user) {
+    window._mbLoginInProgress = false;
     var _pe = document.getElementById('mb-pantalla-espera');
     if(_pe) _pe.remove();
     window._skipAuthRedirect = false;
