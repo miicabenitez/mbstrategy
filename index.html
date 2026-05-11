@@ -2168,6 +2168,51 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         </div>
       </div>
 
+      <!-- MODAL Depósito cajero -->
+      <div id="cajero-deposito-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9998;align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:14px;padding:28px 24px;width:320px;box-shadow:0 8px 32px rgba(0,0,0,.18);">
+          <div style="font-weight:700;font-size:15px;margin-bottom:16px;">Depósito de efectivo</div>
+          <label style="font-size:12px;color:#666;display:block;margin-bottom:4px;">Monto</label>
+          <input id="cajero-deposito-monto" type="number" min="0" step="any" placeholder="0.00" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:16px;">
+          <label style="font-size:12px;color:#666;display:block;margin-bottom:4px;">Observación (opcional)</label>
+          <input id="cajero-deposito-obs" type="text" placeholder="" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:20px;">
+          <div style="display:flex;gap:8px;justify-content:flex-end;">
+            <button onclick="cajaDepositoCerrar()" style="padding:8px 18px;border-radius:8px;border:1px solid #ddd;background:#fff;font-size:13px;cursor:pointer;">Cancelar</button>
+            <button id="cajero-deposito-btn" onclick="cajaDepositoGuardar()" style="padding:8px 18px;border-radius:8px;border:none;background:#4a5e4d;color:#fff;font-size:13px;font-weight:600;cursor:pointer;">Guardar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODAL Egreso cajero con motivo -->
+      <div id="cajero-egreso-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9998;align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:14px;padding:28px 24px;width:320px;box-shadow:0 8px 32px rgba(0,0,0,.18);">
+          <div style="font-weight:700;font-size:15px;margin-bottom:16px;">Retiro de caja</div>
+          <div id="cajero-egreso-step1">
+            <div style="font-size:12px;color:#666;margin-bottom:12px;">¿Motivo del retiro?</div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <button onclick="cajaEgresoSelMotivo('Pago a proveedor')" style="padding:11px 14px;border-radius:9px;border:1.5px solid #ddd;background:#fafafa;font-size:13px;text-align:left;cursor:pointer;font-family:inherit;">Pago a proveedor</button>
+              <button onclick="cajaEgresoSelMotivo('Compra de insumos')" style="padding:11px 14px;border-radius:9px;border:1.5px solid #ddd;background:#fafafa;font-size:13px;text-align:left;cursor:pointer;font-family:inherit;">Compra de insumos</button>
+              <button onclick="cajaEgresoSelMotivo('__cierre__')" style="padding:11px 14px;border-radius:9px;border:1.5px solid #ddd;background:#fafafa;font-size:13px;text-align:left;cursor:pointer;font-family:inherit;">Retiro por cierre</button>
+              <button onclick="cajaEgresoSelMotivo('Otros')" style="padding:11px 14px;border-radius:9px;border:1.5px solid #ddd;background:#fafafa;font-size:13px;text-align:left;cursor:pointer;font-family:inherit;">Otros</button>
+            </div>
+            <div style="margin-top:16px;text-align:right;">
+              <button onclick="cajaEgresoCerrar()" style="padding:8px 18px;border-radius:8px;border:1px solid #ddd;background:#fff;font-size:13px;cursor:pointer;">Cancelar</button>
+            </div>
+          </div>
+          <div id="cajero-egreso-step2" style="display:none;">
+            <div id="cajero-egreso-motivo-label" style="font-size:13px;font-weight:600;color:#4a5e4d;margin-bottom:16px;"></div>
+            <label style="font-size:12px;color:#666;display:block;margin-bottom:4px;">Monto</label>
+            <input id="cajero-egreso-monto" type="number" min="0" step="any" placeholder="0.00" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:16px;">
+            <label style="font-size:12px;color:#666;display:block;margin-bottom:4px;">Observación (opcional)</label>
+            <input id="cajero-egreso-obs" type="text" placeholder="" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:20px;">
+            <div style="display:flex;gap:8px;justify-content:flex-end;">
+              <button onclick="cajaEgresoVolver()" style="padding:8px 18px;border-radius:8px;border:1px solid #ddd;background:#fff;font-size:13px;cursor:pointer;">Volver</button>
+              <button id="cajero-egreso-btn" onclick="cajaEgresoGuardar()" style="padding:8px 18px;border-radius:8px;border:none;background:#b09088;color:#fff;font-size:13px;font-weight:600;cursor:pointer;">Guardar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- MODAL Cierre de caja cajero -->
       <div id="cajero-cierre-overlay" style="display:none;position:fixed;inset:0;background:rgba(61,82,64,0.7);z-index:9998;align-items:center;justify-content:center;">
         <div style="background:#f5f0e8;border-radius:24px;width:380px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.3),0 0 0 1px rgba(255,255,255,.1);">
@@ -10042,7 +10087,7 @@ function renderCajaCajero() {
       '<div class="cv-movimientos"><div class="cv-mov-title">Movimientos</div>'+movsHtml+'</div>' +
       '<div class="cv-bottom-bar">' +
         '<button class="cv-btn cv-btn-venta" onclick="cajaVentaRapida()"><svg width="14" height="14" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="#e8f2e8" stroke-width="1.8"/><path d="M10 6v8M6 10h8" stroke="#e8f2e8" stroke-width="1.8" stroke-linecap="round"/></svg>Nueva venta</button>' +
-        '<button class="cv-btn cv-btn-mov" onclick="cajaNuevoMovimiento()">+ Movimiento</button>' +
+        (window.currentRol==='cajero' ? '<button class="cv-btn cv-btn-mov" onclick="cajaDepositoShow()">Depósito</button>' : '<button class="cv-btn cv-btn-mov" onclick="cajaNuevoMovimiento()">+ Movimiento</button>') +
         '<button class="cv-btn cv-btn-retiro" onclick="cajaRetiroShow()">Retiro</button>' +
         '<button class="cv-btn cv-btn-cerrar" onclick="cajaCierreShow()">Cerrar caja</button>' +
       '</div>' +
@@ -13733,6 +13778,7 @@ window.ccfgEliminarConcepto = function(id, nombre, tieneMov) {
 let _mvmTipo = 'ingreso', _mvmConceptoSel = null, _mvmConceptos = [], _mvmCuentas = [], _mvmEfectivoSaldo = 0;
 
 window.cajaNuevoMovimiento = async function() {
+  if(window.currentRol==='cajero') return;
   if(!currentClientUID) return;
   const uid = currentClientUID;
   try {
@@ -24573,7 +24619,104 @@ window.adminUsuarioDesactivar = async function(docId, usuarioNombre, uid, btnEl)
 };
 
 // ─── CAJERO: Retiro a caja general ───────────────────────────
+// ─── CAJERO: Depósito ─────────────────────────────────────────
+window.cajaDepositoShow = function() {
+  var ov = document.getElementById('cajero-deposito-overlay');
+  if(!ov) return;
+  document.getElementById('cajero-deposito-monto').value = '';
+  document.getElementById('cajero-deposito-obs').value = '';
+  ov.style.display = 'flex';
+};
+window.cajaDepositoCerrar = function() {
+  var ov = document.getElementById('cajero-deposito-overlay');
+  if(ov) ov.style.display = 'none';
+};
+window.cajaDepositoGuardar = async function() {
+  var monto = parseFloat(document.getElementById('cajero-deposito-monto').value)||0;
+  if(monto <= 0) { showToast('Ingresá un monto válido','error'); return; }
+  var obs = document.getElementById('cajero-deposito-obs').value.trim();
+  var btn = document.getElementById('cajero-deposito-btn');
+  if(btn) { btn.disabled=true; btn.textContent='Guardando...'; }
+  try {
+    var hoy = fechaHoyARG();
+    var mes = mesHoyARG(hoy);
+    var uid = currentClientUID;
+    await window._addDoc(window._collection(window.db,'clientes',uid,'libroCaja'),{
+      tipo:'ingreso', cuenta:'Caja mostrador', monto:monto,
+      concepto:'Depósito', detalle: obs||'',
+      fecha: hoy, mes: mes, eliminado: false, creadoEn: new Date().toISOString()
+    });
+    cajaDepositoCerrar();
+    showToast('Depósito registrado','success');
+    loadCajaModule();
+  } catch(e) {
+    showToast('Error: '+(e?.message||e),'error');
+    if(btn) { btn.disabled=false; btn.textContent='Guardar'; }
+  }
+};
+
+// ─── CAJERO: Egreso con motivo ────────────────────────────────
+var _cajaEgresoMotivo = '';
+window.cajaEgresoShow = function() {
+  var ov = document.getElementById('cajero-egreso-overlay');
+  if(!ov) return;
+  document.getElementById('cajero-egreso-step1').style.display = '';
+  document.getElementById('cajero-egreso-step2').style.display = 'none';
+  _cajaEgresoMotivo = '';
+  ov.style.display = 'flex';
+};
+window.cajaEgresoCerrar = function() {
+  var ov = document.getElementById('cajero-egreso-overlay');
+  if(ov) ov.style.display = 'none';
+};
+window.cajaEgresoVolver = function() {
+  document.getElementById('cajero-egreso-step1').style.display = '';
+  document.getElementById('cajero-egreso-step2').style.display = 'none';
+};
+window.cajaEgresoSelMotivo = function(motivo) {
+  if(motivo === '__cierre__') {
+    cajaEgresoCerrar();
+    var ov = document.getElementById('cajero-retiro-overlay');
+    if(ov) {
+      document.getElementById('cajero-retiro-monto').value = '';
+      document.getElementById('cajero-retiro-obs').value = '';
+      ov.style.display = 'flex';
+    }
+    return;
+  }
+  _cajaEgresoMotivo = motivo;
+  document.getElementById('cajero-egreso-motivo-label').textContent = motivo;
+  document.getElementById('cajero-egreso-monto').value = '';
+  document.getElementById('cajero-egreso-obs').value = '';
+  document.getElementById('cajero-egreso-step1').style.display = 'none';
+  document.getElementById('cajero-egreso-step2').style.display = '';
+};
+window.cajaEgresoGuardar = async function() {
+  var monto = parseFloat(document.getElementById('cajero-egreso-monto').value)||0;
+  if(monto <= 0) { showToast('Ingresá un monto válido','error'); return; }
+  var obs = document.getElementById('cajero-egreso-obs').value.trim();
+  var btn = document.getElementById('cajero-egreso-btn');
+  if(btn) { btn.disabled=true; btn.textContent='Guardando...'; }
+  try {
+    var hoy = fechaHoyARG();
+    var mes = mesHoyARG(hoy);
+    var uid = currentClientUID;
+    await window._addDoc(window._collection(window.db,'clientes',uid,'libroCaja'),{
+      tipo:'egreso', cuenta:'Caja mostrador', monto:monto,
+      concepto:_cajaEgresoMotivo, detalle: obs||'',
+      fecha: hoy, mes: mes, eliminado: false, creadoEn: new Date().toISOString()
+    });
+    cajaEgresoCerrar();
+    showToast('Egreso registrado','success');
+    loadCajaModule();
+  } catch(e) {
+    showToast('Error: '+(e?.message||e),'error');
+    if(btn) { btn.disabled=false; btn.textContent='Guardar'; }
+  }
+};
+
 window.cajaRetiroShow = function() {
+  if(window.currentRol==='cajero') { cajaEgresoShow(); return; }
   var ov = document.getElementById('cajero-retiro-overlay');
   if(!ov) return;
   document.getElementById('cajero-retiro-monto').value = '';
