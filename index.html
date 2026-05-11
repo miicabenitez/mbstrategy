@@ -17798,6 +17798,13 @@ window.createMcCobro = async function() {
       } catch(e){ console.log('Error actualizando cobradoPorPresup:', e); }
     }
 
+    // 3c. Si el cobro viene de la colección cobros (cajero), marcar como pagado
+    if(presupId2) {
+      try {
+        await updateDoc(doc(db,'clientes',currentClientUID,'cobros',presupId2), { estado: 'pagado' });
+      } catch(_e) { /* puede no existir si era presupuesto, ignorar */ }
+    }
+
     // 4. DISPARAR INGRESO en contabilidad automáticamente
     const mesIngreso = mesHoyARG(fecha||fechaHoyARG());
     await addDoc(collection(db,'clientes',currentClientUID,'ingresos'), {
