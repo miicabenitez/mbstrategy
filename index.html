@@ -577,6 +577,7 @@ input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus
 @keyframes mbFloatB { 0%,100%{transform:translateY(0)} 50%{transform:translateY(20px)} }
 @keyframes mbPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.75;transform:scale(.96)} }
 @keyframes mbFadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+@keyframes mbCursorBlink { 0%,100%{opacity:1} 50%{opacity:0} }
 @keyframes revealComp{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
 @keyframes bounceUp{0%{transform:translateY(0);}50%{transform:translateY(-4px);}100%{transform:translateY(0);}}
 @keyframes bounceDown{0%{transform:translateY(0);}50%{transform:translateY(4px);}100%{transform:translateY(0);}}
@@ -6222,16 +6223,18 @@ window.mostrarPantallaEspera = function() {
     <div style="position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(176,144,136,0.18) 0%,transparent 65%);bottom:-100px;right:-80px;animation:mbFloatB 9s ease-in-out infinite;"></div>
     <div style="position:absolute;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(176,144,136,0.12) 0%,transparent 65%);top:35%;right:5%;animation:mbFloatA 5s ease-in-out infinite 1s;"></div>
     <div id="mb-espera-content" style="display:flex;flex-direction:column;align-items:center;position:relative;z-index:2;">
-      <div style="display:flex;align-items:center;gap:18px;animation:mbPulse 4s ease-in-out infinite;margin-bottom:8px;">
-        <div style="width:68px;height:68px;border-radius:50%;background:#4a5e4d;border:2px solid rgba(176,144,136,0.45);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <span style="font-family:'Cormorant Garamond',Georgia,serif;font-size:26px;"><span style="color:#f4f0ea;">M</span><span style="color:#b09088;">B</span></span>
+      <div style="display:flex;align-items:flex-end;gap:18px;animation:mbPulse 4s ease-in-out infinite;margin-bottom:8px;">
+        <div style="width:170px;height:170px;border-radius:50%;background:#4a5e4d;border:2px solid rgba(176,144,136,0.45);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <span style="font-family:'Cormorant Garamond',Georgia,serif;font-size:66px;"><span style="color:#f4f0ea;">M</span><span style="color:#b09088;">B</span></span>
         </div>
-        <span style="font-family:'Cormorant Garamond',Georgia,serif;font-size:46px;font-weight:400;color:#f4f0ea;letter-spacing:-1.5px;line-height:1;">Strategy</span>
+        <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:46px;font-weight:400;color:#f4f0ea;letter-spacing:-1px;line-height:1;display:flex;align-items:baseline;padding-bottom:30px;">
+          <span id="mb-typed-text"></span><span id="mb-cursor" style="display:inline-block;width:2px;height:42px;background:#b09088;margin-left:3px;animation:mbCursorBlink 1s step-end infinite;vertical-align:baseline;"></span>
+        </div>
       </div>
-      <div style="font-family:'DM Sans',sans-serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:rgba(244,240,234,0.28);margin-top:14px;">Sistema de gestión</div>
-      <div style="width:40px;height:1px;background:rgba(176,144,136,0.4);margin:28px auto;"></div>
-      <button onclick="mb_mostrarLogin()" style="background:#b09088;color:#f4f0ea;border:none;border-radius:12px;padding:15px 48px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;">Iniciar sesión</button>
-      <div style="font-family:'DM Sans',sans-serif;font-size:12px;color:rgba(244,240,234,0.2);margin-top:16px;">Sistema activo · Turno cerrado</div>
+      <div style="font-family:'DM Sans',sans-serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:rgba(244,240,234,0.28);margin-top:14px;animation:mbFadeUp .5s ease 2.5s both;">Sistema de gestión</div>
+      <div style="width:40px;height:1px;background:rgba(176,144,136,0.4);margin:28px auto;animation:mbFadeUp .5s ease 2.7s both;"></div>
+      <button onclick="mb_mostrarLogin()" style="background:#b09088;color:#f4f0ea;border:none;border-radius:12px;padding:15px 48px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;animation:mbFadeUp .5s ease 2.9s both;">Iniciar sesión</button>
+      <div style="font-family:'DM Sans',sans-serif;font-size:12px;color:rgba(244,240,234,0.2);margin-top:16px;animation:mbFadeUp .5s ease 3.1s both;">Sistema activo · Turno cerrado</div>
     </div>
     <div id="mb-login-content" style="display:none;flex-direction:column;align-items:center;width:100%;max-width:320px;position:relative;z-index:2;animation:mbFadeUp .5s ease both;">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:28px;">
@@ -6249,6 +6252,18 @@ window.mostrarPantallaEspera = function() {
       </div>
       <button onclick="mb_mostrarEspera()" style="background:none;border:none;color:rgba(244,240,234,0.2);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;margin-top:14px;">← volver</button>
     </div>
+    <script>
+    (function(){
+      var _txt = 'Strategy';
+      var _el = document.getElementById('mb-typed-text');
+      var _cur = document.getElementById('mb-cursor');
+      var _i = 0;
+      setTimeout(function _type(){
+        if(_i < _txt.length){ _el.textContent += _txt[_i++]; setTimeout(_type, 110); }
+        else { setTimeout(function(){ if(_cur) _cur.style.display='none'; }, 1200); }
+      }, 400);
+    })();
+    </script>
   `;
   document.body.appendChild(div);
 };
