@@ -6273,13 +6273,9 @@ window.mb_doLogin = async function() {
   try {
     var email = usuario;
     if(!usuario.includes('@')) {
-      var snap = await window._getDocs(
-        window._query(
-          window._collection(window.db, 'operadoresLookup'),
-          window._where('nombre','==', usuario.toLowerCase())
-        )
-      );
-      if(!snap.empty) email = snap.docs[0].data().emailSintetico;
+      var lookupRef = window._doc(window.db, 'operadoresLookup', usuario.toLowerCase());
+      var lookupSnap = await window._getDoc(lookupRef);
+      if(lookupSnap.exists()) email = lookupSnap.data().emailSintetico;
     }
     await window._signInWithEmailAndPassword(window._auth, email, pass);
     var _pe = document.getElementById('mb-pantalla-espera');
