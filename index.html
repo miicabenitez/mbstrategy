@@ -13813,9 +13813,12 @@ window.cajaNuevoMovimiento = async function() {
     _mvmCuentas.sort((a,b)=>(a.orden||0)-(b.orden||0));
     if(window.currentRol === 'cajero') {
       _mvmCuentas = _mvmCuentas.filter(c => {
-        if (c.tipo === 'banco' || c.tipo === 'retiros' || c.tipo === 'reserva') return false;
+        if (c.nombre === 'Caja mostrador') return true;
+        if (c.tipo === 'mp') return true;
+        if (c.nombre === 'Transferencia') return true;
         if (c.tipo === 'efectivo' && c.nombre !== 'Caja mostrador') return false;
-        return true;
+        if (c.tipo === 'banco' && c.nombre !== 'Transferencia') return false;
+        return false;
       });
     }
     _mvmConceptos = [];
@@ -14049,9 +14052,12 @@ window.cajaVentaRapida = async function() {
     _vrcCuentas.sort((a,b)=>(a.orden||0)-(b.orden||0));
     if(window.currentRol === 'cajero') {
       _vrcCuentas = _vrcCuentas.filter(c => {
-        if (c.tipo === 'banco' || c.tipo === 'retiros' || c.tipo === 'reserva') return false;
+        if (c.nombre === 'Caja mostrador') return true;
+        if (c.tipo === 'mp') return true;
+        if (c.nombre === 'Transferencia') return true;
         if (c.tipo === 'efectivo' && c.nombre !== 'Caja mostrador') return false;
-        return true;
+        if (c.tipo === 'banco' && c.nombre !== 'Transferencia') return false;
+        return false;
       });
       _vrcCuentas.forEach(c => { if(c.nombre === 'Caja mostrador') c._label = 'Efectivo'; });
     }
