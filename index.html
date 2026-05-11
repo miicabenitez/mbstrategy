@@ -24967,6 +24967,12 @@ window.cajaCierreConfirmar = async function() {
     if (_hb2) _hb2.remove();
     var _sb2 = document.getElementById('clientSidebar');
     if (_sb2) _sb2.classList.remove('cv-sidebar-open');
+    if(window.currentRol === 'cajero') {
+      window._skipAuthRedirect = true;
+      try { await signOut(auth); } catch(ex) {}
+      mostrarPantallaEspera();
+      return;
+    }
     if (window.showClientMod) window.showClientMod('inicio');
     else loadCajaModule();
   } catch(e) {
