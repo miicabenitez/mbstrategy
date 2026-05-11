@@ -14056,6 +14056,11 @@ window.cajaVentaRapida = async function() {
         return true;
       });
       _vrcCuentas.forEach(c => { if(c.nombre === 'Caja mostrador') c._label = 'Efectivo'; });
+      _vrcCuentas.sort((a,b) => {
+        if(a.nombre === 'Caja mostrador') return -1;
+        if(b.nombre === 'Caja mostrador') return 1;
+        return 0;
+      });
     }
     _vrcMetodo = _vrcCuentas[0]?.nombre || 'Efectivo';
     const buscarEl = document.getElementById('vrc-buscar');
