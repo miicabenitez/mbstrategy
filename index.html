@@ -6272,6 +6272,15 @@ window.mb_doLogin = function() {
   document.getElementById('le').value = usuario;
   document.getElementById('lp2').value = pass;
   doLogin();
+  // Remover pantalla de espera cuando el auth resuelva
+  var _check = setInterval(function() {
+    if(!window._mbLoginInProgress) {
+      clearInterval(_check);
+      var _pe = document.getElementById('mb-pantalla-espera');
+      if(_pe) _pe.remove();
+    }
+  }, 200);
+  setTimeout(function() { clearInterval(_check); }, 10000);
 };
 
 window.doLogout = async function() {
