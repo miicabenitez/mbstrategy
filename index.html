@@ -573,6 +573,10 @@ input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus
 @keyframes embi-pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
 @keyframes slideDown{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+@keyframes mbFloatA { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-24px)} }
+@keyframes mbFloatB { 0%,100%{transform:translateY(0)} 50%{transform:translateY(20px)} }
+@keyframes mbPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.75;transform:scale(.96)} }
+@keyframes mbFadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
 @keyframes revealComp{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
 @keyframes bounceUp{0%{transform:translateY(0);}50%{transform:translateY(-4px);}100%{transform:translateY(0);}}
 @keyframes bounceDown{0%{transform:translateY(0);}50%{transform:translateY(4px);}100%{transform:translateY(0);}}
@@ -6153,6 +6157,7 @@ window.db = db;
 window._db = db;
 window._auth = auth;
 window._confirmPasswordReset = confirmPasswordReset;
+window._signInWithEmailAndPassword = signInWithEmailAndPassword;
 window._addDoc = addDoc;
 window._collection = collection;
 window._doc = doc;
@@ -6206,7 +6211,70 @@ window.doLogin = async function() {
   }
 };
 
+window.mostrarPantallaEspera = function() {
+  var el = document.getElementById('mb-pantalla-espera');
+  if(el) { el.style.display = 'flex'; return; }
+  var div = document.createElement('div');
+  div.id = 'mb-pantalla-espera';
+  div.style.cssText = 'position:fixed;inset:0;background:#2e3e30;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 32px;overflow:hidden;';
+  div.innerHTML = `
+    <div style="position:absolute;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(74,94,77,0.6) 0%,transparent 65%);top:-160px;left:-140px;animation:mbFloatA 7s ease-in-out infinite;"></div>
+    <div style="position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(176,144,136,0.18) 0%,transparent 65%);bottom:-100px;right:-80px;animation:mbFloatB 9s ease-in-out infinite;"></div>
+    <div style="position:absolute;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(176,144,136,0.12) 0%,transparent 65%);top:35%;right:5%;animation:mbFloatA 5s ease-in-out infinite 1s;"></div>
+    <div id="mb-espera-content" style="display:flex;flex-direction:column;align-items:center;position:relative;z-index:2;">
+      <div style="display:flex;align-items:center;gap:18px;animation:mbPulse 4s ease-in-out infinite;margin-bottom:8px;">
+        <div style="width:68px;height:68px;border-radius:50%;background:#4a5e4d;border:2px solid rgba(176,144,136,0.45);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <span style="font-family:'Cormorant Garamond',Georgia,serif;font-size:26px;"><span style="color:#f4f0ea;">M</span><span style="color:#b09088;">B</span></span>
+        </div>
+        <span style="font-family:'Cormorant Garamond',Georgia,serif;font-size:46px;font-weight:400;color:#f4f0ea;letter-spacing:-1.5px;line-height:1;">Strategy</span>
+      </div>
+      <div style="font-family:'DM Sans',sans-serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:rgba(244,240,234,0.28);margin-top:14px;">Sistema de gestión</div>
+      <div style="width:40px;height:1px;background:rgba(176,144,136,0.4);margin:28px auto;"></div>
+      <button onclick="mb_mostrarLogin()" style="background:#b09088;color:#f4f0ea;border:none;border-radius:12px;padding:15px 48px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;">Iniciar sesión</button>
+      <div style="font-family:'DM Sans',sans-serif;font-size:12px;color:rgba(244,240,234,0.2);margin-top:16px;">Sistema activo · Turno cerrado</div>
+    </div>
+    <div id="mb-login-content" style="display:none;flex-direction:column;align-items:center;width:100%;max-width:320px;position:relative;z-index:2;animation:mbFadeUp .5s ease both;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:28px;">
+        <div style="width:44px;height:44px;border-radius:50%;background:#4a5e4d;border:1.5px solid rgba(176,144,136,0.45);display:flex;align-items:center;justify-content:center;">
+          <span style="font-family:'Cormorant Garamond',Georgia,serif;font-size:18px;"><span style="color:#f4f0ea;">M</span><span style="color:#b09088;">B</span></span>
+        </div>
+        <span style="font-family:'Cormorant Garamond',Georgia,serif;font-size:28px;font-weight:400;color:#f4f0ea;letter-spacing:-1px;">Strategy</span>
+      </div>
+      <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(244,240,234,0.1);border-radius:16px;padding:28px 24px;width:100%;box-sizing:border-box;">
+        <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(244,240,234,0.4);margin-bottom:6px;font-family:'DM Sans',sans-serif;">Email</div>
+        <input id="mb-login-email" type="email" placeholder="tu@email.com" style="width:100%;box-sizing:border-box;padding:12px 14px;background:rgba(255,255,255,0.07);border:1px solid rgba(244,240,234,0.15);border-radius:10px;color:#f4f0ea;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;margin-bottom:16px;">
+        <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(244,240,234,0.4);margin-bottom:6px;font-family:'DM Sans',sans-serif;">Contraseña</div>
+        <input id="mb-login-pass" type="password" placeholder="••••••••" style="width:100%;box-sizing:border-box;padding:12px 14px;background:rgba(255,255,255,0.07);border:1px solid rgba(244,240,234,0.15);border-radius:10px;color:#f4f0ea;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;margin-bottom:20px;">
+        <button onclick="mb_doLogin()" style="width:100%;padding:14px;background:#b09088;color:#f4f0ea;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;">Ingresar</button>
+      </div>
+      <button onclick="mb_mostrarEspera()" style="background:none;border:none;color:rgba(244,240,234,0.2);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;margin-top:14px;">← volver</button>
+    </div>
+  `;
+  document.body.appendChild(div);
+};
+window.mb_mostrarLogin = function() {
+  document.getElementById('mb-espera-content').style.display = 'none';
+  var lc = document.getElementById('mb-login-content');
+  lc.style.display = 'flex';
+};
+window.mb_mostrarEspera = function() {
+  document.getElementById('mb-login-content').style.display = 'none';
+  document.getElementById('mb-espera-content').style.display = 'flex';
+};
+window.mb_doLogin = function() {
+  var email = document.getElementById('mb-login-email').value.trim();
+  var pass = document.getElementById('mb-login-pass').value;
+  if(!email || !pass) return;
+  var el = document.getElementById('mb-pantalla-espera');
+  if(el) el.remove();
+  window._signInWithEmailAndPassword(window._auth, email, pass).catch(function(e) {
+    mostrarPantallaEspera();
+    showToast('Email o contraseña incorrectos','error');
+  });
+};
+
 window.doLogout = async function() {
+  if(window.currentRol === 'cajero') mostrarPantallaEspera();
   try { await signOut(auth); } catch(ex) {}
   document.getElementById('lp').style.display = 'flex';
   document.getElementById('app').classList.remove('visible');
