@@ -17721,7 +17721,9 @@ window.openMcCobroModal = async function(clienteId, presupId, concepto, monto) {
   var hoy = fechaHoyARG();
   document.getElementById('mcc-cobro-fecha').value = hoy;
   document.getElementById('mcc-cobro-fecha-display').textContent = 'Hoy · ' + hoy;
-  document.getElementById('mcc-cobro-monto-display').textContent = '$ ' + (monto||0).toLocaleString('es-AR');
+  var elMonto = document.getElementById('mcc-cobro-monto-display');
+  elMonto.textContent = '$ ' + (monto||0).toLocaleString('es-AR');
+  elMonto.style.cssText += ';font-family:Cormorant Garamond,Georgia,serif!important;font-size:28px!important;';
   document.getElementById('mcc-cobro-subtitle').textContent = (concepto||'') + (monto ? ' · $' + parseFloat(monto).toLocaleString('es-AR') : '');
   document.getElementById('mcc-cobro-concepto').value = concepto || '';
   mccSelMedio(document.querySelector('.mcc-medio'), 'Efectivo');
@@ -17740,6 +17742,8 @@ window.mccSelMedio = function(el, medio) {
 
 window.createMcCobro = async function() {
   if (!currentClientUID) return;
+  var _btn = document.querySelector('#newMcCobroModal button[onclick="createMcCobro()"]');
+  if(_btn) { _btn.disabled = true; _btn.textContent = 'Registrando...'; }
   const clienteId  = document.getElementById('mcc-cobro-cliente-id').value;
   const monto      = document.getElementById('mcc-cobro-monto').value;
   if (!monto) { showToast('Ingresá el monto', 'info'); return; }
@@ -17848,7 +17852,7 @@ window.createMcCobro = async function() {
         await loadMcModule();
       }
     }, 1500);
-  } catch(e) { showToast('Error: ' + e.message, 'error'); }
+  } catch(e) { showToast('Error: ' + e.message, 'error'); if(_btn){ _btn.disabled=false; _btn.textContent='Registrar cobro'; } }
 };
 
 async function loadMcCobrosList(clienteId) {
