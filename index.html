@@ -637,7 +637,7 @@ input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus
 .cj-field input,.cj-field select,.cj-field textarea{width:100%;padding:10px 13px;border:1.5px solid #e8e8e4;border-radius:8px;font-size:13px;color:#2c2c2a;background:#fafafa;outline:none;font-family:inherit;transition:border .15s;}
 .cj-field input:focus,.cj-field select:focus,.cj-field textarea:focus{border-color:#4a5e4d;background:white;}
 .cj-field textarea{resize:none;height:56px;}
-.cj-row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.cj-row2{display:flex;gap:12px;align-items:flex-end;}.cj-row2>.cj-field{flex:1;}
 .cj-cdf{padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;margin-top:8px;}
 .cj-cdf.sobrante{background:#edf7ed;color:#3B6D11;}.cj-cdf.faltante{background:#fdf0ec;color:#993C1D;}
 .cj-btn-save{padding:13px;background:#4a5e4d;border:none;border-radius:10px;font-size:14px;font-weight:600;color:white;cursor:pointer;font-family:inherit;transition:all .15s;width:100%;}
@@ -13745,6 +13745,13 @@ window.cajaNuevoMovimiento = async function() {
     _mvmCuentas = [];
     cuentasSnap.forEach(d => { const n=d.data().nombre; if(n&&!seenC.has(n)){seenC.add(n);_mvmCuentas.push({id:d.id,...d.data()});} });
     _mvmCuentas.sort((a,b)=>(a.orden||0)-(b.orden||0));
+    if(window.currentRol === 'cajero') {
+      _mvmCuentas = _mvmCuentas.filter(c => {
+        if (c.tipo === 'banco' || c.tipo === 'retiros' || c.tipo === 'reserva') return false;
+        if (c.tipo === 'efectivo' && c.nombre !== 'Caja mostrador') return false;
+        return true;
+      });
+    }
     _mvmConceptos = [];
     conceptosSnap.forEach(d => _mvmConceptos.push({id:d.id,...d.data()}));
     const ef = _mvmCuentas.find(c=>c.nombre==='Efectivo');
