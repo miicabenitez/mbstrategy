@@ -24980,14 +24980,27 @@ window.cajaAperturaShow = async function() {
     console.log('[cajaAperturaShow] haciendo getDocs...');
     var _movsSnap = await window._getDocs(window._collection(window.db,'clientes',currentClientUID,'libroCaja'));
     console.log('[cajaAperturaShow] docs:', _movsSnap.size);
-    var _saldo = 0;
+    var _aperturas = [];
+    var _movimientos = [];
     _movsSnap.forEach(function(d) {
-      var _m = d.data(); if(_m.eliminado) return;
-      if(_m.tipo==='ingreso'  && _m.cuenta==='Caja mostrador')    _saldo += parseFloat(_m.monto)||0;
-      else if(_m.tipo==='egreso' && _m.cuenta==='Caja mostrador') _saldo -= parseFloat(_m.monto)||0;
-      else if(_m.tipo==='transfer') {
-        if(_m.cuentaDesde==='Caja mostrador') _saldo -= parseFloat(_m.monto)||0;
-        if(_m.cuentaHacia==='Caja mostrador') _saldo += parseFloat(_m.monto)||0;
+      var _m = d.data();
+      if(_m.eliminado) return;
+      if(_m.origen === 'apertura_turno') _aperturas.push(_m);
+      else _movimientos.push(_m);
+    });
+    _aperturas.sort(function(a,b){ return (b.creadoEn||'').localeCompare(a.creadoEn||''); });
+    var _ultimaApertura = _aperturas[0];
+    var _saldo = _ultimaApertura ? (parseFloat(_ultimaApertura.monto)||0) : 0;
+    var _baseTs = _ultimaApertura ? (_ultimaApertura.creadoEn||'') : '';
+    _movimientos.forEach(function(_m) {
+      if(_baseTs && (_m.creadoEn||'') < _baseTs) return;
+      if(_m.cuenta === 'Caja mostrador') {
+        if(_m.tipo === 'ingreso') _saldo += parseFloat(_m.monto)||0;
+        else if(_m.tipo === 'egreso') _saldo -= parseFloat(_m.monto)||0;
+      }
+      if(_m.tipo === 'transfer') {
+        if(_m.cuentaDesde === 'Caja mostrador') _saldo -= parseFloat(_m.monto)||0;
+        if(_m.cuentaHacia === 'Caja mostrador') _saldo += parseFloat(_m.monto)||0;
       }
     });
     console.log('[cajaAperturaShow] saldo calculado:', _saldo);
