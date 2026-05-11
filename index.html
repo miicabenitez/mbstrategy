@@ -6275,6 +6275,7 @@ window.mb_doLogin = function() {
 
 window.doLogout = async function() {
   if(window.currentRol === 'cajero') {
+    window._skipAuthRedirect = true;
     try { await signOut(auth); } catch(ex) {}
     mostrarPantallaEspera();
     return;
@@ -6350,6 +6351,8 @@ window.createEmptyState = function(icon, title, description, buttonText, buttonA
   }
 })();
 
+window._skipAuthRedirect = false;
+
 onAuthStateChanged(auth, async (user) => {
   const lo = document.getElementById('lo');
   if(lo){ lo.style.opacity='0'; lo.style.display='none'; }
@@ -6390,12 +6393,16 @@ onAuthStateChanged(auth, async (user) => {
       }
     } catch(e) {
       console.log('Auth flow error:', e);
+      if(!window._skipAuthRedirect) {
+        document.getElementById('lp').style.display = 'flex';
+        document.getElementById('app').classList.remove('visible');
+      }
+    }
+  } else {
+    if(!window._skipAuthRedirect) {
       document.getElementById('lp').style.display = 'flex';
       document.getElementById('app').classList.remove('visible');
     }
-  } else {
-    document.getElementById('lp').style.display = 'flex';
-    document.getElementById('app').classList.remove('visible');
   }
 });
 
