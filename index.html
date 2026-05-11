@@ -6213,6 +6213,7 @@ window.doLogin = async function() {
 };
 
 window.mostrarPantallaEspera = function() {
+  console.log('[mostrarPantallaEspera] llamada desde:', new Error().stack?.split('\n')[2]);
   var el = document.getElementById('mb-pantalla-espera');
   if(el) { el.style.display = 'flex'; return; }
   var div = document.createElement('div');
@@ -6286,6 +6287,7 @@ window.mb_doLogin = function() {
 };
 
 window.doLogout = async function() {
+  console.log('[doLogout] currentRol:', window.currentRol, 'caller:', new Error().stack?.split('\n')[2]);
   if(window.currentRol === 'cajero') {
     window._skipAuthRedirect = true;
     try { await signOut(auth); } catch(ex) {}
