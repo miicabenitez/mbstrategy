@@ -17851,7 +17851,7 @@ window.createMcCobro = async function() {
       } else {
         await loadMcModule();
       }
-      if(typeof loadCobranzasModule === 'function') loadCobranzasModule();
+      if(typeof loadCobranzasModule === 'function') setTimeout(loadCobranzasModule, 800);
     }, 1500);
   } catch(e) { showToast('Error: ' + e.message, 'error'); if(_btn){ _btn.disabled=false; _btn.textContent='Registrar cobro'; } }
 };
