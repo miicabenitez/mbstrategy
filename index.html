@@ -17718,6 +17718,10 @@ window.openMcCobroModal = async function(clienteId, presupId, concepto, monto) {
     } catch(e) { cuentaSel.innerHTML = '<option value="Efectivo">Efectivo</option>'; }
   }
   // poblar nuevo diseño
+  // resetear botón
+  var _btn = document.querySelector('#newMcCobroModal button[onclick="createMcCobro()"]');
+  if(_btn){ _btn.disabled=false; _btn.textContent='Registrar cobro'; }
+  window._mbLoginInProgress = false;
   var hoy = fechaHoyARG();
   document.getElementById('mcc-cobro-fecha').value = hoy;
   document.getElementById('mcc-cobro-fecha-display').textContent = 'Hoy · ' + hoy;
