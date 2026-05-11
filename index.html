@@ -6369,6 +6369,7 @@ onAuthStateChanged(auth, async (user) => {
   const lo = document.getElementById('lo');
   if(lo){ lo.style.opacity='0'; lo.style.display='none'; }
   if (user) {
+    window._skipAuthRedirect = false;
     currentUser = user;
     window.currentUser = user;
     console.log('[AUTH] user:', user.uid, user.email);
