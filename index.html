@@ -6264,23 +6264,31 @@ window.mb_mostrarLogin = function() {
   document.getElementById('mb-espera-content').style.display = 'none';
   document.getElementById('mb-login-content').style.display = 'flex';
 };
-window.mb_doLogin = function() {
+window.mb_doLogin = async function() {
   if(window._mbLoginInProgress) return;
   window._mbLoginInProgress = true;
   var usuario = document.getElementById('mb-le').value.trim();
   var pass = document.getElementById('mb-lp').value;
-  document.getElementById('le').value = usuario;
-  document.getElementById('lp2').value = pass;
-  doLogin();
-  // Remover pantalla de espera cuando el auth resuelva
-  var _check = setInterval(function() {
-    if(!window._mbLoginInProgress) {
-      clearInterval(_check);
-      var _pe = document.getElementById('mb-pantalla-espera');
-      if(_pe) _pe.remove();
+  if(!usuario || !pass) { window._mbLoginInProgress = false; return; }
+  try {
+    var email = usuario;
+    if(!usuario.includes('@')) {
+      var snap = await window._getDocs(
+        window._query(
+          window._collection(window.db, 'operadoresLookup'),
+          window._where('nombre','==', usuario.toLowerCase())
+        )
+      );
+      if(!snap.empty) email = snap.docs[0].data().emailSintetico;
     }
-  }, 200);
-  setTimeout(function() { clearInterval(_check); }, 10000);
+    await window._signInWithEmailAndPassword(window._auth, email, pass);
+    var _pe = document.getElementById('mb-pantalla-espera');
+    if(_pe) _pe.remove();
+  } catch(e) {
+    window._mbLoginInProgress = false;
+    var err = document.getElementById('mb-login-err');
+    if(err) { err.textContent = 'Usuario o contraseña incorrectos'; err.style.display = 'block'; }
+  }
 };
 
 window.doLogout = async function() {
