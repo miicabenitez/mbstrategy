@@ -10441,7 +10441,7 @@ async function loadCajaModule() {
     let todosMovs = [];
     movsSnap.forEach(d => { const data = d.data(); if(!data.eliminado) todosMovs.push({id:d.id,...data}); });
     if(window.currentRol === 'cajero') {
-      todosMovs = todosMovs.filter(m => m.cuenta==='Caja mostrador' || m.cuentaHacia==='Caja mostrador' || m.cuentaDesde==='Caja mostrador');
+      todosMovs = todosMovs.filter(m => m.cuenta==='Caja mostrador' || m.cuentaHacia==='Caja mostrador' || m.cuentaDesde==='Caja mostrador' || (m.turnoId && m.turnoId===window.turnoActual?.id));
     }
     // Cajero: tabla/chips usan movimientos del turno; admin usa histórico completo
     let movsVista = todosMovs;
@@ -25059,7 +25059,7 @@ window.cajaCierreShow = function() {
   if(!ov) return;
   var _b = document.getElementById('cajero-cierre-btn');
   if(_b) { _b.disabled = false; _b.textContent = 'Cerrar caja'; }
-  var movs = (window._cajaMovimientos || []).filter(function(m){ return m.cuenta==='Caja mostrador'||m.cuentaHacia==='Caja mostrador'||m.cuentaDesde==='Caja mostrador'; });
+  var movs = window._cajaMovimientos || [];
   var ingresos = movs.filter(function(m){return m.tipo==='ingreso' && m.origen!=='apertura_turno';}).reduce(function(a,m){return a+(parseFloat(m.monto)||0);},0);
   var egresos  = movs.filter(function(m){return m.tipo==='egreso';}).reduce(function(a,m){return a+(parseFloat(m.monto)||0);},0);
   var _saldoBase = (window.currentRol === 'cajero' && window.turnoActual && window.turnoActual.apertura && window.turnoActual.apertura.monto) ? window.turnoActual.apertura.monto : 0;
@@ -25086,7 +25086,7 @@ window.cajaCierreConfirmar = async function() {
   var btn = document.getElementById('cajero-cierre-btn');
   if(btn) { btn.disabled=true; btn.textContent='Cerrando...'; }
   try {
-    var movs = (window._cajaMovimientos || []).filter(function(m){ return m.cuenta==='Caja mostrador'||m.cuentaHacia==='Caja mostrador'||m.cuentaDesde==='Caja mostrador'; });
+    var movs = window._cajaMovimientos || [];
     var ingresos = movs.filter(function(m){return m.tipo==='ingreso' && m.origen!=='apertura_turno';}).reduce(function(a,m){return a+(parseFloat(m.monto)||0);},0);
     var egresos  = movs.filter(function(m){return m.tipo==='egreso';}).reduce(function(a,m){return a+(parseFloat(m.monto)||0);},0);
     var _saldoBase = (window.turnoActual && window.turnoActual.apertura && window.turnoActual.apertura.monto) || 0;
