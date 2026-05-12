@@ -6322,14 +6322,7 @@ window.mb_doLogin = async function() {
       if(lookupSnap.exists()) email = lookupSnap.data().emailSintetico;
     }
     await window._signInWithEmailAndPassword(window._auth, email, pass);
-    var _pe = document.getElementById('mb-pantalla-espera');
-    if(_pe) _pe.remove();
-    setTimeout(function(){
-      if(window.currentRol === 'cajero') {
-        if(window._aplicarRestriccionesRol) window._aplicarRestriccionesRol();
-        if(window.loadCajaModule) window.loadCajaModule();
-      }
-    }, 300);
+    location.reload();
   } catch(e) {
     window._mbLoginInProgress = false;
     var err = document.getElementById('mb-login-err');
