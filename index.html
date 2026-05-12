@@ -10880,6 +10880,7 @@ window.emitirFacturaCaja = async function() {
     tipoComprobante = 6; // Factura B
   }
   const btn = document.getElementById('mfc-btn-emitir');
+  if(btn && btn.disabled) return;
   btn.textContent = 'Emitiendo...';
   btn.disabled = true;
   try {
@@ -17784,6 +17785,7 @@ window.mccSelMedio = function(el, medio) {
 window.createMcCobro = async function() {
   if (!currentClientUID) return;
   var _btn = document.querySelector('#newMcCobroModal button[onclick="createMcCobro()"]');
+  if(_btn && _btn.disabled) return;
   if(_btn) { _btn.disabled = true; _btn.textContent = 'Registrando...'; }
   const clienteId  = document.getElementById('mcc-cobro-cliente-id').value;
   const monto      = document.getElementById('mcc-cobro-monto').value;
@@ -18017,6 +18019,7 @@ window.guardarCobroLibre = async function() {
     ? (document.getElementById('mcl-presup-sel')?.value || '')
     : '';
   const btn = document.getElementById('mcl-cobro-btn');
+  if(btn && btn.disabled) return;
   if(btn) { btn.disabled=true; btn.textContent='Registrando...'; }
   try {
     const data = { concepto, formaPago, monto, moneda:'ARS', fecha, presupId: presupId||null, creadoEn: new Date().toISOString() };
@@ -18311,6 +18314,7 @@ window.createMcPresup = async function() {
   if(!clienteNombre||clienteNombre==='—'){showToast('Error: cliente no definido', 'error');return;}
   if(_mcPresupItems.length===0){showToast('Agregá al menos un ítem al presupuesto', 'info');return;}
   const _mcpBtn = document.getElementById('btn-save-mc-presup');
+  if(_mcpBtn && _mcpBtn.disabled) return;
   if(_mcpBtn){_mcpBtn.disabled=true;_mcpBtn.textContent='Guardando...';}
   const total = _mcPresupItems.reduce((s,it)=>s+(it.cant*it.precio),0);
   const data = {
@@ -19171,6 +19175,7 @@ window.createClientPresup = async function() {
   const showErr = msg => { if(errEl){ errEl.textContent=msg; errEl.style.display='block'; setTimeout(()=>errEl.style.display='none', 4000); } };
   if(errEl) errEl.style.display='none';
   const _cpBtn = document.getElementById('btn-save-client-presup');
+  if(_cpBtn && _cpBtn.disabled) return;
   const clienteId = document.getElementById('cp-cliente-id')?.value || null;
   const clienteNombre = (document.getElementById('cp-cliente-search')?.value.trim()) || '';
   if(!clienteNombre) { showErr('Ingresá el nombre del prospecto o seleccioná un cliente'); return; }
