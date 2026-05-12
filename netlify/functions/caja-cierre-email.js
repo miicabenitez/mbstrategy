@@ -63,8 +63,13 @@ exports.handler = async (event) => {
     const totalProductos = (productos || []).reduce((a, p) => a + (p.total || 0), 0);
     const cantItems = (productos || []).reduce((a, p) => a + (p.cantidad || 0), 0);
 
+    const _fechaCierreShort = formatFecha(cierre).split(' ')[0];
+    const _efectivo = (medios || {})['Caja mostrador'] || (medios || {})['Efectivo'] || 0;
+    const _cantProductos = (productos || []).reduce((a, p) => a + (p.cantidad || 0), 0);
+    const _preheader = `Cierre ${_fechaCierreShort} · Saldo final ${fmt(saldoFinal)} · Efectivo ${fmt(_efectivo)} · ${_cantProductos} productos vendidos`;
+
     const html = `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="margin:0;padding:0;background:#f4f0ea;font-family:Arial,sans-serif;">
-<div style="display:none;max-height:0;overflow:hidden;font-size:1px;color:#ffffff;">Turno cerrado · Saldo final ${fmt(saldoFinal)} · ${cajera || ''}</div>
+<div style="display:none;max-height:0;overflow:hidden;font-size:1px;color:#ffffff;">${_preheader}</div>
 <div style="max-width:560px;margin:32px auto;border-radius:14px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.10);">
   <div style="background:#3a4e3d;padding:28px 32px;">
     <div style="display:flex;align-items:center;gap:16px;">
