@@ -14251,7 +14251,7 @@ function _vrcRenderMetodos() {
     if(isCta) {
       const sel = window._vrcClienteSeleccionado;
       ctaDiv.style.display = 'block';
-      ctaDiv.innerHTML = `<div style="margin-top:10px;">${sel?`<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f0f7f0;border-radius:10px;margin-bottom:8px;font-size:13px;color:#3a5a3c;font-weight:500;">👤 ${sel.nombre} <button onclick="window._vrcClienteSeleccionado=null;_vrcRenderMetodos()" style="margin-left:auto;background:none;border:none;cursor:pointer;color:#aaa;font-size:16px;line-height:1;">×</button></div>`:''}<input id="vrc-cta-input" type="text" placeholder="Buscar cliente..." oninput="_vrcFiltrarCta(this.value)" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #e0e0e0;border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:6px;"><div id="vrc-cta-list" style="max-height:130px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;"></div><button onclick="openModal('newMclienteModal')" style="margin-top:6px;width:100%;background:none;border:1px dashed #ccc;border-radius:10px;padding:8px;font-size:12px;color:#999;cursor:pointer;font-family:'DM Sans',sans-serif;">+ Nuevo cliente</button></div>`;
+      ctaDiv.innerHTML = `<div style="margin-top:10px;">${sel?`<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f0f7f0;border-radius:10px;margin-bottom:8px;font-size:13px;color:#3a5a3c;font-weight:500;">👤 ${sel.nombre} <button onclick="window._vrcClienteSeleccionado=null;_vrcRenderMetodos()" style="margin-left:auto;background:none;border:none;cursor:pointer;color:#aaa;font-size:16px;line-height:1;">×</button></div>`:''}<input id="vrc-cta-input" type="text" placeholder="Buscar cliente..." oninput="_vrcFiltrarCta(this.value)" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #e0e0e0;border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:6px;"><div id="vrc-cta-list" style="max-height:160px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;"></div></div>`;
       _vrcFiltrarCta('');
     } else {
       ctaDiv.style.display = 'none';
@@ -14264,11 +14264,17 @@ window._vrcFiltrarCta = function(q) {
   if(!list) return;
   const _selId = window._vrcClienteSeleccionado?.id || null;
   const clis = (window._mcClientes || []).filter(c => !c.eliminado && (!q || ['nombre','tel','dni'].some(f => (c[f]||'').toLowerCase().includes(q.toLowerCase()))));
-  list.innerHTML = clis.slice(0,8).map(c => {
+  const _rows = clis.slice(0,8).map(c => {
     const data = JSON.stringify({id:c.id,nombre:c.nombre}).replace(/\\/g,'\\\\').replace(/"/g,'&quot;');
     const _isSel = _selId && c.id === _selId;
-    return `<button onclick='window._vrcClienteSeleccionado=${data.replace(/'/g,"\\'")}; _vrcFiltrarCta(document.getElementById("vrc-cta-input")?.value||""); _vrcRenderMetodos();' style="text-align:left;background:${_isSel?'#eef5ee':'#fff'};border:1px solid ${_isSel?'#b2d4b2':'#eee'};border-radius:8px;padding:7px 12px;font-size:13px;font-family:inherit;cursor:pointer;color:#222;width:100%;display:flex;align-items:center;justify-content:space-between;">${c.nombre}${c.tel?'<span style="color:#aaa;font-size:11px;margin-left:8px;">'+c.tel+'</span>':''}${_isSel?'<span style="color:#4a5e4d;font-size:14px;margin-left:auto;padding-left:8px;">✓</span>':''}</button>`;
-  }).join('') || '<div style="text-align:center;padding:12px;font-size:12px;color:#aaa;">Sin resultados</div>';
+    const _style = _isSel ? 'background:#3a4e3d;border:none;' : 'background:#fff;border:1px solid rgba(176,144,136,0.2);';
+    const _nameColor = _isSel ? 'color:#f4f0ea;font-weight:500;font-size:14px;' : 'color:#6a7a68;';
+    const _telColor = _isSel ? 'color:rgba(244,240,234,0.5);' : 'color:#aaa;';
+    const _check = _isSel ? '<div style="width:24px;height:24px;border-radius:50%;background:rgba(244,240,234,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-check" style="color:#f4f0ea;font-size:14px;"></i></div>' : '';
+    return `<button onclick='window._vrcClienteSeleccionado=${data.replace(/'/g,"\\'")}; _vrcFiltrarCta(document.getElementById("vrc-cta-input")?.value||""); _vrcRenderMetodos();' style="text-align:left;${_style}border-radius:10px;padding:11px 14px;font-size:13px;font-family:inherit;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:space-between;"><div style="display:flex;flex-direction:column;gap:2px;"><span style="${_nameColor}">${c.nombre}</span>${c.tel?`<span style="font-size:11px;${_telColor}">${c.tel}</span>`:''}</div>${_check}</button>`;
+  }).join('');
+  const _nuevoBtn = '<button onclick="openModal(\'newMclienteModal\')" style="text-align:left;background:#fff;border:1px solid rgba(176,144,136,0.2);border-radius:10px;padding:11px 14px;font-size:13px;font-family:inherit;cursor:pointer;color:#b09088;width:100%;display:flex;align-items:center;gap:8px;"><i class="ti ti-user-plus" style="font-size:15px;"></i><span>Nuevo cliente</span></button>';
+  list.innerHTML = (_rows || '<div style="text-align:center;padding:12px;font-size:12px;color:#aaa;">Sin resultados</div>') + _nuevoBtn;
 };
 
 function _vrcRenderProductos(lista) {
