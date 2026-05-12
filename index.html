@@ -6322,6 +6322,7 @@ window.mb_doLogin = async function() {
       if(lookupSnap.exists()) email = lookupSnap.data().emailSintetico;
     }
     await window._signInWithEmailAndPassword(window._auth, email, pass);
+    sessionStorage.removeItem('mb_turno_cerrado');
     location.reload();
   } catch(e) {
     window._mbLoginInProgress = false;
