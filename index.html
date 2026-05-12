@@ -25037,11 +25037,11 @@ window.cajaCierreConfirmar = async function() {
         if(_snap.exists()) _emailDueno = _snap.data().negocioEmail || _snap.data().email || _emailDueno;
       } catch(_ee) {}
       var _ventas = (window._cajaMovimientos||[]).filter(function(m){
-        return m.tipo==='ingreso' && m.origen==='venta_caja' && m.items;
+        return m.tipo==='ingreso' && m.origen==='venta_caja' && m.productos;
       });
       var _productosMap = {};
       _ventas.forEach(function(v){
-        (v.items||[]).forEach(function(it){
+        (v.productos||[]).forEach(function(it){
           var k = it.nombre||it.producto||'Venta';
           if(!_productosMap[k]) _productosMap[k]={nombre:k,cantidad:0,total:0};
           _productosMap[k].cantidad += (it.cantidad||1);
