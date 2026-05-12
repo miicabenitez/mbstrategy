@@ -25031,8 +25031,11 @@ window.cajaCierreConfirmar = async function() {
     var operador = window.currentOperadorNombre || 'Cajero';
     // Enviar mail de cierre enriquecido
     try {
-      var _idToken = '';
-      try { if(auth.currentUser) _idToken = await auth.currentUser.getIdToken(); } catch(_te) {}
+      var _emailDueno = window.currentNegocioEmail || '';
+      try {
+        var _snap = await window._getDoc(window._doc(window.db,'clientes',currentClientUID));
+        if(_snap.exists()) _emailDueno = _snap.data().email || _emailDueno;
+      } catch(_ee) {}
       var _ventas = (window._cajaMovimientos||[]).filter(function(m){
         return m.tipo==='ingreso' && m.origen==='venta_caja' && m.items;
       });
@@ -25054,10 +25057,10 @@ window.cajaCierreConfirmar = async function() {
       });
       fetch('/.netlify/functions/caja-cierre-email',{
         method:'POST',
-        headers:{'Content-Type':'application/json','Authorization':'Bearer '+_idToken},
+        headers:{'Content-Type':'application/json'},
         body:JSON.stringify({
           negocio: window.currentNegocioNombre||window.currentClientData?.negocioNombre||'',
-          emailDueno: window.currentNegocioEmail||window.currentClientData?.email||'',
+          emailDueno: _emailDueno,
           cajera: window.currentOperadorNombre||'Cajero',
           apertura: window.turnoActual?.apertura?.fecha||'',
           cierre: fechaHoyARG(),
