@@ -6417,10 +6417,24 @@ window.createEmptyState = function(icon, title, description, buttonText, buttonA
 
 window._skipAuthRedirect = false;
 
+function _resetCajeroState() {
+  ['vrc-btn-save','cajero-apertura-btn','cajero-cierre-btn',
+   'cajero-deposito-btn','cajero-egreso-btn'].forEach(function(id) {
+    var btn = document.getElementById(id);
+    if(btn) { btn.disabled = false; btn.textContent = btn.dataset.defaultText || btn.textContent; }
+  });
+  window.turnoActual = null;
+  window._cajaMovimientos = [];
+  window._vrcCarrito = {};
+  window._vrcClienteSeleccionado = null;
+  window._mbLoginInProgress = false;
+}
+
 onAuthStateChanged(auth, async (user) => {
   const lo = document.getElementById('lo');
   if(lo){ lo.style.opacity='0'; lo.style.display='none'; }
   if (user) {
+    _resetCajeroState();
     window._mbLoginInProgress = false;
     var _pe = document.getElementById('mb-pantalla-espera');
     if(_pe) _pe.remove();
