@@ -66,7 +66,7 @@ exports.handler = async (event) => {
     const _fechaCierreShort = formatFecha(cierre).split(' ')[0];
     const _efectivo = (medios || {})['Caja mostrador'] || (medios || {})['Efectivo'] || 0;
     const _cantProductos = (productos || []).reduce((a, p) => a + (p.cantidad || 0), 0);
-    const _preheader = `Cierre de caja ${_fechaCierreShort}; saldo final es ${fmt(saldoFinal)}; efectivo ${fmt(_efectivo)}; ${_cantProductos} productos vendidos`;
+    const _preheader = `Cierre de caja ${_fechaCierreShort}; saldo final ${fmt(saldoFinal)}; efectivo ${fmt(_efectivo)}${_cantProductos > 0 ? '; ' + _cantProductos + ' productos vendidos' : ''}`;
 
     const html = `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="margin:0;padding:0;background:#f4f0ea;font-family:Arial,sans-serif;">
 <div style="display:none;max-height:0;overflow:hidden;font-size:1px;color:#ffffff;">${_preheader}</div>
