@@ -165,6 +165,7 @@ body.cajero-mode #clientSidebar.cv-sidebar-open{transform:translateX(0);box-shad
 body.cajero-mode .app{padding-left:0 !important;overflow:visible !important;}
 body.cajero-mode .content{padding:0 !important;max-width:100% !important;margin:0 !important;}
 body.cajero-mode #ct-contabilidad{padding:0 !important;margin:0 !important;}
+body.cajero-mode #cNav,body.cajero-mode #cArea > *:not(#ct-finanzas){display:none !important;}
 #cv-sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:198;opacity:0;pointer-events:none;transition:opacity 0.25s ease;}
 #cv-sidebar-overlay.visible{opacity:1;pointer-events:all;}
 #cv-hamburger{flex-shrink:0;width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;margin-right:12px;transition:background 0.15s,opacity 0.25s;}
@@ -6324,12 +6325,6 @@ window.mb_doLogin = async function() {
     await window._signInWithEmailAndPassword(window._auth, email, pass);
     var _pe = document.getElementById('mb-pantalla-espera');
     if(_pe) _pe.remove();
-    setTimeout(function(){
-      if(window.currentRol === 'cajero') {
-        if(window._aplicarRestriccionesRol) window._aplicarRestriccionesRol();
-        if(window.loadCajaModule) window.loadCajaModule();
-      }
-    }, 300);
   } catch(e) {
     window._mbLoginInProgress = false;
     var err = document.getElementById('mb-login-err');
@@ -6599,6 +6594,7 @@ window.showClientUI = async function(email, clientData) {
   if(btnSalir) btnSalir.style.display = 'none';
   document.getElementById('ub').style.display = 'none';
   document.getElementById('lp').style.display = 'none';
+  if(window.currentRol === 'cajero') { document.body.classList.add('cajero-mode'); }
   document.getElementById('app').classList.add('visible');
   document.getElementById('aArea').style.display = 'none';
   document.getElementById('cArea').style.display = 'block';
@@ -25398,6 +25394,7 @@ window._aplicarRestriccionesRol = function() {
       if (!esCajeroBtn && b.textContent.trim() !== 'Caja') b.style.display = 'none';
     });
   }
+  document.body.classList.remove('cajero-mode');
 };
 
 // Abre un PDF guardado como Base64 en nueva pestaña
