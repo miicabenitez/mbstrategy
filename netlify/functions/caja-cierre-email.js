@@ -1,24 +1,11 @@
-const admin = require('firebase-admin');
 const nodemailer = require('nodemailer');
 
-if (!admin.apps.length) {
-  admin.initializeApp({ credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)) });
-}
-
-const ALLOWED_ORIGINS = [
-  'https://sistema.mbstrategy.com.ar',
-  'https://dev--creative-griffin-98f177.netlify.app'
-];
-function getCorsHeaders(event) {
-  const origin = event.headers?.origin || '';
-  const allowed = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
-  return {
-    'Access-Control-Allow-Origin': allowed,
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Content-Type': 'application/json'
-  };
-}
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Content-Type': 'application/json'
+};
 
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com', port: 465, secure: true,
@@ -30,26 +17,25 @@ function fmt(n) {
 }
 
 exports.handler = async (event) => {
-  const corsHeaders = getCorsHeaders(event);
-  if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: corsHeaders, body: '' };
-  if (event.httpMethod !== 'POST') return { statusCode: 405, headers: corsHeaders, body: JSON.stringify({ error: 'Método no permitido' }) };
+  if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: CORS_HEADERS, body: '' };
+  if (event.httpMethod !== 'POST') return { statusCode: 405, headers: CORS_HEADERS, body: 'Method not allowed' };
 
-  const authHeader = event.headers?.authorization || '';
-  const idToken = authHeader.replace('Bearer ', '');
-  if (!idToken) return { statusCode: 401, headers: corsHeaders, body: JSON.stringify({ error: 'No autorizado' }) };
-  try { await admin.auth().verifyIdToken(idToken); } catch {
-    return { statusCode: 401, headers: corsHeaders, body: JSON.stringify({ error: 'Token inválido' }) };
+  let data;
+  try { data = JSON.parse(event.body); } catch (e) {
+    return { statusCode: 400, headers: CORS_HEADERS, body: 'Invalid JSON' };
   }
 
+  console.log('enviando mail a:', data.emailDueno);
+
+  const {
+    negocio, emailDueno, cajera, apertura, cierre,
+    saldoInicial, ingresos, egresos, saldoFinal,
+    medios, productos, retiros, depositos
+  } = data;
+
+  if (!emailDueno) return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Falta emailDueno' }) };
+
   try {
-    const {
-      negocio, emailDueno, cajera, apertura, cierre,
-      saldoInicial, ingresos, egresos, saldoFinal,
-      medios, productos, retiros, depositos
-    } = JSON.parse(event.body || '{}');
-
-    if (!emailDueno) return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: 'Falta emailDueno' }) };
-
     const mediosRows = Object.entries(medios || {}).map(([k, v]) =>
       `<tr><td style="padding:8px 12px;color:#555;font-size:13px;">${k}</td><td style="padding:8px 12px;text-align:right;color:#2c2c2c;font-weight:600;font-size:13px;">${fmt(v)}</td></tr>`
     ).join('');
@@ -128,8 +114,9 @@ exports.handler = async (event) => {
       html
     });
 
-    return { statusCode: 200, headers: corsHeaders, body: JSON.stringify({ ok: true }) };
+    return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ ok: true }) };
   } catch (e) {
-    return { statusCode: 500, headers: corsHeaders, body: JSON.stringify({ error: e.message }) };
+    console.error('Error enviando mail de cierre:', e.message);
+    return { statusCode: 500, headers: CORS_HEADERS, body: JSON.stringify({ error: e.message }) };
   }
 };
