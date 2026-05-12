@@ -25034,7 +25034,7 @@ window.cajaCierreConfirmar = async function() {
       var _emailDueno = window.currentNegocioEmail || '';
       try {
         var _snap = await window._getDoc(window._doc(window.db,'clientes',currentClientUID));
-        if(_snap.exists()) _emailDueno = _snap.data().email || _emailDueno;
+        if(_snap.exists()) _emailDueno = _snap.data().negocioEmail || _snap.data().email || _emailDueno;
       } catch(_ee) {}
       var _ventas = (window._cajaMovimientos||[]).filter(function(m){
         return m.tipo==='ingreso' && m.origen==='venta_caja' && m.items;
