@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const PDFDocument = require('pdfkit');
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -29,6 +30,140 @@ function formatFecha(iso) {
 function nombreMedio(nombre) {
   if (nombre === 'Caja mostrador') return 'Efectivo';
   return nombre;
+}
+
+function hexToRgb(hex) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return [r, g, b];
+}
+
+function generarPDF(d) {
+  return new Promise((resolve, reject) => {
+    const doc = new PDFDocument({ margin: 0, size: 'A4' });
+    const chunks = [];
+    doc.on('data', c => chunks.push(c));
+    doc.on('end', () => resolve(Buffer.concat(chunks)));
+    doc.on('error', reject);
+
+    const W = 595.28;
+    const M = 40;
+    const green = hexToRgb('#3a4e3d');
+    const greenLight = hexToRgb('#4a5e4d');
+    const terra = hexToRgb('#b09088');
+    const cream = hexToRgb('#f4f0ea');
+
+    // ── Header verde ──────────────────────────────────────────────
+    doc.rect(0, 0, W, 90).fill(`rgb(${green.join(',')})`);
+
+    // Círculo MB logo
+    doc.circle(M + 20, 45, 20).fill(`rgb(${greenLight.join(',')})`);
+    doc.fontSize(13).fillColor(`rgb(${cream.join(',')})`).text('M', M + 8, 38, { continued: true });
+    doc.fillColor(`rgb(${terra.join(',')})`).text('B');
+
+    // Strategy + título
+    doc.fontSize(9).fillColor(`rgba(244,240,234,0.6)`).text('MB Strategy', M + 50, 28);
+    doc.fontSize(18).fillColor(`rgb(${cream.join(',')})`).text('Cierre de Caja', M + 50, 40);
+
+    // Negocio + fecha/cajera a la derecha
+    const rightX = W - M;
+    doc.fontSize(9).fillColor(`rgba(244,240,234,0.65)`)
+      .text(d.negocio || '', 0, 28, { align: 'right', width: rightX })
+      .text(formatFecha(d.cierre), 0, 42, { align: 'right', width: rightX })
+      .text(d.cajera || '', 0, 56, { align: 'right', width: rightX });
+
+    let y = 110;
+
+    // ── Sección helper ─────────────────────────────────────────────
+    function seccion(titulo) {
+      doc.fontSize(8).fillColor(`rgb(${greenLight.join(',')})`)
+        .text(titulo.toUpperCase(), M, y, { letterSpacing: 1 });
+      y += 16;
+      doc.moveTo(M, y).lineTo(W - M, y).strokeColor('#e8e3de').lineWidth(0.5).stroke();
+      y += 8;
+    }
+
+    function fila(label, valor, color) {
+      doc.fontSize(10).fillColor('#555').text(label, M, y);
+      doc.fontSize(10).fillColor(color || '#2c2c2c').text(valor, 0, y, { align: 'right', width: W - M });
+      y += 18;
+    }
+
+    // ── 1. Datos del turno ─────────────────────────────────────────
+    seccion('Datos del turno');
+    fila('Cajera', d.cajera || '—');
+    fila('Apertura', formatFecha(d.apertura));
+    fila('Cierre', formatFecha(d.cierre));
+    y += 10;
+
+    // ── 2. Resumen ─────────────────────────────────────────────────
+    seccion('Resumen');
+    fila('Saldo inicial', fmt(d.saldoInicial));
+    fila('Ingresos', fmt(d.ingresos), `rgb(${hexToRgb('#3a6e3d').join(',')})`);
+    fila('Egresos', '-' + fmt(d.egresos), `rgb(${terra.join(',')})`);
+    y += 4;
+
+    // Bloque saldo final
+    doc.rect(M, y, W - M * 2, 32).fill(`rgb(${green.join(',')})`);
+    doc.fontSize(11).fillColor(`rgb(${cream.join(',')})`).text('Saldo final', M + 12, y + 10);
+    doc.fontSize(13).fillColor(`rgb(${cream.join(',')})`).text(fmt(d.saldoFinal), 0, y + 9, { align: 'right', width: W - M - 12 });
+    y += 44;
+
+    // ── 3. Por medio de pago ───────────────────────────────────────
+    const mediosEntries = Object.entries(d.medios || {});
+    if (mediosEntries.length) {
+      y += 6;
+      seccion('Por medio de pago');
+      mediosEntries.forEach(([k, v]) => fila(nombreMedio(k), fmt(v)));
+      y += 6;
+    }
+
+    // ── 4. Detalle de ventas ───────────────────────────────────────
+    const prods = d.productos || [];
+    if (prods.length) {
+      y += 6;
+      seccion('Detalle de ventas');
+      // Header tabla
+      doc.fontSize(8).fillColor('#aaa')
+        .text('Producto', M, y)
+        .text('Cant.', M + 260, y)
+        .text('Total', 0, y, { align: 'right', width: W - M });
+      y += 14;
+      doc.moveTo(M, y).lineTo(W - M, y).strokeColor('#e8e3de').lineWidth(0.5).stroke();
+      y += 6;
+      prods.forEach(p => {
+        doc.fontSize(10).fillColor('#444').text(p.nombre || '—', M, y, { width: 240 });
+        doc.text(String(p.cantidad || 0), M + 260, y);
+        doc.fillColor('#2c2c2c').text(fmt(p.total), 0, y, { align: 'right', width: W - M });
+        y += 18;
+      });
+      // Footer totales
+      const totalProd = prods.reduce((a, p) => a + (p.total || 0), 0);
+      const cantProd = prods.reduce((a, p) => a + (p.cantidad || 0), 0);
+      doc.rect(M, y, W - M * 2, 26).fill(`rgb(${green.join(',')})`);
+      doc.fontSize(9).fillColor('rgba(255,255,255,0.7)').text(`${cantProd} items`, M + 12, y + 8);
+      doc.fontSize(11).fillColor(`rgb(${cream.join(',')})`).text(fmt(totalProd), 0, y + 7, { align: 'right', width: W - M - 12 });
+      y += 38;
+    }
+
+    // ── 5. Otros movimientos ───────────────────────────────────────
+    if (d.retiros > 0 || d.depositos > 0) {
+      y += 6;
+      seccion('Otros movimientos');
+      if (d.retiros > 0) fila('Retiros', '-' + fmt(d.retiros), `rgb(${terra.join(',')})`);
+      if (d.depositos > 0) fila('Depósitos', fmt(d.depositos), `rgb(${hexToRgb('#3a6e3d').join(',')})`);
+      y += 6;
+    }
+
+    // ── Footer ─────────────────────────────────────────────────────
+    const pageH = 841.89;
+    doc.rect(0, pageH - 36, W, 36).fill(`rgb(${green.join(',')})`);
+    doc.fontSize(8).fillColor('rgba(244,240,234,0.5)')
+      .text('MB Strategy · sistema.mbstrategy.com.ar', 0, pageH - 22, { align: 'center', width: W });
+
+    doc.end();
+  });
 }
 
 exports.handler = async (event) => {
@@ -129,11 +264,19 @@ exports.handler = async (event) => {
 </div>
 </body></html>`;
 
+    const pdfBuffer = await generarPDF({ negocio, cajera, apertura, cierre,
+      saldoInicial, ingresos, egresos, saldoFinal, medios, productos, retiros, depositos });
+
     await transporter.sendMail({
       from: `"MB Strategy" <${process.env.GMAIL_USER}>`,
       to: emailDueno,
-      subject: `Cierre de caja — ${cajera || 'Cajero'} — ${cierre || new Date().toLocaleDateString('es-AR')}`,
-      html
+      subject: `Cierre de caja — ${cajera || 'Cajero'} — ${_fechaCierreShort}`,
+      html,
+      attachments: [{
+        filename: `cierre-caja-${(cajera || 'cajero').replace(/\s+/g, '-')}-${_fechaCierreShort}.pdf`,
+        content: pdfBuffer,
+        contentType: 'application/pdf'
+      }]
     });
 
     return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ ok: true }) };
