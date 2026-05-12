@@ -14358,7 +14358,7 @@ function _vrcRenderCarrito() {
       </div>
       <div style="display:flex;align-items:center;gap:7px;">
         <button class="vrc-qty-btn" onclick="vrcCambiarQty('${id}',-1)">&#8722;</button>
-        <span style="width:24px;text-align:center;font-size:14px;font-weight:600;">${item.qty}</span>
+        <input type="number" min="1" value="${item.qty}" style="width:36px;text-align:center;font-size:14px;font-weight:600;border:1.5px solid #dce8dc;border-radius:8px;padding:2px 0;background:white;color:#2c2c2c;" onchange="vrcSetQty('${id}',this.value)" onclick="this.select()">
         <button class="vrc-qty-btn" onclick="vrcCambiarQty('${id}',1)">+</button>
       </div>
       <div style="font-size:13px;font-weight:650;color:#4a5e4d;min-width:72px;text-align:right;">$${Math.round(sub).toLocaleString('es-AR')}</div>
@@ -14380,6 +14380,13 @@ window.vrcCambiarQty = function(id, delta) {
   if(!_vrcCarrito[id]) return;
   _vrcCarrito[id].qty += delta;
   if(_vrcCarrito[id].qty<=0) delete _vrcCarrito[id];
+  _vrcRenderCarrito();
+};
+window.vrcSetQty = function(id, val) {
+  var n = parseInt(val);
+  if(!_vrcCarrito[id]) return;
+  if(isNaN(n) || n <= 0) { delete _vrcCarrito[id]; }
+  else { _vrcCarrito[id].qty = n; }
   _vrcRenderCarrito();
 };
 window.vrcQuitar = function(id) { delete _vrcCarrito[id]; _vrcRenderCarrito(); };
