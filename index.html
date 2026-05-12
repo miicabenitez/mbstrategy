@@ -25181,6 +25181,7 @@ window.cajaAperturaShow = async function() {
 
 window.cajaAperturaConfirmar = async function() {
   var btn = document.getElementById('cajero-apertura-btn');
+  if(btn && btn.disabled) return;
   if(btn) { btn.disabled=true; btn.textContent='Abriendo...'; }
   try {
     var monto = parseFloat(document.getElementById('cajero-apertura-monto').value)||0;
