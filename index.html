@@ -25106,9 +25106,11 @@ window.cajaCierreConfirmar = async function() {
       });
       var _medios = {};
       (window._cajaMovimientos||[]).filter(function(m){
-        return m.tipo==='ingreso' && m.origen!=='apertura_turno';
+        return (m.tipo==='ingreso' || m.tipo==='pedido_cta') && m.origen!=='apertura_turno' && m.origen!=='deposito_cajero';
       }).forEach(function(m){
-        var med = m.medioPago||m.cuenta||'Efectivo';
+        var med = m.tipo==='pedido_cta' ? 'Cuenta cliente'
+                : m.origen==='cobro_cliente' ? 'Cobros de clientes'
+                : (m.medioPago||m.cuenta||'Efectivo');
         _medios[med] = (_medios[med]||0) + (parseFloat(m.monto)||0);
       });
       var _totalRetiros = (window._cajaMovimientos||[])
