@@ -14377,6 +14377,8 @@ window.vrcGuardar = async function() {
   if(!currentClientUID) return;
   const keys = Object.keys(_vrcCarrito);
   if(!keys.length) return;
+  const btnSave = document.getElementById('vrc-btn-save');
+  if(btnSave && btnSave.disabled) return;
   let total = 0;
   const productos = keys.map(id=>{
     const item = _vrcCarrito[id];
@@ -14387,7 +14389,6 @@ window.vrcGuardar = async function() {
   });
   const hoy = fechaHoyARG();
   const mes = mesHoyARG(hoy);
-  const btnSave = document.getElementById('vrc-btn-save');
   const _btnReset = () => { if(btnSave){btnSave.disabled=false;btnSave.innerHTML='<span style="display:flex;align-items:center;justify-content:center;gap:8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Registrar venta</span>';} };
   try {
     if(btnSave){btnSave.disabled=true;btnSave.innerHTML='<span style="display:flex;align-items:center;justify-content:center;gap:8px;">Registrando...</span>';}
