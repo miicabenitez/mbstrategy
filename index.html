@@ -14267,9 +14267,10 @@ function _vrcRenderMetodos() {
   container.innerHTML = _vrcCuentas.map(c=>{
     const isSel = c.nombre === _vrcMetodo;
     const safe = c.nombre.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    const _label = c.tipo === 'banco' ? 'Transferencia' : (c._label || c.nombre);
     return `<button class="vrc-metodo-btn${isSel?' sel':''}" onclick="vrcSetMetodo('${safe}')">
       <div style="margin-bottom:5px;">${icons[c.nombre]||defIcon}</div>
-      <div class="vrc-mlabel">${c._label||c.nombre}</div>
+      <div class="vrc-mlabel">${_label}</div>
     </button>`;
   }).join('') + `<button class="vrc-metodo-btn${isCta?' sel':''}" onclick="vrcSetMetodo('__cta__')" style="border-color:rgba(176,144,136,0.5);color:#b09088;">
     <div style="margin-bottom:5px;"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 17c0-3.314 3.134-6 7-6s7 2.686 7 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
