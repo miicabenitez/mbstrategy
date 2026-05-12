@@ -5065,49 +5065,62 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 
 <!-- Modal nuevo cliente (mis clientes) -->
 <div class="mo" id="newMclienteModal">
-  <div class="md" style="max-width:420px;">
-    <button class="mc2" onclick="closeModal('newMclienteModal')">×</button>
-    <div class="mt">Nuevo cliente</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-      <div class="fg"><label class="fl">Nombre</label><input type="text" class="fi" id="mcc-nombre" placeholder="Ej: Juan"/></div>
-      <div class="fg"><label class="fl">Apellido</label><input type="text" class="fi" id="mcc-apellido" placeholder="Ej: Rodríguez"/></div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-      <div class="fg"><label class="fl">DNI</label><input type="text" class="fi" id="mcc-dni" placeholder="12345678"/></div>
-      <div class="fg"><label class="fl">CUIT</label><input type="text" class="fi" id="mcc-cuit" placeholder="20-12345678-9" onblur="onblurCuit(this)"/></div>
-    </div>
-    <div class="fg">
-      <label class="fl">Condición frente al IVA</label>
-      <div id="mcc-condicion-iva-pills" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px;">
-        <div class="mcc-civa-pill" data-val="5" onclick="selectMccCondicionIVA(this,'5')" style="padding:10px 12px;border-radius:10px;border:1.5px solid var(--sage-dark);background:var(--sage-xl);cursor:pointer;">
-          <div class="mcc-civa-label" style="font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;color:var(--sage-dark);">Consumidor Final</div>
-          <div style="font-size:10px;color:var(--text-m);margin-top:2px;">Factura C · sin CUIT</div>
-        </div>
-        <div class="mcc-civa-pill" data-val="6" onclick="selectMccCondicionIVA(this,'6')" style="padding:10px 12px;border-radius:10px;border:.5px solid var(--cream-d);background:var(--cream);cursor:pointer;">
-          <div class="mcc-civa-label" style="font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;color:var(--text-d);">Monotributista</div>
-          <div style="font-size:10px;color:var(--text-m);margin-top:2px;">Factura C · con CUIT</div>
-        </div>
-        <div class="mcc-civa-pill" data-val="1" onclick="selectMccCondicionIVA(this,'1')" style="padding:10px 12px;border-radius:10px;border:.5px solid var(--cream-d);background:var(--cream);cursor:pointer;">
-          <div class="mcc-civa-label" style="font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;color:var(--text-d);">Resp. Inscripto</div>
-          <div style="font-size:10px;color:var(--text-m);margin-top:2px;">Factura A · CUIT obligatorio</div>
-        </div>
-        <div class="mcc-civa-pill" data-val="4" onclick="selectMccCondicionIVA(this,'4')" style="padding:10px 12px;border-radius:10px;border:.5px solid var(--cream-d);background:var(--cream);cursor:pointer;">
-          <div class="mcc-civa-label" style="font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;color:var(--text-d);">Exento</div>
-          <div style="font-size:10px;color:var(--text-m);margin-top:2px;">Factura B · con CUIT</div>
-        </div>
+  <div class="md" style="max-width:480px;padding:0;border-radius:20px;overflow:hidden;background:#f4f0ea;">
+    <div style="height:3px;background:linear-gradient(90deg,#b09088,#c4a098,#b09088)"></div>
+    <div style="background:#3a4e3d;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-size:10px;letter-spacing:2px;color:rgba(244,240,234,0.5);text-transform:uppercase;font-family:'DM Sans',sans-serif;margin-bottom:4px;">Cajero · Clientes</div>
+        <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:22px;font-weight:400;color:#f4f0ea;line-height:1;">Nuevo cliente</div>
       </div>
-      <input type="hidden" id="mcc-condicion-iva" value="5"/>
+      <i class="ti ti-user-plus" style="color:#b09088;font-size:36px;opacity:.85;flex-shrink:0;margin-left:12px;"></i>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-      <div class="fg"><label class="fl">Dirección</label><input type="text" class="fi" id="mcc-direccion" placeholder="Calle 123"/></div>
-      <div class="fg"><label class="fl">Ciudad</label><input type="text" class="fi" id="mcc-ciudad" placeholder="Ej: Rosario"/></div>
+    <div style="padding:20px 24px;display:flex;flex-direction:column;gap:11px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div class="fg"><label class="fl">Nombre</label><input type="text" class="fi" id="mcc-nombre" autocomplete="off"/></div>
+        <div class="fg"><label class="fl">Apellido</label><input type="text" class="fi" id="mcc-apellido" autocomplete="off"/></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div class="fg"><label class="fl">Teléfono</label><input type="tel" class="fi" id="mcc-tel" autocomplete="off"/></div>
+        <div class="fg"><label class="fl">Email</label><input type="email" class="fi" id="mcc-email" autocomplete="off"/></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div class="fg"><label class="fl">DNI</label><input type="text" class="fi" id="mcc-dni" autocomplete="off"/></div>
+        <div class="fg"><label class="fl">CUIT</label><input type="text" class="fi" id="mcc-cuit" autocomplete="off" onblur="onblurCuit(this)"/></div>
+      </div>
+      <div class="fg">
+        <label class="fl">Condición frente al IVA</label>
+        <div id="mcc-condicion-iva-pills" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px;">
+          <div class="mcc-civa-pill" data-val="5" onclick="selectMccCondicionIVA(this,'5')" style="padding:10px 12px;border-radius:10px;border:1.5px solid var(--sage-dark);background:var(--sage-xl);cursor:pointer;">
+            <div class="mcc-civa-label" style="font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;color:var(--sage-dark);">Consumidor Final</div>
+            <div style="font-size:10px;color:var(--text-m);margin-top:2px;">Factura C · sin CUIT</div>
+          </div>
+          <div class="mcc-civa-pill" data-val="6" onclick="selectMccCondicionIVA(this,'6')" style="padding:10px 12px;border-radius:10px;border:.5px solid var(--cream-d);background:var(--cream);cursor:pointer;">
+            <div class="mcc-civa-label" style="font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;color:var(--text-d);">Monotributista</div>
+            <div style="font-size:10px;color:var(--text-m);margin-top:2px;">Factura C · con CUIT</div>
+          </div>
+          <div class="mcc-civa-pill" data-val="1" onclick="selectMccCondicionIVA(this,'1')" style="padding:10px 12px;border-radius:10px;border:.5px solid var(--cream-d);background:var(--cream);cursor:pointer;">
+            <div class="mcc-civa-label" style="font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;color:var(--text-d);">Resp. Inscripto</div>
+            <div style="font-size:10px;color:var(--text-m);margin-top:2px;">Factura A · CUIT obligatorio</div>
+          </div>
+          <div class="mcc-civa-pill" data-val="4" onclick="selectMccCondicionIVA(this,'4')" style="padding:10px 12px;border-radius:10px;border:.5px solid var(--cream-d);background:var(--cream);cursor:pointer;">
+            <div class="mcc-civa-label" style="font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;color:var(--text-d);">Exento</div>
+            <div style="font-size:10px;color:var(--text-m);margin-top:2px;">Factura B · con CUIT</div>
+          </div>
+        </div>
+        <input type="hidden" id="mcc-condicion-iva" value="5"/>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div class="fg"><label class="fl">Dirección</label><input type="text" class="fi" id="mcc-direccion" autocomplete="off"/></div>
+        <div class="fg"><label class="fl">Ciudad</label><input type="text" class="fi" id="mcc-ciudad" autocomplete="off"/></div>
+      </div>
+      <div class="fg"><label class="fl">Notas</label><textarea class="na" id="mcc-notas" style="min-height:50px;"></textarea></div>
+      <div style="display:flex;gap:10px;margin-top:4px;">
+        <button onclick="closeModal('newMclienteModal')" style="flex:1;padding:12px;border-radius:10px;border:1px solid rgba(176,144,136,0.3);background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:#6a7a68;cursor:pointer;">Cancelar</button>
+        <button onclick="createMcCliente()" style="flex:2;padding:12px;border-radius:10px;border:none;background:#4a5e4d;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:#f4f0ea;cursor:pointer;">Guardar cliente</button>
+      </div>
+      <div class="saved-msg" id="mcc-saved">✓ Cliente guardado</div>
+      <div id="mcc-error" style="display:none;background:var(--err-bg);color:var(--err);font-size:12px;padding:9px 12px;border-radius:7px;margin-top:4px;"></div>
     </div>
-    <div class="fg"><label class="fl">Teléfono</label><input type="tel" class="fi" id="mcc-tel" placeholder="+54 11..."/></div>
-    <div class="fg"><label class="fl">Email</label><input type="email" class="fi" id="mcc-email" placeholder="cliente@email.com"/></div>
-    <div class="fg"><label class="fl">Notas</label><textarea class="na" id="mcc-notas" style="min-height:50px;" placeholder="Observaciones..."></textarea></div>
-    <div class="br2"><button class="bp" onclick="createMcCliente()">Guardar</button><button class="bs" onclick="closeModal('newMclienteModal')">Cancelar</button></div>
-    <div class="saved-msg" id="mcc-saved">✓ Cliente guardado</div>
-    <div id="mcc-error" style="display:none;background:var(--err-bg);color:var(--err);font-size:12px;padding:9px 12px;border-radius:7px;margin-top:8px;"></div>
   </div>
 </div>
 
