@@ -25,6 +25,11 @@ function formatFecha(iso) {
   } catch (e) { return iso; }
 }
 
+function nombreMedio(nombre) {
+  if (nombre === 'Caja mostrador') return 'Efectivo';
+  return nombre;
+}
+
 exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: CORS_HEADERS, body: '' };
   if (event.httpMethod !== 'POST') return { statusCode: 405, headers: CORS_HEADERS, body: 'Method not allowed' };
@@ -35,6 +40,7 @@ exports.handler = async (event) => {
   }
 
   console.log('enviando mail a:', data.emailDueno);
+  console.log('datos recibidos:', JSON.stringify({ productos: data.productos, retiros: data.retiros, depositos: data.depositos }));
 
   const {
     negocio, emailDueno, cajera, apertura, cierre,
@@ -46,7 +52,7 @@ exports.handler = async (event) => {
 
   try {
     const mediosRows = Object.entries(medios || {}).map(([k, v]) =>
-      `<tr><td style="padding:8px 12px;color:#555;font-size:13px;">${k}</td><td style="padding:8px 12px;text-align:right;color:#2c2c2c;font-weight:600;font-size:13px;">${fmt(v)}</td></tr>`
+      `<tr><td style="padding:8px 12px;color:#555;font-size:13px;">${nombreMedio(k)}</td><td style="padding:8px 12px;text-align:right;color:#2c2c2c;font-weight:600;font-size:13px;">${fmt(v)}</td></tr>`
     ).join('');
 
     const productosRows = (productos || []).map(p =>
@@ -57,6 +63,7 @@ exports.handler = async (event) => {
     const cantItems = (productos || []).reduce((a, p) => a + (p.cantidad || 0), 0);
 
     const html = `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="margin:0;padding:0;background:#f4f0ea;font-family:Arial,sans-serif;">
+<div style="display:none;max-height:0;overflow:hidden;font-size:1px;color:#ffffff;">Turno cerrado · Saldo final ${fmt(saldoFinal)} · ${cajera || ''}</div>
 <div style="max-width:560px;margin:32px auto;border-radius:14px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.10);">
   <div style="background:#3a4e3d;padding:28px 32px;">
     <div style="display:flex;align-items:center;gap:16px;">
