@@ -2173,6 +2173,25 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         </div>
       </div>
 
+      <!-- MODAL Detalle movimiento -->
+      <div id="cajero-mov-detalle-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9998;align-items:center;justify-content:center;">
+        <div style="background:#f4f0ea;border-radius:16px;width:340px;max-height:82vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.18);">
+          <div style="background:#3a4e3d;padding:20px 24px;border-radius:16px 16px 0 0;display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div id="cmd-titulo" style="font-size:13px;font-weight:600;color:rgba(244,240,234,.7);text-transform:uppercase;letter-spacing:.6px;"></div>
+              <div id="cmd-monto" style="font-size:24px;font-weight:700;color:#f4f0ea;font-family:'DM Sans',sans-serif;margin-top:2px;"></div>
+            </div>
+            <button onclick="cajaMovDetalleCerrar()" style="background:rgba(255,255,255,.12);border:none;color:#f4f0ea;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center;">×</button>
+          </div>
+          <div style="padding:20px 24px;display:flex;flex-direction:column;gap:14px;">
+            <div id="cmd-filas" style="display:flex;flex-direction:column;gap:8px;"></div>
+            <div id="cmd-productos" style="display:none;"></div>
+            <div id="cmd-obs" style="display:none;background:#fff;border-radius:10px;padding:12px 14px;border:1px solid rgba(176,144,136,.2);"></div>
+            <div id="cmd-devolucion" style="display:none;padding-top:12px;border-top:1px solid rgba(176,144,136,.2);"></div>
+          </div>
+        </div>
+      </div>
+
       <!-- MODAL Depósito cajero -->
       <div id="cajero-deposito-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9998;align-items:center;justify-content:center;">
         <div style="background:#fff;border-radius:14px;width:320px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.18);">
@@ -10274,7 +10293,7 @@ function renderCajaCajero() {
     var facturaBtnHtml = (isIng && m.id && m.origen !== 'apertura_turno')
       ? '<div onclick="event.stopPropagation();abrirModalFacturaCaja(\''+m.id+'\')" title="Emitir factura" style="padding:4px 8px;border-radius:8px;border:.5px solid rgba(0,0,0,0.12);cursor:pointer;display:flex;align-items:center;color:#9ca3af;font-size:11px;gap:4px;flex-shrink:0;"><svg width="13" height="13" viewBox="0 0 15 15" fill="none"><rect x="2.5" y="1.5" width="10" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M5 5h5M5 7.5h5M5 10h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>Facturar</div>'
       : '<div></div>';
-    return '<div class="cv-tx-card cv-'+colorKey+(isNueva?' cv-nueva':'')+'" style="animation-delay:'+delay+'s"><div class="cv-tx-dot cv-'+colorKey+'"></div><div class="cv-tx-hora">'+hora+'</div><div class="cv-tx-tipo">'+tipoLabel+'</div><div class="cv-tx-desc"><span class="cv-tx-desc-main">'+(m.concepto||'—')+'</span>'+(m.detalle?'<span class="cv-tx-desc-sep"> · </span><span class="cv-tx-desc-sub">'+m.detalle+'</span>':'')+'</div><div class="cv-tx-medio">'+pillMedio(medioLabel)+'</div><div class="cv-tx-monto cv-'+colorKey+'">'+montoStr+'</div>'+facturaBtnHtml+'</div>';
+    return '<div class="cv-tx-card cv-'+colorKey+(isNueva?' cv-nueva':'')+'" onclick="cajaMovDetalle(\''+m.id+'\')" style="cursor:pointer;animation-delay:'+delay+'s"><div class="cv-tx-dot cv-'+colorKey+'"></div><div class="cv-tx-hora">'+hora+'</div><div class="cv-tx-tipo">'+tipoLabel+'</div><div class="cv-tx-desc"><span class="cv-tx-desc-main">'+(m.concepto||'—')+'</span>'+(m.detalle?'<span class="cv-tx-desc-sep"> · </span><span class="cv-tx-desc-sub">'+m.detalle+'</span>':'')+'</div><div class="cv-tx-medio">'+pillMedio(medioLabel)+'</div><div class="cv-tx-monto cv-'+colorKey+'">'+montoStr+'</div>'+facturaBtnHtml+'</div>';
   }).join('') : '<div style="text-align:center;padding:32px 0;color:#aab8a8;font-size:13px;">Sin movimientos en este turno</div>';
   ct.innerHTML =
     '<div class="cv-wrap">' +
@@ -25055,6 +25074,106 @@ window.cajaRetiroGuardar = async function() {
     showToast('Error: '+(e?.message||e),'error');
     if(btn) { btn.disabled=false; btn.textContent='Retirar'; }
   }
+};
+
+// ─── CAJERO: Detalle de movimiento ───────────────────────────
+window.cajaMovDetalle = function(id) {
+  var m = (window._cajaMovimientos||[]).find(function(x){return x.id===id;});
+  if(!m) return;
+  var ov = document.getElementById('cajero-mov-detalle-overlay');
+  if(!ov) return;
+  var isIng = m.tipo==='ingreso';
+  var isPend = m.tipo==='pedido_cta';
+  var tipoLabel = isPend?'Pedido a cuenta':isIng?'Ingreso':(m.origen==='retiro_cajero'?'Retiro':'Egreso');
+  var signo = isIng?'+':isPend?'':'-';
+  var montoFmt = (parseFloat(m.monto)||0).toLocaleString('es-AR',{style:'currency',currency:'ARS',minimumFractionDigits:0,maximumFractionDigits:0});
+  var fecha = m.creadoEn ? new Date(m.creadoEn).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'America/Argentina/Buenos_Aires'}) : (m.fecha||'—');
+  var medioLabel = (m.medioPago&&m.medioPago!=='Caja mostrador')?m.medioPago:(m.cuenta&&m.cuenta!=='Caja mostrador'?m.cuenta:'Efectivo');
+  document.getElementById('cmd-titulo').textContent = tipoLabel;
+  document.getElementById('cmd-monto').textContent = signo+' '+montoFmt;
+  var filas = [
+    ['Fecha', fecha],
+    ['Medio', medioLabel],
+    m.concepto  ? ['Concepto', m.concepto]  : null,
+    m.detalle   ? ['Detalle',  m.detalle]   : null,
+    m.creadoPor ? ['Cajera',   m.creadoPor] : null,
+  ].filter(Boolean);
+  document.getElementById('cmd-filas').innerHTML = filas.map(function(f){
+    return '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;"><span style="font-size:12px;color:#888;flex-shrink:0;">'+f[0]+'</span><span style="font-size:13px;color:#3a4e3d;font-weight:500;text-align:right;">'+f[1]+'</span></div>';
+  }).join('');
+  var prodEl = document.getElementById('cmd-productos');
+  if(m.productos && m.productos.length) {
+    prodEl.style.display='block';
+    prodEl.innerHTML='<div style="font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#b09088;margin-bottom:8px;">Productos</div>'+
+      '<div style="background:#fff;border-radius:10px;overflow:hidden;border:1px solid rgba(176,144,136,.2);">'+
+      m.productos.map(function(p,i){
+        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 14px;'+(i?'border-top:1px solid #f0ebe6;':'')+'">' +
+          '<span style="font-size:13px;color:#3a4e3d;">'+p.nombre+'</span>' +
+          '<span style="font-size:12px;color:#888;margin:0 8px;">x'+p.qty+'</span>' +
+          '<span style="font-size:13px;font-weight:600;color:#3a4e3d;">'+(parseFloat(p.subtotal)||0).toLocaleString('es-AR',{style:'currency',currency:'ARS',minimumFractionDigits:0})+'</span>' +
+        '</div>';
+      }).join('')+'</div>';
+  } else { prodEl.style.display='none'; }
+  var obsEl = document.getElementById('cmd-obs');
+  if(m.observacion) {
+    obsEl.style.display='block';
+    obsEl.innerHTML='<div style="font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#b09088;margin-bottom:4px;">Observación</div><div style="font-size:13px;color:#555;">'+m.observacion+'</div>';
+  } else { obsEl.style.display='none'; }
+  var devEl = document.getElementById('cmd-devolucion');
+  if(isIng && m.origen==='venta_caja' && m.productos && m.productos.length) {
+    devEl.style.display='block';
+    devEl.innerHTML='<button onclick="cajaMovDevolver(\''+id+'\')" style="width:100%;padding:11px;border-radius:10px;border:1.5px solid #b09088;background:#fff;color:#b09088;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Registrar devolución</button>';
+  } else { devEl.style.display='none'; }
+  ov.style.display='flex';
+};
+window.cajaMovDetalleCerrar = function() {
+  var ov = document.getElementById('cajero-mov-detalle-overlay');
+  if(ov) ov.style.display='none';
+};
+window.cajaMovDevolver = function(id) {
+  var m = (window._cajaMovimientos||[]).find(function(x){return x.id===id;});
+  if(!m) return;
+  var devEl = document.getElementById('cmd-devolucion');
+  if(!devEl) return;
+  var medioOrig = (m.medioPago&&m.medioPago!=='Caja mostrador')?m.medioPago:(m.cuenta&&m.cuenta!=='Caja mostrador'?m.cuenta:'Efectivo');
+  var cuentas = (window._vrcCuentas||[]);
+  var medios = cuentas.length ? cuentas.map(function(c){ return c.nombre; }) : ['Efectivo','Mercado Pago','Transferencia'];
+  if(!medios.includes(medioOrig)) medios.unshift(medioOrig);
+  var optsHtml = medios.map(function(med){
+    var sel = med===medioOrig ? ' selected' : '';
+    return '<option value="'+med+'"'+sel+'>'+med+'</option>';
+  }).join('');
+  devEl.innerHTML = [
+    '<div style="font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#b09088;margin-bottom:10px;">Devolución</div>',
+    '<div style="font-size:12px;color:#888;margin-bottom:6px;">Medio de devolución</div>',
+    '<select id="cmd-dev-medio" style="width:100%;padding:9px 12px;border:1.5px solid rgba(176,144,136,.3);border-radius:10px;font-family:\'DM Sans\',sans-serif;font-size:13px;color:#3a4e3d;background:#fff;margin-bottom:14px;">'+optsHtml+'</select>',
+    '<div style="display:flex;gap:8px;">',
+    '  <button onclick="cajaMovDetalle(\''+id+'\')" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid #d8d3ce;background:#fff;color:#888;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;">← Cancelar</button>',
+    '  <button onclick="cajaMovDevolverConfirmar(\''+id+'\')" style="flex:2;padding:10px;border-radius:10px;border:none;background:#b09088;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Confirmar devolución</button>',
+    '</div>'
+  ].join('');
+};
+window.cajaMovDevolverConfirmar = async function(id) {
+  var m = (window._cajaMovimientos||[]).find(function(x){return x.id===id;});
+  if(!m) return;
+  var medioEl = document.getElementById('cmd-dev-medio');
+  var medio = medioEl ? medioEl.value : (m.cuenta||'Efectivo');
+  try {
+    var hoy = fechaHoyARG();
+    var mes = mesHoyARG(hoy);
+    await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'libroCaja'),{
+      uid:currentClientUID, fecha:hoy, mes:mes,
+      tipo:'egreso', concepto:'Devolución: '+(m.concepto||'venta'),
+      cuenta:medio, monto:parseFloat(m.monto)||0,
+      origen:'devolucion_caja', refMovId:id,
+      eliminado:false, creadoEn:new Date().toISOString(),
+      turnoId:window.turnoActual?.id||'',
+      creadoPor:window.currentOperadorNombre||'Cajero'
+    });
+    cajaMovDetalleCerrar();
+    showToast('Devolución registrada','success');
+    loadCajaModule();
+  } catch(e){ showToast('Error al registrar devolución','error'); }
 };
 
 // ─── CAJERO: Cierre de caja ──────────────────────────────────
