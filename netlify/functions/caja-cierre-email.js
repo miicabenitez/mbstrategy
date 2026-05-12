@@ -32,16 +32,9 @@ function nombreMedio(nombre) {
   return nombre;
 }
 
-function hexToRgb(hex) {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return [r, g, b];
-}
-
 function generarPDF(d) {
   return new Promise((resolve, reject) => {
-    const doc = new PDFDocument({ margin: 0, size: 'A4' });
+    const doc = new PDFDocument({ margin: 40, size: 'A4' });
     const chunks = [];
     doc.on('data', c => chunks.push(c));
     doc.on('end', () => resolve(Buffer.concat(chunks)));
@@ -49,44 +42,36 @@ function generarPDF(d) {
 
     const W = 595.28;
     const M = 40;
-    const green = hexToRgb('#3a4e3d');
-    const greenLight = hexToRgb('#4a5e4d');
-    const terra = hexToRgb('#b09088');
-    const cream = hexToRgb('#f4f0ea');
+    const IW = W - M * 2; // inner width
 
-    // ── Header verde ──────────────────────────────────────────────
-    doc.rect(0, 0, W, 90).fill(`rgb(${green.join(',')})`);
+    // ── Header ────────────────────────────────────────────────────
+    doc.font('Helvetica-Bold').fontSize(16).fillColor('#3a4e3d').text('MB Strategy', M, M, { continued: false });
+    doc.font('Helvetica').fontSize(10).fillColor('#555');
+    const rightColW = IW;
+    doc.text(d.negocio || '', M, M, { align: 'right', width: rightColW });
+    doc.text('Cierre de Caja', M, M + 14, { align: 'right', width: rightColW });
+    doc.text(formatFecha(d.cierre), M, M + 28, { align: 'right', width: rightColW });
 
-    // Círculo MB logo
-    doc.circle(M + 20, 45, 20).fill(`rgb(${greenLight.join(',')})`);
-    doc.fontSize(13).fillColor(`rgb(${cream.join(',')})`).text('M', M + 8, 38, { continued: true });
-    doc.fillColor(`rgb(${terra.join(',')})`).text('B');
+    let y = M + 52;
 
-    // Strategy + título
-    doc.fontSize(9).fillColor(`rgba(244,240,234,0.6)`).text('MB Strategy', M + 50, 28);
-    doc.fontSize(18).fillColor(`rgb(${cream.join(',')})`).text('Cierre de Caja', M + 50, 40);
+    // Línea separadora terracota
+    doc.moveTo(M, y).lineTo(W - M, y).strokeColor('#b09088').lineWidth(1.5).stroke();
+    y += 16;
 
-    // Negocio + fecha/cajera a la derecha
-    const rightX = W - M;
-    doc.fontSize(9).fillColor(`rgba(244,240,234,0.65)`)
-      .text(d.negocio || '', 0, 28, { align: 'right', width: rightX })
-      .text(formatFecha(d.cierre), 0, 42, { align: 'right', width: rightX })
-      .text(d.cajera || '', 0, 56, { align: 'right', width: rightX });
-
-    let y = 110;
-
-    // ── Sección helper ─────────────────────────────────────────────
+    // ── Helpers ───────────────────────────────────────────────────
     function seccion(titulo) {
-      doc.fontSize(8).fillColor(`rgb(${greenLight.join(',')})`)
-        .text(titulo.toUpperCase(), M, y, { letterSpacing: 1 });
-      y += 16;
-      doc.moveTo(M, y).lineTo(W - M, y).strokeColor('#e8e3de').lineWidth(0.5).stroke();
+      y += 6;
+      doc.font('Helvetica-Bold').fontSize(8).fillColor('#7a8e7d')
+        .text(titulo.toUpperCase(), M, y);
+      y += 14;
+      doc.moveTo(M, y).lineTo(W - M, y).strokeColor('#d8d3ce').lineWidth(0.5).stroke();
       y += 8;
     }
 
     function fila(label, valor, color) {
-      doc.fontSize(10).fillColor('#555').text(label, M, y);
-      doc.fontSize(10).fillColor(color || '#2c2c2c').text(valor, 0, y, { align: 'right', width: W - M });
+      doc.font('Helvetica').fontSize(10).fillColor('#666').text(label, M, y);
+      doc.font('Helvetica').fontSize(10).fillColor(color || '#2c2c2c')
+        .text(valor, M, y, { align: 'right', width: IW });
       y += 18;
     }
 
@@ -95,25 +80,28 @@ function generarPDF(d) {
     fila('Cajera', d.cajera || '—');
     fila('Apertura', formatFecha(d.apertura));
     fila('Cierre', formatFecha(d.cierre));
-    y += 10;
+    y += 6;
 
     // ── 2. Resumen ─────────────────────────────────────────────────
     seccion('Resumen');
     fila('Saldo inicial', fmt(d.saldoInicial));
-    fila('Ingresos', fmt(d.ingresos), `rgb(${hexToRgb('#3a6e3d').join(',')})`);
-    fila('Egresos', '-' + fmt(d.egresos), `rgb(${terra.join(',')})`);
+    fila('Ingresos', fmt(d.ingresos), '#3a6e3d');
+    fila('Egresos', '-' + fmt(d.egresos), '#b09088');
     y += 4;
 
-    // Bloque saldo final
-    doc.rect(M, y, W - M * 2, 32).fill(`rgb(${green.join(',')})`);
-    doc.fontSize(11).fillColor(`rgb(${cream.join(',')})`).text('Saldo final', M + 12, y + 10);
-    doc.fontSize(13).fillColor(`rgb(${cream.join(',')})`).text(fmt(d.saldoFinal), 0, y + 9, { align: 'right', width: W - M - 12 });
-    y += 44;
+    // Saldo final — separador fuerte + texto grande
+    doc.moveTo(M, y).lineTo(W - M, y).strokeColor('#3a4e3d').lineWidth(1).stroke();
+    y += 4;
+    doc.moveTo(M, y).lineTo(W - M, y).strokeColor('#3a4e3d').lineWidth(0.4).stroke();
+    y += 10;
+    doc.font('Helvetica-Bold').fontSize(11).fillColor('#3a4e3d').text('Saldo final', M, y);
+    doc.font('Helvetica-Bold').fontSize(14).fillColor('#3a4e3d')
+      .text(fmt(d.saldoFinal), M, y - 2, { align: 'right', width: IW });
+    y += 28;
 
     // ── 3. Por medio de pago ───────────────────────────────────────
     const mediosEntries = Object.entries(d.medios || {});
     if (mediosEntries.length) {
-      y += 6;
       seccion('Por medio de pago');
       mediosEntries.forEach(([k, v]) => fila(nombreMedio(k), fmt(v)));
       y += 6;
@@ -122,45 +110,49 @@ function generarPDF(d) {
     // ── 4. Detalle de ventas ───────────────────────────────────────
     const prods = d.productos || [];
     if (prods.length) {
-      y += 6;
       seccion('Detalle de ventas');
-      // Header tabla
-      doc.fontSize(8).fillColor('#aaa')
+      // Encabezado tabla
+      const cCant = W - M - 80;
+      const cTotal = W - M;
+      doc.font('Helvetica-Bold').fontSize(8).fillColor('#aaa')
         .text('Producto', M, y)
-        .text('Cant.', M + 260, y)
-        .text('Total', 0, y, { align: 'right', width: W - M });
-      y += 14;
-      doc.moveTo(M, y).lineTo(W - M, y).strokeColor('#e8e3de').lineWidth(0.5).stroke();
+        .text('Cant.', cCant - 20, y)
+        .text('Total', M, y, { align: 'right', width: IW });
+      y += 12;
+      doc.moveTo(M, y).lineTo(W - M, y).strokeColor('#d8d3ce').lineWidth(0.5).stroke();
       y += 6;
       prods.forEach(p => {
-        doc.fontSize(10).fillColor('#444').text(p.nombre || '—', M, y, { width: 240 });
-        doc.text(String(p.cantidad || 0), M + 260, y);
-        doc.fillColor('#2c2c2c').text(fmt(p.total), 0, y, { align: 'right', width: W - M });
+        doc.font('Helvetica').fontSize(10).fillColor('#444').text(p.nombre || '—', M, y, { width: IW - 120 });
+        doc.text(String(p.cantidad || 0), cCant - 20, y);
+        doc.fillColor('#2c2c2c').text(fmt(p.total), M, y, { align: 'right', width: IW });
         y += 18;
       });
-      // Footer totales
+      // Total productos
       const totalProd = prods.reduce((a, p) => a + (p.total || 0), 0);
       const cantProd = prods.reduce((a, p) => a + (p.cantidad || 0), 0);
-      doc.rect(M, y, W - M * 2, 26).fill(`rgb(${green.join(',')})`);
-      doc.fontSize(9).fillColor('rgba(255,255,255,0.7)').text(`${cantProd} items`, M + 12, y + 8);
-      doc.fontSize(11).fillColor(`rgb(${cream.join(',')})`).text(fmt(totalProd), 0, y + 7, { align: 'right', width: W - M - 12 });
-      y += 38;
+      y += 4;
+      doc.moveTo(M, y).lineTo(W - M, y).strokeColor('#d8d3ce').lineWidth(0.5).stroke();
+      y += 8;
+      doc.font('Helvetica').fontSize(9).fillColor('#888').text(`${cantProd} item${cantProd !== 1 ? 's' : ''}`, M, y);
+      doc.font('Helvetica-Bold').fontSize(11).fillColor('#3a4e3d')
+        .text(fmt(totalProd), M, y, { align: 'right', width: IW });
+      y += 22;
     }
 
     // ── 5. Otros movimientos ───────────────────────────────────────
     if (d.retiros > 0 || d.depositos > 0) {
-      y += 6;
       seccion('Otros movimientos');
-      if (d.retiros > 0) fila('Retiros', '-' + fmt(d.retiros), `rgb(${terra.join(',')})`);
-      if (d.depositos > 0) fila('Depósitos', fmt(d.depositos), `rgb(${hexToRgb('#3a6e3d').join(',')})`);
+      if (d.retiros > 0) fila('Retiros', '-' + fmt(d.retiros), '#b09088');
+      if (d.depositos > 0) fila('Depósitos', fmt(d.depositos), '#3a6e3d');
       y += 6;
     }
 
     // ── Footer ─────────────────────────────────────────────────────
-    const pageH = 841.89;
-    doc.rect(0, pageH - 36, W, 36).fill(`rgb(${green.join(',')})`);
-    doc.fontSize(8).fillColor('rgba(244,240,234,0.5)')
-      .text('MB Strategy · sistema.mbstrategy.com.ar', 0, pageH - 22, { align: 'center', width: W });
+    y += 16;
+    doc.moveTo(M, y).lineTo(W - M, y).strokeColor('#d8d3ce').lineWidth(0.5).stroke();
+    y += 10;
+    doc.font('Helvetica').fontSize(8).fillColor('#aaa')
+      .text('MB Strategy · sistema.mbstrategy.com.ar', M, y, { align: 'center', width: IW });
 
     doc.end();
   });
