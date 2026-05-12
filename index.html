@@ -6412,6 +6412,12 @@ onAuthStateChanged(auth, async (user) => {
     var _pe = document.getElementById('mb-pantalla-espera');
     if(_pe) _pe.remove();
     window._skipAuthRedirect = false;
+    if(sessionStorage.getItem('mb_turno_cerrado') === '1') {
+      sessionStorage.removeItem('mb_turno_cerrado');
+      try { await signOut(auth); } catch(e) {}
+      mostrarPantallaEspera();
+      return;
+    }
     currentUser = user;
     window.currentUser = user;
     console.log('[AUTH] user:', user.uid, user.email);
@@ -25112,6 +25118,7 @@ window.cajaCierreConfirmar = async function() {
     if (_sb2) _sb2.classList.remove('cv-sidebar-open');
     if(window.currentRol === 'cajero') {
       window._skipAuthRedirect = true;
+      sessionStorage.setItem('mb_turno_cerrado', '1');
       try { await signOut(auth); } catch(ex) {}
       mostrarPantallaEspera();
       return;
