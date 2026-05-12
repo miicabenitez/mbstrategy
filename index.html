@@ -6418,10 +6418,16 @@ window.createEmptyState = function(icon, title, description, buttonText, buttonA
 window._skipAuthRedirect = false;
 
 function _resetCajeroState() {
-  ['vrc-btn-save','cajero-apertura-btn','cajero-cierre-btn',
-   'cajero-deposito-btn','cajero-egreso-btn'].forEach(function(id) {
+  var _btns = {
+    'vrc-btn-save': 'Registrar venta',
+    'cajero-apertura-btn': 'Iniciar turno',
+    'cajero-cierre-btn': 'Cerrar caja',
+    'cajero-deposito-btn': 'Guardar',
+    'cajero-egreso-btn': 'Guardar'
+  };
+  Object.keys(_btns).forEach(function(id) {
     var btn = document.getElementById(id);
-    if(btn) { btn.disabled = false; btn.textContent = btn.dataset.defaultText || btn.textContent; }
+    if(btn) { btn.disabled = false; btn.textContent = _btns[id]; }
   });
   window.turnoActual = null;
   window._cajaMovimientos = [];
@@ -24882,6 +24888,8 @@ window.adminUsuarioDesactivar = async function(docId, usuarioNombre, uid, btnEl)
 window.cajaDepositoShow = function() {
   var ov = document.getElementById('cajero-deposito-overlay');
   if(!ov) return;
+  var _b = document.getElementById('cajero-deposito-btn');
+  if(_b) { _b.disabled = false; _b.textContent = 'Guardar'; }
   document.getElementById('cajero-deposito-monto').value = '';
   document.getElementById('cajero-deposito-obs').value = '';
   ov.style.display = 'flex';
@@ -24923,6 +24931,8 @@ var _cajaEgresoMotivo = '';
 window.cajaEgresoShow = function() {
   var ov = document.getElementById('cajero-egreso-overlay');
   if(!ov) return;
+  var _b = document.getElementById('cajero-egreso-btn');
+  if(_b) { _b.disabled = false; _b.textContent = 'Guardar'; }
   document.getElementById('cajero-egreso-step1').style.display = '';
   document.getElementById('cajero-egreso-step2').style.display = 'none';
   _cajaEgresoMotivo = '';
@@ -25043,6 +25053,8 @@ window.cajaRetiroGuardar = async function() {
 window.cajaCierreShow = function() {
   var ov = document.getElementById('cajero-cierre-overlay');
   if(!ov) return;
+  var _b = document.getElementById('cajero-cierre-btn');
+  if(_b) { _b.disabled = false; _b.textContent = 'Cerrar caja'; }
   var movs = (window._cajaMovimientos || []).filter(function(m){ return m.cuenta==='Caja mostrador'||m.cuentaHacia==='Caja mostrador'||m.cuentaDesde==='Caja mostrador'; });
   var ingresos = movs.filter(function(m){return m.tipo==='ingreso' && m.origen!=='apertura_turno';}).reduce(function(a,m){return a+(parseFloat(m.monto)||0);},0);
   var egresos  = movs.filter(function(m){return m.tipo==='egreso';}).reduce(function(a,m){return a+(parseFloat(m.monto)||0);},0);
