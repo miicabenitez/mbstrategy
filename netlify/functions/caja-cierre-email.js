@@ -1,0 +1,135 @@
+const admin = require('firebase-admin');
+const nodemailer = require('nodemailer');
+
+if (!admin.apps.length) {
+  admin.initializeApp({ credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)) });
+}
+
+const ALLOWED_ORIGINS = [
+  'https://sistema.mbstrategy.com.ar',
+  'https://dev--creative-griffin-98f177.netlify.app'
+];
+function getCorsHeaders(event) {
+  const origin = event.headers?.origin || '';
+  const allowed = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  return {
+    'Access-Control-Allow-Origin': allowed,
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Content-Type': 'application/json'
+  };
+}
+
+const transporter = nodemailer.createTransport({
+  host: 'smtp.gmail.com', port: 465, secure: true,
+  auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_APP_PASSWORD }
+});
+
+function fmt(n) {
+  return '$ ' + parseFloat(n || 0).toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+}
+
+exports.handler = async (event) => {
+  const corsHeaders = getCorsHeaders(event);
+  if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: corsHeaders, body: '' };
+  if (event.httpMethod !== 'POST') return { statusCode: 405, headers: corsHeaders, body: JSON.stringify({ error: 'Método no permitido' }) };
+
+  const authHeader = event.headers?.authorization || '';
+  const idToken = authHeader.replace('Bearer ', '');
+  if (!idToken) return { statusCode: 401, headers: corsHeaders, body: JSON.stringify({ error: 'No autorizado' }) };
+  try { await admin.auth().verifyIdToken(idToken); } catch {
+    return { statusCode: 401, headers: corsHeaders, body: JSON.stringify({ error: 'Token inválido' }) };
+  }
+
+  try {
+    const {
+      negocio, emailDueno, cajera, apertura, cierre,
+      saldoInicial, ingresos, egresos, saldoFinal,
+      medios, productos, retiros, depositos
+    } = JSON.parse(event.body || '{}');
+
+    if (!emailDueno) return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: 'Falta emailDueno' }) };
+
+    const mediosRows = Object.entries(medios || {}).map(([k, v]) =>
+      `<tr><td style="padding:8px 12px;color:#555;font-size:13px;">${k}</td><td style="padding:8px 12px;text-align:right;color:#2c2c2c;font-weight:600;font-size:13px;">${fmt(v)}</td></tr>`
+    ).join('');
+
+    const productosRows = (productos || []).map(p =>
+      `<tr><td style="padding:8px 12px;color:#555;font-size:13px;">${p.nombre}</td><td style="padding:8px 12px;text-align:center;color:#555;font-size:13px;">${p.cantidad}</td><td style="padding:8px 12px;text-align:right;color:#2c2c2c;font-weight:600;font-size:13px;">${fmt(p.total)}</td></tr>`
+    ).join('');
+
+    const totalProductos = (productos || []).reduce((a, p) => a + (p.total || 0), 0);
+    const cantItems = (productos || []).reduce((a, p) => a + (p.cantidad || 0), 0);
+
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="margin:0;padding:0;background:#f4f0ea;font-family:Arial,sans-serif;">
+<div style="max-width:560px;margin:32px auto;border-radius:14px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.10);">
+  <div style="background:#3a4e3d;padding:28px 32px;">
+    <div style="display:flex;align-items:center;gap:16px;">
+      <div style="width:36px;height:36px;background:rgba(255,255,255,.18);border-radius:8px;text-align:center;line-height:36px;font-family:Georgia,serif;font-size:16px;font-weight:700;color:#fff;flex-shrink:0;">MB</div>
+      <div>
+        <div style="font-family:Georgia,serif;font-size:20px;color:#fff;font-weight:500;">Cierre de caja</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.65);margin-top:2px;">${negocio || 'MB Strategy'}</div>
+      </div>
+    </div>
+  </div>
+  <div style="background:#fff;padding:24px 32px;border-bottom:1px solid #f0ebe6;">
+    <table style="width:100%;border-collapse:collapse;">
+      <tr><td style="padding:4px 0;color:#888;font-size:12px;width:40%;">Negocio</td><td style="padding:4px 0;color:#2c2c2c;font-size:13px;font-weight:600;">${negocio || '—'}</td></tr>
+      <tr><td style="padding:4px 0;color:#888;font-size:12px;">Cajera</td><td style="padding:4px 0;color:#2c2c2c;font-size:13px;font-weight:600;">${cajera || '—'}</td></tr>
+      <tr><td style="padding:4px 0;color:#888;font-size:12px;">Apertura</td><td style="padding:4px 0;color:#2c2c2c;font-size:13px;">${apertura || '—'}</td></tr>
+      <tr><td style="padding:4px 0;color:#888;font-size:12px;">Cierre</td><td style="padding:4px 0;color:#2c2c2c;font-size:13px;">${cierre || '—'}</td></tr>
+    </table>
+  </div>
+  <div style="background:#fff;padding:20px 32px;border-bottom:1px solid #f0ebe6;">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.8px;color:#888;text-transform:uppercase;margin-bottom:12px;">Resumen del turno</div>
+    <table style="width:100%;border-collapse:collapse;">
+      <tr><td style="padding:6px 0;color:#555;font-size:13px;">Saldo inicial</td><td style="padding:6px 0;text-align:right;color:#2c2c2c;font-size:13px;">${fmt(saldoInicial)}</td></tr>
+      <tr><td style="padding:6px 0;color:#555;font-size:13px;">Ingresos</td><td style="padding:6px 0;text-align:right;color:#3a6e3d;font-size:13px;font-weight:600;">${fmt(ingresos)}</td></tr>
+      <tr><td style="padding:6px 0;color:#555;font-size:13px;">Egresos</td><td style="padding:6px 0;text-align:right;color:#b09088;font-size:13px;font-weight:600;">-${fmt(egresos)}</td></tr>
+      <tr style="border-top:1.5px solid #f0ebe6;"><td style="padding:10px 0 6px;color:#2c2c2c;font-size:14px;font-weight:700;">Saldo final</td><td style="padding:10px 0 6px;text-align:right;color:#3a4e3d;font-size:16px;font-weight:700;">${fmt(saldoFinal)}</td></tr>
+    </table>
+  </div>
+  ${mediosRows ? `<div style="background:#fff;padding:20px 32px;border-bottom:1px solid #f0ebe6;">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.8px;color:#888;text-transform:uppercase;margin-bottom:12px;">Por medio de pago</div>
+    <table style="width:100%;border-collapse:collapse;">${mediosRows}</table>
+  </div>` : ''}
+  ${productosRows ? `<div style="background:#fff;padding:20px 32px;border-bottom:1px solid #f0ebe6;">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.8px;color:#888;text-transform:uppercase;margin-bottom:12px;">Detalle de ventas</div>
+    <table style="width:100%;border-collapse:collapse;">
+      <thead><tr style="border-bottom:1px solid #f0ebe6;">
+        <th style="padding:6px 12px 8px;text-align:left;color:#aaa;font-size:11px;font-weight:600;">Producto</th>
+        <th style="padding:6px 12px 8px;text-align:center;color:#aaa;font-size:11px;font-weight:600;">Cant.</th>
+        <th style="padding:6px 12px 8px;text-align:right;color:#aaa;font-size:11px;font-weight:600;">Total</th>
+      </tr></thead>
+      <tbody>${productosRows}</tbody>
+    </table>
+    <div style="background:#3a4e3d;border-radius:8px;padding:10px 16px;margin-top:12px;display:flex;justify-content:space-between;align-items:center;">
+      <span style="color:rgba(255,255,255,.75);font-size:12px;">${cantItems} item${cantItems !== 1 ? 's' : ''}</span>
+      <span style="color:#fff;font-size:14px;font-weight:700;">${fmt(totalProductos)}</span>
+    </div>
+  </div>` : ''}
+  ${(retiros || depositos) ? `<div style="background:#fff;padding:20px 32px;border-bottom:1px solid #f0ebe6;">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.8px;color:#888;text-transform:uppercase;margin-bottom:12px;">Otros movimientos</div>
+    <table style="width:100%;border-collapse:collapse;">
+      ${retiros ? `<tr><td style="padding:6px 0;color:#555;font-size:13px;">Retiros</td><td style="padding:6px 0;text-align:right;color:#b09088;font-size:13px;font-weight:600;">-${fmt(retiros)}</td></tr>` : ''}
+      ${depositos ? `<tr><td style="padding:6px 0;color:#555;font-size:13px;">Depósitos</td><td style="padding:6px 0;text-align:right;color:#3a6e3d;font-size:13px;font-weight:600;">${fmt(depositos)}</td></tr>` : ''}
+    </table>
+  </div>` : ''}
+  <div style="background:#3a4e3d;padding:16px 32px;text-align:center;">
+    <div style="color:rgba(255,255,255,.55);font-size:11px;">MB Strategy · sistema.mbstrategy.com.ar</div>
+  </div>
+</div>
+</body></html>`;
+
+    await transporter.sendMail({
+      from: `"MB Strategy" <${process.env.GMAIL_USER}>`,
+      to: emailDueno,
+      subject: `Cierre de caja — ${cajera || 'Cajero'} — ${cierre || new Date().toLocaleDateString('es-AR')}`,
+      html
+    });
+
+    return { statusCode: 200, headers: corsHeaders, body: JSON.stringify({ ok: true }) };
+  } catch (e) {
+    return { statusCode: 500, headers: corsHeaders, body: JSON.stringify({ error: e.message }) };
+  }
+};

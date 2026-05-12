@@ -6612,6 +6612,8 @@ window.showClientUI = async function(email, clientData) {
   window.currentClientUID = currentClientUID;
       currentClientData = clientData;
       window.currentClientData = clientData;
+      window.currentNegocioNombre = clientData.negocioNombre || clientData.nombre || '';
+      window.currentNegocioEmail  = clientData.email || '';
 
       // Resolución de rol del operador
       window.currentRol = 'admin';
@@ -25027,6 +25029,43 @@ window.cajaCierreConfirmar = async function() {
     var _saldoBase = (window.turnoActual && window.turnoActual.apertura && window.turnoActual.apertura.monto) || 0;
     var saldo = _saldoBase + ingresos - egresos;
     var operador = window.currentOperadorNombre || 'Cajero';
+    // Enviar mail de cierre enriquecido
+    try {
+      var _idToken = '';
+      try { if(auth.currentUser) _idToken = await auth.currentUser.getIdToken(); } catch(_te) {}
+      var _ventas = (window._cajaMovimientos||[]).filter(function(m){
+        return m.tipo==='ingreso' && m.origen==='venta_caja' && m.items;
+      });
+      var _productosMap = {};
+      _ventas.forEach(function(v){
+        (v.items||[]).forEach(function(it){
+          var k = it.nombre||it.producto||'Venta';
+          if(!_productosMap[k]) _productosMap[k]={nombre:k,cantidad:0,total:0};
+          _productosMap[k].cantidad += (it.cantidad||1);
+          _productosMap[k].total += (parseFloat(it.precio||0)*(it.cantidad||1));
+        });
+      });
+      var _medios = {};
+      (window._cajaMovimientos||[]).filter(function(m){
+        return m.tipo==='ingreso' && m.origen!=='apertura_turno';
+      }).forEach(function(m){
+        var med = m.medioPago||m.cuenta||'Efectivo';
+        _medios[med] = (_medios[med]||0) + (parseFloat(m.monto)||0);
+      });
+      fetch('/.netlify/functions/caja-cierre-email',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+_idToken},
+        body:JSON.stringify({
+          negocio: window.currentNegocioNombre||window.currentClientData?.negocioNombre||'',
+          emailDueno: window.currentNegocioEmail||window.currentClientData?.email||'',
+          cajera: window.currentOperadorNombre||'Cajero',
+          apertura: window.turnoActual?.apertura?.fecha||'',
+          cierre: fechaHoyARG(),
+          saldoInicial:_saldoBase, ingresos:ingresos, egresos:egresos, saldoFinal:saldo,
+          medios:_medios, productos:Object.values(_productosMap), retiros:egresos, depositos:0
+        })
+      }).catch(function(){});
+    } catch(_me) {}
     // Generar PDF del turno
     var pdfBase64 = await turnoGenerarPDF(operador, ingresos, egresos, saldo, movs);
     // Enviar por email al admin del negocio
