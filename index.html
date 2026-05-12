@@ -14246,6 +14246,8 @@ window.cajaVentaRapida = async function() {
     _vrcRenderMetodos();
     _vrcRenderProductos(_vrcProductos);
     _vrcRenderCarrito();
+    var _b = document.getElementById('vrc-btn-save');
+    if(_b) { _b.disabled = false; _b.textContent = 'Registrar venta'; }
     const ov = document.getElementById('vrc-overlay');
     if(ov) ov.style.display = 'flex';
   } catch(e){console.log('cajaVentaRapida:',e);}
@@ -14430,6 +14432,7 @@ window.vrcGuardar = async function() {
       vrcCerrar();
       if(window._triggerStockPorVenta) window._triggerStockPorVenta(_vcCarritoSnap, null).catch(()=>{});
       showToast('Pedido registrado a cuenta de '+cli.nombre,'success');
+      _btnReset();
       loadCajaModule();
     } else {
       const _vcDocRef = await addDoc(collection(db,'clientes',currentClientUID,'libroCaja'), {
@@ -14443,6 +14446,7 @@ window.vrcGuardar = async function() {
       const _vcCarritoSnap = {..._vrcCarrito};
       vrcCerrar();
       if(window._triggerStockPorVenta) window._triggerStockPorVenta(_vcCarritoSnap, _vcDocRef.id).catch(()=>{});
+      _btnReset();
       loadCajaModule();
     }
   } catch(e){
