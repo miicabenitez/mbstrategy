@@ -14424,6 +14424,7 @@ window.vrcGuardar = async function() {
         clienteId:cli.id, clienteNombre:cli.nombre, concepto:'Pedido caja',
         productos, monto:Math.round(total*100)/100, estado:'pendiente',
         fecha:hoy, creadoEn:new Date().toISOString(),
+        observacion: document.getElementById('vrc-observacion')?.value?.trim() || '',
         origen:'caja_cajero', creadoPor:window.currentOperadorNombre||'Cajero'
       });
       await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'libroCaja'), {
@@ -14449,6 +14450,7 @@ window.vrcGuardar = async function() {
         fecha:hoy, tipo:'ingreso', concepto:'Venta caja',
         cuenta:_vrcMetodo||'Efectivo', monto:Math.round(total*100)/100,
         productos, mes, origen:'venta_caja', eliminado:false, creadoEn:new Date().toISOString(),
+        observacion: document.getElementById('vrc-observacion')?.value?.trim() || '',
         turnoId: window.turnoActual?.id||'',
         creadoPor: window.currentOperadorNombre || 'Admin'
       });
@@ -14463,7 +14465,7 @@ window.vrcGuardar = async function() {
     _btnReset();
   }
 };
-window.vrcCerrar = function() { const ov=document.getElementById('vrc-overlay'); if(ov)ov.style.display='none'; window._vrcClienteSeleccionado=null; };
+window.vrcCerrar = function() { const ov=document.getElementById('vrc-overlay'); if(ov)ov.style.display='none'; window._vrcClienteSeleccionado=null; var _obs=document.getElementById('vrc-observacion'); if(_obs)_obs.value=''; };
 
 window.showClientContView = function(view, btn) {
   loadCajaModule();
@@ -27099,6 +27101,10 @@ window.doResetPassword = async function(){
         <div id="vrc-prod-list" style="display:flex;flex-direction:column;gap:5px;margin-top:8px;"></div>
         <div id="vrc-empty" style="text-align:center;padding:20px 0;color:#ccc;font-size:13px;display:none;">Sin resultados.</div>
       </div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#b09088;font-family:'DM Sans',sans-serif;">Observación <span style="opacity:.5;font-weight:400;text-transform:none;letter-spacing:0">(opcional)</span></div>
+          <textarea id="vrc-observacion" rows="2" placeholder="Sin manteca, para llevar..." style="width:100%;box-sizing:border-box;padding:10px 13px;border:1.5px solid rgba(176,144,136,0.25);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;color:#3a4e3d;background:#fff;outline:none;resize:none;"></textarea>
+        </div>
       <div>
         <span class="cj-slabel">MÉTODO DE PAGO</span>
         <div id="vrc-metodos" style="display:grid;gap:8px;grid-template-columns:1fr 1fr 1fr;margin-top:0;"></div>
