@@ -14377,7 +14377,10 @@ window.vrcGuardar = async function() {
         detalle:cli.nombre, cuenta:'Caja mostrador',
         monto:Math.round(total*100)/100, estado:'pendiente',
         clienteId:cli.id, clienteNombre:cli.nombre,
-        origen:'caja_cajero', eliminado:false, creadoEn:new Date().toISOString()
+        origen:'caja_cajero', eliminado:false,
+        turnoId: window.turnoActual?.id||'',
+        creadoPor: window.currentOperadorNombre||'Cajero',
+        creadoEn:new Date().toISOString()
       });
       const _vcCarritoSnap = {..._vrcCarrito};
       vrcCerrar();
@@ -14390,6 +14393,7 @@ window.vrcGuardar = async function() {
         fecha:hoy, tipo:'ingreso', concepto:'Venta caja',
         cuenta:_vrcMetodo||'Efectivo', monto:Math.round(total*100)/100,
         productos, mes, origen:'venta_caja', eliminado:false, creadoEn:new Date().toISOString(),
+        turnoId: window.turnoActual?.id||'',
         creadoPor: window.currentOperadorNombre || 'Admin'
       });
       const _vcCarritoSnap = {..._vrcCarrito};
@@ -24838,6 +24842,7 @@ window.cajaDepositoCerrar = function() {
 window.cajaDepositoGuardar = async function() {
   var monto = parseFloat(document.getElementById('cajero-deposito-monto').value)||0;
   if(monto <= 0) { showToast('Ingresá un monto válido','error'); return; }
+  if(!window.turnoActual) { showToast('Necesitás abrir un turno primero','error'); return; }
   var obs = document.getElementById('cajero-deposito-obs').value.trim();
   var btn = document.getElementById('cajero-deposito-btn');
   if(btn) { btn.disabled=true; btn.textContent='Guardando...'; }
@@ -24848,7 +24853,10 @@ window.cajaDepositoGuardar = async function() {
     await window._addDoc(window._collection(window.db,'clientes',uid,'libroCaja'),{
       tipo:'ingreso', cuenta:'Caja mostrador', monto:monto,
       concepto:'Depósito', detalle: obs||'',
-      fecha: hoy, mes: mes, eliminado: false, creadoEn: new Date().toISOString()
+      fecha: hoy, mes: mes, uid: uid, eliminado: false,
+      origen:'deposito_cajero', turnoId: window.turnoActual?.id||'',
+      creadoPor: window.currentOperadorNombre||'Cajero',
+      creadoEn: new Date().toISOString()
     });
     cajaDepositoCerrar();
     showToast('Depósito registrado','success');
@@ -24905,6 +24913,7 @@ window.cajaEgresoSelMotivo = function(motivo) {
 window.cajaEgresoGuardar = async function() {
   var monto = parseFloat(document.getElementById('cajero-egreso-monto').value)||0;
   if(monto <= 0) { showToast('Ingresá un monto válido','error'); return; }
+  if(!window.turnoActual) { showToast('Necesitás abrir un turno primero','error'); return; }
   var obs = document.getElementById('cajero-egreso-obs').value.trim();
   var btn = document.getElementById('cajero-egreso-btn');
   if(btn) { btn.disabled=true; btn.textContent='Guardando...'; }
@@ -24917,6 +24926,7 @@ window.cajaEgresoGuardar = async function() {
       tipo:'egreso', cuenta:'Caja mostrador', monto:monto,
       concepto:_cajaEgresoMotivo, detalle: obs||'',
       fecha: hoy, mes: mes, uid: uid, eliminado: false,
+      origen:'egreso_cajero', turnoId: window.turnoActual?.id||'',
       creadoEn: new Date().toISOString(), creadoPor: operador
     });
     cajaEgresoCerrar();
@@ -24944,6 +24954,7 @@ window.cajaRetiroCerrar = function() {
 window.cajaRetiroGuardar = async function() {
   var monto = parseFloat(document.getElementById('cajero-retiro-monto').value)||0;
   if(monto <= 0) { showToast('Ingresá un monto válido','error'); return; }
+  if(!window.turnoActual) { showToast('Necesitás abrir un turno primero','error'); return; }
   var obs = document.getElementById('cajero-retiro-obs').value.trim();
   var btn = document.getElementById('cajero-retiro-btn');
   if(btn) { btn.disabled=true; btn.textContent='Guardando...'; }
@@ -24957,14 +24968,16 @@ window.cajaRetiroGuardar = async function() {
       tipo:'egreso', cuenta:'Caja mostrador', monto:monto,
       concepto:'Retiro a caja general', origen:'retiro_cajero',
       creadoPor: operador, detalle: obs||'',
-      fecha: hoy, mes: mes, uid: uid, eliminado: false, creadoEn: new Date().toISOString()
+      fecha: hoy, mes: mes, uid: uid, eliminado: false,
+      turnoId: window.turnoActual?.id||'', creadoEn: new Date().toISOString()
     });
     // Ingreso en Efectivo (caja del dueño)
     await window._addDoc(window._collection(window.db,'clientes',uid,'libroCaja'),{
       tipo:'ingreso', cuenta:'Efectivo', monto:monto,
       concepto:'Retiro de '+operador, origen:'retiro_cajero',
-      creadoPor: 'Admin', detalle: obs||'',
-      fecha: hoy, mes: mes, uid: uid, eliminado: false, creadoEn: new Date().toISOString()
+      creadoPor: window.currentOperadorNombre||'Cajero', detalle: obs||'',
+      fecha: hoy, mes: mes, uid: uid, eliminado: false,
+      turnoId: window.turnoActual?.id||'', creadoEn: new Date().toISOString()
     });
     cajaRetiroCerrar();
     showToast('Retiro registrado','success');
