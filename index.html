@@ -25042,10 +25042,10 @@ window.cajaCierreConfirmar = async function() {
       var _productosMap = {};
       _ventas.forEach(function(v){
         (v.productos||[]).forEach(function(it){
-          var k = it.nombre||it.producto||'Venta';
+          var k = it.nombre||'Venta';
           if(!_productosMap[k]) _productosMap[k]={nombre:k,cantidad:0,total:0};
-          _productosMap[k].cantidad += (it.cantidad||1);
-          _productosMap[k].total += (parseFloat(it.precio||0)*(it.cantidad||1));
+          _productosMap[k].cantidad += (it.qty||1);
+          _productosMap[k].total += (parseFloat(it.subtotal||0));
         });
       });
       var _medios = {};
