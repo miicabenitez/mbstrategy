@@ -24368,6 +24368,7 @@ window.bottomNavGestion = function(btn) {
 };
 
 window.showCTab = function(tab, btn) {
+  if(window.currentRol==='cajero'){var _p=['caja','mclientes','cobranzas'];if(!_p.includes(tab))return;}
   document.querySelectorAll('[id^="ct-"]').forEach(el => el.style.display = 'none');
   const el = document.getElementById('ct-' + tab);
   if(el) el.style.display = 'block';
