@@ -25061,7 +25061,7 @@ window.cajaCierreConfirmar = async function() {
       var _totalDepositos = (window._cajaMovimientos||[])
         .filter(function(m){ return m.tipo==='ingreso' && m.origen==='deposito_cajero'; })
         .reduce(function(a,m){ return a+(parseFloat(m.monto)||0); },0);
-      fetch('/.netlify/functions/caja-cierre-email',{
+      await fetch('/.netlify/functions/caja-cierre-email',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({
@@ -25073,7 +25073,7 @@ window.cajaCierreConfirmar = async function() {
           saldoInicial:_saldoBase, ingresos:ingresos, egresos:egresos, saldoFinal:saldo,
           medios:_medios, productos:Object.values(_productosMap), retiros:_totalRetiros, depositos:_totalDepositos
         })
-      }).catch(function(){});
+      });
     } catch(_me) {}
     // Generar PDF del turno
     var pdfBase64 = await turnoGenerarPDF(operador, ingresos, egresos, saldo, movs);
