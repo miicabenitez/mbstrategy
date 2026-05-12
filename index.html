@@ -25055,6 +25055,12 @@ window.cajaCierreConfirmar = async function() {
         var med = m.medioPago||m.cuenta||'Efectivo';
         _medios[med] = (_medios[med]||0) + (parseFloat(m.monto)||0);
       });
+      var _totalRetiros = (window._cajaMovimientos||[])
+        .filter(function(m){ return m.tipo==='egreso' && m.origen!=='cierre_turno'; })
+        .reduce(function(a,m){ return a+(parseFloat(m.monto)||0); },0);
+      var _totalDepositos = (window._cajaMovimientos||[])
+        .filter(function(m){ return m.tipo==='ingreso' && m.origen==='deposito_cajero'; })
+        .reduce(function(a,m){ return a+(parseFloat(m.monto)||0); },0);
       fetch('/.netlify/functions/caja-cierre-email',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
@@ -25065,7 +25071,7 @@ window.cajaCierreConfirmar = async function() {
           apertura: window.turnoActual?.apertura?.fecha||'',
           cierre: fechaHoyARG(),
           saldoInicial:_saldoBase, ingresos:ingresos, egresos:egresos, saldoFinal:saldo,
-          medios:_medios, productos:Object.values(_productosMap), retiros:egresos, depositos:0
+          medios:_medios, productos:Object.values(_productosMap), retiros:_totalRetiros, depositos:_totalDepositos
         })
       }).catch(function(){});
     } catch(_me) {}

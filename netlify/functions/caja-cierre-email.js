@@ -16,6 +16,15 @@ function fmt(n) {
   return '$ ' + parseFloat(n || 0).toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 }
 
+function formatFecha(iso) {
+  if (!iso) return '—';
+  try {
+    const d = new Date(iso);
+    return d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+      + ' ' + d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+  } catch (e) { return iso; }
+}
+
 exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: CORS_HEADERS, body: '' };
   if (event.httpMethod !== 'POST') return { statusCode: 405, headers: CORS_HEADERS, body: 'Method not allowed' };
@@ -51,7 +60,7 @@ exports.handler = async (event) => {
 <div style="max-width:560px;margin:32px auto;border-radius:14px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.10);">
   <div style="background:#3a4e3d;padding:28px 32px;">
     <div style="display:flex;align-items:center;gap:16px;">
-      <div style="width:36px;height:36px;background:rgba(255,255,255,.18);border-radius:8px;text-align:center;line-height:36px;font-family:Georgia,serif;font-size:16px;font-weight:700;color:#fff;flex-shrink:0;">MB</div>
+      <div style="width:48px;height:48px;border-radius:50%;background:#4a5e4d;border:2px solid rgba(176,144,136,0.4);display:inline-flex;align-items:center;justify-content:center;font-family:Georgia,serif;font-size:18px;margin-right:14px;vertical-align:middle;flex-shrink:0;"><span style="color:#f4f0ea;">M</span><span style="color:#b09088;">B</span></div>
       <div>
         <div style="font-family:Georgia,serif;font-size:20px;color:#fff;font-weight:500;">Cierre de caja</div>
         <div style="font-size:12px;color:rgba(255,255,255,.65);margin-top:2px;">${negocio || 'MB Strategy'}</div>
@@ -62,8 +71,8 @@ exports.handler = async (event) => {
     <table style="width:100%;border-collapse:collapse;">
       <tr><td style="padding:4px 0;color:#888;font-size:12px;width:40%;">Negocio</td><td style="padding:4px 0;color:#2c2c2c;font-size:13px;font-weight:600;">${negocio || '—'}</td></tr>
       <tr><td style="padding:4px 0;color:#888;font-size:12px;">Cajera</td><td style="padding:4px 0;color:#2c2c2c;font-size:13px;font-weight:600;">${cajera || '—'}</td></tr>
-      <tr><td style="padding:4px 0;color:#888;font-size:12px;">Apertura</td><td style="padding:4px 0;color:#2c2c2c;font-size:13px;">${apertura || '—'}</td></tr>
-      <tr><td style="padding:4px 0;color:#888;font-size:12px;">Cierre</td><td style="padding:4px 0;color:#2c2c2c;font-size:13px;">${cierre || '—'}</td></tr>
+      <tr><td style="padding:4px 0;color:#888;font-size:12px;">Apertura</td><td style="padding:4px 0;color:#2c2c2c;font-size:13px;">${formatFecha(apertura)}</td></tr>
+      <tr><td style="padding:4px 0;color:#888;font-size:12px;">Cierre</td><td style="padding:4px 0;color:#2c2c2c;font-size:13px;">${formatFecha(cierre)}</td></tr>
     </table>
   </div>
   <div style="background:#fff;padding:20px 32px;border-bottom:1px solid #f0ebe6;">
