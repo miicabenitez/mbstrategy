@@ -18665,11 +18665,11 @@ function renderMcVentas(presups, clienteId, cajaMovs) {
   }
   const _fila = (label, fecha, monto, badgeClass, badgeLabel, onclick) =>
     `<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:.5px solid rgba(0,0,0,0.06);cursor:pointer;" ${onclick?'onclick="'+onclick+'"':''}>
-      <div style="display:flex;align-items:center;gap:10px;min-width:0;">
-        <span style="font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;">${label}</span>
+      <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1;">
+        <span style="font-size:13px;font-weight:500;color:var(--text);flex-shrink:0;">${label}</span>
         <span style="font-size:11px;color:var(--text-l);flex-shrink:0;">${fecha}</span>
       </div>
-      <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
         <span style="font-size:13px;font-weight:500;color:var(--text);">$${monto}</span>
         <span class="fc-badge ${badgeClass}">${badgeLabel}</span>
       </div>
@@ -18687,7 +18687,7 @@ function renderMcVentas(presups, clienteId, cajaMovs) {
     html += pedidosCaja.map(m => {
       const fecha = m.creadoEn ? new Date(m.creadoEn).toLocaleDateString('es-AR',{day:'numeric',month:'short'}) : '—';
       const cobrado = m.estado === 'cobrado';
-      return _fila(m.ticketNum||m.concepto||'Pedido caja', fecha, (parseFloat(m.monto)||0).toLocaleString('es-AR'), cobrado?'cobrado':'pendiente', cobrado?'Cobrado':'Pendiente', `cajaMovDetalle('${m.id}')`);
+      return _fila(m.ticketNum||'Pedido caja', fecha, (parseFloat(m.monto)||0).toLocaleString('es-AR'), cobrado?'cobrado':'pendiente', cobrado?'Cobrado':'Pendiente', `cajaMovDetalle('${m.id}')`);
     }).join('');
   }
   el.innerHTML = html;
