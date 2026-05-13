@@ -232,6 +232,48 @@ body.es-cajero #mc-btn-pdf,body.es-cajero #mc-btn-excel{display:none !important;
 .cv-medio-pill.def{background:var(--cream);color:var(--text-2);border:1px solid var(--border);}
 .cv-medio-pill.pend{background:#fdf0eb;color:#9a5040;border:1px solid rgba(154,80,64,0.25);}
 .cv-medio-pill.ing{background:rgba(74,94,77,0.12);color:#4a5e4d;}
+/* ===== Ficha Cliente — rediseño ===== */
+.fc-card{background:var(--white);border-radius:14px;border:1px solid rgba(0,0,0,0.06);overflow:hidden;box-shadow:0 2px 8px rgba(58,78,61,0.04);margin-bottom:14px;}
+.fc-header-body{display:flex;align-items:center;gap:16px;padding:18px 20px;}
+.fc-avatar{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#3d5240 0%,#4a5e4d 45%,#5e7562 70%,#4a5e4d 100%);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:#fff;flex-shrink:0;animation:fcHeartbeat 4s ease-in-out infinite;}
+@keyframes fcHeartbeat{0%,100%{transform:scale(1)}14%{transform:scale(1.1)}28%{transform:scale(1)}42%{transform:scale(1.06)}70%{transform:scale(1)}}
+.fc-name{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:var(--text);line-height:1.1;}
+.fc-actions{display:flex;gap:8px;flex-shrink:0;}
+.fc-icon-btn{width:34px;height:34px;border-radius:10px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;color:#8a8a8a;font-size:16px;transition:all .15s;}
+.fc-icon-btn:hover{background:#fff;color:#4a5e4d;border-color:#4a5e4d;}
+.fc-icon-btn.danger:hover{color:#b05050;border-color:#b05050;}
+.fc-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px;}
+.fc-kpi{padding:16px 18px;border-radius:12px;transition:transform .18s cubic-bezier(.34,1.56,.64,1),box-shadow .18s ease;box-shadow:0 2px 10px rgba(58,78,61,0.06);}
+.fc-kpi:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(58,78,61,0.12);}
+.fc-kpi-label{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;opacity:.8;}
+.fc-kpi-val{font-family:'DM Sans',sans-serif;font-size:22px;font-weight:600;}
+.fc-kpi.total{background:#3a4e3d;color:#f0e8d8;}
+.fc-kpi.cobrado{background:var(--white);border:.5px solid var(--cream-d);color:var(--text-m);}
+.fc-kpi.cobrado .fc-kpi-val{color:#2e6b35;}
+.fc-kpi.pendiente{background:var(--white);border:.5px solid var(--cream-d);color:var(--text-m);}
+.fc-kpi.pendiente .fc-kpi-val{color:#8a5f55;}
+.fc-header-meta{font-size:12px;color:var(--text-l);margin-top:2px;line-height:1.4;}
+.fc-grid{display:grid;grid-template-columns:240px 1fr;gap:14px;margin-bottom:14px;}
+.fc-block{background:var(--white);border-radius:12px;border:1px solid rgba(0,0,0,0.06);padding:14px 16px;position:relative;transition:transform .18s cubic-bezier(.34,1.56,.64,1),box-shadow .18s ease;}
+.fc-block:hover{transform:translateY(-3px);box-shadow:0 6px 20px rgba(58,78,61,0.1);}
+.fc-block:active{transform:scale(0.97);}
+.fc-block-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.fc-block-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--text-l);}
+.fc-block.datos{padding-top:18px;}
+.fc-block.datos::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#b09088,#c4a098,#b09088);}
+.fc-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:.5px solid rgba(0,0,0,0.06);gap:10px;}
+.fc-row:last-child{border-bottom:none;}
+.fc-row .lbl{color:var(--text-l);text-transform:uppercase;letter-spacing:.4px;font-size:9px;font-weight:600;}
+.fc-row .val{color:var(--text);font-size:12px;font-weight:500;text-align:right;word-break:break-word;}
+.fc-add-btn{background:#e8f0e9;border:none;border-radius:8px;padding:6px 12px;font-size:11px;color:#4a5e4d;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;}
+.fc-add-btn:hover{background:#dfeae0;}
+.fc-add-btn.primary{background:linear-gradient(135deg,#3d5240,#4a5e4d 45%,#5e7562 70%,#4a5e4d);color:#e8f0e9;}
+.fc-badge{display:inline-block;font-size:10px;font-weight:500;padding:2px 8px;border-radius:20px;}
+.fc-badge.pendiente{background:rgba(176,144,136,0.15);color:#8a5f55;}
+.fc-badge.cobrado{background:rgba(74,94,77,0.12);color:#3a5e3d;}
+.fc-textarea{width:100%;min-height:70px;border:1px solid rgba(74,94,77,0.2);background:var(--cream);border-radius:8px;padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:12px;resize:vertical;box-sizing:border-box;}
+.fc-save-btn{display:block;margin:8px auto 0;background:linear-gradient(135deg,#3d5240,#4a5e4d 45%,#5e7562 70%,#4a5e4d);border:none;border-radius:8px;padding:7px 22px;font-size:11px;color:#e8f0e9;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;}
+@media (max-width:900px){.fc-grid{grid-template-columns:1fr;}}
 .cv-tx-monto{font-family:'Outfit',sans-serif;font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.5px;text-align:right;white-space:nowrap;}
 .cv-tx-monto.cv-ing{color:#2a2e28;}.cv-tx-monto.cv-eg{color:#b09088;}.cv-tx-monto.cv-pend{color:#9a6050;}
 .cv-bottom-bar{flex-shrink:0;background:#f5f0e8;border-top:1px solid #d8d0c0;padding:14px 20px;display:flex;gap:10px;}
@@ -3573,97 +3615,80 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
           <button class="back-btn" onclick="closeMcDetalle()">← Volver a clientes</button>
 
           <!-- Header del cliente -->
-          <div class="card" style="margin-bottom:14px;overflow:hidden;padding:0;">
-            <div style="width:100%;height:5px;background:linear-gradient(90deg,#3d5240 0%,#4a5e4d 45%,#5e7562 100%);"></div>
-            <div style="padding:16px;position:relative;">
-              <button id="mcd-edit-btn" onclick="" style="position:absolute;top:12px;right:12px;width:28px;height:28px;border-radius:8px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-              <div style="display:flex;align-items:flex-start;gap:14px;">
-                <div id="mcd-avatar" style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#3d5240 0%,#4a5e4d 45%,#5e7562 70%,#4a5e4d 100%);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:500;color:#fff;flex-shrink:0;">?</div>
-                <div style="flex:1;padding-right:40px;">
-                  <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;margin-bottom:10px;" id="mcd-nombre">—</div>
-                  <div style="display:flex;gap:28px;flex-wrap:wrap;margin-bottom:8px;">
-                    <div id="mcd-tel-wrap" style="display:none;"><div style="font-size:9px;color:var(--text-l);font-weight:500;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;">Teléfono</div><div style="font-size:13px;color:var(--text);" id="mcd-tel"></div></div>
-                    <div id="mcd-email-wrap" style="display:none;"><div style="font-size:9px;color:var(--text-l);font-weight:500;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;">Email</div><div style="font-size:13px;color:var(--text);" id="mcd-email"></div></div>
-                    <div id="mcd-dni-wrap" style="display:none;"><div style="font-size:9px;color:var(--text-l);font-weight:500;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;">DNI</div><div style="font-size:13px;color:var(--text);" id="mcd-dni"></div></div>
-                    <div id="mcd-cuit-wrap" style="display:none;"><div style="font-size:9px;color:var(--text-l);font-weight:500;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;">CUIT</div><div style="font-size:13px;color:var(--text);" id="mcd-cuit"></div></div>
-                  </div>
-                  <div style="display:flex;gap:28px;flex-wrap:wrap;">
-                    <div id="mcd-direccion-wrap" style="display:none;"><div style="font-size:9px;color:var(--text-l);font-weight:500;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;">Dirección</div><div style="font-size:13px;color:var(--text);" id="mcd-direccion"></div></div>
-                    <span id="mcd-seguimiento-alert" style="font-size:11px;padding:2px 9px;border-radius:20px;display:none;align-self:flex-end;"></span>
-                  </div>
-                </div>
+          <div class="fc-card">
+            <div class="fc-header-body">
+              <div id="mcd-avatar" class="fc-avatar">?</div>
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px;">
+                <div id="mcd-nombre" class="fc-name">—</div>
+                <div id="mcd-header-meta" class="fc-header-meta"></div>
+                <span id="mcd-seguimiento-alert" style="font-size:11px;padding:2px 9px;border-radius:20px;display:none;align-self:flex-start;"></span>
               </div>
-              <div id="mcd-notas-wrap" style="margin-top:12px;padding-top:12px;border-top:.5px solid var(--cream-d);display:none;">
-                <div style="font-size:11px;color:var(--text-l);margin-bottom:4px;">Descripción</div>
-                <div style="font-size:13px;color:var(--text-m);line-height:1.5;" id="mcd-notas"></div>
+              <div class="fc-actions">
+                <button id="mcd-edit-btn" class="fc-icon-btn" onclick="" title="Editar"><i class="ti ti-edit"></i></button>
+                <button class="fc-icon-btn danger" title="Eliminar" onclick="deleteMcCliente(window._currentMcClienteId, event)"><i class="ti ti-trash"></i></button>
               </div>
             </div>
           </div>
 
-          <!-- Barra de acciones -->
-          <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:14px;">
-            <button id="mcd-quick-cobro" onclick="" style="background:linear-gradient(135deg,#3d5240 0%,#4a5e4d 45%,#5e7562 70%,#4a5e4d 100%);border:none;border-radius:9px;padding:0 16px;height:34px;font-size:13px;color:#e8f0e9;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;white-space:nowrap;">+ Cobro</button>
-            <button id="mcd-quick-presup" onclick="" style="background:#e8f0e9;border:none;border-radius:9px;padding:0 16px;height:34px;font-size:13px;color:#4a5e4d;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;white-space:nowrap;">+ Presupuesto</button>
-          </div>
-
-          <!-- Cuenta Corriente — KPIs -->
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;">
-            <div style="background:#ffffff;border-radius:10px;padding:12px 16px;border:1px solid rgba(0,0,0,0.06);">
-              <div style="font-size:9px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Total vendido</div>
-              <div style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;color:#4a5e4d;" id="mcd-total">—</div>
+          <!-- KPIs -->
+          <div class="fc-kpis">
+            <div class="fc-kpi total">
+              <div class="fc-kpi-label">Total vendido</div>
+              <div class="fc-kpi-val" id="mcd-total">—</div>
             </div>
-            <div style="background:#ffffff;border-radius:10px;padding:12px 16px;border:1px solid rgba(0,0,0,0.06);">
-              <div style="font-size:9px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Cobrado</div>
-              <div style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;color:#4a5e4d;" id="mcd-cobrado">$0</div>
+            <div class="fc-kpi cobrado">
+              <div class="fc-kpi-label">Cobrado</div>
+              <div class="fc-kpi-val" id="mcd-cobrado">$0</div>
             </div>
-            <div style="background:#ffffff;border-radius:10px;padding:12px 16px;border:1px solid rgba(0,0,0,0.06);">
-              <div style="font-size:9px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Pendiente</div>
-              <div style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;color:#b09088;" id="mcd-pendiente">$0</div>
+            <div class="fc-kpi pendiente">
+              <div class="fc-kpi-label">Pendiente</div>
+              <div class="fc-kpi-val" id="mcd-pendiente">$0</div>
             </div>
           </div>
 
-          <div class="g2">
-            <!-- Columna izquierda: Ventas + Cobros -->
-            <div>
-              <!-- Ventas (presupuestos aprobados) -->
-              <div class="card" style="margin-bottom:12px;background:#ffffff;border:1px solid rgba(0,0,0,0.06);">
-                <div class="ct">Ventas</div>
-                <div id="mcd-ventas" style="max-height:400px;overflow-y:auto;"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin ventas aún. Aprobá un presupuesto.</div></div>
-              </div>
-
-              <!-- Cobros recibidos -->
-              <div class="card" style="margin-bottom:12px;background:#ffffff;border:1px solid rgba(0,0,0,0.06);">
-                <div class="ct">Cobros recibidos</div>
-                <div id="mcd-cobros-list" style="max-height:280px;overflow-y:auto;"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin cobros registrados.</div></div>
-              </div>
-
-              <!-- Presupuestos -->
-              <div class="card" style="background:#ffffff;border:1px solid rgba(0,0,0,0.06);">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px;">
-                  <div class="ct" style="margin:0;">Presupuestos</div>
-                  <button class="bp" id="mcd-new-presup-btn" onclick="">+ Nuevo</button>
-                </div>
-                <div id="mcd-presupuestos"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin presupuestos para este cliente.</div></div>
-              </div>
+          <!-- 3 filas de 2 columnas -->
+          <div class="fc-grid">
+            <!-- Fila 1 -->
+            <div class="fc-block datos">
+              <div class="fc-block-head"><div class="fc-block-title">Datos</div></div>
+              <div id="mcd-tel-wrap" class="fc-row" style="display:none;"><span class="lbl">Tel</span><span class="val" id="mcd-tel"></span></div>
+              <div id="mcd-email-wrap" class="fc-row" style="display:none;"><span class="lbl">Email</span><span class="val" id="mcd-email"></span></div>
+              <div id="mcd-dni-wrap" class="fc-row" style="display:none;"><span class="lbl">DNI</span><span class="val" id="mcd-dni"></span></div>
+              <div id="mcd-cuit-wrap" class="fc-row" style="display:none;"><span class="lbl">CUIT</span><span class="val" id="mcd-cuit"></span></div>
+              <div id="mcd-direccion-wrap" class="fc-row" style="display:none;"><span class="lbl">Dir</span><span class="val" id="mcd-direccion"></span></div>
+            </div>
+            <div class="fc-block">
+              <div class="fc-block-head"><div class="fc-block-title">Ventas · Pedidos de caja</div></div>
+              <div id="mcd-ventas" style="max-height:340px;overflow-y:auto;"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin ventas aún. Aprobá un presupuesto.</div></div>
             </div>
 
-            <!-- Columna derecha: Historial + Notas -->
-            <div>
-              <div class="card" style="margin-bottom:12px;background:#ffffff;border:1px solid rgba(0,0,0,0.06);">
-                <div class="ct">Historial de actividad</div>
-                <div id="mcd-historial" style="max-height:240px;overflow-y:auto;">
-                  <div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin actividad registrada aún.</div>
-                </div>
+            <!-- Fila 2 -->
+            <div class="fc-block">
+              <div class="fc-block-head"><div class="fc-block-title">Actividad</div></div>
+              <div id="mcd-historial" style="max-height:280px;overflow-y:auto;"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin actividad registrada aún.</div></div>
+            </div>
+            <div class="fc-block">
+              <div class="fc-block-head">
+                <div class="fc-block-title">Presupuestos</div>
+                <button class="fc-add-btn" id="mcd-new-presup-btn" onclick="">+ Nuevo</button>
               </div>
-              <div class="card" style="background:#ffffff;border:1px solid rgba(0,0,0,0.06);">
-                <div class="ct">Notas internas</div>
-                <div id="mcd-notas-list" style="max-height:140px;overflow-y:auto;margin-bottom:10px;border-bottom:1px solid rgba(0,0,0,0.06);padding-bottom:10px;"></div>
-                <textarea class="na" id="mcd-nota-input" style="min-height:60px;border:1px solid rgba(74,94,77,0.2);background:#fafafa;" placeholder="Anotá algo sobre este cliente..."></textarea>
-                <div style="margin-top:8px;">
-                  <button style="background:linear-gradient(135deg,#3d5240 0%,#4a5e4d 45%,#5e7562 70%,#4a5e4d 100%);border:none;border-radius:6px;height:28px;padding:0 14px;font-size:11px;color:#e8f0e9;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;" id="mcd-nota-btn" onclick="">Guardar nota</button>
-                </div>
-                <div class="saved-msg" id="mcd-nota-saved">✓ Nota guardada</div>
+              <div id="mcd-presupuestos"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin presupuestos para este cliente.</div></div>
+            </div>
+
+            <!-- Fila 3 -->
+            <div class="fc-block">
+              <div class="fc-block-head"><div class="fc-block-title">Notas</div></div>
+              <div id="mcd-notas-list" style="max-height:120px;overflow-y:auto;margin-bottom:8px;"></div>
+              <textarea class="fc-textarea" id="mcd-nota-input" placeholder="Anotá algo sobre este cliente..."></textarea>
+              <button class="fc-save-btn" id="mcd-nota-btn" onclick="">Guardar</button>
+              <div class="saved-msg" id="mcd-nota-saved">✓ Nota guardada</div>
+            </div>
+            <div class="fc-block">
+              <div class="fc-block-head">
+                <div class="fc-block-title">Cobros recibidos</div>
+                <button class="fc-add-btn primary" id="mcd-quick-cobro" onclick="">+ Cobro</button>
               </div>
+              <div id="mcd-cobros-list" style="max-height:280px;overflow-y:auto;"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin cobros registrados.</div></div>
             </div>
           </div>
 
@@ -17686,6 +17711,12 @@ window.openMcDetalle = async function(id) {
   show('mcd-dni-wrap',      'mcd-dni',      c.dni);
   show('mcd-cuit-wrap',     'mcd-cuit',     c.cuit);
   show('mcd-direccion-wrap','mcd-direccion',c.direccion);
+  const _metaParts = [];
+  if(c.tel) _metaParts.push('Tel '+c.tel);
+  if(c.dni) _metaParts.push('DNI '+c.dni);
+  if(c.direccion) _metaParts.push(c.direccion);
+  const _headerMeta = document.getElementById('mcd-header-meta');
+  if(_headerMeta) _headerMeta.textContent = _metaParts.join(' · ');
 
   // Alerta seguimiento
   const alertEl = document.getElementById('mcd-seguimiento-alert');
