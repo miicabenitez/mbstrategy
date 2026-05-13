@@ -10295,7 +10295,7 @@ function renderCajaCajero() {
     var facturaBtnHtml = (isIng && m.id && m.origen !== 'apertura_turno')
       ? '<div onclick="event.stopPropagation();abrirModalFacturaCaja(\''+m.id+'\')" title="Emitir factura" style="padding:4px 8px;border-radius:8px;border:.5px solid rgba(0,0,0,0.12);cursor:pointer;display:flex;align-items:center;color:#9ca3af;font-size:11px;gap:4px;flex-shrink:0;"><svg width="13" height="13" viewBox="0 0 15 15" fill="none"><rect x="2.5" y="1.5" width="10" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M5 5h5M5 7.5h5M5 10h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>Facturar</div>'
       : '<div></div>';
-    return '<div class="cv-tx-card cv-'+colorKey+(isNueva?' cv-nueva':'')+'" onclick="cajaMovDetalle(\''+m.id+'\')" style="cursor:pointer;animation-delay:'+delay+'s"><div class="cv-tx-dot cv-'+colorKey+'"></div><div class="cv-tx-hora">'+hora+'</div><div class="cv-tx-tipo">'+tipoLabel+'</div><div class="cv-tx-desc"><span class="cv-tx-desc-main">'+(m.concepto||'—')+'</span>'+(m.observacion?'<span style="color:#aaa;font-style:italic;font-size:12px;"> · '+m.observacion+'</span>':'')+(m.detalle?'<span class="cv-tx-desc-sep"> · </span><span class="cv-tx-desc-sub">'+m.detalle+'</span>':'')+'</div><div class="cv-tx-medio">'+pillMedio(medioLabel)+'</div><div class="cv-tx-monto cv-'+colorKey+'">'+montoStr+'</div>'+facturaBtnHtml+'</div>';
+    return '<div class="cv-tx-card cv-'+colorKey+(isNueva?' cv-nueva':'')+'" onclick="cajaMovDetalle(\''+m.id+'\')" style="cursor:pointer;animation-delay:'+delay+'s"><div class="cv-tx-dot cv-'+colorKey+'"></div><div class="cv-tx-hora">'+hora+'</div><div class="cv-tx-tipo">'+tipoLabel+'</div><div class="cv-tx-desc"><span class="cv-tx-desc-main">'+(m.concepto||'—')+'</span>'+(m.observacion?'<span style="color:#aaa;font-style:italic;font-size:12px;"> · '+m.observacion+'</span>':'')+(m.devuelto?'<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;color:#b09088;background:rgba(176,144,136,0.1);border-radius:20px;padding:2px 8px;margin-left:6px;">↩ devolución</span>':'')+(m.detalle?'<span class="cv-tx-desc-sep"> · </span><span class="cv-tx-desc-sub">'+m.detalle+'</span>':'')+'</div><div class="cv-tx-medio">'+pillMedio(medioLabel)+'</div><div class="cv-tx-monto cv-'+colorKey+'">'+montoStr+'</div>'+facturaBtnHtml+'</div>';
   }).join('') : '<div style="text-align:center;padding:32px 0;color:#aab8a8;font-size:13px;">Sin movimientos en este turno</div>';
   ct.innerHTML =
     '<div class="cv-wrap">' +
@@ -25127,7 +25127,10 @@ window.cajaMovDetalle = function(id) {
     if(m.devuelto) {
       devEl.innerHTML='<button disabled style="width:100%;padding:11px;border-radius:10px;border:1.5px solid #ddd;background:#f5f5f5;color:#aaa;font-size:13px;font-weight:600;cursor:not-allowed;font-family:inherit;">✓ Devolución ya realizada</button>';
     } else {
-      devEl.innerHTML='<button onclick="cajaMovDevolver(\''+id+'\')" style="width:100%;padding:11px;border-radius:10px;border:1.5px solid #b09088;background:#fff;color:#b09088;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Registrar devolución</button>';
+      devEl.innerHTML='<div style="display:flex;gap:8px;">'+
+        '<button onclick="cajaMovDetalleCerrar()" style="flex:.6;padding:11px;border-radius:10px;background:transparent;color:#6a7a68;border:1.5px solid rgba(176,144,136,0.35);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;">Cancelar</button>'+
+        '<button onclick="cajaMovDevolver(\''+id+'\')" style="flex:1;padding:11px;border-radius:10px;border:1.5px solid #b09088;background:#fff;color:#b09088;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Registrar devolución</button>'+
+        '</div>';
     }
   } else { devEl.style.display='none'; }
   ov.style.display='flex';
