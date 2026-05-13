@@ -3634,7 +3634,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
               <!-- Cobros recibidos -->
               <div class="card" style="margin-bottom:12px;background:#ffffff;border:1px solid rgba(0,0,0,0.06);">
                 <div class="ct">Cobros recibidos</div>
-                <div id="mcd-cobros-list"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin cobros registrados.</div></div>
+                <div id="mcd-cobros-list" style="max-height:280px;overflow-y:auto;"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin cobros registrados.</div></div>
               </div>
 
               <!-- Presupuestos -->
@@ -17708,7 +17708,21 @@ window.openMcDetalle = async function(id) {
   const misPresups = _mcPresupuestos.filter(p => p.clienteId === id || p.cliente === c.nombre);
   const total = misPresups.filter(p=>p.estado==='Aprobado'||p.estado==='Cobrado').reduce((s,p)=>s+getPresupMonto(p),0);
   const fmt = v => '$' + Math.abs(v).toLocaleString('es-AR');
-  setEl('mcd-total', total > 0 ? fmt(total) : '—');
+  try {
+    const cajaDocs = await window._getDocs(
+      window._query(
+        window._collection(window.db,'clientes',currentClientUID,'libroCaja'),
+        window._where('clienteId','==',id)
+      )
+    );
+    const totalCaja = cajaDocs.docs.reduce((s,d) => {
+      const m = d.data();
+      return s + (parseFloat(m.monto)||0);
+    }, 0);
+    setEl('mcd-total', (total + totalCaja) > 0 ? fmt(total + totalCaja) : '—');
+  } catch(_e) {
+    setEl('mcd-total', total > 0 ? fmt(total) : '—');
+  }
   // Calcular cobrado real desde subcolección
   try {
     const cobrosSnap = await getDocs(collection(db,'clientes',currentClientUID,'misClientes',id,'cobros'));
