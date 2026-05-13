@@ -40,6 +40,7 @@
 
 <!-- Manifest inline -->
 <link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
@@ -3672,7 +3673,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
                 <div class="fc-block-title">Presupuestos</div>
                 <button class="fc-add-btn" id="mcd-new-presup-btn" onclick="">+ Nuevo</button>
               </div>
-              <div id="mcd-presupuestos"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin presupuestos para este cliente.</div></div>
+              <div id="mcd-presupuestos" style="min-height:0;"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin presupuestos para este cliente.</div></div>
             </div>
 
             <!-- Fila 3 -->
@@ -18063,24 +18064,17 @@ async function loadMcCobrosList(clienteId) {
       (p.estado==='Aprobado'||p.estado==='Cobrado')
     ).reduce((s,p)=>s+getPresupMonto(p),0);
     const saldoAFavor = totalPresupuestado > 0 && total > totalPresupuestado ? total - totalPresupuestado : 0;
-    const formaIcon = {'Transferencia':'⇄','Efectivo':'💵','Tarjeta':'💳','QR':'◉'};
-    el.innerHTML = `<div style="background:#e8f0e9;border-radius:8px;padding:10px 14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
-      <span style="font-size:9px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Total cobrado</span>
-      <div style="text-align:right;">
-        <span style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:#4a5e4d;">$${total.toLocaleString('es-AR')}</span>
-        ${saldoAFavor>0?`<div style="font-size:11px;color:#4a5e4d;opacity:.8;">Saldo a favor: $${saldoAFavor.toLocaleString('es-AR')}</div>`:''}
-      </div>
-    </div>` + cobros.map(c => `<div style="background:#fafafa;border-radius:8px;padding:10px 12px;border:1px solid rgba(0,0,0,0.05);margin-bottom:6px;display:flex;align-items:center;">
-      <div style="flex:1;">
-        <div style="font-size:13px;font-weight:500;color:var(--text);">${c.concepto||'Cobro'}</div>
-        <div style="font-size:11px;color:var(--text-l);margin-top:2px;">${c.fecha||''} ${c.formaPago ? '· <span style="font-size:11px;padding:1px 7px;border-radius:20px;background:var(--cream);color:var(--text-m);">'+(formaIcon[c.formaPago]||'')+' '+c.formaPago+'</span>' : ''}</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;">
-        <span style="font-size:12px;color:var(--text-l);">${c.moneda||'ARS'}</span>
-        <span style="font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:700;color:#4a5e4d;">$${parseFloat(c.monto).toLocaleString('es-AR')}</span>
-        <button onclick="eliminarCobro('${clienteId}','${c.id}',${parseFloat(c.monto)||0})" style="background:none;border:none;color:var(--err);cursor:pointer;font-size:14px;padding:2px 4px;line-height:1;" title="Eliminar cobro">×</button>
-      </div>
-    </div>`).join('');
+    el.innerHTML = cobros.map(c => {
+      const fecha = c.fecha ? new Date(c.fecha+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'}) : '—';
+      const medio = c.formaPago ? ' · '+c.formaPago : '';
+      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:.5px solid rgba(0,0,0,0.06);">
+        <div style="min-width:0;">
+          <div style="font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;">${c.concepto||'Cobro'}</div>
+          <div style="font-size:11px;color:var(--text-l);margin-top:2px;">${fecha}${medio}</div>
+        </div>
+        <span style="font-size:13px;font-weight:500;color:var(--text);flex-shrink:0;">$${parseFloat(c.monto).toLocaleString('es-AR')}</span>
+      </div>`;
+    }).join('');
   } catch(e) { console.log(e); }
 }
 
@@ -18669,54 +18663,31 @@ function renderMcVentas(presups, clienteId, cajaMovs) {
     el.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin ventas aún. Aprobá un presupuesto.</div>';
     return;
   }
+  const _fila = (label, fecha, monto, badgeClass, badgeLabel, onclick) =>
+    `<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:.5px solid rgba(0,0,0,0.06);cursor:pointer;" ${onclick?'onclick="'+onclick+'"':''}>
+      <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+        <span style="font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;">${label}</span>
+        <span style="font-size:11px;color:var(--text-l);flex-shrink:0;">${fecha}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+        <span style="font-size:13px;font-weight:500;color:var(--text);">$${monto}</span>
+        <span class="fc-badge ${badgeClass}">${badgeLabel}</span>
+      </div>
+    </div>`;
   let html = aprobados.map(p => {
     const monto = getPresupMonto(p);
-    // Saldo pendiente = monto del presupuesto − cobros ya registrados para este presupuesto específico
     const cobradoPresup = parseFloat(p.cobradoPorPresup || 0);
     const pendiente = Math.max(0, monto - cobradoPresup);
-    const montoSugerido = pendiente > 0 ? pendiente : monto;
-    const fecha = p.fecha ? new Date(p.fecha+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'}) : '—';
-    const btnCobro = pendiente > 0
-      ? `<button onclick="openMcCobroModal('${clienteId}','${p.id}','${(p.descripcion||'Venta').replace(/'/g,"\\'")}',${montoSugerido})"
-          style="width:100%;padding:7px;background:var(--ok-bg);border:.5px solid var(--ok);border-radius:8px;font-size:12px;font-weight:500;color:var(--ok);cursor:pointer;font-family:'DM Sans',sans-serif;">
-          $ Registrar cobro${cobradoPresup > 0 ? ' — Saldo: $'+pendiente.toLocaleString('es-AR') : ''}
-        </button>`
-      : `<div style="font-size:11px;color:var(--ok);font-weight:500;padding:4px 0;">✓ Presupuesto completamente cobrado</div>`;
-    return `<div style="background:#fafafa;border-radius:8px;padding:10px 12px;border:1px solid rgba(0,0,0,0.05);margin-bottom:8px;">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px;">
-        <div style="flex:1;">
-          <div style="font-size:13px;font-weight:500;color:var(--text);">${p.descripcion||'Venta'}</div>
-          <div style="font-size:11px;color:var(--text-l);margin-top:2px;">${fecha} ${p.moneda&&p.moneda!=='ARS'?'· '+p.moneda:''}</div>
-        </div>
-        <div style="text-align:right;flex-shrink:0;">
-          <div style="font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:700;color:#4a5e4d;">$${monto.toLocaleString('es-AR')}</div>
-          <span style="font-size:11px;font-weight:500;padding:1px 8px;border-radius:20px;background:var(--ok-bg);color:var(--ok);">Aprobado</span>
-        </div>
-      </div>
-      ${btnCobro}
-      ${p.nroFactura ? `<div style="margin-top:6px;font-size:12px;font-weight:500;color:#4a5e4d;text-align:center;padding:7px;border-radius:8px;background:rgba(74,94,77,.08);border:.5px solid rgba(74,94,77,.3);">Factura N° ${p.nroFactura} emitida</div>` : p.estado === 'Aprobado' ? `<button onclick="abrirFacturaDesdePresupuesto('${p.id}')" style="margin-top:6px;width:100%;padding:7px;font-size:12px;font-weight:500;border-radius:8px;border:.5px solid #4a5e4d;background:rgba(74,94,77,.08);color:#4a5e4d;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:6px;"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><rect x="2" y="1" width="12" height="14" rx="1.5" stroke="#4a5e4d" stroke-width="1.3"/><path d="M5 5.5h6M5 8h6M5 10.5h4" stroke="#4a5e4d" stroke-width="1.3" stroke-linecap="round"/></svg>Emitir factura</button>` : ''}
-    </div>`;
+    const fecha = p.fecha ? new Date(p.fecha+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'short'}) : '—';
+    const badgeClass = pendiente > 0 ? 'pendiente' : 'cobrado';
+    const badgeLabel = pendiente > 0 ? 'Pendiente' : 'Cobrado';
+    return _fila(p.descripcion||'Venta', fecha, monto.toLocaleString('es-AR'), badgeClass, badgeLabel, null);
   }).join('');
   if(pedidosCaja.length > 0) {
-    if(aprobados.length > 0) html += '<div style="font-size:10px;font-weight:600;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;margin:10px 0 6px;">Pedidos caja</div>';
     html += pedidosCaja.map(m => {
-      const fecha = m.creadoEn ? new Date(m.creadoEn).toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'}) : '—';
+      const fecha = m.creadoEn ? new Date(m.creadoEn).toLocaleDateString('es-AR',{day:'numeric',month:'short'}) : '—';
       const cobrado = m.estado === 'cobrado';
-      const badge = cobrado
-        ? '<span style="font-size:11px;font-weight:500;padding:1px 8px;border-radius:20px;background:rgba(74,94,77,0.1);color:#4a5e4d;">Cobrado</span>'
-        : '<span style="font-size:11px;font-weight:500;padding:1px 8px;border-radius:20px;background:#fdf0eb;color:#9a5040;">Pendiente</span>';
-      return `<div style="background:#fafafa;border-radius:8px;padding:10px 12px;border:1px solid rgba(0,0,0,0.05);margin-bottom:8px;cursor:pointer;" onclick="cajaMovDetalle('${m.id}')">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
-          <div style="flex:1;">
-            <div style="font-size:13px;font-weight:500;color:var(--text);">${m.concepto||'Pedido caja'}</div>
-            <div style="font-size:11px;color:var(--text-l);margin-top:2px;">${fecha}${m.ticketNum?' · '+m.ticketNum:''}</div>
-          </div>
-          <div style="text-align:right;flex-shrink:0;">
-            <div style="font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;color:#4a5e4d;">$${(parseFloat(m.monto)||0).toLocaleString('es-AR')}</div>
-            ${badge}
-          </div>
-        </div>
-      </div>`;
+      return _fila(m.ticketNum||m.concepto||'Pedido caja', fecha, (parseFloat(m.monto)||0).toLocaleString('es-AR'), cobrado?'cobrado':'pendiente', cobrado?'Cobrado':'Pendiente', `cajaMovDetalle('${m.id}')`);
     }).join('');
   }
   el.innerHTML = html;
