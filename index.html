@@ -14452,6 +14452,7 @@ window.vrcGuardar = async function() {
   const _btnReset = () => { if(btnSave){btnSave.disabled=false;btnSave.innerHTML='<span style="display:flex;align-items:center;justify-content:center;gap:8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Registrar venta</span>';} };
   try {
     if(btnSave){btnSave.disabled=true;btnSave.innerHTML='<span style="display:flex;align-items:center;justify-content:center;gap:8px;">Registrando...</span>';}
+    var _ticketNum = await window._getNextTicketNum(currentClientUID);
     if(_vrcMetodo === '__cta__') {
       const cli = window._vrcClienteSeleccionado;
       if(!cli) { showToast('Seleccioná un cliente','info'); _btnReset(); return; }
@@ -14468,6 +14469,7 @@ window.vrcGuardar = async function() {
         detalle:cli.nombre, cuenta:'Caja mostrador',
         monto:Math.round(total*100)/100, estado:'pendiente',
         clienteId:cli.id, clienteNombre:cli.nombre,
+        ticketNum: _ticketNum,
         origen:'caja_cajero', eliminado:false,
         turnoId: window.turnoActual?.id||'',
         creadoPor: window.currentOperadorNombre||'Cajero',
@@ -14480,7 +14482,6 @@ window.vrcGuardar = async function() {
       _btnReset();
       loadCajaModule();
     } else {
-      var _ticketNum = await window._getNextTicketNum(currentClientUID);
       const _vcDocRef = await addDoc(collection(db,'clientes',currentClientUID,'libroCaja'), {
         uid:currentClientUID,
         fecha:hoy, tipo:'ingreso', concepto:'Venta caja',
