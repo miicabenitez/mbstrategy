@@ -2192,6 +2192,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
             <div id="cmd-productos" style="display:none;"></div>
             <div id="cmd-obs" style="display:none;background:#fff;border-radius:10px;padding:12px 14px;border:1px solid rgba(176,144,136,.2);"></div>
             <div id="cmd-devolucion" style="display:none;padding-top:12px;border-top:1px solid rgba(176,144,136,.2);"></div>
+            <div id="cmd-download" style="display:none;padding-top:4px;"></div>
           </div>
         </div>
       </div>
@@ -25094,6 +25095,107 @@ window.cajaRetiroGuardar = async function() {
 };
 
 // ─── CAJERO: Detalle de movimiento ───────────────────────────
+window.generarTicketPDF = async function(m) {
+  if(!window.jspdf) {
+    await new Promise((res,rej)=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';s.onload=res;s.onerror=rej;document.head.appendChild(s);});
+  }
+  const {jsPDF} = window.jspdf;
+  const W=80, PAD=6, LH=5;
+  const productos = m.productos||[];
+  const clienteNombre = m.clienteNombre||null;
+  const clienteTel = m.clienteTelefono||m.telefono||null;
+  const clienteDir = m.clienteDireccion||m.direccion||null;
+  const hasCliente = !!(clienteNombre||clienteTel||clienteDir);
+  const logo = window.currentClientData?.logoNegocio||null;
+  // estimate height
+  let h=8;
+  if(logo) h+=22; else h+=2;
+  h+=8; // negocio nombre
+  h+=10; // ticket num
+  h+=8; // TICKET DE VENTA + gap
+  h+=4*LH+4; // 4 filas + dashed line
+  if(hasCliente) h+=[clienteNombre,clienteTel,clienteDir].filter(Boolean).length*LH+10;
+  h+=productos.length*LH+10; // productos header + rows
+  h+=10; // total
+  if(m.observacion) h+=20;
+  h+=12; // footer
+  const pdf = new jsPDF({orientation:'portrait',unit:'mm',format:[W,h]});
+  let y=8;
+  // logo
+  if(logo) { try{pdf.addImage(logo,'PNG',W/2-10,y,20,20);y+=23;}catch(e){} }
+  // nombre negocio
+  const negNombre = window.currentNegocioNombre||'Mi negocio';
+  pdf.setFontSize(9);pdf.setFont('helvetica','bold');pdf.setTextColor(40,40,40);
+  const negLines=pdf.splitTextToSize(negNombre,65);
+  pdf.text(negLines,W/2,y,{align:'center'});y+=negLines.length*4+3;
+  // ticket num
+  pdf.setFontSize(22);pdf.setFont('helvetica','bold');pdf.setTextColor(30,30,30);
+  pdf.text(m.ticketNum||'—',W/2,y,{align:'center'});y+=8;
+  // subtitle
+  pdf.setFontSize(7);pdf.setFont('helvetica','normal');pdf.setTextColor(140,140,140);
+  pdf.text('TICKET DE VENTA',W/2,y,{align:'center'});y+=5;
+  // dashed line helper
+  const dash=function(yy){pdf.setDrawColor(200,200,200);pdf.setLineDashPattern([1,1],0);pdf.line(PAD,yy,W-PAD,yy);pdf.setLineDashPattern([],0);};
+  // row helper
+  const row=function(label,val,yy){
+    pdf.setFontSize(8);pdf.setFont('helvetica','normal');
+    pdf.setTextColor(110,110,110);pdf.text(label,PAD,yy);
+    pdf.setTextColor(40,40,40);pdf.text(String(val||'—'),W-PAD,yy,{align:'right'});
+    return yy+LH;
+  };
+  dash(y);y+=5;
+  const creadoEn=m.creadoEn?new Date(m.creadoEn):null;
+  const fecha=creadoEn?creadoEn.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric',timeZone:'America/Argentina/Buenos_Aires'}):(m.fecha||'—');
+  const hora=creadoEn?creadoEn.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Argentina/Buenos_Aires'}):'—';
+  const medioLabel=(m.medioPago&&m.medioPago!=='Caja mostrador')?m.medioPago:(m.cuenta&&m.cuenta!=='Caja mostrador'?m.cuenta:'Efectivo');
+  y=row('Fecha',fecha,y);y=row('Hora',hora,y);y=row('Cajera',m.creadoPor,y);y=row('Medio',medioLabel,y);
+  // cliente
+  if(hasCliente){
+    dash(y);y+=5;
+    pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor(150,165,150);
+    pdf.text('CLIENTE',PAD,y);y+=LH;
+    if(clienteNombre)y=row('Nombre',clienteNombre,y);
+    if(clienteTel)y=row('Teléfono',String(clienteTel),y);
+    if(clienteDir)y=row('Dirección',clienteDir,y);
+  }
+  // productos
+  dash(y);y+=5;
+  pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor(150,165,150);
+  pdf.text('PRODUCTO',PAD,y);pdf.text('CANT.',W/2+4,y,{align:'center'});pdf.text('TOTAL',W-PAD,y,{align:'right'});
+  y+=LH;
+  productos.forEach(function(p){
+    pdf.setFontSize(8);pdf.setFont('helvetica','normal');pdf.setTextColor(40,40,40);
+    const pLines=pdf.splitTextToSize(p.nombre||'',36);
+    pdf.text(pLines,PAD,y);
+    pdf.text('x'+(p.qty||1),W/2+4,y,{align:'center'});
+    const sub=(parseFloat(p.subtotal)||0).toLocaleString('es-AR',{style:'currency',currency:'ARS',minimumFractionDigits:0});
+    pdf.text(sub,W-PAD,y,{align:'right'});
+    y+=Math.max(pLines.length,1)*LH;
+  });
+  // total
+  dash(y);y+=5;
+  const totalFmt=(parseFloat(m.monto)||0).toLocaleString('es-AR',{style:'currency',currency:'ARS',minimumFractionDigits:0});
+  pdf.setFontSize(8);pdf.setFont('helvetica','normal');pdf.setTextColor(110,110,110);pdf.text('TOTAL',PAD,y);
+  pdf.setFontSize(13);pdf.setFont('helvetica','bold');pdf.setTextColor(30,30,30);pdf.text(totalFmt,W-PAD,y,{align:'right'});
+  y+=8;
+  // observacion
+  if(m.observacion){
+    const obsLines=pdf.splitTextToSize(m.observacion,W-PAD*2-6);
+    const obsH=5+obsLines.length*4+4;
+    pdf.setDrawColor(210,210,210);pdf.setFillColor(248,248,248);
+    pdf.roundedRect(PAD,y,W-PAD*2,obsH,2,2,'S');
+    pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor(150,150,150);
+    pdf.text('OBSERVACIÓN',PAD+3,y+4);
+    pdf.setFont('helvetica','italic');pdf.setTextColor(80,80,80);
+    pdf.text(obsLines,PAD+3,y+9);
+    y+=obsH+4;
+  }
+  // footer
+  pdf.setFontSize(6.5);pdf.setFont('helvetica','normal');pdf.setTextColor(170,170,170);
+  pdf.text('Este comprobante no tiene validez fiscal',W/2,y,{align:'center'});
+  pdf.save('ticket-'+(m.ticketNum||'venta')+'.pdf');
+};
+
 window.cajaMovDetalle = function(id) {
   var m = (window._cajaMovimientos||[]).find(function(x){return x.id===id;});
   if(!m) return;
@@ -25152,6 +25254,13 @@ window.cajaMovDetalle = function(id) {
         '</div>';
     }
   } else { devEl.style.display='none'; }
+  var dlEl = document.getElementById('cmd-download');
+  if(dlEl) {
+    if(m.ticketNum) {
+      dlEl.style.display='block';
+      dlEl.innerHTML='<button onclick="generarTicketPDF((window._cajaMovimientos||[]).find(function(x){return x.id===\''+id+'\';}))" style="width:100%;padding:10px;border-radius:10px;border:1.5px solid rgba(176,144,136,0.4);background:#fff;color:#b09088;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;"><i class="ti ti-download" style="font-size:15px;"></i>Descargar ticket</button>';
+    } else { dlEl.style.display='none'; }
+  }
   ov.style.display='flex';
 };
 window.cajaMovDetalleCerrar = function() {
