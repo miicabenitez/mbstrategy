@@ -25113,7 +25113,7 @@ window.generarTicketPDF = async function(m) {
   }
   const {jsPDF} = window.jspdf;
   const W=80, PAD=7, LH=5.5;
-  const GRY=[136,136,136], BLK=[0,0,0];
+  const GRY=[136,136,136], BLK=[0,0,0], GRN=[58,78,61];
   const productos = m.productos||[];
   const clienteNombre = m.clienteNombre||null;
   const clienteTel = m.clienteTelefono||m.telefono||null;
@@ -25132,7 +25132,7 @@ window.generarTicketPDF = async function(m) {
   const pdf = new jsPDF({orientation:'portrait',unit:'mm',format:[W,h]});
   let y=8;
   // helpers
-  const dash=function(yy){pdf.setDrawColor(180,180,180);pdf.setLineDashPattern([0.5,1],0);pdf.line(PAD,yy,W-PAD,yy);pdf.setLineDashPattern([],0);};
+  const dash=function(yy){pdf.setDrawColor(204,204,204);pdf.setLineDashPattern([0.5,1],0);pdf.line(PAD,yy,W-PAD,yy);pdf.setLineDashPattern([],0);};
   const row=function(label,val,yy){
     pdf.setFontSize(8);pdf.setFont('helvetica','normal');
     pdf.setTextColor(...GRY);pdf.text(label,PAD,yy);
@@ -25140,7 +25140,7 @@ window.generarTicketPDF = async function(m) {
     return yy+LH;
   };
   const secHeader=function(text,yy){
-    pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor(...GRY);
+    pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor(...GRN);
     pdf.text(text,PAD,yy);return yy+LH;
   };
   // logo (si existe)
@@ -25151,7 +25151,7 @@ window.generarTicketPDF = async function(m) {
   const negLines=pdf.splitTextToSize(negNombre,W-PAD*2);
   pdf.text(negLines,W/2,y,{align:'center'});y+=negLines.length*4.5+2;
   // ticket num
-  pdf.setFontSize(22);pdf.setFont('helvetica','bold');pdf.setTextColor(...BLK);
+  pdf.setFontSize(22);pdf.setFont('helvetica','bold');pdf.setTextColor(...GRN);
   pdf.text(m.ticketNum||'—',W/2,y,{align:'center'});y+=9;
   // subtitle
   pdf.setFontSize(7);pdf.setFont('helvetica','normal');pdf.setTextColor(...GRY);
@@ -25172,7 +25172,7 @@ window.generarTicketPDF = async function(m) {
   }
   // productos
   dash(y);y+=5;
-  pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor(...GRY);
+  pdf.setFontSize(7);pdf.setFont('helvetica','bold');pdf.setTextColor(...GRN);
   pdf.text('PRODUCTO',PAD,y);pdf.text('CANT.',W-PAD-16,y);pdf.text('TOTAL',W-PAD,y,{align:'right'});
   y+=LH;
   productos.forEach(function(p){
@@ -25185,9 +25185,9 @@ window.generarTicketPDF = async function(m) {
   });
   // total
   dash(y);y+=5;
-  pdf.setFontSize(9);pdf.setFont('helvetica','bold');pdf.setTextColor(...GRY);pdf.text('TOTAL',PAD,y);
+  pdf.setFontSize(9);pdf.setFont('helvetica','bold');pdf.setTextColor(...GRN);pdf.text('TOTAL',PAD,y);
   const totalFmt=(parseFloat(m.monto)||0).toLocaleString('es-AR',{style:'currency',currency:'ARS',minimumFractionDigits:0});
-  pdf.setFontSize(14);pdf.setFont('helvetica','bold');pdf.setTextColor(...BLK);pdf.text(totalFmt,W-PAD,y,{align:'right'});
+  pdf.setFontSize(14);pdf.setFont('helvetica','bold');pdf.setTextColor(...GRN);pdf.text(totalFmt,W-PAD,y,{align:'right'});
   y+=10;
   // observacion
   if(m.observacion){
@@ -25199,7 +25199,7 @@ window.generarTicketPDF = async function(m) {
     y+=obsH+4;
   }
   // footer
-  pdf.setFontSize(6.5);pdf.setFont('helvetica','normal');pdf.setTextColor(170,170,170);
+  pdf.setFontSize(6.5);pdf.setFont('helvetica','normal');pdf.setTextColor(170,170,170); // #aaa
   pdf.text('Este comprobante no tiene validez fiscal',W/2,y,{align:'center'});
   pdf.save('ticket-'+(m.ticketNum||'venta')+'.pdf');
 };
@@ -25225,9 +25225,11 @@ window.cajaMovDetalle = function(id) {
   var _fRow = function(label, val) {
     return '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;"><span style="font-size:12px;color:#888;flex-shrink:0;">'+label+'</span><span style="font-size:13px;color:#3a4e3d;font-weight:500;text-align:right;">'+val+'</span></div>';
   };
-  var filasHtml = _fRow('Fecha', fecha) + _fRow('Medio', medioLabel);
-  if(isPend) filasHtml += '<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;"><span style="font-size:12px;color:#888;flex-shrink:0;">Estado</span><span style="font-size:11px;font-weight:600;color:#b09088;background:rgba(176,144,136,0.12);border-radius:20px;padding:2px 10px;">Pendiente de pago</span></div>';
+  var filasHtml = _fRow('Fecha', fecha);
   if(m.creadoPor) filasHtml += _fRow('Cajera', m.creadoPor);
+  filasHtml += '<div style="margin:4px 0;border-top:1px solid rgba(176,144,136,.15);"></div>';
+  filasHtml += _fRow('Medio', medioLabel);
+  if(isPend) filasHtml += '<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;"><span style="font-size:12px;color:#888;flex-shrink:0;">Estado</span><span style="font-size:11px;font-weight:600;color:#b09088;background:rgba(176,144,136,0.12);border-radius:20px;padding:2px 10px;">Pendiente de pago</span></div>';
   if(isPend && m.clienteNombre) {
     filasHtml += '<div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(176,144,136,.2);">';
     filasHtml += '<div style="font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#b09088;margin-bottom:8px;">Cliente</div>';
