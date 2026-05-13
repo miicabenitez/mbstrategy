@@ -10284,7 +10284,7 @@ function renderCajaCajero() {
   window._cvLastMovId = movsDesc.length ? (movsDesc[0].id || null) : null;
   var _hasBump = _cvPrevId && window._cvLastMovId && _cvPrevId !== window._cvLastMovId;
   function pillMedio(label) {
-    var map = {'Efectivo':'ef','Transferencia':'tf','Mercado Pago':'mp','Tarjeta':'td','Pendiente':'pend'};
+    var map = {'Efectivo':'ef','Transferencia':'tf','Mercado Pago':'mp','Tarjeta':'td','Pendiente':'pend','Cobrado':'ing'};
     var cls = map[label] || 'def';
     return '<span class="cv-medio-pill '+cls+'">'+label+'</span>';
   }
@@ -10299,7 +10299,7 @@ function renderCajaCajero() {
     var montoStr = (isIng ? '+' : (isPend ? '' : '−')) + fmt(v);
     var delay = _cvDelays[i] !== undefined ? _cvDelays[i] : 0.36;
     var isNueva = i === 0 && _cvPrevId && (m.id || null) !== _cvPrevId;
-    var medioLabel = isPend ? 'Pendiente' : ((m.medioPago && m.medioPago !== 'Caja mostrador') ? m.medioPago : (m.cuenta && m.cuenta !== 'Caja mostrador' ? m.cuenta : 'Efectivo'));
+    var medioLabel = isPend ? (isCobrado ? 'Cobrado' : 'Pendiente') : ((m.medioPago && m.medioPago !== 'Caja mostrador') ? m.medioPago : (m.cuenta && m.cuenta !== 'Caja mostrador' ? m.cuenta : 'Efectivo'));
     var facturaBtnHtml = (isIng && m.id && m.origen !== 'apertura_turno')
       ? '<div onclick="event.stopPropagation();abrirModalFacturaCaja(\''+m.id+'\')" title="Emitir factura" style="padding:4px 8px;border-radius:8px;border:.5px solid rgba(0,0,0,0.12);cursor:pointer;display:flex;align-items:center;color:#9ca3af;font-size:11px;gap:4px;flex-shrink:0;"><svg width="13" height="13" viewBox="0 0 15 15" fill="none"><rect x="2.5" y="1.5" width="10" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M5 5h5M5 7.5h5M5 10h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>Facturar</div>'
       : '<div></div>';
