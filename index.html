@@ -24336,7 +24336,7 @@ window.backToAdmin = function() {
 
 // Navegación cliente — 5 módulos en topbar
 window.showClientMod = function(mod, btn) {
-  if(window.currentRol==='cajero'){var _p=['finanzas','comercial'];if(!_p.includes(mod))return;}
+  if(window.currentRol==='cajero'){var _p=['finanzas','comercial','ventas'];if(!_p.includes(mod))return;}
   // Persistir módulo activo para restaurar en recarga
   try { localStorage.setItem('mbst_lastmod', mod); } catch(e) {}
   // Activar tab en topbar
@@ -26896,7 +26896,7 @@ function navTransition(callback){
   },150);
 }
 window.sidebarNav=function(mod,sub){
-  if(window.currentRol==='cajero'){var _p=['finanzas','comercial'];if(!_p.includes(mod))return;}
+  if(window.currentRol==='cajero'){var _p=['finanzas','comercial','ventas'];if(!_p.includes(mod))return;}
   navTransition(function(){
     try{localStorage.setItem('mbst_sb_mod',mod);localStorage.setItem('mbst_sb_sub',sub||'');}catch(e){}
     sidebarSetActive(mod,sub);
