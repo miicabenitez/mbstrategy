@@ -17938,6 +17938,11 @@ window.createMcCobro = async function() {
         await updateDoc(doc(db,'clientes',currentClientUID,'libroCaja',libroCajaId2), { estado: 'cobrado' });
       } catch(_e) { /* ignorar si no existe */ }
     }
+    if(libroCajaId2 && window._cajaMovimientos && window.currentRol === 'cajero') {
+      var _mov = window._cajaMovimientos.find(function(m){ return m.id === libroCajaId2; });
+      if(_mov) _mov.estado = 'cobrado';
+      if(typeof renderCajaCajero === 'function') renderCajaCajero();
+    }
 
     // 4. DISPARAR INGRESO en contabilidad automáticamente
     const mesIngreso = mesHoyARG(fecha||fechaHoyARG());
