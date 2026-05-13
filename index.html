@@ -10277,7 +10277,7 @@ function renderCajaCajero() {
     return '<div class="cv-medio-card'+(z?' cv-zero':'')+'"><div class="cv-medio-icon">'+(icons[n]||defIcon)+'</div><div class="cv-medio-nombre">'+n+'</div><div class="cv-medio-monto'+(z?' cv-zero-m':'')+'">'+fmt(v)+'</div></div>';
   }).join('') + cobrarCardHtml +
   '<div class="cv-medio-card cv-saldo-card"><div class="cv-medio-icon" style="background:rgba(255,255,255,0.15)"><svg width="18" height="16" viewBox="0 0 24 20" fill="none"><rect x="2" y="4" width="20" height="14" rx="2.5" stroke="rgba(255,255,255,0.9)" stroke-width="1.6"/><path d="M2 9h20" stroke="rgba(255,255,255,0.9)" stroke-width="1.4"/><rect x="15" y="12" width="4" height="3" rx="1" fill="rgba(255,255,255,0.9)"/></svg></div><div class="cv-medio-nombre">Saldo del turno</div><div class="cv-medio-monto cv-saldo-val cv-saldo-monto">'+fmt(saldoTurno)+'</div></div>';
-  var movsDesc = movs.filter(function(m){ return !(m.tipo==='pedido_cta' && m.estado==='cobrado'); }).sort(function(a,b){ return (b.creadoEn||'').localeCompare(a.creadoEn||''); });
+  var movsDesc = movs.slice().sort(function(a,b){ return (b.creadoEn||'').localeCompare(a.creadoEn||''); });
   var _cvDelays = [0, 0.08, 0.15, 0.22, 0.29, 0.36];
   var _cvPrevId = window._cvLastMovId;
   window._cvLastMovId = movsDesc.length ? (movsDesc[0].id || null) : null;
@@ -10291,9 +10291,10 @@ function renderCajaCajero() {
     var v = parseFloat(m.monto) || 0;
     var isPend = m.tipo === 'pedido_cta';
     var isIng = m.tipo === 'ingreso';
-    var colorKey = isPend ? 'pend' : (isIng ? 'ing' : 'eg');
+    var isCobrado = isPend && m.estado === 'cobrado';
+    var colorKey = isPend ? (isCobrado ? 'ing' : 'pend') : (isIng ? 'ing' : 'eg');
     var hora = m.creadoEn ? new Date(m.creadoEn).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}) : '—';
-    var tipoLabel = isPend ? 'Pendiente' : (isIng ? 'Venta' : (m.origen==='retiro_cajero' ? 'Retiro' : 'Egreso'));
+    var tipoLabel = isPend ? (isCobrado ? 'Cobrado' : 'Pendiente') : (isIng ? 'Venta' : (m.origen==='retiro_cajero' ? 'Retiro' : 'Egreso'));
     var montoStr = (isIng ? '+' : (isPend ? '' : '−')) + fmt(v);
     var delay = _cvDelays[i] !== undefined ? _cvDelays[i] : 0.36;
     var isNueva = i === 0 && _cvPrevId && (m.id || null) !== _cvPrevId;
