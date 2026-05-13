@@ -5153,6 +5153,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
   <div class="md" style="max-width:380px;padding:0;border-radius:20px;overflow:hidden;background:#f4f0ea;">
     <input type="hidden" id="mcc-cobro-cliente-id"/>
     <input type="hidden" id="mcc-cobro-presup-id"/>
+    <input type="hidden" id="mcc-cobro-libroCaja-id"/>
     <div style="height:3px;background:linear-gradient(90deg,#b09088,#c4a098,#b09088)"></div>
     <div style="background:#3a4e3d;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;">
       <div>
@@ -14456,14 +14457,14 @@ window.vrcGuardar = async function() {
     if(_vrcMetodo === '__cta__') {
       const cli = window._vrcClienteSeleccionado;
       if(!cli) { showToast('Seleccioná un cliente','info'); _btnReset(); return; }
-      await addDoc(collection(db,'clientes',currentClientUID,'cobros'), {
+      const _cobroRef = await addDoc(collection(db,'clientes',currentClientUID,'cobros'), {
         clienteId:cli.id, clienteNombre:cli.nombre, concepto:'Pedido caja',
         productos, monto:Math.round(total*100)/100, estado:'pendiente',
         fecha:hoy, creadoEn:new Date().toISOString(),
         observacion: document.getElementById('vrc-observacion')?.value?.trim() || '',
         origen:'caja_cajero', creadoPor:window.currentOperadorNombre||'Cajero'
       });
-      await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'libroCaja'), {
+      const _vcDocRef = await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'libroCaja'), {
         uid:currentClientUID, fecha:hoy, mes:mes,
         tipo:'pedido_cta', concepto:'Cuenta cliente',
         detalle:cli.nombre, cuenta:'Caja mostrador',
@@ -14476,6 +14477,7 @@ window.vrcGuardar = async function() {
         creadoPor: window.currentOperadorNombre||'Cajero',
         creadoEn:new Date().toISOString()
       });
+      await window._updateDoc(window._doc(window.db,'clientes',currentClientUID,'cobros',_cobroRef.id), { libroCajaId: _vcDocRef.id });
       const _vcCarritoSnap = {..._vrcCarrito};
       vrcCerrar();
       if(window._triggerStockPorVenta) window._triggerStockPorVenta(_vcCarritoSnap, null).catch(()=>{});
@@ -17299,7 +17301,8 @@ async function loadCobranzasModule() {
         cliente: c.clienteNombre||'—', tel,
         descripcion: c.concepto||'Pedido caja',
         monto: parseFloat(c.monto)||0, moneda:'ARS',
-        fecha: fechaDt, dias, _esCobro: true
+        fecha: fechaDt, dias, _esCobro: true,
+        libroCajaId: c.libroCajaId||''
       });
     });
     psSnap.forEach(d => {
@@ -17378,7 +17381,7 @@ async function loadCobranzasModule() {
         <td class="r">${moneda}${p.monto.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
         <td class="cb-col-fecha">${fmtFecha(p.fecha)}</td>
         <td style="text-align:center"><span style="display:inline-block;padding:3px 9px;border-radius:8px;background:${c.bg};color:${c.fg};font-size:11px;font-weight:500">${p.dias}d</span></td>
-        <td style="text-align:center;">${p.clienteId ? `<button onclick="event.stopPropagation();openMcCobroModal('${esc(p.clienteId)}','${esc(p.id)}','${(p.descripcion||'').replace(/'/g,"\\'")}',${p.monto})" title="Registrar cobro" style="display:inline-flex;align-items:center;justify-content:center;height:30px;padding:0 10px;border-radius:8px;background:#4a5e4d;color:#fff;border:none;font-size:11px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">Cobrar</button>` : ''}</td>
+        <td style="text-align:center;">${p.clienteId ? `<button onclick="event.stopPropagation();openMcCobroModal('${esc(p.clienteId)}','${esc(p.id)}','${(p.descripcion||'').replace(/'/g,"\\'")}',${p.monto},'${esc(p.libroCajaId||'')}')" title="Registrar cobro" style="display:inline-flex;align-items:center;justify-content:center;height:30px;padding:0 10px;border-radius:8px;background:#4a5e4d;color:#fff;border:none;font-size:11px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">Cobrar</button>` : ''}</td>
         <td style="text-align:center;">${wa}</td>
       </tr>`;
     }).join('');
@@ -17804,9 +17807,10 @@ async function renderMcHistorial(clienteId) {
 }
 
 // --- Cobros por cliente ---
-window.openMcCobroModal = async function(clienteId, presupId, concepto, monto) {
-  document.getElementById('mcc-cobro-cliente-id').value  = clienteId || '';
-  document.getElementById('mcc-cobro-presup-id').value   = presupId  || '';
+window.openMcCobroModal = async function(clienteId, presupId, concepto, monto, libroCajaId) {
+  document.getElementById('mcc-cobro-cliente-id').value   = clienteId   || '';
+  document.getElementById('mcc-cobro-presup-id').value    = presupId    || '';
+  document.getElementById('mcc-cobro-libroCaja-id').value = libroCajaId || '';
   document.getElementById('mcc-cobro-concepto').value    = concepto  || '';
   document.getElementById('mcc-cobro-monto').value       = monto     || '';
   document.getElementById('mcc-cobro-notas').value       = '';
@@ -17908,11 +17912,17 @@ window.createMcCobro = async function() {
       } catch(e){ console.log('Error actualizando cobradoPorPresup:', e); }
     }
 
-    // 3c. Si el cobro viene de la colección cobros (cajero), marcar como pagado
+    // 3c. Si el cobro viene de la colección cobros (cajero), marcar como pagado y actualizar libroCaja
+    const libroCajaId2 = document.getElementById('mcc-cobro-libroCaja-id')?.value || '';
     if(presupId2) {
       try {
         await updateDoc(doc(db,'clientes',currentClientUID,'cobros',presupId2), { estado: 'pagado' });
       } catch(_e) { /* puede no existir si era presupuesto, ignorar */ }
+    }
+    if(libroCajaId2) {
+      try {
+        await updateDoc(doc(db,'clientes',currentClientUID,'libroCaja',libroCajaId2), { estado: 'cobrado' });
+      } catch(_e) { /* ignorar si no existe */ }
     }
 
     // 4. DISPARAR INGRESO en contabilidad automáticamente
