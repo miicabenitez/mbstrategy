@@ -2174,14 +2174,16 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
       </div>
 
       <!-- MODAL Detalle movimiento -->
-      <div id="cajero-mov-detalle-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9998;align-items:center;justify-content:center;">
-        <div style="background:#f4f0ea;border-radius:16px;width:340px;max-height:82vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.18);">
-          <div style="background:#3a4e3d;padding:20px 24px;border-radius:16px 16px 0 0;display:flex;align-items:center;justify-content:space-between;">
+      <div id="cajero-mov-detalle-overlay" onclick="cajaMovDetalleCerrar()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9998;align-items:center;justify-content:center;">
+        <div onclick="event.stopPropagation()" style="background:#f4f0ea;border-radius:16px;width:340px;max-height:82vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.18);">
+          <div style="height:3px;background:linear-gradient(90deg,#b09088,#c4a098,#b09088);border-radius:16px 16px 0 0;"></div>
+          <div style="background:#3a4e3d;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;">
             <div>
-              <div id="cmd-titulo" style="font-size:13px;font-weight:600;color:rgba(244,240,234,.7);text-transform:uppercase;letter-spacing:.6px;"></div>
-              <div id="cmd-monto" style="font-size:24px;font-weight:700;color:#f4f0ea;font-family:'DM Sans',sans-serif;margin-top:2px;"></div>
+              <div style="font-size:10px;letter-spacing:2px;color:rgba(244,240,234,0.5);text-transform:uppercase;font-family:'DM Sans',sans-serif;margin-bottom:4px;">Cajero · Movimiento</div>
+              <div id="cmd-titulo" style="font-family:'Cormorant Garamond',Georgia,serif;font-size:22px;font-weight:400;color:#f4f0ea;line-height:1;"></div>
+              <div id="cmd-monto" style="font-family:'DM Sans',sans-serif;font-size:22px;font-weight:700;color:#f4f0ea;margin-top:4px;"></div>
             </div>
-            <button onclick="cajaMovDetalleCerrar()" style="background:rgba(255,255,255,.12);border:none;color:#f4f0ea;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center;">×</button>
+            <i class="ti ti-receipt" style="color:#b09088;font-size:36px;opacity:.85;flex-shrink:0;margin-left:12px;"></i>
           </div>
           <div style="padding:20px 24px;display:flex;flex-direction:column;gap:14px;">
             <div id="cmd-filas" style="display:flex;flex-direction:column;gap:8px;"></div>
