@@ -3660,7 +3660,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
             </div>
             <div class="fc-block">
               <div class="fc-block-head"><div class="fc-block-title">Ventas · Pedidos de caja</div></div>
-              <div id="mcd-ventas" style="max-height:340px;overflow-y:auto;"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin ventas aún. Aprobá un presupuesto.</div></div>
+              <div id="mcd-ventas" style="max-height:220px;overflow-y:auto;"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin ventas aún. Aprobá un presupuesto.</div></div>
             </div>
 
             <!-- Fila 2 -->
@@ -3673,7 +3673,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
                 <div class="fc-block-title">Presupuestos</div>
                 <button class="fc-add-btn" id="mcd-new-presup-btn" onclick="">+ Nuevo</button>
               </div>
-              <div id="mcd-presupuestos" style="min-height:0;"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin presupuestos para este cliente.</div></div>
+              <div id="mcd-presupuestos" style="max-height:150px;overflow-y:auto;"><div style="padding:8px 0;color:var(--text-l);font-size:13px;">Sin presupuestos para este cliente.</div></div>
             </div>
 
             <!-- Fila 3 -->
@@ -3689,7 +3689,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
                 <div class="fc-block-title">Cobros recibidos</div>
                 <button class="fc-add-btn primary" id="mcd-quick-cobro" onclick="">+ Cobro</button>
               </div>
-              <div id="mcd-cobros-list" style="max-height:280px;overflow-y:auto;"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin cobros registrados.</div></div>
+              <div id="mcd-cobros-list" style="max-height:200px;overflow-y:auto;"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin cobros registrados.</div></div>
             </div>
           </div>
 
@@ -18248,7 +18248,7 @@ function renderMcDetallePresupuestos(list, clienteId, clienteNombre) {
   const el = document.getElementById('mcd-presupuestos');
   if (!el) return;
   if (!list || list.length === 0) {
-    el.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin presupuestos para este cliente.</div>';
+    el.innerHTML = '<div style="padding:8px 0;color:var(--text-l);font-size:13px;">Sin presupuestos para este cliente.</div>';
     return;
   }
   const colorMap = {'Pendiente de enviar':{bg:'#F5ECD8',color:'#8A6A3A'},'Enviado':{bg:'#E6EEF5',color:'#4A6A8A'},'Consultado':{bg:'#FFF3CD',color:'#856404'},'Aprobado':{bg:'#EAF0E6',color:'#5A7A4E'},'Denegado':{bg:'#F5E8E8',color:'#8A4A4A'},'Cobrado':{bg:'#D6F0E0',color:'#1A6637'}};
@@ -18665,11 +18665,11 @@ function renderMcVentas(presups, clienteId, cajaMovs) {
   }
   const _fila = (label, fecha, monto, badgeClass, badgeLabel, onclick) =>
     `<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:.5px solid rgba(0,0,0,0.06);cursor:pointer;" ${onclick?'onclick="'+onclick+'"':''}>
-      <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1;">
-        <span style="font-size:13px;font-weight:500;color:var(--text);flex-shrink:0;">${label}</span>
-        <span style="font-size:11px;color:var(--text-l);flex-shrink:0;">${fecha}</span>
+      <div style="display:flex;align-items:center;gap:8px;min-width:0;">
+        <span style="font-size:13px;font-weight:500;color:var(--text);">${label}</span>
+        <span style="font-size:11px;color:var(--text-l);">${fecha}</span>
       </div>
-      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:12px;">
         <span style="font-size:13px;font-weight:500;color:var(--text);">$${monto}</span>
         <span class="fc-badge ${badgeClass}">${badgeLabel}</span>
       </div>
