@@ -25122,7 +25122,11 @@ window.cajaMovDetalle = function(id) {
   var devEl = document.getElementById('cmd-devolucion');
   if(isIng && m.origen==='venta_caja' && m.productos && m.productos.length) {
     devEl.style.display='block';
-    devEl.innerHTML='<button onclick="cajaMovDevolver(\''+id+'\')" style="width:100%;padding:11px;border-radius:10px;border:1.5px solid #b09088;background:#fff;color:#b09088;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Registrar devolución</button>';
+    if(m.devuelto) {
+      devEl.innerHTML='<button disabled style="width:100%;padding:11px;border-radius:10px;border:1.5px solid #ddd;background:#f5f5f5;color:#aaa;font-size:13px;font-weight:600;cursor:not-allowed;font-family:inherit;">✓ Devolución ya realizada</button>';
+    } else {
+      devEl.innerHTML='<button onclick="cajaMovDevolver(\''+id+'\')" style="width:100%;padding:11px;border-radius:10px;border:1.5px solid #b09088;background:#fff;color:#b09088;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Registrar devolución</button>';
+    }
   } else { devEl.style.display='none'; }
   ov.style.display='flex';
 };
@@ -25170,6 +25174,7 @@ window.cajaMovDevolverConfirmar = async function(id) {
       turnoId:window.turnoActual?.id||'',
       creadoPor:window.currentOperadorNombre||'Cajero'
     });
+    await window._updateDoc(window._doc(window.db,'clientes',currentClientUID,'libroCaja',id),{ devuelto: true });
     cajaMovDetalleCerrar();
     showToast('Devolución registrada','success');
     loadCajaModule();
