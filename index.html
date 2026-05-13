@@ -17936,18 +17936,10 @@ window.createMcCobro = async function() {
     }
     if(libroCajaId2) {
       try {
-        await window._updateDoc(window._doc(window.db,'clientes',currentClientUID,'libroCaja',libroCajaId2),{ estado:'cobrado' });
-        var _card = document.querySelector('[data-mov-id="'+libroCajaId2+'"]');
-        if(_card) {
-          _card.classList.replace('cv-pend','cv-ing');
-          var _dot = _card.querySelector('.cv-tx-dot');
-          if(_dot) _dot.classList.replace('cv-pend','cv-ing');
-          var _tipo = _card.querySelector('.cv-tx-tipo');
-          if(_tipo) _tipo.textContent = 'Cobrado';
-          var _monto = _card.querySelector('.cv-tx-monto');
-          if(_monto) _monto.classList.replace('cv-pend','cv-ing');
-          var _pill = _card.querySelector('.cv-medio-pill');
-          if(_pill) { _pill.textContent = 'COBRADO'; _pill.className = 'cv-medio-pill ing'; }
+        await window._updateDoc(window._doc(window.db,'clientes',currentClientUID,'libroCaja',libroCajaId2), { estado:'cobrado' });
+        if(window._cajaMovimientos) {
+          var _mov = window._cajaMovimientos.find(function(m){ return m.id === libroCajaId2; });
+          if(_mov) _mov.estado = 'cobrado';
         }
       } catch(_e) {}
     }
