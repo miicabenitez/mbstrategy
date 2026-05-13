@@ -14460,6 +14460,7 @@ window.vrcGuardar = async function() {
       if(!cli) { showToast('Seleccioná un cliente','info'); _btnReset(); return; }
       const _cobroRef = await addDoc(collection(db,'clientes',currentClientUID,'cobros'), {
         clienteId:cli.id, clienteNombre:cli.nombre, concepto:'Pedido a cuenta',
+        ticketNum: _ticketNum,
         productos, monto:Math.round(total*100)/100, estado:'pendiente',
         fecha:hoy, creadoEn:new Date().toISOString(),
         observacion: document.getElementById('vrc-observacion')?.value?.trim() || '',
