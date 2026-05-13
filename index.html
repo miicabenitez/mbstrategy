@@ -2185,7 +2185,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
               <div id="cmd-titulo" style="font-family:'Cormorant Garamond',Georgia,serif;font-size:22px;font-weight:400;color:#f4f0ea;line-height:1;"></div>
               <div id="cmd-monto" style="font-family:'DM Sans',sans-serif;font-size:22px;font-weight:700;color:#f4f0ea;margin-top:4px;"></div>
             </div>
-            <i class="ti ti-receipt" style="color:#b09088;font-size:36px;opacity:.85;flex-shrink:0;margin-left:12px;"></i>
+            <div id="cmd-header-right" style="flex-shrink:0;margin-left:12px;text-align:right;"><i class="ti ti-receipt" style="color:#b09088;font-size:36px;opacity:.85;"></i></div>
           </div>
           <div style="padding:20px 24px;display:flex;flex-direction:column;gap:14px;">
             <div id="cmd-filas" style="display:flex;flex-direction:column;gap:8px;"></div>
@@ -6213,7 +6213,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, confirmPasswordReset } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, addDoc, collection, getDocs, query, where, orderBy, updateDoc, deleteDoc, deleteField, serverTimestamp, increment, writeBatch, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, addDoc, collection, getDocs, query, where, orderBy, updateDoc, deleteDoc, deleteField, serverTimestamp, increment, writeBatch, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 // Expose firestore db globally for cross-block access
 
 const cfg = {apiKey:"AIzaSyCZr_VAn5fumCzkrfxb1oK9-W2_cADnGTI",authDomain:"mb-strategy.firebaseapp.com",projectId:"mb-strategy",storageBucket:"mb-strategy.firebasestorage.app",messagingSenderId:"1055393429525",appId:"1:1055393429525:web:0f40fa5869ef5aa8bb761c"};
@@ -6236,6 +6236,7 @@ window._query = query;
 window._where = where;
 window._orderBy = orderBy;
 window._updateDoc = updateDoc;
+window._runTransaction = runTransaction;
 
 let currentUser = null;
 let currentClientId = null;
@@ -10297,7 +10298,7 @@ function renderCajaCajero() {
     var facturaBtnHtml = (isIng && m.id && m.origen !== 'apertura_turno')
       ? '<div onclick="event.stopPropagation();abrirModalFacturaCaja(\''+m.id+'\')" title="Emitir factura" style="padding:4px 8px;border-radius:8px;border:.5px solid rgba(0,0,0,0.12);cursor:pointer;display:flex;align-items:center;color:#9ca3af;font-size:11px;gap:4px;flex-shrink:0;"><svg width="13" height="13" viewBox="0 0 15 15" fill="none"><rect x="2.5" y="1.5" width="10" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M5 5h5M5 7.5h5M5 10h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>Facturar</div>'
       : '<div></div>';
-    return '<div class="cv-tx-card cv-'+colorKey+(isNueva?' cv-nueva':'')+'" onclick="cajaMovDetalle(\''+m.id+'\')" style="cursor:pointer;animation-delay:'+delay+'s"><div class="cv-tx-dot cv-'+colorKey+'"></div><div class="cv-tx-hora">'+hora+'</div><div class="cv-tx-tipo">'+tipoLabel+'</div><div class="cv-tx-desc"><span class="cv-tx-desc-main">'+(m.concepto||'—')+'</span>'+(m.observacion?'<span style="color:#aaa;font-style:italic;font-size:12px;"> · '+m.observacion+'</span>':'')+(m.devuelto?'<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;color:#b09088;background:rgba(176,144,136,0.1);border-radius:20px;padding:2px 8px;margin-left:6px;">↩ devolución</span>':'')+(m.detalle?'<span class="cv-tx-desc-sep"> · </span><span class="cv-tx-desc-sub">'+m.detalle+'</span>':'')+'</div><div class="cv-tx-medio">'+pillMedio(medioLabel)+'</div><div class="cv-tx-monto cv-'+colorKey+'">'+montoStr+'</div>'+facturaBtnHtml+'</div>';
+    return '<div class="cv-tx-card cv-'+colorKey+(isNueva?' cv-nueva':'')+'" onclick="cajaMovDetalle(\''+m.id+'\')" style="cursor:pointer;animation-delay:'+delay+'s"><div class="cv-tx-dot cv-'+colorKey+'"></div><div class="cv-tx-hora">'+hora+'</div><div class="cv-tx-tipo">'+tipoLabel+'</div><div class="cv-tx-desc"><span class="cv-tx-desc-main">'+(m.concepto||'—')+'</span>'+(m.observacion?'<span style="color:#aaa;font-style:italic;font-size:12px;"> · '+m.observacion+'</span>':'')+(m.devuelto?'<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;color:#b09088;background:rgba(176,144,136,0.1);border-radius:20px;padding:2px 8px;margin-left:6px;">↩ devolución</span>':'')+(m.detalle?'<span class="cv-tx-desc-sep"> · </span><span class="cv-tx-desc-sub">'+m.detalle+'</span>':'')+(m.ticketNum?'<span style="font-size:10px;color:#aaa;margin-left:6px;">'+m.ticketNum+'</span>':'')+'</div><div class="cv-tx-medio">'+pillMedio(medioLabel)+'</div><div class="cv-tx-monto cv-'+colorKey+'">'+montoStr+'</div>'+facturaBtnHtml+'</div>';
   }).join('') : '<div style="text-align:center;padding:32px 0;color:#aab8a8;font-size:13px;">Sin movimientos en este turno</div>';
   ct.innerHTML =
     '<div class="cv-wrap">' +
@@ -14421,6 +14422,16 @@ window.vrcFiltrar = function(q) {
   _vrcRenderProductos(lista);
 };
 
+window._getNextTicketNum = async function(uid) {
+  const ref = window._doc(window.db, 'clientes', uid, 'config', 'contadores');
+  let num;
+  await window._runTransaction(window.db, async function(tx) {
+    const snap = await tx.get(ref);
+    num = (snap.exists() ? (snap.data().ultimoTicket || 0) : 0) + 1;
+    tx.set(ref, { ultimoTicket: num }, { merge: true });
+  });
+  return 'V-' + String(num).padStart(4, '0');
+};
 window.vrcGuardar = async function() {
   if(!currentClientUID) return;
   const keys = Object.keys(_vrcCarrito);
@@ -14468,6 +14479,7 @@ window.vrcGuardar = async function() {
       _btnReset();
       loadCajaModule();
     } else {
+      var _ticketNum = await window._getNextTicketNum(currentClientUID);
       const _vcDocRef = await addDoc(collection(db,'clientes',currentClientUID,'libroCaja'), {
         uid:currentClientUID,
         fecha:hoy, tipo:'ingreso', concepto:'Venta caja',
@@ -14475,6 +14487,7 @@ window.vrcGuardar = async function() {
         productos, mes, origen:'venta_caja', eliminado:false, creadoEn:new Date().toISOString(),
         observacion: document.getElementById('vrc-observacion')?.value?.trim() || '',
         turnoId: window.turnoActual?.id||'',
+        ticketNum: _ticketNum,
         creadoPor: window.currentOperadorNombre || 'Admin'
       });
       const _vcCarritoSnap = {..._vrcCarrito};
@@ -25095,6 +25108,10 @@ window.cajaMovDetalle = function(id) {
   var medioLabel = (m.medioPago&&m.medioPago!=='Caja mostrador')?m.medioPago:(m.cuenta&&m.cuenta!=='Caja mostrador'?m.cuenta:'Efectivo');
   document.getElementById('cmd-titulo').textContent = tipoLabel;
   document.getElementById('cmd-monto').textContent = signo+' '+montoFmt;
+  var hrEl = document.getElementById('cmd-header-right');
+  if(hrEl) hrEl.innerHTML = m.ticketNum
+    ? '<div style="font-size:10px;letter-spacing:1.5px;color:rgba(244,240,234,0.45);text-transform:uppercase;font-family:\'DM Sans\',sans-serif;margin-bottom:4px;">N° de ticket</div><div style="font-family:\'DM Sans\',sans-serif;font-size:18px;font-weight:700;color:#f4f0ea;">'+m.ticketNum+'</div>'
+    : '<i class="ti ti-receipt" style="color:#b09088;font-size:36px;opacity:.85;"></i>';
   var filas = [
     ['Fecha', fecha],
     ['Medio', medioLabel],
