@@ -18626,6 +18626,7 @@ function renderMcVentas(presups, clienteId, cajaMovs) {
   if(!el) return;
   const aprobados = presups.filter(p => p.estado === 'Aprobado' || p.estado === 'Cobrado');
   const pedidosCaja = cajaMovs.filter(m => m.tipo === 'pedido_cta');
+  pedidosCaja.sort(function(a,b){ return (b.fecha||'').localeCompare(a.fecha||''); });
   if(pedidosCaja.length > 0) {
     window._cajaMovimientos = window._cajaMovimientos || [];
     pedidosCaja.forEach(function(m) {
