@@ -3628,7 +3628,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
               <!-- Ventas (presupuestos aprobados) -->
               <div class="card" style="margin-bottom:12px;background:#ffffff;border:1px solid rgba(0,0,0,0.06);">
                 <div class="ct">Ventas</div>
-                <div id="mcd-ventas"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin ventas aún. Aprobá un presupuesto.</div></div>
+                <div id="mcd-ventas" style="max-height:400px;overflow-y:auto;"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin ventas aún. Aprobá un presupuesto.</div></div>
               </div>
 
               <!-- Cobros recibidos -->
@@ -18626,6 +18626,13 @@ function renderMcVentas(presups, clienteId, cajaMovs) {
   if(!el) return;
   const aprobados = presups.filter(p => p.estado === 'Aprobado' || p.estado === 'Cobrado');
   const pedidosCaja = cajaMovs.filter(m => m.tipo === 'pedido_cta');
+  if(pedidosCaja.length > 0) {
+    window._cajaMovimientos = window._cajaMovimientos || [];
+    pedidosCaja.forEach(function(m) {
+      if(!window._cajaMovimientos.find(function(x){ return x.id === m.id; }))
+        window._cajaMovimientos.push(m);
+    });
+  }
   if(aprobados.length === 0 && pedidosCaja.length === 0) {
     el.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin ventas aún. Aprobá un presupuesto.</div>';
     return;
@@ -18666,7 +18673,7 @@ function renderMcVentas(presups, clienteId, cajaMovs) {
       const badge = cobrado
         ? '<span style="font-size:11px;font-weight:500;padding:1px 8px;border-radius:20px;background:rgba(74,94,77,0.1);color:#4a5e4d;">Cobrado</span>'
         : '<span style="font-size:11px;font-weight:500;padding:1px 8px;border-radius:20px;background:#fdf0eb;color:#9a5040;">Pendiente</span>';
-      return `<div style="background:#fafafa;border-radius:8px;padding:10px 12px;border:1px solid rgba(0,0,0,0.05);margin-bottom:8px;">
+      return `<div style="background:#fafafa;border-radius:8px;padding:10px 12px;border:1px solid rgba(0,0,0,0.05);margin-bottom:8px;cursor:pointer;" onclick="cajaMovDetalle('${m.id}')">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
           <div style="flex:1;">
             <div style="font-size:13px;font-weight:500;color:var(--text);">${m.concepto||'Pedido caja'}</div>
