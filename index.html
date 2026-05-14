@@ -25201,10 +25201,18 @@ window.cajaRetiroGuardar = async function() {
     // Egreso del cajero (sale de Caja mostrador)
     await window._addDoc(window._collection(window.db,'clientes',uid,'libroCaja'),{
       tipo:'egreso', cuenta:'Caja mostrador', monto:monto,
-      concepto:'Retiro a caja general', origen:'retiro_cajero',
+      concepto:'Retiro por cierre', origen:'retiro_cajero',
       creadoPor: operador, detalle: obs||'',
       fecha: hoy, mes: mes, uid: uid, eliminado: false,
       turnoId: window.turnoActual?.id||'', creadoEn: new Date().toISOString()
+    });
+    // Ingreso en caja del dueño (sin turnoId — no aparece en el turno del cajero)
+    await window._addDoc(window._collection(window.db,'clientes',uid,'libroCaja'),{
+      uid: uid, fecha: hoy, mes: mes,
+      tipo:'ingreso', concepto:'Ingreso por retiro de cajero',
+      detalle: operador, cuenta:'Efectivo', monto: monto,
+      origen:'retiro_cajero_cierre', eliminado: false,
+      creadoEn: new Date().toISOString()
     });
     cajaRetiroCerrar();
     showToast('Retiro registrado','success');
