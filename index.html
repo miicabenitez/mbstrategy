@@ -17634,7 +17634,7 @@ function renderMcLista(clientes) {
     const init = (c.nombre||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     const cobradoReal = parseFloat(c.totalCobrado)||0;
     const presapsAprobados = _mcPresupuestos.filter(p=>(p.clienteId===c.id||p.cliente===c.nombre)&&(p.estado==='Aprobado'||p.estado==='Cobrado')).reduce((s,p)=>s+getPresupMonto(p),0);
-    const saldo = presapsAprobados - cobradoReal;
+    const saldo = presapsAprobados + (parseFloat(c.totalCaja)||0) - cobradoReal;
     const franjaGrad = saldo > 0
       ? 'linear-gradient(90deg,#9a7870 0%,#b09088 45%,#ccb0a8 100%)'
       : 'linear-gradient(90deg,#3d5240 0%,#4a5e4d 45%,#5e7562 100%)';
@@ -17756,6 +17756,10 @@ window.openMcDetalle = async function(id) {
       )
     );
     cajaDocs.docs.forEach(d => { const m = d.data(); totalCaja += parseFloat(m.monto)||0; cajaMovs.push({id:d.id,...m}); });
+    if(Math.abs(totalCaja - (parseFloat(c.totalCaja)||0)) > 0.01) {
+      await window._updateDoc(window._doc(window.db,'clientes',currentClientUID,'misClientes',id),{totalCaja});
+      if(_mcClientes.find(x=>x.id===id)) _mcClientes.find(x=>x.id===id).totalCaja = totalCaja;
+    }
     setEl('mcd-total', (total + totalCaja) > 0 ? fmt(total + totalCaja) : '—');
   } catch(_e) {
     setEl('mcd-total', total > 0 ? fmt(total) : '—');
