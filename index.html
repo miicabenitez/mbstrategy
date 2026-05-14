@@ -17759,6 +17759,7 @@ window.openMcDetalle = async function(id) {
     if(Math.abs(totalCaja - (parseFloat(c.totalCaja)||0)) > 0.01) {
       await window._updateDoc(window._doc(window.db,'clientes',currentClientUID,'misClientes',id),{totalCaja});
       if(_mcClientes.find(x=>x.id===id)) _mcClientes.find(x=>x.id===id).totalCaja = totalCaja;
+      if(typeof filterMcLista === 'function') filterMcLista();
     }
     setEl('mcd-total', (total + totalCaja) > 0 ? fmt(total + totalCaja) : '—');
   } catch(_e) {
