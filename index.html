@@ -274,6 +274,7 @@ body.es-cajero #mc-btn-pdf,body.es-cajero #mc-btn-excel{display:none !important;
 .fc-textarea{width:100%;min-height:70px;border:1px solid rgba(74,94,77,0.2);background:var(--cream);border-radius:8px;padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:12px;resize:vertical;box-sizing:border-box;}
 .fc-save-btn{display:block;margin:8px auto 0;background:linear-gradient(135deg,#3d5240,#4a5e4d 45%,#5e7562 70%,#4a5e4d);border:none;border-radius:8px;padding:7px 22px;font-size:11px;color:#e8f0e9;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;}
 @media (max-width:900px){.fc-grid{grid-template-columns:1fr;}}
+.fc-section-label{font-size:10px;font-weight:600;letter-spacing:1.5px;color:var(--text-l);margin-bottom:6px;padding-left:2px;}
 .cv-tx-monto{font-family:'Outfit',sans-serif;font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.5px;text-align:right;white-space:nowrap;}
 .cv-tx-monto.cv-ing{color:#2a2e28;}.cv-tx-monto.cv-eg{color:#b09088;}.cv-tx-monto.cv-pend{color:#9a6050;}
 .cv-bottom-bar{flex-shrink:0;background:#f5f0e8;border-top:1px solid #d8d0c0;padding:14px 20px;display:flex;gap:10px;}
@@ -3649,46 +3650,58 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
           <!-- 3 filas de 2 columnas -->
           <div class="fc-grid">
             <!-- Fila 1 -->
-            <div class="fc-block datos">
-              <div class="fc-block-head"><div class="fc-block-title">Datos</div></div>
-              <div id="mcd-tel-wrap" class="fc-row" style="display:none;"><span class="lbl">Tel</span><span class="val" id="mcd-tel"></span></div>
-              <div id="mcd-email-wrap" class="fc-row" style="display:none;"><span class="lbl">Email</span><span class="val" id="mcd-email"></span></div>
-              <div id="mcd-dni-wrap" class="fc-row" style="display:none;"><span class="lbl">DNI</span><span class="val" id="mcd-dni"></span></div>
-              <div id="mcd-cuit-wrap" class="fc-row" style="display:none;"><span class="lbl">CUIT</span><span class="val" id="mcd-cuit"></span></div>
-              <div id="mcd-direccion-wrap" class="fc-row" style="display:none;"><span class="lbl">Dir</span><span class="val" id="mcd-direccion"></span></div>
+            <div>
+              <div class="fc-section-label">DATOS</div>
+              <div class="fc-block">
+                <div id="mcd-tel-wrap" class="fc-row" style="display:none;"><span class="lbl">Tel</span><span class="val" id="mcd-tel"></span></div>
+                <div id="mcd-email-wrap" class="fc-row" style="display:none;"><span class="lbl">Email</span><span class="val" id="mcd-email"></span></div>
+                <div id="mcd-dni-wrap" class="fc-row" style="display:none;"><span class="lbl">DNI</span><span class="val" id="mcd-dni"></span></div>
+                <div id="mcd-cuit-wrap" class="fc-row" style="display:none;"><span class="lbl">CUIT</span><span class="val" id="mcd-cuit"></span></div>
+                <div id="mcd-direccion-wrap" class="fc-row" style="display:none;"><span class="lbl">Dir</span><span class="val" id="mcd-direccion"></span></div>
+              </div>
             </div>
-            <div class="fc-block">
-              <div class="fc-block-head"><div class="fc-block-title">Ventas · Pedidos de caja</div></div>
-              <div id="mcd-ventas" style="max-height:220px;overflow-y:auto;"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin ventas aún. Aprobá un presupuesto.</div></div>
+            <div>
+              <div class="fc-section-label">VENTAS · PEDIDOS DE CAJA</div>
+              <div class="fc-block">
+                <div id="mcd-ventas" style="max-height:220px;overflow-y:auto;"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin ventas aún. Aprobá un presupuesto.</div></div>
+              </div>
             </div>
 
             <!-- Fila 2 -->
-            <div class="fc-block">
-              <div class="fc-block-head"><div class="fc-block-title">Actividad</div></div>
-              <div id="mcd-historial" style="max-height:280px;overflow-y:auto;"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin actividad registrada aún.</div></div>
+            <div>
+              <div class="fc-section-label">ACTIVIDAD</div>
+              <div class="fc-block">
+                <div id="mcd-historial" style="max-height:280px;overflow-y:auto;"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin actividad registrada aún.</div></div>
+              </div>
             </div>
-            <div class="fc-block">
-              <div class="fc-block-head">
-                <div class="fc-block-title">Presupuestos</div>
+            <div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                <div class="fc-section-label" style="margin-bottom:0;">PRESUPUESTOS</div>
                 <button class="fc-add-btn" id="mcd-new-presup-btn" onclick="">+ Nuevo</button>
               </div>
-              <div id="mcd-presupuestos" style="max-height:150px;overflow-y:auto;"><div style="padding:8px 0;color:var(--text-l);font-size:13px;">Sin presupuestos para este cliente.</div></div>
+              <div class="fc-block">
+                <div id="mcd-presupuestos" style="max-height:150px;overflow-y:auto;"><div style="padding:8px 0;color:var(--text-l);font-size:13px;">Sin presupuestos para este cliente.</div></div>
+              </div>
             </div>
 
             <!-- Fila 3 -->
-            <div class="fc-block">
-              <div class="fc-block-head"><div class="fc-block-title">Notas</div></div>
-              <div id="mcd-notas-list" style="max-height:120px;overflow-y:auto;margin-bottom:8px;"></div>
-              <textarea class="fc-textarea" id="mcd-nota-input" placeholder="Anotá algo sobre este cliente..."></textarea>
-              <button class="fc-save-btn" id="mcd-nota-btn" onclick="">Guardar</button>
-              <div class="saved-msg" id="mcd-nota-saved">✓ Nota guardada</div>
+            <div>
+              <div class="fc-section-label">NOTAS</div>
+              <div class="fc-block">
+                <div id="mcd-notas-list" style="max-height:120px;overflow-y:auto;margin-bottom:8px;"></div>
+                <textarea class="fc-textarea" id="mcd-nota-input" placeholder="Anotá algo sobre este cliente..."></textarea>
+                <button class="fc-save-btn" id="mcd-nota-btn" onclick="">Guardar</button>
+                <div class="saved-msg" id="mcd-nota-saved">✓ Nota guardada</div>
+              </div>
             </div>
-            <div class="fc-block">
-              <div class="fc-block-head">
-                <div class="fc-block-title">Cobros recibidos</div>
+            <div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                <div class="fc-section-label" style="margin-bottom:0;">COBROS RECIBIDOS</div>
                 <button class="fc-add-btn primary" id="mcd-quick-cobro" onclick="">+ Cobro</button>
               </div>
-              <div id="mcd-cobros-list" style="max-height:200px;overflow-y:auto;"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin cobros registrados.</div></div>
+              <div class="fc-block">
+                <div id="mcd-cobros-list" style="max-height:200px;overflow-y:auto;"><div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin cobros registrados.</div></div>
+              </div>
             </div>
           </div>
 
