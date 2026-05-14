@@ -25465,7 +25465,7 @@ window.cajaCierreConfirmar = async function() {
         if(_snap.exists()) _emailDueno = _snap.data().negocioEmail || _snap.data().email || _emailDueno;
       } catch(_ee) {}
       var _ventas = (window._cajaMovimientos||[]).filter(function(m){
-        return m.tipo==='ingreso' && m.origen==='venta_caja' && m.productos;
+        return ((m.tipo==='ingreso' && m.origen==='venta_caja') || m.tipo==='pedido_cta') && m.productos;
       });
       var _productosMap = {};
       _ventas.forEach(function(v){
@@ -25478,13 +25478,15 @@ window.cajaCierreConfirmar = async function() {
       });
       var _medios = {};
       (window._cajaMovimientos||[]).filter(function(m){
-        return (m.tipo==='ingreso' || m.tipo==='pedido_cta') && m.origen!=='apertura_turno' && m.origen!=='deposito_cajero';
+        return m.tipo==='ingreso' && m.origen!=='apertura_turno' && m.origen!=='deposito_cajero';
       }).forEach(function(m){
-        var med = m.tipo==='pedido_cta' ? 'Cuenta cliente'
-                : m.origen==='cobro_cliente' ? 'Cobros de clientes'
+        var med = m.origen==='cobro_cliente' ? 'Cobros de clientes'
                 : (m.medioPago||m.cuenta||'Efectivo');
         _medios[med] = (_medios[med]||0) + (parseFloat(m.monto)||0);
       });
+      var _pedidosCta = (window._cajaMovimientos||[]).filter(function(m){ return m.tipo==='pedido_cta'; });
+      var _totalCta = _pedidosCta.reduce(function(a,m){ return a+(parseFloat(m.monto)||0); },0);
+      var _detalleCta = _pedidosCta.map(function(m){ return { cliente: m.clienteNombre||'', ticket: m.ticketNum||'', monto: parseFloat(m.monto)||0 }; });
       var _totalRetiros = (window._cajaMovimientos||[])
         .filter(function(m){ return m.tipo==='egreso' && m.origen!=='cierre_turno'; })
         .reduce(function(a,m){ return a+(parseFloat(m.monto)||0); },0);
@@ -25501,7 +25503,8 @@ window.cajaCierreConfirmar = async function() {
           apertura: window.turnoActual?.apertura?.creadoEn||'',
           cierre: new Date().toISOString(),
           saldoInicial:_saldoBase, ingresos:ingresos, egresos:egresos, saldoFinal:saldo,
-          medios:_medios, productos:Object.values(_productosMap), retiros:_totalRetiros, depositos:_totalDepositos
+          medios:_medios, productos:Object.values(_productosMap), retiros:_totalRetiros, depositos:_totalDepositos,
+          cuentaCorriente:{ total:_totalCta, detalle:_detalleCta }
         })
       }).catch(function(){});
     } catch(_me) {}

@@ -147,6 +147,22 @@ function generarPDF(d) {
       y += 6;
     }
 
+    // ── 6. Cuenta corriente ────────────────────────────────────────
+    const cta = d.cuentaCorriente;
+    if (cta && cta.total > 0) {
+      seccion('Cuenta corriente · pendiente de cobro');
+      (cta.detalle || []).forEach(p => {
+        const label = p.cliente + (p.ticket ? '  #' + p.ticket : '');
+        fila(label, fmt(p.monto), '#8a5f55');
+      });
+      y += 4;
+      doc.moveTo(M, y).lineTo(W - M, y).strokeColor('#b09088').lineWidth(0.8).stroke();
+      y += 8;
+      doc.font('Helvetica-Bold').fontSize(10).fillColor('#8a5f55').text('Total pendiente', M, y);
+      doc.font('Helvetica-Bold').fontSize(12).fillColor('#8a5f55').text(fmt(cta.total), M, y, { align: 'right', width: IW });
+      y += 22;
+    }
+
     // ── Footer ─────────────────────────────────────────────────────
     y += 16;
     doc.moveTo(M, y).lineTo(W - M, y).strokeColor('#d8d3ce').lineWidth(0.5).stroke();
@@ -173,7 +189,7 @@ exports.handler = async (event) => {
   const {
     negocio, emailDueno, cajera, apertura, cierre,
     saldoInicial, ingresos, egresos, saldoFinal,
-    medios, productos, retiros, depositos
+    medios, productos, retiros, depositos, cuentaCorriente
   } = data;
 
   if (!emailDueno) return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Falta emailDueno' }) };
@@ -249,6 +265,16 @@ exports.handler = async (event) => {
       ${retiros ? `<tr><td style="padding:6px 0;color:#555;font-size:13px;">Retiros</td><td style="padding:6px 0;text-align:right;color:#b09088;font-size:13px;font-weight:600;">-${fmt(retiros)}</td></tr>` : ''}
       ${depositos ? `<tr><td style="padding:6px 0;color:#555;font-size:13px;">Depósitos</td><td style="padding:6px 0;text-align:right;color:#3a6e3d;font-size:13px;font-weight:600;">${fmt(depositos)}</td></tr>` : ''}
     </table>
+  </div>` : ''}
+  ${(cuentaCorriente && cuentaCorriente.total > 0) ? `<div style="background:#fdf8f5;padding:20px 32px;border-bottom:1px solid #f0ebe6;border-left:3px solid #b09088;">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.8px;color:#b09088;text-transform:uppercase;margin-bottom:12px;">Cuenta corriente · pendiente de cobro</div>
+    <table style="width:100%;border-collapse:collapse;">
+      ${(cuentaCorriente.detalle || []).map(p => `<tr><td style="padding:5px 0;color:#555;font-size:13px;">${p.cliente || '—'}${p.ticket ? ' <span style="color:#aaa;font-size:11px;">#'+p.ticket+'</span>' : ''}</td><td style="padding:5px 0;text-align:right;color:#8a5f55;font-size:13px;font-weight:600;">${fmt(p.monto)}</td></tr>`).join('')}
+    </table>
+    <div style="margin-top:10px;padding-top:10px;border-top:1px solid #f0ebe6;display:flex;justify-content:space-between;">
+      <span style="color:#888;font-size:12px;">Total pendiente</span>
+      <span style="color:#8a5f55;font-size:14px;font-weight:700;">${fmt(cuentaCorriente.total)}</span>
+    </div>
   </div>` : ''}
   <div style="background:#3a4e3d;padding:16px 32px;text-align:center;">
     <div style="color:rgba(255,255,255,.55);font-size:11px;">MB Strategy · sistema.mbstrategy.com.ar</div>
