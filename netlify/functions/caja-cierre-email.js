@@ -266,8 +266,8 @@ exports.handler = async (event) => {
       ${depositos ? `<tr><td style="padding:6px 0;color:#555;font-size:13px;">Depósitos</td><td style="padding:6px 0;text-align:right;color:#3a6e3d;font-size:13px;font-weight:600;">${fmt(depositos)}</td></tr>` : ''}
     </table>
   </div>` : ''}
-  ${(cuentaCorriente && cuentaCorriente.total > 0) ? `<div style="background:#fdf8f5;padding:20px 32px;border-bottom:1px solid #f0ebe6;border-left:3px solid #b09088;">
-    <div style="font-size:11px;font-weight:700;letter-spacing:.8px;color:#b09088;text-transform:uppercase;margin-bottom:12px;">Cuenta corriente · pendiente de cobro</div>
+  ${(cuentaCorriente && cuentaCorriente.total > 0) ? `<div style="background:#fdf5f2;padding:20px 32px;border-bottom:1px solid #f0ebe6;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;"><div style="width:3px;height:16px;background:#b09088;border-radius:2px;"></div><div style="font-size:11px;font-weight:700;letter-spacing:.8px;color:#8a5f55;text-transform:uppercase;">Cuenta corriente · pendiente de cobro</div></div>
     <table style="width:100%;border-collapse:collapse;">
       ${(cuentaCorriente.detalle || []).map(p => `<tr><td style="padding:5px 0;color:#555;font-size:13px;">${p.cliente || '—'}${p.ticket ? ' <span style="color:#aaa;font-size:11px;">#'+p.ticket+'</span>' : ''}</td><td style="padding:5px 0;text-align:right;color:#8a5f55;font-size:13px;font-weight:600;">${fmt(p.monto)}</td></tr>`).join('')}
     </table>
@@ -283,7 +283,7 @@ exports.handler = async (event) => {
 </body></html>`;
 
     const pdfBuffer = await generarPDF({ negocio, cajera, apertura, cierre,
-      saldoInicial, ingresos, egresos, saldoFinal, medios, productos, retiros, depositos });
+      saldoInicial, ingresos, egresos, saldoFinal, medios, productos, retiros, depositos, cuentaCorriente });
 
     await transporter.sendMail({
       from: `"MB Strategy" <${process.env.GMAIL_USER}>`,
