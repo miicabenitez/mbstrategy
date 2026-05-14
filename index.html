@@ -2293,7 +2293,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
             <label style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#9aaa98;display:block;margin-bottom:8px;">Monto</label>
             <div style="display:flex;align-items:baseline;gap:6px;border:1.5px solid #ddd;border-radius:10px;padding:10px 14px;margin-bottom:16px;background:#fafafa;">
               <span style="font-family:'DM Sans',sans-serif;font-size:22px;font-weight:400;color:#9aaa98;">$</span>
-              <input id="cajero-egreso-monto" type="number" min="0" step="any" placeholder="0" style="flex:1;border:none;background:transparent;font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:400;color:#1e2a1c;outline:none;width:100%;line-height:1;">
+              <input id="cajero-egreso-monto" type="number" min="0" step="any" placeholder="0" style="flex:1;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:24px;font-weight:400;color:#1e2a1c;outline:none;width:100%;line-height:1;">
             </div>
             <label style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#9aaa98;display:block;margin-bottom:8px;">Observación (opcional)</label>
             <input id="cajero-egreso-obs" type="text" placeholder="Observación (opcional)" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;margin-bottom:20px;font-family:inherit;background:#fafafa;outline:none;">
@@ -18318,8 +18318,8 @@ function renderMcDetallePresupuestos(list, clienteId, clienteNombre) {
         </div>
         <div style="text-align:right;flex-shrink:0;">
           ${m > 0 || !cobrado ? (cobrado
-            ? `<div style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:500;color:var(--text);">$${m.toLocaleString('es-AR')} <span style="font-size:11px;color:var(--text-l);">${p.moneda||'ARS'}</span></div>`
-            : `<div contenteditable="true" data-orig="${m}" onblur="guardarMontoPresup(this,'${p.id}')" onfocus="this.textContent=this.dataset.orig" style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:500;color:var(--text);outline:none;cursor:text;border-bottom:1px dashed var(--cream-d);min-width:20px;display:inline-block;">$${m.toLocaleString('es-AR')}</div><span style="font-size:11px;color:var(--text-l);margin-left:4px;">${p.moneda||'ARS'}</span>`
+            ? `<div style="font-family:'DM Sans',sans-serif;font-size:16px;font-weight:500;color:var(--text);">$${m.toLocaleString('es-AR')} <span style="font-size:11px;color:var(--text-l);">${p.moneda||'ARS'}</span></div>`
+            : `<div contenteditable="true" data-orig="${m}" onblur="guardarMontoPresup(this,'${p.id}')" onfocus="this.textContent=this.dataset.orig" style="font-family:'DM Sans',sans-serif;font-size:16px;font-weight:500;color:var(--text);outline:none;cursor:text;border-bottom:1px dashed var(--cream-d);min-width:20px;display:inline-block;">$${m.toLocaleString('es-AR')}</div><span style="font-size:11px;color:var(--text-l);margin-left:4px;">${p.moneda||'ARS'}</span>`
           ) : ''}
         </div>
       </div>
@@ -18703,7 +18703,6 @@ function renderMcVentas(presups, clienteId, cajaMovs) {
   if(!el) return;
   const aprobados = presups.filter(p => p.estado === 'Aprobado' || p.estado === 'Cobrado');
   const pedidosCaja = cajaMovs.filter(m => m.tipo === 'pedido_cta');
-  pedidosCaja.sort(function(a,b){ return (b.fecha||'').localeCompare(a.fecha||''); });
   if(pedidosCaja.length > 0) {
     window._cajaMovimientos = window._cajaMovimientos || [];
     pedidosCaja.forEach(function(m) {
@@ -18726,23 +18725,22 @@ function renderMcVentas(presups, clienteId, cajaMovs) {
         <span class="fc-badge ${badgeClass}">${badgeLabel}</span>
       </div>
     </div>`;
-  let html = aprobados.map(p => {
-    const monto = getPresupMonto(p);
-    const cobradoPresup = parseFloat(p.cobradoPorPresup || 0);
-    const pendiente = Math.max(0, monto - cobradoPresup);
-    const fecha = p.fecha ? new Date(p.fecha+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'short'}) : '—';
-    const badgeClass = pendiente > 0 ? 'pendiente' : 'cobrado';
-    const badgeLabel = pendiente > 0 ? 'Pendiente' : 'Cobrado';
-    return _fila(p.descripcion||'Venta', fecha, monto.toLocaleString('es-AR'), badgeClass, badgeLabel, null);
-  }).join('');
-  if(pedidosCaja.length > 0) {
-    html += pedidosCaja.map(m => {
-      const fecha = m.creadoEn ? new Date(m.creadoEn).toLocaleDateString('es-AR',{day:'numeric',month:'short'}) : '—';
+  const _items = [
+    ...aprobados.map(p => {
+      const monto = getPresupMonto(p);
+      const cobradoPresup = parseFloat(p.cobradoPorPresup || 0);
+      const pendiente = Math.max(0, monto - cobradoPresup);
+      const fechaLabel = p.fecha ? new Date(p.fecha+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'short'}) : '—';
+      return { sortKey: p.fecha||'', html: _fila(p.descripcion||'Venta', fechaLabel, monto.toLocaleString('es-AR'), pendiente>0?'pendiente':'cobrado', pendiente>0?'Pendiente':'Cobrado', null) };
+    }),
+    ...pedidosCaja.map(m => {
+      const fechaLabel = m.creadoEn ? new Date(m.creadoEn).toLocaleDateString('es-AR',{day:'numeric',month:'short'}) : '—';
       const cobrado = m.estado === 'cobrado';
-      return _fila(m.ticketNum||'Pedido caja', fecha, (parseFloat(m.monto)||0).toLocaleString('es-AR'), cobrado?'cobrado':'pendiente', cobrado?'Cobrado':'Pendiente', `cajaMovDetalle('${m.id}')`);
-    }).join('');
-  }
-  el.innerHTML = html;
+      return { sortKey: m.fecha || (m.creadoEn||'').slice(0,10), html: _fila(m.ticketNum||'Pedido caja', fechaLabel, (parseFloat(m.monto)||0).toLocaleString('es-AR'), cobrado?'cobrado':'pendiente', cobrado?'Cobrado':'Pendiente', `cajaMovDetalle('${m.id}')`) };
+    })
+  ];
+  _items.sort((a,b) => (b.sortKey||'').localeCompare(a.sortKey||''));
+  el.innerHTML = _items.map(i => i.html).join('');
 }
 
 window.deleteMcPresup = function(id) {
