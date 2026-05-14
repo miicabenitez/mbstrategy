@@ -18731,12 +18731,12 @@ function renderMcVentas(presups, clienteId, cajaMovs) {
       const cobradoPresup = parseFloat(p.cobradoPorPresup || 0);
       const pendiente = Math.max(0, monto - cobradoPresup);
       const fechaLabel = p.fecha ? new Date(p.fecha+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'short'}) : '—';
-      return { sortKey: p.fecha||'', html: _fila(p.descripcion||'Venta', fechaLabel, monto.toLocaleString('es-AR'), pendiente>0?'pendiente':'cobrado', pendiente>0?'Pendiente':'Cobrado', null) };
+      return { sortKey: p.creadoEn || p.fecha || '', html: _fila(p.descripcion||'Venta', fechaLabel, monto.toLocaleString('es-AR'), pendiente>0?'pendiente':'cobrado', pendiente>0?'Pendiente':'Cobrado', null) };
     }),
     ...pedidosCaja.map(m => {
       const fechaLabel = m.creadoEn ? new Date(m.creadoEn).toLocaleDateString('es-AR',{day:'numeric',month:'short'}) : '—';
       const cobrado = m.estado === 'cobrado';
-      return { sortKey: m.fecha || (m.creadoEn||'').slice(0,10), html: _fila(m.ticketNum||'Pedido caja', fechaLabel, (parseFloat(m.monto)||0).toLocaleString('es-AR'), cobrado?'cobrado':'pendiente', cobrado?'Cobrado':'Pendiente', `cajaMovDetalle('${m.id}')`) };
+      return { sortKey: m.creadoEn || m.fecha || '', html: _fila(m.ticketNum||'Pedido caja', fechaLabel, (parseFloat(m.monto)||0).toLocaleString('es-AR'), cobrado?'cobrado':'pendiente', cobrado?'Cobrado':'Pendiente', `cajaMovDetalle('${m.id}')`) };
     })
   ];
   _items.sort((a,b) => (b.sortKey||'').localeCompare(a.sortKey||''));
