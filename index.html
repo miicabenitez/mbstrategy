@@ -14337,10 +14337,13 @@ function _vrcRenderMetodos() {
       <div style="margin-bottom:5px;">${icons[c.nombre]||defIcon}</div>
       <div class="vrc-mlabel">${_label}</div>
     </button>`;
-  }).join('') + `<button class="vrc-metodo-btn${isTarjeta?' sel':''}" onclick="vrcSetMetodo('__tarjeta__')">
+  }).join('') + `<div style="position:relative;"><button class="vrc-metodo-btn${isTarjeta?' sel':''}" onclick="vrcSetMetodo('__tarjeta__')" style="width:100%;">
     <div style="margin-bottom:5px;">${icons['Tarjeta']}</div>
     <div class="vrc-mlabel">${isTarjeta && _vrcTarjetaTipo ? (_vrcTarjetaTipo === 'debito' ? 'Débito' : 'Crédito') : 'Tarjeta'}</div>
-  </button>` + `<button class="vrc-metodo-btn${isCta?' sel':''}" onclick="vrcSetMetodo('__cta__')" style="border-color:rgba(176,144,136,0.5);color:#b09088;">
+  </button>${isTarjeta ? `<div style="position:absolute;bottom:calc(100% + 8px);left:0;right:0;display:flex;gap:6px;background:#fff;padding:8px;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,0.15);border:1px solid #e8e8e4;z-index:10;">
+    <button onclick="window._vrcSetTarjetaTipo('debito')" style="flex:1;padding:8px 4px;border-radius:8px;border:1.5px solid ${_vrcTarjetaTipo==='debito'?'#4a5e4d':'#e8e8e4'};background:${_vrcTarjetaTipo==='debito'?'#f2f7f2':'white'};color:${_vrcTarjetaTipo==='debito'?'#4a5e4d':'#888'};font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;">Débito</button>
+    <button onclick="window._vrcSetTarjetaTipo('credito')" style="flex:1;padding:8px 4px;border-radius:8px;border:1.5px solid ${_vrcTarjetaTipo==='credito'?'#4a5e4d':'#e8e8e4'};background:${_vrcTarjetaTipo==='credito'?'#f2f7f2':'white'};color:${_vrcTarjetaTipo==='credito'?'#4a5e4d':'#888'};font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;">Crédito</button>
+  </div>` : ''}</div>` + `<button class="vrc-metodo-btn${isCta?' sel':''}" onclick="vrcSetMetodo('__cta__')" style="border-color:rgba(176,144,136,0.5);color:#b09088;">
     <div style="margin-bottom:5px;"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 17c0-3.314 3.134-6 7-6s7 2.686 7 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
     <div class="vrc-mlabel">Cuenta cliente</div>
   </button>`;
@@ -14353,18 +14356,6 @@ function _vrcRenderMetodos() {
       _vrcFiltrarCta('');
     } else {
       ctaDiv.style.display = 'none';
-    }
-  }
-  const tarjetaDiv = document.getElementById('vrc-tarjeta-tipo');
-  if(tarjetaDiv) {
-    if(isTarjeta) {
-      tarjetaDiv.style.display = 'block';
-      tarjetaDiv.innerHTML = `<div style="display:flex;gap:8px;margin-top:10px;">
-        <button onclick="window._vrcSetTarjetaTipo('debito')" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid ${_vrcTarjetaTipo==='debito'?'#4a5e4d':'#e8e8e4'};background:${_vrcTarjetaTipo==='debito'?'#f2f7f2':'white'};color:${_vrcTarjetaTipo==='debito'?'#4a5e4d':'#888'};font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;">Débito</button>
-        <button onclick="window._vrcSetTarjetaTipo('credito')" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid ${_vrcTarjetaTipo==='credito'?'#4a5e4d':'#e8e8e4'};background:${_vrcTarjetaTipo==='credito'?'#f2f7f2':'white'};color:${_vrcTarjetaTipo==='credito'?'#4a5e4d':'#888'};font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;">Crédito</button>
-      </div>`;
-    } else {
-      tarjetaDiv.style.display = 'none';
     }
   }
 }
@@ -27502,7 +27493,6 @@ window.doResetPassword = async function(){
         <span class="cj-slabel">MÉTODO DE PAGO</span>
         <div id="vrc-metodos" style="display:grid;gap:8px;grid-template-columns:1fr 1fr 1fr;margin-top:0;"></div>
         <div id="vrc-cta-search" style="display:none;"></div>
-        <div id="vrc-tarjeta-tipo" style="display:none;"></div>
       </div>
     </div>
     <div class="cj-mfooter">
