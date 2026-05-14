@@ -5167,7 +5167,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
       <div class="fg"><label class="fl">Notas</label><textarea class="na" id="mcc-notas" style="min-height:50px;"></textarea></div>
       <div style="display:flex;gap:10px;margin-top:4px;">
         <button onclick="closeModal('newMclienteModal')" style="flex:1;padding:12px;border-radius:10px;border:1px solid rgba(176,144,136,0.3);background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:#6a7a68;cursor:pointer;">Cancelar</button>
-        <button onclick="createMcCliente()" style="flex:2;padding:12px;border-radius:10px;border:none;background:#4a5e4d;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:#f4f0ea;cursor:pointer;">Guardar cliente</button>
+        <button id="mcc-save-btn" onclick="createMcCliente()" style="flex:2;padding:12px;border-radius:10px;border:none;background:#4a5e4d;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:#f4f0ea;cursor:pointer;">Guardar cliente</button>
       </div>
       <div class="saved-msg" id="mcc-saved">✓ Cliente guardado</div>
       <div id="mcc-error" style="display:none;background:var(--err-bg);color:var(--err);font-size:12px;padding:9px 12px;border-radius:7px;margin-top:4px;"></div>
@@ -18566,7 +18566,7 @@ window.abrirNuevoMcClienteModal = function() {
   ['mcc-nombre','mcc-apellido','mcc-dni','mcc-cuit','mcc-direccion','mcc-ciudad','mcc-tel','mcc-email','mcc-notas'].forEach(fid=>{const el=document.getElementById(fid);if(el)el.value='';});
   const ivaPill=document.querySelector('#mcc-condicion-iva-pills .mcc-civa-pill[data-val="5"]');
   if(ivaPill) selectMccCondicionIVA(ivaPill,'5');
-  const btn=document.querySelector('#newMclienteModal .bp');
+  const btn=document.getElementById('mcc-save-btn');
   if(btn){btn.textContent='Guardar';btn.onclick=createMcCliente;}
   const mtEl=document.querySelector('#newMclienteModal .mt');
   if(mtEl) mtEl.textContent='Nuevo cliente';
@@ -18592,7 +18592,7 @@ window.editMcCliente = function(id, event) {
   document.getElementById('mcc-notas').value = c.notas||'';
   const condPill = document.querySelector(`#mcc-condicion-iva-pills .mcc-civa-pill[data-val="${c.condicionIVA||'5'}"]`);
   selectMccCondicionIVA(condPill||document.querySelector('#mcc-condicion-iva-pills .mcc-civa-pill'), c.condicionIVA||'5');
-  const btn=document.querySelector('#newMclienteModal .bp');
+  const btn=document.getElementById('mcc-save-btn');
   if(btn){btn.textContent='Guardar cambios';btn.onclick=()=>saveMcCliente(id);}
   const mtEl=document.querySelector('#newMclienteModal .mt');
   if(mtEl) mtEl.textContent='Editar cliente';
@@ -18633,7 +18633,7 @@ window.saveMcCliente = async function(id) {
     setTimeout(async()=>{
       if(s)s.style.display='none';
       closeModal('newMclienteModal');
-      const btn=document.querySelector('#newMclienteModal .bp');
+      const btn=document.getElementById('mcc-save-btn');
       if(btn){btn.textContent='Guardar';btn.onclick=createMcCliente;}
       const mtEl2=document.querySelector('#newMclienteModal .mt');
       if(mtEl2) mtEl2.textContent='Nuevo cliente';
