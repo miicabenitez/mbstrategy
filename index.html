@@ -25206,14 +25206,6 @@ window.cajaRetiroGuardar = async function() {
       fecha: hoy, mes: mes, uid: uid, eliminado: false,
       turnoId: window.turnoActual?.id||'', creadoEn: new Date().toISOString()
     });
-    // Ingreso en Efectivo (caja del dueño)
-    await window._addDoc(window._collection(window.db,'clientes',uid,'libroCaja'),{
-      tipo:'ingreso', cuenta:'Efectivo', monto:monto,
-      concepto:'Retiro de '+operador, origen:'retiro_cajero',
-      creadoPor: window.currentOperadorNombre||'Cajero', detalle: obs||'',
-      fecha: hoy, mes: mes, uid: uid, eliminado: false,
-      turnoId: window.turnoActual?.id||'', creadoEn: new Date().toISOString()
-    });
     cajaRetiroCerrar();
     showToast('Retiro registrado','success');
     loadCajaModule();
