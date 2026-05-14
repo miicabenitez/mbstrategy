@@ -14341,7 +14341,7 @@ function _vrcRenderMetodos() {
   }).join('') + `<div style="position:relative;"><button class="vrc-metodo-btn${isTarjeta?' sel':''}" id="vrc-tarjeta-btn" onclick="window._vrcToggleTarjeta()" style="width:100%;">
     <div style="margin-bottom:5px;">${icons['Tarjeta']}</div>
     <div class="vrc-mlabel">${isTarjeta && _vrcTarjetaTipo ? (_vrcTarjetaTipo === 'debito' ? 'Débito' : 'Crédito') : 'Tarjeta'}</div>
-  </button>${isTarjetaOpen ? `<div id="vrc-tp-popup" style="position:fixed;top:0;left:0;display:flex;gap:6px;background:#f4f0ea;padding:8px;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,0.15);border:1px solid #e8e8e4;z-index:2000;">
+  </button>${isTarjetaOpen ? `<div id="vrc-tp-popup" style="position:fixed;top:0;left:0;display:flex;visibility:hidden;gap:6px;background:#f4f0ea;padding:8px;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,0.15);border:1px solid #e8e8e4;z-index:2000;">
     <button onclick="window._vrcSetTarjetaTipo('debito')" style="flex:1;padding:8px 4px;border-radius:8px;border:1.5px solid ${_vrcTarjetaTipo==='debito'?'#4a5e4d':'#e8e8e4'};background:${_vrcTarjetaTipo==='debito'?'#4a5e4d':'#fff'};color:${_vrcTarjetaTipo==='debito'?'#f4f0ea':'#888'};font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;">Débito</button>
     <button onclick="window._vrcSetTarjetaTipo('credito')" style="flex:1;padding:8px 4px;border-radius:8px;border:1.5px solid ${_vrcTarjetaTipo==='credito'?'#4a5e4d':'#e8e8e4'};background:${_vrcTarjetaTipo==='credito'?'#4a5e4d':'#fff'};color:${_vrcTarjetaTipo==='credito'?'#f4f0ea':'#888'};font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;">Crédito</button>
   </div>` : ''}</div>` + `<button class="vrc-metodo-btn${isCta?' sel':''}" onclick="vrcSetMetodo('__cta__')" style="border-color:rgba(176,144,136,0.5);color:#b09088;">
@@ -14349,19 +14349,15 @@ function _vrcRenderMetodos() {
     <div class="vrc-mlabel">Cuenta cliente</div>
   </button>`;
   if(isTarjetaOpen) {
-    const popup = document.getElementById('vrc-tp-popup');
-    if(popup) {
-      popup.style.visibility = 'hidden';
-      popup.style.display = 'flex';
-      setTimeout(function() {
-        const btn2 = document.getElementById('vrc-tarjeta-btn');
-        if(!btn2) return;
-        const r2 = btn2.getBoundingClientRect();
-        popup.style.left = (r2.left + r2.width/2 - popup.offsetWidth/2) + 'px';
-        popup.style.top = (r2.top - popup.offsetHeight - 8) + 'px';
-        popup.style.visibility = 'visible';
-      }, 0);
-    }
+    requestAnimationFrame(function() {
+      const popup = document.getElementById('vrc-tp-popup');
+      const btn2 = document.getElementById('vrc-tarjeta-btn');
+      if(!popup || !btn2) return;
+      const r2 = btn2.getBoundingClientRect();
+      popup.style.left = (r2.left + r2.width/2 - popup.offsetWidth/2) + 'px';
+      popup.style.top = (r2.top - popup.offsetHeight - 8) + 'px';
+      popup.style.visibility = 'visible';
+    });
   }
   const ctaDiv = document.getElementById('vrc-cta-search');
   if(ctaDiv) {
@@ -14383,8 +14379,8 @@ window._vrcFiltrarCta = function(q) {
   const list = document.getElementById('vrc-cta-list');
   if(!list) return;
   const _selId = window._vrcClienteSeleccionado?.id || null;
-  const clis = (window._mcClientes || []).filter(c => !c.eliminado && (!q || ['nombre','tel','dni'].some(f => (c[f]||'').toLowerCase().includes(q.toLowerCase()))));
-  const _rows = clis.slice(0,8).map(c => {
+  const clis = q ? (window._mcClientes || []).filter(c => !c.eliminado && ['nombre','tel','dni'].some(f => (c[f]||'').toLowerCase().includes(q.toLowerCase()))) : [];
+  const _rows = clis.slice(0,5).map(c => {
     const data = JSON.stringify({id:c.id,nombre:c.nombre}).replace(/\\/g,'\\\\').replace(/"/g,'&quot;');
     const _isSel = _selId && c.id === _selId;
     const _style = _isSel ? 'background:#3a4e3d;border:none;' : 'background:#fff;border:1px solid rgba(176,144,136,0.2);';
@@ -14394,7 +14390,8 @@ window._vrcFiltrarCta = function(q) {
     return `<button onclick='window._vrcClienteSeleccionado=${data.replace(/'/g,"\\'")}; _vrcFiltrarCta(document.getElementById("vrc-cta-input")?.value||""); _vrcRenderMetodos();' style="text-align:left;${_style}border-radius:10px;padding:11px 14px;font-size:13px;font-family:inherit;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:space-between;"><div style="display:flex;flex-direction:column;gap:2px;"><span style="${_nameColor}">${c.nombre}</span>${c.tel?`<span style="font-size:11px;${_telColor}">${c.tel}</span>`:''}</div>${_check}</button>`;
   }).join('');
   const _nuevoBtn = '<button onclick="openModal(\'newMclienteModal\')" style="text-align:left;background:#fff;border:1px solid rgba(176,144,136,0.2);border-radius:10px;padding:11px 14px;font-size:13px;font-family:inherit;cursor:pointer;color:#b09088;width:100%;display:flex;align-items:center;gap:8px;"><i class="ti ti-user-plus" style="font-size:15px;"></i><span>Nuevo cliente</span></button>';
-  list.innerHTML = (_rows || '<div style="text-align:center;padding:12px;font-size:12px;color:#aaa;">Sin resultados</div>') + _nuevoBtn;
+  const _sinResultados = (q && clis.length === 0) ? '<div style="text-align:center;padding:12px;font-size:12px;color:#aaa;">Sin resultados</div>' : '';
+  list.innerHTML = _rows + _sinResultados + _nuevoBtn;
 };
 
 function _vrcRenderProductos(lista) {
