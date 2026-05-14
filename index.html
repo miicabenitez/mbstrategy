@@ -18616,6 +18616,17 @@ window.saveMcCliente = async function(id) {
     notas: document.getElementById('mcc-notas').value
   };
   if(!data.nombre) return;
+  const errEl = document.getElementById('mcc-error');
+  const showErr = (msg) => { if(errEl){ errEl.textContent=msg; errEl.style.display='block'; } };
+  if(errEl) errEl.style.display='none';
+  if(data.dni) {
+    const existeDni = _mcClientes.find(c => c.id !== id && c.dni && c.dni.replace(/\D/g,'') === data.dni.replace(/\D/g,''));
+    if(existeDni) { showErr(`Ya existe un cliente con ese DNI: ${existeDni.nombre}`); return; }
+  }
+  if(data.cuit) {
+    const existeCuit = _mcClientes.find(c => c.id !== id && c.cuit && c.cuit.replace(/\D/g,'') === data.cuit.replace(/\D/g,''));
+    if(existeCuit) { showErr(`Ya existe un cliente con ese CUIT: ${existeCuit.nombre}`); return; }
+  }
   try {
     await updateDoc(doc(db,'clientes',currentClientUID,'misClientes',id),data);
     const s=document.getElementById('mcc-saved');if(s)s.style.display='block';
