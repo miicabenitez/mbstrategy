@@ -17785,7 +17785,7 @@ window.openMcDetalle = async function(id) {
         window._where('clienteId','==',id)
       )
     );
-    cajaDocs.docs.forEach(d => { const m = d.data(); totalCaja += parseFloat(m.monto)||0; cajaMovs.push({id:d.id,...m}); });
+    cajaDocs.docs.forEach(d => { const m = d.data(); if((m.tipo === 'ingreso' && m.origen === 'venta_caja') || m.tipo === 'pedido_cta') totalCaja += parseFloat(m.monto)||0; cajaMovs.push({id:d.id,...m}); });
     if(Math.abs(totalCaja - (parseFloat(c.totalCaja)||0)) > 0.01) {
       await window._updateDoc(window._doc(window.db,'clientes',currentClientUID,'misClientes',id),{totalCaja});
       if(_mcClientes.find(x=>x.id===id)) _mcClientes.find(x=>x.id===id).totalCaja = totalCaja;
