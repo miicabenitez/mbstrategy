@@ -1339,6 +1339,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         </button>
         <div class="sb-sub" id="sbsub-finanzas">
           <button class="sb-subitem active" data-sub="caja" onclick="sidebarNav('finanzas','caja')">Caja</button>
+          <button class="sb-subitem" data-sub="auditoria-cajero" onclick="sidebarNav('finanzas','auditoria-cajero')">Auditoría caja mostrador</button>
           <button class="sb-subitem" data-sub="cierre-periodo" onclick="sidebarNav('finanzas','cierre-periodo')">Cierre de período</button>
           <button class="sb-subitem" data-sub="caja-config" onclick="sidebarNav('finanzas','caja-config')">Configuración</button>
           <button class="sb-subitem" data-sub="mis-facturas" onclick="sidebarNav('finanzas','mis-facturas')">Mis Facturas</button>
@@ -10550,6 +10551,7 @@ async function loadCajaModule() {
     const _opSnap = await getDocs(query(collection(db,'clientes',uid,'operadores'), where('activo','==',true)));
     window._tieneOperadores = !_opSnap.empty;
     // 4. Renderizar
+    movs = movs.filter(m => m.cuenta !== 'Caja mostrador');
     renderCajaKPIs(movs);
     renderCajaChips(cuentasUnicas, todosMovs);
     const facturasSnap = await getDocs(collection(db, 'clientes', uid, 'facturas'));
@@ -10611,6 +10613,8 @@ function renderCajaChips(cuentas, movs) {
   // Cajero: solo ve Caja mostrador
   if(window.currentRol === 'cajero') {
     cuentasUnicas = cuentasUnicas.filter(c => c.nombre === 'Caja mostrador');
+  } else {
+    cuentasUnicas = cuentasUnicas.filter(c => c.nombre !== 'Caja mostrador');
   }
   const saldos = {};
   cuentasUnicas.forEach(c => { saldos[c.nombre] = 0; });
