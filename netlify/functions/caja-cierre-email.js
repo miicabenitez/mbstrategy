@@ -139,21 +139,35 @@ function generarPDF(d) {
       y += 22;
     }
 
-    // ── 5. Otros movimientos ───────────────────────────────────────
+    // ── 5. Retiros ────────────────────────────────────────────────
     if ((d.retirosDetalle && d.retirosDetalle.length) || d.depositos > 0) {
-      seccion('Otros movimientos');
+      seccion('Retiros');
       if (d.retirosDetalle && d.retirosDetalle.length) {
         d.retirosDetalle.forEach(function(r) {
-          var hora = r.creadoEn ? new Date(r.creadoEn).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}) : '';
-          fila((r.concepto||'Retiro') + (hora ? ' · ' + hora : ''), '-' + fmt(r.monto), '#b09088');
+          fila(r.concepto||'Retiro', '-' + fmt(r.monto), '#b09088');
         });
-        if (d.retiros > 0) {
+        if (d.retirosDetalle.length > 1 && d.retiros > 0) {
           doc.font('Helvetica-Bold').fontSize(10).fillColor('#666').text('Total retiros', M, y);
           doc.font('Helvetica-Bold').fontSize(10).fillColor('#b09088').text('-' + fmt(d.retiros), M, y, { align: 'right', width: IW });
           y += 18;
         }
       }
       if (d.depositos > 0) fila('Depósitos', fmt(d.depositos), '#3a6e3d');
+      y += 6;
+    }
+
+    // ── 5b. Egresos del turno ─────────────────────────────────────
+    if (d.egresosCaja && d.egresosCaja.length) {
+      seccion('Egresos del turno');
+      d.egresosCaja.forEach(function(e) {
+        var label = (e.concepto||'Egreso') + (e.detalle ? ' · ' + e.detalle : '');
+        fila(label, '-' + fmt(e.monto), '#b09088');
+      });
+      if (d.egresosCaja.length > 1 && d.egresosCajaTotal > 0) {
+        doc.font('Helvetica-Bold').fontSize(10).fillColor('#666').text('Total egresos', M, y);
+        doc.font('Helvetica-Bold').fontSize(10).fillColor('#b09088').text('-' + fmt(d.egresosCajaTotal), M, y, { align: 'right', width: IW });
+        y += 18;
+      }
       y += 6;
     }
 
@@ -199,7 +213,8 @@ exports.handler = async (event) => {
   const {
     negocio, emailDueno, cajera, apertura, cierre,
     saldoInicial, ingresos, egresos, saldoFinal,
-    medios, productos, retiros, depositos, retirosDetalle, cuentaCorriente
+    medios, productos, retiros, depositos, retirosDetalle,
+    egresosCaja, egresosCajaTotal, cuentaCorriente
   } = data;
 
   if (!emailDueno) return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Falta emailDueno' }) };
@@ -270,14 +285,18 @@ exports.handler = async (event) => {
     </div>
   </div>` : ''}
   ${((retirosDetalle && retirosDetalle.length) || depositos) ? `<div style="background:#fff;padding:20px 32px;border-bottom:1px solid #f0ebe6;">
-    <div style="font-size:11px;font-weight:700;letter-spacing:.8px;color:#888;text-transform:uppercase;margin-bottom:12px;">Otros movimientos</div>
+    <div style="font-size:11px;font-weight:700;letter-spacing:.8px;color:#888;text-transform:uppercase;margin-bottom:12px;">Retiros</div>
     <table style="width:100%;border-collapse:collapse;">
-      ${(retirosDetalle||[]).map(r => {
-        const hora = r.creadoEn ? new Date(r.creadoEn).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}) : '';
-        return `<tr><td style="padding:5px 0;color:#555;font-size:13px;">${r.concepto||'Retiro'}${hora ? ' <span style="color:#aaa;font-size:11px;">· '+hora+'</span>' : ''}</td><td style="padding:5px 0;text-align:right;color:#b09088;font-size:13px;font-weight:600;">-${fmt(r.monto)}</td></tr>`;
-      }).join('')}
-      ${retiros ? `<tr style="border-top:1px solid #f0ebe6;"><td style="padding:8px 0 4px;color:#555;font-size:13px;font-weight:700;">Total retiros</td><td style="padding:8px 0 4px;text-align:right;color:#b09088;font-size:13px;font-weight:700;">-${fmt(retiros)}</td></tr>` : ''}
+      ${(retirosDetalle||[]).map(r => `<tr><td style="padding:5px 0;color:#555;font-size:13px;">${r.concepto||'Retiro'}</td><td style="padding:5px 0;text-align:right;color:#b09088;font-size:13px;font-weight:600;">-${fmt(r.monto)}</td></tr>`).join('')}
+      ${(retirosDetalle && retirosDetalle.length > 1 && retiros) ? `<tr style="border-top:1px solid #f0ebe6;"><td style="padding:8px 0 4px;color:#555;font-size:13px;font-weight:700;">Total retiros</td><td style="padding:8px 0 4px;text-align:right;color:#b09088;font-size:13px;font-weight:700;">-${fmt(retiros)}</td></tr>` : ''}
       ${depositos ? `<tr><td style="padding:6px 0;color:#555;font-size:13px;">Depósitos</td><td style="padding:6px 0;text-align:right;color:#3a6e3d;font-size:13px;font-weight:600;">${fmt(depositos)}</td></tr>` : ''}
+    </table>
+  </div>` : ''}
+  ${(egresosCaja && egresosCaja.length) ? `<div style="background:#fff;padding:20px 32px;border-bottom:1px solid #f0ebe6;">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.8px;color:#888;text-transform:uppercase;margin-bottom:12px;">Egresos del turno</div>
+    <table style="width:100%;border-collapse:collapse;">
+      ${egresosCaja.map(e => `<tr><td style="padding:5px 0;color:#555;font-size:13px;">${e.concepto||'Egreso'}${e.detalle ? `<span style="color:#aaa;font-size:11px;margin-left:6px;">${e.detalle}</span>` : ''}</td><td style="padding:5px 0;text-align:right;color:#b09088;font-size:13px;font-weight:600;">-${fmt(e.monto)}</td></tr>`).join('')}
+      ${(egresosCaja.length > 1 && egresosCajaTotal) ? `<tr style="border-top:1px solid #f0ebe6;"><td style="padding:8px 0 4px;color:#555;font-size:13px;font-weight:700;">Total egresos</td><td style="padding:8px 0 4px;text-align:right;color:#b09088;font-size:13px;font-weight:700;">-${fmt(egresosCajaTotal)}</td></tr>` : ''}
     </table>
   </div>` : ''}
   ${(cuentaCorriente && cuentaCorriente.total > 0) ? `<div style="background:#fdf5f2;padding:20px 32px;border-bottom:1px solid #f0ebe6;">
