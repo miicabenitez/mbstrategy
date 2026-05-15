@@ -14585,7 +14585,7 @@ window.vrcGuardar = async function() {
         : _cuentaObj?.tipo === 'banco' ? 'Transferencia'
         : _cuentaObj?.nombre === 'Caja mostrador' ? 'Efectivo'
         : _cuentaObj?.nombre || 'Efectivo';
-      const _cuentaGuardar = _vrcMetodo === '__tarjeta__' ? 'Caja mostrador' : (_vrcMetodo || 'Efectivo');
+      const _cuentaGuardar = 'Caja mostrador';
       const _vcDocRef = await addDoc(collection(db,'clientes',currentClientUID,'libroCaja'), {
         uid:currentClientUID,
         fecha:hoy, tipo:'ingreso', concepto:'Venta caja',
