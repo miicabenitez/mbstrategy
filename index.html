@@ -3111,6 +3111,11 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         </div>
       </div>
 
+      <!-- ── AUDITORÍA CAJA MOSTRADOR ── -->
+      <div id="ct-auditoria-cajero" style="display:none;">
+        <div id="auditoria-cajero-root"></div>
+      </div>
+
       <!-- ── CIERRE DE PERÍODO ── -->
       <div id="ct-cierre-periodo" style="display:none;">
 
@@ -10476,6 +10481,140 @@ async function _cajaMaybeInit(uid) {
   return _cajaInitPromise;
 }
 
+// ─── AUDITORÍA CAJA MOSTRADOR ─────────────────────────────────────────────────
+window._auditoriaFiltro = 'hoy';
+window._auditoriaFechaCustom = null;
+window._auditoriaTipo = null;
+
+async function loadAuditoriaCajero() {
+  const root = document.getElementById('auditoria-cajero-root');
+  if(!root) return;
+  root.innerHTML = '<div style="padding:32px;text-align:center;color:#888;font-family:\'DM Sans\',sans-serif;font-size:13px;">Cargando...</div>';
+  const uid = currentClientUID;
+  if(!uid) return;
+  try {
+    const snap = await getDocs(query(
+      collection(db,'clientes',uid,'libroCaja'),
+      where('cuenta','==','Caja mostrador'),
+      where('eliminado','==',false),
+      orderBy('creadoEn','desc'),
+      limit(500)
+    ));
+    window._auditoriaMovs = snap.docs.map(d=>({id:d.id,...d.data()}));
+    _auditoriaRender();
+  } catch(e) {
+    root.innerHTML = '<div style="padding:32px;text-align:center;color:#993C1D;font-family:\'DM Sans\',sans-serif;font-size:13px;">Error al cargar: '+(e?.message||e)+'</div>';
+  }
+}
+
+function _auditoriaFechaHoyARG() {
+  return new Date().toLocaleDateString('es-AR',{timeZone:'America/Argentina/Buenos_Aires',year:'numeric',month:'2-digit',day:'2-digit'}).split('/').reverse().join('-');
+}
+
+function _auditoriaRender() {
+  const root = document.getElementById('auditoria-cajero-root');
+  if(!root || !window._auditoriaMovs) return;
+  const hoy = _auditoriaFechaHoyARG();
+  const ayer = new Date(new Date().toLocaleDateString('en-CA',{timeZone:'America/Argentina/Buenos_Aires'}));
+  ayer.setDate(ayer.getDate()-1);
+  const ayerStr = ayer.toISOString().slice(0,10);
+
+  let movs = window._auditoriaMovs;
+  if(window._auditoriaFiltro === 'hoy') movs = movs.filter(m => m.fecha === hoy);
+  else if(window._auditoriaFiltro === 'ayer') movs = movs.filter(m => m.fecha === ayerStr);
+  else if(window._auditoriaFiltro === 'custom' && window._auditoriaFechaCustom) movs = movs.filter(m => m.fecha === window._auditoriaFechaCustom);
+  if(window._auditoriaTipo) movs = movs.filter(m => m.tipo === window._auditoriaTipo);
+
+  // Totales por medio
+  const medios = {Efectivo:0,'Mercado Pago':0,Transferencia:0,Tarjeta:0};
+  let totalGeneral = 0;
+  movs.forEach(m => {
+    if(m.tipo !== 'ingreso') return;
+    const v = parseFloat(m.monto)||0;
+    const mp = (m.medioPago||'Efectivo');
+    const k = mp.startsWith('Tarjeta') ? 'Tarjeta' : (medios[mp]!==undefined ? mp : 'Efectivo');
+    medios[k] += v;
+    totalGeneral += v;
+  });
+
+  const fmt = v => '$'+Math.round(v).toLocaleString('es-AR');
+  const pct = v => totalGeneral > 0 ? Math.round(v/totalGeneral*100) : 0;
+
+
+  const rows = movs.slice(0,200).map(m => {
+    const isIng = m.tipo==='ingreso';
+    const isPed = m.tipo==='pedido_cta';
+    const accentColor = isIng ? '#3a4e3d' : (isPed ? '#4a6e8e' : '#b09088');
+    const montoColor = isIng ? '#3a4e3d' : (isPed ? '#4a6e8e' : '#b09088');
+    const montoStr = (isIng||isPed?'+':'-') + fmt(Math.abs(parseFloat(m.monto)||0));
+    const mp = m.medioPago && m.medioPago !== 'Caja mostrador' ? m.medioPago : 'Efectivo';
+    const hora = m.creadoEn ? new Date(m.creadoEn).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Argentina/Buenos_Aires'}) : '';
+    const fecha = m.fecha ? m.fecha.split('-').reverse().join('/') : '';
+    const cajero = m.creadoPor || '';
+    return `<div style="display:flex;align-items:center;padding:15px 28px;border-bottom:0.5px solid #f0ebe5;gap:16px;cursor:pointer;transition:background .1s;" onmouseover="this.style.background='#faf8f5'" onmouseout="this.style.background=''">
+      <div style="width:3px;height:32px;border-radius:2px;background:${accentColor};flex-shrink:0;"></div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:14px;font-weight:600;color:#2d2a26;">${m.concepto||'—'}</div>
+        <div style="font-size:12px;color:#b0a89e;margin-top:2px;">${fecha} · ${hora}${cajero?' · '+cajero:''}</div>
+      </div>
+      <div style="width:120px;text-align:center;font-size:12px;color:#666;background:#f5f0eb;padding:3px 10px;border-radius:6px;flex-shrink:0;">${mp}</div>
+      <div style="width:90px;text-align:right;font-size:17px;font-weight:700;color:${montoColor};flex-shrink:0;">${montoStr}</div>
+    </div>`;
+  }).join('');
+
+  root.innerHTML = `
+<div style="font-family:'DM Sans',sans-serif;">
+  <div style="background:linear-gradient(135deg,#1e2e22 0%,#2d3d30 30%,#3d5242 60%,#2d3d30 100%);padding:24px 28px 0;border-radius:16px 16px 0 0;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:28px;font-weight:300;color:#f5f0eb;">Caja <em style="font-style:italic;color:#b09088;">mostrador</em></div>
+      <div style="display:flex;align-items:center;gap:3px;background:rgba(0,0,0,.2);border-radius:10px;padding:3px;">
+        ${['hoy','ayer'].map(id => `<button onclick="window._auditoriaFiltro='${id}';window._auditoriaFechaCustom=null;_auditoriaRender()" style="padding:6px 14px;font-size:12px;color:${window._auditoriaFiltro===id?'#f5f0eb':'rgba(255,255,255,.45)'};background:${window._auditoriaFiltro===id?'rgba(255,255,255,.15)':'transparent'};border:none;border-radius:7px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:${window._auditoriaFiltro===id?'600':'400'};white-space:nowrap;">${id.charAt(0).toUpperCase()+id.slice(1)}</button>`).join('')}
+        <div style="width:1px;height:14px;background:rgba(255,255,255,.12);margin:0 2px;"></div>
+        <label style="display:flex;align-items:center;padding:6px 10px;border-radius:7px;cursor:pointer;color:${window._auditoriaFiltro==='custom'?'#f5f0eb':'rgba(255,255,255,.4)'};background:${window._auditoriaFiltro==='custom'?'rgba(255,255,255,.15)':'transparent'};">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          ${window._auditoriaFiltro==='custom' && window._auditoriaFechaCustom ? `<span style="margin-left:6px;font-size:12px;color:#b09088;font-weight:600;">${window._auditoriaFechaCustom.split('-').reverse().join('/')}</span>` : ''}
+          <input type="date" onchange="window._auditoriaFiltro='custom';window._auditoriaFechaCustom=this.value;_auditoriaRender()" style="position:absolute;opacity:0;width:0;height:0;">
+        </label>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(255,255,255,.07);border-radius:10px 10px 0 0;overflow:hidden;">
+      ${Object.entries(medios).map(([k,v]) => {
+        const barColors = {Efectivo:'#7dd98a','Mercado Pago':'#5bb8f5',Transferencia:'#b09088',Tarjeta:'#e8c584'};
+        const count = movs.filter(m => {
+          const mp2 = (m.medioPago||'Efectivo');
+          const key = mp2.startsWith('Tarjeta') ? 'Tarjeta' : (medios[mp2]!==undefined ? mp2 : 'Efectivo');
+          return key === k && m.tipo === 'ingreso';
+        }).length;
+        return `<div style="padding:16px 18px;background:rgba(255,255,255,.04);cursor:pointer;" onclick="window._auditoriaFiltroMedio=window._auditoriaFiltroMedio==='${k}'?null:'${k}';_auditoriaRender()">
+          <div style="font-size:9px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px;">${k}</div>
+          <div style="font-size:20px;font-weight:700;color:#f5f0eb;">${fmt(v)}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.25);margin-top:3px;">${count} movimientos</div>
+          <div style="height:2px;border-radius:2px;margin-top:10px;background:rgba(255,255,255,.08);">
+            <div style="background:${barColors[k]};width:${pct(v)}%;height:100%;border-radius:2px;"></div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>
+  <div style="background:#fff;border-bottom:0.5px solid #e8e3de;padding:11px 28px;display:flex;gap:6px;flex-wrap:wrap;">
+    ${[
+      [null,'Todos'],
+      ['venta_caja','Venta caja'],
+      ['cobro_cliente','Cobro CC'],
+      ['egreso_cajero','Egreso'],
+      ['retiro_cajero','Retiro'],
+      ['apertura_turno','Apertura'],
+      ['cierre_turno','Cierre']
+    ].map(([id,label]) => `<button onclick="window._auditoriaTipo=${id===null?'null':"'"+id+"'"};_auditoriaRender()" style="padding:5px 14px;border-radius:20px;border:0.5px solid ${window._auditoriaTipo===id?'#2d3d30':'#e0dbd6'};background:${window._auditoriaTipo===id?'#2d3d30':'#fff'};color:${window._auditoriaTipo===id?'#f5f0eb':'#888'};font-size:12px;font-weight:${window._auditoriaTipo===id?'600':'400'};cursor:pointer;font-family:'DM Sans',sans-serif;">${label}</button>`).join('')}
+  </div>
+  <div style="background:#fff;">
+    ${rows || '<div style="padding:40px;text-align:center;color:#aaa;font-size:13px;">Sin movimientos para este período</div>'}
+  </div>
+  <div style="padding:12px 0;text-align:center;font-size:11px;color:#ccc;">${movs.length} movimientos</div>
+</div>
+  `;
+}
+
 async function loadCajaModule() {
   if(!currentClientUID) return;
   if(window.currentRol === 'cajero' && !window.turnoActual) {
@@ -10518,7 +10657,7 @@ async function loadCajaModule() {
       movsVista = todosMovs.filter(m => (m.creadoEn||'') >= _turnoStart);
     }
     // Filtrar por mes para tabla y KPIs
-    const movs = movsVista.filter(m => m.mes === mes.stored);
+    let movs = movsVista.filter(m => m.mes === mes.stored);
     movs.sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')||((a.creadoEn||'').localeCompare(b.creadoEn||'')));
     window._cajaMovimientos = movs;
     if(window.currentRol === 'cajero') {
@@ -24651,7 +24790,7 @@ window.showCTab = function(tab, btn) {
     if(ccv && ccv.style.display !== 'none') cerrarCCView();
   }
   // Ocultar subnavs de módulos distintos al que corresponde este tab
-  const _tabToMod = {contabilidad:'finanzas','cierre-periodo':'finanzas','caja-config':'finanzas','mis-facturas':'finanzas','finanzas-pro-lock':'finanzas',mclientes:'ventas',presupuestos:'ventas',productos:'ventas',necesidades:'compras',proveedores:'compras','ordenes-compra':'compras','historial-compra':'compras','prod-compra':'compras','categorias-compra':'compras',calculador:'herramientas',kpis:'herramientas',tareas:'herramientas',insumos:'stock',recetas:'stock','movimientos-stock':'stock'};
+  const _tabToMod = {contabilidad:'finanzas','cierre-periodo':'finanzas','auditoria-cajero':'finanzas','caja-config':'finanzas','mis-facturas':'finanzas','finanzas-pro-lock':'finanzas',mclientes:'ventas',presupuestos:'ventas',productos:'ventas',necesidades:'compras',proveedores:'compras','ordenes-compra':'compras','historial-compra':'compras','prod-compra':'compras','categorias-compra':'compras',calculador:'herramientas',kpis:'herramientas',tareas:'herramientas',insumos:'stock',recetas:'stock','movimientos-stock':'stock'};
   const _thisMod = _tabToMod[tab];
   document.querySelectorAll('.mod-subnav').forEach(sn => {
     if(_thisMod && sn.id === 'subnav-'+_thisMod) return;
@@ -27306,6 +27445,7 @@ window.sidebarNav=function(mod,sub){
         window.showCTab('cierre-periodo',null);
         if((window.currentClientData||currentClientData)?.plan!=='pro') window._proLockEnTab('ct-cierre-periodo','Cierre de Período',true);
       }
+      else if(sub==='auditoria-cajero') { window.showCTab('auditoria-cajero',null); loadAuditoriaCajero(); }
       else if(sub==='caja-config') window.showCTab('caja-config',null);
       else if(sub==='mis-facturas') window.showCTab('mis-facturas',null);
       else if(sub==='resumen-ventas') window.showCTab('resumen-ventas',null);
