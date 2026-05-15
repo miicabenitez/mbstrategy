@@ -2237,6 +2237,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
             <div id="cmd-productos" style="display:none;"></div>
             <div id="cmd-obs" style="display:none;background:#fff;border-radius:10px;padding:12px 14px;border:1px solid rgba(176,144,136,.2);"></div>
             <div id="cmd-devolucion" style="display:none;padding-top:12px;border-top:1px solid rgba(176,144,136,.2);"></div>
+            <div id="cmd-modificar-medio" style="display:none;padding-top:8px;"></div>
             <div id="cmd-download" style="display:none;padding-top:4px;"></div>
           </div>
         </div>
@@ -25388,6 +25389,13 @@ window.cajaMovDetalle = function(id) {
         '</div>';
     }
   } else { devEl.style.display='none'; }
+  var modEl = document.getElementById('cmd-modificar-medio');
+  if(modEl) {
+    if(isIng && m.origen==='venta_caja') {
+      modEl.style.display='block';
+      modEl.innerHTML='<button onclick="cajaMovModificarMedio(\''+id+'\')" style="width:100%;padding:10px;border-radius:10px;border:1.5px solid rgba(176,144,136,0.4);background:#fff;color:#b09088;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;"><i class="ti ti-edit" style="font-size:15px;"></i>Modificar medio de pago</button>';
+    } else { modEl.style.display='none'; }
+  }
   var dlEl = document.getElementById('cmd-download');
   if(dlEl) {
     if(m.ticketNum) {
@@ -25446,6 +25454,55 @@ window.cajaMovDevolverConfirmar = async function(id) {
     showToast('Devolución registrada','success');
     loadCajaModule();
   } catch(e){ showToast('Error al registrar devolución','error'); }
+};
+
+window.cajaMovModificarMedio = function(id) {
+  var m = (window._cajaMovimientos||[]).find(function(x){return x.id===id;});
+  if(!m) return;
+  var modEl = document.getElementById('cmd-modificar-medio');
+  if(!modEl) return;
+  var medioAct = m.medioPago || ((m.cuenta && m.cuenta!=='Caja mostrador') ? m.cuenta : 'Efectivo');
+  var medios = ['Efectivo','Mercado Pago','Transferencia','Tarjeta Débito','Tarjeta Crédito'];
+  if(!medios.includes(medioAct)) medios.unshift(medioAct);
+  var optsHtml = medios.map(function(med){
+    return '<option value="'+med+'"'+(med===medioAct?' selected':'')+'>'+med+'</option>';
+  }).join('');
+  modEl.innerHTML = [
+    '<div style="font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#b09088;margin-bottom:10px;">Modificar medio de pago</div>',
+    '<div style="font-size:12px;color:#888;margin-bottom:6px;">Nuevo medio</div>',
+    '<select id="cmd-mod-medio" style="width:100%;padding:9px 12px;border:1.5px solid rgba(176,144,136,.3);border-radius:10px;font-family:\'DM Sans\',sans-serif;font-size:13px;color:#3a4e3d;background:#fff;margin-bottom:14px;">'+optsHtml+'</select>',
+    '<div style="display:flex;gap:8px;">',
+    '  <button onclick="cajaMovDetalle(\''+id+'\')" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid #d8d3ce;background:#fff;color:#888;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;">← Cancelar</button>',
+    '  <button onclick="cajaMovModificarMedioConfirmar(\''+id+'\')" style="flex:2;padding:10px;border-radius:10px;border:none;background:#b09088;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Confirmar</button>',
+    '</div>'
+  ].join('');
+};
+window.cajaMovModificarMedioConfirmar = async function(id) {
+  var m = (window._cajaMovimientos||[]).find(function(x){return x.id===id;});
+  if(!m) return;
+  var sel = document.getElementById('cmd-mod-medio');
+  var nuevo = sel ? sel.value : '';
+  var medioAnt = m.medioPago || ((m.cuenta && m.cuenta!=='Caja mostrador') ? m.cuenta : 'Efectivo');
+  if(!nuevo || nuevo===medioAnt) { cajaMovDetalle(id); return; }
+  try {
+    var nuevaMod = {
+      campo: 'medioPago',
+      de: medioAnt,
+      a: nuevo,
+      por: window.currentOperadorNombre||'Cajero',
+      creadoEn: new Date().toISOString()
+    };
+    var nuevasModif = (m.modificaciones||[]).concat([nuevaMod]);
+    await window._updateDoc(
+      window._doc(window.db,'clientes',currentClientUID,'libroCaja',id),
+      { medioPago: nuevo, modificaciones: nuevasModif }
+    );
+    m.medioPago = nuevo;
+    m.modificaciones = nuevasModif;
+    cajaMovDetalle(id);
+    if(typeof loadCajaModule === 'function') loadCajaModule();
+    showToast('Medio de pago actualizado','success');
+  } catch(e){ showToast('Error al modificar medio','error'); }
 };
 
 // ─── CAJERO: Cierre de caja ──────────────────────────────────
@@ -25528,6 +25585,16 @@ window.cajaCierreConfirmar = async function() {
       var _totalDepositos = (window._cajaMovimientos||[])
         .filter(function(m){ return m.tipo==='ingreso' && m.origen==='deposito_cajero'; })
         .reduce(function(a,m){ return a+(parseFloat(m.monto)||0); },0);
+      var _modificaciones = [];
+      (window._cajaMovimientos||[]).forEach(function(mv){
+        (mv.modificaciones||[]).forEach(function(mod){
+          _modificaciones.push({
+            ticket: mv.ticketNum || '',
+            concepto: mv.concepto || '',
+            campo: mod.campo, de: mod.de, a: mod.a, por: mod.por, creadoEn: mod.creadoEn
+          });
+        });
+      });
       var _cierrePdfBase64 = null;
       try {
         var _respCierre = await fetch('/.netlify/functions/caja-cierre-email',{
@@ -25542,7 +25609,8 @@ window.cajaCierreConfirmar = async function() {
             saldoInicial:_saldoBase, ingresos:ingresos, egresos:egresos, saldoFinal:saldo,
             medios:_medios, productos:Object.values(_productosMap), retiros:_totalRetiros, depositos:_totalDepositos, retirosDetalle:_retirosArr,
             egresosCaja:_egresosCajaArr, egresosCajaTotal:_totalEgresosCaja,
-            cuentaCorriente:{ total:_totalCta, detalle:_detalleCta }
+            cuentaCorriente:{ total:_totalCta, detalle:_detalleCta },
+            modificaciones:_modificaciones
           })
         });
         if (_respCierre.ok) {

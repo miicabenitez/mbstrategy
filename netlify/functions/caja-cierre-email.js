@@ -186,6 +186,17 @@ function generarPDF(d) {
       y += 22;
     }
 
+    // ── 7. Modificaciones ──────────────────────────────────────────
+    if (d.modificaciones && d.modificaciones.length) {
+      seccion('Modificaciones');
+      d.modificaciones.forEach(function(mod) {
+        var hora = formatFecha(mod.creadoEn).split(' ')[1] || '';
+        var label = (mod.ticket ? '#' + mod.ticket + ' · ' : '') + (mod.de||'') + ' → ' + (mod.a||'');
+        fila(label, (mod.por||'') + ' · ' + hora, '#888');
+      });
+      y += 6;
+    }
+
     // ── Footer ─────────────────────────────────────────────────────
     y += 16;
     doc.moveTo(M, y).lineTo(W - M, y).strokeColor('#d8d3ce').lineWidth(0.5).stroke();
@@ -213,7 +224,7 @@ exports.handler = async (event) => {
     negocio, emailDueno, cajera, apertura, cierre,
     saldoInicial, ingresos, egresos, saldoFinal,
     medios, productos, retiros, depositos, retirosDetalle,
-    egresosCaja, egresosCajaTotal, cuentaCorriente
+    egresosCaja, egresosCajaTotal, cuentaCorriente, modificaciones
   } = data;
 
   if (!emailDueno) return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Falta emailDueno' }) };
@@ -308,6 +319,12 @@ exports.handler = async (event) => {
       <span style="color:#8a5f55;font-size:14px;font-weight:700;">${fmt(cuentaCorriente.total)}</span>
     </div>
   </div>` : ''}
+  ${(modificaciones && modificaciones.length) ? `<div style="background:#fff;padding:20px 32px;border-bottom:1px solid #f0ebe6;">
+    <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#7a8e7d;margin-bottom:12px;font-weight:600;">Modificaciones</div>
+    <table style="width:100%;border-collapse:collapse;">
+      ${modificaciones.map(mod => `<tr><td style="padding:5px 0;color:#555;font-size:13px;">${mod.ticket ? '#'+mod.ticket+' · ' : ''}${mod.de||''} → ${mod.a||''}</td><td style="padding:5px 0;text-align:right;color:#888;font-size:12px;">${mod.por||''} · ${(mod.creadoEn||'').slice(11,16)}</td></tr>`).join('')}
+    </table>
+  </div>` : ''}
   <div style="background:#3a4e3d;padding:16px 32px;text-align:center;">
     <div style="color:rgba(255,255,255,.55);font-size:11px;">MB Strategy · sistema.mbstrategy.com.ar</div>
   </div>
@@ -316,7 +333,7 @@ exports.handler = async (event) => {
 
     const pdfBuffer = await generarPDF({ negocio, cajera, apertura, cierre,
       saldoInicial, ingresos, egresos, saldoFinal, medios, productos, retiros, depositos,
-      retirosDetalle, egresosCaja, egresosCajaTotal, cuentaCorriente });
+      retirosDetalle, egresosCaja, egresosCajaTotal, cuentaCorriente, modificaciones });
 
     await transporter.sendMail({
       from: `"MB Strategy" <${process.env.GMAIL_USER}>`,
