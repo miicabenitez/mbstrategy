@@ -25713,11 +25713,7 @@ async function turnoGenerarPDF(operador, ingresos, egresos, saldo, movs) {
     if(!window.jspdf) {
       await new Promise(function(res,rej){ var s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'; s.onload=res; s.onerror=rej; document.head.appendChild(s); });
     }
-    var negocioNombre = 'Mi negocio';
-    try {
-      var negDoc = await getDoc(doc(db,'clientes',currentClientUID));
-      if(negDoc.exists()) negocioNombre = negDoc.data().negocioNombre || negDoc.data().nombre || negocioNombre;
-    } catch(e) {}
+    var negocioNombre = window.currentNegocioNombre || (window.currentClientData && window.currentClientData.negocioNombre) || 'Mi negocio';
     var { jsPDF } = window.jspdf;
     var pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
     var W=210, M=20, cW=W-M*2;
@@ -25727,9 +25723,7 @@ async function turnoGenerarPDF(operador, ingresos, egresos, saldo, movs) {
     pdf.setFillColor(122,142,125); pdf.rect(0,0,W,28,'F');
     pdf.setTextColor(255,255,255); pdf.setFontSize(13); pdf.setFont('helvetica','bold');
     pdf.text(negocioNombre, M, 13);
-    pdf.setFontSize(9); pdf.setFont('helvetica','normal'); pdf.setTextColor(220,230,222);
-    pdf.text('MB Strategy · sistema.mbstrategy.com.ar', M, 20);
-    pdf.setTextColor(255,255,255); pdf.setFontSize(14); pdf.setFont('helvetica','bold');
+    pdf.setFontSize(14); pdf.setFont('helvetica','bold');
     pdf.text('CIERRE DE TURNO', W-M, 13, {align:'right'});
     pdf.setFontSize(9); pdf.setFont('helvetica','normal'); pdf.setTextColor(220,230,222);
     var ahora = new Date().toLocaleString('es-AR');
