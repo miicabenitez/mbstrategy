@@ -313,28 +313,29 @@ nav::after{
   .home-h1{font-size:38px}
   .bottom-nav{padding:12px 16px}
 }
+
 /* ── Cajero guide ─────────────────────────────────────────── */
 .caj-hero{font-family:'Cormorant Garamond',Georgia,serif;font-size:52px;font-weight:300;line-height:1.15;color:#2d2a26;margin:8px 0 16px}
 .caj-hero em{font-style:italic;color:var(--terra);font-weight:300}
-.caj-pills{display:flex;gap:6px;flex-wrap:wrap;margin:24px 0}
-.caj-pill{display:flex;flex-direction:column;align-items:center;padding:8px 14px;border-radius:10px;border:1.5px solid #e0dbd6;background:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
-.caj-pill span{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;color:#888}
-.caj-pill em{font-size:10px;color:#aaa;font-style:normal;margin-top:2px;white-space:nowrap}
+.caj-pills{display:flex;gap:8px;flex-wrap:wrap;margin:28px 0}
+.caj-pill{display:flex;flex-direction:column;align-items:center;padding:10px 18px;border-radius:12px;border:1.5px solid #e0dbd6;background:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.caj-pill span{font-family:'DM Sans',sans-serif;font-size:18px;font-weight:700;color:#888;line-height:1}
+.caj-pill em{font-size:11px;color:#aaa;font-style:normal;margin-top:3px;white-space:nowrap}
 .caj-pill.active{border-color:#3a4e3d;background:#3a4e3d}
 .caj-pill.active span{color:#fff}
 .caj-pill.active em{color:rgba(255,255,255,.65)}
 .caj-pill:hover:not(.active){border-color:#3a4e3d}
 .caj-section{display:none}
 .caj-section.active{display:block}
-.caj-step-header{display:flex;align-items:baseline;gap:14px;margin-bottom:4px}
-.caj-num{font-family:'Cormorant Garamond',Georgia,serif;font-size:64px;font-weight:400;color:#ddd8d2;line-height:1}
-.caj-title{font-family:'DM Sans',sans-serif;font-size:26px;font-weight:700;color:#2d2a26;margin-bottom:20px}
-.caj-screen{border-radius:14px;overflow:hidden;border:1px solid #e0dbd6;margin:20px 0;box-shadow:0 4px 20px rgba(0,0,0,.07);font-family:'DM Sans',sans-serif}
+.caj-step-header{display:flex;align-items:baseline;gap:16px;margin-bottom:8px;margin-top:32px}
+.caj-num{font-family:'DM Sans',sans-serif;font-size:72px;font-weight:300;color:#ddd8d2;line-height:1}
+.caj-title{font-family:'DM Sans',sans-serif;font-size:28px;font-weight:700;color:#2d2a26;margin-bottom:0}
+.caj-screen{border-radius:16px;overflow:hidden;border:1px solid #e0dbd6;margin:24px 0;box-shadow:0 6px 28px rgba(0,0,0,.09);font-family:'DM Sans',sans-serif;max-width:520px}
 .caj-tip-green{background:rgba(58,78,61,.06);border-left-color:#3a4e3d}
 .caj-tip-green .tip-dot{background:#3a4e3d}
-.caj-tip-alert{background:rgba(201,122,42,.07);border-left-color:#c97a2a}
-.caj-tip-alert .tip-dot{background:#c97a2a}
-@media(max-width:640px){.caj-hero{font-size:38px}.caj-pill em{display:none}.caj-pill{padding:8px 10px}}
+.caj-tip-alert{background:rgba(176,144,136,.1);border-left-color:#b09088}
+.caj-tip-alert .tip-dot{background:#b09088}
+@media(max-width:640px){.caj-hero{font-size:38px}.caj-pill em{display:none}.caj-pill{padding:8px 12px}.caj-screen{max-width:100%}}
 </style>
 </head>
 <body>
@@ -409,7 +410,6 @@ const MODULES = [
   ]},
 ];
 
-// Flat list of all pages in order
 const ALL_PAGES = [];
 MODULES.forEach(m => {
   if(m.subs.length === 0 && m.id !== 'bienvenida') ALL_PAGES.push({id:m.id,label:m.label,mod:m.id});
@@ -473,12 +473,6 @@ bienvenida: `
   ['Si el margen aparece como "bajo", significa que estás ganando menos del 20% de lo que facturás.','Los "pendientes de cobro" son presupuestos aprobados que todavía no cobraste.','Si el módulo aparece vacío, es porque no registraste movimientos en Caja todavía.'],
   [['Caja','caja'],['Presupuestos','presupuestos'],['Indicadores','indicadores']]
 ),
-'inicio-mod': mod('Panel principal','Inicio','El dashboard que resume la salud del negocio al entrar. Muestra la ganancia del mes, tu margen, cuánto te deben los clientes y si el negocio está en buen estado. Se actualiza automáticamente.',
-  ['Se abre automáticamente al entrar al sistema.','Lee Caja, Presupuestos y datos del negocio y muestra alertas de colores: verde = bien, amarillo = margen bajo, rojo = gastás más de lo que ganás.','No requiere ninguna acción — es una vista de lectura que se actualiza sola.'],
-  [],
-  ['Si el margen aparece como "bajo", significa que estás ganando menos del 20% de lo que facturás.','Los "pendientes de cobro" son presupuestos aprobados que todavía no cobraste.','Si el módulo aparece vacío, es porque no registraste movimientos en Caja todavía.'],
-  [['Caja','caja'],['Presupuestos','presupuestos'],['Indicadores','indicadores']]
-),
 caja: mod('Finanzas','Caja','Tu libro de caja digital. Registrás cada peso que entra o sale del negocio por cuenta: efectivo, banco, Mercado Pago. Ves el saldo en tiempo real de cada cuenta y el flujo completo con saldos progresivos.',
   ['Configurás tus cuentas en Caja → Configuración (efectivo, banco, MP, etc.).','Registrás cada movimiento: ingreso o egreso con fecha, concepto y monto.','Filtrás por cuenta usando los chips de arriba para ver solo una cuenta.','Si un ingreso es facturable, hacés clic en el ícono del documento para emitir factura directamente desde acá.','El saldo de cada cuenta se actualiza automáticamente.'],
   [['Fecha','del movimiento'],['Concepto','categoría del movimiento'],['Tipo','ingreso, egreso o transferencia entre cuentas'],['Monto','importe del movimiento'],['Cuenta','efectivo, banco, Mercado Pago, etc.']],
@@ -491,124 +485,124 @@ cierre: mod('Finanzas · Solo plan Pro','Cierre de período','Te ayuda a cerrar 
   ['Los compromisos se cargan solos desde Proveedores y Compras.','El disponible total es solo de cuentas operativas — no incluye la cuenta "Retiros".','Solo disponible en plan Pro.'],
   [['Caja','caja'],['Proveedores','proveedores'],['Órdenes','ordenes']]
 ),
-'config-caja': mod('Finanzas','Configuración','Configurás las cuentas, los conceptos de ingreso y los conceptos de egreso que usás en Caja. Tiene dos tabs: Caja (cuentas y conceptos) y Cierre de período (frecuencia, socios y reservas).',
-  ['En el tab Caja → Cuentas: agregás tus cuentas operativas (Efectivo, Mercado Pago, Banco, etc.).','En Conceptos de ingreso: agregás categorías personalizadas además de las del sistema (Venta caja, Cobro de cliente, Apertura de caja).','En Conceptos de egreso: agregás categorías propias como Alquiler, Sueldos, Publicidad.','En el tab Cierre de período: elegís la frecuencia (Semanal / Quincenal / Mensual) y activás o desactivás el modo Proyección.','Configurás los socios o dueño (Único dueño o Sociedad) con porcentajes de reparto.','Agregás reservas del negocio: un porcentaje del resultado que se acumula en una cuenta propia.'],
-  [['Cuentas','nombre de cada cuenta operativa (Efectivo, MP, Banco, etc.)'],['Conceptos de ingreso','categorías para clasificar ingresos manuales'],['Conceptos de egreso','categorías para clasificar egresos manuales'],['Frecuencia','Semanal, Quincenal o Mensual'],['Socios','nombre y porcentaje de cada participante'],['Reservas','nombre y porcentaje de cada reserva']],
-  ['Los conceptos marcados como "sistema" no se pueden eliminar — los usa el sistema automáticamente.','Podés agregar conceptos propios: "Alquiler", "Sueldos", "Publicidad", etc.','La distribución total tiene que sumar 100% entre socios y reservas — lo que no se asigne queda como remanente operativo en caja.','El modo Proyección permite simular el cierre sin generar movimientos reales.'],
+'config-caja': mod('Finanzas','Configuración','Configurás las cuentas, los conceptos de ingreso y los conceptos de egreso que usás en Caja.',
+  ['En el tab Caja → Cuentas: agregás tus cuentas operativas (Efectivo, Mercado Pago, Banco, etc.).','En Conceptos de ingreso: agregás categorías personalizadas además de las del sistema.','En Conceptos de egreso: agregás categorías propias como Alquiler, Sueldos, Publicidad.','En el tab Cierre de período: elegís la frecuencia y configurás socios y reservas.'],
+  [['Cuentas','nombre de cada cuenta operativa'],['Conceptos de ingreso','categorías para clasificar ingresos manuales'],['Conceptos de egreso','categorías para clasificar egresos manuales'],['Frecuencia','Semanal, Quincenal o Mensual']],
+  ['Los conceptos marcados como "sistema" no se pueden eliminar.','La distribución total tiene que sumar 100% entre socios y reservas.'],
   [['Caja','caja'],['Cierre de período','cierre']]
 ),
-'mis-facturas': mod('Finanzas · Facturación ARCA','Mis Facturas','El historial de todas las facturas electrónicas que emitiste. Descargás el PDF con formato legal completo: CAE, QR ARCA y desglose de IVA según el tipo de comprobante.',
+'mis-facturas': mod('Finanzas · Facturación ARCA','Mis Facturas','El historial de todas las facturas electrónicas que emitiste. Descargás el PDF con formato legal completo: CAE, QR ARCA y desglose de IVA.',
   ['Se cargan automáticamente las últimas 100 facturas emitidas.','Los KPIs del banner muestran cuántas emitiste este mes y el total facturado.','Hacés clic en el ícono de descarga de una fila para generar el PDF.','Para emitir una factura nueva, hacés clic en "+ Nueva factura" en el banner.'],
   [],
-  ['Solo muestra facturas ya emitidas con CAE — no borradores.','Las Facturas A discriminan IVA en la tabla del PDF; las B y C muestran "IVA Contenido" al pie según la Ley 27.743.','El QR del PDF lleva a la constatación oficial de ARCA — cualquier receptor puede verificar que la factura es válida.'],
+  ['Solo muestra facturas ya emitidas con CAE — no borradores.','Las Facturas A discriminan IVA en la tabla del PDF.','El QR del PDF lleva a la constatación oficial de ARCA.'],
   [['Caja','caja'],['Datos fiscales','datos-fiscales'],['Config. ARCA','arca']]
 ),
-'resumen-ventas': mod('Finanzas · Libro IVA Ventas','Resumen de Ventas','Reporta todas tus facturas de venta del mes con IVA discriminado. Exportá en formato CITI para tu contador o presentación ante AFIP.',
-  ['Seleccionás el mes en el dropdown — solo meses del año actual, hasta hoy.','Se cargan todas las facturas de ese mes automáticamente.','Los KPIs muestran: cantidad de comprobantes, total bruto, cantidad de NC y total neto.','Exportás con "↓ CITI" para el formato AFIP o "↓ Excel" para tu contador.'],
+'resumen-ventas': mod('Finanzas · Libro IVA Ventas','Resumen de Ventas','Reporta todas tus facturas de venta del mes con IVA discriminado. Exportá en formato CITI para tu contador.',
+  ['Seleccionás el mes en el dropdown.','Se cargan todas las facturas de ese mes automáticamente.','Los KPIs muestran cantidad de comprobantes, total bruto y total neto.','Exportás con "↓ CITI" para el formato AFIP o "↓ Excel" para tu contador.'],
   [],
-  ['Las notas de crédito restan del total bruto.','El CITI exporta un archivo TXT en formato estándar AFIP, listo para importar en ARCA.'],
+  ['Las notas de crédito restan del total bruto.','El CITI exporta un archivo TXT en formato estándar AFIP.'],
   [['Mis Facturas','mis-facturas']]
 ),
-'resumen-compras': mod('Finanzas · Libro IVA Compras','Resumen de Compras','Reporta todas las facturas de compra del mes con desglose de IVA. Permite filtrarlo mes a mes para tener el libro IVA Compras.',
-  ['Seleccionás el mes en el dropdown.','Se cargan las facturas de todos tus proveedores de ese período.','Ves los KPIs: cantidad de facturas, total, IVA y neto.','La tabla detalla cada compra con fecha, proveedor, número de factura y desglose de IVA.'],
+'resumen-compras': mod('Finanzas · Libro IVA Compras','Resumen de Compras','Reporta todas las facturas de compra del mes con desglose de IVA.',
+  ['Seleccionás el mes en el dropdown.','Se cargan las facturas de todos tus proveedores de ese período.','La tabla detalla cada compra con fecha, proveedor, número de factura y desglose de IVA.'],
   [],
   ['Solo muestra facturas de compra, no órdenes que todavía no recibiste.'],
   [['Proveedores','proveedores']]
 ),
-clientes: mod('Comercial','Clientes','Tu cartera de clientes con cuenta corriente integrada. Guardás datos de contacto, seguís el estado de la relación, ves cuánto te debe cada uno y registrás los cobros.',
-  ['Cargás un cliente nuevo con nombre, teléfono, email, DNI/CUIT y estado.','Le creás presupuestos desde el detalle del cliente.','Cuando aprobás un presupuesto, pasa automáticamente a Cobranzas como deuda pendiente.','Registrás cobros totales o parciales desde el botón "+ Cobro" en el detalle del cliente.','El sistema actualiza en tiempo real: total presupuestado, cobrado y pendiente.'],
+clientes: mod('Comercial','Clientes','Tu cartera de clientes con cuenta corriente integrada. Guardás datos de contacto, seguís el estado de la relación y ves cuánto te debe cada uno.',
+  ['Cargás un cliente nuevo con nombre, teléfono, email, DNI/CUIT y estado.','Le creás presupuestos desde el detalle del cliente.','Cuando aprobás un presupuesto, pasa automáticamente a Cobranzas como deuda pendiente.','Registrás cobros totales o parciales desde el botón "+ Cobro".'],
   [['Nombre','obligatorio'],['Teléfono y email','para contacto y facturación'],['CUIT','necesario para emitir Facturas A'],['Estado','Potencial / Activo / En pausa / Cerrado']],
-  ['Si un cliente pagó más de lo acordado, aparece "Saldo a favor" en verde.','Podés ver la lista en formato lista o en Kanban por estado.','El sistema busca clientes por nombre cuando creás presupuestos — siempre cargalos igual.'],
+  ['Si un cliente pagó más de lo acordado, aparece "Saldo a favor" en verde.','El sistema busca clientes por nombre cuando creás presupuestos.'],
   [['Presupuestos','presupuestos'],['Cobranzas','cobranzas'],['Caja','caja']]
 ),
-cobranzas: mod('Comercial','Cobranzas','Un tablero de seguimiento de cobros pendientes. Muestra solo los presupuestos aprobados que todavía no cobraste, ordenados de más viejo a más nuevo, con el contacto del cliente y acceso directo a WhatsApp.',
-  ['Se carga automáticamente — no hay nada que configurar.','Ves la tabla con cliente, teléfono, descripción del presupuesto, monto, fecha y días pendientes.','El badge de días cambia de color: verde (menos de 7 días), amarillo (7 a 30 días), rojo (más de 30 días).','Hacés clic en el botón de WhatsApp para abrir el chat directamente con el número del cliente.','Hacés clic en la fila para ir al detalle del cliente y registrar el cobro desde ahí.'],
+cobranzas: mod('Comercial','Cobranzas','Un tablero de seguimiento de cobros pendientes. Muestra solo los presupuestos aprobados que todavía no cobraste, con el contacto del cliente y acceso directo a WhatsApp.',
+  ['Se carga automáticamente — no hay nada que configurar.','El badge de días cambia de color: verde (menos de 7 días), amarillo (7 a 30 días), rojo (más de 30 días).','Hacés clic en el botón de WhatsApp para abrir el chat directamente con el número del cliente.','Hacés clic en la fila para ir al detalle del cliente y registrar el cobro.'],
   [],
-  ['El total del KPI suma solo montos en ARS — los presupuestos en USD aparecen en la tabla pero no se suman.','Si un cliente no tiene teléfono cargado, el botón de WhatsApp no aparece.','Para que un presupuesto aparezca acá, el estado tiene que estar en "Aprobado" exactamente.'],
+  ['El total del KPI suma solo montos en ARS.','Para que un presupuesto aparezca acá, el estado tiene que estar en "Aprobado".'],
   [['Clientes','clientes'],['Presupuestos','presupuestos']]
 ),
-presupuestos: mod('Comercial','Presupuestos','Administrás todas tus cotizaciones. Cada presupuesto tiene cliente, descripción, monto, moneda y estado. Cuando está aprobado, podés emitir la factura electrónica en un clic.',
-  ['Creás un presupuesto: cliente, descripción, monto y moneda (ARS/USD).','Opcionalmente pegás el link a un PDF si lo tenés en Drive.','Cambiás el estado según avanza: Pendiente de enviar → Enviado → Consultado → Aprobado → Cobrado.','Cuando está Aprobado, aparece el botón "Emitir factura" para generar la factura en un clic.','Cuando se cobra, lo marcás "Cobrado" y sale de la lista activa.'],
+presupuestos: mod('Comercial','Presupuestos','Administrás todas tus cotizaciones. Cada presupuesto tiene cliente, descripción, monto, moneda y estado.',
+  ['Creás un presupuesto: cliente, descripción, monto y moneda (ARS/USD).','Cambiás el estado según avanza: Pendiente de enviar → Enviado → Aprobado → Cobrado.','Cuando está Aprobado, aparece el botón "Emitir factura" para generar la factura en un clic.'],
   [['Cliente','obligatorio'],['Descripción','qué incluye el presupuesto'],['Monto','obligatorio'],['Moneda','ARS o USD']],
-  ['El monto tiene que estar en el campo "monto" — no en la descripción.','Los presupuestos sin cliente vinculado no van a aparecer bien en Cobranzas.','Si subís un PDF en Drive, pegá el link de visualización, no el de descarga.'],
+  ['El monto tiene que estar en el campo "monto" — no en la descripción.','Los presupuestos sin cliente vinculado no van a aparecer bien en Cobranzas.'],
   [['Clientes','clientes'],['Cobranzas','cobranzas'],['Mis Facturas','mis-facturas']]
 ),
 catalogo: mod('Comercial','Catálogo','Tu lista de productos y servicios con precios. Se aplica automáticamente cuando creás presupuestos o registrás ventas en Caja.',
-  ['Creás un producto o servicio con nombre y precio.','El precio se puede editar directo en la tabla cuando cambia.','Marcás como "inactivo" si dejaste de venderlo — no se borra el historial.','Cuando creás un presupuesto o venta, el sistema autocompleta el precio.'],
+  ['Creás un producto o servicio con nombre y precio.','El precio se puede editar directo en la tabla cuando cambia.','Marcás como "inactivo" si dejaste de venderlo.'],
   [['Nombre','obligatorio'],['Precio','obligatorio'],['Descripción','opcional'],['Estado','activo o inactivo']],
-  ['Los cambios de precio se guardan automáticamente al salir del campo.','Si desactivás un producto, sigue apareciendo en presupuestos anteriores — solo deja de sugerirse.'],
+  ['Los cambios de precio se guardan automáticamente al salir del campo.'],
   [['Presupuestos','presupuestos'],['Caja','caja']]
 ),
-proveedores: mod('Compras','Proveedores','Tu directorio de proveedores con cuenta corriente integrada. Por cada proveedor ves el saldo que les debés, el historial de transacciones y podés registrar pagos.',
-  ['Cargás el proveedor: nombre, teléfono, categoría y notas.','Generás necesidades y órdenes de compra asociadas a ese proveedor.','Cuando recibís la mercadería, marcás la OC como "Recibida" — queda como deuda en la CC.','Registrás el pago en la cuenta corriente — se descuenta del saldo.'],
+proveedores: mod('Compras','Proveedores','Tu directorio de proveedores con cuenta corriente integrada.',
+  ['Cargás el proveedor: nombre, teléfono, categoría y notas.','Generás necesidades y órdenes de compra asociadas a ese proveedor.','Cuando recibís la mercadería, marcás la OC como "Recibida".','Registrás el pago en la cuenta corriente.'],
   [['Nombre','obligatorio'],['Teléfono','para contacto'],['Categoría','tipo de proveedor'],['Notas','información adicional']],
-  ['El saldo se calcula desde lo que llegó (OC recibidas), no desde lo que compraste.','Si el saldo aparece en verde, pagaste más de lo que te facturaron (saldo a favor).','Los proveedores con deuda activa aparecen primero en la lista.'],
-  [['Necesidades','necesidades'],['Órdenes','ordenes'],['Cierre de período','cierre'],['Resumen de Compras','resumen-compras']]
+  ['El saldo se calcula desde lo que llegó (OC recibidas), no desde lo que compraste.'],
+  [['Necesidades','necesidades'],['Órdenes','ordenes'],['Cierre de período','cierre']]
 ),
-necesidades: mod('Compras','Necesidades','Antes de comprar, organizás qué necesitás por urgencia y categoría. Cotizás con múltiples proveedores antes de elegir y generás la orden de compra final.',
-  ['Creás una necesidad con categoría y urgencia (Urgente / Próxima / Programada).','Cotizás la necesidad con uno o más proveedores (precio + condiciones).','Comparás cotizaciones y elegís la mejor.','Generás la orden de compra desde la cotización elegida.'],
+necesidades: mod('Compras','Necesidades','Antes de comprar, organizás qué necesitás por urgencia y categoría.',
+  ['Creás una necesidad con categoría y urgencia (Urgente / Próxima / Programada).','Cotizás la necesidad con uno o más proveedores.','Comparás cotizaciones y elegís la mejor.','Generás la orden de compra desde la cotización elegida.'],
   [],
-  ['Necesitás cargar primero tus "Productos de compra" en Configuración para poder seleccionarlos.','Las necesidades urgentes sin cotizar aparecen primero.','Podés generar un PDF de la necesidad para mandar a proveedores.'],
+  ['Las necesidades urgentes sin cotizar aparecen primero.'],
   [['Proveedores','proveedores'],['Órdenes','ordenes']]
 ),
-ordenes: mod('Compras','Órdenes de compra','Los documentos formales de compra que emitís a proveedores. El sistema numera las órdenes y lleva el estado de recepción y de pago.',
-  ['Creás la OC: proveedor, ítems (nombre, cantidad, precio unitario) y fecha.','Se genera automáticamente el número secuencial (OC-001, OC-002…).','Cuando llega la mercadería, marcás la OC como "Recibida" — eso genera la deuda en la CC del proveedor.','Registrás el pago en la CC del proveedor — descuenta del saldo.'],
+ordenes: mod('Compras','Órdenes de compra','Los documentos formales de compra que emitís a proveedores.',
+  ['Creás la OC: proveedor, ítems y fecha.','Se genera automáticamente el número secuencial (OC-001, OC-002…).','Cuando llega la mercadería, marcás la OC como "Recibida".','Registrás el pago en la CC del proveedor.'],
   [],
-  ['Solo las OC marcadas como "Recibidas" generan deuda en la cuenta corriente del proveedor.','Podés usar productos de texto libre sin que existan en el catálogo de compras.','Las OC pendientes de recibir aparecen como "compromisos" en el Cierre de período.'],
-  [['Necesidades','necesidades'],['Proveedores','proveedores'],['Historial','historial'],['Cierre de período','cierre']]
+  ['Solo las OC marcadas como "Recibidas" generan deuda en la cuenta corriente del proveedor.'],
+  [['Necesidades','necesidades'],['Proveedores','proveedores'],['Historial','historial']]
 ),
-historial: mod('Compras','Historial','Buscador y análisis de todo lo que compraste históricamente. Cuántas veces lo compraste, a quién y a qué precio. Ideal para negociar con datos reales.',
-  ['Se carga automáticamente con todas las órdenes de compra.','Buscás un producto por nombre.','Ves todas las compras de ese producto: proveedor, fecha y precio unitario.','El sistema muestra el último precio y la variación histórica en porcentaje.'],
+historial: mod('Compras','Historial','Buscador y análisis de todo lo que compraste históricamente.',
+  ['Se carga automáticamente con todas las órdenes de compra.','Buscás un producto por nombre.','Ves todas las compras de ese producto: proveedor, fecha y precio unitario.'],
   [],
-  ['Solo aparecen productos que estén en OC registradas.','Si compraste el mismo producto a dos proveedores distintos, se distingue por proveedor.'],
+  ['Solo aparecen productos que estén en OC registradas.'],
   [['Órdenes','ordenes'],['Proveedores','proveedores']]
 ),
-'config-compras': mod('Compras','Configuración','Configurás los productos de compra y las categorías que usás en Necesidades y Órdenes. Tener el catálogo de compras cargado hace que todo el módulo funcione más rápido y preciso.',
-  ['En "Productos de compra" agregás los insumos o materiales que comprás habitualmente.','Le ponés nombre, unidad de medida y precio de referencia.','En "Categorías" organizás los tipos de compras (ej. Insumos, Servicios, Equipamiento).','Estos productos y categorías se usan al crear Necesidades y Órdenes de compra.'],
-  [['Nombre del producto','ej. Harina, Tela, Packaging'],['Unidad de medida','kg, litros, metros, unidades, etc.'],['Precio de referencia','precio habitual de compra'],['Categoría','tipo de compra para organizar necesidades']],
-  ['Sin productos de compra cargados, las Necesidades funcionan con texto libre — menos preciso.','Los precios de referencia se usan en el Historial para detectar variaciones.','Podés desactivar un producto sin borrarlo — sigue apareciendo en el historial.'],
-  [['Necesidades','necesidades'],['Órdenes','ordenes'],['Historial','historial']]
+'config-compras': mod('Compras','Configuración','Configurás los productos de compra y las categorías que usás en Necesidades y Órdenes.',
+  ['En "Productos de compra" agregás los insumos que comprás habitualmente.','En "Categorías" organizás los tipos de compras.'],
+  [['Nombre del producto','ej. Harina, Tela, Packaging'],['Unidad de medida','kg, litros, metros, unidades, etc.'],['Precio de referencia','precio habitual de compra'],['Categoría','tipo de compra']],
+  ['Sin productos de compra cargados, las Necesidades funcionan con texto libre.'],
+  [['Necesidades','necesidades'],['Órdenes','ordenes']]
 ),
-calculador: mod('Control del negocio','Calculador de costos','Calculás el precio de venta basándote en los insumos reales más el margen que querés. Dejás de adivinar — el sistema te dice exactamente cuánto cobrar.',
-  ['Creás un nuevo cálculo con el nombre del producto o servicio.','Cargás los insumos: nombre, precio de compra, cantidad comprada y cuánto usás por unidad producida.','Definís el margen de ganancia en porcentaje.','El sistema muestra el precio sugerido, costo total y ganancia por unidad con un badge de color.'],
+calculador: mod('Control del negocio','Calculador de costos','Calculás el precio de venta basándote en los insumos reales más el margen que querés.',
+  ['Creás un nuevo cálculo con el nombre del producto o servicio.','Cargás los insumos: nombre, precio de compra, cantidad comprada y cuánto usás por unidad producida.','Definís el margen de ganancia en porcentaje.','El sistema muestra el precio sugerido, costo total y ganancia por unidad.'],
   [],
-  ['El badge de color indica si tu margen es saludable: verde = más del 60%, amarillo = 20–60%, rojo = menos del 20%.','Los cálculos se actualizan en tiempo real mientras completás los campos.','Guardá el cálculo para que aparezca en el historial y en los KPIs del módulo.'],
+  ['El badge de color indica si tu margen es saludable: verde = más del 60%, amarillo = 20–60%, rojo = menos del 20%.'],
   [['Inicio','inicio'],['Catálogo','catalogo']]
 ),
-indicadores: mod('Control del negocio','Indicadores','Gráficos mensuales de la evolución de tu negocio. Ingresos, egresos y ganancia mes a mes para ver tendencias a lo largo del año.',
-  ['Seleccionás el mes.','Ingresás el total de ingresos y egresos del mes.','El sistema calcula la ganancia automáticamente.','Con varios meses cargados, los gráficos muestran la evolución completa.'],
+indicadores: mod('Control del negocio','Indicadores','Gráficos mensuales de la evolución de tu negocio.',
+  ['Seleccionás el mes.','Ingresás el total de ingresos y egresos del mes.','El sistema calcula la ganancia automáticamente.'],
   [],
-  ['Los datos de Indicadores son manuales — los ingresás vos cada mes, no se cargan solos desde Caja.','Si querés comparar meses, tenés que cargar al menos 2 o 3 registros.'],
+  ['Los datos de Indicadores son manuales — los ingresás vos cada mes.'],
   [['Inicio','inicio']]
 ),
-'plan-accion': mod('Gestión','Plan de acción','Un tablero Kanban para organizar las tareas del negocio. Creás listas temáticas con ítems que podés tildar a medida que los completás.',
-  ['Creás una lista con nombre (se asigna color automáticamente).','Agregás ítems de texto a cada lista.','Marcás como completado cuando terminás.','Los KPIs arriba muestran en tiempo real cuántas tareas están pendientes, en curso y completadas.'],
+'plan-accion': mod('Gestión','Plan de acción','Un tablero Kanban para organizar las tareas del negocio.',
+  ['Creás una lista con nombre.','Agregás ítems de texto a cada lista.','Marcás como completado cuando terminás.'],
   [],
-  ['Los colores de las listas se asignan automáticamente.','Los ítems completados no se borran, quedan con tilde para el historial.','El Kanban tiene drag & drop para mover tareas entre columnas.'],
+  ['Los ítems completados no se borran, quedan con tilde para el historial.'],
   [['Inicio','inicio']]
 ),
-'datos-negocio': mod('Mi cuenta','Datos del negocio','Información básica que se usa en toda la plataforma: nombre del titular, nombre del negocio, rubro, teléfono, email, CUIT, dirección y logo. Aparecen en facturas, presupuestos y en el encabezado del sistema.',
+'datos-negocio': mod('Mi cuenta','Datos del negocio','Información básica que se usa en toda la plataforma: nombre del titular, nombre del negocio, rubro, teléfono, email, CUIT, dirección y logo.',
   ['Completás todos los campos de datos del negocio.','Subís el logo (máximo 200KB, imagen cuadrada recomendada).','Guardás — el nombre y el logo se actualizan en toda la interfaz inmediatamente.'],
   [['Nombre del titular','como figura en AFIP'],['Nombre del negocio','el que aparece en el sistema'],['Rubro','actividad principal'],['Logo','imagen cuadrada, máximo 200KB']],
-  ['El logo se usa en los PDFs de facturas y presupuestos — subilo antes de empezar a emitir.','El CUIT acá es informativo; el que se usa para facturar ARCA se configura en Datos fiscales.'],
+  ['El logo se usa en los PDFs de facturas y presupuestos — subilo antes de empezar a emitir.'],
   [['Datos fiscales','datos-fiscales'],['Mis Facturas','mis-facturas']]
 ),
-'datos-fiscales': mod('Mi cuenta · Configuración para facturar','Datos fiscales','Los datos tributarios necesarios para emitir facturas electrónicas: tu condición ante AFIP, el número de punto de venta ARCA y el domicilio fiscal. Sin estos datos no podés emitir facturas.',
-  ['Elegís tu condición ante AFIP: Monotributista / Responsable Inscripto / Exento.','Ingresás el número de punto de venta ARCA (el que registraste en ARCA, entre 1 y 9999).','Si tu domicilio fiscal es el mismo que el comercial, tildás la opción y se completa solo.','Subís el PDF del comprobante de alta del punto de venta de ARCA y guardás.'],
-  [['Condición IVA','Monotributista, Resp. Inscripto o Exento'],['Punto de venta','número registrado en ARCA'],['Domicilio fiscal','calle, localidad, provincia, CP'],['Comprobante PDF','constancia de alta del PV (máx. 2MB)']],
-  ['Sin estos datos completos, el sistema bloquea la emisión de facturas y muestra un mensaje con un link a esta sección.','El punto de venta tiene que existir en ARCA previamente — no se puede crear desde acá.','Si tu condición es Monotributista, las facturas se emiten como Factura C.'],
-  [['Mis Facturas','mis-facturas'],['Caja','caja'],['Config. ARCA','arca']]
+'datos-fiscales': mod('Mi cuenta · Configuración para facturar','Datos fiscales','Los datos tributarios necesarios para emitir facturas electrónicas.',
+  ['Elegís tu condición ante AFIP: Monotributista / Responsable Inscripto / Exento.','Ingresás el número de punto de venta ARCA.','Subís el PDF del comprobante de alta del punto de venta de ARCA y guardás.'],
+  [['Condición IVA','Monotributista, Resp. Inscripto o Exento'],['Punto de venta','número registrado en ARCA'],['Domicilio fiscal','calle, localidad, provincia, CP']],
+  ['Sin estos datos completos, el sistema bloquea la emisión de facturas.','El punto de venta tiene que existir en ARCA previamente.'],
+  [['Mis Facturas','mis-facturas'],['Config. ARCA','arca']]
 ),
-arca: mod('Mi cuenta · Integración automática','Configuración ARCA','La integración con AFIP/ARCA funciona automáticamente en segundo plano a través de los servidores de MB Strategy — no instalás certificados ni configurás nada en tu computadora.',
-  ['Completás tus datos fiscales en Mi cuenta.','Al emitir una factura, el sistema envía los datos a los servidores de ARCA automáticamente.','ARCA devuelve el CAE (código de autorización electrónica) y se guarda en la factura.','El PDF se genera con el CAE y el QR de verificación oficial de ARCA.'],
+arca: mod('Mi cuenta · Integración automática','Configuración ARCA','La integración con AFIP/ARCA funciona automáticamente en segundo plano — no instalás certificados ni configurás nada en tu computadora.',
+  ['Completás tus datos fiscales en Mi cuenta.','Al emitir una factura, el sistema envía los datos a los servidores de ARCA automáticamente.','ARCA devuelve el CAE y se guarda en la factura.','El PDF se genera con el CAE y el QR de verificación oficial.'],
   [],
-  ['Si la emisión falla, el error dice exactamente qué rechazó ARCA.','Si el punto de venta no está dado de alta en ARCA, la emisión va a fallar siempre.','El CAE tiene vencimiento — guardá el PDF generado en el momento para tener el comprobante.','Cada cliente de MB Strategy factura con su propio CUIT — la integración es delegada e independiente para cada negocio.'],
+  ['Si la emisión falla, el error dice exactamente qué rechazó ARCA.','El CAE tiene vencimiento — guardá el PDF generado en el momento.'],
   [['Datos fiscales','datos-fiscales'],['Mis Facturas','mis-facturas']]
 ),
-membresia: mod('Mi cuenta','Membresía','Mostrás y gestionás tu suscripción: plan actual (Base o Pro), próximo cobro y opciones para cambiar de plan o cancelar. Los pagos se procesan automáticamente por Mercado Pago.',
-  ['Si no tenés plan activo, ves los botones "Suscribirme" para Base o Pro.','Hacés clic y te redirige a Mercado Pago para completar el primer pago.','Una vez activo, ves: plan, monto y fecha del próximo cobro.','Para cancelar: clic en "Cancelar suscripción" — el acceso se mantiene hasta el fin del período ya pago.'],
+membresia: mod('Mi cuenta','Membresía','Mostrás y gestionás tu suscripción: plan actual (Base o Pro), próximo cobro y opciones para cambiar o cancelar.',
+  ['Si no tenés plan activo, ves los botones "Suscribirme" para Base o Pro.','Hacés clic y te redirige a Mercado Pago para completar el primer pago.','Para cancelar: clic en "Cancelar suscripción".'],
   [],
-  ['El plan Pro incluye funciones bloqueadas en Base: Cierre de período y otras funciones avanzadas.','Al cancelar, no perdés el acceso inmediatamente — se mantiene hasta el vencimiento del período pagado.','Los primeros 10 días son de prueba gratuita — el cobro empieza al finalizar el período de prueba.'],
+  ['El plan Pro incluye Cierre de período y otras funciones avanzadas.','Los primeros 10 días son de prueba gratuita.'],
   []
 ),
 cajero: `
@@ -629,58 +623,58 @@ cajero: `
 <div class="caj-section active">
   <div class="caj-step-header"><div class="caj-num">01</div><div class="caj-title">Apertura</div></div>
   <div class="caj-screen">
-    <div style="background:#3a4e3d;padding:10px 14px;font-family:'DM Sans',sans-serif;">
-      <div style="font-size:10px;color:rgba(255,255,255,.7);display:flex;align-items:center;gap:6px;">
-        <span style="color:#7dd98a;font-size:9px;">●</span>
+    <div style="background:#3a4e3d;padding:12px 16px;font-family:'DM Sans',sans-serif;">
+      <div style="font-size:11px;color:rgba(255,255,255,.7);display:flex;align-items:center;gap:6px;">
+        <span style="color:#7dd98a;font-size:10px;">●</span>
         Maria Garcia &nbsp;·&nbsp; Turno activo &nbsp;·&nbsp; 01:09 p.m.
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:10px;background:#f4f0ea;">
-      <div style="background:#fff;border-radius:9px;padding:9px 10px;">
-        <div style="font-size:8px;color:#aaa;text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px;">Efectivo</div>
-        <div style="font-size:13px;font-weight:700;color:#3a4e3d;">$107.500</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px;background:#f4f0ea;">
+      <div style="background:#3a4e3d;border-radius:10px;padding:11px 12px;">
+        <div style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;font-family:'DM Sans',sans-serif;">Efectivo</div>
+        <div style="font-size:15px;font-weight:700;color:#f4f0ea;font-family:'DM Sans',sans-serif;">$107.500</div>
       </div>
-      <div style="background:#fff;border-radius:9px;padding:9px 10px;">
-        <div style="font-size:8px;color:#aaa;text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px;">A cobrar</div>
-        <div style="font-size:13px;font-weight:700;color:#b09088;">$46.500</div>
+      <div style="background:#8a5f55;border-radius:10px;padding:11px 12px;">
+        <div style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;font-family:'DM Sans',sans-serif;">A cobrar</div>
+        <div style="font-size:15px;font-weight:700;color:#f4f0ea;font-family:'DM Sans',sans-serif;">$46.500</div>
       </div>
-      <div style="background:#fff;border-radius:9px;padding:9px 10px;">
-        <div style="font-size:8px;color:#aaa;text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px;">Saldo turno</div>
-        <div style="font-size:13px;font-weight:700;color:#3a4e3d;">$107.500</div>
+      <div style="background:#3a4e3d;border-radius:10px;padding:11px 12px;">
+        <div style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;font-family:'DM Sans',sans-serif;">Saldo turno</div>
+        <div style="font-size:15px;font-weight:700;color:#f4f0ea;font-family:'DM Sans',sans-serif;">$107.500</div>
       </div>
     </div>
-    <div style="background:#fff;margin:0 10px 10px;border-radius:10px;overflow:hidden;">
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-bottom:1px solid #f5f0ec;">
+    <div style="background:#fff;margin:0 12px 12px;border-radius:10px;overflow:hidden;">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 14px;border-bottom:1px solid #f5f0ec;">
         <div style="flex:1;min-width:0;">
-          <div style="font-size:11px;font-weight:600;color:#2d2a26;">Venta caja</div>
-          <div style="font-size:10px;color:#aaa;letter-spacing:.3px;">V-0062 · EFECTIVO</div>
+          <div style="font-size:12px;font-weight:600;color:#2d2a26;">Venta caja</div>
+          <div style="font-size:11px;color:#aaa;letter-spacing:.3px;">V-0062 · EFECTIVO</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-          <div style="font-size:12px;font-weight:700;color:#3a4e3d;">+$2.500</div>
-          <div style="width:68px;text-align:right;"><button style="font-size:9px;padding:3px 8px;border-radius:5px;border:1px solid #b09088;background:#fff;color:#b09088;cursor:default;white-space:nowrap;">Facturar</button></div>
+          <div style="font-size:13px;font-weight:700;color:#3a4e3d;font-family:'DM Sans',sans-serif;">+$2.500</div>
+          <div style="width:72px;text-align:right;"><button style="font-size:10px;padding:4px 9px;border-radius:5px;border:1px solid #b09088;background:#fff;color:#b09088;cursor:default;white-space:nowrap;font-family:'DM Sans',sans-serif;">Facturar</button></div>
         </div>
       </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 14px;">
         <div style="flex:1;min-width:0;">
-          <div style="font-size:11px;font-weight:600;color:#2d2a26;">Apertura de turno</div>
-          <div style="font-size:10px;color:#aaa;letter-spacing:.3px;">EFECTIVO</div>
+          <div style="font-size:12px;font-weight:600;color:#2d2a26;">Apertura de turno</div>
+          <div style="font-size:11px;color:#aaa;letter-spacing:.3px;">EFECTIVO</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-          <div style="font-size:12px;font-weight:700;color:#3a4e3d;">+$105.000</div>
-          <div style="width:68px;"></div>
+          <div style="font-size:13px;font-weight:700;color:#3a4e3d;font-family:'DM Sans',sans-serif;">+$105.000</div>
+          <div style="width:72px;"></div>
         </div>
       </div>
     </div>
     <div style="background:#fff;border-top:1px solid #eee;display:grid;grid-template-columns:repeat(4,1fr);">
-      <div style="padding:8px 4px;text-align:center;font-size:9px;color:#3a4e3d;font-weight:700;border-right:1px solid #f0ebe6;">Nueva venta</div>
-      <div style="padding:8px 4px;text-align:center;font-size:9px;color:#888;border-right:1px solid #f0ebe6;">Retiro</div>
-      <div style="padding:8px 4px;text-align:center;font-size:9px;color:#888;border-right:1px solid #f0ebe6;">Depósito</div>
-      <div style="padding:8px 4px;text-align:center;font-size:9px;color:#b09088;font-weight:600;">Cerrar caja</div>
+      <div style="padding:10px 4px;text-align:center;font-size:10px;color:#3a4e3d;font-weight:700;border-right:1px solid #f0ebe6;font-family:'DM Sans',sans-serif;">Nueva venta</div>
+      <div style="padding:10px 4px;text-align:center;font-size:10px;color:#888;border-right:1px solid #f0ebe6;font-family:'DM Sans',sans-serif;">Retiro</div>
+      <div style="padding:10px 4px;text-align:center;font-size:10px;color:#888;border-right:1px solid #f0ebe6;font-family:'DM Sans',sans-serif;">Depósito</div>
+      <div style="padding:10px 4px;text-align:center;font-size:10px;color:#b09088;font-weight:600;font-family:'DM Sans',sans-serif;">Cerrar caja</div>
     </div>
   </div>
   <div class="section"><div class="sec-title">Cómo se usa</div><div class="steps">
-    <div class="step"><div class="step-left"><div class="step-num">1</div><div class="step-line"></div></div><div class="step-text">Ingresá con tu nombre y contraseña. Si es la primera vez, el dueño te las va a dar.</div></div>
-    <div class="step"><div class="step-left"><div class="step-num">2</div><div class="step-line"></div></div><div class="step-text">El sistema te muestra el saldo inicial en efectivo — es lo que quedó del turno anterior. Confirmá y empezá a operar.</div></div>
+    <div class="step"><div class="step-left"><div class="step-num">1</div><div class="step-line"></div></div><div class="step-text">Ingresá con tu <strong>nombre</strong> y <strong>contraseña</strong>. Si es la primera vez, el dueño te las va a dar.</div></div>
+    <div class="step"><div class="step-left"><div class="step-num">2</div><div class="step-line"></div></div><div class="step-text">El sistema te muestra el <strong>saldo inicial en efectivo</strong> — es lo que quedó del turno anterior. Confirmá y empezá a operar.</div></div>
   </div></div>
   <div class="tip"><div class="tip-dot"></div><div class="tip-text">El saldo inicial es solo el efectivo. Los otros medios (Mercado Pago, Transferencia, Tarjeta) arrancan desde cero cada turno.</div></div>
 </div>
@@ -689,38 +683,40 @@ cajero: `
 <div class="caj-section">
   <div class="caj-step-header"><div class="caj-num">02</div><div class="caj-title">Nueva venta</div></div>
   <div class="caj-screen">
-    <div style="background:#f4f0ea;padding:12px 14px;">
-      <div style="background:#fff;border-radius:9px;padding:8px 12px;display:flex;align-items:center;gap:8px;margin-bottom:8px;border:1px solid #e8e3de;">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <span style="font-size:12px;color:#ccc;">Buscar producto...</span>
+    <div style="background:#f4f0ea;padding:14px 16px;">
+      <div style="background:#fff;border-radius:9px;padding:9px 12px;display:flex;align-items:center;gap:8px;margin-bottom:8px;border:1px solid #e8e3de;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <span style="font-size:12px;color:#ccc;font-family:'DM Sans',sans-serif;">Buscar producto...</span>
       </div>
-      <div style="background:rgba(74,94,77,0.06);border:0.5px solid rgba(74,94,77,0.35);border-radius:9px;padding:7px;text-align:center;font-size:11px;font-weight:600;color:#3a4e3d;margin-bottom:10px;">+ Ítem libre</div>
-      <div style="background:#fff;border-radius:10px;overflow:hidden;margin-bottom:10px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border-bottom:1px solid #f5f0ec;">
-          <div><div style="font-size:11px;font-weight:600;color:#2d2a26;">Sandwich de miga</div><div style="font-size:10px;color:#aaa;">$1.500</div></div>
-          <button style="width:24px;height:24px;border-radius:6px;border:none;background:#3a4e3d;color:#fff;font-size:14px;cursor:default;display:flex;align-items:center;justify-content:center;">+</button>
+      <div style="background:rgba(74,94,77,0.06);border:0.5px solid rgba(74,94,77,0.35);border-radius:9px;padding:8px;text-align:center;font-size:12px;font-weight:600;color:#3a4e3d;margin-bottom:12px;font-family:'DM Sans',sans-serif;">+ Ítem libre</div>
+      <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:#b09088;margin-bottom:8px;text-transform:uppercase;font-family:'DM Sans',sans-serif;">Más vendidos</div>
+      <div style="background:#fff;border-radius:10px;overflow:hidden;margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid #f5f0ec;">
+          <div><div style="font-size:12px;font-weight:600;color:#2d2a26;font-family:'DM Sans',sans-serif;">Sandwich de miga</div><div style="font-size:11px;color:#aaa;font-family:'DM Sans',sans-serif;">$1.500</div></div>
+          <button style="width:26px;height:26px;border-radius:6px;border:none;background:#3a4e3d;color:#fff;font-size:16px;cursor:default;display:flex;align-items:center;justify-content:center;line-height:1;">+</button>
         </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border-bottom:1px solid #f5f0ec;">
-          <div><div style="font-size:11px;font-weight:600;color:#2d2a26;">Corte General</div><div style="font-size:10px;color:#aaa;">$40.000</div></div>
-          <button style="width:24px;height:24px;border-radius:6px;border:none;background:#3a4e3d;color:#fff;font-size:14px;cursor:default;display:flex;align-items:center;justify-content:center;">+</button>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid #f5f0ec;">
+          <div><div style="font-size:12px;font-weight:600;color:#2d2a26;font-family:'DM Sans',sans-serif;">Corte General</div><div style="font-size:11px;color:#aaa;font-family:'DM Sans',sans-serif;">$40.000</div></div>
+          <button style="width:26px;height:26px;border-radius:6px;border:none;background:#3a4e3d;color:#fff;font-size:16px;cursor:default;display:flex;align-items:center;justify-content:center;line-height:1;">+</button>
         </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 12px;">
-          <div><div style="font-size:11px;font-weight:600;color:#2d2a26;">Medialunas</div><div style="font-size:10px;color:#aaa;">$2.000</div></div>
-          <button style="width:24px;height:24px;border-radius:6px;border:none;background:#3a4e3d;color:#fff;font-size:14px;cursor:default;display:flex;align-items:center;justify-content:center;">+</button>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;">
+          <div><div style="font-size:12px;font-weight:600;color:#2d2a26;font-family:'DM Sans',sans-serif;">Medialunas</div><div style="font-size:11px;color:#aaa;font-family:'DM Sans',sans-serif;">$2.000</div></div>
+          <button style="width:26px;height:26px;border-radius:6px;border:none;background:#3a4e3d;color:#fff;font-size:16px;cursor:default;display:flex;align-items:center;justify-content:center;line-height:1;">+</button>
         </div>
       </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
-        <div style="padding:5px 10px;border-radius:7px;background:#3a4e3d;color:#fff;font-size:10px;font-weight:600;">Efectivo</div>
-        <div style="padding:5px 10px;border-radius:7px;background:#fff;border:1px solid #e0dbd6;color:#888;font-size:10px;">Mercado Pago</div>
-        <div style="padding:5px 10px;border-radius:7px;background:#fff;border:1px solid #e0dbd6;color:#888;font-size:10px;">Transferencia</div>
-        <div style="padding:5px 10px;border-radius:7px;background:#fff;border:1px solid #e0dbd6;color:#888;font-size:10px;">Tarjeta</div>
+      <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:#b09088;margin-bottom:8px;text-transform:uppercase;font-family:'DM Sans',sans-serif;">Método de pago</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
+        <div style="padding:6px 12px;border-radius:8px;background:#3a4e3d;color:#fff;font-size:11px;font-weight:600;font-family:'DM Sans',sans-serif;">Efectivo</div>
+        <div style="padding:6px 12px;border-radius:8px;background:#fff;border:1px solid #e0dbd6;color:#888;font-size:11px;font-family:'DM Sans',sans-serif;">Mercado Pago</div>
+        <div style="padding:6px 12px;border-radius:8px;background:#fff;border:1px solid #e0dbd6;color:#888;font-size:11px;font-family:'DM Sans',sans-serif;">Transferencia</div>
+        <div style="padding:6px 12px;border-radius:8px;background:#fff;border:1px solid #e0dbd6;color:#888;font-size:11px;font-family:'DM Sans',sans-serif;">Tarjeta</div>
       </div>
-      <div style="background:#3a4e3d;border-radius:10px;padding:10px;text-align:center;font-size:12px;font-weight:700;color:#fff;">Registrar venta</div>
+      <div style="background:#3a4e3d;border-radius:10px;padding:12px;text-align:center;font-size:13px;font-weight:700;color:#fff;font-family:'DM Sans',sans-serif;">Registrar venta</div>
     </div>
   </div>
   <div class="section"><div class="sec-title">Cómo se usa</div><div class="steps">
     <div class="step"><div class="step-left"><div class="step-num">1</div><div class="step-line"></div></div><div class="step-text">Tocá <strong>Nueva venta</strong> en la barra de abajo.</div></div>
-    <div class="step"><div class="step-left"><div class="step-num">2</div><div class="step-line"></div></div><div class="step-text">El sistema muestra los 3 más vendidos del turno. Si no está, usá el buscador. Si no existe en el catálogo, tocá <strong>+ Ítem libre</strong> e ingresá nombre, cantidad y precio.</div></div>
+    <div class="step"><div class="step-left"><div class="step-num">2</div><div class="step-line"></div></div><div class="step-text">El sistema muestra los <strong>3 más vendidos</strong> del turno. Si no está, usá el buscador. Si no existe en el catálogo, tocá <strong>+ Ítem libre</strong> e ingresá nombre, cantidad y precio.</div></div>
     <div class="step"><div class="step-left"><div class="step-num">3</div><div class="step-line"></div></div><div class="step-text">Tocá el <strong>+</strong> para agregar al carrito. Podés cambiar la cantidad desde ahí.</div></div>
     <div class="step"><div class="step-left"><div class="step-num">4</div><div class="step-line"></div></div><div class="step-text">Elegí el medio de pago y tocá <strong>Registrar venta</strong>. Se genera el ticket automáticamente.</div></div>
   </div></div>
@@ -731,31 +727,31 @@ cajero: `
 <div class="caj-section">
   <div class="caj-step-header"><div class="caj-num">03</div><div class="caj-title">Cuenta cliente</div></div>
   <div class="caj-screen">
-    <div style="background:#f4f0ea;padding:12px 14px;">
-      <div style="display:flex;gap:6px;margin-bottom:12px;">
-        <div style="flex:1;background:#fff;border-radius:9px;padding:8px 12px;display:flex;align-items:center;gap:6px;border:1px solid #e8e3de;">
+    <div style="background:#f4f0ea;padding:14px 16px;">
+      <div style="display:flex;gap:8px;margin-bottom:14px;">
+        <div style="flex:1;background:#fff;border-radius:9px;padding:9px 12px;display:flex;align-items:center;gap:6px;border:1px solid #e8e3de;">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <span style="font-size:12px;color:#ccc;">Buscar cliente...</span>
+          <span style="font-size:12px;color:#ccc;font-family:'DM Sans',sans-serif;">Buscar cliente...</span>
         </div>
-        <div style="background:#3a4e3d;border-radius:9px;padding:8px 12px;font-size:11px;font-weight:600;color:#fff;white-space:nowrap;">+ Nuevo</div>
+        <div style="background:#3a4e3d;border-radius:9px;padding:9px 14px;font-size:12px;font-weight:600;color:#fff;white-space:nowrap;font-family:'DM Sans',sans-serif;">+ Nuevo</div>
       </div>
-      <div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;font-weight:600;">Condición IVA del cliente</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
-        <div style="background:#3a4e3d;border-radius:10px;padding:10px 11px;">
-          <div style="font-size:11px;font-weight:700;color:#fff;margin-bottom:3px;">Consumidor Final</div>
-          <div style="font-size:9px;color:rgba(255,255,255,.65);">Ticket X · nombre y tel.</div>
+      <div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;font-weight:600;font-family:'DM Sans',sans-serif;">Condición IVA del cliente</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div style="background:#3a4e3d;border-radius:10px;padding:12px 13px;">
+          <div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:3px;font-family:'DM Sans',sans-serif;">Consumidor Final</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.65);font-family:'DM Sans',sans-serif;">Ticket X · nombre y tel.</div>
         </div>
-        <div style="background:#fff;border:1px solid #e0dbd6;border-radius:10px;padding:10px 11px;">
-          <div style="font-size:11px;font-weight:700;color:#2d2a26;margin-bottom:3px;">Monotributista</div>
-          <div style="font-size:9px;color:#aaa;">Factura C · nombre, CUIT y dir.</div>
+        <div style="background:#fff;border:1px solid #e0dbd6;border-radius:10px;padding:12px 13px;">
+          <div style="font-size:12px;font-weight:700;color:#2d2a26;margin-bottom:3px;font-family:'DM Sans',sans-serif;">Monotributista</div>
+          <div style="font-size:10px;color:#aaa;font-family:'DM Sans',sans-serif;">Factura C · nombre, CUIT y dir.</div>
         </div>
-        <div style="background:#fff;border:1px solid #e0dbd6;border-radius:10px;padding:10px 11px;">
-          <div style="font-size:11px;font-weight:700;color:#2d2a26;margin-bottom:3px;">Resp. Inscripto</div>
-          <div style="font-size:9px;color:#aaa;">Factura A · nombre, CUIT y dir.</div>
+        <div style="background:#fff;border:1px solid #e0dbd6;border-radius:10px;padding:12px 13px;">
+          <div style="font-size:12px;font-weight:700;color:#2d2a26;margin-bottom:3px;font-family:'DM Sans',sans-serif;">Resp. Inscripto</div>
+          <div style="font-size:10px;color:#aaa;font-family:'DM Sans',sans-serif;">Factura A · nombre, CUIT y dir.</div>
         </div>
-        <div style="background:#fff;border:1px solid #e0dbd6;border-radius:10px;padding:10px 11px;">
-          <div style="font-size:11px;font-weight:700;color:#2d2a26;margin-bottom:3px;">Exento</div>
-          <div style="font-size:9px;color:#aaa;">Factura C · nombre, CUIT y dir.</div>
+        <div style="background:#fff;border:1px solid #e0dbd6;border-radius:10px;padding:12px 13px;">
+          <div style="font-size:12px;font-weight:700;color:#2d2a26;margin-bottom:3px;font-family:'DM Sans',sans-serif;">Exento</div>
+          <div style="font-size:10px;color:#aaa;font-family:'DM Sans',sans-serif;">Factura C · nombre, CUIT y dir.</div>
         </div>
       </div>
     </div>
@@ -763,7 +759,7 @@ cajero: `
   <div class="section"><div class="sec-title">Cómo se usa</div><div class="steps">
     <div class="step"><div class="step-left"><div class="step-num">1</div><div class="step-line"></div></div><div class="step-text">Cargá los productos y seleccioná <strong>Cuenta cliente</strong> como medio de pago.</div></div>
     <div class="step"><div class="step-left"><div class="step-num">2</div><div class="step-line"></div></div><div class="step-text">Buscá el cliente por nombre o teléfono. Si no aparece, tocá <strong>Nuevo cliente</strong> y completá los datos.</div></div>
-    <div class="step"><div class="step-left"><div class="step-num">3</div><div class="step-line"></div></div><div class="step-text">Si el cliente pide factura, preguntale su condición frente al IVA y completá los datos requeridos.</div></div>
+    <div class="step"><div class="step-left"><div class="step-num">3</div><div class="step-line"></div></div><div class="step-text">Si el cliente pide factura, preguntale su <strong>condición frente al IVA</strong> y completá los datos requeridos según la tabla.</div></div>
     <div class="step"><div class="step-left"><div class="step-num">4</div><div class="step-line"></div></div><div class="step-text">Confirmá. El pedido queda como <strong>Pendiente</strong> en Cobranzas.</div></div>
   </div></div>
   <div class="tip caj-tip-green"><div class="tip-dot"></div><div class="tip-text"><strong>Consumidor Final</strong> — solo nombre y teléfono. <strong>Monotributista / Exento</strong> — nombre, CUIT y dirección. <strong>Resp. Inscripto</strong> — nombre, CUIT y dirección (obligatorios para Factura A). Si no sabés la condición, preguntale al cliente.</div></div>
@@ -774,37 +770,37 @@ cajero: `
 <div class="caj-section">
   <div class="caj-step-header"><div class="caj-num">04</div><div class="caj-title">Cobranzas</div></div>
   <div class="caj-screen">
-    <div style="background:#f4f0ea;padding:10px 12px;">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;">
-        <div style="background:#fff;border-radius:9px;padding:9px 10px;">
-          <div style="font-size:8px;color:#aaa;text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px;">Total pendiente</div>
-          <div style="font-size:14px;font-weight:700;color:#b09088;">$46.500</div>
+    <div style="background:#f4f0ea;padding:12px 14px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+        <div style="background:#3a4e3d;border-radius:10px;padding:11px 12px;">
+          <div style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;font-family:'DM Sans',sans-serif;">Total pendiente</div>
+          <div style="font-size:16px;font-weight:700;color:#f4f0ea;font-family:'DM Sans',sans-serif;">$46.500</div>
         </div>
-        <div style="background:#fff;border-radius:9px;padding:9px 10px;">
-          <div style="font-size:8px;color:#aaa;text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px;">Cantidad</div>
-          <div style="font-size:14px;font-weight:700;color:#2d2a26;">20</div>
+        <div style="background:#3a4e3d;border-radius:10px;padding:11px 12px;">
+          <div style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;font-family:'DM Sans',sans-serif;">Cantidad</div>
+          <div style="font-size:16px;font-weight:700;color:#f4f0ea;font-family:'DM Sans',sans-serif;">20</div>
         </div>
       </div>
-      <div style="display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap;">
-        <div style="padding:4px 10px;border-radius:20px;background:#3a4e3d;color:#fff;font-size:10px;font-weight:600;">Todos</div>
-        <div style="padding:4px 10px;border-radius:20px;background:#fff;border:1px solid #e0dbd6;color:#888;font-size:10px;">Esta semana</div>
-        <div style="padding:4px 10px;border-radius:20px;background:#fff;border:1px solid #e0dbd6;color:#888;font-size:10px;">Este mes</div>
-        <div style="padding:4px 10px;border-radius:20px;background:#fff;border:1px solid #e0dbd6;color:#888;font-size:10px;">+30 días</div>
+      <div style="display:flex;gap:5px;margin-bottom:10px;flex-wrap:wrap;">
+        <div style="padding:5px 12px;border-radius:20px;background:#3a4e3d;color:#fff;font-size:11px;font-weight:600;font-family:'DM Sans',sans-serif;">Todos</div>
+        <div style="padding:5px 12px;border-radius:20px;background:#fff;border:1px solid #e0dbd6;color:#888;font-size:11px;font-family:'DM Sans',sans-serif;">Esta semana</div>
+        <div style="padding:5px 12px;border-radius:20px;background:#fff;border:1px solid #e0dbd6;color:#888;font-size:11px;font-family:'DM Sans',sans-serif;">Este mes</div>
+        <div style="padding:5px 12px;border-radius:20px;background:#fff;border:1px solid #e0dbd6;color:#888;font-size:11px;font-family:'DM Sans',sans-serif;">+30 días</div>
       </div>
-      <div style="background:#fff;border-radius:8px;padding:6px 10px;display:flex;align-items:center;gap:6px;border:1px solid #e8e3de;margin-bottom:8px;">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <span style="font-size:11px;color:#ccc;">Nombre, teléfono o N° ticket...</span>
+      <div style="background:#fff;border-radius:8px;padding:7px 12px;display:flex;align-items:center;gap:6px;border:1px solid #e8e3de;margin-bottom:10px;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <span style="font-size:12px;color:#ccc;font-family:'DM Sans',sans-serif;">Nombre, teléfono o N° ticket...</span>
       </div>
-      <div style="background:#fff;border-radius:10px;padding:10px 12px;">
+      <div style="background:#fff;border-radius:10px;padding:12px 14px;">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
           <div style="flex:1;min-width:0;">
-            <div style="font-size:11px;font-weight:700;color:#2d2a26;">Claudia Franco</div>
-            <div style="font-size:9px;color:#aaa;">11 2345-6789 · V-0050 · 15-may</div>
+            <div style="font-size:13px;font-weight:700;color:#2d2a26;font-family:'DM Sans',sans-serif;">Claudia Franco</div>
+            <div style="font-size:10px;color:#aaa;margin-top:2px;font-family:'DM Sans',sans-serif;">11 2345-6789 · V-0050 · 15-may</div>
           </div>
-          <div style="font-size:12px;font-weight:700;color:#b09088;flex-shrink:0;">$1.500</div>
+          <div style="font-size:13px;font-weight:700;color:#b09088;flex-shrink:0;font-family:'DM Sans',sans-serif;">$1.500</div>
           <div style="display:flex;gap:5px;flex-shrink:0;">
-            <button style="padding:4px 8px;border-radius:6px;border:none;background:#3a4e3d;color:#fff;font-size:9px;font-weight:600;cursor:default;">Cobrar</button>
-            <button style="padding:4px 8px;border-radius:6px;border:1px solid #3a4e3d;background:#fff;color:#3a4e3d;font-size:9px;font-weight:600;cursor:default;">WA</button>
+            <button style="padding:5px 10px;border-radius:6px;border:none;background:#3a4e3d;color:#fff;font-size:11px;font-weight:600;cursor:default;font-family:'DM Sans',sans-serif;">Cobrar</button>
+            <button style="padding:5px 10px;border-radius:6px;border:none;background:#25d366;color:#fff;font-size:11px;font-weight:600;cursor:default;font-family:'DM Sans',sans-serif;">WA</button>
           </div>
         </div>
       </div>
@@ -812,7 +808,7 @@ cajero: `
   </div>
   <div class="section"><div class="sec-title">Cómo se usa</div><div class="steps">
     <div class="step"><div class="step-left"><div class="step-num">1</div><div class="step-line"></div></div><div class="step-text">Usá los filtros <strong>Esta semana · Este mes · +30 días</strong> para ordenar por urgencia, o buscá por nombre, teléfono o número de ticket.</div></div>
-    <div class="step"><div class="step-left"><div class="step-num">2</div><div class="step-line"></div></div><div class="step-text">Si el cliente está en camino, tocá el botón <strong>WA</strong> para enviarle un mensaje avisando que tiene un pago pendiente.</div></div>
+    <div class="step"><div class="step-left"><div class="step-num">2</div><div class="step-line"></div></div><div class="step-text">Si el cliente está en camino, tocá el botón <strong>WA</strong> (verde) para enviarle un mensaje avisando que tiene un pago pendiente.</div></div>
     <div class="step"><div class="step-left"><div class="step-num">3</div><div class="step-line"></div></div><div class="step-text">Cuando el cliente paga, tocá <strong>Cobrar</strong>, elegí el medio de pago y confirmá el monto.</div></div>
     <div class="step"><div class="step-left"><div class="step-num">4</div><div class="step-line"></div></div><div class="step-text">El pedido pasa a <strong>Cobrado</strong> y el ingreso se suma automáticamente a la caja del turno.</div></div>
   </div></div>
@@ -823,24 +819,24 @@ cajero: `
 <div class="caj-section">
   <div class="caj-step-header"><div class="caj-num">05</div><div class="caj-title">Retiro y Depósito</div></div>
   <div class="caj-screen">
-    <div style="background:#f4f0ea;padding:12px 14px;">
-      <div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;font-weight:600;">¿Motivo del retiro?</div>
-      <div style="display:flex;flex-direction:column;gap:6px;">
-        <div style="background:#fff;border-radius:10px;padding:10px 12px;border:1px solid #e0dbd6;">
-          <div style="font-size:11px;font-weight:600;color:#2d2a26;margin-bottom:2px;">Pago a proveedor</div>
-          <div style="font-size:10px;color:#aaa;">Ej: pagás la factura de la panadería en efectivo</div>
+    <div style="background:#f4f0ea;padding:14px 16px;">
+      <div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;font-weight:600;font-family:'DM Sans',sans-serif;">¿Motivo del retiro?</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="background:#fff;border-radius:10px;padding:12px 14px;border:1px solid #e0dbd6;">
+          <div style="font-size:12px;font-weight:600;color:#2d2a26;margin-bottom:3px;font-family:'DM Sans',sans-serif;">Pago a proveedor</div>
+          <div style="font-size:11px;color:#aaa;font-family:'DM Sans',sans-serif;">Ej: pagás la factura de la panadería en efectivo</div>
         </div>
-        <div style="background:#fff;border-radius:10px;padding:10px 12px;border:1px solid #e0dbd6;">
-          <div style="font-size:11px;font-weight:600;color:#2d2a26;margin-bottom:2px;">Compra de insumos</div>
-          <div style="font-size:10px;color:#aaa;">Ej: comprás papel aluminio, bolsas, materiales</div>
+        <div style="background:#fff;border-radius:10px;padding:12px 14px;border:1px solid #e0dbd6;">
+          <div style="font-size:12px;font-weight:600;color:#2d2a26;margin-bottom:3px;font-family:'DM Sans',sans-serif;">Compra de insumos</div>
+          <div style="font-size:11px;color:#aaa;font-family:'DM Sans',sans-serif;">Ej: comprás papel aluminio, bolsas, materiales</div>
         </div>
-        <div style="background:#3a4e3d;border-radius:10px;padding:10px 12px;">
-          <div style="font-size:11px;font-weight:700;color:#fff;margin-bottom:2px;">Retiro por cierre</div>
-          <div style="font-size:10px;color:rgba(255,255,255,.65);">Entregás el efectivo del turno al dueño</div>
+        <div style="background:#3a4e3d;border-radius:10px;padding:12px 14px;">
+          <div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:3px;font-family:'DM Sans',sans-serif;">Retiro por cierre</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.65);font-family:'DM Sans',sans-serif;">Entregás el efectivo del turno al dueño</div>
         </div>
-        <div style="background:#fff;border-radius:10px;padding:10px 12px;border:1px solid #e0dbd6;">
-          <div style="font-size:11px;font-weight:600;color:#2d2a26;margin-bottom:2px;">Otros</div>
-          <div style="font-size:10px;color:#aaa;">Cualquier otro egreso, describilo en la observación</div>
+        <div style="background:#fff;border-radius:10px;padding:12px 14px;border:1px solid #e0dbd6;">
+          <div style="font-size:12px;font-weight:600;color:#2d2a26;margin-bottom:3px;font-family:'DM Sans',sans-serif;">Otros</div>
+          <div style="font-size:11px;color:#aaa;font-family:'DM Sans',sans-serif;">Cualquier otro egreso, describilo en la observación</div>
         </div>
       </div>
     </div>
@@ -851,12 +847,12 @@ cajero: `
     <div class="step"><div class="step-left"><div class="step-num">3</div><div class="step-line"></div></div><div class="step-text">Confirmá. El retiro aparece en la lista y se descuenta del saldo de caja.</div></div>
   </div></div>
   <div class="tip caj-tip-alert"><div class="tip-dot"></div><div class="tip-text">Usá <strong>Retiro por cierre</strong> solo cuando entregás el efectivo al dueño al final del día. Ese dinero pasa automáticamente a la caja general del negocio.</div></div>
-  <div class="section" style="margin-top:24px"><div class="sec-title">Depósito — cómo se usa</div><div class="steps">
+  <div class="section" style="margin-top:28px"><div class="sec-title">Depósito — cómo se usa</div><div class="steps">
     <div class="step"><div class="step-left"><div class="step-num">1</div><div class="step-line"></div></div><div class="step-text">Tocá <strong>Depósito</strong> en la barra de abajo.</div></div>
     <div class="step"><div class="step-left"><div class="step-num">2</div><div class="step-line"></div></div><div class="step-text">Ingresá el monto y una observación que explique de dónde viene ese dinero.</div></div>
     <div class="step"><div class="step-left"><div class="step-num">3</div><div class="step-line"></div></div><div class="step-text">Confirmá. El depósito suma al saldo de caja del turno.</div></div>
   </div></div>
-  <div class="tip" style="margin-top:10px"><div class="tip-dot"></div><div class="tip-text">Usá Depósito cuando entra plata que no es una venta. Ejemplos: cambio inicial del día, devolución de un adelanto.</div></div>
+  <div class="tip" style="margin-top:10px"><div class="tip-dot"></div><div class="tip-text">Usá Depósito cuando entra plata que no es una venta. Ejemplos: <strong>cambio inicial del día</strong>, devolución de un adelanto, cualquier ingreso de efectivo que no viene de una venta al cliente.</div></div>
 </div>
 
 <!-- 06 · Facturas -->
@@ -864,34 +860,34 @@ cajero: `
   <div class="caj-step-header"><div class="caj-num">06</div><div class="caj-title">Facturas</div></div>
   <div class="caj-screen">
     <div style="background:#fff;">
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 14px;border-bottom:1px solid #f5f0ec;">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:13px 16px;border-bottom:1px solid #f5f0ec;">
         <div style="flex:1;min-width:0;">
-          <div style="font-size:11px;font-weight:600;color:#2d2a26;">Venta caja</div>
-          <div style="font-size:10px;color:#aaa;">V-0062 · EFECTIVO</div>
+          <div style="font-size:12px;font-weight:600;color:#2d2a26;font-family:'DM Sans',sans-serif;">Venta caja</div>
+          <div style="font-size:11px;color:#aaa;font-family:'DM Sans',sans-serif;">V-0062 · EFECTIVO</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-          <div style="font-size:12px;font-weight:700;color:#3a4e3d;">+$2.500</div>
-          <div style="width:68px;text-align:right;"><button style="font-size:9px;padding:3px 8px;border-radius:5px;border:1px solid #b09088;background:#fff;color:#b09088;cursor:default;white-space:nowrap;">Facturar</button></div>
+          <div style="font-size:13px;font-weight:700;color:#3a4e3d;font-family:'DM Sans',sans-serif;">+$2.500</div>
+          <div style="width:72px;text-align:right;"><button style="font-size:10px;padding:4px 9px;border-radius:5px;border:1px solid #b09088;background:#fff;color:#b09088;cursor:default;white-space:nowrap;font-family:'DM Sans',sans-serif;">Facturar</button></div>
         </div>
       </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 14px;border-bottom:1px solid #f5f0ec;">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:13px 16px;border-bottom:1px solid #f5f0ec;">
         <div style="flex:1;min-width:0;">
-          <div style="font-size:11px;font-weight:600;color:#2d2a26;">Venta caja</div>
-          <div style="font-size:10px;color:#aaa;">V-0061 · MP</div>
+          <div style="font-size:12px;font-weight:600;color:#2d2a26;font-family:'DM Sans',sans-serif;">Venta caja</div>
+          <div style="font-size:11px;color:#aaa;font-family:'DM Sans',sans-serif;">V-0061 · MP</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-          <div style="font-size:12px;font-weight:700;color:#3a4e3d;">+$1.500</div>
-          <div style="width:68px;text-align:right;"><span style="font-size:15px;color:#3a4e3d;font-weight:700;">✓</span></div>
+          <div style="font-size:13px;font-weight:700;color:#3a4e3d;font-family:'DM Sans',sans-serif;">+$1.500</div>
+          <div style="width:72px;text-align:right;"><span style="font-size:16px;color:#3a4e3d;font-weight:700;">✓</span></div>
         </div>
       </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 14px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:13px 16px;">
         <div style="flex:1;min-width:0;">
-          <div style="font-size:11px;font-weight:600;color:#2d2a26;">Apertura de turno</div>
-          <div style="font-size:10px;color:#aaa;">EFECTIVO</div>
+          <div style="font-size:12px;font-weight:600;color:#2d2a26;font-family:'DM Sans',sans-serif;">Apertura de turno</div>
+          <div style="font-size:11px;color:#aaa;font-family:'DM Sans',sans-serif;">EFECTIVO</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-          <div style="font-size:12px;font-weight:700;color:#3a4e3d;">+$105.000</div>
-          <div style="width:68px;"></div>
+          <div style="font-size:13px;font-weight:700;color:#3a4e3d;font-family:'DM Sans',sans-serif;">+$105.000</div>
+          <div style="width:72px;"></div>
         </div>
       </div>
     </div>
@@ -908,34 +904,34 @@ cajero: `
 <div class="caj-section">
   <div class="caj-step-header"><div class="caj-num">07</div><div class="caj-title">Cierre</div></div>
   <div class="caj-screen">
-    <div style="background:#f4f0ea;padding:12px 14px;">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px;">
-        <div style="background:#fff;border-radius:10px;padding:10px 12px;">
-          <div style="font-size:8px;color:#aaa;text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px;">Saldo inicial</div>
-          <div style="font-size:13px;font-weight:700;color:#2d2a26;">$105.000</div>
+    <div style="background:#f4f0ea;padding:14px 16px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+        <div style="background:#fff;border-radius:10px;padding:12px 14px;">
+          <div style="font-size:9px;color:#aaa;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;font-family:'DM Sans',sans-serif;">Saldo inicial</div>
+          <div style="font-size:15px;font-weight:700;color:#2d2a26;font-family:'DM Sans',sans-serif;">$105.000</div>
         </div>
-        <div style="background:#fff;border-radius:10px;padding:10px 12px;">
-          <div style="font-size:8px;color:#aaa;text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px;">Ingresos</div>
-          <div style="font-size:13px;font-weight:700;color:#3a4e3d;">+$4.000</div>
+        <div style="background:#fff;border-radius:10px;padding:12px 14px;">
+          <div style="font-size:9px;color:#aaa;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;font-family:'DM Sans',sans-serif;">Ingresos</div>
+          <div style="font-size:15px;font-weight:700;color:#3a4e3d;font-family:'DM Sans',sans-serif;">+$4.000</div>
         </div>
-        <div style="background:#fff;border-radius:10px;padding:10px 12px;">
-          <div style="font-size:8px;color:#aaa;text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px;">Egresos</div>
-          <div style="font-size:13px;font-weight:700;color:#b09088;">-$5.000</div>
+        <div style="background:#fff;border-radius:10px;padding:12px 14px;">
+          <div style="font-size:9px;color:#aaa;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;font-family:'DM Sans',sans-serif;">Egresos</div>
+          <div style="font-size:15px;font-weight:700;color:#b09088;font-family:'DM Sans',sans-serif;">-$5.000</div>
         </div>
-        <div style="background:#3a4e3d;border-radius:10px;padding:10px 12px;">
-          <div style="font-size:8px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px;">Saldo final</div>
-          <div style="font-size:13px;font-weight:700;color:#fff;">$104.000</div>
+        <div style="background:#3a4e3d;border-radius:10px;padding:12px 14px;">
+          <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;font-family:'DM Sans',sans-serif;">Saldo final</div>
+          <div style="font-size:15px;font-weight:700;color:#fff;font-family:'DM Sans',sans-serif;">$104.000</div>
         </div>
       </div>
       <div style="display:flex;gap:8px;">
-        <button style="flex:1;padding:10px;border-radius:9px;border:1.5px solid #3a4e3d;background:#fff;color:#3a4e3d;font-size:11px;font-weight:600;cursor:default;">Descargar resumen</button>
-        <button style="flex:1;padding:10px;border-radius:9px;border:none;background:#b09088;color:#fff;font-size:11px;font-weight:600;cursor:default;">Confirmar cierre</button>
+        <button style="flex:1;padding:11px;border-radius:9px;border:1.5px solid #3a4e3d;background:#fff;color:#3a4e3d;font-size:12px;font-weight:600;cursor:default;font-family:'DM Sans',sans-serif;">Descargar resumen</button>
+        <button style="flex:1;padding:11px;border-radius:9px;border:none;background:#b09088;color:#fff;font-size:12px;font-weight:600;cursor:default;font-family:'DM Sans',sans-serif;">Confirmar cierre</button>
       </div>
     </div>
   </div>
   <div class="section"><div class="sec-title">Cómo se usa</div><div class="steps">
     <div class="step"><div class="step-left"><div class="step-num">1</div><div class="step-line"></div></div><div class="step-text">Tocá <strong>Cerrar caja</strong> en la barra de abajo.</div></div>
-    <div class="step"><div class="step-left"><div class="step-num">2</div><div class="step-line"></div></div><div class="step-text">Revisá que el Saldo final coincida con el efectivo que tenés en caja.</div></div>
+    <div class="step"><div class="step-left"><div class="step-num">2</div><div class="step-line"></div></div><div class="step-text">Revisá que el <strong>Saldo final</strong> coincida con el efectivo que tenés en caja.</div></div>
     <div class="step"><div class="step-left"><div class="step-num">3</div><div class="step-line"></div></div><div class="step-text">Si tenés efectivo para entregar, hacé antes un <strong>Retiro por cierre</strong>.</div></div>
     <div class="step"><div class="step-left"><div class="step-num">4</div><div class="step-line"></div></div><div class="step-text">Podés <strong>Descargar el resumen</strong> en PDF antes de cerrar sesión.</div></div>
   </div></div>
@@ -973,7 +969,7 @@ const MOD_META = {
   }},
   compras: { desc: 'Todo el ciclo de compras — proveedores, necesidades, órdenes e historial.', subs: {
     'proveedores': { icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>', desc: 'Directorio y cuenta corriente' },
-    'necesidades': { icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="12" y2="16"/></svg>', desc: 'Planificación y cotización de compras' },
+    'necesidades': { icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/></svg>', desc: 'Planificación y cotización de compras' },
     'ordenes': { icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>', desc: 'Documentos formales de compra' },
     'historial': { icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>', desc: 'Análisis histórico de precios y compras' },
     'config-compras': { icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>', desc: 'Productos de compra y categorías' },
@@ -989,7 +985,7 @@ const MOD_META = {
     'datos-negocio': { icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="10" r="3"/><path d="M7 21v-1a5 5 0 0 1 10 0v1"/></svg>', desc: 'Nombre, logo y datos de contacto' },
     'datos-fiscales': { icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>', desc: 'Condición ante AFIP y punto de venta' },
     'arca': { icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>', desc: 'Integración automática con AFIP/ARCA' },
-    'membresia': { icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>', desc: 'Plan activo, cobros y suscripción' },
+    'membresia': { icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/></svg>', desc: 'Plan activo, cobros y suscripción' },
   }},
 };
 
@@ -1031,9 +1027,7 @@ function goModule(modId) {
       t.onclick = () => goPage(s.id);
       subWrap.appendChild(t);
     });
-    // Hide sub-tabs on index page, show only inside sub-pages
     subWrap.style.display = 'none';
-    // Show index page first
     const content = document.getElementById('page-content');
     content.style.opacity = '0';
     content.style.transform = 'translateY(10px)';
@@ -1062,17 +1056,14 @@ function goPage(pageId) {
     content.style.transform = 'translateY(0)';
     window.scrollTo(0,0);
   }, 150);
-  // Update sub tabs
   document.querySelectorAll('.sub-tab').forEach(t => {
     t.classList.toggle('active', t.textContent === (MODULES.flatMap(m=>m.subs).find(s=>s.id===pageId)||{}).label);
   });
-  // Update mod tab
   const parentMod = MODULES.find(m => m.subs.some(s=>s.id===pageId) || m.id===pageId);
   if(parentMod) {
     currentMod = parentMod.id;
     const visibleMods2 = MODULES.filter(x => x.id !== 'bienvenida');
     document.querySelectorAll('.mod-tab').forEach((t,i) => t.classList.toggle('active', visibleMods2[i]?.id === parentMod.id));
-    // Show sub tabs
     const subWrap = document.getElementById('sub-tabs-wrap');
     if(parentMod.subs.length > 0 && subWrap.children.length === 0) {
       subWrap.style.display = 'none';
@@ -1085,7 +1076,6 @@ function goPage(pageId) {
       });
     }
   }
-  // Bottom nav
   updateBottomNav(pageId);
 }
 
@@ -1105,7 +1095,6 @@ function updateBottomNav(pageId) {
 
 function goAdj(dir) {
   const allIds = ALL_PAGES.map(p=>p.id);
-  // find current
   const subActive = document.querySelector('.sub-tab.active');
   let currentId = 'home';
   if(subActive) {
@@ -1123,6 +1112,7 @@ function cajStep(n) {
   document.querySelectorAll('.caj-pill').forEach((p,i) => p.classList.toggle('active', i===n));
   window.scrollTo(0,0);
 }
+
 const IS_CAJERO = new URLSearchParams(location.search).get('rol') === 'cajero';
 if(IS_CAJERO) {
   const _keep = new Set(['bienvenida','cajero']);
