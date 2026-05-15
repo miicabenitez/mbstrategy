@@ -14275,7 +14275,7 @@ function _mvmParseMonto(id) {
 }
 
 // ─── MODAL VENTA RÁPIDA ───
-let _vrcCarrito = {}, _vrcMetodo = null, _vrcProductos = [], _vrcCuentas = [], _vrcTarjetaTipo = null;
+let _vrcCarrito = {}, _vrcMetodo = null, _vrcProductos = [], _vrcMasVendidos = [], _vrcCuentas = [], _vrcTarjetaTipo = null;
 window._vrcClienteSeleccionado = null;
 
 window.cajaVentaRapida = async function() {
@@ -14311,7 +14311,16 @@ window.cajaVentaRapida = async function() {
     const buscarEl = document.getElementById('vrc-buscar');
     if(buscarEl) buscarEl.value = '';
     _vrcRenderMetodos();
-    _vrcRenderProductos(_vrcProductos);
+    var _conteo = {};
+    (window._cajaMovimientos||[]).forEach(function(mv) {
+      (mv.productos||[]).forEach(function(it) {
+        if(it.nombre) _conteo[it.nombre] = (_conteo[it.nombre]||0) + (it.qty||1);
+      });
+    });
+    _vrcMasVendidos = _vrcProductos.slice()
+      .sort(function(a,b){ return (_conteo[b.nombre]||0) - (_conteo[a.nombre]||0); })
+      .slice(0,3);
+    _vrcRenderProductos(_vrcMasVendidos);
     _vrcRenderCarrito();
     var _b = document.getElementById('vrc-btn-save');
     if(_b) { _b.disabled = false; _b.textContent = 'Registrar venta'; }
@@ -14479,10 +14488,33 @@ window.vrcSetQty = function(id, val) {
 window.vrcQuitar = function(id) { delete _vrcCarrito[id]; _vrcRenderCarrito(); };
 window.vrcSetMetodo = function(nombre) { _vrcMetodo = nombre; _vrcTarjetaTipo = null; _vrcRenderMetodos(); };
 window.vrcFiltrar = function(q) {
-  const lista = q.trim()==='' ? _vrcProductos : _vrcProductos.filter(p=>(p.nombre||'').toLowerCase().includes(q.toLowerCase()));
+  const lista = q.trim()==='' ? _vrcMasVendidos : _vrcProductos.filter(p=>(p.nombre||'').toLowerCase().includes(q.toLowerCase()));
   _vrcRenderProductos(lista);
 };
 
+window.vrcLibreMostrar = function() {
+  var f = document.getElementById('vrc-libre-form');
+  if(!f) return;
+  var isVisible = f.style.display !== 'none';
+  f.style.display = isVisible ? 'none' : 'block';
+  if(!isVisible) {
+    document.getElementById('vrc-libre-nombre').value = '';
+    document.getElementById('vrc-libre-qty').value = '1';
+    document.getElementById('vrc-libre-precio').value = '';
+    document.getElementById('vrc-libre-nombre').focus();
+  }
+};
+window.vrcLibreAgregar = function() {
+  var nombre = (document.getElementById('vrc-libre-nombre').value||'').trim();
+  var qty = parseInt(document.getElementById('vrc-libre-qty').value)||1;
+  var precio = parseFloat(document.getElementById('vrc-libre-precio').value)||0;
+  if(!nombre) { showToast('Ingresá el nombre del ítem','error'); return; }
+  if(precio <= 0) { showToast('Ingresá un precio mayor a 0','error'); return; }
+  var id = 'libre_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+  _vrcCarrito[id] = { producto: { nombre: nombre, precio: precio, libre: true }, qty: qty };
+  _vrcRenderCarrito();
+  document.getElementById('vrc-libre-form').style.display = 'none';
+};
 window._getNextTicketNum = async function(uid) {
   const ref = window._doc(window.db, 'clientes', uid, 'config', 'contadores');
   let num;
@@ -14505,7 +14537,8 @@ window.vrcGuardar = async function() {
     const precio = parseFloat(item.producto.precio)||0;
     const sub = precio * item.qty;
     total += sub;
-    return {nombre:item.producto.nombre, qty:item.qty, precioUnitario:precio, subtotal:sub};
+    return {nombre:item.producto.nombre, qty:item.qty, precioUnitario:precio, subtotal:sub, ...(item.producto.libre?{libre:true}:{})};
+
   });
   const hoy = fechaHoyARG();
   const mes = mesHoyARG(hoy);
@@ -27577,13 +27610,28 @@ window.doResetPassword = async function(){
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <input type="text" id="vrc-buscar" placeholder="Buscar producto..." oninput="vrcFiltrar(this.value)">
         </div>
+        <button onclick="vrcLibreMostrar()" style="width:100%;margin-top:8px;padding:8px;border-radius:9px;border:0.5px solid rgba(74,94,77,0.35);background:rgba(74,94,77,0.06);color:#3a4e3d;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.3px;">+ Ítem libre</button>
+        <div id="vrc-libre-form" style="display:none;margin-top:10px;background:#fff;border-radius:12px;padding:14px;border:1.5px solid rgba(176,144,136,0.25);">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#b09088;margin-bottom:10px;">Ítem libre</div>
+          <input id="vrc-libre-nombre" type="text" placeholder="Nombre del ítem" style="width:100%;box-sizing:border-box;padding:8px 11px;border:1.5px solid rgba(176,144,136,.25);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;color:#3a4e3d;background:#fafafa;margin-bottom:8px;outline:none;">
+          <div style="display:flex;gap:8px;margin-bottom:10px;">
+            <div style="flex:1;"><div style="font-size:11px;color:#aaa;margin-bottom:4px;">Cantidad</div>
+              <input id="vrc-libre-qty" type="number" min="1" value="1" style="width:100%;box-sizing:border-box;padding:8px 11px;border:1.5px solid rgba(176,144,136,.25);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;color:#3a4e3d;background:#fafafa;outline:none;"></div>
+            <div style="flex:2;"><div style="font-size:11px;color:#aaa;margin-bottom:4px;">Precio unitario</div>
+              <input id="vrc-libre-precio" type="number" min="0" step="any" placeholder="0" style="width:100%;box-sizing:border-box;padding:8px 11px;border:1.5px solid rgba(176,144,136,.25);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;color:#3a4e3d;background:#fafafa;outline:none;"></div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button onclick="vrcLibreMostrar()" style="flex:1;padding:9px;border-radius:9px;border:1.5px solid #ddd;background:#fff;color:#888;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;">Cancelar</button>
+            <button onclick="vrcLibreAgregar()" style="flex:2;padding:9px;border-radius:9px;border:none;background:#b09088;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Agregar</button>
+          </div>
+        </div>
       </div>
       <div id="vrc-carrito-sec" style="display:none;">
         <span class="cj-slabel">EN ESTA VENTA</span>
         <div id="vrc-carrito-items" style="display:flex;flex-direction:column;gap:6px;margin-top:8px;"></div>
       </div>
       <div>
-        <span class="cj-slabel">CATÁLOGO</span>
+        <span class="cj-slabel">MÁS VENDIDOS</span>
         <div id="vrc-prod-list" style="display:flex;flex-direction:column;gap:5px;margin-top:8px;"></div>
         <div id="vrc-empty" style="text-align:center;padding:20px 0;color:#ccc;font-size:13px;display:none;">Sin resultados.</div>
       </div>
