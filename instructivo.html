@@ -615,10 +615,10 @@ cajero: `
 .caj-tab-bar{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scroll-behavior:smooth;}
 .caj-tab-bar::-webkit-scrollbar{height:3px;}
 .caj-tab-bar::-webkit-scrollbar-thumb{background:#d4cec8;border-radius:2px;}
-.caj-tab-item{display:flex;flex-direction:column;align-items:center;padding:12px 22px;border-radius:12px;border:0.5px solid #e0dbd6;background:#fff;cursor:pointer;white-space:nowrap;flex-shrink:0;font-family:'DM Sans',sans-serif;transition:all .2s;border-top:3px solid transparent;}
+.caj-tab-item{display:flex;flex-direction:column;align-items:center;padding:10px 14px;border-radius:12px;border:0.5px solid #e0dbd6;background:#fff;cursor:pointer;white-space:nowrap;flex-shrink:0;font-family:'DM Sans',sans-serif;transition:all .2s;border-top:3px solid transparent;}
 .caj-tab-item:hover{border-top-color:#d4a098;}
 .caj-tab-item.active{border-color:#3a4e3d;border-top-color:#b09088;}
-.caj-tab-num{font-size:20px;font-weight:700;color:#ccc;line-height:1;transition:color .2s;}
+.caj-tab-num{font-size:17px;font-weight:700;color:#ccc;line-height:1;transition:color .2s;}
 .caj-tab-item.active .caj-tab-num{color:#3a4e3d;}
 .caj-tab-name{font-size:11px;color:#aaa;margin-top:4px;transition:color .2s;}
 .caj-tab-item.active .caj-tab-name{color:#3a4e3d;font-weight:600;}
@@ -867,26 +867,6 @@ cajero: `
 
 </div>
 
-<script>
-(function(){
-  var cajCurrent=0;
-  var cajPanels=document.querySelectorAll('.caj-panel');
-  var cajTabs=document.querySelectorAll('.caj-tab-item');
-  window.cajGoTab=function(n,el){
-    if(n===cajCurrent)return;
-    var dir=n>cajCurrent?1:-1;
-    cajPanels[cajCurrent].classList.add(dir>0?'exit-left':'exit-right');
-    setTimeout(function(){
-      cajPanels[cajCurrent].classList.remove('active','exit-left','exit-right');
-      cajPanels[n].classList.add('active');
-      cajCurrent=n;
-    },200);
-    cajTabs.forEach(function(t){t.classList.remove('active');});
-    el.classList.add('active');
-    el.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
-  };
-})();
-<\/script>
 `,
 };
 
@@ -1068,6 +1048,22 @@ if(IS_CAJERO) {
   });
   document.querySelector('.nav-logo span').textContent = 'Tu guía de uso';
 }
+window.cajGoTab = function(n, el) {
+  var cajPanels = document.querySelectorAll('.caj-panel');
+  var cajTabs = document.querySelectorAll('.caj-tab-item');
+  var current = -1;
+  cajTabs.forEach(function(t, i) { if(t.classList.contains('active')) current = i; });
+  if(n === current) return;
+  var dir = n > current ? 1 : -1;
+  cajPanels[current].classList.add(dir > 0 ? 'exit-left' : 'exit-right');
+  setTimeout(function() {
+    cajPanels[current].classList.remove('active','exit-left','exit-right');
+    cajPanels[n].classList.add('active');
+  }, 200);
+  cajTabs.forEach(function(t) { t.classList.remove('active'); });
+  el.classList.add('active');
+  el.scrollIntoView({behavior:'smooth', block:'nearest', inline:'center'});
+};
 buildNav();
 if(IS_CAJERO) goPage('cajero'); else goPage('bienvenida');
 </script>
