@@ -25513,12 +25513,13 @@ window.cajaCierreConfirmar = async function() {
                 : (m.medioPago||m.cuenta||'Efectivo');
         _medios[med] = (_medios[med]||0) + (parseFloat(m.monto)||0);
       });
-      var _pedidosCta = (window._cajaMovimientos||[]).filter(function(m){ return m.tipo==='pedido_cta'; });
+      var _pedidosCta = (window._cajaMovimientos||[]).filter(function(m){ return m.tipo==='pedido_cta' && m.estado !== 'cobrado'; });
       var _totalCta = _pedidosCta.reduce(function(a,m){ return a+(parseFloat(m.monto)||0); },0);
       var _detalleCta = _pedidosCta.map(function(m){ return { cliente: m.clienteNombre||'', ticket: m.ticketNum||'', monto: parseFloat(m.monto)||0 }; });
-      var _totalRetiros = (window._cajaMovimientos||[])
+      var _retirosArr = (window._cajaMovimientos||[])
         .filter(function(m){ return m.tipo==='egreso' && m.origen!=='cierre_turno'; })
-        .reduce(function(a,m){ return a+(parseFloat(m.monto)||0); },0);
+        .map(function(m){ return { concepto: m.concepto||'Retiro', monto: parseFloat(m.monto)||0, creadoEn: m.creadoEn||'' }; });
+      var _totalRetiros = _retirosArr.reduce(function(a,r){ return a+r.monto; },0);
       var _totalDepositos = (window._cajaMovimientos||[])
         .filter(function(m){ return m.tipo==='ingreso' && m.origen==='deposito_cajero'; })
         .reduce(function(a,m){ return a+(parseFloat(m.monto)||0); },0);
@@ -25532,7 +25533,7 @@ window.cajaCierreConfirmar = async function() {
           apertura: window.turnoActual?.apertura?.creadoEn||'',
           cierre: new Date().toISOString(),
           saldoInicial:_saldoBase, ingresos:ingresos, egresos:egresos, saldoFinal:saldo,
-          medios:_medios, productos:Object.values(_productosMap), retiros:_totalRetiros, depositos:_totalDepositos,
+          medios:_medios, productos:Object.values(_productosMap), retiros:_totalRetiros, depositos:_totalDepositos, retirosDetalle:_retirosArr,
           cuentaCorriente:{ total:_totalCta, detalle:_detalleCta }
         })
       }).catch(function(){});

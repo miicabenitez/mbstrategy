@@ -140,9 +140,19 @@ function generarPDF(d) {
     }
 
     // ── 5. Otros movimientos ───────────────────────────────────────
-    if (d.retiros > 0 || d.depositos > 0) {
+    if ((d.retirosDetalle && d.retirosDetalle.length) || d.depositos > 0) {
       seccion('Otros movimientos');
-      if (d.retiros > 0) fila('Retiros', '-' + fmt(d.retiros), '#b09088');
+      if (d.retirosDetalle && d.retirosDetalle.length) {
+        d.retirosDetalle.forEach(function(r) {
+          var hora = r.creadoEn ? new Date(r.creadoEn).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}) : '';
+          fila((r.concepto||'Retiro') + (hora ? ' · ' + hora : ''), '-' + fmt(r.monto), '#b09088');
+        });
+        if (d.retiros > 0) {
+          doc.font('Helvetica-Bold').fontSize(10).fillColor('#666').text('Total retiros', M, y);
+          doc.font('Helvetica-Bold').fontSize(10).fillColor('#b09088').text('-' + fmt(d.retiros), M, y, { align: 'right', width: IW });
+          y += 18;
+        }
+      }
       if (d.depositos > 0) fila('Depósitos', fmt(d.depositos), '#3a6e3d');
       y += 6;
     }
@@ -189,7 +199,7 @@ exports.handler = async (event) => {
   const {
     negocio, emailDueno, cajera, apertura, cierre,
     saldoInicial, ingresos, egresos, saldoFinal,
-    medios, productos, retiros, depositos, cuentaCorriente
+    medios, productos, retiros, depositos, retirosDetalle, cuentaCorriente
   } = data;
 
   if (!emailDueno) return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Falta emailDueno' }) };
@@ -259,10 +269,14 @@ exports.handler = async (event) => {
       <span style="color:#fff;font-size:14px;font-weight:700;">${fmt(totalProductos)}</span>
     </div>
   </div>` : ''}
-  ${(retiros || depositos) ? `<div style="background:#fff;padding:20px 32px;border-bottom:1px solid #f0ebe6;">
+  ${((retirosDetalle && retirosDetalle.length) || depositos) ? `<div style="background:#fff;padding:20px 32px;border-bottom:1px solid #f0ebe6;">
     <div style="font-size:11px;font-weight:700;letter-spacing:.8px;color:#888;text-transform:uppercase;margin-bottom:12px;">Otros movimientos</div>
     <table style="width:100%;border-collapse:collapse;">
-      ${retiros ? `<tr><td style="padding:6px 0;color:#555;font-size:13px;">Retiros</td><td style="padding:6px 0;text-align:right;color:#b09088;font-size:13px;font-weight:600;">-${fmt(retiros)}</td></tr>` : ''}
+      ${(retirosDetalle||[]).map(r => {
+        const hora = r.creadoEn ? new Date(r.creadoEn).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}) : '';
+        return `<tr><td style="padding:5px 0;color:#555;font-size:13px;">${r.concepto||'Retiro'}${hora ? ' <span style="color:#aaa;font-size:11px;">· '+hora+'</span>' : ''}</td><td style="padding:5px 0;text-align:right;color:#b09088;font-size:13px;font-weight:600;">-${fmt(r.monto)}</td></tr>`;
+      }).join('')}
+      ${retiros ? `<tr style="border-top:1px solid #f0ebe6;"><td style="padding:8px 0 4px;color:#555;font-size:13px;font-weight:700;">Total retiros</td><td style="padding:8px 0 4px;text-align:right;color:#b09088;font-size:13px;font-weight:700;">-${fmt(retiros)}</td></tr>` : ''}
       ${depositos ? `<tr><td style="padding:6px 0;color:#555;font-size:13px;">Depósitos</td><td style="padding:6px 0;text-align:right;color:#3a6e3d;font-size:13px;font-weight:600;">${fmt(depositos)}</td></tr>` : ''}
     </table>
   </div>` : ''}
