@@ -10486,7 +10486,7 @@ window._auditoriaFiltro = 'hoy';
 window._auditoriaFechaCustom = null;
 window._auditoriaTipo = null;
 
-async function loadAuditoriaCajero() {
+window.loadAuditoriaCajero = async function() {
   const root = document.getElementById('auditoria-cajero-root');
   if(!root) return;
   root.innerHTML = '<div style="padding:32px;text-align:center;color:#888;font-family:\'DM Sans\',sans-serif;font-size:13px;">Cargando...</div>';
@@ -10511,7 +10511,7 @@ function _auditoriaFechaHoyARG() {
   return new Date().toLocaleDateString('es-AR',{timeZone:'America/Argentina/Buenos_Aires',year:'numeric',month:'2-digit',day:'2-digit'}).split('/').reverse().join('-');
 }
 
-function _auditoriaRender() {
+window._auditoriaRender = function() {
   const root = document.getElementById('auditoria-cajero-root');
   if(!root || !window._auditoriaMovs) return;
   const hoy = _auditoriaFechaHoyARG();
