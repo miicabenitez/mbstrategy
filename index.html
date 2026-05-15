@@ -25582,8 +25582,38 @@ window.cajaCierreConfirmar = async function() {
     if(window.currentRol === 'cajero') {
       window._skipAuthRedirect = true;
       sessionStorage.setItem('mb_turno_cerrado', '1');
-      try { await signOut(auth); } catch(ex) {}
-      mostrarPantallaEspera();
+      var _hacerSignOut = async function() {
+        try { await signOut(auth); } catch(ex) {}
+        mostrarPantallaEspera();
+      };
+      if (pdfBase64) {
+        var _mod = document.createElement('div');
+        _mod.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9999;display:flex;align-items:center;justify-content:center;';
+        _mod.innerHTML = '<div style="background:#f4f0ea;border-radius:16px;padding:36px 32px;max-width:340px;width:90%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.18);">'
+          + '<div style="font-family:\'DM Sans\',sans-serif;font-size:20px;font-weight:700;color:#2d2a26;margin-bottom:24px;">Caja cerrada</div>'
+          + '<button id="cierre-dl-btn" style="width:100%;padding:13px;border-radius:10px;font-family:\'DM Sans\',sans-serif;font-size:14px;font-weight:600;cursor:pointer;border:none;background:#b09088;color:#f4f0ea;margin-bottom:10px;">Descargar resumen</button>'
+          + '<button id="cierre-salir-btn" style="width:100%;padding:11px;border-radius:10px;font-family:\'DM Sans\',sans-serif;font-size:14px;font-weight:600;cursor:pointer;border:1px solid #ccc;background:transparent;color:#888;">Cerrar sesión</button>'
+          + '</div>';
+        document.body.appendChild(_mod);
+        document.getElementById('cierre-dl-btn').onclick = function() {
+          var _a = document.createElement('a');
+          var _fecha = new Date().toLocaleDateString('es-AR').replace(/\//g,'-');
+          var _nom = (window.currentOperadorNombre||'cajero').toLowerCase().replace(/\s+/g,'-');
+          _a.href = 'data:application/pdf;base64,' + pdfBase64;
+          _a.download = 'cierre-' + _nom + '-' + _fecha + '.pdf';
+          document.body.appendChild(_a);
+          _a.click();
+          document.body.removeChild(_a);
+          _mod.remove();
+          _hacerSignOut();
+        };
+        document.getElementById('cierre-salir-btn').onclick = function() {
+          _mod.remove();
+          _hacerSignOut();
+        };
+      } else {
+        _hacerSignOut();
+      }
       return;
     }
     if (window.showClientMod) window.showClientMod('inicio');
