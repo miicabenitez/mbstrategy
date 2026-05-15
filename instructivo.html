@@ -313,6 +313,28 @@ nav::after{
   .home-h1{font-size:38px}
   .bottom-nav{padding:12px 16px}
 }
+/* ── Cajero guide ─────────────────────────────────────────── */
+.caj-hero{font-family:'Cormorant Garamond',Georgia,serif;font-size:52px;font-weight:300;line-height:1.15;color:#2d2a26;margin:8px 0 16px}
+.caj-hero em{font-style:italic;color:var(--terra);font-weight:300}
+.caj-pills{display:flex;gap:6px;flex-wrap:wrap;margin:24px 0}
+.caj-pill{display:flex;flex-direction:column;align-items:center;padding:8px 14px;border-radius:10px;border:1.5px solid #e0dbd6;background:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.caj-pill span{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;color:#888}
+.caj-pill em{font-size:10px;color:#aaa;font-style:normal;margin-top:2px;white-space:nowrap}
+.caj-pill.active{border-color:#3a4e3d;background:#3a4e3d}
+.caj-pill.active span{color:#fff}
+.caj-pill.active em{color:rgba(255,255,255,.65)}
+.caj-pill:hover:not(.active){border-color:#3a4e3d}
+.caj-section{display:none}
+.caj-section.active{display:block}
+.caj-step-header{display:flex;align-items:baseline;gap:14px;margin-bottom:4px}
+.caj-num{font-family:'Cormorant Garamond',Georgia,serif;font-size:64px;font-weight:400;color:#ddd8d2;line-height:1}
+.caj-title{font-family:'DM Sans',sans-serif;font-size:26px;font-weight:700;color:#2d2a26;margin-bottom:20px}
+.caj-screen{border-radius:14px;overflow:hidden;border:1px solid #e0dbd6;margin:20px 0;box-shadow:0 4px 20px rgba(0,0,0,.07);font-family:'DM Sans',sans-serif}
+.caj-tip-green{background:rgba(58,78,61,.06);border-left-color:#3a4e3d}
+.caj-tip-green .tip-dot{background:#3a4e3d}
+.caj-tip-alert{background:rgba(201,122,42,.07);border-left-color:#c97a2a}
+.caj-tip-alert .tip-dot{background:#c97a2a}
+@media(max-width:640px){.caj-hero{font-size:38px}.caj-pill em{display:none}.caj-pill{padding:8px 10px}}
 </style>
 </head>
 <body>
@@ -378,6 +400,7 @@ const MODULES = [
   { id:'gestion', label:'Gestión', subs:[
     {id:'plan-accion',label:'Plan de acción'},
   ]},
+  { id:'cajero', label:'Cajero', subs:[] },
   { id:'micuenta', label:'Mi cuenta', subs:[
     {id:'datos-negocio',label:'Datos del negocio'},
     {id:'datos-fiscales',label:'Datos fiscales'},
@@ -588,6 +611,338 @@ membresia: mod('Mi cuenta','Membresía','Mostrás y gestionás tu suscripción: 
   ['El plan Pro incluye funciones bloqueadas en Base: Cierre de período y otras funciones avanzadas.','Al cancelar, no perdés el acceso inmediatamente — se mantiene hasta el vencimiento del período pagado.','Los primeros 10 días son de prueba gratuita — el cobro empieza al finalizar el período de prueba.'],
   []
 ),
+,
+cajero: `
+<div class="mod-kicker">Cajero</div>
+<h1 class="caj-hero">Tu guía<br>de <em>trabajo.</em></h1>
+<p class="mod-desc">Todo lo que necesitás para operar la caja desde el primer turno.</p>
+<div class="caj-pills">
+  <button class="caj-pill active" onclick="cajStep(0)"><span>01</span><em>Apertura</em></button>
+  <button class="caj-pill" onclick="cajStep(1)"><span>02</span><em>Nueva venta</em></button>
+  <button class="caj-pill" onclick="cajStep(2)"><span>03</span><em>Cuenta cliente</em></button>
+  <button class="caj-pill" onclick="cajStep(3)"><span>04</span><em>Cobranzas</em></button>
+  <button class="caj-pill" onclick="cajStep(4)"><span>05</span><em>Retiro y Depósito</em></button>
+  <button class="caj-pill" onclick="cajStep(5)"><span>06</span><em>Facturas</em></button>
+  <button class="caj-pill" onclick="cajStep(6)"><span>07</span><em>Cierre</em></button>
+</div>
+
+<!-- 01 · Apertura -->
+<div class="caj-section active">
+  <div class="caj-step-header"><div class="caj-num">01</div><div class="caj-title">Apertura</div></div>
+  <div class="caj-screen">
+    <div style="background:#3a4e3d;padding:10px 14px;font-family:'DM Sans',sans-serif;">
+      <div style="font-size:10px;color:rgba(255,255,255,.7);display:flex;align-items:center;gap:6px;">
+        <span style="color:#7dd98a;font-size:9px;">●</span>
+        Maria Garcia &nbsp;·&nbsp; Turno activo &nbsp;·&nbsp; 01:09 p.m.
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:10px;background:#f4f0ea;">
+      <div style="background:#fff;border-radius:9px;padding:9px 10px;">
+        <div style="font-size:8px;color:#aaa;text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px;">Efectivo</div>
+        <div style="font-size:13px;font-weight:700;color:#3a4e3d;">$107.500</div>
+      </div>
+      <div style="background:#fff;border-radius:9px;padding:9px 10px;">
+        <div style="font-size:8px;color:#aaa;text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px;">A cobrar</div>
+        <div style="font-size:13px;font-weight:700;color:#b09088;">$46.500</div>
+      </div>
+      <div style="background:#fff;border-radius:9px;padding:9px 10px;">
+        <div style="font-size:8px;color:#aaa;text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px;">Saldo turno</div>
+        <div style="font-size:13px;font-weight:700;color:#3a4e3d;">$107.500</div>
+      </div>
+    </div>
+    <div style="background:#fff;margin:0 10px 10px;border-radius:10px;overflow:hidden;">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-bottom:1px solid #f5f0ec;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:11px;font-weight:600;color:#2d2a26;">Venta caja</div>
+          <div style="font-size:10px;color:#aaa;letter-spacing:.3px;">V-0062 · EFECTIVO</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+          <div style="font-size:12px;font-weight:700;color:#3a4e3d;">+$2.500</div>
+          <div style="width:68px;text-align:right;"><button style="font-size:9px;padding:3px 8px;border-radius:5px;border:1px solid #b09088;background:#fff;color:#b09088;cursor:default;white-space:nowrap;">Facturar</button></div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:11px;font-weight:600;color:#2d2a26;">Apertura de turno</div>
+          <div style="font-size:10px;color:#aaa;letter-spacing:.3px;">EFECTIVO</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+          <div style="font-size:12px;font-weight:700;color:#3a4e3d;">+$105.000</div>
+          <div style="width:68px;"></div>
+        </div>
+      </div>
+    </div>
+    <div style="background:#fff;border-top:1px solid #eee;display:grid;grid-template-columns:repeat(4,1fr);">
+      <div style="padding:8px 4px;text-align:center;font-size:9px;color:#3a4e3d;font-weight:700;border-right:1px solid #f0ebe6;">Nueva venta</div>
+      <div style="padding:8px 4px;text-align:center;font-size:9px;color:#888;border-right:1px solid #f0ebe6;">Retiro</div>
+      <div style="padding:8px 4px;text-align:center;font-size:9px;color:#888;border-right:1px solid #f0ebe6;">Depósito</div>
+      <div style="padding:8px 4px;text-align:center;font-size:9px;color:#b09088;font-weight:600;">Cerrar caja</div>
+    </div>
+  </div>
+  <div class="section"><div class="sec-title">Cómo se usa</div><div class="steps">
+    <div class="step"><div class="step-left"><div class="step-num">1</div><div class="step-line"></div></div><div class="step-text">Ingresá con tu nombre y contraseña. Si es la primera vez, el dueño te las va a dar.</div></div>
+    <div class="step"><div class="step-left"><div class="step-num">2</div><div class="step-line"></div></div><div class="step-text">El sistema te muestra el saldo inicial en efectivo — es lo que quedó del turno anterior. Confirmá y empezá a operar.</div></div>
+  </div></div>
+  <div class="tip"><div class="tip-dot"></div><div class="tip-text">El saldo inicial es solo el efectivo. Los otros medios (Mercado Pago, Transferencia, Tarjeta) arrancan desde cero cada turno.</div></div>
+</div>
+
+<!-- 02 · Nueva venta -->
+<div class="caj-section">
+  <div class="caj-step-header"><div class="caj-num">02</div><div class="caj-title">Nueva venta</div></div>
+  <div class="caj-screen">
+    <div style="background:#f4f0ea;padding:12px 14px;">
+      <div style="background:#fff;border-radius:9px;padding:8px 12px;display:flex;align-items:center;gap:8px;margin-bottom:8px;border:1px solid #e8e3de;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <span style="font-size:12px;color:#ccc;">Buscar producto...</span>
+      </div>
+      <div style="background:rgba(74,94,77,0.06);border:0.5px solid rgba(74,94,77,0.35);border-radius:9px;padding:7px;text-align:center;font-size:11px;font-weight:600;color:#3a4e3d;margin-bottom:10px;">+ Ítem libre</div>
+      <div style="background:#fff;border-radius:10px;overflow:hidden;margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border-bottom:1px solid #f5f0ec;">
+          <div><div style="font-size:11px;font-weight:600;color:#2d2a26;">Sandwich de miga</div><div style="font-size:10px;color:#aaa;">$1.500</div></div>
+          <button style="width:24px;height:24px;border-radius:6px;border:none;background:#3a4e3d;color:#fff;font-size:14px;cursor:default;display:flex;align-items:center;justify-content:center;">+</button>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border-bottom:1px solid #f5f0ec;">
+          <div><div style="font-size:11px;font-weight:600;color:#2d2a26;">Corte General</div><div style="font-size:10px;color:#aaa;">$40.000</div></div>
+          <button style="width:24px;height:24px;border-radius:6px;border:none;background:#3a4e3d;color:#fff;font-size:14px;cursor:default;display:flex;align-items:center;justify-content:center;">+</button>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 12px;">
+          <div><div style="font-size:11px;font-weight:600;color:#2d2a26;">Medialunas</div><div style="font-size:10px;color:#aaa;">$2.000</div></div>
+          <button style="width:24px;height:24px;border-radius:6px;border:none;background:#3a4e3d;color:#fff;font-size:14px;cursor:default;display:flex;align-items:center;justify-content:center;">+</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
+        <div style="padding:5px 10px;border-radius:7px;background:#3a4e3d;color:#fff;font-size:10px;font-weight:600;">Efectivo</div>
+        <div style="padding:5px 10px;border-radius:7px;background:#fff;border:1px solid #e0dbd6;color:#888;font-size:10px;">Mercado Pago</div>
+        <div style="padding:5px 10px;border-radius:7px;background:#fff;border:1px solid #e0dbd6;color:#888;font-size:10px;">Transferencia</div>
+        <div style="padding:5px 10px;border-radius:7px;background:#fff;border:1px solid #e0dbd6;color:#888;font-size:10px;">Tarjeta</div>
+      </div>
+      <div style="background:#3a4e3d;border-radius:10px;padding:10px;text-align:center;font-size:12px;font-weight:700;color:#fff;">Registrar venta</div>
+    </div>
+  </div>
+  <div class="section"><div class="sec-title">Cómo se usa</div><div class="steps">
+    <div class="step"><div class="step-left"><div class="step-num">1</div><div class="step-line"></div></div><div class="step-text">Tocá <strong>Nueva venta</strong> en la barra de abajo.</div></div>
+    <div class="step"><div class="step-left"><div class="step-num">2</div><div class="step-line"></div></div><div class="step-text">El sistema muestra los 3 más vendidos del turno. Si no está, usá el buscador. Si no existe en el catálogo, tocá <strong>+ Ítem libre</strong> e ingresá nombre, cantidad y precio.</div></div>
+    <div class="step"><div class="step-left"><div class="step-num">3</div><div class="step-line"></div></div><div class="step-text">Tocá el <strong>+</strong> para agregar al carrito. Podés cambiar la cantidad desde ahí.</div></div>
+    <div class="step"><div class="step-left"><div class="step-num">4</div><div class="step-line"></div></div><div class="step-text">Elegí el medio de pago y tocá <strong>Registrar venta</strong>. Se genera el ticket automáticamente.</div></div>
+  </div></div>
+  <div class="tip"><div class="tip-dot"></div><div class="tip-text">Si te equivocaste de medio de pago, podés corregirlo tocando el movimiento en la lista y eligiendo <strong>Modificar medio de pago</strong>. El cambio queda registrado con tu nombre. Si elegís Tarjeta, aparece un selector para elegir Débito o Crédito.</div></div>
+</div>
+
+<!-- 03 · Cuenta cliente -->
+<div class="caj-section">
+  <div class="caj-step-header"><div class="caj-num">03</div><div class="caj-title">Cuenta cliente</div></div>
+  <div class="caj-screen">
+    <div style="background:#f4f0ea;padding:12px 14px;">
+      <div style="display:flex;gap:6px;margin-bottom:12px;">
+        <div style="flex:1;background:#fff;border-radius:9px;padding:8px 12px;display:flex;align-items:center;gap:6px;border:1px solid #e8e3de;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span style="font-size:12px;color:#ccc;">Buscar cliente...</span>
+        </div>
+        <div style="background:#3a4e3d;border-radius:9px;padding:8px 12px;font-size:11px;font-weight:600;color:#fff;white-space:nowrap;">+ Nuevo</div>
+      </div>
+      <div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;font-weight:600;">Condición IVA del cliente</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+        <div style="background:#3a4e3d;border-radius:10px;padding:10px 11px;">
+          <div style="font-size:11px;font-weight:700;color:#fff;margin-bottom:3px;">Consumidor Final</div>
+          <div style="font-size:9px;color:rgba(255,255,255,.65);">Ticket X · nombre y tel.</div>
+        </div>
+        <div style="background:#fff;border:1px solid #e0dbd6;border-radius:10px;padding:10px 11px;">
+          <div style="font-size:11px;font-weight:700;color:#2d2a26;margin-bottom:3px;">Monotributista</div>
+          <div style="font-size:9px;color:#aaa;">Factura C · nombre, CUIT y dir.</div>
+        </div>
+        <div style="background:#fff;border:1px solid #e0dbd6;border-radius:10px;padding:10px 11px;">
+          <div style="font-size:11px;font-weight:700;color:#2d2a26;margin-bottom:3px;">Resp. Inscripto</div>
+          <div style="font-size:9px;color:#aaa;">Factura A · nombre, CUIT y dir.</div>
+        </div>
+        <div style="background:#fff;border:1px solid #e0dbd6;border-radius:10px;padding:10px 11px;">
+          <div style="font-size:11px;font-weight:700;color:#2d2a26;margin-bottom:3px;">Exento</div>
+          <div style="font-size:9px;color:#aaa;">Factura C · nombre, CUIT y dir.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="section"><div class="sec-title">Cómo se usa</div><div class="steps">
+    <div class="step"><div class="step-left"><div class="step-num">1</div><div class="step-line"></div></div><div class="step-text">Cargá los productos y seleccioná <strong>Cuenta cliente</strong> como medio de pago.</div></div>
+    <div class="step"><div class="step-left"><div class="step-num">2</div><div class="step-line"></div></div><div class="step-text">Buscá el cliente por nombre o teléfono. Si no aparece, tocá <strong>Nuevo cliente</strong> y completá los datos.</div></div>
+    <div class="step"><div class="step-left"><div class="step-num">3</div><div class="step-line"></div></div><div class="step-text">Si el cliente pide factura, preguntale su condición frente al IVA y completá los datos requeridos.</div></div>
+    <div class="step"><div class="step-left"><div class="step-num">4</div><div class="step-line"></div></div><div class="step-text">Confirmá. El pedido queda como <strong>Pendiente</strong> en Cobranzas.</div></div>
+  </div></div>
+  <div class="tip caj-tip-green"><div class="tip-dot"></div><div class="tip-text"><strong>Consumidor Final</strong> — solo nombre y teléfono. <strong>Monotributista / Exento</strong> — nombre, CUIT y dirección. <strong>Resp. Inscripto</strong> — nombre, CUIT y dirección (obligatorios para Factura A). Si no sabés la condición, preguntale al cliente.</div></div>
+  <div class="tip" style="margin-top:10px"><div class="tip-dot"></div><div class="tip-text">El pedido a cuenta <strong>NO suma al saldo de caja</strong> — aparece en "A cobrar" hasta que se cobre desde Cobranzas.</div></div>
+</div>
+
+<!-- 04 · Cobranzas -->
+<div class="caj-section">
+  <div class="caj-step-header"><div class="caj-num">04</div><div class="caj-title">Cobranzas</div></div>
+  <div class="caj-screen">
+    <div style="background:#f4f0ea;padding:10px 12px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;">
+        <div style="background:#fff;border-radius:9px;padding:9px 10px;">
+          <div style="font-size:8px;color:#aaa;text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px;">Total pendiente</div>
+          <div style="font-size:14px;font-weight:700;color:#b09088;">$46.500</div>
+        </div>
+        <div style="background:#fff;border-radius:9px;padding:9px 10px;">
+          <div style="font-size:8px;color:#aaa;text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px;">Cantidad</div>
+          <div style="font-size:14px;font-weight:700;color:#2d2a26;">20</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap;">
+        <div style="padding:4px 10px;border-radius:20px;background:#3a4e3d;color:#fff;font-size:10px;font-weight:600;">Todos</div>
+        <div style="padding:4px 10px;border-radius:20px;background:#fff;border:1px solid #e0dbd6;color:#888;font-size:10px;">Esta semana</div>
+        <div style="padding:4px 10px;border-radius:20px;background:#fff;border:1px solid #e0dbd6;color:#888;font-size:10px;">Este mes</div>
+        <div style="padding:4px 10px;border-radius:20px;background:#fff;border:1px solid #e0dbd6;color:#888;font-size:10px;">+30 días</div>
+      </div>
+      <div style="background:#fff;border-radius:8px;padding:6px 10px;display:flex;align-items:center;gap:6px;border:1px solid #e8e3de;margin-bottom:8px;">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <span style="font-size:11px;color:#ccc;">Nombre, teléfono o N° ticket...</span>
+      </div>
+      <div style="background:#fff;border-radius:10px;padding:10px 12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:11px;font-weight:700;color:#2d2a26;">Claudia Franco</div>
+            <div style="font-size:9px;color:#aaa;">11 2345-6789 · V-0050 · 15-may</div>
+          </div>
+          <div style="font-size:12px;font-weight:700;color:#b09088;flex-shrink:0;">$1.500</div>
+          <div style="display:flex;gap:5px;flex-shrink:0;">
+            <button style="padding:4px 8px;border-radius:6px;border:none;background:#3a4e3d;color:#fff;font-size:9px;font-weight:600;cursor:default;">Cobrar</button>
+            <button style="padding:4px 8px;border-radius:6px;border:1px solid #3a4e3d;background:#fff;color:#3a4e3d;font-size:9px;font-weight:600;cursor:default;">WA</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="section"><div class="sec-title">Cómo se usa</div><div class="steps">
+    <div class="step"><div class="step-left"><div class="step-num">1</div><div class="step-line"></div></div><div class="step-text">Usá los filtros <strong>Esta semana · Este mes · +30 días</strong> para ordenar por urgencia, o buscá por nombre, teléfono o número de ticket.</div></div>
+    <div class="step"><div class="step-left"><div class="step-num">2</div><div class="step-line"></div></div><div class="step-text">Si el cliente está en camino, tocá el botón <strong>WA</strong> para enviarle un mensaje avisando que tiene un pago pendiente.</div></div>
+    <div class="step"><div class="step-left"><div class="step-num">3</div><div class="step-line"></div></div><div class="step-text">Cuando el cliente paga, tocá <strong>Cobrar</strong>, elegí el medio de pago y confirmá el monto.</div></div>
+    <div class="step"><div class="step-left"><div class="step-num">4</div><div class="step-line"></div></div><div class="step-text">El pedido pasa a <strong>Cobrado</strong> y el ingreso se suma automáticamente a la caja del turno.</div></div>
+  </div></div>
+  <div class="tip"><div class="tip-dot"></div><div class="tip-text"><strong>+30 días</strong> muestra los pedidos que llevan más de un mes sin cobrar. Es útil para hacer seguimiento de deudas viejas.</div></div>
+</div>
+
+<!-- 05 · Retiro y Depósito -->
+<div class="caj-section">
+  <div class="caj-step-header"><div class="caj-num">05</div><div class="caj-title">Retiro y Depósito</div></div>
+  <div class="caj-screen">
+    <div style="background:#f4f0ea;padding:12px 14px;">
+      <div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;font-weight:600;">¿Motivo del retiro?</div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <div style="background:#fff;border-radius:10px;padding:10px 12px;border:1px solid #e0dbd6;">
+          <div style="font-size:11px;font-weight:600;color:#2d2a26;margin-bottom:2px;">Pago a proveedor</div>
+          <div style="font-size:10px;color:#aaa;">Ej: pagás la factura de la panadería en efectivo</div>
+        </div>
+        <div style="background:#fff;border-radius:10px;padding:10px 12px;border:1px solid #e0dbd6;">
+          <div style="font-size:11px;font-weight:600;color:#2d2a26;margin-bottom:2px;">Compra de insumos</div>
+          <div style="font-size:10px;color:#aaa;">Ej: comprás papel aluminio, bolsas, materiales</div>
+        </div>
+        <div style="background:#3a4e3d;border-radius:10px;padding:10px 12px;">
+          <div style="font-size:11px;font-weight:700;color:#fff;margin-bottom:2px;">Retiro por cierre</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.65);">Entregás el efectivo del turno al dueño</div>
+        </div>
+        <div style="background:#fff;border-radius:10px;padding:10px 12px;border:1px solid #e0dbd6;">
+          <div style="font-size:11px;font-weight:600;color:#2d2a26;margin-bottom:2px;">Otros</div>
+          <div style="font-size:10px;color:#aaa;">Cualquier otro egreso, describilo en la observación</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="section"><div class="sec-title">Retiro — cómo se usa</div><div class="steps">
+    <div class="step"><div class="step-left"><div class="step-num">1</div><div class="step-line"></div></div><div class="step-text">Tocá <strong>Retiro</strong> en la barra de abajo y elegí el motivo que corresponda.</div></div>
+    <div class="step"><div class="step-left"><div class="step-num">2</div><div class="step-line"></div></div><div class="step-text">Ingresá el monto. Si querés agregar una nota, usá el campo de observación.</div></div>
+    <div class="step"><div class="step-left"><div class="step-num">3</div><div class="step-line"></div></div><div class="step-text">Confirmá. El retiro aparece en la lista y se descuenta del saldo de caja.</div></div>
+  </div></div>
+  <div class="tip caj-tip-alert"><div class="tip-dot"></div><div class="tip-text">Usá <strong>Retiro por cierre</strong> solo cuando entregás el efectivo al dueño al final del día. Ese dinero pasa automáticamente a la caja general del negocio.</div></div>
+  <div class="section" style="margin-top:24px"><div class="sec-title">Depósito — cómo se usa</div><div class="steps">
+    <div class="step"><div class="step-left"><div class="step-num">1</div><div class="step-line"></div></div><div class="step-text">Tocá <strong>Depósito</strong> en la barra de abajo.</div></div>
+    <div class="step"><div class="step-left"><div class="step-num">2</div><div class="step-line"></div></div><div class="step-text">Ingresá el monto y una observación que explique de dónde viene ese dinero.</div></div>
+    <div class="step"><div class="step-left"><div class="step-num">3</div><div class="step-line"></div></div><div class="step-text">Confirmá. El depósito suma al saldo de caja del turno.</div></div>
+  </div></div>
+  <div class="tip" style="margin-top:10px"><div class="tip-dot"></div><div class="tip-text">Usá Depósito cuando entra plata que no es una venta. Ejemplos: cambio inicial del día, devolución de un adelanto.</div></div>
+</div>
+
+<!-- 06 · Facturas -->
+<div class="caj-section">
+  <div class="caj-step-header"><div class="caj-num">06</div><div class="caj-title">Facturas</div></div>
+  <div class="caj-screen">
+    <div style="background:#fff;">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 14px;border-bottom:1px solid #f5f0ec;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:11px;font-weight:600;color:#2d2a26;">Venta caja</div>
+          <div style="font-size:10px;color:#aaa;">V-0062 · EFECTIVO</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+          <div style="font-size:12px;font-weight:700;color:#3a4e3d;">+$2.500</div>
+          <div style="width:68px;text-align:right;"><button style="font-size:9px;padding:3px 8px;border-radius:5px;border:1px solid #b09088;background:#fff;color:#b09088;cursor:default;white-space:nowrap;">Facturar</button></div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 14px;border-bottom:1px solid #f5f0ec;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:11px;font-weight:600;color:#2d2a26;">Venta caja</div>
+          <div style="font-size:10px;color:#aaa;">V-0061 · MP</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+          <div style="font-size:12px;font-weight:700;color:#3a4e3d;">+$1.500</div>
+          <div style="width:68px;text-align:right;"><span style="font-size:15px;color:#3a4e3d;font-weight:700;">✓</span></div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 14px;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:11px;font-weight:600;color:#2d2a26;">Apertura de turno</div>
+          <div style="font-size:10px;color:#aaa;">EFECTIVO</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+          <div style="font-size:12px;font-weight:700;color:#3a4e3d;">+$105.000</div>
+          <div style="width:68px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="section"><div class="sec-title">Cómo se usa</div><div class="steps">
+    <div class="step"><div class="step-left"><div class="step-num">1</div><div class="step-line"></div></div><div class="step-text">En la lista de movimientos, buscá la venta que querés facturar.</div></div>
+    <div class="step"><div class="step-left"><div class="step-num">2</div><div class="step-line"></div></div><div class="step-text">Tocá el botón <strong>Facturar</strong> que aparece al lado del monto.</div></div>
+    <div class="step"><div class="step-left"><div class="step-num">3</div><div class="step-line"></div></div><div class="step-text">Una vez emitida, el ícono cambia a <strong>✓</strong> — ese movimiento ya no se puede volver a facturar.</div></div>
+    <div class="step"><div class="step-left"><div class="step-num">4</div><div class="step-line"></div></div><div class="step-text">Para ver el historial completo, andá a <strong>Mis Facturas</strong> en el menú lateral.</div></div>
+  </div></div>
+</div>
+
+<!-- 07 · Cierre -->
+<div class="caj-section">
+  <div class="caj-step-header"><div class="caj-num">07</div><div class="caj-title">Cierre</div></div>
+  <div class="caj-screen">
+    <div style="background:#f4f0ea;padding:12px 14px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px;">
+        <div style="background:#fff;border-radius:10px;padding:10px 12px;">
+          <div style="font-size:8px;color:#aaa;text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px;">Saldo inicial</div>
+          <div style="font-size:13px;font-weight:700;color:#2d2a26;">$105.000</div>
+        </div>
+        <div style="background:#fff;border-radius:10px;padding:10px 12px;">
+          <div style="font-size:8px;color:#aaa;text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px;">Ingresos</div>
+          <div style="font-size:13px;font-weight:700;color:#3a4e3d;">+$4.000</div>
+        </div>
+        <div style="background:#fff;border-radius:10px;padding:10px 12px;">
+          <div style="font-size:8px;color:#aaa;text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px;">Egresos</div>
+          <div style="font-size:13px;font-weight:700;color:#b09088;">-$5.000</div>
+        </div>
+        <div style="background:#3a4e3d;border-radius:10px;padding:10px 12px;">
+          <div style="font-size:8px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px;">Saldo final</div>
+          <div style="font-size:13px;font-weight:700;color:#fff;">$104.000</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button style="flex:1;padding:10px;border-radius:9px;border:1.5px solid #3a4e3d;background:#fff;color:#3a4e3d;font-size:11px;font-weight:600;cursor:default;">Descargar resumen</button>
+        <button style="flex:1;padding:10px;border-radius:9px;border:none;background:#b09088;color:#fff;font-size:11px;font-weight:600;cursor:default;">Confirmar cierre</button>
+      </div>
+    </div>
+  </div>
+  <div class="section"><div class="sec-title">Cómo se usa</div><div class="steps">
+    <div class="step"><div class="step-left"><div class="step-num">1</div><div class="step-line"></div></div><div class="step-text">Tocá <strong>Cerrar caja</strong> en la barra de abajo.</div></div>
+    <div class="step"><div class="step-left"><div class="step-num">2</div><div class="step-line"></div></div><div class="step-text">Revisá que el Saldo final coincida con el efectivo que tenés en caja.</div></div>
+    <div class="step"><div class="step-left"><div class="step-num">3</div><div class="step-line"></div></div><div class="step-text">Si tenés efectivo para entregar, hacé antes un <strong>Retiro por cierre</strong>.</div></div>
+    <div class="step"><div class="step-left"><div class="step-num">4</div><div class="step-line"></div></div><div class="step-text">Podés <strong>Descargar el resumen</strong> en PDF antes de cerrar sesión.</div></div>
+  </div></div>
+  <div class="tip"><div class="tip-dot"></div><div class="tip-text">El dueño recibe automáticamente un mail con el detalle completo del turno — ventas, egresos, retiros y cualquier modificación realizada.</div></div>
+</div>
+`,
 };
 
 function buildNav() {
@@ -764,8 +1119,24 @@ function goAdj(dir) {
   if(newIdx >= 0 && newIdx < allIds.length) goPage(allIds[newIdx]);
 }
 
+function cajStep(n) {
+  document.querySelectorAll('.caj-section').forEach((s,i) => s.classList.toggle('active', i===n));
+  document.querySelectorAll('.caj-pill').forEach((p,i) => p.classList.toggle('active', i===n));
+  window.scrollTo(0,0);
+}
+const IS_CAJERO = new URLSearchParams(location.search).get('rol') === 'cajero';
+if(IS_CAJERO) {
+  const _keep = new Set(['bienvenida','cajero']);
+  MODULES.splice(0, MODULES.length, ...MODULES.filter(m => _keep.has(m.id)));
+  ALL_PAGES.length = 0;
+  MODULES.forEach(m => {
+    if(m.subs.length === 0 && m.id !== 'bienvenida') ALL_PAGES.push({id:m.id,label:m.label,mod:m.id});
+    m.subs.forEach(s => ALL_PAGES.push({id:s.id,label:s.label,mod:m.id}));
+  });
+  document.querySelector('.nav-logo span').textContent = 'Tu guía de uso';
+}
 buildNav();
-goPage('bienvenida');
+if(IS_CAJERO) goPage('cajero'); else goPage('bienvenida');
 </script>
 </body>
 </html>
