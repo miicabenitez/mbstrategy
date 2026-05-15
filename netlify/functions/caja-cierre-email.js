@@ -45,10 +45,9 @@ function generarPDF(d) {
     const IW = W - M * 2; // inner width
 
     // ── Header ────────────────────────────────────────────────────
-    doc.font('Helvetica-Bold').fontSize(16).fillColor('#3a4e3d').text('MB Strategy', M, M, { continued: false });
+    doc.font('Helvetica-Bold').fontSize(16).fillColor('#3a4e3d').text(d.negocio || 'Mi negocio', M, M, { continued: false });
     doc.font('Helvetica').fontSize(10).fillColor('#555');
     const rightColW = IW;
-    doc.text(d.negocio || '', M, M, { align: 'right', width: rightColW });
     doc.text('Cierre de Caja', M, M + 14, { align: 'right', width: rightColW });
     doc.text(formatFecha(d.cierre), M, M + 28, { align: 'right', width: rightColW });
 
