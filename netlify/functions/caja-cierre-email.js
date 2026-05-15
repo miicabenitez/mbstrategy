@@ -316,7 +316,8 @@ exports.handler = async (event) => {
 </body></html>`;
 
     const pdfBuffer = await generarPDF({ negocio, cajera, apertura, cierre,
-      saldoInicial, ingresos, egresos, saldoFinal, medios, productos, retiros, depositos, cuentaCorriente });
+      saldoInicial, ingresos, egresos, saldoFinal, medios, productos, retiros, depositos,
+      retirosDetalle, egresosCaja, egresosCajaTotal, cuentaCorriente });
 
     await transporter.sendMail({
       from: `"MB Strategy" <${process.env.GMAIL_USER}>`,
