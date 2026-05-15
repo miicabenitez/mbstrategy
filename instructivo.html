@@ -606,337 +606,287 @@ membresia: mod('Mi cuenta','Membresía','Mostrás y gestionás tu suscripción: 
   []
 ),
 cajero: `
-<div class="mod-kicker">Cajero</div>
-<div class="caj-pills">
-  <button class="caj-pill active" onclick="cajStep(0)"><span>01</span><em>Apertura</em></button>
-  <button class="caj-pill" onclick="cajStep(1)"><span>02</span><em>Nueva venta</em></button>
-  <button class="caj-pill" onclick="cajStep(2)"><span>03</span><em>Cuenta cliente</em></button>
-  <button class="caj-pill" onclick="cajStep(3)"><span>04</span><em>Cobranzas</em></button>
-  <button class="caj-pill" onclick="cajStep(4)"><span>05</span><em>Retiro y Depósito</em></button>
-  <button class="caj-pill" onclick="cajStep(5)"><span>06</span><em>Facturas</em></button>
-  <button class="caj-pill" onclick="cajStep(6)"><span>07</span><em>Cierre</em></button>
-</div>
-<h1 class="caj-hero">Tu guía<br>de <em>trabajo.</em></h1>
-<p class="mod-desc">Todo lo que necesitás para operar la caja desde el primer turno.</p>
+<style>
+.caj-kicker{font-size:11px;letter-spacing:2px;color:#b09088;font-weight:600;margin-bottom:8px;}
+.caj-hero{font-family:'Cormorant Garamond',Georgia,serif;font-size:54px;font-weight:300;color:#2d2a26;line-height:1.1;margin-bottom:8px;}
+.caj-hero em{font-style:italic;color:#b09088;}
+.caj-sub{font-size:15px;color:#888;margin-bottom:28px;}
+.caj-tab-wrap{position:relative;}
+.caj-tab-bar{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scroll-behavior:smooth;}
+.caj-tab-bar::-webkit-scrollbar{height:3px;}
+.caj-tab-bar::-webkit-scrollbar-thumb{background:#d4cec8;border-radius:2px;}
+.caj-tab-item{display:flex;flex-direction:column;align-items:center;padding:12px 22px;border-radius:12px;border:0.5px solid #e0dbd6;background:#fff;cursor:pointer;white-space:nowrap;flex-shrink:0;font-family:'DM Sans',sans-serif;transition:all .2s;border-top:3px solid transparent;}
+.caj-tab-item:hover{border-top-color:#d4a098;}
+.caj-tab-item.active{border-color:#3a4e3d;border-top-color:#b09088;}
+.caj-tab-num{font-size:20px;font-weight:700;color:#ccc;line-height:1;transition:color .2s;}
+.caj-tab-item.active .caj-tab-num{color:#3a4e3d;}
+.caj-tab-name{font-size:11px;color:#aaa;margin-top:4px;transition:color .2s;}
+.caj-tab-item.active .caj-tab-name{color:#3a4e3d;font-weight:600;}
+.caj-tab-fade{position:absolute;right:0;top:0;bottom:0;width:48px;background:linear-gradient(to left,var(--cream),transparent);pointer-events:none;}
+.caj-content{position:relative;overflow:hidden;min-height:520px;margin-top:28px;}
+.caj-panel{position:absolute;top:0;left:0;right:0;opacity:0;transform:translateY(16px);pointer-events:none;transition:opacity .3s ease,transform .38s cubic-bezier(.34,1.2,.64,1);}
+.caj-panel.active{opacity:1;transform:translateY(0);pointer-events:all;position:relative;}
+.caj-panel.exit-left{opacity:0;transform:translateX(-28px) scale(.98);transition:opacity .2s,transform .2s;}
+.caj-panel.exit-right{opacity:0;transform:translateX(28px) scale(.98);transition:opacity .2s,transform .2s;}
+.caj-step-hdr{display:flex;align-items:baseline;gap:16px;margin-bottom:24px;}
+.caj-big-num{font-size:80px;font-weight:300;color:#e8e3de;line-height:1;font-family:'DM Sans',sans-serif;}
+.caj-panel-title{font-size:32px;font-weight:700;color:#2d2a26;font-family:'DM Sans',sans-serif;}
+.caj-screen{border-radius:16px;overflow:hidden;border:1px solid #e0dbd6;margin-bottom:28px;box-shadow:0 8px 36px rgba(0,0,0,.1);transform:translateY(12px);opacity:0;transition:transform .45s cubic-bezier(.34,1.2,.64,1) .08s,opacity .3s ease .08s;}
+.caj-panel.active .caj-screen{transform:translateY(0);opacity:1;}
+.caj-kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:16px;background:#f4f0ea;}
+.caj-kpi{border-radius:12px;padding:14px 16px;}
+.caj-kpi-l{font-size:10px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;font-family:'DM Sans',sans-serif;}
+.caj-kpi-v{font-size:20px;font-weight:700;color:#f4f0ea;font-family:'DM Sans',sans-serif;}
+.caj-mov{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid #f5f0ec;font-size:14px;font-family:'DM Sans',sans-serif;}
+.caj-mov:last-child{border:none;}
+.caj-bb{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;border-top:1px solid #eee;}
+.caj-bbb{padding:14px 4px;text-align:center;font-size:12px;font-weight:700;font-family:'DM Sans',sans-serif;}
+.caj-steps{display:flex;flex-direction:column;max-width:680px;}
+.caj-srow{display:flex;gap:16px;padding:16px 0;border-bottom:.5px solid rgba(0,0,0,.05);opacity:0;transform:translateX(-14px);}
+.caj-srow:last-child{border:none;}
+.caj-panel.active .caj-srow:nth-child(1){animation:cajSIn .35s cubic-bezier(.34,1.2,.64,1) .2s forwards;}
+.caj-panel.active .caj-srow:nth-child(2){animation:cajSIn .35s cubic-bezier(.34,1.2,.64,1) .29s forwards;}
+.caj-panel.active .caj-srow:nth-child(3){animation:cajSIn .35s cubic-bezier(.34,1.2,.64,1) .38s forwards;}
+.caj-panel.active .caj-srow:nth-child(4){animation:cajSIn .35s cubic-bezier(.34,1.2,.64,1) .47s forwards;}
+@keyframes cajSIn{to{opacity:1;transform:translateX(0);}}
+.caj-scircle{width:32px;height:32px;border-radius:50%;background:#3a4e3d;color:#f4f0ea;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+.caj-stext{font-size:15px;color:#444;line-height:1.7;font-family:'DM Sans',sans-serif;}
+.caj-tip{display:flex;gap:14px;background:#fff;border-radius:12px;padding:16px 20px;border:.5px solid rgba(0,0,0,.06);max-width:680px;margin-top:20px;opacity:0;transition:opacity .3s ease .5s;}
+.caj-panel.active .caj-tip{opacity:1;}
+.caj-tip-dot{width:7px;height:7px;border-radius:50%;background:#b09088;flex-shrink:0;margin-top:8px;}
+.caj-tip-text{font-size:14px;color:#555;line-height:1.65;font-family:'DM Sans',sans-serif;}
+.caj-tip-green{background:rgba(58,78,61,.05);border:.5px solid rgba(58,78,61,.2);}
+.caj-tip-green .caj-tip-dot{background:#3a4e3d;}
+.caj-tip-alert{background:rgba(176,144,136,.08);border:.5px solid rgba(176,144,136,.3);}
+@media(max-width:600px){
+  .caj-hero{font-size:36px;}
+  .caj-kpi-v{font-size:16px;}
+  .caj-tab-fade{display:none;}
+  .caj-big-num{font-size:56px;}
+  .caj-panel-title{font-size:24px;}
+  .caj-stext{font-size:14px;}
+}
+</style>
 
-<!-- 01 · Apertura -->
-<div class="caj-section active">
-  <div class="caj-step-header"><div class="caj-num">01</div><div class="caj-title">Apertura</div></div>
-  <div class="caj-screen">
-    <div style="background:#3a4e3d;padding:12px 16px;font-family:'DM Sans',sans-serif;">
-      <div style="font-size:11px;color:rgba(255,255,255,.7);display:flex;align-items:center;gap:6px;">
-        <span style="color:#7dd98a;font-size:10px;">●</span>
-        Maria Garcia &nbsp;·&nbsp; Turno activo &nbsp;·&nbsp; 01:09 p.m.
-      </div>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px;background:#f4f0ea;">
-      <div style="background:#3a4e3d;border-radius:10px;padding:11px 12px;">
-        <div style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;font-family:'DM Sans',sans-serif;">Efectivo</div>
-        <div style="font-size:15px;font-weight:700;color:#f4f0ea;font-family:'DM Sans',sans-serif;">$107.500</div>
-      </div>
-      <div style="background:#8a5f55;border-radius:10px;padding:11px 12px;">
-        <div style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;font-family:'DM Sans',sans-serif;">A cobrar</div>
-        <div style="font-size:15px;font-weight:700;color:#f4f0ea;font-family:'DM Sans',sans-serif;">$46.500</div>
-      </div>
-      <div style="background:#3a4e3d;border-radius:10px;padding:11px 12px;">
-        <div style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;font-family:'DM Sans',sans-serif;">Saldo turno</div>
-        <div style="font-size:15px;font-weight:700;color:#f4f0ea;font-family:'DM Sans',sans-serif;">$107.500</div>
-      </div>
-    </div>
-    <div style="background:#fff;margin:0 12px 12px;border-radius:10px;overflow:hidden;">
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 14px;border-bottom:1px solid #f5f0ec;">
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:12px;font-weight:600;color:#2d2a26;">Venta caja</div>
-          <div style="font-size:11px;color:#aaa;letter-spacing:.3px;">V-0062 · EFECTIVO</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-          <div style="font-size:13px;font-weight:700;color:#3a4e3d;font-family:'DM Sans',sans-serif;">+$2.500</div>
-          <div style="width:72px;text-align:right;"><button style="font-size:10px;padding:4px 9px;border-radius:5px;border:1px solid #b09088;background:#fff;color:#b09088;cursor:default;white-space:nowrap;font-family:'DM Sans',sans-serif;">Facturar</button></div>
-        </div>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 14px;">
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:12px;font-weight:600;color:#2d2a26;">Apertura de turno</div>
-          <div style="font-size:11px;color:#aaa;letter-spacing:.3px;">EFECTIVO</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-          <div style="font-size:13px;font-weight:700;color:#3a4e3d;font-family:'DM Sans',sans-serif;">+$105.000</div>
-          <div style="width:72px;"></div>
-        </div>
-      </div>
-    </div>
-    <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;border-top:1px solid #eee;">
-      <div style="padding:11px 8px;text-align:center;font-size:11px;color:#f4f0ea;font-weight:700;background:#3a4e3d;font-family:'DM Sans',sans-serif;border-radius:0 0 0 0;">⊕ Nueva venta</div>
-      <div style="padding:11px 4px;text-align:center;font-size:11px;color:#b09088;font-weight:500;background:#f7f0ee;border-left:1px solid #f0ebe6;font-family:'DM Sans',sans-serif;">Retiro</div>
-      <div style="padding:11px 4px;text-align:center;font-size:11px;color:#666;background:#f8f6f4;border-left:1px solid #f0ebe6;font-family:'DM Sans',sans-serif;">Depósito</div>
-      <div style="padding:11px 4px;text-align:center;font-size:11px;color:#f4f0ea;font-weight:600;background:#b09088;border-left:1px solid #f0ebe6;font-family:'DM Sans',sans-serif;border-radius:0 0 10px 0;">Cerrar caja</div>
-    </div>
-  </div>
-  <div class="section"><div class="sec-title">Cómo se usa</div><div class="steps">
-    <div class="step"><div class="step-left"><div class="step-num">1</div><div class="step-line"></div></div><div class="step-text">Ingresá con tu <strong>nombre</strong> y <strong>contraseña</strong>. Si es la primera vez, el dueño te las va a dar.</div></div>
-    <div class="step"><div class="step-left"><div class="step-num">2</div><div class="step-line"></div></div><div class="step-text">El sistema te muestra el <strong>saldo inicial en efectivo</strong> — es lo que quedó del turno anterior. Confirmá y empezá a operar.</div></div>
-  </div></div>
-  <div class="tip"><div class="tip-dot"></div><div class="tip-text">El saldo inicial es solo el efectivo. Los otros medios (Mercado Pago, Transferencia, Tarjeta) arrancan desde cero cada turno.</div></div>
-</div>
+<div class="mod-kicker caj-kicker">Cajero</div>
+<h1 class="caj-hero">Tu guía de <em>trabajo.</em></h1>
+<p class="caj-sub">Todo lo que necesitás para operar la caja desde el primer turno.</p>
 
-<!-- 02 · Nueva venta -->
-<div class="caj-section">
-  <div class="caj-step-header"><div class="caj-num">02</div><div class="caj-title">Nueva venta</div></div>
-  <div class="caj-screen">
-    <div style="background:#f4f0ea;padding:14px 16px;">
-      <div style="background:#fff;border-radius:9px;padding:9px 12px;display:flex;align-items:center;gap:8px;margin-bottom:8px;border:1px solid #e8e3de;">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <span style="font-size:12px;color:#ccc;font-family:'DM Sans',sans-serif;">Buscar producto...</span>
-      </div>
-      <div style="background:rgba(74,94,77,0.06);border:0.5px solid rgba(74,94,77,0.35);border-radius:9px;padding:8px;text-align:center;font-size:12px;font-weight:600;color:#3a4e3d;margin-bottom:12px;font-family:'DM Sans',sans-serif;">+ Ítem libre</div>
-      <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:#b09088;margin-bottom:8px;text-transform:uppercase;font-family:'DM Sans',sans-serif;">Más vendidos</div>
-      <div style="background:#fff;border-radius:10px;overflow:hidden;margin-bottom:12px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid #f5f0ec;">
-          <div><div style="font-size:12px;font-weight:600;color:#2d2a26;font-family:'DM Sans',sans-serif;">Sandwich de miga</div><div style="font-size:11px;color:#aaa;font-family:'DM Sans',sans-serif;">$1.500</div></div>
-          <button style="width:26px;height:26px;border-radius:6px;border:none;background:#3a4e3d;color:#fff;font-size:16px;cursor:default;display:flex;align-items:center;justify-content:center;line-height:1;">+</button>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid #f5f0ec;">
-          <div><div style="font-size:12px;font-weight:600;color:#2d2a26;font-family:'DM Sans',sans-serif;">Corte General</div><div style="font-size:11px;color:#aaa;font-family:'DM Sans',sans-serif;">$40.000</div></div>
-          <button style="width:26px;height:26px;border-radius:6px;border:none;background:#3a4e3d;color:#fff;font-size:16px;cursor:default;display:flex;align-items:center;justify-content:center;line-height:1;">+</button>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;">
-          <div><div style="font-size:12px;font-weight:600;color:#2d2a26;font-family:'DM Sans',sans-serif;">Medialunas</div><div style="font-size:11px;color:#aaa;font-family:'DM Sans',sans-serif;">$2.000</div></div>
-          <button style="width:26px;height:26px;border-radius:6px;border:none;background:#3a4e3d;color:#fff;font-size:16px;cursor:default;display:flex;align-items:center;justify-content:center;line-height:1;">+</button>
-        </div>
-      </div>
-      <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:#b09088;margin-bottom:8px;text-transform:uppercase;font-family:'DM Sans',sans-serif;">Método de pago</div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
-        <div style="padding:6px 12px;border-radius:8px;background:#3a4e3d;color:#fff;font-size:11px;font-weight:600;font-family:'DM Sans',sans-serif;">Efectivo</div>
-        <div style="padding:6px 12px;border-radius:8px;background:#fff;border:1px solid #e0dbd6;color:#888;font-size:11px;font-family:'DM Sans',sans-serif;">Mercado Pago</div>
-        <div style="padding:6px 12px;border-radius:8px;background:#fff;border:1px solid #e0dbd6;color:#888;font-size:11px;font-family:'DM Sans',sans-serif;">Transferencia</div>
-        <div style="padding:6px 12px;border-radius:8px;background:#fff;border:1px solid #e0dbd6;color:#888;font-size:11px;font-family:'DM Sans',sans-serif;">Tarjeta</div>
-      </div>
-      <div style="background:#3a4e3d;border-radius:10px;padding:12px;text-align:center;font-size:13px;font-weight:700;color:#fff;font-family:'DM Sans',sans-serif;">Registrar venta</div>
-    </div>
+<div class="caj-tab-wrap">
+  <div class="caj-tab-bar" id="cajTabBar">
+    <button class="caj-tab-item active" onclick="cajGoTab(0,this)"><span class="caj-tab-num">01</span><span class="caj-tab-name">Apertura</span></button>
+    <button class="caj-tab-item" onclick="cajGoTab(1,this)"><span class="caj-tab-num">02</span><span class="caj-tab-name">Nueva venta</span></button>
+    <button class="caj-tab-item" onclick="cajGoTab(2,this)"><span class="caj-tab-num">03</span><span class="caj-tab-name">Cuenta cliente</span></button>
+    <button class="caj-tab-item" onclick="cajGoTab(3,this)"><span class="caj-tab-num">04</span><span class="caj-tab-name">Cobranzas</span></button>
+    <button class="caj-tab-item" onclick="cajGoTab(4,this)"><span class="caj-tab-num">05</span><span class="caj-tab-name">Retiro</span></button>
+    <button class="caj-tab-item" onclick="cajGoTab(5,this)"><span class="caj-tab-num">06</span><span class="caj-tab-name">Facturas</span></button>
+    <button class="caj-tab-item" onclick="cajGoTab(6,this)"><span class="caj-tab-num">07</span><span class="caj-tab-name">Cierre</span></button>
   </div>
-  <div class="section"><div class="sec-title">Cómo se usa</div><div class="steps">
-    <div class="step"><div class="step-left"><div class="step-num">1</div><div class="step-line"></div></div><div class="step-text">Tocá <strong>Nueva venta</strong> en la barra de abajo.</div></div>
-    <div class="step"><div class="step-left"><div class="step-num">2</div><div class="step-line"></div></div><div class="step-text">El sistema muestra los <strong>3 más vendidos</strong> del turno. Si no está, usá el buscador. Si no existe en el catálogo, tocá <strong>+ Ítem libre</strong> e ingresá nombre, cantidad y precio.</div></div>
-    <div class="step"><div class="step-left"><div class="step-num">3</div><div class="step-line"></div></div><div class="step-text">Tocá el <strong>+</strong> para agregar al carrito. Podés cambiar la cantidad desde ahí.</div></div>
-    <div class="step"><div class="step-left"><div class="step-num">4</div><div class="step-line"></div></div><div class="step-text">Elegí el medio de pago y tocá <strong>Registrar venta</strong>. Se genera el ticket automáticamente.</div></div>
-  </div></div>
-  <div class="tip"><div class="tip-dot"></div><div class="tip-text">Si te equivocaste de medio de pago, podés corregirlo tocando el movimiento en la lista y eligiendo <strong>Modificar medio de pago</strong>. El cambio queda registrado con tu nombre. Si elegís Tarjeta, aparece un selector para elegir Débito o Crédito.</div></div>
+  <div class="caj-tab-fade"></div>
 </div>
 
-<!-- 03 · Cuenta cliente -->
-<div class="caj-section">
-  <div class="caj-step-header"><div class="caj-num">03</div><div class="caj-title">Cuenta cliente</div></div>
-  <div class="caj-screen">
-    <div style="background:#f4f0ea;padding:14px 16px;">
-      <div style="display:flex;gap:8px;margin-bottom:14px;">
-        <div style="flex:1;background:#fff;border-radius:9px;padding:9px 12px;display:flex;align-items:center;gap:6px;border:1px solid #e8e3de;">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <span style="font-size:12px;color:#ccc;font-family:'DM Sans',sans-serif;">Buscar cliente...</span>
-        </div>
-        <div style="background:#3a4e3d;border-radius:9px;padding:9px 14px;font-size:12px;font-weight:600;color:#fff;white-space:nowrap;font-family:'DM Sans',sans-serif;">+ Nuevo</div>
+<div class="caj-content">
+
+  <!-- 01 Apertura -->
+  <div class="caj-panel active" id="cajP0">
+    <div class="caj-step-hdr"><div class="caj-big-num">01</div><div class="caj-panel-title">Apertura</div></div>
+    <div class="caj-screen">
+      <div style="background:#3a4e3d;padding:14px 20px;font-size:13px;color:rgba(255,255,255,.75);font-family:'DM Sans',sans-serif;">● Maria Garcia &nbsp;·&nbsp; Turno activo &nbsp;·&nbsp; 01:09 p.m.</div>
+      <div class="caj-kpi-row">
+        <div class="caj-kpi" style="background:#3a4e3d;"><div class="caj-kpi-l">Efectivo</div><div class="caj-kpi-v">$107.500</div></div>
+        <div class="caj-kpi" style="background:#8a5f55;"><div class="caj-kpi-l">A cobrar</div><div class="caj-kpi-v">$46.500</div></div>
+        <div class="caj-kpi" style="background:#3a4e3d;"><div class="caj-kpi-l">Saldo turno</div><div class="caj-kpi-v">$107.500</div></div>
       </div>
-      <div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;font-weight:600;font-family:'DM Sans',sans-serif;">Condición IVA del cliente</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-        <div style="background:#3a4e3d;border-radius:10px;padding:12px 13px;">
-          <div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:3px;font-family:'DM Sans',sans-serif;">Consumidor Final</div>
-          <div style="font-size:10px;color:rgba(255,255,255,.65);font-family:'DM Sans',sans-serif;">Ticket X · nombre y tel.</div>
+      <div style="background:#fff;margin:0 16px 16px;border-radius:12px;overflow:hidden;">
+        <div class="caj-mov"><div><div style="font-weight:600;color:#2d2a26;">Venta caja</div><div style="font-size:12px;color:#aaa;">V-0062 · EFECTIVO</div></div><div style="display:flex;align-items:center;gap:10px;"><span style="font-weight:700;color:#3a4e3d;">+$2.500</span><button style="font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid #b09088;background:#fff;color:#b09088;cursor:default;">Facturar</button></div></div>
+        <div class="caj-mov"><div><div style="font-weight:600;color:#2d2a26;">Apertura de turno</div><div style="font-size:12px;color:#aaa;">EFECTIVO</div></div><div style="display:flex;align-items:center;gap:10px;"><span style="font-weight:700;color:#3a4e3d;">+$105.000</span><div style="width:76px;"></div></div></div>
+      </div>
+      <div class="caj-bb">
+        <div class="caj-bbb" style="color:#f4f0ea;background:#3a4e3d;">⊕ Nueva venta</div>
+        <div class="caj-bbb" style="color:#b09088;background:#f7f0ee;">Retiro</div>
+        <div class="caj-bbb" style="color:#666;background:#f8f6f4;">Depósito</div>
+        <div class="caj-bbb" style="color:#f4f0ea;background:#b09088;">Cerrar caja</div>
+      </div>
+    </div>
+    <div class="caj-steps">
+      <div class="caj-srow"><div class="caj-scircle">1</div><div class="caj-stext">Ingresá con tu <strong>nombre</strong> y <strong>contraseña</strong>. Si es la primera vez, el dueño te las va a dar.</div></div>
+      <div class="caj-srow"><div class="caj-scircle">2</div><div class="caj-stext">El sistema te muestra el <strong>saldo inicial en efectivo</strong> — es lo que quedó del turno anterior. Confirmá y empezá a operar.</div></div>
+    </div>
+    <div class="caj-tip"><div class="caj-tip-dot"></div><div class="caj-tip-text">El saldo inicial es solo el efectivo. Los otros medios (Mercado Pago, Transferencia, Tarjeta) arrancan desde cero cada turno.</div></div>
+  </div>
+
+  <!-- 02 Nueva venta -->
+  <div class="caj-panel" id="cajP1">
+    <div class="caj-step-hdr"><div class="caj-big-num">02</div><div class="caj-panel-title">Nueva venta</div></div>
+    <div class="caj-screen">
+      <div style="background:#f4f0ea;padding:18px 20px;">
+        <div style="background:#fff;border-radius:10px;padding:12px 16px;font-size:14px;color:#ccc;margin-bottom:10px;border:1px solid #e8e3de;font-family:'DM Sans',sans-serif;">Buscar producto...</div>
+        <div style="border:0.5px solid rgba(74,94,77,.35);border-radius:10px;padding:10px;text-align:center;font-size:14px;font-weight:600;color:#3a4e3d;margin-bottom:14px;background:rgba(74,94,77,.05);font-family:'DM Sans',sans-serif;">+ Ítem libre</div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:#b09088;margin-bottom:10px;text-transform:uppercase;font-family:'DM Sans',sans-serif;">Más vendidos</div>
+        <div style="background:#fff;border-radius:12px;overflow:hidden;margin-bottom:14px;">
+          <div class="caj-mov" style="padding:12px 16px;"><div><div style="font-weight:600;color:#2d2a26;">Sandwich de miga</div><div style="font-size:12px;color:#aaa;">$1.500</div></div><button style="width:28px;height:28px;border-radius:6px;border:none;background:#3a4e3d;color:#fff;font-size:18px;cursor:default;line-height:1;">+</button></div>
+          <div class="caj-mov" style="padding:12px 16px;border:none;"><div><div style="font-weight:600;color:#2d2a26;">Corte General</div><div style="font-size:12px;color:#aaa;">$40.000</div></div><button style="width:28px;height:28px;border-radius:6px;border:none;background:#3a4e3d;color:#fff;font-size:18px;cursor:default;line-height:1;">+</button></div>
         </div>
-        <div style="background:#fff;border:1px solid #e0dbd6;border-radius:10px;padding:12px 13px;">
-          <div style="font-size:12px;font-weight:700;color:#2d2a26;margin-bottom:3px;font-family:'DM Sans',sans-serif;">Monotributista</div>
-          <div style="font-size:10px;color:#aaa;font-family:'DM Sans',sans-serif;">Factura C · nombre, CUIT y dir.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+          <div style="padding:8px 14px;border-radius:8px;background:#3a4e3d;color:#fff;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;">Efectivo</div>
+          <div style="padding:8px 14px;border-radius:8px;background:#fff;border:1px solid #e0dbd6;color:#888;font-size:13px;font-family:'DM Sans',sans-serif;">Mercado Pago</div>
+          <div style="padding:8px 14px;border-radius:8px;background:#fff;border:1px solid #e0dbd6;color:#888;font-size:13px;font-family:'DM Sans',sans-serif;">Tarjeta</div>
         </div>
-        <div style="background:#fff;border:1px solid #e0dbd6;border-radius:10px;padding:12px 13px;">
-          <div style="font-size:12px;font-weight:700;color:#2d2a26;margin-bottom:3px;font-family:'DM Sans',sans-serif;">Resp. Inscripto</div>
-          <div style="font-size:10px;color:#aaa;font-family:'DM Sans',sans-serif;">Factura A · nombre, CUIT y dir.</div>
+        <div style="background:#3a4e3d;border-radius:12px;padding:14px;text-align:center;font-size:15px;font-weight:700;color:#fff;font-family:'DM Sans',sans-serif;">Registrar venta</div>
+      </div>
+    </div>
+    <div class="caj-steps">
+      <div class="caj-srow"><div class="caj-scircle">1</div><div class="caj-stext">Tocá <strong>Nueva venta</strong> en la barra de abajo.</div></div>
+      <div class="caj-srow"><div class="caj-scircle">2</div><div class="caj-stext">El sistema muestra los <strong>3 más vendidos</strong>. Si no está, usá el buscador. Si no existe en el catálogo, tocá <strong>+ Ítem libre</strong> e ingresá nombre, cantidad y precio.</div></div>
+      <div class="caj-srow"><div class="caj-scircle">3</div><div class="caj-stext">Tocá <strong>+</strong> para agregar al carrito, elegí el medio de pago y confirmá. El ticket se genera automáticamente.</div></div>
+    </div>
+    <div class="caj-tip"><div class="caj-tip-dot"></div><div class="caj-tip-text">Si te equivocaste de medio de pago, tocá el movimiento y elegí <strong>Modificar medio de pago</strong>. Si elegís Tarjeta, aparece un selector Débito / Crédito.</div></div>
+  </div>
+
+  <!-- 03 Cuenta cliente -->
+  <div class="caj-panel" id="cajP2">
+    <div class="caj-step-hdr"><div class="caj-big-num">03</div><div class="caj-panel-title">Cuenta cliente</div></div>
+    <div class="caj-screen">
+      <div style="background:#f4f0ea;padding:18px 20px;">
+        <div style="display:flex;gap:10px;margin-bottom:16px;">
+          <div style="flex:1;background:#fff;border-radius:10px;padding:12px 16px;font-size:14px;color:#ccc;border:1px solid #e8e3de;font-family:'DM Sans',sans-serif;">Buscar cliente...</div>
+          <div style="background:#3a4e3d;border-radius:10px;padding:12px 18px;font-size:13px;font-weight:600;color:#fff;font-family:'DM Sans',sans-serif;">+ Nuevo</div>
         </div>
-        <div style="background:#fff;border:1px solid #e0dbd6;border-radius:10px;padding:12px 13px;">
-          <div style="font-size:12px;font-weight:700;color:#2d2a26;margin-bottom:3px;font-family:'DM Sans',sans-serif;">Exento</div>
-          <div style="font-size:10px;color:#aaa;font-family:'DM Sans',sans-serif;">Factura C · nombre, CUIT y dir.</div>
+        <div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;font-weight:600;font-family:'DM Sans',sans-serif;">Condición IVA</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div style="background:#3a4e3d;border-radius:12px;padding:14px 15px;"><div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:4px;font-family:'DM Sans',sans-serif;">Consumidor Final</div><div style="font-size:11px;color:rgba(255,255,255,.6);font-family:'DM Sans',sans-serif;">nombre y tel.</div></div>
+          <div style="background:#fff;border:1px solid #e0dbd6;border-radius:12px;padding:14px 15px;"><div style="font-size:14px;font-weight:700;color:#2d2a26;margin-bottom:4px;font-family:'DM Sans',sans-serif;">Monotributista</div><div style="font-size:11px;color:#aaa;font-family:'DM Sans',sans-serif;">CUIT obligatorio</div></div>
+          <div style="background:#fff;border:1px solid #e0dbd6;border-radius:12px;padding:14px 15px;"><div style="font-size:14px;font-weight:700;color:#2d2a26;margin-bottom:4px;font-family:'DM Sans',sans-serif;">Resp. Inscripto</div><div style="font-size:11px;color:#aaa;font-family:'DM Sans',sans-serif;">Factura A · CUIT</div></div>
+          <div style="background:#fff;border:1px solid #e0dbd6;border-radius:12px;padding:14px 15px;"><div style="font-size:14px;font-weight:700;color:#2d2a26;margin-bottom:4px;font-family:'DM Sans',sans-serif;">Exento</div><div style="font-size:11px;color:#aaa;font-family:'DM Sans',sans-serif;">Factura C · CUIT</div></div>
         </div>
       </div>
     </div>
+    <div class="caj-steps">
+      <div class="caj-srow"><div class="caj-scircle">1</div><div class="caj-stext">Cargá los productos y elegí <strong>Cuenta cliente</strong> como medio de pago.</div></div>
+      <div class="caj-srow"><div class="caj-scircle">2</div><div class="caj-stext">Buscá el cliente. Si no existe, tocá <strong>Nuevo cliente</strong> y completá los datos.</div></div>
+      <div class="caj-srow"><div class="caj-scircle">3</div><div class="caj-stext">Si pide factura, preguntale la <strong>condición IVA</strong> y completá los datos requeridos.</div></div>
+    </div>
+    <div class="caj-tip caj-tip-green"><div class="caj-tip-dot"></div><div class="caj-tip-text"><strong>Consumidor Final</strong> — nombre y tel. <strong>Monotributista/Exento</strong> — CUIT y dir. <strong>Resp. Inscripto</strong> — CUIT y dir. (Factura A).</div></div>
+    <div class="caj-tip" style="margin-top:12px;"><div class="caj-tip-dot"></div><div class="caj-tip-text">El pedido a cuenta <strong>no suma al saldo de caja</strong> — aparece en "A cobrar" hasta que se cobre desde Cobranzas.</div></div>
   </div>
-  <div class="section"><div class="sec-title">Cómo se usa</div><div class="steps">
-    <div class="step"><div class="step-left"><div class="step-num">1</div><div class="step-line"></div></div><div class="step-text">Cargá los productos y seleccioná <strong>Cuenta cliente</strong> como medio de pago.</div></div>
-    <div class="step"><div class="step-left"><div class="step-num">2</div><div class="step-line"></div></div><div class="step-text">Buscá el cliente por nombre o teléfono. Si no aparece, tocá <strong>Nuevo cliente</strong> y completá los datos.</div></div>
-    <div class="step"><div class="step-left"><div class="step-num">3</div><div class="step-line"></div></div><div class="step-text">Si el cliente pide factura, preguntale su <strong>condición frente al IVA</strong> y completá los datos requeridos según la tabla.</div></div>
-    <div class="step"><div class="step-left"><div class="step-num">4</div><div class="step-line"></div></div><div class="step-text">Confirmá. El pedido queda como <strong>Pendiente</strong> en Cobranzas.</div></div>
-  </div></div>
-  <div class="tip caj-tip-green"><div class="tip-dot"></div><div class="tip-text"><strong>Consumidor Final</strong> — solo nombre y teléfono. <strong>Monotributista / Exento</strong> — nombre, CUIT y dirección. <strong>Resp. Inscripto</strong> — nombre, CUIT y dirección (obligatorios para Factura A). Si no sabés la condición, preguntale al cliente.</div></div>
-  <div class="tip" style="margin-top:10px"><div class="tip-dot"></div><div class="tip-text">El pedido a cuenta <strong>NO suma al saldo de caja</strong> — aparece en "A cobrar" hasta que se cobre desde Cobranzas.</div></div>
+
+  <!-- 04 Cobranzas -->
+  <div class="caj-panel" id="cajP3">
+    <div class="caj-step-hdr"><div class="caj-big-num">04</div><div class="caj-panel-title">Cobranzas</div></div>
+    <div class="caj-screen">
+      <div style="background:#f4f0ea;padding:16px 20px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+          <div style="background:#3a4e3d;border-radius:12px;padding:14px 16px;"><div class="caj-kpi-l">Total pendiente</div><div class="caj-kpi-v">$46.500</div></div>
+          <div style="background:#3a4e3d;border-radius:12px;padding:14px 16px;"><div class="caj-kpi-l">Cantidad</div><div class="caj-kpi-v">20</div></div>
+        </div>
+        <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;">
+          <div style="padding:6px 14px;border-radius:20px;background:#3a4e3d;color:#fff;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;">Todos</div>
+          <div style="padding:6px 14px;border-radius:20px;background:#fff;border:1px solid #e0dbd6;color:#888;font-size:12px;font-family:'DM Sans',sans-serif;">Esta semana</div>
+          <div style="padding:6px 14px;border-radius:20px;background:#fff;border:1px solid #e0dbd6;color:#888;font-size:12px;font-family:'DM Sans',sans-serif;">Este mes</div>
+          <div style="padding:6px 14px;border-radius:20px;background:#fff;border:1px solid #e0dbd6;color:#888;font-size:12px;font-family:'DM Sans',sans-serif;">+30 días</div>
+        </div>
+        <div style="background:#fff;border-radius:12px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">
+          <div><div style="font-size:15px;font-weight:700;color:#2d2a26;font-family:'DM Sans',sans-serif;">Claudia Franco</div><div style="font-size:12px;color:#aaa;margin-top:3px;font-family:'DM Sans',sans-serif;">V-0050 · 15-may</div></div>
+          <div style="display:flex;gap:8px;align-items:center;"><span style="font-size:14px;font-weight:700;color:#b09088;font-family:'DM Sans',sans-serif;">$1.500</span><button style="padding:6px 12px;border-radius:7px;border:none;background:#3a4e3d;color:#fff;font-size:12px;font-weight:600;cursor:default;font-family:'DM Sans',sans-serif;">Cobrar</button><button style="padding:6px 12px;border-radius:7px;border:none;background:#25d366;color:#fff;font-size:12px;font-weight:600;cursor:default;font-family:'DM Sans',sans-serif;">WA</button></div>
+        </div>
+      </div>
+    </div>
+    <div class="caj-steps">
+      <div class="caj-srow"><div class="caj-scircle">1</div><div class="caj-stext">Filtrá por <strong>Esta semana · Este mes · +30 días</strong> o buscá por nombre, teléfono o ticket.</div></div>
+      <div class="caj-srow"><div class="caj-scircle">2</div><div class="caj-stext">Tocá <strong>WA</strong> para avisarle al cliente que tiene un pago pendiente.</div></div>
+      <div class="caj-srow"><div class="caj-scircle">3</div><div class="caj-stext">Tocá <strong>Cobrar</strong>, elegí el medio de pago y confirmá. El ingreso suma al turno automáticamente.</div></div>
+    </div>
+    <div class="caj-tip"><div class="caj-tip-dot"></div><div class="caj-tip-text"><strong>+30 días</strong> muestra los pedidos que llevan más de un mes sin cobrar. Útil para seguimiento de deudas viejas.</div></div>
+  </div>
+
+  <!-- 05 Retiro -->
+  <div class="caj-panel" id="cajP4">
+    <div class="caj-step-hdr"><div class="caj-big-num">05</div><div class="caj-panel-title">Retiro y Depósito</div></div>
+    <div class="caj-screen">
+      <div style="background:#f4f0ea;padding:18px 20px;">
+        <div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;font-weight:600;font-family:'DM Sans',sans-serif;">¿Motivo del retiro?</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="background:#fff;border-radius:12px;padding:14px 16px;border:1px solid #e0dbd6;"><div style="font-size:14px;font-weight:600;color:#2d2a26;margin-bottom:4px;font-family:'DM Sans',sans-serif;">Pago a proveedor</div><div style="font-size:12px;color:#aaa;font-family:'DM Sans',sans-serif;">Ej: pagás la factura de la panadería en efectivo</div></div>
+          <div style="background:#fff;border-radius:12px;padding:14px 16px;border:1px solid #e0dbd6;"><div style="font-size:14px;font-weight:600;color:#2d2a26;margin-bottom:4px;font-family:'DM Sans',sans-serif;">Compra de insumos</div><div style="font-size:12px;color:#aaa;font-family:'DM Sans',sans-serif;">Ej: comprás bolsas, materiales</div></div>
+          <div style="background:#3a4e3d;border-radius:12px;padding:14px 16px;"><div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:4px;font-family:'DM Sans',sans-serif;">Retiro por cierre</div><div style="font-size:12px;color:rgba(255,255,255,.6);font-family:'DM Sans',sans-serif;">Entregás el efectivo del turno al dueño</div></div>
+          <div style="background:#fff;border-radius:12px;padding:14px 16px;border:1px solid #e0dbd6;"><div style="font-size:14px;font-weight:600;color:#2d2a26;margin-bottom:4px;font-family:'DM Sans',sans-serif;">Otros</div><div style="font-size:12px;color:#aaa;font-family:'DM Sans',sans-serif;">Cualquier otro egreso — describilo en la observación</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="caj-steps">
+      <div class="caj-srow"><div class="caj-scircle">1</div><div class="caj-stext">Tocá <strong>Retiro</strong> en la barra de abajo y elegí el motivo que corresponda.</div></div>
+      <div class="caj-srow"><div class="caj-scircle">2</div><div class="caj-stext">Ingresá el monto y una observación si hace falta. Confirmá.</div></div>
+      <div class="caj-srow"><div class="caj-scircle">3</div><div class="caj-stext">Para depósitos (ej. cambio inicial del día), tocá <strong>Depósito</strong> e ingresá el monto.</div></div>
+    </div>
+    <div class="caj-tip caj-tip-alert"><div class="caj-tip-dot"></div><div class="caj-tip-text">Usá <strong>Retiro por cierre</strong> solo cuando entregás el efectivo al dueño. Ese dinero pasa automáticamente a la caja general del negocio.</div></div>
+  </div>
+
+  <!-- 06 Facturas -->
+  <div class="caj-panel" id="cajP5">
+    <div class="caj-step-hdr"><div class="caj-big-num">06</div><div class="caj-panel-title">Facturas</div></div>
+    <div class="caj-screen">
+      <div style="background:#fff;">
+        <div class="caj-mov"><div><div style="font-weight:600;color:#2d2a26;">Venta caja</div><div style="font-size:12px;color:#aaa;">V-0062 · EFECTIVO</div></div><div style="display:flex;align-items:center;gap:10px;"><span style="font-weight:700;color:#3a4e3d;">+$2.500</span><button style="font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid #b09088;background:#fff;color:#b09088;cursor:default;">Facturar</button></div></div>
+        <div class="caj-mov"><div><div style="font-weight:600;color:#2d2a26;">Venta caja</div><div style="font-size:12px;color:#aaa;">V-0061 · MP</div></div><div style="display:flex;align-items:center;gap:10px;"><span style="font-weight:700;color:#3a4e3d;">+$1.500</span><span style="font-size:20px;color:#3a4e3d;font-weight:700;">✓</span></div></div>
+        <div class="caj-mov" style="border:none;"><div><div style="font-weight:600;color:#2d2a26;">Apertura de turno</div><div style="font-size:12px;color:#aaa;">EFECTIVO</div></div><div style="display:flex;align-items:center;gap:10px;"><span style="font-weight:700;color:#3a4e3d;">+$105.000</span><div style="width:76px;"></div></div></div>
+      </div>
+    </div>
+    <div class="caj-steps">
+      <div class="caj-srow"><div class="caj-scircle">1</div><div class="caj-stext">En la lista de movimientos, buscá la venta que querés facturar.</div></div>
+      <div class="caj-srow"><div class="caj-scircle">2</div><div class="caj-stext">Tocá el botón <strong>Facturar</strong> que aparece al lado del monto.</div></div>
+      <div class="caj-srow"><div class="caj-scircle">3</div><div class="caj-stext">El ícono cambia a <strong>✓</strong> — ese movimiento ya no se puede volver a facturar.</div></div>
+      <div class="caj-srow"><div class="caj-scircle">4</div><div class="caj-stext">Para ver el historial completo, andá a <strong>Mis Facturas</strong> en el menú lateral.</div></div>
+    </div>
+  </div>
+
+  <!-- 07 Cierre -->
+  <div class="caj-panel" id="cajP6">
+    <div class="caj-step-hdr"><div class="caj-big-num">07</div><div class="caj-panel-title">Cierre</div></div>
+    <div class="caj-screen">
+      <div style="background:#f4f0ea;padding:18px 20px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+          <div style="background:#fff;border-radius:12px;padding:14px 16px;"><div style="font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;font-family:'DM Sans',sans-serif;">Saldo inicial</div><div style="font-size:18px;font-weight:700;color:#2d2a26;font-family:'DM Sans',sans-serif;">$105.000</div></div>
+          <div style="background:#fff;border-radius:12px;padding:14px 16px;"><div style="font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;font-family:'DM Sans',sans-serif;">Ingresos</div><div style="font-size:18px;font-weight:700;color:#3a4e3d;font-family:'DM Sans',sans-serif;">+$4.000</div></div>
+          <div style="background:#fff;border-radius:12px;padding:14px 16px;"><div style="font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;font-family:'DM Sans',sans-serif;">Egresos</div><div style="font-size:18px;font-weight:700;color:#b09088;font-family:'DM Sans',sans-serif;">-$5.000</div></div>
+          <div style="background:#3a4e3d;border-radius:12px;padding:14px 16px;"><div style="font-size:10px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;font-family:'DM Sans',sans-serif;">Saldo final</div><div style="font-size:18px;font-weight:700;color:#fff;font-family:'DM Sans',sans-serif;">$104.000</div></div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button style="flex:1;padding:14px;border-radius:12px;border:1.5px solid #3a4e3d;background:#fff;color:#3a4e3d;font-size:13px;font-weight:600;cursor:default;font-family:'DM Sans',sans-serif;">Descargar resumen</button>
+          <button style="flex:1;padding:14px;border-radius:12px;border:none;background:#b09088;color:#fff;font-size:13px;font-weight:600;cursor:default;font-family:'DM Sans',sans-serif;">Confirmar cierre</button>
+        </div>
+      </div>
+    </div>
+    <div class="caj-steps">
+      <div class="caj-srow"><div class="caj-scircle">1</div><div class="caj-stext">Tocá <strong>Cerrar caja</strong> en la barra de abajo.</div></div>
+      <div class="caj-srow"><div class="caj-scircle">2</div><div class="caj-stext">Verificá que el <strong>Saldo final</strong> coincida con el efectivo que tenés en caja.</div></div>
+      <div class="caj-srow"><div class="caj-scircle">3</div><div class="caj-stext">Si vas a entregar efectivo, hacé antes un <strong>Retiro por cierre</strong>.</div></div>
+      <div class="caj-srow"><div class="caj-scircle">4</div><div class="caj-stext">Podés <strong>Descargar el resumen</strong> en PDF antes de cerrar sesión.</div></div>
+    </div>
+    <div class="caj-tip"><div class="caj-tip-dot"></div><div class="caj-tip-text">El dueño recibe automáticamente un mail con el detalle completo del turno — ventas, egresos, retiros y cualquier modificación realizada.</div></div>
+  </div>
+
 </div>
 
-<!-- 04 · Cobranzas -->
-<div class="caj-section">
-  <div class="caj-step-header"><div class="caj-num">04</div><div class="caj-title">Cobranzas</div></div>
-  <div class="caj-screen">
-    <div style="background:#f4f0ea;padding:12px 14px;">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
-        <div style="background:#3a4e3d;border-radius:10px;padding:11px 12px;">
-          <div style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;font-family:'DM Sans',sans-serif;">Total pendiente</div>
-          <div style="font-size:16px;font-weight:700;color:#f4f0ea;font-family:'DM Sans',sans-serif;">$46.500</div>
-        </div>
-        <div style="background:#3a4e3d;border-radius:10px;padding:11px 12px;">
-          <div style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;font-family:'DM Sans',sans-serif;">Cantidad</div>
-          <div style="font-size:16px;font-weight:700;color:#f4f0ea;font-family:'DM Sans',sans-serif;">20</div>
-        </div>
-      </div>
-      <div style="display:flex;gap:5px;margin-bottom:10px;flex-wrap:wrap;">
-        <div style="padding:5px 12px;border-radius:20px;background:#3a4e3d;color:#fff;font-size:11px;font-weight:600;font-family:'DM Sans',sans-serif;">Todos</div>
-        <div style="padding:5px 12px;border-radius:20px;background:#fff;border:1px solid #e0dbd6;color:#888;font-size:11px;font-family:'DM Sans',sans-serif;">Esta semana</div>
-        <div style="padding:5px 12px;border-radius:20px;background:#fff;border:1px solid #e0dbd6;color:#888;font-size:11px;font-family:'DM Sans',sans-serif;">Este mes</div>
-        <div style="padding:5px 12px;border-radius:20px;background:#fff;border:1px solid #e0dbd6;color:#888;font-size:11px;font-family:'DM Sans',sans-serif;">+30 días</div>
-      </div>
-      <div style="background:#fff;border-radius:8px;padding:7px 12px;display:flex;align-items:center;gap:6px;border:1px solid #e8e3de;margin-bottom:10px;">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <span style="font-size:12px;color:#ccc;font-family:'DM Sans',sans-serif;">Nombre, teléfono o N° ticket...</span>
-      </div>
-      <div style="background:#fff;border-radius:10px;padding:12px 14px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:13px;font-weight:700;color:#2d2a26;font-family:'DM Sans',sans-serif;">Claudia Franco</div>
-            <div style="font-size:10px;color:#aaa;margin-top:2px;font-family:'DM Sans',sans-serif;">11 2345-6789 · V-0050 · 15-may</div>
-          </div>
-          <div style="font-size:13px;font-weight:700;color:#b09088;flex-shrink:0;font-family:'DM Sans',sans-serif;">$1.500</div>
-          <div style="display:flex;gap:5px;flex-shrink:0;">
-            <button style="padding:5px 10px;border-radius:6px;border:none;background:#3a4e3d;color:#fff;font-size:11px;font-weight:600;cursor:default;font-family:'DM Sans',sans-serif;">Cobrar</button>
-            <button style="padding:5px 10px;border-radius:6px;border:none;background:#25d366;color:#fff;font-size:11px;font-weight:600;cursor:default;font-family:'DM Sans',sans-serif;">WA</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="section"><div class="sec-title">Cómo se usa</div><div class="steps">
-    <div class="step"><div class="step-left"><div class="step-num">1</div><div class="step-line"></div></div><div class="step-text">Usá los filtros <strong>Esta semana · Este mes · +30 días</strong> para ordenar por urgencia, o buscá por nombre, teléfono o número de ticket.</div></div>
-    <div class="step"><div class="step-left"><div class="step-num">2</div><div class="step-line"></div></div><div class="step-text">Si el cliente está en camino, tocá el botón <strong>WA</strong> (verde) para enviarle un mensaje avisando que tiene un pago pendiente.</div></div>
-    <div class="step"><div class="step-left"><div class="step-num">3</div><div class="step-line"></div></div><div class="step-text">Cuando el cliente paga, tocá <strong>Cobrar</strong>, elegí el medio de pago y confirmá el monto.</div></div>
-    <div class="step"><div class="step-left"><div class="step-num">4</div><div class="step-line"></div></div><div class="step-text">El pedido pasa a <strong>Cobrado</strong> y el ingreso se suma automáticamente a la caja del turno.</div></div>
-  </div></div>
-  <div class="tip"><div class="tip-dot"></div><div class="tip-text"><strong>+30 días</strong> muestra los pedidos que llevan más de un mes sin cobrar. Es útil para hacer seguimiento de deudas viejas.</div></div>
-</div>
-
-<!-- 05 · Retiro y Depósito -->
-<div class="caj-section">
-  <div class="caj-step-header"><div class="caj-num">05</div><div class="caj-title">Retiro y Depósito</div></div>
-  <div class="caj-screen">
-    <div style="background:#f4f0ea;padding:14px 16px;">
-      <div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;font-weight:600;font-family:'DM Sans',sans-serif;">¿Motivo del retiro?</div>
-      <div style="display:flex;flex-direction:column;gap:8px;">
-        <div style="background:#fff;border-radius:10px;padding:12px 14px;border:1px solid #e0dbd6;">
-          <div style="font-size:12px;font-weight:600;color:#2d2a26;margin-bottom:3px;font-family:'DM Sans',sans-serif;">Pago a proveedor</div>
-          <div style="font-size:11px;color:#aaa;font-family:'DM Sans',sans-serif;">Ej: pagás la factura de la panadería en efectivo</div>
-        </div>
-        <div style="background:#fff;border-radius:10px;padding:12px 14px;border:1px solid #e0dbd6;">
-          <div style="font-size:12px;font-weight:600;color:#2d2a26;margin-bottom:3px;font-family:'DM Sans',sans-serif;">Compra de insumos</div>
-          <div style="font-size:11px;color:#aaa;font-family:'DM Sans',sans-serif;">Ej: comprás papel aluminio, bolsas, materiales</div>
-        </div>
-        <div style="background:#3a4e3d;border-radius:10px;padding:12px 14px;">
-          <div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:3px;font-family:'DM Sans',sans-serif;">Retiro por cierre</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.65);font-family:'DM Sans',sans-serif;">Entregás el efectivo del turno al dueño</div>
-        </div>
-        <div style="background:#fff;border-radius:10px;padding:12px 14px;border:1px solid #e0dbd6;">
-          <div style="font-size:12px;font-weight:600;color:#2d2a26;margin-bottom:3px;font-family:'DM Sans',sans-serif;">Otros</div>
-          <div style="font-size:11px;color:#aaa;font-family:'DM Sans',sans-serif;">Cualquier otro egreso, describilo en la observación</div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="section"><div class="sec-title">Retiro — cómo se usa</div><div class="steps">
-    <div class="step"><div class="step-left"><div class="step-num">1</div><div class="step-line"></div></div><div class="step-text">Tocá <strong>Retiro</strong> en la barra de abajo y elegí el motivo que corresponda.</div></div>
-    <div class="step"><div class="step-left"><div class="step-num">2</div><div class="step-line"></div></div><div class="step-text">Ingresá el monto. Si querés agregar una nota, usá el campo de observación.</div></div>
-    <div class="step"><div class="step-left"><div class="step-num">3</div><div class="step-line"></div></div><div class="step-text">Confirmá. El retiro aparece en la lista y se descuenta del saldo de caja.</div></div>
-  </div></div>
-  <div class="tip caj-tip-alert"><div class="tip-dot"></div><div class="tip-text">Usá <strong>Retiro por cierre</strong> solo cuando entregás el efectivo al dueño al final del día. Ese dinero pasa automáticamente a la caja general del negocio.</div></div>
-  <div class="section" style="margin-top:28px"><div class="sec-title">Depósito — cómo se usa</div><div class="steps">
-    <div class="step"><div class="step-left"><div class="step-num">1</div><div class="step-line"></div></div><div class="step-text">Tocá <strong>Depósito</strong> en la barra de abajo.</div></div>
-    <div class="step"><div class="step-left"><div class="step-num">2</div><div class="step-line"></div></div><div class="step-text">Ingresá el monto y una observación que explique de dónde viene ese dinero.</div></div>
-    <div class="step"><div class="step-left"><div class="step-num">3</div><div class="step-line"></div></div><div class="step-text">Confirmá. El depósito suma al saldo de caja del turno.</div></div>
-  </div></div>
-  <div class="tip" style="margin-top:10px"><div class="tip-dot"></div><div class="tip-text">Usá Depósito cuando entra plata que no es una venta. Ejemplos: <strong>cambio inicial del día</strong>, devolución de un adelanto, cualquier ingreso de efectivo que no viene de una venta al cliente.</div></div>
-</div>
-
-<!-- 06 · Facturas -->
-<div class="caj-section">
-  <div class="caj-step-header"><div class="caj-num">06</div><div class="caj-title">Facturas</div></div>
-  <div class="caj-screen">
-    <div style="background:#fff;">
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:13px 16px;border-bottom:1px solid #f5f0ec;">
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:12px;font-weight:600;color:#2d2a26;font-family:'DM Sans',sans-serif;">Venta caja</div>
-          <div style="font-size:11px;color:#aaa;font-family:'DM Sans',sans-serif;">V-0062 · EFECTIVO</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-          <div style="font-size:13px;font-weight:700;color:#3a4e3d;font-family:'DM Sans',sans-serif;">+$2.500</div>
-          <div style="width:72px;text-align:right;"><button style="font-size:10px;padding:4px 9px;border-radius:5px;border:1px solid #b09088;background:#fff;color:#b09088;cursor:default;white-space:nowrap;font-family:'DM Sans',sans-serif;">Facturar</button></div>
-        </div>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:13px 16px;border-bottom:1px solid #f5f0ec;">
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:12px;font-weight:600;color:#2d2a26;font-family:'DM Sans',sans-serif;">Venta caja</div>
-          <div style="font-size:11px;color:#aaa;font-family:'DM Sans',sans-serif;">V-0061 · MP</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-          <div style="font-size:13px;font-weight:700;color:#3a4e3d;font-family:'DM Sans',sans-serif;">+$1.500</div>
-          <div style="width:72px;text-align:right;"><span style="font-size:16px;color:#3a4e3d;font-weight:700;">✓</span></div>
-        </div>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:13px 16px;">
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:12px;font-weight:600;color:#2d2a26;font-family:'DM Sans',sans-serif;">Apertura de turno</div>
-          <div style="font-size:11px;color:#aaa;font-family:'DM Sans',sans-serif;">EFECTIVO</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-          <div style="font-size:13px;font-weight:700;color:#3a4e3d;font-family:'DM Sans',sans-serif;">+$105.000</div>
-          <div style="width:72px;"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="section"><div class="sec-title">Cómo se usa</div><div class="steps">
-    <div class="step"><div class="step-left"><div class="step-num">1</div><div class="step-line"></div></div><div class="step-text">En la lista de movimientos, buscá la venta que querés facturar.</div></div>
-    <div class="step"><div class="step-left"><div class="step-num">2</div><div class="step-line"></div></div><div class="step-text">Tocá el botón <strong>Facturar</strong> que aparece al lado del monto.</div></div>
-    <div class="step"><div class="step-left"><div class="step-num">3</div><div class="step-line"></div></div><div class="step-text">Una vez emitida, el ícono cambia a <strong>✓</strong> — ese movimiento ya no se puede volver a facturar.</div></div>
-    <div class="step"><div class="step-left"><div class="step-num">4</div><div class="step-line"></div></div><div class="step-text">Para ver el historial completo, andá a <strong>Mis Facturas</strong> en el menú lateral.</div></div>
-  </div></div>
-</div>
-
-<!-- 07 · Cierre -->
-<div class="caj-section">
-  <div class="caj-step-header"><div class="caj-num">07</div><div class="caj-title">Cierre</div></div>
-  <div class="caj-screen">
-    <div style="background:#f4f0ea;padding:14px 16px;">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
-        <div style="background:#fff;border-radius:10px;padding:12px 14px;">
-          <div style="font-size:9px;color:#aaa;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;font-family:'DM Sans',sans-serif;">Saldo inicial</div>
-          <div style="font-size:15px;font-weight:700;color:#2d2a26;font-family:'DM Sans',sans-serif;">$105.000</div>
-        </div>
-        <div style="background:#fff;border-radius:10px;padding:12px 14px;">
-          <div style="font-size:9px;color:#aaa;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;font-family:'DM Sans',sans-serif;">Ingresos</div>
-          <div style="font-size:15px;font-weight:700;color:#3a4e3d;font-family:'DM Sans',sans-serif;">+$4.000</div>
-        </div>
-        <div style="background:#fff;border-radius:10px;padding:12px 14px;">
-          <div style="font-size:9px;color:#aaa;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;font-family:'DM Sans',sans-serif;">Egresos</div>
-          <div style="font-size:15px;font-weight:700;color:#b09088;font-family:'DM Sans',sans-serif;">-$5.000</div>
-        </div>
-        <div style="background:#3a4e3d;border-radius:10px;padding:12px 14px;">
-          <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;font-family:'DM Sans',sans-serif;">Saldo final</div>
-          <div style="font-size:15px;font-weight:700;color:#fff;font-family:'DM Sans',sans-serif;">$104.000</div>
-        </div>
-      </div>
-      <div style="display:flex;gap:8px;">
-        <button style="flex:1;padding:11px;border-radius:9px;border:1.5px solid #3a4e3d;background:#fff;color:#3a4e3d;font-size:12px;font-weight:600;cursor:default;font-family:'DM Sans',sans-serif;">Descargar resumen</button>
-        <button style="flex:1;padding:11px;border-radius:9px;border:none;background:#b09088;color:#fff;font-size:12px;font-weight:600;cursor:default;font-family:'DM Sans',sans-serif;">Confirmar cierre</button>
-      </div>
-    </div>
-  </div>
-  <div class="section"><div class="sec-title">Cómo se usa</div><div class="steps">
-    <div class="step"><div class="step-left"><div class="step-num">1</div><div class="step-line"></div></div><div class="step-text">Tocá <strong>Cerrar caja</strong> en la barra de abajo.</div></div>
-    <div class="step"><div class="step-left"><div class="step-num">2</div><div class="step-line"></div></div><div class="step-text">Revisá que el <strong>Saldo final</strong> coincida con el efectivo que tenés en caja.</div></div>
-    <div class="step"><div class="step-left"><div class="step-num">3</div><div class="step-line"></div></div><div class="step-text">Si tenés efectivo para entregar, hacé antes un <strong>Retiro por cierre</strong>.</div></div>
-    <div class="step"><div class="step-left"><div class="step-num">4</div><div class="step-line"></div></div><div class="step-text">Podés <strong>Descargar el resumen</strong> en PDF antes de cerrar sesión.</div></div>
-  </div></div>
-  <div class="tip"><div class="tip-dot"></div><div class="tip-text">El dueño recibe automáticamente un mail con el detalle completo del turno — ventas, egresos, retiros y cualquier modificación realizada.</div></div>
-</div>
+<script>
+(function(){
+  var cajCurrent=0;
+  var cajPanels=document.querySelectorAll('.caj-panel');
+  var cajTabs=document.querySelectorAll('.caj-tab-item');
+  window.cajGoTab=function(n,el){
+    if(n===cajCurrent)return;
+    var dir=n>cajCurrent?1:-1;
+    cajPanels[cajCurrent].classList.add(dir>0?'exit-left':'exit-right');
+    setTimeout(function(){
+      cajPanels[cajCurrent].classList.remove('active','exit-left','exit-right');
+      cajPanels[n].classList.add('active');
+      cajCurrent=n;
+    },200);
+    cajTabs.forEach(function(t){t.classList.remove('active');});
+    el.classList.add('active');
+    el.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+  };
+})();
+</script>
 `,
 };
 
@@ -1105,12 +1055,6 @@ function goAdj(dir) {
   const idx = allIds.indexOf(currentId);
   const newIdx = idx + dir;
   if(newIdx >= 0 && newIdx < allIds.length) goPage(allIds[newIdx]);
-}
-
-function cajStep(n) {
-  document.querySelectorAll('.caj-section').forEach((s,i) => s.classList.toggle('active', i===n));
-  document.querySelectorAll('.caj-pill').forEach((p,i) => p.classList.toggle('active', i===n));
-  window.scrollTo(0,0);
 }
 
 const IS_CAJERO = new URLSearchParams(location.search).get('rol') === 'cajero';
