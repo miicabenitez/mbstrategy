@@ -25528,39 +25528,32 @@ window.cajaCierreConfirmar = async function() {
       var _totalDepositos = (window._cajaMovimientos||[])
         .filter(function(m){ return m.tipo==='ingreso' && m.origen==='deposito_cajero'; })
         .reduce(function(a,m){ return a+(parseFloat(m.monto)||0); },0);
-      fetch('/.netlify/functions/caja-cierre-email',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({
-          negocio: window.currentNegocioNombre||window.currentClientData?.negocioNombre||'',
-          emailDueno: _emailDueno,
-          cajera: window.currentOperadorNombre||'Cajero',
-          apertura: window.turnoActual?.apertura?.creadoEn||'',
-          cierre: new Date().toISOString(),
-          saldoInicial:_saldoBase, ingresos:ingresos, egresos:egresos, saldoFinal:saldo,
-          medios:_medios, productos:Object.values(_productosMap), retiros:_totalRetiros, depositos:_totalDepositos, retirosDetalle:_retirosArr,
-          egresosCaja:_egresosCajaArr, egresosCajaTotal:_totalEgresosCaja,
-          cuentaCorriente:{ total:_totalCta, detalle:_detalleCta }
-        })
-      }).catch(function(){});
+      var _cierrePdfBase64 = null;
+      try {
+        var _respCierre = await fetch('/.netlify/functions/caja-cierre-email',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({
+            negocio: window.currentNegocioNombre||window.currentClientData?.negocioNombre||'',
+            emailDueno: _emailDueno,
+            cajera: window.currentOperadorNombre||'Cajero',
+            apertura: window.turnoActual?.apertura?.creadoEn||'',
+            cierre: new Date().toISOString(),
+            saldoInicial:_saldoBase, ingresos:ingresos, egresos:egresos, saldoFinal:saldo,
+            medios:_medios, productos:Object.values(_productosMap), retiros:_totalRetiros, depositos:_totalDepositos, retirosDetalle:_retirosArr,
+            egresosCaja:_egresosCajaArr, egresosCajaTotal:_totalEgresosCaja,
+            cuentaCorriente:{ total:_totalCta, detalle:_detalleCta }
+          })
+        });
+        if (_respCierre.ok) {
+          var _dataCierre = await _respCierre.json();
+          _cierrePdfBase64 = _dataCierre.pdfBase64 || null;
+        }
+      } catch(_fe) {}
     } catch(_me) {}
-    // Generar PDF del turno
+    // Generar PDF del turno (fallback si falla el servidor)
     var pdfBase64 = await turnoGenerarPDF(operador, ingresos, egresos, saldo, movs);
-    // Enviar por email al admin del negocio
-    if(pdfBase64 && window.currentClientData?.email) {
-      var hoyStr = new Date().toLocaleDateString('es-AR');
-      await fetch('/.netlify/functions/send-factura-email', {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({
-          emailDestino: window.currentClientData.email,
-          pdfBase64: pdfBase64,
-          nombreArchivo: 'cierre-turno-'+operador+'.pdf',
-          asunto: 'Cierre de caja — '+operador+' — '+hoyStr,
-          cuerpo: 'Se adjunta el resumen del turno de '+operador+' del '+hoyStr+'.'
-        })
-      });
-    }
+    if (_cierrePdfBase64) pdfBase64 = _cierrePdfBase64;
     cajaCierreCerrar();
     showToast('Caja cerrada. Se envió el resumen al admin.','success');
     if (window.turnoActual && window.turnoActual.id) {

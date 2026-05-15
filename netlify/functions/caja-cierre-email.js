@@ -331,7 +331,7 @@ exports.handler = async (event) => {
       }]
     });
 
-    return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ ok: true }) };
+    return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ ok: true, pdfBase64: pdfBuffer.toString('base64') }) };
   } catch (e) {
     console.error('Error enviando mail de cierre:', e.message);
     return { statusCode: 500, headers: CORS_HEADERS, body: JSON.stringify({ error: e.message }) };
