@@ -10519,13 +10519,15 @@ window._auditoriaActivarEncurso = async function() {
   _auditoriaRender();
   try {
     const tSnap = await getDocs(query(collection(db,'clientes',uid,'turnos'), where('estado','==','abierto')));
-    const tIds = tSnap.docs.map(d => d.id).filter(Boolean);
+    const tDocs = tSnap.docs.map(d => ({id:d.id,...d.data()}));
+    const tIds = tDocs.map(d => d.id).filter(Boolean);
     if(tIds.length === 0) { _auditoriaRender(); return; }
     const _tIdsSet = new Set(tIds);
+    const _aperturaTs = new Set(tDocs.map(d => d.apertura?.creadoEn).filter(Boolean));
     window._auditoriaUnsub = onSnapshot(
       query(collection(db,'clientes',uid,'libroCaja'), where('cuenta','==','Caja mostrador'), where('eliminado','==',false), orderBy('creadoEn','desc'), limit(500)),
       snap => {
-        window._auditoriaMovsEncurso = snap.docs.map(d=>({id:d.id,...d.data()})).filter(m => _tIdsSet.has(m.turnoId));
+        window._auditoriaMovsEncurso = snap.docs.map(d=>({id:d.id,...d.data()})).filter(m => _tIdsSet.has(m.turnoId) || (m.origen === 'apertura_turno' && _aperturaTs.has(m.creadoEn)));
         if(window._auditoriaFiltro === 'encurso') _auditoriaRender();
       },
       err => console.warn('[auditoriaEncurso]', err)
