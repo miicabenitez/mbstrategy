@@ -10566,7 +10566,7 @@ window._auditoriaRender = function() {
   let totalGeneral = 0;
   movs.forEach(m => {
     if(m.tipo !== 'ingreso') return;
-    if(m.origen === 'apertura_turno') return;
+    if(m.origen === 'apertura_turno' && !_isEncurso) return;
     const v = parseFloat(m.monto)||0;
     const mp = (m.medioPago||'Efectivo');
     const k = mp.startsWith('Tarjeta') ? 'Tarjeta' : (medios[mp]!==undefined ? mp : 'Efectivo');
