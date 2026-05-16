@@ -10542,6 +10542,7 @@ window._auditoriaRender = function() {
   let totalEgresos = 0, egresosCount = 0;
   movs.forEach(m => {
     if(m.tipo !== 'egreso') return;
+    if(m.origen === 'cierre_turno') return;
     totalEgresos += parseFloat(m.monto)||0;
     egresosCount++;
   });
@@ -25838,9 +25839,19 @@ window.cajaCierreConfirmar = async function() {
     if (window.turnoActual && window.turnoActual.id) {
       try {
         var _turnoRef = window._doc(window.db,'clientes',currentClientUID,'turnos',window.turnoActual.id);
+        var _ahoraCierre = new Date().toISOString();
         await window._updateDoc(_turnoRef, {
           estado: 'cerrado',
-          cierre: { monto: saldo, fecha: new Date().toISOString(), creadoEn: new Date().toISOString() }
+          cierre: { monto: saldo, fecha: _ahoraCierre, creadoEn: _ahoraCierre }
+        });
+        var _hoyC = fechaHoyARG(); var _mesC = mesHoyARG(_hoyC);
+        await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'libroCaja'), {
+          uid: currentClientUID, fecha: _hoyC, mes: _mesC,
+          tipo: 'egreso', concepto: 'Cierre de turno',
+          cuenta: 'Caja mostrador', monto: saldo,
+          origen: 'cierre_turno', eliminado: false,
+          creadoEn: _ahoraCierre, creadoPor: operador,
+          turnoId: window.turnoActual.id
         });
       } catch(_ce) {}
       window.turnoActual = null;
