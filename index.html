@@ -10489,6 +10489,7 @@ window._auditoriaTipos = new Set();
 window._auditoriaFiltroMedio = null;
 window._auditoriaUnsub = null;
 window._auditoriaMovsEncurso = null;
+window._auditoriaCajero = null;
 
 window.loadAuditoriaCajero = async function() {
   const root = document.getElementById('auditoria-cajero-root');
@@ -10560,6 +10561,7 @@ window._auditoriaRender = function() {
     else if(window._auditoriaFiltro === 'custom' && window._auditoriaFechaCustom) movs = movs.filter(m => m.fecha === window._auditoriaFechaCustom);
   }
   if(window._auditoriaTipos.size > 0) movs = movs.filter(m => window._auditoriaTipos.has(m.origen));
+  if(window._auditoriaCajero) movs = movs.filter(m => m.creadoPor === window._auditoriaCajero);
 
   // Totales por medio — calculados sobre el período completo, antes del filtro de medio
   const medios = {Efectivo:0,'Mercado Pago':0,Transferencia:0,Tarjeta:0};
@@ -10624,13 +10626,13 @@ window._auditoriaRender = function() {
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
       <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:38px;font-weight:300;color:#f5f0eb;">Caja <em style="font-style:italic;color:#b09088;">mostrador</em></div>
       <div style="display:flex;align-items:center;gap:3px;background:rgba(0,0,0,.2);border-radius:10px;padding:3px;">
-        ${['todo','hoy','ayer'].map(id => `<button onclick="if(window._auditoriaUnsub){window._auditoriaUnsub();window._auditoriaUnsub=null;}window._auditoriaFiltro='${id}';window._auditoriaFechaCustom=null;window._auditoriaFiltroMedio=null;_auditoriaRender()" style="padding:6px 14px;font-size:12px;color:${window._auditoriaFiltro===id?'#f5f0eb':'rgba(255,255,255,.45)'};background:${window._auditoriaFiltro===id?'rgba(255,255,255,.15)':'transparent'};border:none;border-radius:7px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:${window._auditoriaFiltro===id?'600':'400'};white-space:nowrap;">${id==='todo'?'Todo':id.charAt(0).toUpperCase()+id.slice(1)}</button>`).join('')}
+        ${['todo','hoy','ayer'].map(id => `<button onclick="if(window._auditoriaUnsub){window._auditoriaUnsub();window._auditoriaUnsub=null;}window._auditoriaFiltro='${id}';window._auditoriaFechaCustom=null;window._auditoriaFiltroMedio=null;window._auditoriaCajero=null;_auditoriaRender()" style="padding:6px 14px;font-size:12px;color:${window._auditoriaFiltro===id?'#f5f0eb':'rgba(255,255,255,.45)'};background:${window._auditoriaFiltro===id?'rgba(255,255,255,.15)':'transparent'};border:none;border-radius:7px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:${window._auditoriaFiltro===id?'600':'400'};white-space:nowrap;">${id==='todo'?'Todo':id.charAt(0).toUpperCase()+id.slice(1)}</button>`).join('')}
         <button onclick="window._auditoriaFiltro='encurso';window._auditoriaFechaCustom=null;window._auditoriaFiltroMedio=null;_auditoriaActivarEncurso()" style="padding:6px 14px;font-size:12px;display:flex;align-items:center;gap:5px;color:${window._auditoriaFiltro==='encurso'?'#f5f0eb':'rgba(255,255,255,.45)'};background:${window._auditoriaFiltro==='encurso'?'rgba(255,255,255,.15)':'transparent'};border:none;border-radius:7px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:${window._auditoriaFiltro==='encurso'?'600':'400'};white-space:nowrap;"><span style="width:6px;height:6px;border-radius:50%;background:#7dd98a;display:inline-block;${window._auditoriaFiltro==='encurso'?'animation:pulse 1.2s infinite;':'opacity:.5;'}"></span>En curso</button>
         <div style="width:1px;height:14px;background:rgba(255,255,255,.12);margin:0 2px;"></div>
         <label style="display:flex;align-items:center;padding:6px 10px;border-radius:7px;cursor:pointer;color:${window._auditoriaFiltro==='custom'?'#f5f0eb':'rgba(255,255,255,.4)'};background:${window._auditoriaFiltro==='custom'?'rgba(255,255,255,.15)':'transparent'};">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
           ${window._auditoriaFiltro==='custom' && window._auditoriaFechaCustom ? `<span style="margin-left:6px;font-size:12px;color:#b09088;font-weight:600;">${window._auditoriaFechaCustom.split('-').reverse().join('/')}</span>` : ''}
-          <input type="date" onchange="if(window._auditoriaUnsub){window._auditoriaUnsub();window._auditoriaUnsub=null;}window._auditoriaFiltro='custom';window._auditoriaFechaCustom=this.value;window._auditoriaFiltroMedio=null;_auditoriaRender()" style="position:absolute;opacity:0;width:0;height:0;">
+          <input type="date" onchange="if(window._auditoriaUnsub){window._auditoriaUnsub();window._auditoriaUnsub=null;}window._auditoriaFiltro='custom';window._auditoriaFechaCustom=this.value;window._auditoriaFiltroMedio=null;window._auditoriaCajero=null;_auditoriaRender()" style="position:absolute;opacity:0;width:0;height:0;">
         </label>
       </div>
     </div>
@@ -10678,6 +10680,15 @@ window._auditoriaRender = function() {
         : `if(window._auditoriaTipos.has('${id}')){window._auditoriaTipos.delete('${id}');}else{window._auditoriaTipos.add('${id}');}_auditoriaRender()`;
       return `<button onclick="${onclick}" style="padding:5px 14px;border-radius:20px;border:0.5px solid ${isActive?'#2d3d30':'#e0dbd6'};background:${isActive?'#2d3d30':'#fff'};color:${isActive?'#f5f0eb':'#888'};font-size:12px;font-weight:${isActive?'600':'400'};cursor:pointer;font-family:'DM Sans',sans-serif;">${label}</button>`;
     }).join('')}
+    ${(() => {
+      const cajerosList = [...new Set(movs.map(m => m.creadoPor).filter(Boolean))];
+      if(cajerosList.length <= 1) return '';
+      return `<div style="width:1px;height:20px;background:#e0dbd6;margin:0 4px;align-self:center;"></div>`
+        + cajerosList.map(nombre => {
+          const isActive = window._auditoriaCajero === nombre;
+          return `<button onclick="window._auditoriaCajero=window._auditoriaCajero==='${nombre}'?null:'${nombre}';_auditoriaRender()" style="padding:5px 14px;border-radius:20px;border:0.5px solid ${isActive?'#2d3d30':'#e0dbd6'};background:${isActive?'#2d3d30':'#fff'};color:${isActive?'#f5f0eb':'#888'};font-size:12px;font-weight:${isActive?'600':'400'};cursor:pointer;font-family:'DM Sans',sans-serif;">${nombre}</button>`;
+        }).join('');
+    })()}
   </div>
   <div style="background:#fff;">
     ${rows || '<div style="padding:40px;text-align:center;color:#aaa;font-size:13px;">Sin movimientos para este período</div>'}
