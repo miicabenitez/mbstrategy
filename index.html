@@ -10924,7 +10924,7 @@ window.cajaFiltrarCuenta = function(nombre, _el) {
   const filtrados = (_cajaCuentaFiltro
     ? movs.filter(m => m.cuenta === _cajaCuentaFiltro || m.cuentaDesde === _cajaCuentaFiltro || m.cuentaHacia === _cajaCuentaFiltro)
     : [...movs]).sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')||((a.creadoEn||'').localeCompare(b.creadoEn||'')));
-  // Re-render solo chips y tabla (KPIs no cambian)
+  // Re-render chips, KPIs y tabla según cuenta seleccionada
   const cuentasContainer = document.getElementById('caja-chips');
   if(cuentasContainer) {
     cuentasContainer.querySelectorAll('.caja-chip').forEach(ch => {
@@ -10944,6 +10944,7 @@ window.cajaFiltrarCuenta = function(nombre, _el) {
       if(dot) dot.style.background = sel ? 'white' : (dot.dataset.color || '#888');
     });
   }
+  renderCajaKPIs(filtrados);
   renderCajaTable(filtrados);
 };
 
