@@ -10486,6 +10486,8 @@ window._auditoriaFiltro = 'hoy';
 window._auditoriaFechaCustom = null;
 window._auditoriaTipos = new Set();
 window._auditoriaFiltroMedio = null;
+window._auditoriaUnsub = null;
+window._auditoriaMovsEncurso = null;
 
 window.loadAuditoriaCajero = async function() {
   const root = document.getElementById('auditoria-cajero-root');
@@ -10508,22 +10510,52 @@ window.loadAuditoriaCajero = async function() {
   }
 }
 
+window._auditoriaActivarEncurso = async function() {
+  if(window._auditoriaUnsub) { window._auditoriaUnsub(); window._auditoriaUnsub = null; }
+  const root = document.getElementById('auditoria-cajero-root');
+  const uid = currentClientUID;
+  if(!uid) return;
+  window._auditoriaMovsEncurso = [];
+  _auditoriaRender();
+  try {
+    const tSnap = await getDocs(query(collection(db,'clientes',uid,'turnos'), where('estado','==','abierto')));
+    const tIds = tSnap.docs.map(d => d.id).filter(Boolean);
+    if(tIds.length === 0) { _auditoriaRender(); return; }
+    const _tIdsSet = new Set(tIds);
+    window._auditoriaUnsub = onSnapshot(
+      query(collection(db,'clientes',uid,'libroCaja'), where('cuenta','==','Caja mostrador'), where('eliminado','==',false), orderBy('creadoEn','desc'), limit(500)),
+      snap => {
+        window._auditoriaMovsEncurso = snap.docs.map(d=>({id:d.id,...d.data()})).filter(m => _tIdsSet.has(m.turnoId));
+        if(window._auditoriaFiltro === 'encurso') _auditoriaRender();
+      },
+      err => console.warn('[auditoriaEncurso]', err)
+    );
+  } catch(e) {
+    if(root) root.innerHTML = '<div style="padding:32px;text-align:center;color:#993C1D;font-family:\'DM Sans\',sans-serif;font-size:13px;">Error: '+(e?.message||e)+'</div>';
+  }
+};
+
 function _auditoriaFechaHoyARG() {
   return new Date().toLocaleDateString('es-AR',{timeZone:'America/Argentina/Buenos_Aires',year:'numeric',month:'2-digit',day:'2-digit'}).split('/').reverse().join('-');
 }
 
 window._auditoriaRender = function() {
   const root = document.getElementById('auditoria-cajero-root');
-  if(!root || !window._auditoriaMovs) return;
+  const _isEncurso = window._auditoriaFiltro === 'encurso';
+  if(!root) return;
+  if(_isEncurso && !window._auditoriaMovsEncurso) return;
+  if(!_isEncurso && !window._auditoriaMovs) return;
   const hoy = _auditoriaFechaHoyARG();
   const ayer = new Date(new Date().toLocaleDateString('en-CA',{timeZone:'America/Argentina/Buenos_Aires'}));
   ayer.setDate(ayer.getDate()-1);
   const ayerStr = ayer.toISOString().slice(0,10);
 
-  let movs = window._auditoriaMovs;
-  if(window._auditoriaFiltro === 'hoy') movs = movs.filter(m => m.fecha === hoy);
-  else if(window._auditoriaFiltro === 'ayer') movs = movs.filter(m => m.fecha === ayerStr);
-  else if(window._auditoriaFiltro === 'custom' && window._auditoriaFechaCustom) movs = movs.filter(m => m.fecha === window._auditoriaFechaCustom);
+  let movs = _isEncurso ? (window._auditoriaMovsEncurso || []) : window._auditoriaMovs;
+  if(!_isEncurso) {
+    if(window._auditoriaFiltro === 'hoy') movs = movs.filter(m => m.fecha === hoy);
+    else if(window._auditoriaFiltro === 'ayer') movs = movs.filter(m => m.fecha === ayerStr);
+    else if(window._auditoriaFiltro === 'custom' && window._auditoriaFechaCustom) movs = movs.filter(m => m.fecha === window._auditoriaFechaCustom);
+  }
   if(window._auditoriaTipos.size > 0) movs = movs.filter(m => window._auditoriaTipos.has(m.origen));
 
   // Totales por medio — calculados sobre el período completo, antes del filtro de medio
@@ -10589,12 +10621,13 @@ window._auditoriaRender = function() {
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
       <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:38px;font-weight:300;color:#f5f0eb;">Caja <em style="font-style:italic;color:#b09088;">mostrador</em></div>
       <div style="display:flex;align-items:center;gap:3px;background:rgba(0,0,0,.2);border-radius:10px;padding:3px;">
-        ${['todo','hoy','ayer'].map(id => `<button onclick="window._auditoriaFiltro='${id}';window._auditoriaFechaCustom=null;window._auditoriaFiltroMedio=null;_auditoriaRender()" style="padding:6px 14px;font-size:12px;color:${window._auditoriaFiltro===id?'#f5f0eb':'rgba(255,255,255,.45)'};background:${window._auditoriaFiltro===id?'rgba(255,255,255,.15)':'transparent'};border:none;border-radius:7px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:${window._auditoriaFiltro===id?'600':'400'};white-space:nowrap;">${id==='todo'?'Todo':id.charAt(0).toUpperCase()+id.slice(1)}</button>`).join('')}
+        ${['todo','hoy','ayer'].map(id => `<button onclick="if(window._auditoriaUnsub){window._auditoriaUnsub();window._auditoriaUnsub=null;}window._auditoriaFiltro='${id}';window._auditoriaFechaCustom=null;window._auditoriaFiltroMedio=null;_auditoriaRender()" style="padding:6px 14px;font-size:12px;color:${window._auditoriaFiltro===id?'#f5f0eb':'rgba(255,255,255,.45)'};background:${window._auditoriaFiltro===id?'rgba(255,255,255,.15)':'transparent'};border:none;border-radius:7px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:${window._auditoriaFiltro===id?'600':'400'};white-space:nowrap;">${id==='todo'?'Todo':id.charAt(0).toUpperCase()+id.slice(1)}</button>`).join('')}
+        <button onclick="window._auditoriaFiltro='encurso';window._auditoriaFechaCustom=null;window._auditoriaFiltroMedio=null;_auditoriaActivarEncurso()" style="padding:6px 14px;font-size:12px;display:flex;align-items:center;gap:5px;color:${window._auditoriaFiltro==='encurso'?'#f5f0eb':'rgba(255,255,255,.45)'};background:${window._auditoriaFiltro==='encurso'?'rgba(255,255,255,.15)':'transparent'};border:none;border-radius:7px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:${window._auditoriaFiltro==='encurso'?'600':'400'};white-space:nowrap;"><span style="width:6px;height:6px;border-radius:50%;background:#7dd98a;display:inline-block;${window._auditoriaFiltro==='encurso'?'animation:pulse 1.2s infinite;':'opacity:.5;'}"></span>En curso</button>
         <div style="width:1px;height:14px;background:rgba(255,255,255,.12);margin:0 2px;"></div>
         <label style="display:flex;align-items:center;padding:6px 10px;border-radius:7px;cursor:pointer;color:${window._auditoriaFiltro==='custom'?'#f5f0eb':'rgba(255,255,255,.4)'};background:${window._auditoriaFiltro==='custom'?'rgba(255,255,255,.15)':'transparent'};">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
           ${window._auditoriaFiltro==='custom' && window._auditoriaFechaCustom ? `<span style="margin-left:6px;font-size:12px;color:#b09088;font-weight:600;">${window._auditoriaFechaCustom.split('-').reverse().join('/')}</span>` : ''}
-          <input type="date" onchange="window._auditoriaFiltro='custom';window._auditoriaFechaCustom=this.value;window._auditoriaFiltroMedio=null;_auditoriaRender()" style="position:absolute;opacity:0;width:0;height:0;">
+          <input type="date" onchange="if(window._auditoriaUnsub){window._auditoriaUnsub();window._auditoriaUnsub=null;}window._auditoriaFiltro='custom';window._auditoriaFechaCustom=this.value;window._auditoriaFiltroMedio=null;_auditoriaRender()" style="position:absolute;opacity:0;width:0;height:0;">
         </label>
       </div>
     </div>
