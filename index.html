@@ -2376,6 +2376,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
               <div style="font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#b09088;">Monto inicial declarado</div>
               <input id="cajero-apertura-monto" type="number" min="0" step="0.01" placeholder="0"
                 style="border:1.5px solid #ddd;border-radius:10px;padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:26px;font-weight:600;color:#1e2a1c;font-variant-numeric:tabular-nums;outline:none;width:100%;box-sizing:border-box;" />
+              <div id="cajero-apertura-msg" style="font-size:11px;color:#888;margin-top:4px;font-family:'DM Sans',sans-serif;"></div>
             </div>
           </div>
           <div style="padding:0 24px 24px;display:flex;gap:8px;">
@@ -25985,7 +25986,18 @@ window.cajaAperturaShow = async function() {
     console.log('[cajaAperturaShow] saldo calculado:', _saldo);
     if(_saldoEl) _saldoEl.textContent = '$'+Math.round(_saldo).toLocaleString('es-AR');
     console.log('[cajaAperturaShow] textContent seteado:', _saldoEl?.textContent);
-    if(_montoInput) _montoInput.value = Math.max(0, Math.round(_saldo));
+    if(_montoInput) {
+      const _esPrimerTurno = !_ultimaApertura;
+      _montoInput.value = Math.max(0, Math.round(_saldo));
+      _montoInput.readOnly = !_esPrimerTurno;
+      _montoInput.style.background = _esPrimerTurno ? '' : '#f4f0ea';
+      _montoInput.style.color = _esPrimerTurno ? '' : '#3a4e3d';
+      _montoInput.style.cursor = _esPrimerTurno ? '' : 'default';
+    }
+    const _msgEl = document.getElementById('cajero-apertura-msg');
+    if(_msgEl) _msgEl.textContent = !_ultimaApertura
+      ? 'Ingresá el efectivo inicial de caja'
+      : 'Monto fijado por el cierre del turno anterior';
   } catch(_e) { console.log('[cajaAperturaShow] ERROR:', _e); if(_saldoEl) _saldoEl.textContent = ''; }
   _ov.style.display = 'flex';
 };
