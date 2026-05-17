@@ -26264,7 +26264,9 @@ let _editPDFBase64 = '';
 
 window.editContent = async function(id) {
   try {
-    const snap = await getDocs(collection(db,'clientes',currentClientId,'contenido'));
+    var fsi = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
+    var fdb = window.db || fsi.getFirestore();
+    const snap = await fsi.getDocs(fsi.collection(fdb,'clientes',currentClientId,'contenido'));
     let c = null;
     snap.forEach(d => { if(d.id === id) c = {id:d.id,...d.data()}; });
     if(!c) return;
@@ -26315,12 +26317,16 @@ window.saveEditContent = async function() {
     if(_editPDFBase64) descripcion = _editPDFBase64;
     else {
       // Keep existing
-      const snap = await getDocs(collection(db,'clientes',currentClientId,'contenido'));
+      var fsi2 = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
+      var fdb2 = window.db || fsi2.getFirestore();
+      const snap = await fsi2.getDocs(fsi2.collection(fdb2,'clientes',currentClientId,'contenido'));
       snap.forEach(d => { if(d.id === id) descripcion = d.data().descripcion||''; });
     }
   }
   try {
-    await updateDoc(doc(db,'clientes',currentClientId,'contenido',id), {
+    var fsi = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
+    var fdb = window.db || fsi.getFirestore();
+    await fsi.updateDoc(fsi.doc(fdb,'clientes',currentClientId,'contenido',id), {
       semana: parseInt(document.getElementById('ec-cont-semana').value),
       titulo, tipo, descripcion
     });
@@ -26341,7 +26347,9 @@ window.abrirPDFBase64 = async function(contentId) {
       // Fallback: buscar en Firestore
       const clientId = currentClientUID || currentClientId;
       if(!clientId) { showToast('No se pudo identificar el cliente.', 'error'); return; }
-      const snap = await getDocs(collection(db,'clientes',clientId,'contenido'));
+      var fsi = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
+      var fdb = window.db || fsi.getFirestore();
+      const snap = await fsi.getDocs(fsi.collection(fdb,'clientes',clientId,'contenido'));
       snap.forEach(d => { if(d.id === contentId) base64 = d.data().descripcion; });
     }
     if(!base64 || !base64.startsWith('data:application/pdf')) {
@@ -26597,12 +26605,14 @@ window.createMcReunion = async function() {
   const notas = document.getElementById('mcr-notas').value;
 
   try {
+    var fsi = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
+    var fdb = window.db || fsi.getFirestore();
     if (_mcrTipo === 'cliente') {
       // Guardar en el doc del cliente
       const sel = document.getElementById('mcr-cliente-sel');
       const clienteId = sel?.value;
       if (!clienteId) { showToast('Seleccioná un cliente', 'info'); return; }
-      await updateDoc(doc(db, 'clientes', currentClientUID, 'misClientes', clienteId), {
+      await fsi.updateDoc(fsi.doc(fdb, 'clientes', currentClientUID, 'misClientes', clienteId), {
         proximaReunion: { fecha, hora, notas },
         ultimoContacto: new Date().toISOString()
       });
@@ -26615,7 +26625,7 @@ window.createMcReunion = async function() {
       const contexto = document.getElementById('mcr-ext-contexto').value.trim();
       const tel      = document.getElementById('mcr-ext-tel').value.trim();
       if (!nombre) { showToast('Ingresá un nombre', 'info'); return; }
-      await addDoc(collection(db, 'clientes', currentClientUID, 'reunionesExternas'), {
+      await fsi.addDoc(fsi.collection(fdb, 'clientes', currentClientUID, 'reunionesExternas'), {
         nombre, contexto, tel, fecha, hora, notas, creadoEn: new Date().toISOString()
       });
     }
@@ -26633,7 +26643,9 @@ window.createMcReunion = async function() {
 async function loadMcReunionesExternas() {
   if (!currentClientUID) return;
   try {
-    const snap = await getDocs(collection(db, 'clientes', currentClientUID, 'reunionesExternas'));
+    var fsi = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
+    var fdb = window.db || fsi.getFirestore();
+    const snap = await fsi.getDocs(fsi.collection(fdb, 'clientes', currentClientUID, 'reunionesExternas'));
     const hoy = new Date().toISOString().split('T')[0];
     window._mcReunionesExternas = [];
     snap.forEach(d => {
@@ -27129,7 +27141,9 @@ async function embiCallAPI(userMsg){
 async function embiSaveReport(tipo,modulo,descripcion,userMsg){
   if(!currentClientUID)return;
   try{
-    await addDoc(collection(db,'embiReports'),{
+    var fsi = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
+    var fdb = window.db || fsi.getFirestore();
+    await fsi.addDoc(fsi.collection(fdb,'embiReports'),{
       tipo,modulo,descripcion,mensajeOriginal:userMsg,
       cliente:window.currentClientData?.nombre||'Cliente',
       clienteId:currentClientUID||'',
@@ -27509,12 +27523,14 @@ function embiToggle(){
       if(window.currentClientUID){
         (async()=>{
           try{
-            const _nSnap=await getDocs(collection(db,'clientes',window.currentClientUID,'embiNotificaciones'));
+            var fsi = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
+            var fdb = window.db || fsi.getFirestore();
+            const _nSnap=await fsi.getDocs(fsi.collection(fdb,'clientes',window.currentClientUID,'embiNotificaciones'));
             const _nPend=[];
             _nSnap.forEach(d=>{if(!d.data().leido)_nPend.push({id:d.id,...d.data()});});
             if(_nPend.length>0){
               _nPend.forEach(n=>embiAddMsg('bot','📋 '+n.mensaje));
-              await Promise.all(_nPend.map(n=>updateDoc(doc(db,'clientes',window.currentClientUID,'embiNotificaciones',n.id),{leido:true})));
+              await Promise.all(_nPend.map(n=>fsi.updateDoc(fsi.doc(fdb,'clientes',window.currentClientUID,'embiNotificaciones',n.id),{leido:true})));
             }
           }catch(e){}
         })();
