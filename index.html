@@ -2048,9 +2048,8 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
             <label style="font-size:12px;color:#666;display:block;margin-bottom:4px;">Rol</label>
             <select id="usr-rol" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;margin-bottom:20px;font-family:'DM Sans',sans-serif;">
               <option value="cajero">Cajero</option>
-              <option value="compras">Compras</option>
+              <option value="compras">Compras + Stock</option>
               <option value="comercial">Comercial</option>
-              <option value="vendedor">Vendedor — Caja + Comercial</option>
             </select>
             <div id="usr-modal-error" style="display:none;color:#e53e3e;font-size:12px;margin-bottom:12px;"></div>
             <div style="display:flex;gap:8px;justify-content:flex-end;">
@@ -4887,9 +4886,8 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
             <label style="font-size:12px;color:#666;display:block;margin-bottom:4px;">Rol</label>
             <select id="equipo-rol" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;margin-bottom:20px;font-family:'DM Sans',sans-serif;">
               <option value="cajero">Cajero</option>
-              <option value="compras">Compras</option>
+              <option value="compras">Compras + Stock</option>
               <option value="comercial">Comercial</option>
-              <option value="vendedor">Vendedor — Caja + Comercial</option>
             </select>
             <div id="equipo-modal-error" style="display:none;color:#e53e3e;font-size:12px;margin-bottom:12px;"></div>
             <div style="display:flex;gap:8px;justify-content:flex-end;">
@@ -25152,7 +25150,7 @@ window.loadEquipoModule = async function() {
 </div>`;
       return;
     }
-    const ROL_LABEL = {cajero:'Cajero',compras:'Compras',comercial:'Comercial',admin:'Admin'};
+    const ROL_LABEL = {cajero:'Cajero',compras:'Compras + Stock',comercial:'Comercial',admin:'Admin'};
     const filas = ops.map(o => {
       const activo = o.activo !== false;
       const badge = activo
@@ -25295,7 +25293,7 @@ window.loadAdminUsuarios = async function() {
       cont.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-l);font-size:13px;">No hay operadores todavía.<br><span style="font-size:12px;">Usá "+ Nuevo usuario" para agregar uno.</span></div>';
       return;
     }
-    const ROL_LABEL = {cajero:'Cajero',compras:'Compras',comercial:'Comercial',admin:'Admin'};
+    const ROL_LABEL = {cajero:'Cajero',compras:'Compras + Stock',comercial:'Comercial',admin:'Admin'};
     const filas = ops.map(o => {
       const activo = o.activo !== false;
       const badge = activo
