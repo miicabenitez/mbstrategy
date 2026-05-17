@@ -6775,7 +6775,7 @@ window.showClientUI = async function(email, clientData) {
 
       // Mostrar módulo inicial inmediatamente, sin esperar los awaits de datos
       const _savedMod0 = (() => { try { return localStorage.getItem('mbst_lastmod'); } catch(e) { return null; } })();
-      const _modToShow0 = window.currentRol === 'cajero' ? 'finanzas' : (_savedMod0 || 'inicio');
+      const _modToShow0 = window.currentRol === 'cajero' ? 'finanzas' : window.currentRol === 'comercial' ? 'comercial' : (_savedMod0 || 'inicio');
       const _modBtn0 = document.querySelector('#cNav .nt[onclick*="\''+_modToShow0+'\'"]') || document.querySelector('#cNav .nt');
       getDocs(collection(db,'clientes',currentClientUID,'tareas')).then(function(_tSnap){
         window._clientTareas=[];
@@ -24826,6 +24826,7 @@ window.backToAdmin = function() {
 // Navegación cliente — 5 módulos en topbar
 window.showClientMod = function(mod, btn) {
   if(window.currentRol==='cajero'){var _p=['finanzas','comercial','ventas'];if(!_p.includes(mod))return;}
+  if(window.currentRol==='comercial'){if(!['comercial'].includes(mod))return;}
   // Persistir módulo activo para restaurar en recarga
   try { localStorage.setItem('mbst_lastmod', mod); } catch(e) {}
   // Activar tab en topbar
@@ -24942,6 +24943,7 @@ window.bottomNavGestion = function(btn) {
 
 window.showCTab = function(tab, btn) {
   if(window.currentRol==='cajero'){var _p=['caja','contabilidad','mclientes','cobranzas','mis-facturas'];if(!_p.includes(tab))return;}
+  if(window.currentRol==='comercial'){if(!['mclientes','cobranzas','presupuestos','catalogo'].includes(tab))return;}
   document.querySelectorAll('[id^="ct-"]').forEach(el => el.style.display = 'none');
   const el = document.getElementById('ct-' + tab);
   if(el) el.style.display = 'block';
@@ -26256,6 +26258,7 @@ window._aplicarRestriccionesRol = function() {
     });
   }
   if(window.currentRol === 'cajero') document.body.classList.add('es-cajero');
+  if(window.currentRol === 'comercial') document.body.classList.add('es-comercial');
 };
 
 // Abre un PDF guardado como Base64 en nueva pestaña
@@ -27634,6 +27637,7 @@ function navTransition(callback){
 }
 window.sidebarNav=function(mod,sub){
   if(window.currentRol==='cajero'){var _p=['finanzas','comercial','ventas'];if(!_p.includes(mod))return;}
+  if(window.currentRol==='comercial'){if(!['comercial'].includes(mod))return;}
   navTransition(function(){
     try{localStorage.setItem('mbst_sb_mod',mod);localStorage.setItem('mbst_sb_sub',sub||'');}catch(e){}
     sidebarSetActive(mod,sub);
