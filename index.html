@@ -26805,7 +26805,9 @@ window.deleteProducto = function(id) {
     var uid = window.currentClientUID;
     if(!uid) return;
     try {
-      await updateDoc(doc(db,'clientes',uid,'productos',id), {eliminado:true, eliminadoEn:new Date().toISOString()});
+      var fsi = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
+      var fdb = window.db || fsi.getFirestore();
+      await fsi.updateDoc(fsi.doc(fdb,'clientes',uid,'productos',id), {eliminado:true, eliminadoEn:new Date().toISOString()});
       await loadProductos();
     } catch(e){ showToast('Error: '+e.message, 'error'); }
   }, 'Eliminar producto');
