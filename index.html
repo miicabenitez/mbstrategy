@@ -3559,8 +3559,24 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
       <div id="ct-presupuestos" style="display:none;">
 
         <!-- Header banner con KPIs -->
-        <div style="background:linear-gradient(135deg,#1e2e22 0%,#2d3d30 30%,#3d5242 60%,#2d3d30 100%);border-radius:16px;padding:20px 24px 22px;margin-bottom:14px;color:#fff;position:relative;overflow:hidden;">
-          <div style="font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:300;margin-bottom:16px;">Mis <em style="font-style:italic;color:#b09088;">presupuestos</em></div>
+        <div style="background:linear-gradient(135deg,#1e2e22 0%,#2d3d30 30%,#3d5242 60%,#2d3d30 100%);border-radius:16px;padding:20px 24px 22px;margin-bottom:14px;color:#fff;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:300;">Mis <em style="font-style:italic;color:#b09088;">presupuestos</em></div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <button onclick="openModal('newClientPresupModal')" style="width:34px;height:34px;border-radius:50%;background:#b09088;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;" title="Nuevo presupuesto">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#f5f0eb" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </button>
+              <div style="position:relative;">
+                <button onclick="toggleDropdown('pre-dl-menu',event)" style="width:34px;height:34px;border-radius:50%;background:#b09088;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;" title="Exportar">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#f5f0eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><line x1="20" y1="4" x2="4" y2="4"/><line x1="20" y1="9" x2="4" y2="9"/></svg>
+                </button>
+                <div id="pre-dl-menu" class="cl-dropdown-menu" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:#fff;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.13);min-width:160px;overflow:hidden;z-index:200;">
+                  <button onclick="exportar('presupuestos','pdf')" style="width:100%;background:none;border:none;border-bottom:.5px solid var(--cream-d);padding:11px 16px;text-align:left;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);cursor:pointer;">↓ PDF</button>
+                  <button onclick="exportar('presupuestos','excel')" style="width:100%;background:none;border:none;padding:11px 16px;text-align:left;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);cursor:pointer;">↓ Excel</button>
+                </div>
+              </div>
+            </div>
+          </div>
           <div id="presup-kpi-grid" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;">
             <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
               <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Total presupuestado</div>
@@ -3581,12 +3597,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
           </div>
         </div>
 
-        <!-- Acciones -->
-        <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:14px;">
-          <button onclick="exportar('presupuestos','pdf')" style="display:inline-flex;align-items:center;gap:5px;padding:8px 16px;background:var(--sage-dark);color:#fff;border:none;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;"><svg width="12" height="12" viewBox="0 0 13 13" fill="none"><rect x="1" y="0.5" width="11" height="12" rx="1.5" stroke="#fff" stroke-width="1.2"/><path d="M3.5 6.5h6M3.5 9h4" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/></svg>PDF</button>
-          <button onclick="exportar('presupuestos','excel')" style="display:inline-flex;align-items:center;gap:5px;padding:8px 16px;background:var(--white);color:var(--text-m);border:.5px solid var(--cream-d);border-radius:20px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;"><svg width="12" height="12" viewBox="0 0 13 13" fill="none"><rect x="1" y="0.5" width="11" height="12" rx="1.5" stroke="var(--text-m)" stroke-width="1.2"/><path d="M4 5h2M7.5 5h2" stroke="var(--text-m)" stroke-width="1.2" stroke-linecap="round"/></svg>Excel</button>
-          <button class="bp" onclick="openModal('newClientPresupModal')">+ Nuevo</button>
-        </div>
+
 
         <!-- Filtros pill -->
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
@@ -3612,9 +3623,25 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 
           <!-- Header banner -->
           <div style="background:linear-gradient(135deg,#1e2e22 0%,#2d3d30 30%,#3d5242 60%,#2d3d30 100%);border-radius:16px;padding:20px 24px;margin-bottom:14px;color:#fff;">
-            <div style="display:flex;align-items:center;margin-bottom:16px;">
-              <button id="mc-hamburger" type="button" onclick="window._cvOpenSidebar&&window._cvOpenSidebar()"><div class="cv-ham-line"></div><div class="cv-ham-line"></div><div class="cv-ham-line"></div></button>
-              <div style="font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:300;">Mis <em style="font-style:italic;color:#b09088;">clientes</em></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+              <div style="display:flex;align-items:center;">
+                <button id="mc-hamburger" type="button" onclick="window._cvOpenSidebar&&window._cvOpenSidebar()"><div class="cv-ham-line"></div><div class="cv-ham-line"></div><div class="cv-ham-line"></div></button>
+                <div style="font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:300;">Mis <em style="font-style:italic;color:#b09088;">clientes</em></div>
+              </div>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <button onclick="abrirNuevoMcClienteModal()" style="width:34px;height:34px;border-radius:50%;background:#b09088;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;" title="Nuevo cliente">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#f5f0eb" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </button>
+                <div style="position:relative;">
+                  <button onclick="toggleDropdown('mc-dl-menu',event)" style="width:34px;height:34px;border-radius:50%;background:#b09088;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;" title="Exportar">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#f5f0eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><line x1="20" y1="4" x2="4" y2="4"/><line x1="20" y1="9" x2="4" y2="9"/></svg>
+                  </button>
+                  <div id="mc-dl-menu" class="cl-dropdown-menu" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:#fff;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.13);min-width:160px;overflow:hidden;z-index:200;">
+                    <button onclick="exportar('clientes','pdf')" style="width:100%;background:none;border:none;border-bottom:.5px solid var(--cream-d);padding:11px 16px;text-align:left;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);cursor:pointer;">↓ PDF</button>
+                    <button onclick="exportar('clientes','excel')" style="width:100%;background:none;border:none;padding:11px 16px;text-align:left;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);cursor:pointer;">↓ Excel</button>
+                  </div>
+                </div>
+              </div>
             </div>
             <div id="mc-kpi-clientes-grid" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;">
               <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
@@ -3636,14 +3663,9 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
           </div>
 
           <!-- Barra de acciones -->
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+          <div style="display:flex;align-items:center;margin-bottom:14px;">
             <div style="flex:1;min-width:0;max-width:280px;">
               <input type="text" id="mc-search" class="fi" placeholder="Buscar cliente..." style="width:100%;padding:10px 14px;margin-top:0;" oninput="filterMcLista()"/>
-            </div>
-            <div style="display:flex;gap:8px;">
-              <button id="mc-btn-pdf" onclick="exportar('clientes','pdf')" style="display:inline-flex;align-items:center;gap:5px;padding:8px 16px;background:var(--sage-dark);color:#fff;border:none;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;"><svg width="12" height="12" viewBox="0 0 13 13" fill="none"><rect x="1" y="0.5" width="11" height="12" rx="1.5" stroke="#fff" stroke-width="1.2"/><path d="M3.5 6.5h6M3.5 9h4" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/></svg>PDF</button>
-              <button id="mc-btn-excel" onclick="exportar('clientes','excel')" style="display:inline-flex;align-items:center;gap:5px;padding:8px 16px;background:var(--white);color:var(--text-m);border:.5px solid var(--cream-d);border-radius:20px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;"><svg width="12" height="12" viewBox="0 0 13 13" fill="none"><rect x="1" y="0.5" width="11" height="12" rx="1.5" stroke="var(--text-m)" stroke-width="1.2"/><path d="M4 5h2M7.5 5h2" stroke="var(--text-m)" stroke-width="1.2" stroke-linecap="round"/></svg>Excel</button>
-              <button class="bp" onclick="abrirNuevoMcClienteModal()">+ Nuevo cliente</button>
             </div>
           </div>
 
@@ -4034,7 +4056,23 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
       <div id="prov-lista-view">
 
           <div style="background:linear-gradient(135deg,#1e2e22 0%,#2d3d30 30%,#3d5242 60%,#2d3d30 100%);border-radius:16px;padding:20px 24px;margin-bottom:14px;color:#fff;">
-            <div style="font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:300;margin-bottom:16px;">Mis <em style="font-style:italic;color:#b09088;">proveedores</em></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+              <div style="font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:300;">Mis <em style="font-style:italic;color:#b09088;">proveedores</em></div>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <button onclick="openModal('newProveedorModal')" style="width:34px;height:34px;border-radius:50%;background:#b09088;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;" title="Agregar proveedor">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#f5f0eb" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </button>
+                <div style="position:relative;">
+                  <button onclick="toggleDropdown('prov-dl-menu',event)" style="width:34px;height:34px;border-radius:50%;background:#b09088;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;" title="Exportar">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#f5f0eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><line x1="20" y1="4" x2="4" y2="4"/><line x1="20" y1="9" x2="4" y2="9"/></svg>
+                  </button>
+                  <div id="prov-dl-menu" class="cl-dropdown-menu" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:#fff;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.13);min-width:160px;overflow:hidden;z-index:200;">
+                    <button onclick="exportar('proveedores','pdf')" style="width:100%;background:none;border:none;border-bottom:.5px solid var(--cream-d);padding:11px 16px;text-align:left;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);cursor:pointer;">↓ PDF</button>
+                    <button onclick="exportar('proveedores','excel')" style="width:100%;background:none;border:none;padding:11px 16px;text-align:left;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);cursor:pointer;">↓ Excel</button>
+                  </div>
+                </div>
+              </div>
+            </div>
             <div id="prov-kpi-grid" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;">
               <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
                 <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Total proveedores</div>
@@ -4059,11 +4097,6 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         <div style="display:flex;flex-direction:row;align-items:center;gap:8px;margin-bottom:14px;margin-top:16px;">
           <div style="flex:1;min-width:0;">
             <input type="text" id="prov-search" class="fi" placeholder="Buscar proveedor..." style="border-radius:20px;margin-top:0;" oninput="filtrarProveedores(this.value)"/>
-          </div>
-          <div style="display:flex;gap:8px;flex-shrink:0;flex-wrap:nowrap;">
-            <button onclick="exportar('proveedores','pdf')" style="display:inline-flex;align-items:center;gap:5px;padding:8px 16px;background:var(--sage-dark);color:#fff;border:none;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;"><svg width="12" height="12" viewBox="0 0 13 13" fill="none"><rect x="1" y="0.5" width="11" height="12" rx="1.5" stroke="#fff" stroke-width="1.2"/><path d="M3.5 6.5h6M3.5 9h4" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/></svg>PDF</button>
-            <button onclick="exportar('proveedores','excel')" style="display:inline-flex;align-items:center;gap:5px;padding:8px 16px;background:var(--white);color:var(--text-m);border:.5px solid var(--cream-d);border-radius:20px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;"><svg width="12" height="12" viewBox="0 0 13 13" fill="none"><rect x="1" y="0.5" width="11" height="12" rx="1.5" stroke="var(--text-m)" stroke-width="1.2"/><path d="M4 5h2M7.5 5h2" stroke="var(--text-m)" stroke-width="1.2" stroke-linecap="round"/></svg>Excel</button>
-            <button class="bp" onclick="openModal('newProveedorModal')">+ Agregar</button>
           </div>
         </div>
 
