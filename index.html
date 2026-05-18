@@ -11093,6 +11093,16 @@ window.cajaFiltrarCuenta = function(nombre, _el) {
   }
   renderCajaKPIs(filtrados);
   renderCajaTable(filtrados);
+  const cardsContainer = document.getElementById('caja-cuentas-cards');
+  if(cardsContainer) {
+    cardsContainer.querySelectorAll('div[data-cuenta]').forEach(card => {
+      const nombreAttr = card.dataset.cuenta;
+      const cuentaNombre = nombreAttr === '' ? null : nombreAttr;
+      const isOn = cuentaNombre === _cajaCuentaFiltro;
+      card.style.background = isOn ? 'rgba(255,255,255,.13)' : 'rgba(255,255,255,.06)';
+      card.style.borderBottomColor = isOn ? '#b09088' : 'transparent';
+    });
+  }
 };
 
 function renderCajaTable(movs, facturadosMap = new Map()) {
