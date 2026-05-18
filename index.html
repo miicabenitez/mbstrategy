@@ -2577,7 +2577,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
       <div id="ct-contabilidad" style="display:none;">
 
   <!-- Banner verde rediseñado — Mi caja -->
-  <div style="background:linear-gradient(135deg,#1e2e22 0%,#2d3d30 30%,#3d5242 60%,#2d3d30 100%);padding:24px 28px 0;border-radius:20px 20px 0 0;margin-bottom:0;">
+  <div style="background:linear-gradient(135deg,#1e2e22 0%,#2d3d30 30%,#3d5242 60%,#2d3d30 100%);padding:24px 28px 16px;border-radius:20px;margin-bottom:0;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
       <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:34px;font-weight:300;color:#f5f0eb;line-height:1;">Mi <em style="font-style:italic;color:#b09088;">caja</em></div>
       <div style="display:flex;align-items:center;gap:8px;position:relative;">
@@ -10697,7 +10697,7 @@ window._auditoriaRender = function() {
 
   root.innerHTML = `
 <div style="font-family:'DM Sans',sans-serif;margin:-20px;width:calc(100% + 40px);">
-  <div style="background:linear-gradient(135deg,#1e2e22 0%,#2d3d30 30%,#3d5242 60%,#2d3d30 100%);padding:24px 28px 0;border-radius:16px 16px 0 0;">
+  <div style="background:linear-gradient(135deg,#1e2e22 0%,#2d3d30 30%,#3d5242 60%,#2d3d30 100%);padding:24px 28px 20px;border-radius:16px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
       <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:38px;font-weight:300;color:#f5f0eb;">Caja <em style="font-style:italic;color:#b09088;">mostrador</em></div>
       <div style="display:flex;align-items:center;gap:3px;background:rgba(0,0,0,.2);border-radius:10px;padding:3px;">
@@ -10711,7 +10711,7 @@ window._auditoriaRender = function() {
         </label>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:rgba(255,255,255,.07);border-radius:10px 10px 0 0;overflow:hidden;">
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;background:transparent;border-radius:10px;overflow:hidden;">
       ${Object.entries(medios).map(([k,v]) => {
         const barColors = {Efectivo:'#7dd98a','Mercado Pago':'#5bb8f5',Transferencia:'#b09088',Tarjeta:'#e8c584'};
         const count = movsPeriodo.filter(m => {
@@ -10720,7 +10720,7 @@ window._auditoriaRender = function() {
           return key === k && m.tipo === 'ingreso';
         }).length;
         const isSelMedio = window._auditoriaFiltroMedio === k;
-        return `<div style="padding:16px 18px;background:${isSelMedio?'rgba(255,255,255,.10)':'rgba(255,255,255,.04)'};cursor:pointer;transition:background .15s;" onclick="window._auditoriaFiltroMedio=window._auditoriaFiltroMedio==='${k}'?null:'${k}';_auditoriaRender()">
+        return `<div style="padding:16px 18px;background:${isSelMedio?'rgba(255,255,255,.10)':'rgba(255,255,255,.04)'};cursor:pointer;transition:background .15s;border-radius:10px;" onclick="window._auditoriaFiltroMedio=window._auditoriaFiltroMedio==='${k}'?null:'${k}';_auditoriaRender()">
           <div style="font-size:9px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px;">${k}</div>
           <div style="font-size:20px;font-weight:700;color:#f5f0eb;">${fmt(v)}</div>
           <div style="font-size:10px;color:rgba(255,255,255,.25);margin-top:3px;">${count} mvtos</div>
