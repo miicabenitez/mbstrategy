@@ -2991,15 +2991,20 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
               <div style="font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:300;line-height:1.1">Resumen <em style="font-style:italic;color:#b09088;">ventas</em></div>
               <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:4px;letter-spacing:.04em">Libro IVA Ventas</div>
             </div>
-            <div style="display:flex;gap:8px">
-              <button onclick="exportarResumenVentas()" style="background:#fff;border:none;border-radius:12px;padding:9px 16px;font-size:13px;font-family:'DM Sans',sans-serif;color:#4a5e4d;cursor:pointer;font-weight:500;display:flex;align-items:center;gap:6px">
-                <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v7M4 7l2.5 2.5L9 7M2 11h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                ↓ Excel
+            <div style="position:relative;">
+              <button onclick="toggleDropdown('rv-dl-menu',event)" style="width:34px;height:34px;border-radius:50%;background:#b09088;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;" title="Descargar">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f5f0eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               </button>
-              <button onclick="exportarCitiVentas()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:12px;padding:9px 16px;font-size:13px;font-family:'DM Sans',sans-serif;color:#fff;cursor:pointer;font-weight:500;display:flex;align-items:center;gap:6px">
-                <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v7M4 7l2.5 2.5L9 7M2 11h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                ↓ CITI
-              </button>
+              <div id="rv-dl-menu" class="cl-dropdown-menu" style="display:none;position:absolute;top:42px;right:0;background:#fff;border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.15);overflow:hidden;min-width:170px;z-index:200;">
+                <div onclick="toggleDropdown('rv-dl-menu',event);exportarResumenVentas()" style="padding:12px 16px;font-size:13px;color:#2d2a26;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:0.5px solid #f0ebe6;font-family:'DM Sans',sans-serif;font-weight:500;" onmouseover="this.style.background='#f5f0eb'" onmouseout="this.style.background=''">
+                  <div style="width:26px;height:26px;border-radius:7px;background:#eaf3de;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3a4e3d" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div>
+                  Excel
+                </div>
+                <div onclick="toggleDropdown('rv-dl-menu',event);exportarCitiVentas()" style="padding:12px 16px;font-size:13px;color:#2d2a26;cursor:pointer;display:flex;align-items:center;gap:10px;font-family:'DM Sans',sans-serif;font-weight:500;" onmouseover="this.style.background='#f5f0eb'" onmouseout="this.style.background=''">
+                  <div style="width:26px;height:26px;border-radius:7px;background:#f0e8e5;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#b09088" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div>
+                  CITI Excel
+                </div>
+              </div>
             </div>
           </div>
           <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;">
@@ -3078,15 +3083,20 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
               <div style="font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:300;line-height:1.1">Resumen <em style="font-style:italic;color:#b09088;">compras</em></div>
               <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:4px;letter-spacing:.04em">Libro IVA Compras</div>
             </div>
-            <div style="display:flex;gap:8px">
-              <button onclick="exportarResumenCompras()" style="background:#fff;border:none;border-radius:12px;padding:9px 16px;font-size:13px;font-family:'DM Sans',sans-serif;color:#4a5e4d;cursor:pointer;font-weight:500;display:flex;align-items:center;gap:6px">
-                <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v7M4 7l2.5 2.5L9 7M2 11h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                ↓ Excel
+            <div style="position:relative;">
+              <button onclick="toggleDropdown('rc-dl-menu',event)" style="width:34px;height:34px;border-radius:50%;background:#b09088;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;" title="Descargar">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f5f0eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               </button>
-              <button onclick="exportarCitiCompras()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:12px;padding:9px 16px;font-size:13px;font-family:'DM Sans',sans-serif;color:#fff;cursor:pointer;font-weight:500;display:flex;align-items:center;gap:6px">
-                <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v7M4 7l2.5 2.5L9 7M2 11h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                ↓ CITI
-              </button>
+              <div id="rc-dl-menu" class="cl-dropdown-menu" style="display:none;position:absolute;top:42px;right:0;background:#fff;border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.15);overflow:hidden;min-width:170px;z-index:200;">
+                <div onclick="toggleDropdown('rc-dl-menu',event);exportarResumenCompras()" style="padding:12px 16px;font-size:13px;color:#2d2a26;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:0.5px solid #f0ebe6;font-family:'DM Sans',sans-serif;font-weight:500;" onmouseover="this.style.background='#f5f0eb'" onmouseout="this.style.background=''">
+                  <div style="width:26px;height:26px;border-radius:7px;background:#eaf3de;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3a4e3d" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div>
+                  Excel
+                </div>
+                <div onclick="toggleDropdown('rc-dl-menu',event);exportarCitiCompras()" style="padding:12px 16px;font-size:13px;color:#2d2a26;cursor:pointer;display:flex;align-items:center;gap:10px;font-family:'DM Sans',sans-serif;font-weight:500;" onmouseover="this.style.background='#f5f0eb'" onmouseout="this.style.background=''">
+                  <div style="width:26px;height:26px;border-radius:7px;background:#f0e8e5;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#b09088" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div>
+                  CITI Excel
+                </div>
+              </div>
             </div>
           </div>
           <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;">
@@ -4471,9 +4481,20 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         <div style="background:linear-gradient(135deg,#1e2e22 0%,#2d3d30 30%,#3d5242 60%,#2d3d30 100%);border-radius:16px;padding:20px 24px;margin-bottom:14px;color:#fff;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
             <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:34px;font-weight:300;">Movimientos <em style="font-style:italic;color:#b09088;">stock</em></div>
-            <div style="display:flex;gap:8px;">
-              <button onclick="exportarStkMovsExcel()" style="height:32px;padding:0 14px;background:#fff;color:#4a5e4d;border:none;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;">↓ Excel</button>
-              <button onclick="exportarStkMovsCsv()" style="height:32px;padding:0 14px;background:rgba(255,255,255,.12);color:#fff;border:0.5px solid rgba(255,255,255,.25);border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;">↓ CSV</button>
+            <div style="position:relative;">
+              <button onclick="toggleDropdown('stk-mov-dl-menu',event)" style="width:34px;height:34px;border-radius:50%;background:#b09088;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;" title="Descargar">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f5f0eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              </button>
+              <div id="stk-mov-dl-menu" class="cl-dropdown-menu" style="display:none;position:absolute;top:42px;right:0;background:#fff;border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.15);overflow:hidden;min-width:170px;z-index:200;">
+                <div onclick="toggleDropdown('stk-mov-dl-menu',event);exportarStkMovsExcel()" style="padding:12px 16px;font-size:13px;color:#2d2a26;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:0.5px solid #f0ebe6;font-family:'DM Sans',sans-serif;font-weight:500;" onmouseover="this.style.background='#f5f0eb'" onmouseout="this.style.background=''">
+                  <div style="width:26px;height:26px;border-radius:7px;background:#eaf3de;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3a4e3d" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div>
+                  Excel
+                </div>
+                <div onclick="toggleDropdown('stk-mov-dl-menu',event);exportarStkMovsCsv()" style="padding:12px 16px;font-size:13px;color:#2d2a26;cursor:pointer;display:flex;align-items:center;gap:10px;font-family:'DM Sans',sans-serif;font-weight:500;" onmouseover="this.style.background='#f5f0eb'" onmouseout="this.style.background=''">
+                  <div style="width:26px;height:26px;border-radius:7px;background:#f0e8e5;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#b09088" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div>
+                  CSV
+                </div>
+              </div>
             </div>
           </div>
           <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;">
@@ -10724,6 +10745,7 @@ window.toggleCajaPlus = function(e) {
   const dl = document.getElementById('caja-dl-menu');
   if(m) m.style.display = m.style.display === 'none' ? 'block' : 'none';
   if(dl) dl.style.display = 'none';
+  document.querySelectorAll('.cl-dropdown-menu').forEach(function(x){x.style.display='none';});
 };
 window.toggleCajaDl = function(e) {
   e.stopPropagation();
@@ -10731,12 +10753,23 @@ window.toggleCajaDl = function(e) {
   const pl = document.getElementById('caja-plus-menu');
   if(m) m.style.display = m.style.display === 'none' ? 'block' : 'none';
   if(pl) pl.style.display = 'none';
+  document.querySelectorAll('.cl-dropdown-menu').forEach(function(x){x.style.display='none';});
+};
+window.toggleDropdown = function(menuId, e) {
+  if(e) e.stopPropagation();
+  var target = document.getElementById(menuId);
+  var isOpen = target && target.style.display === 'block';
+  document.querySelectorAll('.cl-dropdown-menu').forEach(function(m){ m.style.display='none'; });
+  var cp = document.getElementById('caja-plus-menu'); if(cp) cp.style.display='none';
+  var cd = document.getElementById('caja-dl-menu'); if(cd) cd.style.display='none';
+  if(target && !isOpen) target.style.display = 'block';
 };
 document.addEventListener('click', function() {
   const pm = document.getElementById('caja-plus-menu');
   const dm = document.getElementById('caja-dl-menu');
   if(pm) pm.style.display = 'none';
   if(dm) dm.style.display = 'none';
+  document.querySelectorAll('.cl-dropdown-menu').forEach(function(x){x.style.display='none';});
 });
 
 window.renderCajaCuentasCards = function(cuentas, movs, saldos, cuentaActiva) {
