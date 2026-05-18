@@ -2838,21 +2838,25 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
               <div style="font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:300">Mis <em style="font-style:italic;color:#b09088;">facturas</em></div>
             </div>
             <div style="display:flex;align-items:center;gap:8px;">
-              <button onclick="exportarMfExcel()" style="background:rgba(255,255,255,.15);border:.5px solid rgba(255,255,255,.3);border-radius:12px;padding:9px 16px;font-size:13px;font-family:'DM Sans',sans-serif;color:#fff;cursor:pointer;font-weight:500;display:flex;align-items:center;gap:6px">↓ Excel</button>
-              <button onclick="exportarMfCsv()" style="background:rgba(255,255,255,.08);border:.5px solid rgba(255,255,255,.2);border-radius:12px;padding:9px 16px;font-size:13px;font-family:'DM Sans',sans-serif;color:#fff;cursor:pointer;font-weight:500;display:flex;align-items:center;gap:6px">↓ CSV</button>
-              <div style="position:relative;" id="mf-nuevo-wrapper">
-                <button onclick="mfToggleNuevoMenu()" style="background:#fff;border:none;border-radius:12px;padding:9px 16px;font-size:13px;font-family:'DM Sans',sans-serif;color:#4a5e4d;cursor:pointer;font-weight:500;display:flex;align-items:center;gap:6px">
-                  <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v9M2 6.5h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-                  Nuevo
-                  <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#4a5e4d" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <div style="position:relative;">
+                <button onclick="toggleDropdown('mf-plus-menu',event)" style="width:34px;height:34px;border-radius:50%;background:#b09088;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;" title="Nueva factura">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#f5f0eb" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 </button>
-                <div id="mf-nuevo-menu" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:#fff;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.13);min-width:210px;overflow:hidden;z-index:200;">
+                <div id="mf-plus-menu" class="cl-dropdown-menu" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:#fff;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.13);min-width:210px;overflow:hidden;z-index:200;">
                   <button onclick="mfNuevoOpcion('factura')" style="width:100%;background:none;border:none;border-bottom:.5px solid var(--cream-d);padding:11px 16px;text-align:left;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:8px;">
-                    <svg width="12" height="12" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v9M2 6.5h9" stroke="#4a5e4d" stroke-width="1.5" stroke-linecap="round"/></svg>
-                    Factura
+                    <svg width="12" height="12" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v9M2 6.5h9" stroke="#4a5e4d" stroke-width="1.5" stroke-linecap="round"/></svg>Factura
                   </button>
                   <button onclick="mfNuevoOpcion('nc')" style="width:100%;background:none;border:none;border-bottom:.5px solid var(--cream-d);padding:11px 16px;text-align:left;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);cursor:pointer;">NC — Nota de Crédito</button>
                   <button onclick="mfNuevoOpcion('nd')" style="width:100%;background:none;border:none;padding:11px 16px;text-align:left;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);cursor:pointer;">ND — Nota de Débito</button>
+                </div>
+              </div>
+              <div style="position:relative;">
+                <button onclick="toggleDropdown('mf-dl-menu',event)" style="width:34px;height:34px;border-radius:50%;background:#b09088;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;" title="Exportar">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#f5f0eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><line x1="20" y1="4" x2="4" y2="4"/><line x1="20" y1="9" x2="4" y2="9"/></svg>
+                </button>
+                <div id="mf-dl-menu" class="cl-dropdown-menu" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:#fff;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.13);min-width:160px;overflow:hidden;z-index:200;">
+                  <button onclick="exportarMfExcel()" style="width:100%;background:none;border:none;border-bottom:.5px solid var(--cream-d);padding:11px 16px;text-align:left;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);cursor:pointer;">↓ Excel</button>
+                  <button onclick="exportarMfCsv()" style="width:100%;background:none;border:none;padding:11px 16px;text-align:left;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);cursor:pointer;">↓ CSV</button>
                 </div>
               </div>
             </div>
@@ -4340,10 +4344,21 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         <div style="background:linear-gradient(135deg,#1e2e22 0%,#2d3d30 30%,#3d5242 60%,#2d3d30 100%);border-radius:16px;padding:20px 24px;margin-bottom:14px;color:#fff;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
             <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:34px;font-weight:300;">Mis <em style="font-style:italic;color:#b09088;">insumos</em></div>
-            <div style="display:flex;gap:8px;">
-              <button onclick="exportarStkInsumosExcel()" style="background:rgba(255,255,255,.15);border:.5px solid rgba(255,255,255,.3);border-radius:12px;padding:9px 16px;font-size:13px;font-family:'DM Sans',sans-serif;color:#fff;cursor:pointer;font-weight:500;display:flex;align-items:center;gap:6px;">↓ Excel</button>
-              <button onclick="if(window.stkAjusteModal)stkAjusteModal()" style="background:rgba(255,255,255,.15);border:.5px solid rgba(255,255,255,.3);border-radius:12px;padding:9px 16px;font-size:13px;font-family:'DM Sans',sans-serif;color:#fff;cursor:pointer;font-weight:500;">Ajuste de stock</button>
-              <button onclick="if(window.stkNuevoInsumo)stkNuevoInsumo()" style="background:#fff;border:none;border-radius:12px;padding:9px 16px;font-size:13px;font-family:'DM Sans',sans-serif;color:#4a5e4d;cursor:pointer;font-weight:500;display:flex;align-items:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v9M2 6.5h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Insumo</button>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <div style="position:relative;">
+                <button onclick="toggleDropdown('stk-ins-plus-menu',event)" style="width:34px;height:34px;border-radius:50%;background:#b09088;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;" title="Nuevo insumo">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#f5f0eb" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </button>
+                <div id="stk-ins-plus-menu" class="cl-dropdown-menu" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:#fff;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.13);min-width:180px;overflow:hidden;z-index:200;">
+                  <button onclick="if(window.stkNuevoInsumo)stkNuevoInsumo()" style="width:100%;background:none;border:none;border-bottom:.5px solid var(--cream-d);padding:11px 16px;text-align:left;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:8px;">
+                    <svg width="12" height="12" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v9M2 6.5h9" stroke="#4a5e4d" stroke-width="1.5" stroke-linecap="round"/></svg>+ Insumo
+                  </button>
+                  <button onclick="if(window.stkAjusteModal)stkAjusteModal()" style="width:100%;background:none;border:none;padding:11px 16px;text-align:left;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);cursor:pointer;">Ajuste de stock</button>
+                </div>
+              </div>
+              <button onclick="exportarStkInsumosExcel()" style="width:34px;height:34px;border-radius:50%;background:#b09088;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;" title="Exportar Excel">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#f5f0eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><line x1="20" y1="4" x2="4" y2="4"/><line x1="20" y1="9" x2="4" y2="9"/></svg>
+              </button>
             </div>
           </div>
           <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;">
@@ -12755,7 +12770,7 @@ window.mfToggleNuevoMenu = function() {
 };
 
 window.mfNuevoOpcion = function(tipo) {
-  document.getElementById('mf-nuevo-menu').style.display = 'none';
+  var _mfm=document.getElementById('mf-plus-menu');if(_mfm)_mfm.style.display='none';
   if (tipo === 'factura') { abrirNuevaFacturaLibre(); return; }
   const esNc = tipo === 'nc';
   document.getElementById('mf-ncnd-titulo').textContent = esNc ? 'Nota de Crédito' : 'Nota de Débito';
