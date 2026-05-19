@@ -10823,7 +10823,18 @@ window.toggleDropdown = function(menuId, e) {
   document.querySelectorAll('.cl-dropdown-menu').forEach(function(m){ m.style.display='none'; });
   var cp = document.getElementById('caja-plus-menu'); if(cp) cp.style.display='none';
   var cd = document.getElementById('caja-dl-menu'); if(cd) cd.style.display='none';
-  if(target && !isOpen) target.style.display = 'block';
+  if(target && !isOpen) {
+    // Dropdowns dentro de listas scrolleables (cp-dd-*) usan position:fixed
+    // para escapar el overflow:hidden de .cv-wrap
+    if(menuId.indexOf('cp-dd-') === 0 && e && e.currentTarget && e.currentTarget.getBoundingClientRect) {
+      var r = e.currentTarget.getBoundingClientRect();
+      target.style.position = 'fixed';
+      target.style.top = (r.bottom + 4) + 'px';
+      target.style.left = r.left + 'px';
+      target.style.zIndex = '9999';
+    }
+    target.style.display = 'block';
+  }
 };
 document.addEventListener('click', function() {
   const pm = document.getElementById('caja-plus-menu');
