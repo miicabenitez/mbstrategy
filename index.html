@@ -14987,6 +14987,29 @@ window._getNextTicketNum = async function(uid) {
   });
   return 'V-' + String(num).padStart(4, '0');
 };
+function _mbPrintTicket({productos, total, medioPago, ticketNum, cajero, fecha}) {
+  try {
+    fetch('http://localhost:8765/print', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        negocio: 'MB Strategy',
+        fecha: fecha + ' ' + new Date().toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'}),
+        cajero: cajero || '',
+        turno: window.turnoActual?.id || '',
+        ticket: ticketNum || '',
+        items: productos.map(p => ({
+          desc: p.nombre,
+          qty: p.qty,
+          precio: '$' + Math.round(p.subtotal).toLocaleString('es-AR')
+        })),
+        total: '$' + Math.round(total).toLocaleString('es-AR'),
+        medio: medioPago || '',
+        footer: '¡Gracias por tu compra!'
+      })
+    }).catch(() => {});
+  } catch(_) {}
+}
 window.vrcGuardar = async function() {
   if(!currentClientUID) return;
   const keys = Object.keys(_vrcCarrito);
@@ -15034,6 +15057,7 @@ window.vrcGuardar = async function() {
       });
       await window._updateDoc(window._doc(window.db,'clientes',currentClientUID,'cobros',_cobroRef.id), { libroCajaId: _vcDocRef.id });
       const _vcCarritoSnap = {..._vrcCarrito};
+      _mbPrintTicket({productos, total, medioPago:'Cuenta: '+cli.nombre, ticketNum:_ticketNum, cajero:window.currentOperadorNombre||'', fecha:hoy});
       vrcCerrar();
       if(window._triggerStockPorVenta) window._triggerStockPorVenta(_vcCarritoSnap, null).catch(()=>{});
       showToast('Pedido registrado a cuenta de '+cli.nombre,'success');
@@ -15059,6 +15083,7 @@ window.vrcGuardar = async function() {
         creadoPor: window.currentOperadorNombre || 'Admin'
       });
       const _vcCarritoSnap = {..._vrcCarrito};
+      _mbPrintTicket({productos, total, medioPago:_medioPago, ticketNum:_ticketNum, cajero:window.currentOperadorNombre||'', fecha:hoy});
       vrcCerrar();
       if(window._triggerStockPorVenta) window._triggerStockPorVenta(_vcCarritoSnap, _vcDocRef.id).catch(()=>{});
       _btnReset();
