@@ -660,7 +660,7 @@ input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus
 .caja-table tbody tr{background:#fff;cursor:pointer;transition:all .15s;}
 .caja-table tbody tr:hover{background:#f5f0eb;transform:translateX(2px);}
 .caja-table tbody tr td{border-bottom:0.5px solid #f5f0ec;padding:14px 0;}
-.caja-table tbody tr td:first-child{border-left:3px solid var(--acc-color, #e0dbd6);padding-left:4px;}
+.caja-table tbody tr td:first-child{padding-left:4px;}
 .caja-table col.c-acc{width:20px;}
 .caja-table tbody tr td.c-acc{border-left:none!important;padding:0 6px!important;}
 .caja-table td{padding:20px 0;vertical-align:middle;white-space:nowrap;}
@@ -18173,7 +18173,7 @@ function renderMcLista(clientes) {
         <button onclick="editMcCliente('${c.id}',event)" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <button onclick="deleteMcCliente('${c.id}',event)" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
       </div>
-      <div style="width:100%;height:5px;background:${franjaGrad};flex-shrink:0;"></div>
+
       <div style="padding:16px 12px 14px;display:flex;flex-direction:column;align-items:center;width:100%;flex:1;justify-content:space-between;">
         <div style="display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;">
           <div class="av" style="background:${avatarGrad};color:#fff;font-size:12px;border-radius:50%;">${init}</div>
@@ -21739,7 +21739,7 @@ function renderOrdenesCompra() {
   });
   if(ocsFiltered.length===0){el.innerHTML='<div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Sin resultados.</div>';return;}
   const fmtMonto = v => '$' + new Intl.NumberFormat('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(parseFloat(v)||0);
-  const ocHeader = `<div class="oc-grid-header" style="display:grid;grid-template-columns:90px 1fr 110px 130px 80px;column-gap:12px;align-items:center;padding:6px 0 8px 20px;border-bottom:1.5px solid var(--sage-light);">
+  const ocHeader = `<div class="oc-grid-header" style="display:grid;grid-template-columns:90px 1fr 110px 130px 80px;column-gap:12px;align-items:center;padding:6px 0 8px 16px;border-bottom:1.5px solid var(--sage-light);">
     <div style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Nº OC</div>
     <div style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Proveedor</div>
     <div class="oc-col-monto" style="text-align:right;font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Monto</div>
@@ -21754,8 +21754,7 @@ function renderOrdenesCompra() {
     const recPill = estadoRec==='recibida'
       ? `<div onclick="event.stopPropagation()" style="display:inline-flex;align-items:center;gap:6px;background:#e8f0e9;color:#2e4d31;font-size:11px;font-weight:600;padding:5px 11px;border-radius:20px;white-space:nowrap;font-family:'DM Sans',sans-serif;"><span style="width:6px;height:6px;border-radius:50%;background:#4a5e4d;flex-shrink:0;"></span>Recibida</div>`
       : `<div onclick="event.stopPropagation();marcarOCRecibida('${o.id}')" style="display:inline-flex;align-items:center;gap:6px;background:#f5eeec;color:#7a4e46;font-size:11px;font-weight:600;padding:5px 11px;border-radius:20px;white-space:nowrap;font-family:'DM Sans',sans-serif;cursor:pointer;" title="Por recibir — clic para marcar como recibida"><span style="width:6px;height:6px;border-radius:50%;background:#b09088;flex-shrink:0;"></span>Pendiente</div>`;
-    return `<div onclick="abrirDetalleOC('${o.id}')" class="oc-grid-row" style="display:grid;grid-template-columns:90px 1fr 110px 130px 80px;column-gap:12px;align-items:center;padding:12px 0 12px 20px;border-bottom:.5px solid var(--cream-d);cursor:pointer;position:relative;">
-      <div style="position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:2px;background:${franjaGrad};"></div>
+    return `<div onclick="abrirDetalleOC('${o.id}')" class="oc-grid-row" style="display:grid;grid-template-columns:90px 1fr 110px 130px 80px;column-gap:12px;align-items:center;padding:12px 16px;border-bottom:.5px solid var(--cream-d);cursor:pointer;">
       <div><span style="background:#e8f0e9;color:#4a5e4d;font-size:11px;font-weight:700;padding:4px 8px;border-radius:6px;white-space:nowrap;font-family:'DM Sans',sans-serif;">OC-${String(o.numero||0).padStart(3,'0')}</span></div>
       <div style="min-width:0;">
         <div style="font-size:13px;font-weight:500;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${o.proveedor||'—'}</div>
@@ -22332,8 +22331,7 @@ function renderHistorialCompra(q) {
     const variacion=precios.length>1&&min>0?Math.round(((max-min)/min)*100):0;
     const ultimoPrecio=precios[0]||0;
     return `<div style="background:#ffffff;border-radius:12px;border:1px solid rgba(0,0,0,0.06);overflow:hidden;margin-bottom:12px;">
-      <div style="position:relative;padding:14px 16px 14px 24px;display:flex;justify-content:space-between;align-items:center;">
-        <div style="position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,#3d5240 0%,#4a5e4d 50%,#5e7562 100%);"></div>
+      <div style="padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">
         <div>
           <div style="font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:#4a5e4d;">${nombre}</div>
           <div style="font-size:11px;color:var(--text-l);margin-top:2px;">${lineas.length} compra${lineas.length!==1?'s':''} · Último precio: <b style="color:#4a5e4d;font-weight:600;">${fmtHC(ultimoPrecio)}</b></div>
