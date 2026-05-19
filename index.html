@@ -3621,7 +3621,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         </div>
         </div>
         <!-- Lista -->
-        <div style="background:var(--white);border-radius:16px;padding:0 16px;">
+        <div style="background:var(--white);border-radius:16px;overflow:visible;">
           <div id="cp-list"><div style="text-align:center;padding:24px;color:var(--text-l);font-size:13px;">Sin presupuestos cargados.</div></div>
         </div>
 
@@ -19616,7 +19616,8 @@ function renderClientPresup(list) {
   const dot  = {'Pendiente de enviar':'#B08A42','Enviado':'#4A6A8A','Consultado':'#856404','Aprobado':'#5A7A4E','Denegado':'#8A4A4A','Cobrado':'#1A6637'};
   const badge = {'Pendiente de enviar':{bg:'#F5ECD8',color:'#8A6A3A'},'Enviado':{bg:'#E6EEF5',color:'#4A6A8A'},'Consultado':{bg:'#FFF3CD',color:'#856404'},'Aprobado':{bg:'#EAF0E6',color:'#5A7A4E'},'Denegado':{bg:'#F5E8E8',color:'#8A4A4A'},'Cobrado':{bg:'#D6F0E0',color:'#1A6637'}};
   const estados = ['Pendiente de enviar','Enviado','Consultado','Aprobado','Denegado','Cobrado'];
-  el.innerHTML = list.map(p => {
+  const header = `<div style="display:grid;grid-template-columns:7px 1fr 110px 104px;padding:8px 16px 6px;border-bottom:1px solid var(--cream-d);"><div></div><div style="padding-left:8px;font-size:10px;font-family:'DM Sans',sans-serif;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Presupuesto</div><div style="font-size:10px;font-family:'DM Sans',sans-serif;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;text-align:right;padding-right:8px;">Monto</div><div style="font-size:10px;font-family:'DM Sans',sans-serif;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;text-align:right;">Acciones</div></div>`;
+  el.innerHTML = header + list.map(p => {
     const m  = getPresupMonto(p);
     const bc = badge[p.estado]||{bg:'var(--cream)',color:'var(--text-l)'};
     const ac = dot[p.estado]||'#ccc';
@@ -19624,40 +19625,38 @@ function renderClientPresup(list) {
     const fecha = p.fecha ? new Date(p.fecha+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'short'}) : '';
     const alerta = p.estado==='Enviado'&&p.fecha&&Math.floor((new Date()-new Date(p.fecha+'T12:00:00'))/(1000*60*60*24))>=7;
     const ddId = `cp-dd-${p.id}`;
-    return `<div style="display:flex;align-items:stretch;border-bottom:.5px solid var(--cream-d);">
-      <div style="width:3px;flex-shrink:0;background:${ac};border-radius:2px;margin:10px 4px 10px 0;"></div>
-      <div style="flex:1;min-width:0;padding:12px 10px 12px 10px;">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
-          <div style="min-width:0;">
-            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:5px;">
-              <span onclick="goToClientFromPresup('${p.clienteId||''}')" style="font-size:13px;font-weight:500;color:var(--text);${p.clienteId?'cursor:pointer;text-decoration:underline;text-underline-offset:3px;':''}">${p.cliente||'Sin cliente'}</span>
-              ${p.prospecto&&!p.clienteId?`<span style="font-size:11px;padding:2px 8px;border-radius:20px;background:#EEF2FF;color:#5A5ABF;">Prospecto</span>`:''}
-              ${p.descripcion?`<span style="font-size:12px;color:var(--text-m);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px;">${p.descripcion}</span>`:''}
-            </div>
-            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-              ${cobrado
-                ? `<span style="font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;background:${bc.bg};color:${bc.color};">${p.estado}</span><span style="font-size:11px;color:#1A6637;font-weight:500;">✓ Presupuesto cerrado</span>`
-                : `<div style="position:relative;display:inline-block;">
-                    <button onmousedown="event.preventDefault();toggleDropdown('${ddId}',event)" style="font-size:11px;font-weight:500;padding:3px 10px 3px 10px;border-radius:20px;background:${bc.bg};color:${bc.color};border:none;cursor:pointer;font-family:'DM Sans',sans-serif;display:inline-flex;align-items:center;gap:4px;">${p.estado}<svg width="8" height="8" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
-                    <div id="${ddId}" class="cl-dropdown-menu" style="display:none;position:absolute;top:30px;left:0;background:#fff;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.13);overflow:hidden;min-width:170px;z-index:200;">
-                      ${estados.filter(s=>s!==p.estado).map(s=>`<div onmousedown="event.preventDefault();updateClientPresupEstado('${p.id}','${s}');toggleDropdown('${ddId}',event)" style="padding:9px 14px;font-size:12px;font-family:'DM Sans',sans-serif;color:var(--text);cursor:pointer;" onmouseover="this.style.background='var(--cream)'" onmouseout="this.style.background=''">${s}</div>`).join('')}
-                    </div>
-                  </div>`
-              }
-              ${fecha?`<span style="font-size:11px;color:var(--text-l);">${fecha}</span>`:''}
-              ${alerta?`<span style="font-size:11px;color:var(--warn);">⚠ seguimiento</span>`:''}
-            </div>
-          </div>
-          <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
-            ${m>0?`<div style="text-align:right;"><div style="font-family:'DM Sans',sans-serif;font-size:16px;font-weight:700;color:var(--text);">$${m.toLocaleString('es-AR')}</div><div style="font-size:11px;color:var(--text-l);">${p.moneda||'ARS'}</div></div>`:''}
-            <div style="display:flex;gap:4px;align-items:center;">
-              ${p.link?`<button onclick="verPresupuestoPDF('${p.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--sage-xl);border:.5px solid var(--sage-light);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Ver PDF"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--sage-dark)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>`:''}
-              <button onclick="exportarPresupuestoPDF('${p.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--sage-xl);border:.5px solid var(--sage-light);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Ver / PDF"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--sage-dark)" stroke-width="1.8" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
-              ${!cobrado?`<button onclick="editClientPresup('${p.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`:''}
-              <button onclick="deleteClientPresup('${p.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
-            </div>
-          </div>
+    return `<div style="display:grid;grid-template-columns:7px 1fr 110px 104px;align-items:center;padding:10px 16px;border-bottom:.5px solid var(--cream-d);">
+      <div style="display:flex;align-items:center;justify-content:center;">
+        <div style="width:3px;height:32px;background:${ac};border-radius:2px;"></div>
+      </div>
+      <div style="min-width:0;padding:0 8px;">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:5px;">
+          <span onclick="goToClientFromPresup('${p.clienteId||''}')" style="font-size:13px;font-weight:500;color:var(--text);${p.clienteId?'cursor:pointer;text-decoration:underline;text-underline-offset:3px;':''}">${p.cliente||'Sin cliente'}</span>
+          ${p.prospecto&&!p.clienteId?`<span style="font-size:11px;padding:2px 8px;border-radius:20px;background:#EEF2FF;color:#5A5ABF;">Prospecto</span>`:''}
+          ${p.descripcion?`<span style="font-size:12px;color:var(--text-m);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px;">${p.descripcion}</span>`:''}
         </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          ${cobrado
+            ? `<span style="font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;background:${bc.bg};color:${bc.color};">${p.estado}</span><span style="font-size:11px;color:#1A6637;font-weight:500;">✓ Presupuesto cerrado</span>`
+            : `<div style="position:relative;display:inline-block;">
+                <button onclick="toggleDropdown('${ddId}',event)" style="font-size:11px;font-weight:500;padding:3px 10px 3px 10px;border-radius:20px;background:${bc.bg};color:${bc.color};border:none;cursor:pointer;font-family:'DM Sans',sans-serif;display:inline-flex;align-items:center;gap:4px;">${p.estado}<svg width="8" height="8" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+                <div id="${ddId}" class="cl-dropdown-menu" style="display:none;position:absolute;top:30px;left:0;background:#fff;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.13);overflow:hidden;min-width:170px;z-index:200;">
+                  ${estados.filter(s=>s!==p.estado).map(s=>`<div onclick="updateClientPresupEstado('${p.id}','${s}');toggleDropdown('${ddId}',event)" style="padding:9px 14px;font-size:12px;font-family:'DM Sans',sans-serif;color:var(--text);cursor:pointer;" onmouseover="this.style.background='var(--cream)'" onmouseout="this.style.background=''">${s}</div>`).join('')}
+                </div>
+              </div>`
+          }
+          ${fecha?`<span style="font-size:11px;color:var(--text-l);">${fecha}</span>`:''}
+          ${alerta?`<span style="font-size:11px;color:var(--warn);">⚠ seguimiento</span>`:''}
+        </div>
+      </div>
+      <div style="text-align:right;padding-right:8px;">
+        ${m>0?`<div style="font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:var(--text);">$${m.toLocaleString('es-AR')}</div><div style="font-size:11px;color:var(--text-l);">${p.moneda||'ARS'}</div>`:''}
+      </div>
+      <div style="display:flex;gap:4px;justify-content:flex-end;align-items:center;">
+        ${p.link?`<button onclick="verPresupuestoPDF('${p.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--sage-xl);border:.5px solid var(--sage-light);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Ver PDF"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--sage-dark)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>`:''}
+        <button onclick="exportarPresupuestoPDF('${p.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--sage-xl);border:.5px solid var(--sage-light);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Ver / PDF"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--sage-dark)" stroke-width="1.8" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+        ${!cobrado?`<button onclick="editClientPresup('${p.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`:''}
+        <button onclick="deleteClientPresup('${p.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
       </div>
     </div>`;
   }).join('');
