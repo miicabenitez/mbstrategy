@@ -16062,7 +16062,7 @@ window.stkBuscarProductoRec = function(q) {
   if(!q.trim()){dd.style.display='none';return;}
   const prods=(window._productos||_productos||[]).filter(p=>p.activo!==false&&(p.nombre||'').toLowerCase().includes(q.toLowerCase())).slice(0,6);
   if(!prods.length){dd.style.display='none';return;}
-  dd.innerHTML=prods.map(p=>`<div onclick="stkSeleccionarProductoRec('${p.id}')" style="padding:10px 14px;cursor:pointer;border-bottom:.5px solid var(--cream-d);font-size:13px;" onmouseenter="this.style.background='var(--cream)'" onmouseleave="this.style.background=''"><div style="font-weight:500;color:var(--text);">${p.nombre||''}</div></div>`).join('');
+  dd.innerHTML=prods.map(p=>`<div onmousedown="event.preventDefault();stkSeleccionarProductoRec('${p.id}')" style="padding:10px 14px;cursor:pointer;border-bottom:.5px solid var(--cream-d);font-size:13px;" onmouseenter="this.style.background='var(--cream)'" onmouseleave="this.style.background=''"><div style="font-weight:500;color:var(--text);">${p.nombre||''}</div></div>`).join('');
   dd.style.display='block';
 };
 
