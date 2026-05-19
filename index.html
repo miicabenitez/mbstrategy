@@ -10824,14 +10824,16 @@ window.toggleDropdown = function(menuId, e) {
   var cp = document.getElementById('caja-plus-menu'); if(cp) cp.style.display='none';
   var cd = document.getElementById('caja-dl-menu'); if(cd) cd.style.display='none';
   if(target && !isOpen) {
-    // Dropdowns dentro de listas scrolleables (cp-dd-*) usan position:fixed
-    // para escapar el overflow:hidden de .cv-wrap
-    if(menuId.indexOf('cp-dd-') === 0 && e && e.currentTarget && e.currentTarget.getBoundingClientRect) {
-      var r = e.currentTarget.getBoundingClientRect();
-      target.style.position = 'fixed';
-      target.style.top = (r.bottom + 4) + 'px';
-      target.style.left = r.left + 'px';
-      target.style.zIndex = '9999';
+    if(menuId.indexOf('cp-dd-') === 0 && e) {
+      var trigger = e.target;
+      while(trigger && trigger.tagName !== 'BUTTON') trigger = trigger.parentElement;
+      if(trigger && trigger.getBoundingClientRect) {
+        var r = trigger.getBoundingClientRect();
+        target.style.position = 'fixed';
+        target.style.top = (r.bottom + 4) + 'px';
+        target.style.left = r.left + 'px';
+        target.style.zIndex = '9999';
+      }
     }
     target.style.display = 'block';
   }
@@ -19651,11 +19653,11 @@ function renderClientPresup(list) {
           ${alerta?`<span style="font-size:11px;color:var(--warn);">⚠ seguimiento</span>`:''}
         </div>
       </div>
-      <div style="padding:0 4px;">
+      <div style="padding:0 4px;display:flex;align-items:center;">
         ${cobrado
-          ? `<span style="font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;background:${bc.bg};color:${bc.color};">${p.estado}</span>`
+          ? `<span style="font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;background:${bc.bg};color:${bc.color};white-space:nowrap;">${p.estado}</span>`
           : `<div style="position:relative;display:inline-block;">
-              <button onclick="toggleDropdown('${ddId}',event)" style="font-size:11px;font-weight:500;padding:3px 10px 3px 10px;border-radius:20px;background:${bc.bg};color:${bc.color};border:none;cursor:pointer;font-family:'DM Sans',sans-serif;display:inline-flex;align-items:center;gap:4px;">${p.estado}<svg width="8" height="8" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+              <button onclick="toggleDropdown('${ddId}',event)" style="font-size:11px;font-weight:500;padding:3px 10px 3px 10px;border-radius:20px;background:${bc.bg};color:${bc.color};border:none;cursor:pointer;font-family:'DM Sans',sans-serif;display:inline-flex;align-items:center;gap:4px;white-space:nowrap;">${p.estado}<svg width="8" height="8" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
               <div id="${ddId}" class="cl-dropdown-menu" style="display:none;position:absolute;top:30px;left:0;background:#fff;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.13);overflow:hidden;min-width:170px;z-index:200;">
                 ${estados.filter(s=>s!==p.estado).map(s=>`<div onclick="updateClientPresupEstado('${p.id}','${s}');toggleDropdown('${ddId}',event)" style="padding:9px 14px;font-size:12px;font-family:'DM Sans',sans-serif;color:var(--text);cursor:pointer;" onmouseover="this.style.background='var(--cream)'" onmouseout="this.style.background=''">${s}</div>`).join('')}
               </div>
