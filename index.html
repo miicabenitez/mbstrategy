@@ -2939,7 +2939,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
             <div style="border:.5px solid var(--cream-d);border-radius:10px;padding:12px;">
               <div style="font-size:11px;color:var(--text-l);margin-bottom:8px;font-weight:500;text-transform:uppercase;letter-spacing:.04em;">Agregar ítem</div>
               <div style="position:relative;margin-bottom:10px">
-                <input class="fi" type="text" id="nfl-prod-search" placeholder="Buscá en catálogo o describí el servicio" oninput="nflBuscarProducto(this.value)" autocomplete="off">
+                <input class="fi" type="text" id="nfl-prod-search" placeholder="Buscá en catálogo o describí el servicio" oninput="nflBuscarProducto(this.value)" onkeydown="nflProdKeydown(event)" onblur="setTimeout(()=>{ const d=document.getElementById('nfl-prod-dropdown'); if(d && !d.contains(document.activeElement)) d.style.display='none'; },180)" autocomplete="off">
                 <input type="hidden" id="nfl-prod-id">
                 <div id="nfl-prod-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:.5px solid var(--cream-d);border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.1);z-index:10;overflow:hidden;margin-top:4px"></div>
               </div>
@@ -13552,8 +13552,26 @@ window.nflBuscarProducto = function(q) {
   if (!q.trim()) { dropdown.style.display = 'none'; return; }
   const matches = (_productos || []).filter(p => p.activo !== false && (p.nombre||'').toLowerCase().includes(q.toLowerCase())).slice(0, 6);
   if (!matches.length) { dropdown.style.display = 'none'; return; }
-  dropdown.innerHTML = matches.map(p => `<div onclick="nflSeleccionarProducto('${p.id}')" style="padding:10px 14px;cursor:pointer;border-bottom:.5px solid var(--cream-d);font-size:13px" onmouseenter="this.style.background='var(--cream)'" onmouseleave="this.style.background=''"><div style="font-weight:500;color:var(--text)">${p.nombre||''}</div><div style="font-size:11px;color:var(--text-l)">$${Number(p.precio||0).toLocaleString('es-AR')}</div></div>`).join('');
+  dropdown.innerHTML = matches.map((p,i) => `<div data-idx="${i}" onmousedown="event.preventDefault();nflSeleccionarProducto('${p.id}')" style="padding:10px 14px;cursor:pointer;border-bottom:.5px solid var(--cream-d);font-size:13px" onmouseenter="this.style.background='var(--cream)'" onmouseleave="this.style.background=''"><div style="font-weight:500;color:var(--text)">${p.nombre||''}</div><div style="font-size:11px;color:var(--text-l)">$${Number(p.precio||0).toLocaleString('es-AR')}</div></div>`).join('');
+  window._nflProdIdx = -1;
   dropdown.style.display = 'block';
+};
+
+window.nflProdKeydown = function(e) {
+  const dd=document.getElementById('nfl-prod-dropdown');
+  if(!dd||dd.style.display==='none') return;
+  const items=dd.querySelectorAll('[data-idx]');
+  if(!items.length) return;
+  const total=items.length;
+  let idx=window._nflProdIdx ?? -1;
+  if(e.key==='ArrowDown'){e.preventDefault();idx=(idx+1)%total;}
+  else if(e.key==='ArrowUp'){e.preventDefault();idx=idx<=0?total-1:idx-1;}
+  else if(e.key==='Enter'){e.preventDefault();if(idx>=0&&items[idx]){const id=items[idx].getAttribute('onmousedown').match(/nflSeleccionarProducto\('([^']+)'\)/)?.[1];if(id)nflSeleccionarProducto(id);}return;}
+  else if(e.key==='Escape'){dd.style.display='none';return;}
+  else return;
+  window._nflProdIdx=idx;
+  items.forEach((el,i)=>{el.style.background=i===idx?'var(--cream)':'';});
+  items[idx]?.scrollIntoView({block:'nearest'});
 };
 
 window.nflSeleccionarProducto = function(id) {
@@ -14762,7 +14780,7 @@ function _vrcRenderMetodos() {
     if(isCta) {
       const sel = window._vrcClienteSeleccionado;
       ctaDiv.style.display = 'block';
-      ctaDiv.innerHTML = `<div style="margin-top:10px;">${sel?`<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f0f7f0;border-radius:10px;margin-bottom:8px;font-size:13px;color:#3a5a3c;font-weight:500;">👤 ${sel.nombre} <button onclick="window._vrcClienteSeleccionado=null;_vrcRenderMetodos()" style="margin-left:auto;background:none;border:none;cursor:pointer;color:#aaa;font-size:16px;line-height:1;">×</button></div>`:''}<input id="vrc-cta-input" type="text" placeholder="Buscar cliente..." oninput="_vrcFiltrarCta(this.value)" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #e0e0e0;border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:6px;"><div id="vrc-cta-list" style="max-height:160px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;"></div></div>`;
+      ctaDiv.innerHTML = `<div style="margin-top:10px;">${sel?`<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f0f7f0;border-radius:10px;margin-bottom:8px;font-size:13px;color:#3a5a3c;font-weight:500;">👤 ${sel.nombre} <button onclick="window._vrcClienteSeleccionado=null;_vrcRenderMetodos()" style="margin-left:auto;background:none;border:none;cursor:pointer;color:#aaa;font-size:16px;line-height:1;">×</button></div>`:''}<input id="vrc-cta-input" type="text" placeholder="Buscar cliente..." oninput="_vrcFiltrarCta(this.value)" onkeydown="vrcCtaKeydown(event)" style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid #e0e0e0;border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:6px;"><div id="vrc-cta-list" style="max-height:160px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;"></div></div>`;
       _vrcFiltrarCta('');
     } else {
       ctaDiv.style.display = 'none';
@@ -14777,18 +14795,36 @@ window._vrcFiltrarCta = function(q) {
   if(!list) return;
   const _selId = window._vrcClienteSeleccionado?.id || null;
   const clis = q ? (window._mcClientes || []).filter(c => !c.eliminado && ['nombre','tel','dni'].some(f => (c[f]||'').toLowerCase().includes(q.toLowerCase()))) : [];
-  const _rows = clis.slice(0,5).map(c => {
+  window._vrcCtaIdx = -1;
+  const _rows = clis.slice(0,5).map((c,i) => {
     const data = JSON.stringify({id:c.id,nombre:c.nombre}).replace(/\\/g,'\\\\').replace(/"/g,'&quot;');
     const _isSel = _selId && c.id === _selId;
     const _style = _isSel ? 'background:#3a4e3d;border:none;' : 'background:#fff;border:1px solid rgba(176,144,136,0.2);';
     const _nameColor = _isSel ? 'color:#f4f0ea;font-weight:500;font-size:14px;' : 'color:#6a7a68;';
     const _telColor = _isSel ? 'color:rgba(244,240,234,0.5);' : 'color:#aaa;';
     const _check = _isSel ? '<div style="width:24px;height:24px;border-radius:50%;background:rgba(244,240,234,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="#f4f0ea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>' : '';
-    return `<button onclick='window._vrcClienteSeleccionado=${data.replace(/'/g,"\\'")}; _vrcFiltrarCta(document.getElementById("vrc-cta-input")?.value||""); _vrcRenderMetodos();' style="text-align:left;${_style}border-radius:10px;padding:11px 14px;font-size:13px;font-family:inherit;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:space-between;"><div style="display:flex;flex-direction:column;gap:2px;"><span style="${_nameColor}">${c.nombre}</span>${c.tel?`<span style="font-size:11px;${_telColor}">${c.tel}</span>`:''}</div>${_check}</button>`;
+    return `<button data-idx="${i}" onclick='window._vrcClienteSeleccionado=${data.replace(/'/g,"\\'")}; _vrcFiltrarCta(document.getElementById("vrc-cta-input")?.value||""); _vrcRenderMetodos();' style="text-align:left;${_style}border-radius:10px;padding:11px 14px;font-size:13px;font-family:inherit;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:space-between;"><div style="display:flex;flex-direction:column;gap:2px;"><span style="${_nameColor}">${c.nombre}</span>${c.tel?`<span style="font-size:11px;${_telColor}">${c.tel}</span>`:''}</div>${_check}</button>`;
   }).join('');
   const _nuevoBtn = '<button onclick="openModal(\'newMclienteModal\')" style="text-align:left;background:#fff;border:1px solid rgba(176,144,136,0.2);border-radius:10px;padding:11px 14px;font-size:13px;font-family:inherit;cursor:pointer;color:#b09088;width:100%;display:flex;align-items:center;gap:8px;"><i class="ti ti-user-plus" style="font-size:15px;"></i><span>Nuevo cliente</span></button>';
   const _sinResultados = (q && clis.length === 0) ? '<div style="text-align:center;padding:12px;font-size:12px;color:#aaa;">Sin resultados</div>' : '';
   list.innerHTML = _rows + _sinResultados + _nuevoBtn;
+};
+
+window.vrcCtaKeydown = function(e) {
+  const list=document.getElementById('vrc-cta-list');
+  if(!list) return;
+  const items=list.querySelectorAll('[data-idx]');
+  if(!items.length) return;
+  const total=items.length;
+  let idx=window._vrcCtaIdx ?? -1;
+  if(e.key==='ArrowDown'){e.preventDefault();idx=(idx+1)%total;}
+  else if(e.key==='ArrowUp'){e.preventDefault();idx=idx<=0?total-1:idx-1;}
+  else if(e.key==='Enter'){e.preventDefault();if(idx>=0&&items[idx])items[idx].click();return;}
+  else if(e.key==='Escape'){if(list)list.innerHTML='';return;}
+  else return;
+  window._vrcCtaIdx=idx;
+  items.forEach((el,i)=>{el.style.outline=i===idx?'2px solid var(--cream-d)':'';});
+  items[idx]?.scrollIntoView({block:'nearest'});
 };
 
 function _vrcRenderProductos(lista) {
