@@ -54,6 +54,11 @@ def _row(label: str, value: str) -> bytes:
     return _encode(f"{label}{' ' * max(1, gap)}{value}\n")
 
 
+def _separator() -> bytes:
+    """Centered dotted separator (24 chars wide), restores LEFT alignment."""
+    return CMD_CENTER + _encode("- " * 12 + "\n") + CMD_LEFT
+
+
 def _build_image_cmd(b64: str, max_width: int = 512) -> bytes:
     """Convert base64 image to ESC/POS raster command (GS v 0). Returns b'' on failure."""
     try:
@@ -157,7 +162,7 @@ def _print_structured(data: dict):
     buf += CMD_BOLD_OFF
     if subtitulo:
         buf += _encode(subtitulo + "\n")
-    buf += _encode("-" * LINE_WIDTH + "\n")
+    buf += _separator()
 
     # Meta
     buf += CMD_LEFT
@@ -170,7 +175,7 @@ def _print_structured(data: dict):
     if turno:
         buf += _encode(f"Turno:  {turno}\n")
     if fecha or hora or cajero or turno:
-        buf += _encode("-" * LINE_WIDTH + "\n")
+        buf += _separator()
         buf += b"\n"
 
     # Items
@@ -187,18 +192,20 @@ def _print_structured(data: dict):
             buf += _encode(f"   {precio}\n\n")
 
     buf += b"\n"
-    buf += _encode("-" * LINE_WIDTH + "\n")
+    buf += _separator()
 
     # Totals
     if subtotal:
         buf += _row("Subtotal:", subtotal)
     if descuento:
         buf += _row("Descuento:", descuento)
-    buf += CMD_BOLD_ON
-    buf += _row("TOTAL:", total)
-    buf += CMD_BOLD_OFF
+    # TOTAL: centered, bold, double-size
+    buf += CMD_CENTER + CMD_BOLD_ON + CMD_DOUBLE
+    buf += _encode(f"TOTAL  {total}\n")
+    buf += CMD_NORMAL + CMD_BOLD_OFF + CMD_LEFT
 
     if medio:
+        buf += b"\n"
         buf += _row("Medio de pago:", medio)
     if recibido:
         buf += _row("Recibido:", recibido)
@@ -214,7 +221,7 @@ def _print_structured(data: dict):
             buf += _encode(line + "\n")
 
     # Footer
-    buf += _encode("-" * LINE_WIDTH + "\n")
+    buf += _separator()
     buf += b"\n\n"
     buf += CMD_CENTER
     buf += _encode(footer + "\n")
