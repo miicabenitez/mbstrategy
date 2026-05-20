@@ -59,6 +59,16 @@ def _separator() -> bytes:
     return CMD_CENTER + _encode("- " * 16 + "\n") + CMD_LEFT
 
 
+def _money(n) -> str:
+    """Format a number as ARS string like '$1.234'. Pass strings through unchanged."""
+    if isinstance(n, str):
+        return n
+    try:
+        return f"${int(round(float(n))):,}".replace(",", ".")
+    except Exception:
+        return "$0"
+
+
 def _build_image_cmd(b64: str, max_width: int = 512) -> bytes:
     """Convert base64 image to ESC/POS raster command (GS v 0). Returns b'' on failure."""
     try:
@@ -104,6 +114,7 @@ def print_ticket(data):
       - a plain list of str (treated as lines)
       - a dict with structured ticket fields (negocio, items, total, etc.)
       - a dict with tipo:"pedido" for production order layout
+      - a dict with tipo:"cierre" for cash register closing layout
     """
     if isinstance(data, list):
         return _print_lines(data)
@@ -112,6 +123,8 @@ def print_ticket(data):
     if isinstance(data, dict):
         if data.get("tipo") == "pedido":
             return _print_pedido(data)
+        if data.get("tipo") == "cierre":
+            return _print_cierre(data)
         return _print_structured(data)
     raise ValueError("data debe ser una lista de líneas o un dict")
 
@@ -328,6 +341,174 @@ def _print_pedido(data: dict):
     buf += _encode("- MB Strategy -\n")
     buf += b"\n" * 6
 
+    if corte:
+        buf += CMD_CUT
+
+    _send_raw(get_printer_name(), bytes(buf))
+
+
+def _print_cierre(data: dict):
+    """Cash register closing ticket. Comprehensive shift-close summary printed
+    on the thermal printer with the same look as customer/production tickets."""
+    logo_b64 = data.get("logo", "")
+    negocio = data.get("negocio", "MB Strategy")
+    fecha_cierre = data.get("fecha_cierre", "")
+    cajera = data.get("cajera", "")
+    apertura = data.get("apertura", "")
+    cierre = data.get("cierre", "")
+    saldo_inicial = data.get("saldo_inicial", 0)
+    ingresos = data.get("ingresos", 0)
+    egresos = data.get("egresos", 0)
+    saldo_final = data.get("saldo_final", 0)
+    medios = data.get("medios", [])
+    productos = data.get("productos", [])
+    total_productos = data.get("total_productos", 0)
+    cant_items = data.get("cant_items", 0)
+    egresos_caja = data.get("egresos_caja", [])
+    total_egresos_caja = data.get("total_egresos_caja", 0)
+    retiros = data.get("retiros", [])
+    total_retiros = data.get("total_retiros", 0)
+    cuenta_corriente = data.get("cuenta_corriente", [])
+    total_pendiente = data.get("total_pendiente", 0)
+    modificaciones = data.get("modificaciones", [])
+    corte = data.get("corte", True)
+
+    def _line_with_price(label: str, price: str) -> bytes:
+        """Print label + right-aligned price; wrap to next line if too long."""
+        if len(label) + len(price) + 1 <= LINE_WIDTH:
+            return _encode(label + price.rjust(LINE_WIDTH - len(label)) + "\n")
+        return _encode(label + "\n" + " " * (LINE_WIDTH - len(price)) + price + "\n")
+
+    buf = bytearray(CMD_INIT)
+
+    # 1. Logo + negocio
+    if logo_b64:
+        img_cmd = _build_image_cmd(logo_b64)
+        if img_cmd:
+            buf += CMD_CENTER
+            buf += img_cmd
+    buf += b"\n"
+    buf += CMD_CENTER + CMD_BOLD_ON + CMD_DOUBLE
+    buf += _encode(negocio + "\n")
+    buf += CMD_NORMAL + CMD_BOLD_OFF
+
+    # 2. Separator
+    buf += _separator()
+
+    # 3. CIERRE DE CAJA + fecha
+    buf += CMD_CENTER + CMD_BOLD_ON
+    buf += _encode("CIERRE DE CAJA\n")
+    buf += CMD_BOLD_OFF
+    if fecha_cierre:
+        buf += _encode(str(fecha_cierre) + "\n")
+    buf += CMD_LEFT
+
+    # 4. Separator
+    buf += _separator()
+
+    # 5. DATOS DEL TURNO
+    buf += CMD_BOLD_ON + _encode("DATOS DEL TURNO\n") + CMD_BOLD_OFF
+    if cajera:
+        buf += _row("Cajera:", str(cajera))
+    if apertura:
+        buf += _row("Apertura:", str(apertura))
+    if cierre:
+        buf += _row("Cierre:", str(cierre))
+
+    # 6. Separator
+    buf += _separator()
+
+    # 7. RESUMEN
+    buf += CMD_BOLD_ON + _encode("RESUMEN\n") + CMD_BOLD_OFF
+    buf += _row("Saldo inicial:", _money(saldo_inicial))
+    buf += _row("Ingresos:", _money(ingresos))
+    buf += _row("Egresos:", "-" + _money(egresos))
+    buf += _separator()
+    buf += CMD_CENTER + CMD_BOLD_ON + CMD_DOUBLE
+    buf += _encode("SALDO FINAL\n")
+    buf += _encode(_money(saldo_final) + "\n")
+    buf += CMD_NORMAL + CMD_BOLD_OFF + CMD_LEFT
+
+    # 8. Separator
+    buf += _separator()
+
+    # 9. POR MEDIO DE PAGO
+    if medios:
+        buf += CMD_BOLD_ON + _encode("POR MEDIO DE PAGO\n") + CMD_BOLD_OFF
+        for m in medios:
+            buf += _row(str(m.get("nombre", "")) + ":", _money(m.get("monto", 0)))
+        buf += _separator()
+
+    # 11. DETALLE DE VENTAS
+    if productos:
+        buf += CMD_BOLD_ON + _encode("DETALLE DE VENTAS\n") + CMD_BOLD_OFF
+        for p in productos:
+            nombre = str(p.get("nombre", ""))
+            cantidad = str(p.get("cantidad", "1"))
+            total = _money(p.get("total", 0))
+            buf += _line_with_price(f"{nombre} x{cantidad}", total)
+        buf += _separator()
+        items_label = f"Total - {cant_items} item" + ("s" if cant_items != 1 else "")
+        buf += _row(items_label, _money(total_productos))
+        buf += _separator()
+
+    # 13. EGRESOS DEL TURNO
+    if egresos_caja:
+        buf += CMD_BOLD_ON + _encode("EGRESOS DEL TURNO\n") + CMD_BOLD_OFF
+        for e in egresos_caja:
+            concepto = str(e.get("concepto", "Egreso"))
+            detalle = str(e.get("detalle", ""))
+            buf += _line_with_price(concepto, "-" + _money(e.get("monto", 0)))
+            if detalle:
+                for ln in textwrap.wrap("-> " + detalle, LINE_WIDTH, subsequent_indent="   "):
+                    buf += _encode(ln + "\n")
+        if len(egresos_caja) > 1:
+            buf += _row("Total egresos:", "-" + _money(total_egresos_caja))
+        buf += _separator()
+
+    # 15. RETIROS
+    if retiros:
+        buf += CMD_BOLD_ON + _encode("RETIROS\n") + CMD_BOLD_OFF
+        for r in retiros:
+            concepto = str(r.get("concepto", "Retiro"))
+            buf += _line_with_price(concepto, "-" + _money(r.get("monto", 0)))
+        if len(retiros) > 1:
+            buf += _row("Total retiros:", "-" + _money(total_retiros))
+        buf += _separator()
+
+    # 17. CUENTA CORRIENTE
+    if cuenta_corriente:
+        buf += CMD_BOLD_ON + _encode("CUENTA CORRIENTE\n") + CMD_BOLD_OFF
+        for c in cuenta_corriente:
+            cliente = str(c.get("cliente", ""))
+            ticket = str(c.get("ticket", ""))
+            label = cliente + (" - #" + ticket if ticket else "")
+            buf += _line_with_price(label, _money(c.get("monto", 0)))
+        buf += _row("Total pendiente:", _money(total_pendiente))
+        buf += _separator()
+
+    # 19. MODIFICACIONES
+    if modificaciones:
+        buf += CMD_BOLD_ON + _encode("MODIFICACIONES\n") + CMD_BOLD_OFF
+        for mod in modificaciones:
+            ticket = str(mod.get("ticket", ""))
+            de = str(mod.get("de", ""))
+            a = str(mod.get("a", ""))
+            por = str(mod.get("por", ""))
+            hora = str(mod.get("hora", ""))
+            line1 = (("#" + ticket + " - ") if ticket else "") + de + " -> " + a
+            line2 = por + (" - " + hora if hora else "")
+            for ln in textwrap.wrap(line1, LINE_WIDTH):
+                buf += _encode(ln + "\n")
+            if line2.strip():
+                buf += _encode("  " + line2 + "\n")
+        buf += _separator()
+
+    # 21. Footer
+    buf += CMD_CENTER + _encode("- MB Strategy -\n")
+    buf += b"\n" * 6
+
+    # 22. Cut
     if corte:
         buf += CMD_CUT
 

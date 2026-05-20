@@ -15099,6 +15099,88 @@ async function _mbPrintPedido({productos, ticketNum, pedidoNum, cajero, cliente,
     }).catch(() => {});
   } catch(_) {}
 }
+async function _mbPrintCierre(params) {
+  try {
+    let negocio = window._negocioNombre;
+    let logo = window._negocioLogo;
+    if (!negocio || logo === undefined) {
+      try {
+        const uid = window.currentClientUID;
+        if (uid && window._getDoc && window._doc) {
+          const negDoc = await window._getDoc(window._doc(window.db, 'clientes', uid));
+          if (negDoc.exists()) {
+            const d = negDoc.data();
+            negocio = d.negocioNombre || d.nombre || '';
+            logo = d.logoNegocio || null;
+            window._negocioNombre = negocio;
+            window._negocioSubtitulo = d.negocioRubro || '';
+            window._negocioLogo = logo;
+          }
+        }
+      } catch(_) {}
+    }
+    negocio = negocio || 'Mi negocio';
+
+    const logoB64 = (logo && typeof logo === 'string')
+      ? (logo.includes(',') ? logo.split(',', 2)[1] : logo)
+      : '';
+
+    const fmtFecha = (iso) => {
+      if (!iso) return '';
+      try {
+        const d = new Date(iso);
+        return d.toLocaleDateString('es-AR', {day:'2-digit', month:'2-digit', year:'numeric'})
+          + ' ' + d.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'});
+      } catch(_) { return String(iso); }
+    };
+
+    const productos = params.productos || [];
+    const totalProductos = productos.reduce((a, p) => a + (parseFloat(p.total) || 0), 0);
+    const cantItems = productos.reduce((a, p) => a + (parseFloat(p.cantidad) || 0), 0);
+
+    const mediosArr = Object.entries(params.medios || {}).map(([nombre, monto]) => ({
+      nombre: nombre === 'Caja mostrador' ? 'Efectivo' : nombre,
+      monto: parseFloat(monto) || 0
+    }));
+
+    const modificaciones = (params.modificaciones || []).map(mod => ({
+      ticket: mod.ticket || '',
+      de: mod.de || '',
+      a: mod.a || '',
+      por: mod.por || '',
+      hora: (mod.creadoEn || '').slice(11, 16)
+    }));
+
+    fetch('http://localhost:8765/print', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        tipo: 'cierre',
+        logo: logoB64,
+        negocio,
+        fecha_cierre: fmtFecha(params.cierre),
+        cajera: params.cajera || '',
+        apertura: fmtFecha(params.apertura),
+        cierre: fmtFecha(params.cierre),
+        saldo_inicial: params.saldoInicial || 0,
+        ingresos: params.ingresos || 0,
+        egresos: params.egresos || 0,
+        saldo_final: params.saldoFinal || 0,
+        medios: mediosArr,
+        productos,
+        total_productos: totalProductos,
+        cant_items: cantItems,
+        egresos_caja: params.egresosCaja || [],
+        total_egresos_caja: params.egresosCajaTotal || 0,
+        retiros: params.retirosDetalle || [],
+        total_retiros: params.retiros || 0,
+        cuenta_corriente: (params.cuentaCorriente && params.cuentaCorriente.detalle) || [],
+        total_pendiente: (params.cuentaCorriente && params.cuentaCorriente.total) || 0,
+        modificaciones
+      })
+    }).catch(() => {});
+  } catch(_) {}
+}
 window.vrcGuardar = async function() {
   if(!currentClientUID) return;
   const keys = Object.keys(_vrcCarrito);
@@ -26240,6 +26322,24 @@ window.cajaCierreConfirmar = async function() {
             campo: mod.campo, de: mod.de, a: mod.a, por: mod.por, creadoEn: mod.creadoEn
           });
         });
+      });
+      // Imprimir cierre en comandera local (fire-and-forget, paralelo al Netlify)
+      _mbPrintCierre({
+        cajera: window.currentOperadorNombre || 'Cajero',
+        apertura: window.turnoActual?.apertura?.creadoEn || '',
+        cierre: new Date().toISOString(),
+        saldoInicial: _saldoBase,
+        ingresos: ingresos,
+        egresos: egresos,
+        saldoFinal: saldo,
+        medios: _medios,
+        productos: Object.values(_productosMap),
+        egresosCaja: _egresosCajaArr,
+        egresosCajaTotal: _totalEgresosCaja,
+        retirosDetalle: _retirosArr,
+        retiros: _totalRetiros,
+        cuentaCorriente: { total: _totalCta, detalle: _detalleCta },
+        modificaciones: _modificaciones
       });
       var _cierrePdfBase64 = null;
       try {
