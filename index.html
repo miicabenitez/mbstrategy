@@ -15181,6 +15181,7 @@ async function _mbPrintCierre(params) {
     }).catch(() => {});
   } catch(_) {}
 }
+window._mbPrintCierre = _mbPrintCierre;
 window.vrcGuardar = async function() {
   if(!currentClientUID) return;
   const keys = Object.keys(_vrcCarrito);
@@ -26324,7 +26325,8 @@ window.cajaCierreConfirmar = async function() {
         });
       });
       // Imprimir cierre en comandera local (fire-and-forget, paralelo al Netlify)
-      _mbPrintCierre({
+      // window._mbPrintCierre porque la def está dentro del <script type="module"> y este call site no
+      window._mbPrintCierre({
         cajera: window.currentOperadorNombre || 'Cajero',
         apertura: window.turnoActual?.apertura?.creadoEn || '',
         cierre: new Date().toISOString(),
