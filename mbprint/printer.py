@@ -56,7 +56,7 @@ def _row(label: str, value: str) -> bytes:
 
 def _separator() -> bytes:
     """Centered dotted separator (24 chars wide), restores LEFT alignment."""
-    return CMD_CENTER + _encode("- " * 12 + "\n") + CMD_LEFT
+    return CMD_CENTER + _encode("- " * 16 + "\n") + CMD_LEFT
 
 
 def _build_image_cmd(b64: str, max_width: int = 512) -> bytes:
@@ -150,15 +150,16 @@ def _print_structured(data: dict):
         if img_cmd:
             buf += CMD_CENTER
             buf += img_cmd
-            buf += b"\n"
 
-    # Header: negocio (double bold), ticket (bold), subtitulo (normal)
-    buf += CMD_CENTER + b"\n"
-    buf += CMD_BOLD_ON + CMD_DOUBLE
+    # Header: negocio (double bold), ticket (double bold), subtitulo (normal)
+    buf += b"\n"
+    buf += CMD_CENTER + CMD_BOLD_ON + CMD_DOUBLE
     buf += _encode(negocio + "\n")
     buf += CMD_NORMAL + b"\n"
     if ticket:
+        buf += CMD_DOUBLE
         buf += _encode(ticket + "\n")
+        buf += CMD_NORMAL
     buf += CMD_BOLD_OFF
     if subtitulo:
         buf += _encode(subtitulo + "\n")

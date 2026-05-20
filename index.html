@@ -15039,6 +15039,7 @@ async function _mbPrintTicket({productos, total, medioPago, ticketNum, cajero}) 
         })),
         total: '$' + Math.round(total).toLocaleString('es-AR'),
         medio: medioPago || '',
+        observaciones: productos.map(p => p.detalle || p.nota || '').filter(Boolean).join(', ') || '',
         footer: 'Este comprobante no tiene validez fiscal'
       })
     }).catch(() => {});
