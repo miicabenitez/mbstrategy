@@ -1,4 +1,5 @@
 import base64
+import textwrap
 from io import BytesIO
 
 import win32print
@@ -53,7 +54,7 @@ def _row(label: str, value: str) -> bytes:
     return _encode(f"{label}{' ' * max(1, gap)}{value}\n")
 
 
-def _build_image_cmd(b64: str, max_width: int = 384) -> bytes:
+def _build_image_cmd(b64: str, max_width: int = 512) -> bytes:
     """Convert base64 image to ESC/POS raster command (GS v 0). Returns b'' on failure."""
     try:
         if "," in b64:
@@ -142,12 +143,15 @@ def _print_structured(data: dict):
     if logo_b64:
         img_cmd = _build_image_cmd(logo_b64)
         if img_cmd:
-            buf += CMD_CENTER + img_cmd + b"\n"
+            buf += CMD_CENTER
+            buf += img_cmd
+            buf += b"\n"
 
     # Header: negocio (double bold), ticket (bold), subtitulo (normal)
-    buf += CMD_CENTER + CMD_BOLD_ON + CMD_DOUBLE
+    buf += CMD_CENTER + b"\n"
+    buf += CMD_BOLD_ON + CMD_DOUBLE
     buf += _encode(negocio + "\n")
-    buf += CMD_NORMAL
+    buf += CMD_NORMAL + b"\n"
     if ticket:
         buf += _encode(ticket + "\n")
     buf += CMD_BOLD_OFF
@@ -167,6 +171,7 @@ def _print_structured(data: dict):
         buf += _encode(f"Turno:  {turno}\n")
     if fecha or hora or cajero or turno:
         buf += _encode("-" * LINE_WIDTH + "\n")
+        buf += b"\n"
 
     # Items
     for it in items:
@@ -176,11 +181,12 @@ def _print_structured(data: dict):
         line = f"{qty}x {desc}"
         if len(line) + len(precio) + 1 <= LINE_WIDTH:
             price_str = precio.rjust(LINE_WIDTH - len(line))
-            buf += _encode(f"{line}{price_str}\n")
+            buf += _encode(f"{line}{price_str}\n\n")
         else:
             buf += _encode(f"{line}\n")
-            buf += _encode(f"   {precio}\n")
+            buf += _encode(f"   {precio}\n\n")
 
+    buf += b"\n"
     buf += _encode("-" * LINE_WIDTH + "\n")
 
     # Totals
@@ -199,8 +205,17 @@ def _print_structured(data: dict):
     if vuelto:
         buf += _row("Vuelto:", vuelto)
 
+    # Observaciones / detalle (optional, before the final separator)
+    nota = data.get("detalle") or data.get("observaciones")
+    if nota:
+        buf += b"\n"
+        buf += _encode("Observaciones:\n")
+        for line in textwrap.wrap(str(nota), LINE_WIDTH):
+            buf += _encode(line + "\n")
+
     # Footer
     buf += _encode("-" * LINE_WIDTH + "\n")
+    buf += b"\n\n"
     buf += CMD_CENTER
     buf += _encode(footer + "\n")
     buf += b'\n' * 6
