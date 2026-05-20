@@ -15045,6 +15045,58 @@ async function _mbPrintTicket({productos, total, medioPago, ticketNum, cajero}) 
     }).catch(() => {});
   } catch(_) {}
 }
+async function _mbPrintPedido({productos, ticketNum, pedidoNum, cajero, cliente}) {
+  try {
+    let negocio = window._negocioNombre;
+    let logo = window._negocioLogo;
+    if (!negocio || logo === undefined) {
+      try {
+        const uid = window.currentClientUID;
+        if (uid && window._getDoc && window._doc) {
+          const negDoc = await window._getDoc(window._doc(window.db, 'clientes', uid));
+          if (negDoc.exists()) {
+            const d = negDoc.data();
+            negocio = d.negocioNombre || d.nombre || '';
+            logo = d.logoNegocio || null;
+            window._negocioNombre = negocio;
+            window._negocioSubtitulo = d.negocioRubro || '';
+            window._negocioLogo = logo;
+          }
+        }
+      } catch(_) {}
+    }
+    negocio = negocio || 'Mi negocio';
+
+    const logoB64 = (logo && typeof logo === 'string')
+      ? (logo.includes(',') ? logo.split(',', 2)[1] : logo)
+      : '';
+
+    const ahora = new Date();
+    const fechaFmt = ahora.toLocaleDateString('es-AR', {day:'2-digit', month:'long', year:'numeric'});
+    const horaFmt = ahora.toLocaleTimeString('es-AR', {hour:'numeric', minute:'2-digit', hour12:true});
+
+    fetch('http://localhost:8765/print', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        tipo: 'pedido',
+        logo: logoB64,
+        negocio,
+        pedido: pedidoNum || '',
+        ticket: ticketNum || '',
+        fecha: fechaFmt,
+        hora: horaFmt,
+        operador: cajero || '',
+        items: productos.map(p => ({
+          desc: p.nombre,
+          qty: p.qty,
+          detalle: p.detalle || p.nota || ''
+        })),
+        cliente: cliente || ''
+      })
+    }).catch(() => {});
+  } catch(_) {}
+}
 window.vrcGuardar = async function() {
   if(!currentClientUID) return;
   const keys = Object.keys(_vrcCarrito);
@@ -15093,6 +15145,7 @@ window.vrcGuardar = async function() {
       await window._updateDoc(window._doc(window.db,'clientes',currentClientUID,'cobros',_cobroRef.id), { libroCajaId: _vcDocRef.id });
       const _vcCarritoSnap = {..._vrcCarrito};
       _mbPrintTicket({productos, total, medioPago:'Cuenta: '+cli.nombre, ticketNum:_ticketNum, cajero:window.currentOperadorNombre||''});
+      setTimeout(() => _mbPrintPedido({productos, ticketNum:_ticketNum, pedidoNum:'P-'+_ticketNum.slice(2), cajero:window.currentOperadorNombre||'', cliente:cli.nombre}), 1500);
       vrcCerrar();
       if(window._triggerStockPorVenta) window._triggerStockPorVenta(_vcCarritoSnap, null).catch(()=>{});
       showToast('Pedido registrado a cuenta de '+cli.nombre,'success');
@@ -15119,6 +15172,7 @@ window.vrcGuardar = async function() {
       });
       const _vcCarritoSnap = {..._vrcCarrito};
       _mbPrintTicket({productos, total, medioPago:_medioPago, ticketNum:_ticketNum, cajero:window.currentOperadorNombre||''});
+      setTimeout(() => _mbPrintPedido({productos, ticketNum:_ticketNum, pedidoNum:'P-'+_ticketNum.slice(2), cajero:window.currentOperadorNombre||'', cliente:''}), 1500);
       vrcCerrar();
       if(window._triggerStockPorVenta) window._triggerStockPorVenta(_vcCarritoSnap, _vcDocRef.id).catch(()=>{});
       _btnReset();

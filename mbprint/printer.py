@@ -103,12 +103,15 @@ def print_ticket(data):
       - a dict with a "lines" key (list of str) for raw text printing
       - a plain list of str (treated as lines)
       - a dict with structured ticket fields (negocio, items, total, etc.)
+      - a dict with tipo:"pedido" for production order layout
     """
     if isinstance(data, list):
         return _print_lines(data)
     if isinstance(data, dict) and "lines" in data:
         return _print_lines(data["lines"], cut=data.get("corte", True))
     if isinstance(data, dict):
+        if data.get("tipo") == "pedido":
+            return _print_pedido(data)
         return _print_structured(data)
     raise ValueError("data debe ser una lista de líneas o un dict")
 
@@ -227,6 +230,93 @@ def _print_structured(data: dict):
     buf += CMD_CENTER
     buf += _encode(footer + "\n")
     buf += b'\n' * 6
+
+    if corte:
+        buf += CMD_CUT
+
+    _send_raw(get_printer_name(), bytes(buf))
+
+
+def _print_pedido(data: dict):
+    """Production order ticket (kitchen/workshop). Same header style as customer
+    ticket but no totals/payment — just items with optional notes per item."""
+    logo_b64 = data.get("logo", "")
+    negocio = data.get("negocio", "MB Strategy")
+    pedido = data.get("pedido", "")
+    ticket = data.get("ticket", "")
+    fecha = data.get("fecha", "")
+    hora = data.get("hora", "")
+    operador = data.get("operador", "")
+    items = data.get("items", [])
+    cliente = data.get("cliente", "")
+    corte = data.get("corte", True)
+
+    buf = bytearray(CMD_INIT)
+
+    # Logo
+    if logo_b64:
+        img_cmd = _build_image_cmd(logo_b64)
+        if img_cmd:
+            buf += CMD_CENTER
+            buf += img_cmd
+
+    # Business name
+    buf += b"\n"
+    buf += CMD_CENTER + CMD_BOLD_ON + CMD_DOUBLE
+    buf += _encode(negocio + "\n")
+    buf += CMD_NORMAL + CMD_BOLD_OFF
+    buf += _separator()
+
+    # Title block: "PEDIDO DE PRODUCCION" + P-XXXX + Ticket: V-XXXX
+    buf += CMD_CENTER + CMD_BOLD_ON
+    buf += _encode("PEDIDO DE PRODUCCION\n")
+    buf += CMD_BOLD_OFF
+    if pedido:
+        buf += CMD_BOLD_ON + CMD_DOUBLE
+        buf += _encode(pedido + "\n")
+        buf += CMD_NORMAL + CMD_BOLD_OFF
+    if ticket:
+        buf += _encode(f"Ticket: {ticket}\n")
+    buf += _separator()
+
+    # Meta (left-aligned)
+    buf += CMD_LEFT
+    if fecha:
+        buf += _encode(f"Fecha: {fecha}\n")
+    if hora:
+        buf += _encode(f"Hora:  {hora}\n")
+    if operador:
+        buf += _encode(f"Operador: {operador}\n")
+    buf += _separator()
+
+    # PRODUCTOS
+    buf += CMD_LEFT + CMD_BOLD_ON
+    buf += _encode("PRODUCTOS\n")
+    buf += CMD_BOLD_OFF
+    buf += b"\n"
+    for it in items:
+        desc = str(it.get("desc", ""))
+        qty = str(it.get("qty", "1"))
+        nota = it.get("detalle") or it.get("nota") or ""
+        buf += CMD_BOLD_ON
+        buf += _encode(f"{qty}x {desc}\n")
+        buf += CMD_BOLD_OFF
+        if nota:
+            wrapped = textwrap.wrap(f"-> {nota}", LINE_WIDTH, subsequent_indent="   ")
+            for line in wrapped:
+                buf += _encode(line + "\n")
+        buf += b"\n"
+    buf += _separator()
+
+    # Cliente (only if venta a cuenta)
+    if cliente:
+        buf += CMD_LEFT + _encode(f"Cliente: {cliente}\n")
+        buf += _separator()
+
+    # Footer
+    buf += CMD_CENTER
+    buf += _encode("- MB Strategy -\n")
+    buf += b"\n" * 6
 
     if corte:
         buf += CMD_CUT
