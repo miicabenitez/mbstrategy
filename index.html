@@ -14987,7 +14987,7 @@ window._getNextTicketNum = async function(uid) {
   });
   return 'V-' + String(num).padStart(4, '0');
 };
-async function _mbPrintTicket({productos, total, medioPago, ticketNum, cajero}) {
+async function _mbPrintTicket({productos, total, medioPago, ticketNum, cajero, observacion}) {
   try {
     let negocio = window._negocioNombre;
     let subtitulo = window._negocioSubtitulo;
@@ -15039,13 +15039,14 @@ async function _mbPrintTicket({productos, total, medioPago, ticketNum, cajero}) 
         })),
         total: '$' + Math.round(total).toLocaleString('es-AR'),
         medio: medioPago || '',
+        observacion: observacion || '',
         observaciones: productos.map(p => p.detalle || p.nota || '').filter(Boolean).join(', ') || '',
         footer: 'Este comprobante no tiene validez fiscal'
       })
     }).catch(() => {});
   } catch(_) {}
 }
-async function _mbPrintPedido({productos, ticketNum, pedidoNum, cajero, cliente}) {
+async function _mbPrintPedido({productos, ticketNum, pedidoNum, cajero, cliente, observacion}) {
   try {
     let negocio = window._negocioNombre;
     let logo = window._negocioLogo;
@@ -15092,7 +15093,8 @@ async function _mbPrintPedido({productos, ticketNum, pedidoNum, cajero, cliente}
           qty: p.qty,
           detalle: p.detalle || p.nota || ''
         })),
-        cliente: cliente || ''
+        cliente: cliente || '',
+        observacion: observacion || ''
       })
     }).catch(() => {});
   } catch(_) {}
@@ -15144,8 +15146,9 @@ window.vrcGuardar = async function() {
       });
       await window._updateDoc(window._doc(window.db,'clientes',currentClientUID,'cobros',_cobroRef.id), { libroCajaId: _vcDocRef.id });
       const _vcCarritoSnap = {..._vrcCarrito};
-      _mbPrintTicket({productos, total, medioPago:'Cuenta: '+cli.nombre, ticketNum:_ticketNum, cajero:window.currentOperadorNombre||''});
-      setTimeout(() => _mbPrintPedido({productos, ticketNum:_ticketNum, pedidoNum:'P-'+_ticketNum.slice(2), cajero:window.currentOperadorNombre||'', cliente:cli.nombre}), 1500);
+      const _obsVenta = document.getElementById('vrc-observacion')?.value?.trim() || '';
+      _mbPrintTicket({productos, total, medioPago:'Cuenta: '+cli.nombre, ticketNum:_ticketNum, cajero:window.currentOperadorNombre||'', observacion:_obsVenta});
+      setTimeout(() => _mbPrintPedido({productos, ticketNum:_ticketNum, pedidoNum:'P-'+_ticketNum.slice(2), cajero:window.currentOperadorNombre||'', cliente:cli.nombre, observacion:_obsVenta}), 1500);
       vrcCerrar();
       if(window._triggerStockPorVenta) window._triggerStockPorVenta(_vcCarritoSnap, null).catch(()=>{});
       showToast('Pedido registrado a cuenta de '+cli.nombre,'success');
@@ -15171,8 +15174,9 @@ window.vrcGuardar = async function() {
         creadoPor: window.currentOperadorNombre || 'Admin'
       });
       const _vcCarritoSnap = {..._vrcCarrito};
-      _mbPrintTicket({productos, total, medioPago:_medioPago, ticketNum:_ticketNum, cajero:window.currentOperadorNombre||''});
-      setTimeout(() => _mbPrintPedido({productos, ticketNum:_ticketNum, pedidoNum:'P-'+_ticketNum.slice(2), cajero:window.currentOperadorNombre||'', cliente:''}), 1500);
+      const _obsVenta = document.getElementById('vrc-observacion')?.value?.trim() || '';
+      _mbPrintTicket({productos, total, medioPago:_medioPago, ticketNum:_ticketNum, cajero:window.currentOperadorNombre||'', observacion:_obsVenta});
+      setTimeout(() => _mbPrintPedido({productos, ticketNum:_ticketNum, pedidoNum:'P-'+_ticketNum.slice(2), cajero:window.currentOperadorNombre||'', cliente:'', observacion:_obsVenta}), 1500);
       vrcCerrar();
       if(window._triggerStockPorVenta) window._triggerStockPorVenta(_vcCarritoSnap, _vcDocRef.id).catch(()=>{});
       _btnReset();

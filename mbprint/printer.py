@@ -217,7 +217,7 @@ def _print_structured(data: dict):
         buf += _row("Vuelto:", vuelto)
 
     # Observaciones / detalle (optional, before the final separator)
-    nota = data.get("detalle") or data.get("observaciones")
+    nota = data.get("observacion") or data.get("detalle") or data.get("observaciones")
     if nota:
         buf += b"\n"
         buf += _encode("Observaciones:\n")
@@ -307,6 +307,16 @@ def _print_pedido(data: dict):
                 buf += _encode(line + "\n")
         buf += b"\n"
     buf += _separator()
+
+    # Observaciones generales de la venta
+    obs = data.get("observacion") or ""
+    if obs:
+        buf += CMD_LEFT + CMD_BOLD_ON
+        buf += _encode("OBSERVACIONES\n")
+        buf += CMD_BOLD_OFF
+        for line in textwrap.wrap(str(obs), LINE_WIDTH):
+            buf += _encode(line + "\n")
+        buf += _separator()
 
     # Cliente (only if venta a cuenta)
     if cliente:
