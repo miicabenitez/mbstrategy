@@ -8,7 +8,7 @@ from flask_cors import CORS
 import pystray
 from PIL import Image
 
-from printer import print_ticket, get_printer
+from printer import print_ticket, get_printer_name
 
 # ---------------------------------------------------------------------------
 # Config
@@ -76,8 +76,8 @@ def load_icon() -> Image.Image:
 
 def check_printer_status(icon, item):
     try:
-        get_printer().close()
-        icon.notify("Impresora detectada y lista.", "MB Print")
+        name = get_printer_name()
+        icon.notify(f"Impresora: {name}", "MB Print")
     except Exception as e:
         icon.notify(f"Sin impresora: {e}", "MB Print")
 
