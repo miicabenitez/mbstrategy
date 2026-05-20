@@ -424,10 +424,9 @@ def _print_cierre(data: dict):
     buf += _row("Ingresos:", _money(ingresos))
     buf += _row("Egresos:", "-" + _money(egresos))
     buf += _separator()
-    buf += CMD_CENTER + CMD_BOLD_ON + CMD_DOUBLE
-    buf += _encode("SALDO FINAL\n")
-    buf += _encode(_money(saldo_final) + "\n")
-    buf += CMD_NORMAL + CMD_BOLD_OFF + CMD_LEFT
+    buf += CMD_BOLD_ON
+    buf += _row("SALDO FINAL:", _money(saldo_final))
+    buf += CMD_BOLD_OFF
 
     # 8. Separator
     buf += _separator()
