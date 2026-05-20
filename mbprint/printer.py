@@ -1,71 +1,81 @@
-import usb.core
-from escpos.printer import Usb, Network, File
-from escpos.exceptions import Error as EscposError
+import win32print
 
-KNOWN_VENDORS = [
-    0x04b8,  # Epson
-    0x0519,  # Star
-    0x0416,  # Bixolon
-    0x154f,  # SNBC
-    0x0dd4,  # Custom
-    0x1fc9,  # Sewoo
-    0x20d1,  # Rongta
-    0x0fe6,  # Goodson
-]
 
-def find_usb_printer():
-    for vendor_id in KNOWN_VENDORS:
-        devices = list(usb.core.find(idVendor=vendor_id, find_all=True))
-        for dev in devices:
-            return dev.idVendor, dev.idProduct
-    # Fallback: any device with printer class (7)
-    for dev in usb.core.find(find_all=True):
+def get_printer_name():
+    name = win32print.GetDefaultPrinter()
+    if not name:
+        raise RuntimeError("No se encontró ninguna impresora configurada")
+    return name
+
+
+def _send_raw(printer_name: str, data: bytes):
+    hprinter = win32print.OpenPrinter(printer_name)
+    try:
+        hjob = win32print.StartDocPrinter(hprinter, 1, ("ticket", None, "RAW"))
         try:
-            if dev.bDeviceClass == 7:
-                return dev.idVendor, dev.idProduct
-            for cfg in dev:
-                for intf in cfg:
-                    if intf.bInterfaceClass == 7:
-                        return dev.idVendor, dev.idProduct
-        except Exception:
-            continue
-    return None, None
+            win32print.StartPagePrinter(hprinter)
+            win32print.WritePrinter(hprinter, data)
+            win32print.EndPagePrinter(hprinter)
+        finally:
+            win32print.EndDocPrinter(hprinter)
+    finally:
+        win32print.ClosePrinter(hprinter)
 
 
-def get_printer():
-    vendor, product = find_usb_printer()
-    if vendor and product:
-        try:
-            return Usb(vendor, product, timeout=0, in_ep=0x82, out_ep=0x01)
-        except Exception:
-            pass
-        try:
-            return Usb(vendor, product)
-        except Exception as e:
-            raise RuntimeError(f"Impresora encontrada (0x{vendor:04x}:0x{product:04x}) pero no se pudo conectar: {e}")
-    raise RuntimeError("No se encontró ninguna impresora ESC/POS USB")
+# --------------- ESC/POS command helpers ---------------
+
+ESC = b'\x1b'
+GS = b'\x1d'
+
+CMD_INIT = ESC + b'@'
+CMD_CENTER = ESC + b'a\x01'
+CMD_LEFT = ESC + b'a\x00'
+CMD_BOLD_ON = ESC + b'E\x01'
+CMD_BOLD_OFF = ESC + b'E\x00'
+CMD_DOUBLE = GS + b'!\x11'       # double width + double height
+CMD_NORMAL = GS + b'!\x00'       # normal size
+CMD_CUT = GS + b'V\x00'          # full cut
+CMD_FEED = b'\n'
+
+LINE_WIDTH = 32
 
 
-def print_ticket(data: dict):
+def _encode(text: str) -> bytes:
+    return text.encode("cp437", errors="replace")
+
+
+def _row(label: str, value: str) -> bytes:
+    gap = LINE_WIDTH - len(label) - len(value)
+    return _encode(f"{label}{' ' * max(1, gap)}{value}\n")
+
+
+def print_ticket(data):
     """
-    data keys (all optional except at least one line):
-      negocio   str  — nombre del negocio (header)
-      subtitulo str  — subtítulo debajo del nombre
-      fecha     str  — fecha/hora
-      cajero    str  — nombre del cajero
-      turno     str  — número de turno
-      items     list[{desc, qty, precio}]
-      subtotal  str
-      descuento str
-      total     str
-      medio     str  — medio de pago
-      recibido  str
-      vuelto    str
-      footer    str  — mensaje de cierre
-      corte     bool — true para cortar papel (default true)
+    Accepts either:
+      - a dict with a "lines" key (list of str) for raw text printing
+      - a plain list of str (treated as lines)
+      - a dict with structured ticket fields (negocio, items, total, etc.)
     """
-    p = get_printer()
+    if isinstance(data, list):
+        return _print_lines(data)
+    if isinstance(data, dict) and "lines" in data:
+        return _print_lines(data["lines"], cut=data.get("corte", True))
+    if isinstance(data, dict):
+        return _print_structured(data)
+    raise ValueError("data debe ser una lista de líneas o un dict")
 
+
+def _print_lines(lines: list, cut: bool = True):
+    buf = bytearray(CMD_INIT)
+    for line in lines:
+        buf += _encode(str(line) + "\n")
+    buf += b'\n\n\n'
+    if cut:
+        buf += CMD_CUT
+    _send_raw(get_printer_name(), bytes(buf))
+
+
+def _print_structured(data: dict):
     negocio = data.get("negocio", "MB Strategy")
     subtitulo = data.get("subtitulo", "")
     fecha = data.get("fecha", "")
@@ -78,70 +88,68 @@ def print_ticket(data: dict):
     medio = data.get("medio", "")
     recibido = data.get("recibido")
     vuelto = data.get("vuelto")
-    footer = data.get("footer", "¡Gracias por tu compra!")
+    footer = data.get("footer", "Gracias por tu compra!")
     corte = data.get("corte", True)
 
+    buf = bytearray(CMD_INIT)
+
     # Header
-    p.set(align="center", bold=True, width=2, height=2)
-    p.textln(negocio)
-    p.set(align="center", bold=False, width=1, height=1)
+    buf += CMD_CENTER + CMD_BOLD_ON + CMD_DOUBLE
+    buf += _encode(negocio + "\n")
+    buf += CMD_NORMAL + CMD_BOLD_OFF + CMD_CENTER
     if subtitulo:
-        p.textln(subtitulo)
-    p.textln("-" * 32)
+        buf += _encode(subtitulo + "\n")
+    buf += _encode("-" * LINE_WIDTH + "\n")
 
     # Meta
+    buf += CMD_LEFT
     if fecha:
-        p.text(f"Fecha:  {fecha}\n")
+        buf += _encode(f"Fecha:  {fecha}\n")
     if cajero:
-        p.text(f"Cajero: {cajero}\n")
+        buf += _encode(f"Cajero: {cajero}\n")
     if turno:
-        p.text(f"Turno:  {turno}\n")
+        buf += _encode(f"Turno:  {turno}\n")
     if fecha or cajero or turno:
-        p.textln("-" * 32)
+        buf += _encode("-" * LINE_WIDTH + "\n")
 
     # Items
-    p.set(align="left")
     for it in items:
         desc = str(it.get("desc", ""))
         qty = str(it.get("qty", "1"))
         precio = str(it.get("precio", ""))
         line = f"{qty}x {desc}"
-        price_str = precio.rjust(32 - len(line))
-        if len(line) + len(precio) + 1 <= 32:
-            p.text(f"{line}{price_str}\n")
+        if len(line) + len(precio) + 1 <= LINE_WIDTH:
+            price_str = precio.rjust(LINE_WIDTH - len(line))
+            buf += _encode(f"{line}{price_str}\n")
         else:
-            p.text(f"{line}\n")
-            p.text(f"   {precio}\n")
+            buf += _encode(f"{line}\n")
+            buf += _encode(f"   {precio}\n")
 
-    p.textln("-" * 32)
+    buf += _encode("-" * LINE_WIDTH + "\n")
 
     # Totals
-    def print_row(label, value):
-        gap = 32 - len(label) - len(value)
-        p.text(f"{label}{' ' * max(1, gap)}{value}\n")
-
     if subtotal:
-        print_row("Subtotal:", subtotal)
+        buf += _row("Subtotal:", subtotal)
     if descuento:
-        print_row("Descuento:", descuento)
-    p.set(bold=True)
-    print_row("TOTAL:", total)
-    p.set(bold=False)
+        buf += _row("Descuento:", descuento)
+    buf += CMD_BOLD_ON
+    buf += _row("TOTAL:", total)
+    buf += CMD_BOLD_OFF
 
     if medio:
-        print_row("Medio de pago:", medio)
+        buf += _row("Medio de pago:", medio)
     if recibido:
-        print_row("Recibido:", recibido)
+        buf += _row("Recibido:", recibido)
     if vuelto:
-        print_row("Vuelto:", vuelto)
+        buf += _row("Vuelto:", vuelto)
 
     # Footer
-    p.textln("-" * 32)
-    p.set(align="center")
-    p.textln(footer)
-    p.text("\n\n\n")
+    buf += _encode("-" * LINE_WIDTH + "\n")
+    buf += CMD_CENTER
+    buf += _encode(footer + "\n")
+    buf += b'\n\n\n'
 
     if corte:
-        p.cut()
+        buf += CMD_CUT
 
-    p.close()
+    _send_raw(get_printer_name(), bytes(buf))
