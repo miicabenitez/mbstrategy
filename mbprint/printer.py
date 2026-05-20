@@ -1,4 +1,8 @@
+import base64
+from io import BytesIO
+
 import win32print
+from PIL import Image
 
 
 def get_printer_name():
@@ -49,6 +53,44 @@ def _row(label: str, value: str) -> bytes:
     return _encode(f"{label}{' ' * max(1, gap)}{value}\n")
 
 
+def _build_image_cmd(b64: str, max_width: int = 384) -> bytes:
+    """Convert base64 image to ESC/POS raster command (GS v 0). Returns b'' on failure."""
+    try:
+        if "," in b64:
+            b64 = b64.split(",", 1)[1]
+        raw = base64.b64decode(b64)
+        img = Image.open(BytesIO(raw))
+        if img.mode != "RGBA":
+            img = img.convert("RGBA")
+        # Flatten transparency onto white (avoid black blob on transparent logos)
+        bg = Image.new("RGBA", img.size, (255, 255, 255, 255))
+        bg.paste(img, mask=img.split()[3])
+        img = bg.convert("L")
+        w, h = img.size
+        if w > max_width:
+            h = max(1, int(h * max_width / w))
+            w = max_width
+        w = (w // 8) * 8
+        if w == 0:
+            return b""
+        img = img.resize((w, h)).convert("1")  # 1-bit with Floyd-Steinberg dithering
+        bytes_per_row = w // 8
+        raster = bytearray()
+        px = img.load()
+        for y in range(h):
+            for xb in range(bytes_per_row):
+                byte = 0
+                for bit in range(8):
+                    if px[xb * 8 + bit, y] == 0:  # black pixel
+                        byte |= 1 << (7 - bit)
+                raster.append(byte)
+        xL, xH = bytes_per_row & 0xFF, (bytes_per_row >> 8) & 0xFF
+        yL, yH = h & 0xFF, (h >> 8) & 0xFF
+        return GS + b"v0" + bytes([0, xL, xH, yL, yH]) + bytes(raster)
+    except Exception:
+        return b""
+
+
 def print_ticket(data):
     """
     Accepts either:
@@ -76,9 +118,12 @@ def _print_lines(lines: list, cut: bool = True):
 
 
 def _print_structured(data: dict):
+    logo_b64 = data.get("logo", "")
     negocio = data.get("negocio", "MB Strategy")
     subtitulo = data.get("subtitulo", "")
+    ticket = data.get("ticket", "")
     fecha = data.get("fecha", "")
+    hora = data.get("hora", "")
     cajero = data.get("cajero", "")
     turno = data.get("turno", "")
     items = data.get("items", [])
@@ -93,10 +138,19 @@ def _print_structured(data: dict):
 
     buf = bytearray(CMD_INIT)
 
-    # Header
+    # Logo (centered, silent if missing/invalid)
+    if logo_b64:
+        img_cmd = _build_image_cmd(logo_b64)
+        if img_cmd:
+            buf += CMD_CENTER + img_cmd + b"\n"
+
+    # Header: negocio (double bold), ticket (bold), subtitulo (normal)
     buf += CMD_CENTER + CMD_BOLD_ON + CMD_DOUBLE
     buf += _encode(negocio + "\n")
-    buf += CMD_NORMAL + CMD_BOLD_OFF + CMD_CENTER
+    buf += CMD_NORMAL
+    if ticket:
+        buf += _encode(ticket + "\n")
+    buf += CMD_BOLD_OFF
     if subtitulo:
         buf += _encode(subtitulo + "\n")
     buf += _encode("-" * LINE_WIDTH + "\n")
@@ -104,12 +158,14 @@ def _print_structured(data: dict):
     # Meta
     buf += CMD_LEFT
     if fecha:
-        buf += _encode(f"Fecha:  {fecha}\n")
+        buf += _encode(f"Fecha: {fecha}\n")
+    if hora:
+        buf += _encode(f"Hora:  {hora}\n")
     if cajero:
         buf += _encode(f"Cajero: {cajero}\n")
     if turno:
         buf += _encode(f"Turno:  {turno}\n")
-    if fecha or cajero or turno:
+    if fecha or hora or cajero or turno:
         buf += _encode("-" * LINE_WIDTH + "\n")
 
     # Items
@@ -147,7 +203,7 @@ def _print_structured(data: dict):
     buf += _encode("-" * LINE_WIDTH + "\n")
     buf += CMD_CENTER
     buf += _encode(footer + "\n")
-    buf += b'\n\n\n'
+    buf += b'\n' * 6
 
     if corte:
         buf += CMD_CUT

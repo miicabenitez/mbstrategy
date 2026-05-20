@@ -14991,7 +14991,8 @@ async function _mbPrintTicket({productos, total, medioPago, ticketNum, cajero}) 
   try {
     let negocio = window._negocioNombre;
     let subtitulo = window._negocioSubtitulo;
-    if (!negocio) {
+    let logo = window._negocioLogo;
+    if (!negocio || logo === undefined) {
       try {
         const uid = window.currentClientUID;
         if (uid && window._getDoc && window._doc) {
@@ -15000,8 +15001,10 @@ async function _mbPrintTicket({productos, total, medioPago, ticketNum, cajero}) 
             const d = negDoc.data();
             negocio = d.negocioNombre || d.nombre || '';
             subtitulo = d.negocioRubro || '';
+            logo = d.logoNegocio || null;
             window._negocioNombre = negocio;
             window._negocioSubtitulo = subtitulo;
+            window._negocioLogo = logo;
           }
         }
       } catch(_) {}
@@ -15009,18 +15012,25 @@ async function _mbPrintTicket({productos, total, medioPago, ticketNum, cajero}) 
     negocio = negocio || 'Mi negocio';
     subtitulo = subtitulo || '';
 
+    // Strip data URI prefix so the server gets pure base64
+    const logoB64 = (logo && typeof logo === 'string')
+      ? (logo.includes(',') ? logo.split(',', 2)[1] : logo)
+      : '';
+
     const ahora = new Date();
     const fechaFmt = ahora.toLocaleDateString('es-AR', {day:'2-digit', month:'long', year:'numeric'});
-    const horaFmt = ahora.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'});
+    const horaFmt = ahora.toLocaleTimeString('es-AR', {hour:'numeric', minute:'2-digit', hour12:true});
 
     fetch('http://localhost:8765/print', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
+        logo: logoB64,
         negocio,
         subtitulo,
         ticket: ticketNum || '',
-        fecha: fechaFmt + ' · ' + horaFmt,
+        fecha: fechaFmt,
+        hora: horaFmt,
         cajero: cajero || '',
         items: productos.map(p => ({
           desc: p.nombre,
