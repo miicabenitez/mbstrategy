@@ -165,7 +165,7 @@ exports.handler = async function(event) {
         puntoVenta, tipoComprobante, importeTotal,
         concepto, cuitReceptor, razonSocialReceptor,
         fechaServDesde, fechaServHasta, fechaVtoPago,
-        descripcion
+        descripcion, items
       } = body;
 
       // Validaciones básicas
@@ -283,6 +283,7 @@ exports.handler = async function(event) {
         cuitReceptor: cuitReceptor || null,
         razonSocialReceptor: razonSocialReceptor || null,
         descripcion: descripcion || null,
+        items: (items && items.length) ? items : null,
         fechaEmision: admin.firestore.FieldValue.serverTimestamp(),
         ambiente,
         estado: 'emitida',

@@ -11316,6 +11316,7 @@ window.abrirModalFacturaCaja = async function(movId) {
     const modal = document.getElementById('modalFacturaCaja');
     modal.dataset.movId = movId;
     modal.dataset.monto = mov.monto;
+    modal.dataset.productos = JSON.stringify(mov.productos || []);
     // Reset pills al abrir — labels primero para que reflejen la condición del emisor
     window._updateMfcPillLabels();
     selectMfcCond(document.querySelector('#modalFacturaCaja .mfc-pill'), '5', false);
@@ -11383,6 +11384,8 @@ window.emitirFacturaCaja = async function() {
   } else if (condEmisor === 'exento') {
     tipoComprobante = 6; // Factura B
   }
+  const _productos = JSON.parse(modal.dataset.productos || '[]');
+  const items = _productos.map(p => ({desc: p.nombre, cantidad: p.qty, precio: p.precioUnitario}));
   const btn = document.getElementById('mfc-btn-emitir');
   if(btn && btn.disabled) return;
   btn.textContent = 'Emitiendo...';
@@ -11405,7 +11408,8 @@ window.emitirFacturaCaja = async function() {
         condicionIVAReceptor: parseInt(condReceptor),
         cuitReceptor: cuitReceptor || null,
         razonSocialReceptor: razonSocial,
-        descripcion
+        descripcion,
+        items: items.length ? items : undefined
       })
     });
     const data = await res.json();
