@@ -556,6 +556,8 @@ def _print_factura(data: dict):
     razon_recep    = data.get("razonSocialReceptor", "")
     cuit_recep     = data.get("cuitReceptor", "")
     emisor_cond    = data.get("emisorCondicion", "")
+    inicio_act     = data.get("inicioAct", "")
+    condicion_iva_raw = data.get("condicionIVA", "")
     corte          = data.get("corte", True)
 
     TIPO_NOMBRE = {
@@ -563,6 +565,12 @@ def _print_factura(data: dict):
         3: "NOTA DE CREDITO A", 8: "NOTA DE CREDITO B", 13: "NOTA DE CREDITO C",
         2: "NOTA DE DEBITO A",  7: "NOTA DE DEBITO B",  12: "NOTA DE DEBITO C",
     }
+    CONDICION_IVA_LABEL = {
+        "responsable_inscripto": "Responsable Inscripto",
+        "exento": "Exento",
+        "monotributista": "Monotributista",
+    }
+    condicion_iva_label = CONDICION_IVA_LABEL.get(condicion_iva_raw, "")
 
     pv_fmt    = str(pto_venta).zfill(4)
     nro_fmt   = str(nro_comp).zfill(8)
@@ -597,7 +605,12 @@ def _print_factura(data: dict):
         buf += CMD_CENTER + _encode("CUIT: " + str(cuit_emisor) + "\n")
     if ing_brutos:
         buf += CMD_CENTER + _encode("Ing. Brutos: " + str(ing_brutos) + "\n")
+    if inicio_act:
+        buf += CMD_CENTER + _encode("Inicio Act.: " + str(inicio_act) + "\n")
+    if condicion_iva_label:
+        buf += CMD_CENTER + _encode(condicion_iva_label + "\n")
 
+    buf += b"\n"
     buf += _separator()
 
     # 2. Tipo comprobante bold centrado
@@ -605,13 +618,18 @@ def _print_factura(data: dict):
     buf += _encode(TIPO_NOMBRE.get(tipo, "FACTURA C") + "\n")
     buf += CMD_BOLD_OFF + CMD_LEFT
 
+    buf += b"\n"
     buf += _separator()
 
     # 3. Datos del comprobante
-    buf += _row("Nro.:", nro_label)
+    buf += _row("P. Venta:", pv_fmt)
+    buf += b"\n"
+    buf += _row("Nro. Factura:", nro_fmt)
     if fecha:
+        buf += b"\n"
         buf += _row("Fecha:", str(fecha))
     if ticket_num:
+        buf += b"\n"
         buf += _row("Ticket:", str(ticket_num))
 
     # 4. Receptor (solo Factura A, tipo 1)
@@ -626,6 +644,7 @@ def _print_factura(data: dict):
 
     buf += _separator()
 
+    buf += b"\n"
     # 5. Detalle de items
     buf += CMD_BOLD_ON + _encode("DETALLE\n") + CMD_BOLD_OFF + b"\n"
     if items:
@@ -657,12 +676,13 @@ def _print_factura(data: dict):
         buf += _lwp("Subtotal:", _money(importe_total))
         buf += _lwp("Otros Tributos:", _money(0))
 
+    buf += b"\n"
     buf += CMD_CENTER + CMD_BOLD_ON + CMD_DOUBLE
     buf += _encode(f"TOTAL  {_money(importe_total)}\n")
     buf += CMD_NORMAL + CMD_BOLD_OFF + CMD_LEFT
 
     if tipo == 6 and emisor_ri and iva21 > 0:
-        buf += b"\n"
+        buf += _separator()
         buf += _encode(f"IVA Cont. Ley 27.743: {_money(iva21)}\n")
 
     buf += _separator()
@@ -671,11 +691,13 @@ def _print_factura(data: dict):
     buf += CMD_BOLD_ON + _encode("FACTURACION ELECTRONICA\n") + CMD_BOLD_OFF
     if cae:
         buf += _encode("CAE: " + cae + "\n")
+        buf += b"\n"
     if cae_fecha_vto:
         vto = str(cae_fecha_vto)
         if len(vto) == 8:
             vto = f"{vto[6:8]}/{vto[4:6]}/{vto[0:4]}"
         buf += _encode("Vto. CAE: " + vto + "\n")
+        buf += b"\n"
     if fecha:
         buf += _encode("Emision: " + str(fecha) + "\n")
 
