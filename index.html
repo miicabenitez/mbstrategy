@@ -15048,6 +15048,7 @@ async function _mbPrintTicket({productos, total, medioPago, ticketNum, cajero, o
     }).catch(() => {});
   } catch(_) {}
 }
+window._mbPrintTicket = _mbPrintTicket;
 async function _mbPrintPedido({productos, ticketNum, pedidoNum, cajero, cliente, observacion}) {
   try {
     let negocio = window._negocioNombre;
@@ -15101,6 +15102,7 @@ async function _mbPrintPedido({productos, ticketNum, pedidoNum, cajero, cliente,
     }).catch(() => {});
   } catch(_) {}
 }
+window._mbPrintPedido = _mbPrintPedido;
 async function _mbPrintCierre(params) {
   try {
     let negocio = window._negocioNombre;
@@ -15200,6 +15202,52 @@ window.abrirMenuFacturaEmitida = function(facturaId, movId, event) {
   document.body.appendChild(menu);
   const close = (e) => { if (!menu.contains(e.target)) { menu.remove(); document.removeEventListener('click', close, true); } };
   setTimeout(() => document.addEventListener('click', close, true), 0);
+};
+
+window.abrirMenuTicketPedido = function(id, event) {
+  document.querySelectorAll('.mb-tic-menu').forEach(el => el.remove());
+  const menu = document.createElement('div');
+  menu.className = 'mb-tic-menu';
+  menu.style.cssText = 'position:fixed;background:#fff;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.14);min-width:220px;overflow:hidden;z-index:9999;';
+  menu.innerHTML =
+    '<button onclick="generarTicketPDF((window._cajaMovimientos||[]).find(function(x){return x.id===\''+id+'\';}));this.closest(\'.mb-tic-menu\').remove();" style="width:100%;background:none;border:none;border-bottom:.5px solid #ede8e0;padding:11px 14px;text-align:left;font-size:12px;font-family:\'DM Sans\',sans-serif;color:#1a1a1a;cursor:pointer;display:flex;align-items:center;gap:8px;">↓ Descargar ticket</button>' +
+    '<button onclick="window._reimprimirTicketMov(\''+id+'\');this.closest(\'.mb-tic-menu\').remove();" style="width:100%;background:none;border:none;border-bottom:.5px solid #ede8e0;padding:11px 14px;text-align:left;font-size:12px;font-family:\'DM Sans\',sans-serif;color:#1a1a1a;cursor:pointer;display:flex;align-items:center;gap:8px;">🖨 Reimprimir ticket cliente</button>' +
+    '<button onclick="window._reimprimirPedidoMov(\''+id+'\');this.closest(\'.mb-tic-menu\').remove();" style="width:100%;background:none;border:none;padding:11px 14px;text-align:left;font-size:12px;font-family:\'DM Sans\',sans-serif;color:#1a1a1a;cursor:pointer;display:flex;align-items:center;gap:8px;">🖨 Reimprimir pedido producción</button>';
+  const rect = event.currentTarget.getBoundingClientRect();
+  menu.style.top = (rect.bottom + 4) + 'px';
+  menu.style.left = Math.min(rect.left, window.innerWidth - 230) + 'px';
+  document.body.appendChild(menu);
+  const close = (e) => { if (!menu.contains(e.target)) { menu.remove(); document.removeEventListener('click', close, true); } };
+  setTimeout(() => document.addEventListener('click', close, true), 0);
+};
+
+window._reimprimirTicketMov = function(id) {
+  const m = (window._cajaMovimientos||[]).find(function(x){return x.id===id;});
+  if (!m) return;
+  let medioPago = m.medioPago || m.cuenta || 'Efectivo';
+  if (medioPago === 'Caja mostrador') medioPago = 'Efectivo';
+  window._mbPrintTicket({
+    productos: m.productos || [],
+    total: parseFloat(m.monto) || 0,
+    medioPago: medioPago,
+    ticketNum: m.ticketNum || '',
+    cajero: m.creadoPor || '',
+    observacion: m.observacion || ''
+  });
+};
+
+window._reimprimirPedidoMov = function(id) {
+  const m = (window._cajaMovimientos||[]).find(function(x){return x.id===id;});
+  if (!m) return;
+  const pedidoNum = m.ticketNum ? ('P-' + m.ticketNum.slice(2)) : '';
+  window._mbPrintPedido({
+    productos: m.productos || [],
+    ticketNum: m.ticketNum || '',
+    pedidoNum: pedidoNum,
+    cajero: m.creadoPor || '',
+    cliente: m.clienteNombre || '',
+    observacion: m.observacion || ''
+  });
 };
 
 async function _mbPrintFactura(facturaId) {
@@ -26191,7 +26239,7 @@ window.cajaMovDetalle = function(id) {
   if(dlEl) {
     if(m.ticketNum) {
       dlEl.style.display='block';
-      dlEl.innerHTML='<button onclick="generarTicketPDF((window._cajaMovimientos||[]).find(function(x){return x.id===\''+id+'\';}))" style="width:100%;padding:10px;border-radius:10px;border:1.5px solid rgba(176,144,136,0.4);background:#fff;color:#b09088;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;"><i class="ti ti-download" style="font-size:15px;"></i>Descargar ticket</button>';
+      dlEl.innerHTML='<button onclick="event.stopPropagation();window.abrirMenuTicketPedido(\''+id+'\',event)" style="width:100%;padding:10px;border-radius:10px;border:1.5px solid rgba(176,144,136,0.4);background:#fff;color:#b09088;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;">Ticket / Pedido<i class="ti ti-chevron-down" style="font-size:15px;"></i></button>';
     } else { dlEl.style.display='none'; }
   }
   ov.style.display='flex';
