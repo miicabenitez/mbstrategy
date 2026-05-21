@@ -10447,7 +10447,7 @@ function renderCajaCajero() {
     var medioLabel = isPend ? (isCobrado ? 'Cobrado' : 'Pendiente') : ((m.medioPago && m.medioPago !== 'Caja mostrador') ? m.medioPago : (m.cuenta && m.cuenta !== 'Caja mostrador' ? m.cuenta : 'Efectivo'));
     var facturaBtnHtml = (isIng && m.id && m.origen !== 'apertura_turno')
       ? (m.facturado
-          ? '<div style="padding:4px 8px;border-radius:8px;background:rgba(74,94,77,0.1);border:.5px solid rgba(74,94,77,0.3);display:flex;align-items:center;color:#4a5e4d;font-size:11px;gap:4px;flex-shrink:0;font-weight:500;">✓ Factura emitida</div>'
+          ? '<div onclick="event.stopPropagation();abrirMenuFacturaEmitida(\''+(m.facturaId||'')+'\',\''+m.id+'\',event)" style="padding:4px 8px;border-radius:8px;background:rgba(74,94,77,0.1);border:.5px solid rgba(74,94,77,0.3);display:flex;align-items:center;color:#4a5e4d;font-size:11px;gap:4px;flex-shrink:0;font-weight:500;cursor:pointer;">✓ Factura emitida</div>'
           : '<div onclick="event.stopPropagation();abrirModalFacturaCaja(\''+m.id+'\')" title="Emitir factura" style="padding:4px 8px;border-radius:8px;border:.5px solid rgba(0,0,0,0.12);cursor:pointer;display:flex;align-items:center;color:#9ca3af;font-size:11px;gap:4px;flex-shrink:0;"><svg width="13" height="13" viewBox="0 0 15 15" fill="none"><rect x="2.5" y="1.5" width="10" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M5 5h5M5 7.5h5M5 10h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>Facturar</div>')
       : '<div></div>';
     return '<div class="cv-tx-card cv-'+colorKey+(isNueva?' cv-nueva':'')+'" data-mov-id="'+m.id+'" onclick="cajaMovDetalle(\''+m.id+'\')" style="cursor:pointer;animation-delay:'+delay+'s"><div class="cv-tx-dot cv-'+colorKey+'"></div><div class="cv-tx-hora">'+hora+'</div><div class="cv-tx-tipo">'+tipoLabel+'</div><div class="cv-tx-desc"><span class="cv-tx-desc-main">'+(m.concepto||'—')+'</span>'+(m.devuelto?'<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;color:#b09088;background:rgba(176,144,136,0.1);border-radius:20px;padding:2px 8px;margin-left:6px;">↩ devolución</span>':'')+(m.detalle?'<span class="cv-tx-desc-sep"> · </span><span class="cv-tx-desc-sub">'+m.detalle+'</span>':'')+(m.ticketNum?'<span style="font-size:10px;color:#aaa;margin-left:6px;">'+m.ticketNum+'</span>':'')+'</div><div class="cv-tx-medio">'+pillMedio(medioLabel)+'</div><div class="cv-tx-monto cv-'+colorKey+'">'+montoStr+'</div>'+facturaBtnHtml+'</div>';
@@ -15184,6 +15184,64 @@ async function _mbPrintCierre(params) {
   } catch(_) {}
 }
 window._mbPrintCierre = _mbPrintCierre;
+
+window.abrirMenuFacturaEmitida = function(facturaId, movId, event) {
+  document.querySelectorAll('.mb-fac-menu').forEach(el => el.remove());
+  if (!facturaId) { showToast('ID de factura no disponible', 'error'); return; }
+  const menu = document.createElement('div');
+  menu.className = 'mb-fac-menu';
+  menu.style.cssText = 'position:fixed;background:#fff;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.14);min-width:180px;overflow:hidden;z-index:9999;';
+  menu.innerHTML =
+    '<button onclick="descargarPdfFactura(\''+facturaId+'\');this.closest(\'.mb-fac-menu\').remove();" style="width:100%;background:none;border:none;border-bottom:.5px solid #ede8e0;padding:11px 14px;text-align:left;font-size:12px;font-family:\'DM Sans\',sans-serif;color:#1a1a1a;cursor:pointer;display:flex;align-items:center;gap:8px;">📄 Ver PDF</button>' +
+    '<button onclick="window._mbPrintFactura(\''+facturaId+'\');this.closest(\'.mb-fac-menu\').remove();" style="width:100%;background:none;border:none;padding:11px 14px;text-align:left;font-size:12px;font-family:\'DM Sans\',sans-serif;color:#1a1a1a;cursor:pointer;display:flex;align-items:center;gap:8px;">🖨 Imprimir ticket</button>';
+  const rect = event.currentTarget.getBoundingClientRect();
+  menu.style.top = (rect.bottom + 4) + 'px';
+  menu.style.left = Math.min(rect.left, window.innerWidth - 190) + 'px';
+  document.body.appendChild(menu);
+  const close = (e) => { if (!menu.contains(e.target)) { menu.remove(); document.removeEventListener('click', close, true); } };
+  setTimeout(() => document.addEventListener('click', close, true), 0);
+};
+
+async function _mbPrintFactura(facturaId) {
+  try {
+    const { getDoc, doc } = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
+    const facSnap = await getDoc(doc(db, 'clientes', currentClientUID, 'facturas', facturaId));
+    if (!facSnap.exists()) return;
+    const f = facSnap.data();
+    const c = window.currentClientData || {};
+    const fechaStr = (() => { try { const d = f.creadoEn ? new Date(f.creadoEn) : new Date(); return d.toISOString().slice(0,10).split('-').reverse().join('/'); } catch(_) { return ''; } })();
+    const fechaISO = (() => { try { const d = f.creadoEn ? new Date(f.creadoEn) : new Date(); return d.toISOString().slice(0,10); } catch(_) { return ''; } })();
+    fetch('http://localhost:8765/print', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        tipo: 'factura',
+        negocio:              c.negocioNombre || c.nombre || 'MB Strategy',
+        razonSocial:          c.negocioRazonSocial || c.negocioNombre || '',
+        direccion:            c.negocioDir || '',
+        cuitEmisor:           c.negocioCuit || '',
+        ingBrutos:            c.negocioIngresosBrutos || '',
+        emisorCondicion:      c.negocioCondicionIVA || 'monotributista',
+        logo:                 c.logoNegocio || '',
+        tipoComprobante:      f.tipoComprobante || 11,
+        puntoVenta:           f.puntoVenta || 1,
+        nroComprobante:       f.nroComprobante || 0,
+        fecha:                fechaStr,
+        fechaISO:             fechaISO,
+        cae:                  f.cae || '',
+        caeFechaVto:          f.caeFechaVto || '',
+        importeTotal:         f.importeTotal || 0,
+        descripcion:          f.descripcion || '',
+        items:                f.items || [],
+        razonSocialReceptor:  f.razonSocialReceptor || '',
+        cuitReceptor:         f.cuitReceptor || '',
+        ticketNum:            f.ticketNum || '',
+      })
+    }).catch(() => {});
+  } catch(_) {}
+}
+window._mbPrintFactura = _mbPrintFactura;
+
 window.vrcGuardar = async function() {
   if(!currentClientUID) return;
   const keys = Object.keys(_vrcCarrito);
