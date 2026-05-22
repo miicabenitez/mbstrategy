@@ -193,10 +193,10 @@ body.es-cajero #mcd-quick-cobro{display:none !important;}
 .cv-turno-sub{font-size:11px;color:rgba(255,255,255,.3);padding-left:16px;}
 .cv-top-row2{display:flex;align-items:stretch;padding:12px 16px;gap:8px;overflow:visible;}
 @media(max-width:768px){
-  .cv-top-row2{overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap;padding-bottom:4px;padding-right:16px;}
-  .cv-top-row2 > *{flex-shrink:0;min-width:80px;}
-  .cv-medio-card{min-width:90px;max-width:110px;}
-  .cv-medio-card.cv-saldo-card{min-width:110px;}
+  .cv-top-row2{display:grid;grid-template-columns:1fr 1fr 1fr;overflow-x:unset;flex-wrap:unset;padding:8px 12px 12px;gap:6px;}
+  .cv-top-row2 > *{flex-shrink:unset;min-width:unset;}
+  .cv-medio-card{min-width:unset;max-width:unset;flex:unset;}
+  .cv-medio-card.cv-saldo-card{min-width:unset;}
 }
 .cv-medio-card{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:12px 10px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:14px;text-align:center;min-width:0;opacity:1;animation:none;}
 .cv-medio-card.cv-zero{background:rgba(255,255,255,.03);border-color:rgba(255,255,255,.05);}
@@ -26819,6 +26819,15 @@ window._aplicarRestriccionesRol = function() {
       var esCajeroBtn = b.id === 'btn-cajero-retiro' || b.id === 'btn-cajero-cierre';
       if (!esCajeroBtn && b.textContent.trim() !== 'Caja') b.style.display = 'none';
     });
+    // Ocultar tabs del subnav-ventas que el cajero no debe ver (solo cobranzas + clientes)
+    var sbsubVentasNav = document.getElementById('subnav-ventas');
+    if (sbsubVentasNav) {
+      sbsubVentasNav.querySelectorAll('.subctab').forEach(btn => {
+        const sub = btn.dataset.sub || btn.getAttribute('onclick') || '';
+        const visible = sub.includes('cobranzas') || sub.includes('clientes') || sub.includes('mclientes');
+        if (!visible) btn.style.display = 'none';
+      });
+    }
   }
   if(window.currentRol === 'cajero') {
     document.body.classList.add('es-cajero');
