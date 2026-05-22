@@ -15205,8 +15205,14 @@ window.abrirMenuFacturaEmitida = function(facturaId, movId, event) {
 };
 
 window.abrirMenuTicketPedido = function(id, event) {
-  const existing = document.querySelector('.mb-tic-menu');
-  if (existing) { existing.remove(); return; }
+  const trigger = event.currentTarget;
+  if (trigger.dataset.menuOpen === 'true') {
+    const existing = document.querySelector('.mb-tic-menu');
+    if (existing) existing.remove();
+    trigger.dataset.menuOpen = '';
+    return;
+  }
+  document.querySelectorAll('.mb-tic-menu').forEach(el => el.remove());
   const menu = document.createElement('div');
   menu.className = 'mb-tic-menu';
   menu.style.cssText = 'position:fixed;background:#fff;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.14);min-width:220px;overflow:hidden;z-index:9999;';
@@ -15215,12 +15221,20 @@ window.abrirMenuTicketPedido = function(id, event) {
     '<button' + hoverAttrs + ' onclick="generarTicketPDF((window._cajaMovimientos||[]).find(function(x){return x.id===\''+id+'\';}));this.closest(\'.mb-tic-menu\').remove();" style="width:100%;background:transparent;border:none;border-bottom:.5px solid #ede8e0;padding:11px 14px;text-align:left;font-size:12px;font-family:\'DM Sans\',sans-serif;color:#1a1a1a;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .15s ease;">↓ Descargar ticket</button>' +
     '<button' + hoverAttrs + ' onclick="window._reimprimirTicketMov(\''+id+'\');this.closest(\'.mb-tic-menu\').remove();" style="width:100%;background:transparent;border:none;border-bottom:.5px solid #ede8e0;padding:11px 14px;text-align:left;font-size:12px;font-family:\'DM Sans\',sans-serif;color:#1a1a1a;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .15s ease;">🖨 Reimprimir ticket cliente</button>' +
     '<button' + hoverAttrs + ' onclick="window._reimprimirPedidoMov(\''+id+'\');this.closest(\'.mb-tic-menu\').remove();" style="width:100%;background:transparent;border:none;padding:11px 14px;text-align:left;font-size:12px;font-family:\'DM Sans\',sans-serif;color:#1a1a1a;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .15s ease;">🖨 Reimprimir pedido producción</button>';
-  const rect = event.currentTarget.getBoundingClientRect();
+  const rect = trigger.getBoundingClientRect();
   menu.style.top = (rect.bottom + 4) + 'px';
   menu.style.left = Math.min(rect.left, window.innerWidth - 230) + 'px';
   document.body.appendChild(menu);
-  const close = (e) => { if (!menu.contains(e.target)) { menu.remove(); document.removeEventListener('click', close, true); } };
-  setTimeout(() => document.addEventListener('click', close, true), 100);
+  trigger.dataset.menuOpen = 'true';
+  const close = (e) => {
+    if (trigger.contains(e.target)) return;
+    if (!menu.contains(e.target)) {
+      menu.remove();
+      trigger.dataset.menuOpen = '';
+      document.removeEventListener('click', close, true);
+    }
+  };
+  setTimeout(() => document.addEventListener('click', close, true), 0);
 };
 
 window._reimprimirTicketMov = function(id) {
