@@ -193,8 +193,10 @@ body.es-cajero #mcd-quick-cobro{display:none !important;}
 .cv-turno-sub{font-size:11px;color:rgba(255,255,255,.3);padding-left:16px;}
 .cv-top-row2{display:flex;align-items:stretch;padding:12px 16px;gap:8px;overflow:visible;}
 @media(max-width:768px){
-  .cv-top-row2{overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap;padding-bottom:4px;}
+  .cv-top-row2{overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap;padding-bottom:4px;padding-right:16px;}
   .cv-top-row2 > *{flex-shrink:0;min-width:80px;}
+  .cv-medio-card{min-width:90px;max-width:110px;}
+  .cv-medio-card.cv-saldo-card{min-width:110px;}
 }
 .cv-medio-card{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:12px 10px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:14px;text-align:center;min-width:0;opacity:1;animation:none;}
 .cv-medio-card.cv-zero{background:rgba(255,255,255,.03);border-color:rgba(255,255,255,.05);}
@@ -286,10 +288,13 @@ body.es-cajero #mcd-quick-cobro{display:none !important;}
 .fc-section-label{font-size:10px;font-weight:600;letter-spacing:1.5px;color:var(--text-l);margin-bottom:6px;padding-left:2px;}
 .cv-tx-monto{font-family:'Outfit',sans-serif;font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.5px;text-align:right;white-space:nowrap;}
 .cv-tx-monto.cv-ing{color:#2a2e28;}.cv-tx-monto.cv-eg{color:#b09088;}.cv-tx-monto.cv-pend{color:#9a6050;}
+.cv-tx-ticket{font-size:10px;color:#aaa;grid-column:4;justify-self:end;align-self:center;padding-right:4px;}
 @media(max-width:768px){
-  .cv-tx-card{grid-template-columns:10px 80px 50px 1fr;grid-template-rows:auto auto;row-gap:6px;}
+  .cv-tx-card{grid-template-columns:10px 80px 50px 1fr auto;grid-template-rows:auto auto;row-gap:6px;}
+  .cv-tx-desc-main{overflow:hidden;text-overflow:ellipsis;max-width:150px;}
   .cv-tx-medio{grid-column:2;grid-row:2;}
-  .cv-tx-monto{grid-column:3/5;grid-row:2;text-align:right;}
+  .cv-tx-monto{grid-column:3;grid-row:2;text-align:right;}
+  .cv-tx-ticket{grid-column:4;grid-row:2;font-size:10px;color:#aaa;align-self:center;justify-self:start;padding-right:0;}
   .cv-tx-card > :last-child{grid-column:5;grid-row:2;}
 }
 .cv-bottom-bar{flex-shrink:0;background:#f5f0e8;border-top:1px solid #d8d0c0;padding:14px 20px;display:flex;gap:10px;}
@@ -10471,7 +10476,7 @@ function renderCajaCajero() {
           ? '<div onclick="event.stopPropagation();abrirMenuFacturaEmitida(\''+(m.facturaId||'')+'\',\''+m.id+'\',event)" style="padding:4px 8px;border-radius:8px;background:rgba(74,94,77,0.1);border:.5px solid rgba(74,94,77,0.3);display:flex;align-items:center;justify-content:center;color:#4a5e4d;font-size:11px;gap:4px;flex-shrink:0;font-weight:500;cursor:pointer;">✓ Factura emitida</div>'
           : '<div onclick="event.stopPropagation();abrirModalFacturaCaja(\''+m.id+'\')" title="Emitir factura" style="padding:4px 8px;border-radius:8px;border:.5px solid rgba(0,0,0,0.12);cursor:pointer;display:flex;align-items:center;color:#9ca3af;font-size:11px;gap:4px;flex-shrink:0;"><svg width="13" height="13" viewBox="0 0 15 15" fill="none"><rect x="2.5" y="1.5" width="10" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M5 5h5M5 7.5h5M5 10h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>Facturar</div>')
       : '<div></div>';
-    return '<div class="cv-tx-card cv-'+colorKey+(isNueva?' cv-nueva':'')+'" data-mov-id="'+m.id+'" onclick="cajaMovDetalle(\''+m.id+'\')" style="cursor:pointer;animation-delay:'+delay+'s"><div class="cv-tx-dot cv-'+colorKey+'"></div><div class="cv-tx-hora">'+hora+'</div><div class="cv-tx-tipo">'+tipoLabel+'</div><div class="cv-tx-desc"><span class="cv-tx-desc-main">'+(m.concepto||'—')+'</span>'+(m.devuelto?'<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;color:#b09088;background:rgba(176,144,136,0.1);border-radius:20px;padding:2px 8px;margin-left:6px;">↩ devolución</span>':'')+(m.detalle?'<span class="cv-tx-desc-sep"> · </span><span class="cv-tx-desc-sub">'+m.detalle+'</span>':'')+(m.ticketNum?'<span style="font-size:10px;color:#aaa;margin-left:6px;">'+m.ticketNum+'</span>':'')+'</div><div class="cv-tx-medio">'+pillMedio(medioLabel)+'</div><div class="cv-tx-monto cv-'+colorKey+'">'+montoStr+'</div>'+facturaBtnHtml+'</div>';
+    return '<div class="cv-tx-card cv-'+colorKey+(isNueva?' cv-nueva':'')+'" data-mov-id="'+m.id+'" onclick="cajaMovDetalle(\''+m.id+'\')" style="cursor:pointer;animation-delay:'+delay+'s"><div class="cv-tx-dot cv-'+colorKey+'"></div><div class="cv-tx-hora">'+hora+'</div><div class="cv-tx-tipo">'+tipoLabel+'</div><div class="cv-tx-desc"><span class="cv-tx-desc-main">'+(m.concepto||'—')+'</span>'+(m.devuelto?'<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;color:#b09088;background:rgba(176,144,136,0.1);border-radius:20px;padding:2px 8px;margin-left:6px;">↩ devolución</span>':'')+(m.detalle?'<span class="cv-tx-desc-sep"> · </span><span class="cv-tx-desc-sub">'+m.detalle+'</span>':'')+'</div><div class="cv-tx-medio">'+pillMedio(medioLabel)+'</div><div class="cv-tx-monto cv-'+colorKey+'">'+montoStr+'</div>'+(m.ticketNum?'<span class="cv-tx-ticket">'+m.ticketNum+'</span>':'')+facturaBtnHtml+'</div>';
   }).join('') : '<div style="text-align:center;padding:32px 0;color:#aab8a8;font-size:13px;">Sin movimientos en este turno</div>';
   ct.innerHTML =
     '<div class="cv-wrap">' +
