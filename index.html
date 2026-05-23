@@ -174,10 +174,6 @@ body.es-cajero .mc-card-actions{display:none !important;}
 body.es-cajero #mc-btn-pdf,body.es-cajero #mc-btn-excel{display:none !important;}
 body.es-cajero .fc-icon-btn.danger{display:none;}
 body.es-cajero #mcd-quick-cobro{display:none !important;}
-@media(max-width:768px){
-  body.es-cajero .mod-subnav{display:none !important;}
-  body.es-cajero #bottomNav{display:none !important;}
-}
 #cv-sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:198;opacity:0;pointer-events:none;transition:opacity 0.25s ease;}
 #cv-sidebar-overlay.visible{opacity:1;pointer-events:all;}
 #cv-hamburger{flex-shrink:0;width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;margin-right:12px;transition:background 0.15s,opacity 0.25s;}
@@ -26817,10 +26813,11 @@ window._aplicarRestriccionesRol = function() {
         if (btn.dataset.sub !== 'cobranzas' && btn.dataset.sub !== 'clientes') btn.style.display = 'none';
       });
     }
-    // Subnav-finanzas: solo Caja y Mis Facturas (Retiro/Cerrar caja ya estan en cv-bottom-bar)
+    // Ocultar tabs del subnav-finanzas que el cajero no debe ver
     var subnavBtns = document.querySelectorAll('#subnav-finanzas .subctab');
     subnavBtns.forEach(function(b) {
-      if (b.textContent.trim() !== 'Caja' && b.dataset.sub !== 'mis-facturas') b.style.display = 'none';
+      var esCajeroBtn = b.id === 'btn-cajero-retiro' || b.id === 'btn-cajero-cierre';
+      if (!esCajeroBtn && b.textContent.trim() !== 'Caja') b.style.display = 'none';
     });
     // Ocultar tabs del subnav-ventas que el cajero no debe ver (solo cobranzas + clientes)
     var sbsubVentasNav = document.getElementById('subnav-ventas');
