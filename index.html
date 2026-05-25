@@ -764,6 +764,12 @@ input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus
   body.cajero-mode #cb-tabla > thead{display:none;}
   body.cajero-mode #cb-tabla > tbody{display:block;width:100%;}
   body.cajero-mode .cb-wrapper{overflow:visible;}
+  #caja-table-card table > thead{display:none;}
+  #caja-table-card table > tfoot{display:none;}
+  #caja-table-card table{display:block;min-width:0 !important;width:100%;}
+  #caja-table-card table > tbody{display:block;width:100%;}
+  #caja-table-card{overflow:visible !important;}
+  #caja-cuentas-cards{grid-template-columns:1fr 1fr;gap:8px;}
 }
 /* ── CAJA MODALES ── */
 @keyframes modalIn{from{opacity:0;transform:scale(.97) translateY(10px);}to{opacity:1;transform:none;}}
@@ -11350,6 +11356,29 @@ function renderCajaTable(movs, facturadosMap = new Map()) {
         ? `<td class="c-accion"><div style="width:32px;height:32px;border-radius:8px;border:.5px solid #4a5e4d;display:flex;align-items:center;justify-content:center;color:#4a5e4d;background:#e8ede8;cursor:default;" onclick="event.stopPropagation();showToast('Factura ya generada · N° ${facNro}','info')" title="Factura ya emitida"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M3 8l3.5 3.5L12 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div></td>`
         : `<td class="c-accion" onclick="event.stopPropagation();abrirModalFacturaCaja('${m.id}')" title="Emitir factura" style="cursor:pointer;"><div style="width:32px;height:32px;border-radius:8px;border:.5px solid rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;color:#9ca3af;transition:all .15s;" onmouseover="this.style.background='#e8ede8';this.style.borderColor='#4a5e4d';this.style.color='#4a5e4d'" onmouseout="this.style.background='';this.style.borderColor='rgba(0,0,0,.08)';this.style.color='#9ca3af'"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="2.5" y="1.5" width="10" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M5 5h5M5 7.5h5M5 10h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></div></td>`
       : `<td class="c-accion"></td>`;
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) {
+      const accentColor = m.tipo==='ingreso'?'#3a4e3d':m.tipo==='egreso'?'#b09088':'#5bb8f5';
+      const montoHtml = m.tipo==='egreso' ? salidaHtml : entradaHtml;
+      return `<tr data-tipo="${m.tipo||''}" data-concepto="${(m.concepto||'').toLowerCase()}" data-fecha="${m.fecha||''}" onclick="cajaMostrarMovimiento('${m.id}')" style="display:block;background:#fff;border-radius:12px;border:0.5px solid #e8e4dc;margin-bottom:6px;padding:12px 14px;position:relative;overflow:hidden;cursor:pointer;">
+        <td style="display:block;padding:0;border:none;position:absolute;left:0;top:0;bottom:0;width:3px;background:${accentColor};border-radius:0;"></td>
+        <td style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;padding:0 0 0 8px;border:none;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:11px;color:#bbb;">${fechaStr}</span>
+            <span style="font-size:13px;font-weight:500;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;">${m.concepto||'—'}</span>
+          </div>
+          <span class="${badgeClass}" style="flex-shrink:0;">${badgeText}</span>
+        </td>
+        <td style="display:flex;justify-content:space-between;align-items:center;padding:0 0 0 8px;border:none;">
+          <span style="font-size:11px;color:#aaa;">${cuentaLabel}</span>
+          <div style="display:flex;align-items:center;gap:12px;">
+            ${montoHtml}
+            <span style="font-size:12px;font-weight:650;color:#1a1a1a;">$${Math.round(saldo).toLocaleString('es-AR')}</span>
+          </div>
+        </td>
+        <td style="display:none"></td><td style="display:none"></td><td style="display:none"></td><td style="display:none"></td><td style="display:none"></td><td style="display:none"></td>
+      </tr>`;
+    }
     return `<tr data-tipo="${m.tipo||''}" data-concepto="${(m.concepto||'').toLowerCase()}" data-fecha="${m.fecha||''}" style="opacity:0;animation:fadeUp .3s ease both;animation-delay:${80+i*50}ms;--acc-color:${m.tipo==='ingreso'?'#3a4e3d':m.tipo==='egreso'?'#b09088':'#e0dbd6'};" onclick="cajaMostrarMovimiento('${m.id}')">
       <td class="c-acc"><div style="width:3px;height:28px;border-radius:2px;background:var(--acc-color,#e0dbd6);margin:0 auto;"></div></td>
       <td><span style="font-size:12px;color:#bbb;">${fechaStr}</span></td>
