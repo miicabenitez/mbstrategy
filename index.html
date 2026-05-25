@@ -748,6 +748,13 @@ input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus
 .caja-table col.c-acc{width:20px;}
 .caja-table tbody tr td.c-acc{border-left:none!important;padding:0 6px!important;}
 .caja-table td{padding:20px 0;vertical-align:middle;white-space:nowrap;}
+@media(max-width:768px){
+  body.cajero-mode #mf-tabla{display:block;min-width:0 !important;width:100%;}
+  body.cajero-mode #mf-tabla > thead{display:none;}
+  body.cajero-mode #mf-tabla > tbody{display:block;width:100%;}
+  body.cajero-mode #mf-tabla > colgroup{display:none;}
+  body.cajero-mode .mf-wrapper{overflow:visible;}
+}
 /* ── CAJA MODALES ── */
 @keyframes modalIn{from{opacity:0;transform:scale(.97) translateY(10px);}to{opacity:1;transform:none;}}
 @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
@@ -2974,7 +2981,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         </div>
         </div>
         <!-- Tabla -->
-        <div style="background:var(--white);overflow:hidden;border-radius:16px;">
+        <div class="mf-wrapper" style="background:var(--white);overflow:hidden;border-radius:16px;">
           <div id="mf-empty" style="display:none;padding:48px;text-align:center;color:var(--text-m)">
             <div style="font-size:14px;margin-bottom:6px">Todavía no emitiste ninguna factura</div>
             <div style="font-size:12px">Usá el botón "Nueva factura" o el ícono en Caja</div>
