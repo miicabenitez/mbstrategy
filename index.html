@@ -754,6 +754,10 @@ input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus
   body.cajero-mode #mf-tabla > tbody{display:block;width:100%;}
   body.cajero-mode #mf-tabla > colgroup{display:none;}
   body.cajero-mode .mf-wrapper{overflow:visible;}
+  body.cajero-mode #cb-tabla{display:block;min-width:0 !important;width:100%;}
+  body.cajero-mode #cb-tabla > thead{display:none;}
+  body.cajero-mode #cb-tabla > tbody{display:block;width:100%;}
+  body.cajero-mode .cb-wrapper{overflow:visible;}
 }
 /* ── CAJA MODALES ── */
 @keyframes modalIn{from{opacity:0;transform:scale(.97) translateY(10px);}to{opacity:1;transform:none;}}
@@ -3906,7 +3910,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         <div id="cb-search-wrap" style="display:none;background:#fff;padding:0 16px 12px;"><input id="cb-search-input" type="text" placeholder="Buscar por cliente, teléfono o ticket..." oninput="cbSearch()" style="width:100%;box-sizing:border-box;padding:9px 14px;border-radius:10px;border:1px solid #e0ddd8;font-size:13px;font-family:'DM Sans',sans-serif;background:#fff;color:#3a4e3d;outline:none;"></div>
         </div>
         <!-- Tabla -->
-        <div style="background:var(--white);border-radius:16px;overflow:hidden;padding:0;">
+        <div class="cb-wrapper" style="background:var(--white);border-radius:16px;overflow:hidden;padding:0;">
           <div id="cb-empty" style="display:none;padding:40px 28px;text-align:center;">
             <div style="display:flex;justify-content:center;margin-bottom:24px;">
               <svg width="64" height="64" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="30" fill="#e8ede8" stroke="#c8d4c8" stroke-width="1"/><rect x="18" y="16" width="28" height="32" rx="4" fill="#fff" stroke="#c8d4c8" stroke-width="1"/><path d="M24 26h16M24 32h16M24 38h10" stroke="#4a5e4d" stroke-width="1.5" stroke-linecap="round"/><circle cx="46" cy="46" r="10" fill="#b09088"/><path d="M46 41v10M41 46h10" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
@@ -18342,6 +18346,24 @@ async function loadCobranzasModule() {
       const onclickRow = p.clienteId ? ` onclick="openMcDetalle('${esc(p.clienteId)}')"` : '';
       const telDisplay = p.tel || '—';
       const moneda = (p.moneda||'ARS') === 'USD' ? 'USD ' : '$';
+      const isMobile = window.innerWidth <= 768;
+      if (isMobile) {
+        const badgeStyle = `background:${c.bg};color:${c.fg};border-radius:20px;padding:3px 10px;font-size:10px;font-weight:600;`;
+        const cobrarBtn = p.clienteId ? `<button onclick="event.stopPropagation();openMcCobroModal('${esc(p.clienteId)}','${esc(p.id)}','${(p.descripcion||'').replace(/'/g,"\\'")}',${p.monto},'${esc(p.libroCajaId||'')}')" style="background:#4a5e4d;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;">Cobrar</button>` : '';
+        const waBtn = p.tel ? `<a href="https://wa.me/549${esc(p.tel)}?text=${_waMsg}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="background:#e8ede8;border-radius:8px;width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;">${waSvg}</a>` : '';
+        return `<tr data-search="${esc((p.cliente+'|'+p.tel+'|'+p.descripcion+'|'+p.ticketNum).toLowerCase())}" style="display:block;background:var(--white);border-radius:12px;border:0.5px solid #d8d0c0;margin-bottom:8px;padding:12px 14px;">
+          <td style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;padding:0;border:none;">
+            <span style="font-size:13px;font-weight:600;color:var(--text-d)">${esc(p.cliente)}</span>
+            <span style="${badgeStyle}">${p.dias}d</span>
+          </td>
+          <td style="display:block;font-size:12px;color:var(--text-m);margin-bottom:10px;padding:0;border:none;">${esc(p.descripcion)}</td>
+          <td style="display:flex;align-items:center;justify-content:space-between;padding:0;border:none;">
+            <span style="font-size:15px;font-weight:700;color:var(--text-d);">${moneda}${p.monto.toLocaleString('es-AR',{minimumFractionDigits:0,maximumFractionDigits:0})}</span>
+            <div style="display:flex;gap:8px;">${cobrarBtn}${waBtn}</div>
+          </td>
+          <td style="display:none"></td><td style="display:none"></td><td style="display:none"></td><td style="display:none"></td><td style="display:none"></td>
+        </tr>`;
+      }
       return `<tr${onclickRow} data-search="${esc((p.cliente+'|'+p.tel+'|'+p.descripcion+'|'+p.ticketNum).toLowerCase())}">
         <td>${esc(p.cliente)}</td>
         <td class="cb-col-tel">${esc(telDisplay)}</td>
