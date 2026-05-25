@@ -10836,12 +10836,13 @@ window._auditoriaRender = function() {
     </div>`;
   }).join('');
 
+  const _isMobile = window.innerWidth <= 768;
   root.innerHTML = `
 <div style="font-family:'DM Sans',sans-serif;margin:-20px;width:calc(100% + 40px);">
   <div style="border-radius:16px;overflow:hidden;margin-bottom:12px;">
-  <div style="background:linear-gradient(135deg,#1e2e22 0%,#2d3d30 30%,#3d5242 60%,#2d3d30 100%);padding:24px 28px 20px;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
-      <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:38px;font-weight:300;color:#f5f0eb;">Caja <em style="font-style:italic;color:#b09088;">mostrador</em></div>
+  <div style="background:linear-gradient(135deg,#1e2e22 0%,#2d3d30 30%,#3d5242 60%,#2d3d30 100%);padding:${_isMobile ? '16px 16px 14px' : '24px 28px 20px'};">
+    <div style="display:flex;align-items:center;${_isMobile ? 'flex-direction:column;gap:12px;' : 'justify-content:space-between;'}margin-bottom:20px;">
+      <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:${_isMobile ? '28px' : '38px'};font-weight:300;color:#f5f0eb;">Caja <em style="font-style:italic;color:#b09088;">mostrador</em></div>
       <div style="display:flex;align-items:center;gap:3px;background:rgba(0,0,0,.2);border-radius:10px;padding:3px;">
         ${['todo','hoy','ayer'].map(id => `<button onclick="if(window._auditoriaUnsub){window._auditoriaUnsub();window._auditoriaUnsub=null;}window._auditoriaFiltro='${id}';window._auditoriaFechaCustom=null;window._auditoriaFiltroMedio=null;window._auditoriaCajero=null;_auditoriaRender()" style="padding:6px 14px;font-size:12px;color:${window._auditoriaFiltro===id?'#f5f0eb':'rgba(255,255,255,.45)'};background:${window._auditoriaFiltro===id?'rgba(255,255,255,.15)':'transparent'};border:none;border-radius:7px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:${window._auditoriaFiltro===id?'600':'400'};white-space:nowrap;">${id==='todo'?'Todo':id.charAt(0).toUpperCase()+id.slice(1)}</button>`).join('')}
         <button onclick="window._auditoriaFiltro='encurso';window._auditoriaFechaCustom=null;window._auditoriaFiltroMedio=null;_auditoriaActivarEncurso()" style="padding:6px 14px;font-size:12px;display:flex;align-items:center;gap:5px;color:${window._auditoriaFiltro==='encurso'?'#f5f0eb':'rgba(255,255,255,.45)'};background:${window._auditoriaFiltro==='encurso'?'rgba(255,255,255,.15)':'transparent'};border:none;border-radius:7px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:${window._auditoriaFiltro==='encurso'?'600':'400'};white-space:nowrap;"><span style="width:6px;height:6px;border-radius:50%;background:#7dd98a;display:inline-block;${window._auditoriaFiltro==='encurso'?'animation:pulse 1.2s infinite;':'opacity:.5;'}"></span>En curso</button>
@@ -10853,7 +10854,7 @@ window._auditoriaRender = function() {
         </label>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;background:transparent;border-radius:10px;overflow:hidden;">
+    <div style="display:grid;grid-template-columns:${_isMobile ? 'repeat(2,1fr)' : 'repeat(5,1fr)'};gap:8px;background:transparent;border-radius:10px;overflow:hidden;">
       ${Object.entries(medios).map(([k,v]) => {
         const barColors = {Efectivo:'#7dd98a','Mercado Pago':'#5bb8f5',Transferencia:'#b09088',Tarjeta:'#e8c584'};
         const count = movsPeriodo.filter(m => {
