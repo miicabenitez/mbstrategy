@@ -11621,8 +11621,16 @@ window.cajaFiltrar = function() {
 };
 
 window.toggleCajaMesDrop = function() {
-  const drop = document.getElementById('caja-mes-drop');
-  if(drop) drop.style.display = drop.style.display==='none' ? 'block' : 'none';
+  const btn = document.getElementById('caja-mes-btn');
+  let drop = document.getElementById('caja-mes-drop');
+  if(drop.style.display !== 'none') { drop.style.display = 'none'; return; }
+  const rect = btn.getBoundingClientRect();
+  document.body.appendChild(drop);
+  drop.style.position = 'fixed';
+  drop.style.top = (rect.bottom + 4) + 'px';
+  drop.style.left = rect.left + 'px';
+  drop.style.display = 'block';
+  drop.style.zIndex = '9999';
 };
 
 window.selectCajaMes = function(offset) {
