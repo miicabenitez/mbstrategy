@@ -11372,9 +11372,14 @@ function renderCajaTable(movs, facturadosMap = new Map()) {
         </td>
         <td style="display:flex;justify-content:space-between;align-items:center;padding:0 0 0 8px;border:none;">
           <span style="font-size:11px;color:#aaa;">${cuentaLabel}</span>
-          <div style="display:flex;align-items:center;gap:12px;">
+          <div style="display:flex;align-items:center;gap:8px;">
             ${montoHtml}
             <span style="font-size:12px;font-weight:650;color:#1a1a1a;">$${Math.round(saldo).toLocaleString('es-AR')}</span>
+            ${(m.tipo === 'ingreso' && !noFacturable)
+              ? facInfo
+                ? `<div onclick="event.stopPropagation();showToast('Factura ya generada · N° ${facNro}','info')" style="width:28px;height:28px;border-radius:8px;background:#e8ede8;border:.5px solid #4a5e4d;display:flex;align-items:center;justify-content:center;color:#4a5e4d;cursor:pointer;flex-shrink:0;"><svg width="13" height="13" viewBox="0 0 15 15" fill="none"><path d="M3 8l3.5 3.5L12 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`
+                : `<div onclick="event.stopPropagation();abrirModalFacturaCaja('${m.id}')" style="width:28px;height:28px;border-radius:8px;border:.5px solid rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;color:#9ca3af;cursor:pointer;flex-shrink:0;"><svg width="13" height="13" viewBox="0 0 15 15" fill="none"><rect x="2.5" y="1.5" width="10" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M5 5h5M5 7.5h5M5 10h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></div>`
+              : `<div style="width:28px;height:28px;flex-shrink:0;"></div>`}
           </div>
         </td>
         <td style="display:none"></td><td style="display:none"></td><td style="display:none"></td><td style="display:none"></td><td style="display:none"></td><td style="display:none"></td>
