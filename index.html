@@ -26725,37 +26725,7 @@ window._aplicarRestriccionesRol = function() {
       if (!esCajeroBtn && b.textContent.trim() !== 'Caja') b.style.display = 'none';
     });
   }
-  if(window.currentRol === 'cajero') {
-    document.body.classList.add('es-cajero');
-    document.body.classList.add('cajero-mode');
-
-    // Crear overlay si no existe
-    if (!document.getElementById('cv-sidebar-overlay')) {
-      var _ov = document.createElement('div');
-      _ov.id = 'cv-sidebar-overlay';
-      document.body.appendChild(_ov);
-    }
-
-    // Definir funciones si no están definidas
-    if (!window._cvOpenSidebar) {
-      window._cvOpenSidebar = function() {
-        var sb = document.getElementById('clientSidebar');
-        var ov = document.getElementById('cv-sidebar-overlay');
-        var hb = document.getElementById('cv-hamburger') || document.getElementById('mf-hamburger') || document.getElementById('cb-hamburger') || document.getElementById('mc-hamburger');
-        if(sb) sb.classList.add('cv-sidebar-open');
-        if(ov) ov.classList.add('visible');
-        if(hb) hb.classList.add('hidden');
-      };
-      window._cvCloseSidebar = function() {
-        var sb = document.getElementById('clientSidebar');
-        var ov = document.getElementById('cv-sidebar-overlay');
-        if(sb) sb.classList.remove('cv-sidebar-open');
-        if(ov) ov.classList.remove('visible');
-        document.querySelectorAll('#cv-hamburger,#mf-hamburger,#cb-hamburger,#mc-hamburger').forEach(function(h){ h.classList.remove('hidden'); });
-      };
-      document.getElementById('cv-sidebar-overlay').onclick = window._cvCloseSidebar;
-    }
-  }
+  if(window.currentRol === 'cajero') document.body.classList.add('es-cajero');
   if(window.currentRol === 'comercial') document.body.classList.add('es-comercial');
   if(window.currentRol === 'compras') document.body.classList.add('es-compras');
 };
