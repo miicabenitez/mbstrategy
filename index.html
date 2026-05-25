@@ -10999,11 +10999,12 @@ async function loadCajaModule() {
   initCajaMesDrop();
 
   // Actualizar mes ANTES de cualquier await para que no quede "—"
-  const mes = cajaMesDesde(window._cajaMesOffset||0);
+  const _offset = window._cajaMesOffset;
+  const mes = _offset === 'todo' ? { label: 'Todo el año ' + new Date().getFullYear(), stored: 'todo' } : cajaMesDesde(_offset ?? 0);
   const mesLabel = document.getElementById('caja-mes-label');
   if(mesLabel) mesLabel.textContent = mes.label;
   const sigBtn = document.getElementById('caja-mes-sig');
-  if(sigBtn) sigBtn.style.opacity = (window._cajaMesOffset||0) >= 0 ? '.3' : '1';
+  if(sigBtn) sigBtn.style.opacity = (window._cajaMesOffset === 'todo' || (window._cajaMesOffset||0) >= 0) ? '.3' : '1';
 
   try {
     // 1. Init/dedup cuentas y conceptos (solo corre una vez por sesión)
@@ -11028,7 +11029,7 @@ async function loadCajaModule() {
       movsVista = todosMovs.filter(m => (m.creadoEn||'') >= _turnoStart);
     }
     // Filtrar por mes para tabla y KPIs
-    let movs = movsVista.filter(m => m.mes === mes.stored);
+    let movs = mes.stored === 'todo' ? movsVista : movsVista.filter(m => m.mes === mes.stored);
     movs.sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')||((a.creadoEn||'').localeCompare(b.creadoEn||'')));
     window._cajaMovimientos = movs;
     if(window.currentRol === 'cajero') {
@@ -11577,13 +11578,15 @@ window.emitirFacturaCaja = async function() {
 
 window.cajaMesAnterior = function() {
   _cajaCuentaFiltro = null;
-  window._cajaMesOffset = (window._cajaMesOffset||0) - 1;
+  const _cur = window._cajaMesOffset === 'todo' ? 0 : (window._cajaMesOffset||0);
+  window._cajaMesOffset = _cur - 1;
   loadCajaModule();
 };
 window.cajaMesSiguiente = function() {
-  if((window._cajaMesOffset||0) >= 0) return;
+  const _cur = window._cajaMesOffset === 'todo' ? 0 : (window._cajaMesOffset||0);
+  if(_cur >= 0) return;
   _cajaCuentaFiltro = null;
-  window._cajaMesOffset = (window._cajaMesOffset||0) + 1;
+  window._cajaMesOffset = _cur + 1;
   loadCajaModule();
 };
 
@@ -11646,11 +11649,11 @@ window.initCajaMesDrop = function() {
   const anio = hoy.getFullYear();
   const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
   const opts = [
-    { label: 'Todo el año', offset: null },
+    { label: 'Todo el año', offset: 'todo' },
     ...MESES.map((m, i) => ({ label: `${m} ${anio}`, offset: i - hoy.getMonth() }))
   ];
   container.innerHTML = opts.map(o => `
-    <div onclick="selectCajaMes(${o.offset})" style="padding:7px 12px;font-size:11px;color:#1a1a1a;cursor:pointer;border-radius:5px;font-family:'DM Sans',sans-serif;"
+    <div onclick="selectCajaMes(${typeof o.offset === 'string' ? `'${o.offset}'` : o.offset})" style="padding:7px 12px;font-size:11px;color:#1a1a1a;cursor:pointer;border-radius:5px;font-family:'DM Sans',sans-serif;"
     onmouseover="this.style.background='rgba(168,212,172,.1)'" onmouseout="this.style.background=''">${o.label}</div>
   `).join('');
   const mesActual = `${MESES[hoy.getMonth()]} ${anio}`;
