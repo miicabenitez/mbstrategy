@@ -768,7 +768,7 @@ input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus
   #caja-table-card table > tfoot{display:none;}
   #caja-table-card table{display:block;min-width:0 !important;width:100%;}
   #caja-table-card table > tbody{display:block;width:100%;}
-  #caja-table-card{overflow:visible !important;}
+  #caja-table-card > div{overflow:visible !important;}
   #caja-cuentas-cards{grid-template-columns:1fr 1fr !important;gap:8px;}
 }
 /* ── CAJA MODALES ── */
@@ -11313,7 +11313,7 @@ function renderCajaTable(movs, facturadosMap = new Map()) {
   if(tableCard) tableCard.style.display = '';
   if(emptyState) emptyState.style.display = 'none';
   let saldo = 0, totalEntradas = 0, totalSalidas = 0;
-  tbody.innerHTML = movs.map((m, i) => {
+  let _rowsHtml = movs.map((m, i) => {
     const monto = parseFloat(m.monto)||0;
     if(m.tipo==='ingreso') { saldo += monto; totalEntradas += monto; }
     else if(m.tipo==='egreso') { saldo -= monto; totalSalidas += monto; }
@@ -11391,6 +11391,23 @@ function renderCajaTable(movs, facturadosMap = new Map()) {
       ${accionTd}
     </tr>`;
   }).join('');
+  if (window.innerWidth <= 768) {
+    _rowsHtml += `<tr style="display:block;background:#2d3d30;border-radius:12px;padding:12px 14px;margin-top:4px;">
+      <td style="display:flex;justify-content:space-between;align-items:center;padding:0;border:none;">
+        <span style="font-size:11px;color:rgba(255,255,255,0.5);letter-spacing:0.5px;">TOTAL ENTRADAS</span>
+        <span style="font-size:13px;font-weight:700;color:#7dd98a;">$${Math.round(totalEntradas).toLocaleString('es-AR')}</span>
+      </td>
+      <td style="display:flex;justify-content:space-between;align-items:center;padding:4px 0 0;border:none;">
+        <span style="font-size:11px;color:rgba(255,255,255,0.5);letter-spacing:0.5px;">TOTAL SALIDAS</span>
+        <span style="font-size:13px;font-weight:700;color:#b09088;">$${Math.round(totalSalidas).toLocaleString('es-AR')}</span>
+      </td>
+      <td style="display:flex;justify-content:space-between;align-items:center;padding:4px 0 0;border:none;">
+        <span style="font-size:11px;color:rgba(255,255,255,0.5);letter-spacing:0.5px;">SALDO</span>
+        <span style="font-size:14px;font-weight:700;color:#fff;">$${Math.round(saldo).toLocaleString('es-AR')}</span>
+      </td>
+    </tr>`;
+  }
+  tbody.innerHTML = _rowsHtml;
   const tfoot = document.getElementById('caja-tfoot');
   if(tfoot) {
     const saldoColor = saldo >= 0 ? '#3B6D11' : '#993C1D';
