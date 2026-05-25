@@ -174,9 +174,6 @@ body.es-cajero .mc-card-actions{display:none !important;}
 body.es-cajero #mc-btn-pdf,body.es-cajero #mc-btn-excel{display:none !important;}
 body.es-cajero .fc-icon-btn.danger{display:none;}
 body.es-cajero #mcd-quick-cobro{display:none !important;}
-@media(max-width:768px){
-  body.es-cajero .mod-subnav{display:none !important;}
-}
 #cv-sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:198;opacity:0;pointer-events:none;transition:opacity 0.25s ease;}
 #cv-sidebar-overlay.visible{opacity:1;pointer-events:all;}
 #cv-hamburger{flex-shrink:0;width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;margin-right:12px;transition:background 0.15s,opacity 0.25s;}
@@ -195,12 +192,6 @@ body.es-cajero #mcd-quick-cobro{display:none !important;}
 .cv-turno-nombre{font-size:13px;font-weight:700;color:rgba(255,255,255,.9);}
 .cv-turno-sub{font-size:11px;color:rgba(255,255,255,.3);padding-left:16px;}
 .cv-top-row2{display:flex;align-items:stretch;padding:12px 16px;gap:8px;overflow:visible;}
-@media(max-width:768px){
-  .cv-top-row2{display:grid;grid-template-columns:1fr 1fr 1fr;overflow-x:unset;flex-wrap:unset;padding:8px 12px 12px;gap:6px;}
-  .cv-top-row2 > *{flex-shrink:unset;min-width:unset;}
-  .cv-medio-card{min-width:unset;max-width:unset;flex:unset;}
-  .cv-medio-card.cv-saldo-card{min-width:unset;}
-}
 .cv-medio-card{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:12px 10px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:14px;text-align:center;min-width:0;opacity:1;animation:none;}
 .cv-medio-card.cv-zero{background:rgba(255,255,255,.03);border-color:rgba(255,255,255,.05);}
 .cv-medio-card.cv-saldo-card{background:rgba(255,255,255,.13);border:1.5px solid #b09088;animation:cvSaldoPulse 3s ease-in-out 1s infinite;}
@@ -291,15 +282,6 @@ body.es-cajero #mcd-quick-cobro{display:none !important;}
 .fc-section-label{font-size:10px;font-weight:600;letter-spacing:1.5px;color:var(--text-l);margin-bottom:6px;padding-left:2px;}
 .cv-tx-monto{font-family:'Outfit',sans-serif;font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.5px;text-align:right;white-space:nowrap;}
 .cv-tx-monto.cv-ing{color:#2a2e28;}.cv-tx-monto.cv-eg{color:#b09088;}.cv-tx-monto.cv-pend{color:#9a6050;}
-.cv-tx-ticket{font-size:10px;color:#aaa;grid-column:4;justify-self:end;align-self:center;padding-right:4px;}
-@media(max-width:768px){
-  .cv-tx-card{grid-template-columns:10px 80px 50px 1fr auto;grid-template-rows:auto auto;row-gap:6px;}
-  .cv-tx-desc-main{overflow:hidden;text-overflow:ellipsis;max-width:150px;}
-  .cv-tx-medio{grid-column:2;grid-row:2;}
-  .cv-tx-monto{grid-column:3;grid-row:2;text-align:right;}
-  .cv-tx-ticket{grid-column:4;grid-row:2;font-size:10px;color:#aaa;align-self:center;justify-self:start;padding-right:0;}
-  .cv-tx-card > :last-child{grid-column:5;grid-row:2;}
-}
 .cv-bottom-bar{flex-shrink:0;background:#f5f0e8;border-top:1px solid #d8d0c0;padding:14px 20px;display:flex;gap:10px;}
 .cv-btn{flex:1;padding:18px 16px;border-radius:16px;font-family:'Outfit',sans-serif;font-size:15px;font-weight:800;cursor:pointer;border:none;display:flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;transition:transform .1s,box-shadow .15s;letter-spacing:.1px;}
 .cv-btn:active{transform:scale(.97);}
@@ -307,17 +289,6 @@ body.es-cajero #mcd-quick-cobro{display:none !important;}
 .cv-btn-mov{background:#ede7db;color:#6a7a68;border:1.5px solid #d8d0c0;}
 .cv-btn-retiro{background:#f8f0ee;color:#b09088;border:1.5px solid rgba(176,144,136,.35);}
 .cv-btn-cerrar{background:linear-gradient(135deg,#a08078 0%,#c4a098 45%,#b89090 70%,#a08078 100%);color:#fff8f5;box-shadow:0 4px 16px rgba(160,128,120,.35),inset 0 1px 0 rgba(255,255,255,.2);}
-@media (max-width: 768px) {
-  .cv-bottom-bar {
-    flex-wrap: wrap;
-    padding: 12px 16px;
-    padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)) !important;
-  }
-  .cv-btn-venta{flex:1 1 100%;order:1;}
-  .cv-btn-retiro{flex:1;order:2;}
-  .cv-btn-mov{flex:1;order:3;}
-  .cv-btn-cerrar{flex:1;order:4;}
-}
 #navProgressBar{position:fixed;top:0;left:220px;right:0;height:2.5px;background:#4a5e4d;border-radius:0 2px 2px 0;z-index:500;width:0;opacity:0;pointer-events:none;}
 @media(max-width:768px){#navProgressBar{left:0;}}
 .content{flex:1;padding:20px;max-width:1100px;margin:0 auto;width:100%;}
@@ -10476,10 +10447,10 @@ function renderCajaCajero() {
     var medioLabel = isPend ? (isCobrado ? 'Cobrado' : 'Pendiente') : ((m.medioPago && m.medioPago !== 'Caja mostrador') ? m.medioPago : (m.cuenta && m.cuenta !== 'Caja mostrador' ? m.cuenta : 'Efectivo'));
     var facturaBtnHtml = (isIng && m.id && m.origen !== 'apertura_turno')
       ? (m.facturado
-          ? '<div onclick="event.stopPropagation();abrirMenuFacturaEmitida(\''+(m.facturaId||'')+'\',\''+m.id+'\',event)" style="padding:4px 8px;border-radius:8px;background:rgba(74,94,77,0.1);border:.5px solid rgba(74,94,77,0.3);display:flex;align-items:center;justify-content:center;color:#4a5e4d;font-size:11px;gap:4px;flex-shrink:0;font-weight:500;cursor:pointer;">✓ Factura emitida</div>'
+          ? '<div onclick="event.stopPropagation();abrirMenuFacturaEmitida(\''+(m.facturaId||'')+'\',\''+m.id+'\',event)" style="padding:4px 8px;border-radius:8px;background:rgba(74,94,77,0.1);border:.5px solid rgba(74,94,77,0.3);display:flex;align-items:center;color:#4a5e4d;font-size:11px;gap:4px;flex-shrink:0;font-weight:500;cursor:pointer;">✓ Factura emitida</div>'
           : '<div onclick="event.stopPropagation();abrirModalFacturaCaja(\''+m.id+'\')" title="Emitir factura" style="padding:4px 8px;border-radius:8px;border:.5px solid rgba(0,0,0,0.12);cursor:pointer;display:flex;align-items:center;color:#9ca3af;font-size:11px;gap:4px;flex-shrink:0;"><svg width="13" height="13" viewBox="0 0 15 15" fill="none"><rect x="2.5" y="1.5" width="10" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M5 5h5M5 7.5h5M5 10h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>Facturar</div>')
       : '<div></div>';
-    return '<div class="cv-tx-card cv-'+colorKey+(isNueva?' cv-nueva':'')+'" data-mov-id="'+m.id+'" onclick="cajaMovDetalle(\''+m.id+'\')" style="cursor:pointer;animation-delay:'+delay+'s"><div class="cv-tx-dot cv-'+colorKey+'"></div><div class="cv-tx-hora">'+hora+'</div><div class="cv-tx-tipo">'+tipoLabel+'</div><div class="cv-tx-desc"><span class="cv-tx-desc-main">'+(m.concepto||'—')+'</span>'+(m.devuelto?'<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;color:#b09088;background:rgba(176,144,136,0.1);border-radius:20px;padding:2px 8px;margin-left:6px;">↩ devolución</span>':'')+(m.detalle?'<span class="cv-tx-desc-sep"> · </span><span class="cv-tx-desc-sub">'+m.detalle+'</span>':'')+'</div><div class="cv-tx-medio">'+pillMedio(medioLabel)+'</div><div class="cv-tx-monto cv-'+colorKey+'">'+montoStr+'</div>'+(m.ticketNum?'<span class="cv-tx-ticket">'+m.ticketNum+'</span>':'')+facturaBtnHtml+'</div>';
+    return '<div class="cv-tx-card cv-'+colorKey+(isNueva?' cv-nueva':'')+'" data-mov-id="'+m.id+'" onclick="cajaMovDetalle(\''+m.id+'\')" style="cursor:pointer;animation-delay:'+delay+'s"><div class="cv-tx-dot cv-'+colorKey+'"></div><div class="cv-tx-hora">'+hora+'</div><div class="cv-tx-tipo">'+tipoLabel+'</div><div class="cv-tx-desc"><span class="cv-tx-desc-main">'+(m.concepto||'—')+'</span>'+(m.devuelto?'<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;color:#b09088;background:rgba(176,144,136,0.1);border-radius:20px;padding:2px 8px;margin-left:6px;">↩ devolución</span>':'')+(m.detalle?'<span class="cv-tx-desc-sep"> · </span><span class="cv-tx-desc-sub">'+m.detalle+'</span>':'')+(m.ticketNum?'<span style="font-size:10px;color:#aaa;margin-left:6px;">'+m.ticketNum+'</span>':'')+'</div><div class="cv-tx-medio">'+pillMedio(medioLabel)+'</div><div class="cv-tx-monto cv-'+colorKey+'">'+montoStr+'</div>'+facturaBtnHtml+'</div>';
   }).join('') : '<div style="text-align:center;padding:32px 0;color:#aab8a8;font-size:13px;">Sin movimientos en este turno</div>';
   ct.innerHTML =
     '<div class="cv-wrap">' +
@@ -15077,7 +15048,6 @@ async function _mbPrintTicket({productos, total, medioPago, ticketNum, cajero, o
     }).catch(() => {});
   } catch(_) {}
 }
-window._mbPrintTicket = _mbPrintTicket;
 async function _mbPrintPedido({productos, ticketNum, pedidoNum, cajero, cliente, observacion}) {
   try {
     let negocio = window._negocioNombre;
@@ -15131,7 +15101,6 @@ async function _mbPrintPedido({productos, ticketNum, pedidoNum, cajero, cliente,
     }).catch(() => {});
   } catch(_) {}
 }
-window._mbPrintPedido = _mbPrintPedido;
 async function _mbPrintCierre(params) {
   try {
     let negocio = window._negocioNombre;
@@ -15231,73 +15200,6 @@ window.abrirMenuFacturaEmitida = function(facturaId, movId, event) {
   document.body.appendChild(menu);
   const close = (e) => { if (!menu.contains(e.target)) { menu.remove(); document.removeEventListener('click', close, true); } };
   setTimeout(() => document.addEventListener('click', close, true), 0);
-};
-
-window.abrirMenuTicketPedido = function(id, event) {
-  const trigger = event.currentTarget;
-  if (trigger.dataset.menuOpen === 'true') {
-    const existing = document.querySelector('.mb-tic-menu');
-    if (existing) existing.remove();
-    trigger.dataset.menuOpen = '';
-    return;
-  }
-  document.querySelectorAll('.mb-tic-menu').forEach(el => el.remove());
-  if (!document.getElementById('mb-tic-btn-styles')) {
-    const styleEl = document.createElement('style');
-    styleEl.id = 'mb-tic-btn-styles';
-    styleEl.textContent = '.mb-tic-btn { background: transparent; } .mb-tic-btn:hover { background: #f0ede8 !important; } .mb-tic-btn:active { background: #f0ede8 !important; }';
-    document.head.appendChild(styleEl);
-  }
-  const menu = document.createElement('div');
-  menu.className = 'mb-tic-menu';
-  menu.style.cssText = 'position:fixed;background:#fff;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.14);min-width:220px;overflow:hidden;z-index:9999;';
-  menu.innerHTML =
-    '<button class="mb-tic-btn" onclick="generarTicketPDF((window._cajaMovimientos||[]).find(function(x){return x.id===\''+id+'\';}));this.closest(\'.mb-tic-menu\').remove();" style="width:100%;border:none;border-bottom:.5px solid #ede8e0;padding:11px 14px;text-align:left;font-size:12px;font-family:\'DM Sans\',sans-serif;color:#1a1a1a;cursor:pointer;display:flex;align-items:center;gap:8px;">↓ Descargar ticket</button>' +
-    '<button class="mb-tic-btn" onclick="window._reimprimirTicketMov(\''+id+'\');this.closest(\'.mb-tic-menu\').remove();" style="width:100%;border:none;border-bottom:.5px solid #ede8e0;padding:11px 14px;text-align:left;font-size:12px;font-family:\'DM Sans\',sans-serif;color:#1a1a1a;cursor:pointer;display:flex;align-items:center;gap:8px;">🖨 Reimprimir ticket cliente</button>' +
-    '<button class="mb-tic-btn" onclick="window._reimprimirPedidoMov(\''+id+'\');this.closest(\'.mb-tic-menu\').remove();" style="width:100%;border:none;padding:11px 14px;text-align:left;font-size:12px;font-family:\'DM Sans\',sans-serif;color:#1a1a1a;cursor:pointer;display:flex;align-items:center;gap:8px;">🖨 Reimprimir pedido producción</button>';
-  const rect = trigger.getBoundingClientRect();
-  menu.style.top = (rect.bottom + 4) + 'px';
-  menu.style.left = Math.min(rect.left, window.innerWidth - 230) + 'px';
-  document.body.appendChild(menu);
-  trigger.dataset.menuOpen = 'true';
-  const close = (e) => {
-    if (trigger.contains(e.target)) return;
-    if (!menu.contains(e.target)) {
-      menu.remove();
-      trigger.dataset.menuOpen = '';
-      document.removeEventListener('click', close, true);
-    }
-  };
-  setTimeout(() => document.addEventListener('click', close, true), 0);
-};
-
-window._reimprimirTicketMov = function(id) {
-  const m = (window._cajaMovimientos||[]).find(function(x){return x.id===id;});
-  if (!m) return;
-  let medioPago = m.medioPago || m.cuenta || 'Efectivo';
-  if (medioPago === 'Caja mostrador') medioPago = 'Efectivo';
-  window._mbPrintTicket({
-    productos: m.productos || [],
-    total: parseFloat(m.monto) || 0,
-    medioPago: medioPago,
-    ticketNum: m.ticketNum || '',
-    cajero: m.creadoPor || '',
-    observacion: m.observacion || ''
-  });
-};
-
-window._reimprimirPedidoMov = function(id) {
-  const m = (window._cajaMovimientos||[]).find(function(x){return x.id===id;});
-  if (!m) return;
-  const pedidoNum = m.ticketNum ? ('P-' + m.ticketNum.slice(2)) : '';
-  window._mbPrintPedido({
-    productos: m.productos || [],
-    ticketNum: m.ticketNum || '',
-    pedidoNum: pedidoNum,
-    cajero: m.creadoPor || '',
-    cliente: m.clienteNombre || '',
-    observacion: m.observacion || ''
-  });
 };
 
 async function _mbPrintFactura(facturaId) {
@@ -26289,7 +26191,7 @@ window.cajaMovDetalle = function(id) {
   if(dlEl) {
     if(m.ticketNum) {
       dlEl.style.display='block';
-      dlEl.innerHTML='<button onclick="event.stopPropagation();window.abrirMenuTicketPedido(\''+id+'\',event)" style="width:100%;padding:10px;border-radius:10px;border:1.5px solid rgba(176,144,136,0.4);background:#fff;color:#b09088;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;">Ticket / Pedido<i class="ti ti-chevron-down" style="font-size:15px;"></i></button>';
+      dlEl.innerHTML='<button onclick="generarTicketPDF((window._cajaMovimientos||[]).find(function(x){return x.id===\''+id+'\';}))" style="width:100%;padding:10px;border-radius:10px;border:1.5px solid rgba(176,144,136,0.4);background:#fff;color:#b09088;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;"><i class="ti ti-download" style="font-size:15px;"></i>Descargar ticket</button>';
     } else { dlEl.style.display='none'; }
   }
   ov.style.display='flex';
@@ -26822,27 +26724,8 @@ window._aplicarRestriccionesRol = function() {
       var esCajeroBtn = b.id === 'btn-cajero-retiro' || b.id === 'btn-cajero-cierre';
       if (!esCajeroBtn && b.textContent.trim() !== 'Caja') b.style.display = 'none';
     });
-    // Ocultar tabs del subnav-ventas que el cajero no debe ver (solo cobranzas + clientes)
-    var sbsubVentasNav = document.getElementById('subnav-ventas');
-    if (sbsubVentasNav) {
-      sbsubVentasNav.querySelectorAll('.subctab').forEach(btn => {
-        const sub = btn.dataset.sub || btn.getAttribute('onclick') || '';
-        const visible = sub.includes('cobranzas') || sub.includes('clientes') || sub.includes('mclientes');
-        if (!visible) btn.style.display = 'none';
-      });
-    }
   }
-  if(window.currentRol === 'cajero') {
-    document.body.classList.add('es-cajero');
-    const bnav = document.getElementById('bottomNav');
-    if (bnav) {
-      bnav.querySelectorAll('.bnav-item').forEach(btn => {
-        const oc = btn.getAttribute('onclick') || '';
-        const visible = oc.includes("'finanzas'") || oc.includes("'ventas'");
-        btn.style.display = visible ? '' : 'none';
-      });
-    }
-  }
+  if(window.currentRol === 'cajero') document.body.classList.add('es-cajero');
   if(window.currentRol === 'comercial') document.body.classList.add('es-comercial');
   if(window.currentRol === 'compras') document.body.classList.add('es-compras');
 };
