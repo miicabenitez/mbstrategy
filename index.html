@@ -10842,6 +10842,7 @@ window._auditoriaRender = function() {
   }).join('');
 
   const _isMobile = window.innerWidth <= 768;
+  const mediosArr = Object.entries(medios);
   root.innerHTML = `
 <div style="font-family:'DM Sans',sans-serif;margin:-20px;width:calc(100% + 40px);">
   <div style="border-radius:16px;overflow:hidden;margin-bottom:12px;">
@@ -10860,7 +10861,7 @@ window._auditoriaRender = function() {
       </div>
     </div>
     <div style="display:grid;grid-template-columns:${_isMobile ? 'repeat(2,1fr)' : 'repeat(5,1fr)'};gap:8px;background:transparent;border-radius:10px;overflow:hidden;">
-      ${Object.entries(medios).map(([k,v]) => {
+      ${mediosArr.map(([k,v], idx) => {
         const barColors = {Efectivo:'#7dd98a','Mercado Pago':'#5bb8f5',Transferencia:'#b09088',Tarjeta:'#e8c584'};
         const count = movsPeriodo.filter(m => {
           const mp2 = (m.medioPago||'Efectivo');
@@ -10868,7 +10869,8 @@ window._auditoriaRender = function() {
           return key === k && m.tipo === 'ingreso';
         }).length;
         const isSelMedio = window._auditoriaFiltroMedio === k;
-        return `<div style="padding:16px 18px;background:${isSelMedio?'rgba(255,255,255,.10)':'rgba(255,255,255,.04)'};cursor:pointer;transition:background .15s;border-radius:10px;" onclick="window._auditoriaFiltroMedio=window._auditoriaFiltroMedio==='${k}'?null:'${k}';_auditoriaRender()">
+        const isLastOdd = _isMobile && mediosArr.length % 2 !== 0 && idx === mediosArr.length - 1;
+        return `<div style="padding:16px 18px;background:${isSelMedio?'rgba(255,255,255,.10)':'rgba(255,255,255,.04)'};cursor:pointer;transition:background .15s;border-radius:10px;${isLastOdd ? 'grid-column:1/-1;' : ''}" onclick="window._auditoriaFiltroMedio=window._auditoriaFiltroMedio==='${k}'?null:'${k}';_auditoriaRender()">
           <div style="font-size:9px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px;">${k}</div>
           <div style="font-size:20px;font-weight:700;color:#f5f0eb;">${fmt(v)}</div>
           <div style="font-size:10px;color:rgba(255,255,255,.25);margin-top:3px;">${count} mvtos</div>
