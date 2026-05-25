@@ -26730,6 +26730,11 @@ window._aplicarRestriccionesRol = function() {
       var esCajeroBtn = b.id === 'btn-cajero-retiro' || b.id === 'btn-cajero-cierre';
       if (!esCajeroBtn && b.textContent.trim() !== 'Caja') b.style.display = 'none';
     });
+    if(window.innerWidth <= 768) {
+      document.querySelectorAll('.mod-subnav').forEach(function(el) {
+        el.style.setProperty('display', 'none', 'important');
+      });
+    }
   }
   if(window.currentRol === 'cajero') document.body.classList.add('es-cajero');
   if(window.currentRol === 'comercial') document.body.classList.add('es-comercial');
