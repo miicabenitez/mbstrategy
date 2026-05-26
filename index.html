@@ -574,6 +574,7 @@ input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus
   #stk-movs-header{display:none !important;}
   #stk-movs-lista{min-width:0 !important;}
   #stk-movs-content .card > div{overflow-x:visible !important;}
+  #calc-header{display:none !important;}
   #presup-kpi-grid{grid-template-columns:1fr 1fr !important;}
   /* KPIs finanzas 2x2 en mobile */
   [style*="grid-template-columns:1.4fr"]{grid-template-columns:1fr 1fr !important;}
@@ -9118,6 +9119,7 @@ window.renderCalcList = function() {
       body.innerHTML = `<div style="text-align:center;padding:40px;color:#6b7280;font-size:13px;"><div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:#1a1a1a;margin-bottom:6px;">Sin resultados</div>Probá con otro nombre</div>`;
       return;
     }
+    const isMobile = window.innerWidth <= 768;
     body.innerHTML = lista.map((c,i) => {
       const m = _calcItemMetrics(c);
       const t = getTema(m.margen);
@@ -9127,6 +9129,36 @@ window.renderCalcList = function() {
       const obs = diasDesde > 90;
       const fechaLabel = fechaDoc.getTime()>0 ? fechaDoc.toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'}) : '—';
       const ini = (c.nombre||'?')[0].toUpperCase();
+      if (isMobile) {
+        return `<div onclick="showCalcForm('${c.id}')" style="background:${obs?'#fffbf0':'#fff'};border-radius:12px;border:0.5px solid var(--cream-d);margin:0 0 8px;padding:12px 14px;cursor:pointer;">
+          <div style="display:flex;align-items:flex-start;gap:10px;">
+            <div style="width:36px;height:36px;border-radius:10px;background:${t.av};display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:18px;color:#fff;flex-shrink:0;">${ini}</div>
+            <div style="flex:1;min-width:0;">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+                <div style="font-size:14px;font-weight:500;color:#1a1a1a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${sanitize(c.nombre||'')}</div>
+                <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+                  <span style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:500;${t.pill};"><span style="width:6px;height:6px;border-radius:50%;flex-shrink:0;${t.dot};display:inline-block;"></span>${m.margen}%</span>
+                  <button onclick="event.stopPropagation();calcMenuOpc('${c.id}',this)" style="background:none;border:none;cursor:pointer;color:#bbb;font-size:18px;padding:2px 4px;border-radius:6px;line-height:1;">⋯</button>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:3px;flex-wrap:wrap;">
+                ${obs?`<span style="background:#fdf8e8;color:#c8a030;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:500;">Revisar precios</span>`:''}
+                <span style="font-size:11px;color:#6b7280;">${fechaLabel}</span>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:24px;padding-left:46px;margin-top:10px;">
+            <div>
+              <div style="font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px;">Costo unit.</div>
+              <div style="font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:#1a1a1a;">${fmt(m.costo)}</div>
+            </div>
+            <div>
+              <div style="font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px;">Precio venta</div>
+              <div style="font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:${t.pc};">${fmt(m.precio)}</div>
+            </div>
+          </div>
+        </div>`;
+      }
       return `<div style="display:grid;grid-template-columns:2fr 120px 140px 90px 90px 36px;align-items:center;padding:0 24px;border-bottom:.5px solid #f8f4f0;min-height:64px;cursor:pointer;transition:background .15s;opacity:0;animation:calcFadeUp .35s ease ${i*.06}s forwards;${obs?'background:#fffbf0;':''}"
         onmouseover="this.style.background='#faf8f6'" onmouseout="this.style.background='${obs?'#fffbf0':'#fff'}'"
         onclick="showCalcForm('${c.id}')">
@@ -9182,7 +9214,7 @@ window.renderCalcList = function() {
         <svg style="position:absolute;left:32px;top:50%;transform:translateY(-50%)" width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4.5" stroke="#bbb" stroke-width="1.2"/><path d="M9.5 9.5l3 3" stroke="#bbb" stroke-width="1.2" stroke-linecap="round"/></svg>
         <input id="calc-buscador" type="text" placeholder="Buscar cálculo..." oninput="window._calcFiltrar()" style="width:100%;border:.5px solid rgba(0,0,0,.08);border-radius:10px;padding:10px 14px 10px 36px;font-size:13px;font-family:'DM Sans',sans-serif;background:#eeebe6;color:#1a1a1a;outline:none;">
       </div>
-      <div style="display:grid;grid-template-columns:2fr 120px 140px 90px 90px 36px;padding:10px 24px;background:#faf8f6;border-bottom:.5px solid #f0ece8;">
+      <div id="calc-header" style="display:grid;grid-template-columns:2fr 120px 140px 90px 90px 36px;padding:10px 24px;background:#faf8f6;border-bottom:.5px solid #f0ece8;">
         <div id="calc-col-nombre" onclick="window._calcSortBy('nombre')" style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#4a5e4d;cursor:pointer;display:flex;align-items:center;gap:4px;user-select:none;">Nombre <span id="calc-arr-nombre">↑</span></div>
         <div id="calc-col-costo" onclick="window._calcSortBy('costo')" style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#bbb;cursor:pointer;display:flex;align-items:center;gap:4px;user-select:none;">Costo unit. <span id="calc-arr-costo"><span style="font-size:9px;opacity:.5;">↑↓</span></span></div>
         <div id="calc-col-precio" onclick="window._calcSortBy('precio')" style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#bbb;cursor:pointer;display:flex;align-items:center;gap:4px;user-select:none;">Precio sugerido <span id="calc-arr-precio"><span style="font-size:9px;opacity:.5;">↑↓</span></span></div>
