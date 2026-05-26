@@ -10964,7 +10964,10 @@ window._auditoriaRender = function() {
       return `<button onclick="${onclick}" style="padding:5px 14px;border-radius:20px;border:0.5px solid ${isActive?'#2d3d30':'#e0dbd6'};background:${isActive?'#2d3d30':'#fff'};color:${isActive?'#f5f0eb':'#888'};font-size:12px;font-weight:${isActive?'600':'400'};cursor:pointer;font-family:'DM Sans',sans-serif;">${label}</button>`;
     }).join('')}
     ${(() => {
-      const cajerosList = [...new Set(movs.map(m => m.creadoPor).filter(n => n && n !== 'Admin' && n !== 'Cajero'))];
+      const cajerosList = [...new Set(
+        movs.map(m => (m.creadoPor||'').trim())
+            .filter(n => n && n.toLowerCase() !== 'admin' && n.toLowerCase() !== 'cajero')
+      )];
       if(cajerosList.length <= 1) return '';
       return `<div style="width:1px;height:20px;background:#e0dbd6;margin:0 4px;align-self:center;"></div>`
         + cajerosList.map(nombre => {
