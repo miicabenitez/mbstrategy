@@ -793,6 +793,8 @@ input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus
   .cierre-kpi:last-child{border-bottom:none;}
   .rv-kpi-grid,.rc-kpi-grid{grid-template-columns:1fr 1fr !important;}
   #cp-list{padding:0 !important;}
+  #prod-lista{min-width:0 !important;}
+  .prod-header{display:none !important;}
 }
 /* ── CAJA MODALES ── */
 @keyframes modalIn{from{opacity:0;transform:scale(.97) translateY(10px);}to{opacity:1;transform:none;}}
@@ -4179,7 +4181,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         <!-- Tabla -->
         <div class="card">
           <!-- Headers columnas -->
-          <div style="display:grid;grid-template-columns:1fr 120px 110px 50px 60px;gap:10px;padding-bottom:10px;border-bottom:.5px solid var(--cream-d);">
+          <div class="prod-header" style="display:grid;grid-template-columns:1fr 120px 110px 50px 60px;gap:10px;padding-bottom:10px;border-bottom:.5px solid var(--cream-d);">
             <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;">Producto / Servicio</span>
             <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;text-align:right;">Precio actual</span>
             <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;text-align:right;">Nuevo precio</span>
@@ -20550,9 +20552,28 @@ function renderProductosModule() {
     if(footer)footer.style.display='none';
     return;
   }
+  const isMobile = window.innerWidth <= 768;
   lista.innerHTML = _productos.map(p => {
     const inactivo = p.activo===false;
     const precio = parseFloat(p.precio)||0;
+    if (isMobile) {
+      return `<div style="display:block;background:#fff;border-radius:12px;border:0.5px solid var(--cream-d);margin-bottom:8px;padding:12px 14px;${inactivo?'opacity:.4;':''}">
+        <div style="margin-bottom:10px;">
+          <div style="font-size:13px;font-weight:600;color:var(--text);${inactivo?'text-decoration:line-through;':''}">${esc(p.nombre)}</div>
+          ${p.descripcion?`<div style="font-size:11px;color:var(--text-l);margin-top:2px;">${esc(p.descripcion)}</div>`:''}
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span style="font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--ok);font-weight:500;white-space:nowrap;">$${precio.toLocaleString('es-AR')}</span>
+          <span style="font-size:14px;color:var(--text-l);">→</span>
+          <input type="text" inputmode="numeric" value="${precio>0?precio.toLocaleString('es-AR'):''}" data-id="${p.id}" class="prod-precio-input" ${inactivo?'disabled':''} style="flex:1;min-width:80px;padding:6px 10px;border:.5px solid var(--cream-d);border-radius:8px;font-size:12px;color:var(--text);font-family:'DM Sans',sans-serif;text-align:right;${inactivo?'background:var(--cream);':''}" oninput="mvmFormatMonto(this);marcarCambioPrecio()"/>
+          <div onclick="toggleActivoProducto('${p.id}',${!inactivo})" style="width:36px;height:20px;border-radius:10px;background:${inactivo?'var(--cream-d)':'var(--topbar)'};position:relative;cursor:pointer;flex-shrink:0;">
+            <div style="position:absolute;width:14px;height:14px;border-radius:50%;background:#fff;top:3px;${inactivo?'left:3px':'left:19px'};transition:left .2s;"></div>
+          </div>
+          <button onclick="editProducto('${p.id}')" style="width:28px;height:28px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button onclick="deleteProducto('${p.id}')" style="width:28px;height:28px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
+        </div>
+      </div>`;
+    }
     return `<div style="display:grid;grid-template-columns:1fr 120px 110px 50px 60px;gap:10px;align-items:center;padding:13px 0;border-bottom:.5px solid var(--cream-d);${inactivo?'opacity:.4;':''}">
       <div>
         <div style="font-size:13px;font-weight:500;color:var(--text);${inactivo?'text-decoration:line-through;':''}">${esc(p.nombre)}</div>
