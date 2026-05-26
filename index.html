@@ -22406,6 +22406,7 @@ function _nocRenderItems() {
       + 'value="'+(it.insumoNombre||'').replace(/"/g,'&quot;')+'" '
       + 'style="margin-top:0;font-size:11px;padding:5px 8px;color:var(--text-l);" autocomplete="off" '
       + 'oninput="_nocBuscarInsumo(this.value,'+i+')" '
+      + 'onfocus="_nocBuscarInsumo(this.value,'+i+')" '
       + 'onkeydown="_nocInsumoKeydown(event,'+i+')" '
       + 'onblur="setTimeout(()=>{const d=document.getElementById(\'noc-ins-dd-'+i+'\');if(d)d.style.display=\'none\';},180)"/>'
       + '<div id="noc-ins-dd-'+i+'" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:700;max-height:160px;overflow-y:auto;"></div>'
@@ -22484,7 +22485,7 @@ window._nocBuscarInsumo = function(q, i) {
   const dd = document.getElementById('noc-ins-dd-'+i);
   if(!dd) return;
   const ins = (window._stockInsumos||[]).filter(x=>(x.nombre||'').toLowerCase().includes((q||'').toLowerCase())).slice(0,6);
-  if(!ins.length || !q.trim()) { dd.style.display='none'; dd.innerHTML=''; return; }
+  if(!ins.length) { dd.style.display='none'; dd.innerHTML=''; return; }
   dd.innerHTML = ins.map(x=>'<div class="noc-ins-opt" onclick="_nocSelInsumo(\''+x.id+'\','+i+')" style="padding:9px 12px;cursor:pointer;border-bottom:.5px solid var(--cream-d);font-size:12px;" onmouseenter="this.style.background=\'var(--cream)\'" onmouseleave="this.style.background=\'\'"><span style="font-weight:500;">'+x.nombre+'</span> <span style="color:var(--text-l);">('+x.unidad+')</span></div>').join('');
   dd.dataset.active = '-1';
   dd.style.display = 'block';
