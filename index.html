@@ -20486,6 +20486,7 @@ async function loadProductos() {
     _productos = [];
     snap.forEach(d => { const data=d.data(); if(!data.eliminado) _productos.push({id:d.id,...data}); });
     _productos.sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||''));
+    window._productos = _productos;
     renderProductosModule();
     actualizarSelectorProductos();
   } catch(e){
@@ -27692,7 +27693,7 @@ window.guardarPrecios = async function() {
   try {
     var fsi = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
     var fdb = window.db || fsi.getFirestore();
-    var prods = window._productosData || [];
+    var prods = (window._productos && window._productos.length) ? window._productos : (window._productosData || []);
     for(var i=0;i<inputs.length;i++){
       var input = inputs[i];
       var pid = input.dataset.id;
