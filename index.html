@@ -10959,14 +10959,14 @@ window.toggleDropdown = function(menuId, e) {
   var cp = document.getElementById('caja-plus-menu'); if(cp) cp.style.display='none';
   var cd = document.getElementById('caja-dl-menu'); if(cd) cd.style.display='none';
   if(target && !isOpen) {
-    if(menuId.indexOf('cp-dd-') === 0 && e) {
+    if(e) {
       var trigger = e.target;
-      while(trigger && trigger.tagName !== 'BUTTON') trigger = trigger.parentElement;
+      while(trigger && trigger.tagName !== 'BUTTON' && trigger !== document.body) trigger = trigger.parentElement;
       if(trigger && trigger.getBoundingClientRect) {
         var r = trigger.getBoundingClientRect();
         target.style.position = 'fixed';
         target.style.top = (r.bottom + 4) + 'px';
-        target.style.left = r.left + 'px';
+        target.style.left = Math.min(r.left, window.innerWidth - 200) + 'px';
         target.style.zIndex = '9999';
       }
     }
