@@ -10960,7 +10960,7 @@ window.toggleDropdown = function(menuId, e) {
   var cd = document.getElementById('caja-dl-menu'); if(cd) cd.style.display='none';
   if(target && !isOpen) {
     if(e) {
-      var trigger = e.target;
+      var trigger = e.target.closest('button') || e.target.closest('[onclick]') || e.target;
       var r = trigger.getBoundingClientRect();
       target.style.position = 'fixed';
       target.style.top = (r.bottom + 4) + 'px';
