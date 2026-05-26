@@ -21473,6 +21473,18 @@ window.saveProdCompra = async function() {
     setTimeout(async()=>{if(s)s.style.display='none';closeModal('newProdCompraModal');document.getElementById('newProdCompraModal').style.zIndex='';['pc-nombre','pc-desc'].forEach(i=>{const e=document.getElementById(i);if(e)e.value='';});document.getElementById('pc-edit-id').value='';await loadProductosCompra();
       // Si veníamos desde NC, recargar el selector
       if(window._prodDesdeNC){ window._prodDesdeNC=false; cargarProductosPorCat(); }
+      // Si veníamos desde OC, seleccionar el producto recién creado en el item correspondiente
+      if(window._prodDesdeOC){
+        window._prodDesdeOC = false;
+        const ocIdx = window._prodDesdeOCIndex;
+        window._prodDesdeOCIndex = null;
+        const newProd = (_prodCompra||[]).find(p => p.nombre === nombre);
+        if(newProd && typeof ocIdx === 'number' && _nocItems[ocIdx]){
+          _nocItems[ocIdx] = {..._nocItems[ocIdx], prodId: newProd.id, nombre: newProd.nombre, esOtro: false};
+          _nocRenderItems();
+          if(typeof _nocRecalcTotal === 'function') _nocRecalcTotal();
+        }
+      }
     },1500);
   }catch(e){showToast('Error: '+e.message, 'error');}
 };
@@ -22373,14 +22385,19 @@ function _nocRenderItems() {
   const cont = document.getElementById('noc-items-container');
   if(!cont) return;
   cont.innerHTML = _nocItems.map((it, i) => {
-    const prodOpts = (_prodCompra||[]).map(p =>
-      '<option value="'+p.id+'"'+(it.prodId===p.id?' selected':'')+'>'+p.nombre+'</option>'
-    ).join('');
-    const selectHtml = '<select class="fi" style="margin-top:0;font-size:13px;padding:7px 10px;" onchange="nocSeleccionarProducto('+i+',this.value)">'
-      + '<option value="">Seleccionar producto...</option>'
-      + prodOpts
-      + '<option value="__otro__"'+(it.esOtro?' selected':'')+'>Otro (texto libre)</option>'
-      + '</select>';
+    const prodLabel = it.prodId
+      ? ((_prodCompra||[]).find(p=>p.id===it.prodId)?.nombre || '')
+      : (it.esOtro ? 'Otro (texto libre)' : '');
+    const selectHtml = '<div style="position:relative;">'
+      + '<input type="text" class="fi" style="margin-top:0;font-size:13px;padding:7px 10px;" '
+      + 'id="noc-prod-input-'+i+'" '
+      + 'value="'+prodLabel.replace(/"/g,'&quot;')+'" '
+      + 'placeholder="Buscar producto..." autocomplete="off" '
+      + 'oninput="nocBuscarProducto('+i+',this.value)" '
+      + 'onfocus="nocBuscarProducto('+i+',this.value)" '
+      + 'onblur="setTimeout(()=>nocOcultarDropdown('+i+'),180)"/>'
+      + '<div id="noc-prod-dd-'+i+'" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:.5px solid var(--cream-d);border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.1);z-index:10;overflow:hidden;margin-top:4px;max-height:240px;overflow-y:auto;"></div>'
+      + '</div>';
     const textoLibre = it.esOtro
       ? '<input type="text" class="fi" placeholder="Descripción..." value="'+(it.nombre||'').replace(/"/g,'&quot;')+'" style="margin-top:4px;font-size:13px;padding:6px 10px;" oninput="_nocSetNombre('+i+',this.value)">'
       : '';
@@ -22413,12 +22430,49 @@ window.nocSeleccionarProducto = function(i, val) {
   _nocRenderItems();
   _nocRecalcTotal();
 };
+window.nocBuscarProducto = function(i, query) {
+  const dd = document.getElementById('noc-prod-dd-' + i);
+  if (!dd) return;
+  const q = (query || '').toLowerCase().trim();
+  const filtered = (_prodCompra || []).filter(p => !q || (p.nombre || '').toLowerCase().includes(q));
+  let html = filtered.map(p =>
+    '<div onclick="nocSeleccionarProducto(' + i + ',\'' + p.id + '\')" '
+    + 'style="padding:8px 12px;font-size:13px;cursor:pointer;border-bottom:.5px solid var(--cream);" '
+    + 'onmouseover="this.style.background=\'var(--cream)\'" '
+    + 'onmouseout="this.style.background=\'\'">'
+    + (p.nombre || '').replace(/</g,'&lt;')
+    + '</div>'
+  ).join('');
+  if (filtered.length === 0) {
+    html = '<div style="padding:8px 12px;font-size:12px;color:var(--text-l);">Sin resultados</div>';
+  }
+  html += '<div onclick="nocSeleccionarProducto(' + i + ',\'__otro__\')" '
+    + 'style="padding:8px 12px;font-size:13px;cursor:pointer;border-top:.5px solid var(--cream-d);color:var(--text-l);" '
+    + 'onmouseover="this.style.background=\'var(--cream)\'" '
+    + 'onmouseout="this.style.background=\'\'">Otro (texto libre)</div>';
+  html += '<div onclick="abrirProdDesdeOC(' + i + ')" '
+    + 'style="padding:8px 12px;font-size:13px;cursor:pointer;color:var(--sage-dark);font-weight:500;" '
+    + 'onmouseover="this.style.background=\'var(--sage-xl)\'" '
+    + 'onmouseout="this.style.background=\'\'">+ Nuevo producto</div>';
+  dd.innerHTML = html;
+  dd.style.display = 'block';
+};
+window.nocOcultarDropdown = function(i) {
+  const dd = document.getElementById('noc-prod-dd-' + i);
+  if (dd) dd.style.display = 'none';
+};
+window.abrirProdDesdeOC = function(i) {
+  window._prodDesdeOCIndex = i;
+  window._prodDesdeOC = true;
+  document.getElementById('newProdCompraModal').style.zIndex = '2000';
+  openModal('newProdCompraModal');
+};
 window.nocAgregarItem = function() {
   _nocItems.push({ esOtro: false, prodId: null, nombre: '', cantidad: 1, precio: 0, insumoId: null, insumoNombre: '', insumoUnidad: '' });
   _nocRenderItems();
   setTimeout(() => {
-    const selects = document.querySelectorAll('#noc-items-container select');
-    if(selects.length) selects[selects.length-1].focus();
+    const inputs = document.querySelectorAll('#noc-items-container input[id^="noc-prod-input-"]');
+    if(inputs.length) inputs[inputs.length-1].focus();
   }, 30);
 };
 window.nocEliminarItem = function(i) {
