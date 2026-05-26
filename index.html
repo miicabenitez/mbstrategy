@@ -2515,6 +2515,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
             <i class="ti ti-cash-register" style="color:#b09088;font-size:36px;opacity:.85;flex-shrink:0;margin-left:12px;"></i>
           </div>
           <div style="padding:20px 24px;display:flex;flex-direction:column;gap:14px;">
+            <div id="cajero-apertura-warning" style="display:none;"></div>
             <div style="background:#fff;border:1.5px solid #e8e4de;border-radius:12px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;">
               <div>
                 <div style="font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#b09088;margin-bottom:4px;">Saldo en sistema</div>
@@ -27090,6 +27091,37 @@ window.cajaAperturaShow = async function() {
       ? 'Ingresá el efectivo inicial de caja'
       : 'Monto fijado por el cierre del turno anterior: $' + Math.round(_saldo).toLocaleString('es-AR');
   } catch(_e) { console.log('[cajaAperturaShow] ERROR:', _e); if(_saldoEl) _saldoEl.textContent = ''; }
+  // Verificar si hay turno abierto de OTRO cajero — aviso de coexistencia
+  try {
+    const _otrosTurnosSnap = await window._getDocs(window._query(
+      window._collection(window.db, 'clientes', currentClientUID, 'turnos'),
+      window._where('estado', '==', 'abierto')
+    ));
+    const _otros = [];
+    _otrosTurnosSnap.forEach(d => {
+      const _t = d.data();
+      if(_t.cajeroUid !== window.currentUser?.uid) _otros.push(_t);
+    });
+    const _warnEl = document.getElementById('cajero-apertura-warning');
+    if(_warnEl) {
+      if(_otros.length > 0) {
+        const _nombre = _otros[0].cajeroNombre || 'Otro cajero';
+        _warnEl.innerHTML = `<div style="background:#fdf8f0;border:0.5px solid #e8d5b0;border-radius:10px;padding:12px 14px;margin-bottom:16px;display:flex;gap:10px;align-items:flex-start;">
+          <div style="width:20px;height:20px;border-radius:50%;background:#b09088;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">
+            <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M8 5v4M8 11h.01" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:600;color:#8a6040;margin-bottom:2px;">Hay un turno abierto</div>
+            <div style="font-size:11px;color:#a07850;line-height:1.4;">${_nombre} tiene un turno activo. Podés abrir el tuyo igualmente — compartirán la misma caja.</div>
+          </div>
+        </div>`;
+        _warnEl.style.display = 'block';
+      } else {
+        _warnEl.innerHTML = '';
+        _warnEl.style.display = 'none';
+      }
+    }
+  } catch(_we) { console.log('[cajaAperturaShow] warn check error:', _we); }
   _ov.style.display = 'flex';
 };
 
