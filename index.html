@@ -571,6 +571,9 @@ input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus
   #stk-insumos-header{display:none !important;}
   #stk-insumos-lista{min-width:0 !important;}
   #stk-insumos-content .card > div{overflow-x:visible !important;}
+  #stk-movs-header{display:none !important;}
+  #stk-movs-lista{min-width:0 !important;}
+  #stk-movs-content .card > div{overflow-x:visible !important;}
   #presup-kpi-grid{grid-template-columns:1fr 1fr !important;}
   /* KPIs finanzas 2x2 en mobile */
   [style*="grid-template-columns:1.4fr"]{grid-template-columns:1fr 1fr !important;}
@@ -4745,12 +4748,12 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         <div id="stk-movs-content" style="display:none;">
           <div style="background:var(--white);border-radius:16px;overflow:hidden;">
             <div style="overflow-x:auto;">
-              <div style="display:grid;grid-template-columns:90px 80px 1fr 90px 100px;gap:10px;padding:0 14px 8px;border-bottom:1.5px solid var(--cream-d);margin-bottom:4px;min-width:480px;">
+              <div id="stk-movs-header" style="display:grid;grid-template-columns:90px 80px 1fr 100px 150px;gap:10px;padding:0 14px 8px;border-bottom:1.5px solid var(--cream-d);margin-bottom:4px;min-width:480px;">
                 <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Fecha</span>
                 <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Tipo</span>
                 <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Insumo</span>
-                <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;text-align:right;">Cantidad</span>
                 <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Origen</span>
+                <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;text-align:right;">Cantidad</span>
               </div>
               <div id="stk-movs-lista" style="min-width:480px;"></div>
             </div>
@@ -16888,6 +16891,7 @@ function _stkRenderMovs(mes, tipo) {
     return;
   }
   const origenLabel = {compra:'Compra',venta:'Venta caja',presupuesto:'Presupuesto',ajuste:'Ajuste manual'};
+  const isMobile = window.innerWidth <= 768;
   lista.innerHTML = movs.map(m=>{
     const esEntrada = m.tipo==='entrada';
     const esAjuste = m.tipo==='ajuste';
@@ -16897,13 +16901,31 @@ function _stkRenderMovs(mes, tipo) {
     const signo = esEntrada ? '+' : '−';
     const signoColor = esEntrada ? '#3d6644' : '#c0392b';
     const cantStr = (parseFloat(m.cantidad||0)).toLocaleString('es-AR',{maximumFractionDigits:3})+' '+(m.unidad||'');
-    return `<div style="display:grid;grid-template-columns:90px 80px 1fr 90px 100px 120px;gap:10px;padding:10px 14px;border-bottom:.5px solid var(--cream-d);min-width:560px;align-items:center;">
+    if (isMobile) {
+      return `<div style="background:#fff;border-radius:12px;border:0.5px solid var(--cream-d);margin-bottom:8px;padding:12px 14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <span style="font-size:11px;color:var(--text-l);">${(m.fecha||'').slice(0,10)}</span>
+          <span style="background:${badgeBg};color:${badgeColor};font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;letter-spacing:.3px;">${badgeLabel}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:10px;">
+          <span style="font-size:13px;font-weight:600;color:var(--text);">${m.insumoNombre||'—'}</span>
+          <span style="font-size:14px;font-weight:600;color:${signoColor};white-space:nowrap;">${signo}${cantStr}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+          <span style="font-size:11px;color:var(--text-l);">${origenLabel[m.origen]||m.origen||'—'}</span>
+          ${m.notas ? `<span style="font-size:11px;color:var(--text-l);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;">${m.notas}</span>` : ''}
+        </div>
+      </div>`;
+    }
+    return `<div style="display:grid;grid-template-columns:90px 80px 1fr 100px 150px;gap:10px;padding:10px 14px;border-bottom:.5px solid var(--cream-d);min-width:480px;align-items:center;">
       <span style="font-size:12px;color:var(--text-m);">${(m.fecha||'').slice(0,10)}</span>
       <span style="display:inline-flex;"><span style="background:${badgeBg};color:${badgeColor};font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;letter-spacing:.3px;">${badgeLabel}</span></span>
-      <span style="font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;">${m.insumoNombre||'—'}</span>
-      <span style="font-size:13px;color:${signoColor};font-weight:600;text-align:right;">${signo}${cantStr}</span>
+      <div style="min-width:0;">
+        <div style="font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${m.insumoNombre||'—'}</div>
+        ${m.notas ? `<div style="font-size:11px;color:var(--text-l);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${m.notas.replace(/"/g,'&quot;')}">${m.notas}</div>` : ''}
+      </div>
       <span style="font-size:12px;color:var(--text-m);">${origenLabel[m.origen]||m.origen||'—'}</span>
-      <span style="font-size:12px;color:var(--text-m);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${(m.notas||'').replace(/"/g,'&quot;')}">${m.notas||'—'}</span>
+      <span style="font-size:13px;color:${signoColor};font-weight:600;text-align:right;">${signo}${cantStr}</span>
     </div>`;
   }).join('');
 }
