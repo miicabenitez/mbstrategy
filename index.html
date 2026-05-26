@@ -10961,7 +10961,8 @@ window.toggleDropdown = function(menuId, e) {
   if(target && !isOpen) {
     if(e) {
       var trigger = e.target;
-      while(trigger && trigger.tagName !== 'BUTTON' && trigger !== document.body) trigger = trigger.parentElement;
+      while(trigger && trigger.tagName !== 'BUTTON' && trigger.tagName !== 'DIV' && trigger !== document.body) trigger = trigger.parentElement;
+      if(!trigger || trigger === document.body) trigger = e.target;
       if(trigger && trigger.getBoundingClientRect) {
         var r = trigger.getBoundingClientRect();
         target.style.position = 'fixed';
