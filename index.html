@@ -4317,12 +4317,12 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
             <div style="width:.5px;background:rgba(255,255,255,.15);"></div>
             <div>
               <div style="font-size:11px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.8px;">Total pagado</div>
-              <div style="font-family:'DM Sans',sans-serif;font-size:16px;font-weight:600;color:#a8d8a0;margin-top:2px;" id="cc-kpi-pagado-full">$0</div>
+              <div style="font-family:'DM Sans',sans-serif;font-size:16px;font-weight:600;color:#4a5e4d;margin-top:2px;" id="cc-kpi-pagado-full">$0</div>
             </div>
             <div style="width:.5px;background:rgba(255,255,255,.15);"></div>
             <div>
               <div style="font-size:11px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.8px;">Pendiente</div>
-              <div style="font-family:'DM Sans',sans-serif;font-size:16px;font-weight:600;color:#f0857a;margin-top:2px;" id="cc-kpi-pendiente-full">$0</div>
+              <div style="font-family:'DM Sans',sans-serif;font-size:16px;font-weight:600;color:#b09088;margin-top:2px;" id="cc-kpi-pendiente-full">$0</div>
             </div>
             <div style="width:.5px;background:rgba(255,255,255,.15);"></div>
             <div>
@@ -4336,7 +4336,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         <div id="prov-cc-grid" style="display:grid;grid-template-columns:1fr 340px;gap:14px;align-items:start;">
 
           <!-- Movimientos -->
-          <div class="card">
+          <div class="card" style="border-top:3px solid #b09088;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
               <div style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:1px;">Movimientos</div>
               <div style="display:flex;gap:8px;">
@@ -23244,7 +23244,7 @@ function renderCuentaCorriente() {
   setEl('cc-saldo-final', saldoPendiente>0?'-$'+saldoPendiente.toLocaleString('es-AR'):'Al día');
 
   const saldoFullEl = document.getElementById('cc-saldo-final-full');
-  if(saldoFullEl) saldoFullEl.style.color = saldoFavor > 0 ? '#90c695' : saldoPendiente > 0 ? 'var(--err)' : 'var(--ok)';
+  if(saldoFullEl) saldoFullEl.style.color = saldoFavor > 0 ? '#90c695' : saldoPendiente > 0 ? '#b09088' : 'var(--ok)';
 
   const saldoBadge = document.getElementById('cc-saldo-badge-full');
   if(saldoBadge) saldoBadge.innerHTML = saldoFavor > 0
@@ -23325,7 +23325,7 @@ function renderCuentaCorriente() {
           <div style="font-size:11px;color:var(--text-l);margin-top:2px;">${m.fecha||'—'} · Sin factura aún</div>
         </div>
         <div style="text-align:right;">
-          <div style="font-family:'DM Sans',sans-serif;font-size:14px;color:var(--err);font-weight:600;">-$${montoOC.toLocaleString('es-AR')}</div>
+          <div style="font-family:'DM Sans',sans-serif;font-size:14px;color:#b09088;font-weight:600;">-$${montoOC.toLocaleString('es-AR')}</div>
           ${ocBadge}
         </div>
       </div>`;
@@ -23363,7 +23363,7 @@ function renderCuentaCorriente() {
           <div style="font-size:11px;color:var(--text-l);margin-top:2px;">${m.fecha||''}${m.desc?' · '+m.desc:''}</div>
         </div>
         <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
-          <div style="font-family:'DM Sans',sans-serif;font-size:14px;color:var(--err);font-weight:600;">-$${(parseFloat(m.monto)||0).toLocaleString('es-AR')}</div>
+          <div style="font-family:'DM Sans',sans-serif;font-size:14px;color:#b09088;font-weight:600;">-$${(parseFloat(m.monto)||0).toLocaleString('es-AR')}</div>
           <span style="background:${bc.bg};color:${bc.tc};font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;">${bc.label}</span>
         </div>
       </div>`;
