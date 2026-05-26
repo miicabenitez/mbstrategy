@@ -6988,9 +6988,14 @@ window.showClientUI = async function(email, clientData) {
             if (!_turnosSnap.empty) {
               const _td = _turnosSnap.docs[0];
               window.turnoActual = { id: _td.id, ..._td.data() };
-            } else {
+            } else if (window.currentRol === 'cajero') {
               setTimeout(() => { if(window.cajaAperturaShow) window.cajaAperturaShow(); }, 400);
             }
+          } else {
+            // Operador no encontrado — cerrar sesión por seguridad
+            try { await signOut(auth); } catch(ex) {}
+            window.location.reload();
+            return;
           }
         } catch(_e) { console.log('resolución rol:', _e); }
       }
