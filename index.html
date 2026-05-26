@@ -792,6 +792,7 @@ input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus
   .cierre-kpi{border-right:none;border-bottom:1px solid rgba(255,255,255,.1);}
   .cierre-kpi:last-child{border-bottom:none;}
   .rv-kpi-grid,.rc-kpi-grid{grid-template-columns:1fr 1fr !important;}
+  #cp-list{padding:0 !important;}
 }
 /* ── CAJA MODALES ── */
 @keyframes modalIn{from{opacity:0;transform:scale(.97) translateY(10px);}to{opacity:1;transform:none;}}
@@ -20127,7 +20128,8 @@ function renderClientPresup(list) {
   const dot  = {'Pendiente de enviar':'#B08A42','Enviado':'#4A6A8A','Consultado':'#856404','Aprobado':'#5A7A4E','Denegado':'#8A4A4A','Cobrado':'#1A6637'};
   const badge = {'Pendiente de enviar':{bg:'#F5ECD8',color:'#8A6A3A'},'Enviado':{bg:'#E6EEF5',color:'#4A6A8A'},'Consultado':{bg:'#FFF3CD',color:'#856404'},'Aprobado':{bg:'#EAF0E6',color:'#5A7A4E'},'Denegado':{bg:'#F5E8E8',color:'#8A4A4A'},'Cobrado':{bg:'#D6F0E0',color:'#1A6637'}};
   const estados = ['Pendiente de enviar','Enviado','Consultado','Aprobado','Denegado','Cobrado'];
-  const header = `<div style="display:grid;grid-template-columns:7px 1fr 140px 110px 104px;padding:8px 16px 6px;border-bottom:1px solid var(--cream-d);"><div></div><div style="padding-left:8px;font-size:10px;font-family:'DM Sans',sans-serif;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Presupuesto</div><div style="font-size:10px;font-family:'DM Sans',sans-serif;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Estado</div><div style="font-size:10px;font-family:'DM Sans',sans-serif;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;text-align:right;padding-right:8px;">Monto</div><div style="font-size:10px;font-family:'DM Sans',sans-serif;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;text-align:right;">Acciones</div></div>`;
+  const isMobile = window.innerWidth <= 768;
+  const header = isMobile ? '' : `<div style="display:grid;grid-template-columns:7px 1fr 140px 110px 104px;padding:8px 16px 6px;border-bottom:1px solid var(--cream-d);"><div></div><div style="padding-left:8px;font-size:10px;font-family:'DM Sans',sans-serif;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Presupuesto</div><div style="font-size:10px;font-family:'DM Sans',sans-serif;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;">Estado</div><div style="font-size:10px;font-family:'DM Sans',sans-serif;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;text-align:right;padding-right:8px;">Monto</div><div style="font-size:10px;font-family:'DM Sans',sans-serif;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;text-align:right;">Acciones</div></div>`;
   el.innerHTML = header + list.map((p, idx) => {
     const m  = getPresupMonto(p);
     const bc = badge[p.estado]||{bg:'var(--cream)',color:'var(--text-l)'};
@@ -20136,6 +20138,40 @@ function renderClientPresup(list) {
     const fecha = p.fecha ? new Date(p.fecha+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'short'}) : '';
     const alerta = p.estado==='Enviado'&&p.fecha&&Math.floor((new Date()-new Date(p.fecha+'T12:00:00'))/(1000*60*60*24))>=7;
     const ddId = `cp-dd-${p.id}`;
+    if (isMobile) {
+      const estadoEl = cobrado
+        ? `<span style="font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;background:${bc.bg};color:${bc.color};white-space:nowrap;">${p.estado}</span>`
+        : `<div style="position:relative;display:inline-block;">
+            <button onclick="toggleDropdown('${ddId}',event)" style="font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;background:${bc.bg};color:${bc.color};border:none;cursor:pointer;font-family:'DM Sans',sans-serif;display:inline-flex;align-items:center;gap:4px;white-space:nowrap;">${p.estado}<svg width="8" height="8" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+            <div id="${ddId}" class="cl-dropdown-menu" style="display:none;position:absolute;top:30px;left:0;background:#fff;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.13);overflow:hidden;min-width:170px;z-index:200;">
+              ${estados.filter(s=>s!==p.estado).map(s=>`<div onclick="updateClientPresupEstado('${p.id}','${s}');toggleDropdown('${ddId}',event)" style="padding:9px 14px;font-size:12px;font-family:'DM Sans',sans-serif;color:var(--text);cursor:pointer;" onmouseover="this.style.background='var(--cream)'" onmouseout="this.style.background=''">${s}</div>`).join('')}
+            </div>
+          </div>`;
+      return `<div style="display:block;background:#fff;border-radius:12px;border:0.5px solid var(--cream-d);margin-bottom:8px;padding:12px 14px 10px;position:relative;overflow:hidden;animation:fadeUp .3s ease both;animation-delay:${idx*40}ms;">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:${ac};"></div>
+        <div style="padding-left:10px;margin-bottom:8px;">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px;">
+            <span onclick="goToClientFromPresup('${p.clienteId||''}')" style="font-size:13px;font-weight:600;color:var(--text);${p.clienteId?'cursor:pointer;':''}">${p.cliente||'Sin cliente'}</span>
+            ${p.prospecto&&!p.clienteId?`<span style="font-size:10px;padding:2px 7px;border-radius:20px;background:#EEF2FF;color:#5A5ABF;">Prospecto</span>`:''}
+          </div>
+          ${p.descripcion?`<div style="font-size:12px;color:var(--text-m);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.descripcion}</div>`:''}
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:3px;">
+            ${fecha?`<span style="font-size:11px;color:var(--text-l);">${fecha}</span>`:''}
+            ${alerta?`<span style="font-size:11px;color:var(--warn);">⚠ seguimiento</span>`:''}
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding-left:10px;margin-bottom:8px;">
+          ${estadoEl}
+          ${m>0?`<div style="font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:var(--text);">$${m.toLocaleString('es-AR')} <span style="font-size:10px;color:var(--text-l);font-weight:400;">${p.moneda||'ARS'}</span></div>`:''}
+        </div>
+        <div style="display:flex;gap:4px;justify-content:flex-end;align-items:center;padding-left:10px;">
+          ${p.link?`<button onclick="verPresupuestoPDF('${p.id}')" style="width:28px;height:28px;border-radius:6px;background:var(--sage-xl);border:.5px solid var(--sage-light);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Ver PDF"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--sage-dark)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>`:''}
+          <button onclick="exportarPresupuestoPDF('${p.id}')" style="width:28px;height:28px;border-radius:6px;background:var(--sage-xl);border:.5px solid var(--sage-light);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Ver / PDF"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--sage-dark)" stroke-width="1.8" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+          ${!cobrado?`<button onclick="editClientPresup('${p.id}')" style="width:28px;height:28px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`:''}
+          <button onclick="deleteClientPresup('${p.id}')" style="width:28px;height:28px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
+        </div>
+      </div>`;
+    }
     return `<div style="display:grid;grid-template-columns:7px 1fr 140px 110px 104px;align-items:center;padding:10px 16px;border-bottom:.5px solid var(--cream-d);transition:all .15s;animation:fadeUp .3s ease both;animation-delay:${idx*40}ms" onmouseover="this.style.background='#faf8f5';this.style.transform='translateX(2px)'" onmouseout="this.style.background='';this.style.transform=''">
       <div style="display:flex;align-items:center;justify-content:center;">
         <div style="width:3px;height:32px;background:${ac};border-radius:2px;"></div>
