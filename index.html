@@ -15595,6 +15595,27 @@ window.vrcGuardar = async function() {
         ticketNum: _ticketNum,
         creadoPor: window.currentOperadorNombre || 'Admin'
       });
+      // Espejo en cuenta del dueño para MP y transferencias
+      const _esEfectivoCajero = _cuentaObj?.nombre === 'Caja mostrador' || _vrcMetodo === '__tarjeta__';
+      if (!_esEfectivoCajero) {
+        const _cuentaEspejo = _cuentaObj?.nombre || 'Mercado Pago';
+        await addDoc(collection(db, 'clientes', currentClientUID, 'libroCaja'), {
+          uid: currentClientUID,
+          fecha: hoy,
+          tipo: 'ingreso',
+          concepto: 'Venta caja',
+          cuenta: _cuentaEspejo,
+          medioPago: _medioPago,
+          monto: Math.round(total * 100) / 100,
+          mes,
+          origen: 'venta_caja_espejo',
+          eliminado: false,
+          creadoEn: new Date().toISOString(),
+          turnoId: window.turnoActual?.id || '',
+          ticketNum: _ticketNum,
+          creadoPor: window.currentOperadorNombre || 'Admin'
+        });
+      }
       const _vcCarritoSnap = {..._vrcCarrito};
       const _obsVenta = document.getElementById('vrc-observacion')?.value?.trim() || '';
       _mbPrintTicket({productos, total, medioPago:_medioPago, ticketNum:_ticketNum, cajero:window.currentOperadorNombre||'', observacion:_obsVenta});
