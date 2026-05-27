@@ -11117,7 +11117,7 @@ async function loadCajaModule() {
     let todosMovs = [];
     movsSnap.forEach(d => { const data = d.data(); if(!data.eliminado) todosMovs.push({id:d.id,...data}); });
     if(window.currentRol === 'cajero') {
-      todosMovs = todosMovs.filter(m => m.cuenta==='Caja mostrador' || m.cuentaHacia==='Caja mostrador' || m.cuentaDesde==='Caja mostrador' || (m.turnoId && m.turnoId===window.turnoActual?.id));
+      todosMovs = todosMovs.filter(m => m.origen !== 'venta_caja_espejo' && (m.cuenta==='Caja mostrador' || m.cuentaHacia==='Caja mostrador' || m.cuentaDesde==='Caja mostrador' || (m.turnoId && m.turnoId===window.turnoActual?.id)));
     }
     // Cajero: tabla/chips usan movimientos del turno; admin usa histórico completo
     let movsVista = todosMovs;
