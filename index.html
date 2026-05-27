@@ -11450,9 +11450,9 @@ function renderCajaTable(movs, facturadosMap = new Map()) {
             <div style="font-size:13px;font-weight:600;color:#1a1a1a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:3px;">${m.concepto||'—'}</div>
             <div style="font-size:11px;color:#aaa;">${fechaStr}${m.hora?' · '+m.hora:''}${m.creadoPor?' · '+m.creadoPor:''}</div>
           </div>
-          <div style="text-align:right;flex-shrink:0;">
-            <div style="font-size:14px;font-weight:600;color:${m.tipo==='egreso'?'#b09088':'#4a5e4d'};">${montoHtml}</div>
-            <span style="font-size:10px;background:#f0ede8;color:#888;padding:2px 8px;border-radius:20px;">${m.medioPago||'Efectivo'}</span>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;">
+            <div style="font-size:14px;font-weight:600;color:${m.tipo==='egreso'?'#b09088':'#4a5e4d'};white-space:nowrap;">${m.tipo==='egreso'?'-':''}$${Math.round(monto).toLocaleString('es-AR')}</div>
+            <span style="font-size:10px;background:#f0ede8;color:#888;padding:2px 8px;border-radius:20px;white-space:nowrap;">${m.medioPago||'Efectivo'}</span>
           </div>
         </td>
       </tr>`;
