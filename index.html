@@ -11159,7 +11159,11 @@ async function loadCajaModule() {
     const _opSnap = await getDocs(query(collection(db,'clientes',uid,'operadores'), where('activo','==',true)));
     window._tieneOperadores = !_opSnap.empty;
     // 4. Renderizar
-    movs = movs.filter(m => m.cuenta !== 'Caja mostrador');
+    movs = movs.filter(m =>
+      m.cuenta !== 'Caja mostrador' &&
+      !(m.cuenta === 'Efectivo' && ['venta_caja','apertura_turno','cierre_turno','pedido_cta'].includes(m.origen)) ||
+      m.origen === 'retiro_cajero_cierre'
+    );
     renderCajaKPIs(movs);
     renderCajaChips(cuentasUnicas, todosMovs);
     const facturasSnap = await getDocs(collection(db, 'clientes', uid, 'facturas'));
