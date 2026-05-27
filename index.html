@@ -10895,6 +10895,20 @@ window._auditoriaRender = function() {
     const hora = m.creadoEn ? new Date(m.creadoEn).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Argentina/Buenos_Aires'}) : '';
     const fecha = m.fecha ? m.fecha.split('-').reverse().join('/') : '';
     const cajero = m.creadoPor || '';
+    const isMobileRow = window.innerWidth <= 768;
+    if (isMobileRow) {
+      return `<div onclick="cajaMostrarMovimiento('${m.id}')" style="display:flex;align-items:flex-start;justify-content:space-between;padding:12px 14px;border-bottom:0.5px solid #f0ebe5;gap:8px;cursor:pointer;background:#fff;">
+        <div style="width:3px;min-height:36px;border-radius:2px;background:${accentColor};flex-shrink:0;align-self:stretch;"></div>
+        <div style="flex:1;min-width:0;padding-left:8px;">
+          <div style="font-size:13px;font-weight:600;color:#2d2a26;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:3px;">${m.concepto||'—'}</div>
+          <div style="font-size:11px;color:#aaa;">${fecha} · ${hora}${cajero?' · '+cajero:''}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;">
+          <div style="font-size:14px;font-weight:600;color:${montoColor};white-space:nowrap;">${montoStr}</div>
+          <span style="font-size:10px;background:#f0ede8;color:#888;padding:2px 8px;border-radius:20px;white-space:nowrap;">${mp}</span>
+        </div>
+      </div>`;
+    }
     return `<div style="display:flex;align-items:center;padding:15px 28px;border-bottom:0.5px solid #f0ebe5;gap:16px;cursor:pointer;transition:background .1s;" onmouseover="this.style.background='#faf8f5'" onmouseout="this.style.background=''">
       <div style="width:3px;height:32px;border-radius:2px;background:${accentColor};flex-shrink:0;"></div>
       <div style="flex:1;min-width:0;">
