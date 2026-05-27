@@ -11443,28 +11443,18 @@ function renderCajaTable(movs, facturadosMap = new Map()) {
     if (isMobile) {
       const accentColor = m.tipo==='ingreso'?'#3a4e3d':m.tipo==='egreso'?'#b09088':'#5bb8f5';
       const montoHtml = m.tipo==='egreso' ? salidaHtml : entradaHtml;
-      return `<tr data-tipo="${m.tipo||''}" data-concepto="${(m.concepto||'').toLowerCase()}" data-fecha="${m.fecha||''}" onclick="cajaMostrarMovimiento('${m.id}')" style="display:block;background:#fff;border-radius:12px !important;border:0.5px solid #e8e4dc;margin-bottom:6px;padding:12px 14px;position:relative;overflow:hidden;cursor:pointer;">
-        <td style="display:block;padding:0;border:none;position:absolute;left:0;top:0;bottom:0;width:3px;background:${accentColor};border-radius:0;"></td>
-        <td style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;padding:0 0 0 8px;border:none;">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <span style="font-size:11px;color:#bbb;">${fechaStr}</span>
-            <span style="font-size:13px;font-weight:500;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;">${m.concepto||'—'}</span>
+      return `<tr data-tipo="${m.tipo||''}" data-concepto="${(m.concepto||'').toLowerCase()}" data-fecha="${m.fecha||''}" onclick="cajaMostrarMovimiento('${m.id||m.docId||''}')" style="display:block;background:#fff;border-radius:12px;border:0.5px solid #e8e4dc;margin-bottom:6px;padding:12px 14px;position:relative;overflow:hidden;cursor:pointer;">
+        <td style="display:block;padding:0;border:none;position:absolute;left:0;top:0;bottom:0;width:3px;background:${accentColor};"></td>
+        <td style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;padding:0 0 0 10px;border:none;">
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:600;color:#1a1a1a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:3px;">${m.concepto||'—'}</div>
+            <div style="font-size:11px;color:#aaa;">${fechaStr}${m.hora?' · '+m.hora:''}${m.creadoPor?' · '+m.creadoPor:''}</div>
           </div>
-          <span class="${badgeClass}" style="flex-shrink:0;">${badgeText}</span>
-        </td>
-        <td style="display:flex;justify-content:space-between;align-items:center;padding:0 0 0 8px;border:none;">
-          <span style="font-size:11px;color:#aaa;">${cuentaLabel}</span>
-          <div style="display:flex;align-items:center;gap:8px;">
-            ${montoHtml}
-            <span style="font-size:12px;font-weight:650;color:#1a1a1a;">$${Math.round(saldo).toLocaleString('es-AR')}</span>
-            ${(m.tipo === 'ingreso' && !noFacturable)
-              ? facInfo
-                ? `<div onclick="event.stopPropagation();showToast('Factura ya generada · N° ${facNro}','info')" style="width:28px;height:28px;border-radius:8px;background:#e8ede8;border:.5px solid #4a5e4d;display:flex;align-items:center;justify-content:center;color:#4a5e4d;cursor:pointer;flex-shrink:0;"><svg width="13" height="13" viewBox="0 0 15 15" fill="none"><path d="M3 8l3.5 3.5L12 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`
-                : `<div onclick="event.stopPropagation();abrirModalFacturaCaja('${m.id}')" style="width:28px;height:28px;border-radius:8px;border:.5px solid rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;color:#9ca3af;cursor:pointer;flex-shrink:0;"><svg width="13" height="13" viewBox="0 0 15 15" fill="none"><rect x="2.5" y="1.5" width="10" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M5 5h5M5 7.5h5M5 10h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></div>`
-              : `<div style="width:28px;height:28px;flex-shrink:0;"></div>`}
+          <div style="text-align:right;flex-shrink:0;">
+            <div style="font-size:14px;font-weight:600;color:${m.tipo==='egreso'?'#b09088':'#4a5e4d'};">${montoHtml}</div>
+            <span style="font-size:10px;background:#f0ede8;color:#888;padding:2px 8px;border-radius:20px;">${m.medioPago||'Efectivo'}</span>
           </div>
         </td>
-        <td style="display:none"></td><td style="display:none"></td><td style="display:none"></td><td style="display:none"></td><td style="display:none"></td><td style="display:none"></td>
       </tr>`;
     }
     return `<tr data-tipo="${m.tipo||''}" data-concepto="${(m.concepto||'').toLowerCase()}" data-fecha="${m.fecha||''}" style="opacity:0;animation:fadeUp .3s ease both;animation-delay:${80+i*50}ms;--acc-color:${m.tipo==='ingreso'?'#3a4e3d':m.tipo==='egreso'?'#b09088':'#e0dbd6'};" onclick="cajaMostrarMovimiento('${m.id}')">
