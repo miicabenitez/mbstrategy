@@ -11117,7 +11117,7 @@ async function loadCajaModule() {
     let todosMovs = [];
     movsSnap.forEach(d => { const data = d.data(); if(!data.eliminado) todosMovs.push({id:d.id,...data}); });
     if(window.currentRol === 'cajero') {
-      todosMovs = todosMovs.filter(m => m.origen !== 'venta_caja_espejo' && (m.cuenta==='Caja mostrador' || m.cuentaHacia==='Caja mostrador' || m.cuentaDesde==='Caja mostrador' || (m.turnoId && m.turnoId===window.turnoActual?.id)));
+      todosMovs = todosMovs.filter(m => !['venta_caja_espejo','devolucion_caja_espejo'].includes(m.origen) && (m.cuenta==='Caja mostrador' || m.cuentaHacia==='Caja mostrador' || m.cuentaDesde==='Caja mostrador' || (m.turnoId && m.turnoId===window.turnoActual?.id)));
     }
     // Cajero: tabla/chips usan movimientos del turno; admin usa histórico completo
     let movsVista = todosMovs;
@@ -15607,10 +15607,12 @@ window.vrcGuardar = async function() {
           cuenta: _cuentaEspejo,
           medioPago: _medioPago,
           monto: Math.round(total * 100) / 100,
+          productos,
           mes,
           origen: 'venta_caja_espejo',
           eliminado: false,
           creadoEn: new Date().toISOString(),
+          observacion: document.getElementById('vrc-observacion')?.value?.trim() || '',
           turnoId: window.turnoActual?.id || '',
           ticketNum: _ticketNum,
           creadoPor: window.currentOperadorNombre || 'Admin'
@@ -26787,18 +26789,38 @@ window.cajaMovDevolverConfirmar = async function(id) {
   if(!m) return;
   var medioEl = document.getElementById('cmd-dev-medio');
   var medio = medioEl ? medioEl.value : (m.cuenta||'Efectivo');
+  var _esEfectivoDev = (medio||'').toLowerCase() === 'efectivo' || (medio||'').toLowerCase() === 'caja mostrador' || medio?.toLowerCase().includes('tarjeta');
   try {
     var hoy = fechaHoyARG();
     var mes = mesHoyARG(hoy);
+    var _cuentaOriginal = _esEfectivoDev ? medio : 'Caja mostrador';
     await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'libroCaja'),{
       uid:currentClientUID, fecha:hoy, mes:mes,
       tipo:'egreso', concepto:'Devolución: '+(m.concepto||'venta'),
-      cuenta:medio, monto:parseFloat(m.monto)||0,
+      cuenta:_cuentaOriginal, monto:parseFloat(m.monto)||0,
       origen:'devolucion_caja', refMovId:id,
       eliminado:false, creadoEn:new Date().toISOString(),
       turnoId:window.turnoActual?.id||'',
       creadoPor:window.currentOperadorNombre||'Cajero'
     });
+    // Espejo de devolución en cuenta del dueño para MP y transferencias
+    if (!_esEfectivoDev) {
+      await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'libroCaja'), {
+        uid: currentClientUID,
+        fecha: hoy,
+        mes: mes,
+        tipo: 'egreso',
+        concepto: 'Devolución: ' + (m.concepto||'venta'),
+        cuenta: medio,
+        monto: parseFloat(m.monto)||0,
+        origen: 'devolucion_caja_espejo',
+        refMovId: id,
+        eliminado: false,
+        creadoEn: new Date().toISOString(),
+        turnoId: window.turnoActual?.id||'',
+        creadoPor: window.currentOperadorNombre||'Cajero'
+      });
+    }
     await window._updateDoc(window._doc(window.db,'clientes',currentClientUID,'libroCaja',id),{ devuelto: true });
     cajaMovDetalleCerrar();
     showToast('Devolución registrada','success');
