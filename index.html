@@ -11878,6 +11878,31 @@ function _mdvBuildBody(m, editing) {
     return html;
   }
 
+  const esEspejo = ['venta_caja_espejo','devolucion_caja_espejo'].includes(m.origen);
+  if(esEspejo) {
+    html += _mdvField('FECHA',
+      `<div class="mdv-fv">${_mdvFechaCorta(m.fecha)}</div>`, '', false);
+    if(m.ticketNum) html += _mdvField('TICKET',
+      `<div class="mdv-fv">N° ${m.ticketNum}</div>`, '', false);
+    if(m.creadoPor) html += _mdvField('CAJERO',
+      `<div class="mdv-fv">${m.creadoPor}</div>`, '', false);
+    if(typeof m.facturado !== 'undefined') html += _mdvField('FACTURADO',
+      `<div class="mdv-fv">${m.facturado ? 'Sí' : 'No'}</div>`, '', false);
+    if(m.productos && m.productos.length) {
+      html += '<div style="margin-bottom:12px;">';
+      html += '<div style="font-size:10px;font-weight:700;color:#888;letter-spacing:.06em;margin-bottom:6px;">PRODUCTOS</div>';
+      html += '<div style="display:flex;flex-direction:column;gap:4px;">';
+      m.productos.forEach(p=>{
+        html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#fafafa;border:1.5px solid #f0efeb;border-radius:9px;font-size:13px;">`;
+        html += `<span style="color:#555;">${p.nombre} <span style="color:#aaa;">×${p.qty||p.cantidad||1}</span></span>`;
+        html += `<span style="font-weight:600;color:#3B6D11;">${montoFmt((p.precioUnitario||p.precio||0)*(p.qty||p.cantidad||1))}</span>`;
+        html += `</div>`;
+      });
+      html += '</div></div>';
+    }
+    return html;
+  }
+
   // Normal ingreso/egreso
   html += _mdvField('FECHA',
     `<div class="mdv-fv">${_mdvFechaCorta(m.fecha)}</div>`,
@@ -11918,6 +11943,7 @@ function _mdvRender() {
   const m = _mdvMovimiento;
   if(!m) return;
   const editing = _mdvEditing;
+  const esEspejo = ['venta_caja_espejo','devolucion_caja_espejo'].includes(m.origen);
 
   // Eyebrow & title
   const eyebrow = document.getElementById('mdv-eyebrow');
@@ -11928,9 +11954,9 @@ function _mdvRender() {
 
   // Buttons
   const btnEditar = document.getElementById('mdv-btn-editar');
-  if(btnEditar) btnEditar.style.display = editing ? 'none' : 'flex';
+  if(btnEditar) btnEditar.style.display = (editing || esEspejo) ? 'none' : 'flex';
   const btnEliminar = document.getElementById('mdv-btn-eliminar');
-  if(btnEliminar) btnEliminar.style.display = editing ? 'none' : 'flex';
+  if(btnEliminar) btnEliminar.style.display = (editing || esEspejo) ? 'none' : 'flex';
 
   // Footer
   const footer = document.getElementById('mdv-footer');
