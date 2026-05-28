@@ -50,6 +50,7 @@ exports.handler = async function(event) {
     if (clienteData.uid !== callerUid) {
       return { statusCode: 403, headers: corsHeaders, body: JSON.stringify({ error: 'Solo el admin del negocio puede gestionar usuarios' }) };
     }
+    const negocioId = clienteData.negocioId;
 
     const body = JSON.parse(event.body || '{}');
     const { accion } = body;
@@ -72,10 +73,14 @@ exports.handler = async function(event) {
         return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: 'La contraseña debe tener al menos 6 caracteres' }) };
       }
 
+      if (!negocioId) {
+        return { statusCode: 500, headers: corsHeaders, body: JSON.stringify({ error: 'El negocio no tiene negocioId asignado. Ejecutar la migración primero.' }) };
+      }
+
       const emailSintetico = `${usuario}@${clienteUID}.op.mbstrategy.internal`;
 
       // Verificar que el usuario no exista ya en operadoresLookup
-      const lookupSnap = await db.collection('operadoresLookup').doc(usuario).get();
+      const lookupSnap = await db.collection('operadoresLookup').doc(`${negocioId}_${usuario}`).get();
       if (lookupSnap.exists) {
         return { statusCode: 409, headers: corsHeaders, body: JSON.stringify({ error: `El usuario "${usuario}" ya existe` }) };
       }
@@ -94,13 +99,14 @@ exports.handler = async function(event) {
         usuario,
         nombre,
         rol,
+        negocioId,
         emailSintetico,
         activo: true,
         creadoEn: new Date().toISOString()
       });
 
-      // Guardar en operadoresLookup/{usuario} para login lookup O(1)
-      await db.collection('operadoresLookup').doc(usuario).set({
+      // Guardar en operadoresLookup/{negocioId}_{usuario} para login lookup O(1)
+      await db.collection('operadoresLookup').doc(`${negocioId}_${usuario}`).set({
         emailSintetico: emailSintetico.toLowerCase(),
         clienteUID
       });
@@ -133,8 +139,8 @@ exports.handler = async function(event) {
       });
 
       // Eliminar de operadoresLookup para que no pueda hacer login
-      if (usuario) {
-        await db.collection('operadoresLookup').doc(usuario).delete().catch(() => {});
+      if (usuario && negocioId) {
+        await db.collection('operadoresLookup').doc(`${negocioId}_${usuario}`).delete().catch(() => {});
       }
 
       // Deshabilitar en Firebase Auth
@@ -155,8 +161,8 @@ exports.handler = async function(event) {
       await db.collection('clientes').doc(clienteUID).collection('operadores').doc(docId).delete().catch(() => {});
 
       // Eliminar de operadoresLookup
-      if (usuario) {
-        await db.collection('operadoresLookup').doc(usuario).delete().catch(() => {});
+      if (usuario && negocioId) {
+        await db.collection('operadoresLookup').doc(`${negocioId}_${usuario}`).delete().catch(() => {});
       }
 
       // Eliminar de Firebase Auth
