@@ -11453,7 +11453,7 @@ function renderCajaTable(movs, facturadosMap = new Map()) {
       ? `${_aliasEfectivo(m.cuentaDesde||'?')} → ${_aliasEfectivo(m.cuentaHacia||'?')}`
       : m.tipo==='transferencia' ? (m.cuentaOrigen||'—') : (_aliasEfectivo(m.cuenta||'—'));
     const noFacturable = ['apertura de caja','retiro de socio'].includes((m.concepto||'').toLowerCase()) || m.origen === 'cierre';
-    const facInfo = facturadosMap.get(m.id);
+    const facInfo = facturadosMap.get(m.id) || facturadosMap.get(m.ticketNum) || facturadosMap.get(m.refMovId);
     const facNro = facInfo ? ('0000'+(facInfo.puntoVenta||2)).slice(-4)+'-'+('00000000'+(facInfo.nroComprobante||0)).slice(-8) : '';
     const accionTd = (m.tipo === 'ingreso' && !noFacturable)
       ? facInfo
