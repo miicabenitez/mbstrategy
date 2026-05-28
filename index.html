@@ -26797,7 +26797,7 @@ window.cajaMovDevolverConfirmar = async function(id) {
     await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'libroCaja'),{
       uid:currentClientUID, fecha:hoy, mes:mes,
       tipo:'egreso', concepto:'Devolución: '+(m.concepto||'venta'),
-      cuenta:_cuentaOriginal, monto:parseFloat(m.monto)||0,
+      cuenta:_cuentaOriginal, medioPago:medio, monto:parseFloat(m.monto)||0,
       origen:'devolucion_caja', refMovId:id,
       eliminado:false, creadoEn:new Date().toISOString(),
       turnoId:window.turnoActual?.id||'',
@@ -26812,6 +26812,7 @@ window.cajaMovDevolverConfirmar = async function(id) {
         tipo: 'egreso',
         concepto: 'Devolución: ' + (m.concepto||'venta'),
         cuenta: medio,
+        medioPago: medio,
         monto: parseFloat(m.monto)||0,
         origen: 'devolucion_caja_espejo',
         refMovId: id,
