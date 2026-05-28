@@ -2495,6 +2495,10 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
               <span style="font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:rgba(244,240,234,.5);">Saldo final</span>
               <span id="cajero-cierre-saldo-fin" style="font-family:'DM Sans',sans-serif;font-size:26px;font-weight:600;color:#f4f0ea;font-variant-numeric:tabular-nums;letter-spacing:-.5px;">—</span>
             </div>
+            <div style="background:#f5f0ea;border-radius:10px;padding:12px 16px;margin-top:8px;display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:13px;font-weight:500;color:#888;">Efectivo en caja</span>
+              <span id="cajero-cierre-efectivo" style="font-size:15px;font-weight:700;color:#4a5e4d;">—</span>
+            </div>
           </div>
           <div style="padding:12px 24px 24px;display:flex;gap:8px;">
             <button onclick="cajaCierreCerrar()" style="flex:0.7;padding:13px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;background:#fff;color:#888;border:1.5px solid #e0ddd8;">Cancelar</button>
@@ -26980,6 +26984,12 @@ window.cajaCierreConfirmar = async function() {
     var egresos  = movs.filter(function(m){return m.tipo==='egreso';}).reduce(function(a,m){return a+(parseFloat(m.monto)||0);},0);
     var _saldoBase = (window.turnoActual && window.turnoActual.apertura && window.turnoActual.apertura.monto) || 0;
     var saldo = _saldoBase + ingresos - egresos;
+    const _efectivoEnCaja = movs.filter(m =>
+      m.origen !== 'apertura_turno' &&
+      (!m.medioPago || m.medioPago === 'Efectivo' || m.medioPago === 'Caja mostrador')
+    ).reduce((s, m) => m.tipo === 'ingreso' ? s + (parseFloat(m.monto)||0) : s - (parseFloat(m.monto)||0), _saldoBase);
+    const _efEl = document.getElementById('cajero-cierre-efectivo');
+    if(_efEl) _efEl.textContent = '$' + Math.round(_efectivoEnCaja).toLocaleString('es-AR');
     var operador = window.currentOperadorNombre || 'Cajero';
     // Enviar mail de cierre enriquecido
     try {
