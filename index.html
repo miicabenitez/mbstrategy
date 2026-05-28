@@ -11172,6 +11172,7 @@ async function loadCajaModule() {
       const fd = d.data();
       if (fd.movId) facturadosMap.set(fd.movId, {nroComprobante: fd.nroComprobante, puntoVenta: fd.puntoVenta});
     });
+    window._facturadosMap = facturadosMap;
     renderCajaTable(movs, facturadosMap);
     // Animación staggered de cards
     document.querySelectorAll('#ct-contabilidad .dash-card').forEach((c,i) => {
@@ -11880,6 +11881,13 @@ function _mdvBuildBody(m, editing) {
 
   const esEspejo = ['venta_caja_espejo','devolucion_caja_espejo'].includes(m.origen);
   if(esEspejo) {
+    const _facInfo = window._facturadosMap?.get(m.id);
+    const _facNro = _facInfo ? `${_facInfo.puntoVenta}-${_facInfo.nroComprobante}` : null;
+    if(_facNro) {
+      html += `<div style="margin-bottom:12px;"><span style="background:#e8f0e8;color:#4a5e4d;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;">✓ Facturado · N° ${_facNro}</span></div>`;
+    } else if(m.origen === 'venta_caja_espejo') {
+      html += `<div style="margin-bottom:12px;"><button onclick="abrirModalFacturaCaja('${m.id}')" style="background:#b09088;color:#fff;border:none;border-radius:20px;padding:6px 14px;font-size:11px;font-weight:600;cursor:pointer;">Facturar</button></div>`;
+    }
     html += _mdvField('FECHA',
       `<div class="mdv-fv">${_mdvFechaCorta(m.fecha)}</div>`, '', false);
     if(m.ticketNum) html += _mdvField('TICKET',
