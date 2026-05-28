@@ -27184,8 +27184,10 @@ window.cajaAperturaShow = async function() {
       if(_m.origen === 'cierre_turno') return;
       if(_baseTs && (_m.creadoEn||'') < _baseTs) return;
       if(_m.cuenta === 'Caja mostrador') {
-        if(_m.tipo === 'ingreso') _saldo += parseFloat(_m.monto)||0;
-        else if(_m.tipo === 'egreso') _saldo -= parseFloat(_m.monto)||0;
+        // Solo contar movimientos de efectivo físico — excluir MP y Transferencia
+        const _mpEfectivo = !_m.medioPago || _m.medioPago === 'Efectivo' || _m.medioPago === 'Caja mostrador';
+        if(_m.tipo === 'ingreso' && _mpEfectivo) _saldo += parseFloat(_m.monto)||0;
+        else if(_m.tipo === 'egreso' && _mpEfectivo) _saldo -= parseFloat(_m.monto)||0;
       }
       if(_m.tipo === 'transfer') {
         if(_m.cuentaDesde === 'Caja mostrador') _saldo -= parseFloat(_m.monto)||0;
