@@ -26780,7 +26780,13 @@ window.cajaMovDevolver = async function(id) {
   }
   var medioOrig = (m.medioPago&&m.medioPago!=='Caja mostrador')?m.medioPago:(m.cuenta&&m.cuenta!=='Caja mostrador'?m.cuenta:'Efectivo');
   var cuentas = (window._vrcCuentas||[]);
-  var medios = cuentas.length ? cuentas.map(function(c){ return c.nombre; }) : ['Efectivo','Mercado Pago','Transferencia'];
+  var medios = cuentas.length
+    ? [...new Set(cuentas.map(c => {
+        if(c.tipo === 'banco') return 'Transferencia';
+        if(c.nombre === 'Mercado Pago') return 'Mercado Pago';
+        return c.nombre;
+      }))]
+    : ['Efectivo','Mercado Pago','Transferencia'];
   if(!medios.includes(medioOrig)) medios.unshift(medioOrig);
   var optsHtml = medios.map(function(med){
     var sel = med===medioOrig ? ' selected' : '';
@@ -26820,11 +26826,12 @@ window.cajaMovDevolverConfirmar = async function(id) {
       // Resolver cuenta real igual que vrcGuardar
       const _cuentaEspejoDevolucion = (() => {
         const cuentas = window._vrcCuentas || [];
+        if(medio === 'Transferencia') {
+          const banco = cuentas.find(x => x.tipo === 'banco');
+          return banco ? banco.nombre : 'Transferencia';
+        }
         const c = cuentas.find(x => x.nombre === medio);
-        if (c) return c.nombre;
-        // Si no hay cuenta exacta, buscar cuenta tipo banco (igual que vrcGuardar)
-        const banco = cuentas.find(x => x.tipo === 'banco');
-        return banco ? banco.nombre : 'Mercado Pago';
+        return c ? c.nombre : medio;
       })();
       await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'libroCaja'), {
         uid: currentClientUID,
