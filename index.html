@@ -15598,7 +15598,8 @@ window.vrcGuardar = async function() {
       // Espejo en cuenta del dueño para MP y transferencias
       const _esEfectivoCajero = _cuentaObj?.nombre === 'Caja mostrador' || _vrcMetodo === '__tarjeta__';
       if (!_esEfectivoCajero) {
-        const _cuentaEspejo = _cuentaObj?.nombre || 'Mercado Pago';
+        // Resolver cuenta real: si _cuentaObj existe usar su nombre; si no, buscar primer cuenta tipo banco; fallback 'Mercado Pago'
+        const _cuentaEspejo = _cuentaObj?.nombre || (_vrcCuentas.find(x => x.tipo === 'banco')?.nombre) || 'Mercado Pago';
         await addDoc(collection(db, 'clientes', currentClientUID, 'libroCaja'), {
           uid: currentClientUID,
           fecha: hoy,
@@ -26805,13 +26806,22 @@ window.cajaMovDevolverConfirmar = async function(id) {
     });
     // Espejo de devolución en cuenta del dueño para MP y transferencias
     if (!_esEfectivoDev) {
+      // Resolver cuenta real igual que vrcGuardar
+      const _cuentaEspejoDevolucion = (() => {
+        const cuentas = window._vrcCuentas || [];
+        const c = cuentas.find(x => x.nombre === medio);
+        if (c) return c.nombre;
+        // Si no hay cuenta exacta, buscar cuenta tipo banco (igual que vrcGuardar)
+        const banco = cuentas.find(x => x.tipo === 'banco');
+        return banco ? banco.nombre : 'Mercado Pago';
+      })();
       await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'libroCaja'), {
         uid: currentClientUID,
         fecha: hoy,
         mes: mes,
         tipo: 'egreso',
         concepto: 'Devolución: ' + (m.concepto||'venta'),
-        cuenta: medio,
+        cuenta: _cuentaEspejoDevolucion,
         medioPago: medio,
         monto: parseFloat(m.monto)||0,
         origen: 'devolucion_caja_espejo',
