@@ -26969,6 +26969,14 @@ window.cajaCierreShow = function() {
   if(_ingEl) _ingEl.textContent = '+'+fmt(ingresos);
   if(_egEl)  _egEl.textContent  = '−'+fmt(egresos);
   if(_finEl) _finEl.textContent = fmt(saldo);
+  var _efectivoEnCaja = movs.filter(function(m){
+    return m.origen !== 'apertura_turno' &&
+      (!m.medioPago || m.medioPago === 'Efectivo' || m.medioPago === 'Caja mostrador');
+  }).reduce(function(s, m){
+    return m.tipo === 'ingreso' ? s + (parseFloat(m.monto)||0) : s - (parseFloat(m.monto)||0);
+  }, _saldoBase);
+  var _efEl = document.getElementById('cajero-cierre-efectivo');
+  if(_efEl) _efEl.textContent = fmt(_efectivoEnCaja);
   ov.style.display = 'flex';
 };
 window.cajaCierreCerrar = function() {
@@ -26984,12 +26992,6 @@ window.cajaCierreConfirmar = async function() {
     var egresos  = movs.filter(function(m){return m.tipo==='egreso';}).reduce(function(a,m){return a+(parseFloat(m.monto)||0);},0);
     var _saldoBase = (window.turnoActual && window.turnoActual.apertura && window.turnoActual.apertura.monto) || 0;
     var saldo = _saldoBase + ingresos - egresos;
-    const _efectivoEnCaja = movs.filter(m =>
-      m.origen !== 'apertura_turno' &&
-      (!m.medioPago || m.medioPago === 'Efectivo' || m.medioPago === 'Caja mostrador')
-    ).reduce((s, m) => m.tipo === 'ingreso' ? s + (parseFloat(m.monto)||0) : s - (parseFloat(m.monto)||0), _saldoBase);
-    const _efEl = document.getElementById('cajero-cierre-efectivo');
-    if(_efEl) _efEl.textContent = '$' + Math.round(_efectivoEnCaja).toLocaleString('es-AR');
     var operador = window.currentOperadorNombre || 'Cajero';
     // Enviar mail de cierre enriquecido
     try {
