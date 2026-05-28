@@ -11170,7 +11170,8 @@ async function loadCajaModule() {
     const facturadosMap = new Map();
     facturasSnap.forEach(d => {
       const fd = d.data();
-      if (fd.movId) facturadosMap.set(fd.movId, {nroComprobante: fd.nroComprobante, puntoVenta: fd.puntoVenta});
+      if(fd.movId) facturadosMap.set(fd.movId, {nroComprobante: fd.nroComprobante, puntoVenta: fd.puntoVenta});
+      if(fd.ticketNum) facturadosMap.set(fd.ticketNum, {nroComprobante: fd.nroComprobante, puntoVenta: fd.puntoVenta});
     });
     window._facturadosMap = facturadosMap;
     renderCajaTable(movs, facturadosMap);
@@ -11881,9 +11882,8 @@ function _mdvBuildBody(m, editing) {
 
   const esEspejo = ['venta_caja_espejo','devolucion_caja_espejo'].includes(m.origen);
   if(esEspejo) {
-    const _facInfo = window._facturadosMap?.get(m.id);
+    const _facInfo = window._facturadosMap?.get(m.id) || window._facturadosMap?.get(m.ticketNum);
     const _facNro = _facInfo ? `${_facInfo.puntoVenta}-${_facInfo.nroComprobante}` : null;
-    html += `<div style="height:3px;background:#b09088;border-radius:2px;margin-bottom:14px;"></div>`;
     if(_facNro) {
       html += `<div style="margin-bottom:12px;"><span style="background:#e8f0e8;color:#4a5e4d;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;">✓ Facturado · N° ${_facNro}</span></div>`;
     } else if(m.origen === 'venta_caja_espejo') {
@@ -11974,6 +11974,7 @@ function _mdvRender() {
   // Body
   const body = document.getElementById('mdv-body');
   if(body) {
+    body.style.borderTop = esEspejo ? '3px solid #b09088' : '';
     body.innerHTML = _mdvBuildBody(m, editing);
     if(editing) {
       const fechaEl = document.getElementById('mdv-fecha');
