@@ -11882,7 +11882,6 @@ function _mdvBuildBody(m, editing) {
 
   const esEspejo = ['venta_caja_espejo','devolucion_caja_espejo'].includes(m.origen);
   if(esEspejo) {
-    console.log('facInfo:', window._facturadosMap?.get(m.id), window._facturadosMap?.get(m.ticketNum), window._facturadosMap?.get(m.refMovId), 'ticketNum:', m.ticketNum, 'refMovId:', m.refMovId);
     const _facInfo = window._facturadosMap?.get(m.id) || window._facturadosMap?.get(m.ticketNum) || window._facturadosMap?.get(m.refMovId);
     const _facNro = _facInfo ? `${_facInfo.puntoVenta}-${_facInfo.nroComprobante}` : null;
     if(_facNro) {
@@ -15652,6 +15651,7 @@ window.vrcGuardar = async function() {
           observacion: document.getElementById('vrc-observacion')?.value?.trim() || '',
           turnoId: window.turnoActual?.id || '',
           ticketNum: _ticketNum,
+          refMovId: _vcDocRef.id,
           creadoPor: window.currentOperadorNombre || 'Admin'
         });
       }
