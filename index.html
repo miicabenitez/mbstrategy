@@ -26769,7 +26769,7 @@ window.cajaMovDevolver = async function(id) {
   if(!devEl) return;
   // Precargar cuentas si no están disponibles
   if (!window._vrcCuentas || window._vrcCuentas.length === 0) {
-    const _cSnap = await getDocs(collection(db, 'clientes', currentClientUID, 'cuentas'));
+    const _cSnap = await window._getDocs(window._collection(window.db, 'clientes', currentClientUID, 'cuentas'));
     window._vrcCuentas = [];
     _cSnap.forEach(d => { if (!d.data().eliminado) window._vrcCuentas.push({id: d.id, ...d.data()}); });
   }
