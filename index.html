@@ -11882,12 +11882,12 @@ function _mdvBuildBody(m, editing) {
 
   const esEspejo = ['venta_caja_espejo','devolucion_caja_espejo'].includes(m.origen);
   if(esEspejo) {
-    const _facInfo = window._facturadosMap?.get(m.id) || window._facturadosMap?.get(m.ticketNum);
+    const _facInfo = window._facturadosMap?.get(m.id) || window._facturadosMap?.get(m.ticketNum) || window._facturadosMap?.get(m.refMovId);
     const _facNro = _facInfo ? `${_facInfo.puntoVenta}-${_facInfo.nroComprobante}` : null;
     if(_facNro) {
       html += `<div style="margin-bottom:12px;"><span style="background:#e8f0e8;color:#4a5e4d;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;">✓ Facturado · N° ${_facNro}</span></div>`;
     } else if(m.origen === 'venta_caja_espejo') {
-      html += `<div style="margin-bottom:12px;"><button onclick="abrirModalFacturaCaja('${m.id}')" style="background:#b09088;color:#fff;border:none;border-radius:20px;padding:6px 14px;font-size:11px;font-weight:600;cursor:pointer;">Facturar</button></div>`;
+      html += `<div style="margin-bottom:12px;"><button onclick="abrirModalFacturaCaja('${m.refMovId || m.id}')" style="background:#b09088;color:#fff;border:none;border-radius:20px;padding:6px 14px;font-size:11px;font-weight:600;cursor:pointer;">Facturar</button></div>`;
     }
     html += _mdvField('FECHA',
       `<div class="mdv-fv">${_mdvFechaCorta(m.fecha)}</div>`, '', false);
@@ -29168,6 +29168,7 @@ window.doResetPassword = async function(){
 <!-- MODAL DETALLE MOVIMIENTO -->
 <div class="cj-overlay" id="mdv-overlay" onclick="if(event.target===this)mdvCerrar()" style="display:none;">
   <div class="cj-modal" style="max-width:440px;" onclick="event.stopPropagation()">
+    <div style="height:3px;background:#b09088;flex-shrink:0;"></div>
     <!-- Header -->
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;padding:20px 22px 0;flex-shrink:0;">
       <div style="flex:1;min-width:0;">
