@@ -26771,7 +26771,12 @@ window.cajaMovDevolver = async function(id) {
   if (!window._vrcCuentas || window._vrcCuentas.length === 0) {
     const _cSnap = await window._getDocs(window._collection(window.db, 'clientes', currentClientUID, 'cuentas'));
     window._vrcCuentas = [];
-    _cSnap.forEach(d => { if (!d.data().eliminado) window._vrcCuentas.push({id: d.id, ...d.data()}); });
+    _cSnap.forEach(d => {
+      const data = d.data();
+      if (!data.eliminado && !data.esReserva && data.nombre !== 'Caja mostrador') {
+        window._vrcCuentas.push({id: d.id, ...data});
+      }
+    });
   }
   var medioOrig = (m.medioPago&&m.medioPago!=='Caja mostrador')?m.medioPago:(m.cuenta&&m.cuenta!=='Caja mostrador'?m.cuenta:'Efectivo');
   var cuentas = (window._vrcCuentas||[]);
