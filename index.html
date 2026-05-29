@@ -10988,7 +10988,7 @@ window.loadAuditoriaCajero = async function() {
   try {
     const snap = await getDocs(query(
       collection(db,'clientes',uid,'libroCaja'),
-      where('cuenta','==','Caja mostrador'),
+      where('cuenta','==', window._cajaActivaNombre || 'Caja mostrador'),
       where('eliminado','==',false),
       orderBy('creadoEn','desc'),
       limit(500)
@@ -11015,7 +11015,7 @@ window._auditoriaActivarEncurso = async function() {
     const _tIdsSet = new Set(tIds);
     const _aperturaTs = new Set(tDocs.map(d => d.apertura?.creadoEn).filter(Boolean));
     window._auditoriaUnsub = onSnapshot(
-      query(collection(db,'clientes',uid,'libroCaja'), where('cuenta','==','Caja mostrador'), where('eliminado','==',false), orderBy('creadoEn','desc'), limit(500)),
+      query(collection(db,'clientes',uid,'libroCaja'), where('cuenta','==', window._cajaActivaNombre || 'Caja mostrador'), where('eliminado','==',false), orderBy('creadoEn','desc'), limit(500)),
       snap => {
         window._auditoriaMovsEncurso = snap.docs.map(d=>({id:d.id,...d.data()})).filter(m => _tIdsSet.has(m.turnoId) || (m.origen === 'apertura_turno' && _aperturaTs.has(m.creadoEn)));
         if(window._auditoriaFiltro === 'encurso') _auditoriaRender();
@@ -11320,7 +11320,8 @@ async function loadCajaModule() {
     let todosMovs = [];
     movsSnap.forEach(d => { const data = d.data(); if(!data.eliminado) todosMovs.push({id:d.id,...data}); });
     if(window.currentRol === 'cajero') {
-      todosMovs = todosMovs.filter(m => !['venta_caja_espejo','devolucion_caja_espejo'].includes(m.origen) && (m.cuenta==='Caja mostrador' || m.cuentaHacia==='Caja mostrador' || m.cuentaDesde==='Caja mostrador' || (m.turnoId && m.turnoId===window.turnoActual?.id)));
+      const _cajaActiva = window._cajaActivaNombre || 'Caja mostrador';
+      todosMovs = todosMovs.filter(m => !['venta_caja_espejo','devolucion_caja_espejo'].includes(m.origen) && (m.cuenta===_cajaActiva || m.cuentaHacia===_cajaActiva || m.cuentaDesde===_cajaActiva || (m.turnoId && m.turnoId===window.turnoActual?.id)));
     }
     // Cajero: tabla/chips usan movimientos del turno; admin usa histórico completo
     let movsVista = todosMovs;
@@ -27823,18 +27824,20 @@ window.cajaAperturaShow = async function() {
     var _ultimaApertura = _aperturas[0];
     var _saldo = _ultimaApertura ? (parseFloat(_ultimaApertura.monto)||0) : 0;
     var _baseTs = _ultimaApertura ? (_ultimaApertura.creadoEn||'') : '';
+    const _cajaActiva = window._cajaActivaNombre || 'Caja mostrador';
     _movimientos.forEach(function(_m) {
       if(_m.origen === 'cierre_turno') return;
       if(_baseTs && (_m.creadoEn||'') < _baseTs) return;
-      if(_m.cuenta === 'Caja mostrador') {
-        // Solo contar movimientos de efectivo físico — excluir MP y Transferencia
+      if(_m.cuenta === _cajaActiva) {
+        // Solo contar movimientos de efectivo físico — excluir MP y Transferencia.
+        // medioPago === 'Caja mostrador' es sanitización histórica (docs viejos con bug pasado), NO depende de la caja activa.
         const _mpEfectivo = !_m.medioPago || _m.medioPago === 'Efectivo' || _m.medioPago === 'Caja mostrador';
         if(_m.tipo === 'ingreso' && _mpEfectivo) _saldo += parseFloat(_m.monto)||0;
         else if(_m.tipo === 'egreso' && _mpEfectivo) _saldo -= parseFloat(_m.monto)||0;
       }
       if(_m.tipo === 'transfer') {
-        if(_m.cuentaDesde === 'Caja mostrador') _saldo -= parseFloat(_m.monto)||0;
-        if(_m.cuentaHacia === 'Caja mostrador') _saldo += parseFloat(_m.monto)||0;
+        if(_m.cuentaDesde === _cajaActiva) _saldo -= parseFloat(_m.monto)||0;
+        if(_m.cuentaHacia === _cajaActiva) _saldo += parseFloat(_m.monto)||0;
       }
     });
     console.log('[cajaAperturaShow] saldo calculado:', _saldo);
