@@ -27736,7 +27736,7 @@ window.cajaCierreConfirmar = async function() {
         await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'libroCaja'), {
           uid: currentClientUID, fecha: _hoyC, mes: _mesC,
           tipo: 'egreso', concepto: 'Cierre de turno',
-          cuenta: 'Caja mostrador', monto: saldo,
+          cuenta: (window._cajaActivaNombre || 'Caja mostrador'), monto: saldo,
           origen: 'cierre_turno', eliminado: false,
           creadoEn: _ahoraCierre, creadoPor: operador,
           turnoId: window.turnoActual.id
@@ -27904,6 +27904,8 @@ window.cajaAperturaConfirmar = async function() {
       cajeroUid: window.currentOperadorId || '',
       cajeroNombre: window.currentOperadorNombre || 'Cajero',
       estado: 'abierto',
+      cajaId: window._cajaActivaId || '',
+      cajaNombre: window._cajaActivaNombre || 'Caja mostrador',
       apertura: { monto: monto, fecha: ahora, creadoEn: ahora },
       cierre: null,
       creadoEn: ahora
@@ -27914,7 +27916,7 @@ window.cajaAperturaConfirmar = async function() {
       var _hoy = fechaHoyARG(); var _mes = mesHoyARG(_hoy);
       await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'libroCaja'), {
         uid:currentClientUID, fecha:_hoy, tipo:'ingreso', concepto:'Apertura de turno',
-        cuenta:'Caja mostrador', monto:monto, mes:_mes, origen:'apertura_turno',
+        cuenta: (window._cajaActivaNombre || 'Caja mostrador'), monto:monto, mes:_mes, origen:'apertura_turno',
         eliminado:false, creadoEn:ahora, creadoPor:window.currentOperadorNombre||'Cajero'
       });
     }
