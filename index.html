@@ -7161,6 +7161,11 @@ window.showClientUI = async function(email, clientData) {
             if (!_turnosSnap.empty) {
               const _td = _turnosSnap.docs[0];
               window.turnoActual = { id: _td.id, ..._td.data() };
+              // SUB-FASE 3.F: restaurar caja activa desde el doc del turno (recovery post-reload)
+              if (window.turnoActual.cajaId) {
+                window._cajaActivaId = window.turnoActual.cajaId;
+                window._cajaActivaNombre = window.turnoActual.cajaNombre || 'Caja mostrador';
+              }
             } else if (window.currentRol === 'cajero') {
               // SUB-FASE 3.D — resolver cajas asignadas y elegir o mostrar selector
               try {
