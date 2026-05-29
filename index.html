@@ -10785,7 +10785,8 @@ function renderCajaCajero() {
     }
     else if(m.tipo === 'egreso') {
       totalEg += v;
-      var ek = (m.cuenta && m.cuenta !== 'Caja mostrador' ? m.cuenta : 'Efectivo');
+      var ek = (m.medioPago && m.medioPago !== 'Caja mostrador') ? m.medioPago : (m.cuenta && m.cuenta !== 'Caja mostrador' ? m.cuenta : 'Efectivo');
+      if(ek.indexOf('Tarjeta') === 0) ek = 'Tarjeta';
       if(mediosDef.indexOf(ek) !== -1) medios[ek] = (medios[ek]||0) - v;
     }
   });
