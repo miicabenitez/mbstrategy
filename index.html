@@ -15858,7 +15858,9 @@ window.vrcGuardar = async function() {
           turnoId: window.turnoActual?.id || '',
           ticketNum: _ticketNum,
           refMovId: _vcDocRef.id,
-          creadoPor: window.currentOperadorNombre || 'Admin'
+          creadoPor: window.currentOperadorNombre || 'Admin',
+          cajaOrigenId: window._cajaActivaId || '',
+          cajaOrigenNombre: window._cajaActivaNombre || 'Caja mostrador'
         });
       }
       const _vcCarritoSnap = {..._vrcCarrito};
@@ -27178,7 +27180,9 @@ window.cajaRetiroGuardar = async function() {
       tipo:'ingreso', concepto:'Ingreso por retiro de cajero',
       detalle: operador, cuenta:'Efectivo', monto: monto,
       origen:'retiro_cajero_cierre', eliminado: false,
-      creadoEn: new Date().toISOString()
+      creadoEn: new Date().toISOString(),
+      cajaOrigenId: window._cajaActivaId || '',
+      cajaOrigenNombre: window._cajaActivaNombre || 'Caja mostrador'
     });
     cajaRetiroCerrar();
     showToast('Retiro registrado','success');
@@ -27526,7 +27530,9 @@ window.cajaMovDevolverConfirmar = async function(id) {
         eliminado: false,
         creadoEn: new Date().toISOString(),
         turnoId: window.turnoActual?.id||'',
-        creadoPor: window.currentOperadorNombre||'Cajero'
+        creadoPor: window.currentOperadorNombre||'Cajero',
+        cajaOrigenId: window._cajaActivaId || '',
+        cajaOrigenNombre: window._cajaActivaNombre || 'Caja mostrador'
       });
     }
     await window._updateDoc(window._doc(window.db,'clientes',currentClientUID,'libroCaja',id),{ devuelto: true });
