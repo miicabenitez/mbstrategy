@@ -1311,8 +1311,29 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
       <div class="fg"><label class="fl">Usuario</label><input type="text" class="fi" id="le" placeholder=""/></div>
       <div class="fg"><label class="fl">Contraseña</label><div style="position:relative;"><input type="password" class="fi" id="lp2" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" style="padding-right:44px;"/><button type="button" id="lp2-toggle" onclick="(function(){var i=document.getElementById('lp2'),b=document.getElementById('lp2-toggle');i.type=i.type==='password'?'text':'password';b.innerHTML=i.type==='password'?'<svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;#9ca3af&quot; stroke-width=&quot;1.8&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z&quot;/><circle cx=&quot;12&quot; cy=&quot;12&quot; r=&quot;3&quot;/></svg>':'<svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;#9ca3af&quot; stroke-width=&quot;1.8&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24&quot;/><line x1=&quot;1&quot; y1=&quot;1&quot; x2=&quot;23&quot; y2=&quot;23&quot;/></svg>';})()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;line-height:0;display:flex;align-items:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin:8px 0 20px;"><a href="/terminos.html" target="_blank" style="font-size:12px;color:#aaa;text-decoration:none;">Términos y condiciones</a><a href="#" onclick="resetPassword()" style="font-size:12px;color:#aaa;text-decoration:none;">¿Olvidaste tu contraseña?</a></div>
+      <div id="login-err-banner" style="display:none;background:#f9f0ee;color:#b09088;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;border:.5px solid #d4bfbb;line-height:1.4;"></div>
       <button class="btn-login" onclick="doLogin()">Ingresar</button>
       <div class="login-err" id="lerr"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SELECTOR DE CAJA (cajero post-login) -->
+<div id="cajeroSelectorCajaScreen" style="display:none;position:fixed;inset:0;z-index:9998;background:linear-gradient(135deg,#1a3528 0%,#0d1f1a 60%,#060e0b 100%);font-family:'DM Sans',sans-serif;overflow-y:auto;">
+  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 16px;">
+    <div style="width:100%;max-width:480px;">
+      <div style="text-align:center;margin-bottom:36px;">
+        <div style="display:inline-flex;align-items:center;justify-content:center;width:88px;height:88px;border-radius:50%;background:#4a5e4d;">
+          <img src="/logo-login.png" alt="MB Strategy" style="width:80px;height:80px;display:block;border-radius:50%;">
+        </div>
+        <div style="font-size:10px;font-weight:500;letter-spacing:1.8px;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-top:18px;margin-bottom:10px;">Hola, <span id="cajeroSelectorNombre"></span></div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:30px;color:#f4f0ea;line-height:1.15;margin-bottom:8px;">¿En qué <span style="color:#b09088;font-style:italic;">caja</span> vas a trabajar hoy?</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.5);line-height:1.5;">Elegí una para arrancar tu turno.</div>
+      </div>
+      <div id="cajeroSelectorCajaList" style="display:flex;flex-direction:column;gap:12px;"></div>
+      <div style="text-align:center;margin-top:32px;">
+        <span onclick="cajeroLogout()" style="font-size:12px;color:rgba(255,255,255,0.35);cursor:pointer;padding:8px;display:inline-block;">Cerrar sesión</span>
+      </div>
     </div>
   </div>
 </div>
@@ -6659,6 +6680,7 @@ window.mostrarPantallaEspera = function() {
     </div>
     <div id="mb-login-content" style="display:none;flex-direction:column;align-items:center;width:100%;max-width:320px;position:relative;z-index:2;animation:mbFadeUp .5s ease both;">
       <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(244,240,234,0.1);border-radius:16px;padding:28px 24px;width:100%;box-sizing:border-box;">
+        <div id="mb-login-err-banner" style="display:none;background:#f9f0ee;color:#b09088;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;border:.5px solid #d4bfbb;line-height:1.4;"></div>
         <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(244,240,234,0.4);margin-bottom:6px;font-family:'DM Sans',sans-serif;">ID Negocio</div>
         <input id="mb-lcod" type="text" placeholder="MB-XXXX" style="width:100%;box-sizing:border-box;padding:12px 14px;background:rgba(255,255,255,0.07);border:1px solid rgba(244,240,234,0.15);border-radius:10px;color:#f4f0ea;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;margin-bottom:16px;" onkeydown="if(event.key==='Enter')mb_doLogin()">
         <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(244,240,234,0.4);margin-bottom:6px;font-family:'DM Sans',sans-serif;">Usuario</div>
@@ -6686,7 +6708,74 @@ window.mostrarPantallaEspera = function() {
 window.mb_mostrarLogin = function() {
   document.getElementById('mb-espera-content').style.display = 'none';
   document.getElementById('mb-login-content').style.display = 'flex';
+  if(window.cajeroShowSavedLoginError) window.cajeroShowSavedLoginError();
 };
+
+// ─── SUB-FASE 3.D: selector de caja al login del cajero ─────────
+window.cajeroShowSavedLoginError = function() {
+  var msg = sessionStorage.getItem('mb_login_err');
+  if(!msg) return;
+  var banner = document.getElementById('mb-login-err-banner') || document.getElementById('login-err-banner');
+  if(banner) {
+    banner.textContent = msg;
+    banner.style.display = 'block';
+    sessionStorage.removeItem('mb_login_err');
+  }
+};
+
+window.cajeroResolveCajas = async function(operador) {
+  if(!window._equipoCajas || !window._equipoCajas.length) {
+    try {
+      var snap = await window._getDocs(window._collection(window.db,'clientes',currentClientUID,'cajas'));
+      var arr = [];
+      snap.forEach(d => arr.push({id:d.id, ...d.data()}));
+      window._equipoCajas = arr;
+    } catch(e) { console.error('cajeroResolveCajas fetch:', e); return []; }
+  }
+  var ids = window.equipoGetCajasOperador ? window.equipoGetCajasOperador(operador) : (Array.isArray(operador?.cajas) && operador.cajas.length ? operador.cajas : (window._equipoCajas||[]).filter(c=>c.activa!==false).map(c=>c.id));
+  var idToCaja = {};
+  (window._equipoCajas || []).forEach(c => { idToCaja[c.id] = c; });
+  return ids.map(id => idToCaja[id]).filter(c => c && c.activa !== false);
+};
+
+window.cajeroSelectorCajaMostrar = function(operador, cajasAsignadas) {
+  var nombreEl = document.getElementById('cajeroSelectorNombre');
+  if(nombreEl) nombreEl.textContent = (operador && operador.nombre) || 'Cajero';
+  var cajas = (cajasAsignadas || []).slice().sort(function(a, b) {
+    if(a.esCajaMostrador && !b.esCajaMostrador) return -1;
+    if(!a.esCajaMostrador && b.esCajaMostrador) return 1;
+    return (a.nombre || '').localeCompare(b.nombre || '');
+  });
+  var list = document.getElementById('cajeroSelectorCajaList');
+  if(list) {
+    list.innerHTML = cajas.map(function(c) {
+      var eyebrow = c.esCajaMostrador ? 'PRINCIPAL' : 'SUCURSAL';
+      var idEsc = (c.id || '').replace(/'/g, "\\'");
+      var nomEsc = (c.nombre || '').replace(/'/g, "\\'");
+      return '<div onclick="cajeroSelectorCajaElegir(\''+idEsc+'\',\''+nomEsc+'\')" style="background:#f4f0ea;border-radius:14px;border-top:3px solid #b09088;padding:20px 22px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:transform .15s,box-shadow .15s;" onmouseover="this.style.transform=\'translateY(-1px)\';this.style.boxShadow=\'0 8px 24px rgba(0,0,0,.18)\';" onmouseout="this.style.transform=\'\';this.style.boxShadow=\'\';"><div><div style="font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#888;margin-bottom:4px;">'+eyebrow+'</div><div style="font-family:\'Cormorant Garamond\',serif;font-size:24px;font-weight:400;color:#1a1a1a;line-height:1;">'+(c.nombre||'—')+'</div></div><div style="width:36px;height:36px;border-radius:50%;background:#e8f0e8;display:flex;align-items:center;justify-content:center;color:#4a5e4d;font-size:18px;flex-shrink:0;">→</div></div>';
+    }).join('');
+  }
+  var screen = document.getElementById('cajeroSelectorCajaScreen');
+  if(screen) screen.style.display = 'block';
+};
+
+window.cajeroSelectorCajaElegir = function(cajaId, cajaNombre) {
+  window._cajaActivaId = cajaId;
+  window._cajaActivaNombre = cajaNombre;
+  var screen = document.getElementById('cajeroSelectorCajaScreen');
+  if(screen) screen.style.display = 'none';
+  if(window.cajaAperturaShow) window.cajaAperturaShow();
+};
+
+window.cajeroLogout = async function() {
+  try { if(window._auth) await window._auth.signOut(); } catch(e) {}
+  var screen = document.getElementById('cajeroSelectorCajaScreen');
+  if(screen) screen.style.display = 'none';
+  location.reload();
+};
+
+// Trigger inicial del banner de error guardado (si el cajero fue forzado a logout)
+window.cajeroShowSavedLoginError();
 window.mb_doLogin = async function() {
   if(window._mbLoginInProgress) return;
   window._mbLoginInProgress = true;
@@ -7059,7 +7148,26 @@ window.showClientUI = async function(email, clientData) {
               const _td = _turnosSnap.docs[0];
               window.turnoActual = { id: _td.id, ..._td.data() };
             } else if (window.currentRol === 'cajero') {
-              setTimeout(() => { if(window.cajaAperturaShow) window.cajaAperturaShow(); }, 400);
+              // SUB-FASE 3.D — resolver cajas asignadas y elegir o mostrar selector
+              try {
+                const _cajas = await window.cajeroResolveCajas(_op);
+                if (_cajas.length === 0) {
+                  sessionStorage.setItem('mb_login_err', 'No tenés cajas asignadas. Avisale al dueño para que te configure el acceso.');
+                  try { await signOut(auth); } catch(_se) {}
+                  location.reload();
+                  return;
+                }
+                if (_cajas.length === 1) {
+                  window._cajaActivaId = _cajas[0].id;
+                  window._cajaActivaNombre = _cajas[0].nombre;
+                  setTimeout(() => { if(window.cajaAperturaShow) window.cajaAperturaShow(); }, 400);
+                } else {
+                  setTimeout(() => { if(window.cajeroSelectorCajaMostrar) window.cajeroSelectorCajaMostrar(_op, _cajas); }, 400);
+                }
+              } catch(_re) {
+                console.error('cajeroResolveCajas:', _re);
+                setTimeout(() => { if(window.cajaAperturaShow) window.cajaAperturaShow(); }, 400);
+              }
             }
           } else {
             // Operador no encontrado — cerrar sesión por seguridad
