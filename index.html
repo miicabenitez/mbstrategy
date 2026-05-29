@@ -5148,6 +5148,28 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
           </div>
         </div>
 
+        <!-- MODAL nueva caja (equipo) -->
+        <div id="equipo-caja-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;">
+          <div style="background:#fff;border-radius:16px;border-top:3px solid #b09088;width:380px;box-shadow:0 12px 40px rgba(0,0,0,.18);overflow:hidden;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:22px 24px 18px;">
+              <div>
+                <div id="equipo-caja-modal-eyebrow" style="font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:#888;margin-bottom:4px;">Nueva</div>
+                <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;color:#1a1a1a;line-height:1;">caja</div>
+              </div>
+              <button onclick="equipoCajaCerrar()" style="background:none;border:none;cursor:pointer;color:#aaa;font-size:22px;line-height:1;padding:0;width:24px;height:24px;display:flex;align-items:center;justify-content:center;">×</button>
+            </div>
+            <div style="padding:0 24px 18px;">
+              <div style="font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:#888;margin-bottom:6px;">Nombre de la caja</div>
+              <input id="equipo-caja-nombre" type="text" placeholder="Ej: Local Centro, Caja 1..." style="width:100%;box-sizing:border-box;padding:11px 14px;border:.5px solid #d0ccc6;border-radius:8px;font-size:14px;font-family:'DM Sans',sans-serif;margin-bottom:14px;outline:none;color:#1a1a1a;">
+              <div id="equipo-caja-modal-error" style="display:none;color:#e53e3e;font-size:12px;margin-bottom:10px;"></div>
+            </div>
+            <div style="display:flex;gap:8px;justify-content:flex-end;padding:14px 24px;border-top:.5px solid #f0ece6;">
+              <button onclick="equipoCajaCerrar()" style="padding:10px 18px;border-radius:8px;border:.5px solid #d0ccc6;background:#fff;color:#888;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">Cancelar</button>
+              <button id="equipo-caja-modal-btn" onclick="equipoCajaGuardar()" style="padding:10px 20px;border-radius:8px;border:none;background:linear-gradient(135deg,#1a3528 0%,#0d1f1a 100%);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Crear caja</button>
+            </div>
+          </div>
+        </div>
+
       </div>
 
     </div>
@@ -26228,14 +26250,129 @@ window.equipoTabSwitch = function(tab) {
   }
 };
 
-window.equipoLoadCajas = function() {
+window.equipoLoadCajas = async function() {
   var cont = document.getElementById('equipo-contenido');
   if(!cont) return;
-  cont.innerHTML = `<div style="background:#fff;border-radius:16px;padding:40px 24px;text-align:center;">
-    <div style="font-family:'Cormorant Garamond',serif;font-size:24px;color:#1a1a1a;margin-bottom:8px;line-height:1.2;">Todavía no tenés cajas configuradas</div>
-    <div style="font-size:13px;color:#6b7280;line-height:1.65;margin-bottom:24px;max-width:360px;margin-left:auto;margin-right:auto;">Creá tu primera caja para empezar.</div>
-    <button onclick="equipoCajaShow()" style="background:linear-gradient(135deg,#1a3528 0%,#0d1f1a 100%);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">+ Nueva caja</button>
-  </div>`;
+  cont.innerHTML = '<div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Cargando...</div>';
+  try {
+    var snap = await window._getDocs(window._collection(window.db, 'clientes', currentClientUID, 'cajas'));
+    var cajas = [];
+    snap.forEach(d => cajas.push({id:d.id, ...d.data()}));
+    window._equipoCajas = cajas;
+    if(!cajas.length) {
+      cont.innerHTML = `<div style="background:#fff;border-radius:16px;padding:40px 24px;text-align:center;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:24px;color:#1a1a1a;margin-bottom:8px;line-height:1.2;">Todavía no tenés cajas configuradas</div>
+        <div style="font-size:13px;color:#6b7280;line-height:1.65;margin-bottom:24px;max-width:360px;margin-left:auto;margin-right:auto;">Creá tu primera caja para empezar.</div>
+        <button onclick="equipoCajaShow()" style="background:linear-gradient(135deg,#1a3528 0%,#0d1f1a 100%);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">+ Nueva caja</button>
+      </div>`;
+      return;
+    }
+    var filas = cajas.map(c => {
+      var activa = c.activa !== false;
+      var badge = activa
+        ? '<span style="background:#e8f0e8;color:#4a5e4d;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600;">Activa</span>'
+        : '<span style="background:#f9f0ee;color:#b09088;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600;">Inactiva</span>';
+      var btnEditar = `<button onclick="equipoCajaEditar('${c.id}',this)" style="padding:5px 12px;border-radius:6px;border:.5px solid #d0ccc6;background:#fff;color:#888;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;">Editar</button>`;
+      var btnDesact = (activa && !c.esCajaMostrador)
+        ? `<button onclick="equipoCajaDesactivar('${c.id}',this)" style="padding:5px 12px;border-radius:6px;border:.5px solid #d4bfbb;background:#f9f4f3;color:#b09088;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;">Desactivar</button>`
+        : '';
+      return `<tr style="border-bottom:1px solid var(--cream-d);">
+        <td style="padding:10px 8px;font-size:13px;">${c.nombre||'—'}${c.esCajaMostrador?' <span style="font-size:10px;color:#aaa;margin-left:6px;">(principal)</span>':''}</td>
+        <td style="padding:10px 8px;">${badge}</td>
+        <td style="padding:10px 8px;"><div style="display:flex;gap:6px;flex-wrap:wrap;">${btnEditar}${btnDesact}</div></td>
+      </tr>`;
+    }).join('');
+    cont.innerHTML = `<div class="card"><div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;">
+        <thead><tr style="border-bottom:2px solid var(--cream-d);">
+          <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-l);font-weight:600;">Nombre</th>
+          <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-l);font-weight:600;">Estado</th>
+          <th style="padding:8px;text-align:left;font-size:11px;color:var(--text-l);font-weight:600;">Acciones</th>
+        </tr></thead>
+        <tbody>${filas}</tbody>
+      </table>
+    </div></div>`;
+  } catch(e) {
+    console.error('equipoLoadCajas:', e);
+    cont.innerHTML = '<div style="text-align:center;padding:28px;color:#dc2626;font-size:13px;">Error al cargar las cajas.</div>';
+  }
+};
+
+window.equipoCajaShow = function() {
+  var ov = document.getElementById('equipo-caja-modal-overlay');
+  if(!ov) return;
+  window._equipoCajaEditandoId = null;
+  var nombreEl = document.getElementById('equipo-caja-nombre');
+  if(nombreEl) nombreEl.value = '';
+  var eyebrow = document.getElementById('equipo-caja-modal-eyebrow');
+  if(eyebrow) eyebrow.textContent = 'Nueva';
+  var errEl = document.getElementById('equipo-caja-modal-error');
+  if(errEl) errEl.style.display = 'none';
+  var btn = document.getElementById('equipo-caja-modal-btn');
+  if(btn) { btn.disabled = false; btn.textContent = 'Crear caja'; }
+  ov.style.display = 'flex';
+};
+
+window.equipoCajaCerrar = function() {
+  var ov = document.getElementById('equipo-caja-modal-overlay');
+  if(ov) ov.style.display = 'none';
+};
+
+window.equipoCajaGuardar = async function() {
+  var nombre = document.getElementById('equipo-caja-nombre').value.trim();
+  var errEl = document.getElementById('equipo-caja-modal-error');
+  var btn = document.getElementById('equipo-caja-modal-btn');
+  errEl.style.display = 'none';
+  if(!nombre) { errEl.textContent = 'Ingresá el nombre de la caja.'; errEl.style.display = 'block'; return; }
+  var editandoId = window._equipoCajaEditandoId;
+  btn.disabled = true; btn.textContent = editandoId ? 'Guardando...' : 'Creando...';
+  try {
+    if(editandoId) {
+      await window._updateDoc(window._doc(window.db, 'clientes', currentClientUID, 'cajas', editandoId), { nombre });
+    } else {
+      await window._addDoc(window._collection(window.db, 'clientes', currentClientUID, 'cajas'), {
+        nombre,
+        activa: true,
+        esCajaMostrador: false,
+        creadoEn: new Date().toISOString()
+      });
+    }
+    equipoCajaCerrar();
+    equipoLoadCajas();
+  } catch(e) {
+    console.error('equipoCajaGuardar:', e);
+    errEl.textContent = editandoId ? 'Error al guardar los cambios.' : 'Error al crear la caja. Intentá de nuevo.';
+    errEl.style.display = 'block';
+    btn.disabled = false; btn.textContent = editandoId ? 'Guardar cambios' : 'Crear caja';
+  }
+};
+
+window.equipoCajaEditar = function(id) {
+  var caja = (window._equipoCajas || []).find(c => c.id === id);
+  if(!caja) return;
+  var ov = document.getElementById('equipo-caja-modal-overlay');
+  if(!ov) return;
+  window._equipoCajaEditandoId = id;
+  var nombreEl = document.getElementById('equipo-caja-nombre');
+  if(nombreEl) nombreEl.value = caja.nombre || '';
+  var eyebrow = document.getElementById('equipo-caja-modal-eyebrow');
+  if(eyebrow) eyebrow.textContent = 'Editar';
+  var errEl = document.getElementById('equipo-caja-modal-error');
+  if(errEl) errEl.style.display = 'none';
+  var btn = document.getElementById('equipo-caja-modal-btn');
+  if(btn) { btn.disabled = false; btn.textContent = 'Guardar cambios'; }
+  ov.style.display = 'flex';
+};
+
+window.equipoCajaDesactivar = async function(id, btn) {
+  if(btn) { btn.disabled = true; btn.textContent = '...'; }
+  try {
+    await window._updateDoc(window._doc(window.db, 'clientes', currentClientUID, 'cajas', id), {activa: false});
+    equipoLoadCajas();
+  } catch(e) {
+    console.error('equipoCajaDesactivar:', e);
+    if(btn) { btn.disabled = false; btn.textContent = 'Desactivar'; }
+  }
 };
 
 window.equipoNuevoUsuarioShow = function() {
