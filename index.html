@@ -15780,6 +15780,7 @@ window.vrcGuardar = async function() {
   const _btnReset = () => { if(btnSave){btnSave.disabled=false;btnSave.innerHTML='<span style="display:flex;align-items:center;justify-content:center;gap:8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Registrar venta</span>';} };
   try {
     if(btnSave){btnSave.disabled=true;btnSave.innerHTML='<span style="display:flex;align-items:center;justify-content:center;gap:8px;">Registrando...</span>';}
+    const _cajaActiva = window._cajaActivaNombre || 'Caja mostrador';
     var _ticketNum = await window._getNextTicketNum(currentClientUID);
     if(_vrcMetodo === '__cta__') {
       const cli = window._vrcClienteSeleccionado;
@@ -15795,7 +15796,7 @@ window.vrcGuardar = async function() {
       const _vcDocRef = await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'libroCaja'), {
         uid:currentClientUID, fecha:hoy, mes:mes,
         tipo:'pedido_cta', concepto:'Cuenta cliente',
-        detalle:cli.nombre, cuenta:'Caja mostrador',
+        detalle:cli.nombre, cuenta: _cajaActiva,
         monto:Math.round(total*100)/100, estado:'pendiente',
         clienteId:cli.id, clienteNombre:cli.nombre,
         productos, observacion: document.getElementById('vrc-observacion')?.value?.trim() || '',
@@ -15821,9 +15822,9 @@ window.vrcGuardar = async function() {
       const _medioPago = _vrcMetodo === '__tarjeta__'
         ? (_vrcTarjetaTipo === 'credito' ? 'Tarjeta Crédito' : 'Tarjeta Débito')
         : _cuentaObj?.tipo === 'banco' ? 'Transferencia'
-        : _cuentaObj?.nombre === 'Caja mostrador' ? 'Efectivo'
+        : _cuentaObj?.nombre === _cajaActiva ? 'Efectivo'
         : _cuentaObj?.nombre || 'Efectivo';
-      const _cuentaGuardar = 'Caja mostrador';
+      const _cuentaGuardar = _cajaActiva;
       const _vcDocRef = await addDoc(collection(db,'clientes',currentClientUID,'libroCaja'), {
         uid:currentClientUID,
         fecha:hoy, tipo:'ingreso', concepto:'Venta caja',
@@ -19336,7 +19337,7 @@ window.mccSelMedio = function(el, medio) {
   });
   el.style.background='#4a5e4d'; el.style.color='#f4f0ea'; el.style.borderColor='#4a5e4d';
   document.getElementById('mcc-cobro-forma').value = medio;
-  var cuenta = medio === 'Efectivo' ? 'Caja mostrador' : medio;
+  var cuenta = medio === 'Efectivo' ? (window._cajaActivaNombre || 'Caja mostrador') : medio;
   document.getElementById('mcc-cobro-cuenta').value = cuenta;
 };
 
@@ -27044,8 +27045,9 @@ window.cajaDepositoGuardar = async function() {
     var hoy = fechaHoyARG();
     var mes = mesHoyARG(hoy);
     var uid = currentClientUID;
+    const _cajaActiva = window._cajaActivaNombre || 'Caja mostrador';
     await window._addDoc(window._collection(window.db,'clientes',uid,'libroCaja'),{
-      tipo:'ingreso', cuenta:'Caja mostrador', monto:monto,
+      tipo:'ingreso', cuenta: _cajaActiva, monto:monto,
       concepto:'Depósito', detalle: obs||'',
       fecha: hoy, mes: mes, uid: uid, eliminado: false,
       origen:'deposito_cajero', turnoId: window.turnoActual?.id||'',
@@ -27118,8 +27120,9 @@ window.cajaEgresoGuardar = async function() {
     var mes = mesHoyARG(hoy);
     var uid = currentClientUID;
     var operador = window.currentOperadorNombre || 'Cajero';
+    const _cajaActiva = window._cajaActivaNombre || 'Caja mostrador';
     await window._addDoc(window._collection(window.db,'clientes',uid,'libroCaja'),{
-      tipo:'egreso', cuenta:'Caja mostrador', monto:monto,
+      tipo:'egreso', cuenta: _cajaActiva, monto:monto,
       concepto:_cajaEgresoMotivo, detalle: obs||'',
       fecha: hoy, mes: mes, uid: uid, eliminado: false,
       origen:'egreso_cajero', turnoId: window.turnoActual?.id||'',
@@ -27159,9 +27162,10 @@ window.cajaRetiroGuardar = async function() {
     var mes = mesHoyARG(hoy);
     var uid = currentClientUID;
     var operador = window.currentOperadorNombre || 'Cajero';
-    // Egreso del cajero (sale de Caja mostrador)
+    const _cajaActiva = window._cajaActivaNombre || 'Caja mostrador';
+    // Egreso del cajero (sale de la caja activa)
     await window._addDoc(window._collection(window.db,'clientes',uid,'libroCaja'),{
-      tipo:'egreso', cuenta:'Caja mostrador', monto:monto,
+      tipo:'egreso', cuenta: _cajaActiva, monto:monto,
       concepto:'Retiro por cierre', origen:'retiro_cajero',
       creadoPor: operador, detalle: obs||'',
       fecha: hoy, mes: mes, uid: uid, eliminado: false,
@@ -27483,7 +27487,8 @@ window.cajaMovDevolverConfirmar = async function(id) {
   try {
     var hoy = fechaHoyARG();
     var mes = mesHoyARG(hoy);
-    var _cuentaOriginal = _esEfectivoDev ? medio : 'Caja mostrador';
+    const _cajaActiva = window._cajaActivaNombre || 'Caja mostrador';
+    var _cuentaOriginal = _esEfectivoDev ? medio : _cajaActiva;
     await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'libroCaja'),{
       uid:currentClientUID, fecha:hoy, mes:mes,
       tipo:'egreso', concepto:'Devolución: '+(m.concepto||'venta'),
