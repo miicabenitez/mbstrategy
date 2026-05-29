@@ -5123,7 +5123,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
           <div style="background:#fff;border-radius:16px;border-top:3px solid #b09088;width:380px;box-shadow:0 12px 40px rgba(0,0,0,.18);overflow:hidden;">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:22px 24px 18px;">
               <div>
-                <div style="font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:#888;margin-bottom:4px;">Nuevo</div>
+                <div id="equipo-modal-eyebrow" style="font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:#888;margin-bottom:4px;">Nuevo</div>
                 <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;color:#1a1a1a;line-height:1;">usuario</div>
               </div>
               <button onclick="equipoNuevoUsuarioCerrar()" style="background:none;border:none;cursor:pointer;color:#aaa;font-size:22px;line-height:1;padding:0;width:24px;height:24px;display:flex;align-items:center;justify-content:center;">×</button>
@@ -26169,6 +26169,7 @@ window.loadEquipoModule = async function() {
     const snap = await window._getDocs(window._collection(window.db,'clientes',currentClientUID,'operadores'));
     const ops = [];
     snap.forEach(d => ops.push({id:d.id,...d.data()}));
+    window._equipoOperadores = ops;
     if(!window._equipoCajas || !window._equipoCajas.length) {
       try {
         const _cajasSnap = await window._getDocs(window._collection(window.db,'clientes',currentClientUID,'cajas'));
@@ -26225,6 +26226,7 @@ window.loadEquipoModule = async function() {
         }
       }
       const rolCell = `<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start;">${rolBadge}${cajasHtml ? '<div style="display:flex;flex-wrap:wrap;gap:4px;">'+cajasHtml+'</div>' : ''}</div>`;
+      const btnEditar = `<button onclick="equipoEditarUsuario('${o.id}')" style="padding:5px 12px;border-radius:6px;border:.5px solid #c0d0c0;background:#f4f8f4;color:#4a5e4d;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;">Editar</button>`;
       const btnDesact = activo
         ? `<button onclick="equipoDesactivar('${o.id}','${(o.usuario||'').replace(/'/g,"\\'")}','${(o.uid||'').replace(/'/g,"\\'")}',this)" style="padding:5px 12px;border-radius:6px;border:.5px solid #d4bfbb;background:#f9f4f3;color:#b09088;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;">Desactivar</button>`
         : '<span style="color:var(--text-l);font-size:11px;">—</span>';
@@ -26234,7 +26236,7 @@ window.loadEquipoModule = async function() {
         <td style="padding:10px 8px;font-size:12px;color:var(--text-l);">${o.usuario||'—'}</td>
         <td style="padding:10px 8px;">${rolCell}</td>
         <td style="padding:10px 8px;">${badge}</td>
-        <td style="padding:10px 8px;"><div style="display:flex;gap:6px;flex-wrap:wrap;">${btnDesact}${btnEliminar}</div></td>
+        <td style="padding:10px 8px;"><div style="display:flex;gap:6px;flex-wrap:wrap;">${btnEditar}${btnDesact}${btnEliminar}</div></td>
       </tr>`;
     }).join('');
     cont.innerHTML = `<div class="card" style="border-top:3px solid #b09088;"><div style="overflow-x:auto;">
@@ -26414,7 +26416,15 @@ window.equipoCajaDesactivar = async function(id, btn) {
 window.equipoNuevoUsuarioShow = function() {
   var ov = document.getElementById('equipo-modal-overlay');
   if(!ov) return;
+  window._equipoModalMode = 'crear';
+  window._equipoModalEditandoUid = null;
   ['equipo-nombre','equipo-usuario','equipo-password'].forEach(id => { var el=document.getElementById(id); if(el) el.value=''; });
+  var _usuarioEl = document.getElementById('equipo-usuario');
+  if(_usuarioEl) { _usuarioEl.readOnly = false; _usuarioEl.style.opacity = ''; _usuarioEl.style.cursor = ''; }
+  var _passEl = document.getElementById('equipo-password');
+  if(_passEl) _passEl.placeholder = 'Mínimo 6 caracteres';
+  var _eyebrow = document.getElementById('equipo-modal-eyebrow');
+  if(_eyebrow) _eyebrow.textContent = 'Nuevo';
   document.getElementById('equipo-rol').value = 'cajero';
   document.querySelectorAll('.equipo-rol-pill').forEach(b => {
     var on = b.dataset.rol === 'cajero';
@@ -26434,6 +26444,73 @@ window.equipoNuevoUsuarioShow = function() {
 window.equipoNuevoUsuarioCerrar = function() {
   var ov = document.getElementById('equipo-modal-overlay');
   if(ov) ov.style.display = 'none';
+  window._equipoModalMode = null;
+  window._equipoModalEditandoUid = null;
+};
+
+window.equipoEditarUsuario = async function(uid) {
+  // NOTA: si un cajero tenía asignada una caja que después fue desactivada,
+  // al guardar la edición se pierde esa asignación (la caja inactiva no aparece
+  // en los checkboxes). Comportamiento conocido — se mejora en sub-fase 3.C
+  // cuando se agregue Reactivar caja.
+  var operador = (window._equipoOperadores || []).find(o => o.id === uid);
+  if(!operador) {
+    try {
+      var docSnap = await window._getDoc(window._doc(window.db, 'clientes', currentClientUID, 'operadores', uid));
+      if(docSnap.exists()) operador = {id: docSnap.id, ...docSnap.data()};
+    } catch(e) { console.error('equipoEditarUsuario fetch:', e); }
+  }
+  if(!operador) { showToast('No se encontró el operador', 'error'); return; }
+
+  window._equipoModalMode = 'editar';
+  window._equipoModalEditandoUid = uid;
+
+  var eyebrow = document.getElementById('equipo-modal-eyebrow');
+  if(eyebrow) eyebrow.textContent = 'Editar';
+
+  var nombreEl = document.getElementById('equipo-nombre');
+  if(nombreEl) nombreEl.value = operador.nombre || '';
+
+  var usuarioEl = document.getElementById('equipo-usuario');
+  if(usuarioEl) {
+    usuarioEl.value = operador.usuario || '';
+    usuarioEl.readOnly = true;
+    usuarioEl.style.opacity = '0.6';
+    usuarioEl.style.cursor = 'not-allowed';
+  }
+
+  var passEl = document.getElementById('equipo-password');
+  if(passEl) { passEl.value = ''; passEl.placeholder = 'Dejar vacío para no cambiarla'; }
+
+  var rol = operador.rol || 'cajero';
+  document.getElementById('equipo-rol').value = rol;
+  document.querySelectorAll('.equipo-rol-pill').forEach(b => {
+    var on = b.dataset.rol === rol;
+    b.style.background = on ? '#e8f0e8' : '#fff';
+    b.style.borderColor = on ? '#4a5e4d' : '#d0ccc6';
+    b.style.color = on ? '#4a5e4d' : '#aaa';
+  });
+
+  var cajasBlock = document.getElementById('equipo-cajas-block');
+  if(cajasBlock) cajasBlock.style.display = rol === 'cajero' ? 'block' : 'none';
+
+  if(rol === 'cajero' && window.equipoCajasRenderCheckboxes) {
+    var initialIds;
+    if(Array.isArray(operador.cajas) && operador.cajas.length > 0) {
+      initialIds = operador.cajas;
+    } else {
+      initialIds = (window._equipoCajas || []).filter(c => c.activa !== false).map(c => c.id);
+    }
+    await window.equipoCajasRenderCheckboxes(initialIds);
+  }
+
+  var errEl = document.getElementById('equipo-modal-error');
+  if(errEl) errEl.style.display = 'none';
+  var btn = document.getElementById('equipo-modal-btn');
+  if(btn) { btn.disabled = false; btn.textContent = 'Guardar cambios'; }
+
+  var ov = document.getElementById('equipo-modal-overlay');
+  if(ov) ov.style.display = 'flex';
 };
 window.equipoUsuarioValidar = function(input) {
   input.value = input.value.replace(/\s|@/g,'');
@@ -26546,29 +26623,61 @@ window.equipoNuevoUsuarioGuardar = async function() {
   var errEl    = document.getElementById('equipo-modal-error');
   var btn      = document.getElementById('equipo-modal-btn');
   errEl.style.display = 'none';
-  if(!nombre||!usuario||!password||!rol) { errEl.textContent='Completá todos los campos.'; errEl.style.display='block'; return; }
-  if(password.length < 6) { errEl.textContent='La contraseña debe tener al menos 6 caracteres.'; errEl.style.display='block'; return; }
-  if(/\s|@/.test(usuario)) { errEl.textContent='El usuario no puede tener espacios ni @.'; errEl.style.display='block'; return; }
-  if(rol === 'cajero' && !window.equipoCajasValidar()) { return; }
-  btn.disabled=true; btn.textContent='Creando...';
-  try {
-    const idToken = await window._auth?.currentUser?.getIdToken(true);
-    const payload = {accion:'crear', nombre, usuario, password, rol, clienteUID:currentClientUID};
-    if(rol === 'cajero') payload.cajas = window.equipoCajasGetSeleccionadas();
-    const res = await fetch('/.netlify/functions/create-operator', {
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+idToken,'X-Cliente-UID':currentClientUID},
-      body: JSON.stringify(payload)
-    });
-    const data = await res.json();
-    if(!res.ok) throw new Error(data.error || 'Error del servidor');
-    equipoNuevoUsuarioCerrar();
-    showToast('Usuario '+nombre+' creado','success');
-    loadEquipoModule();
-  } catch(e) {
-    errEl.textContent = e.message || 'Error al crear el usuario.';
-    errEl.style.display = 'block';
-    btn.disabled=false; btn.textContent='Crear usuario';
+  var mode = window._equipoModalMode === 'editar' ? 'editar' : 'crear';
+  if(mode === 'crear') {
+    if(!nombre||!usuario||!password||!rol) { errEl.textContent='Completá todos los campos.'; errEl.style.display='block'; return; }
+    if(password.length < 6) { errEl.textContent='La contraseña debe tener al menos 6 caracteres.'; errEl.style.display='block'; return; }
+    if(/\s|@/.test(usuario)) { errEl.textContent='El usuario no puede tener espacios ni @.'; errEl.style.display='block'; return; }
+    if(rol === 'cajero' && !window.equipoCajasValidar()) { return; }
+    btn.disabled=true; btn.textContent='Creando...';
+    try {
+      const idToken = await window._auth?.currentUser?.getIdToken(true);
+      const payload = {accion:'crear', nombre, usuario, password, rol, clienteUID:currentClientUID};
+      if(rol === 'cajero') payload.cajas = window.equipoCajasGetSeleccionadas();
+      const res = await fetch('/.netlify/functions/create-operator', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+idToken,'X-Cliente-UID':currentClientUID},
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if(!res.ok) throw new Error(data.error || 'Error del servidor');
+      equipoNuevoUsuarioCerrar();
+      showToast('Usuario '+nombre+' creado','success');
+      loadEquipoModule();
+    } catch(e) {
+      errEl.textContent = e.message || 'Error al crear el usuario.';
+      errEl.style.display = 'block';
+      btn.disabled=false; btn.textContent='Crear usuario';
+    }
+  } else {
+    if(!nombre || !rol) { errEl.textContent='Completá nombre y rol.'; errEl.style.display='block'; return; }
+    if(password && password.length < 6) { errEl.textContent='La contraseña debe tener al menos 6 caracteres.'; errEl.style.display='block'; return; }
+    if(rol === 'cajero' && !window.equipoCajasValidar()) { return; }
+    btn.disabled=true; btn.textContent='Guardando...';
+    try {
+      const idToken = await window._auth?.currentUser?.getIdToken(true);
+      const payload = {accion:'editar', uid: window._equipoModalEditandoUid, nombre, rol, clienteUID: currentClientUID};
+      if(password) payload.password = password;
+      if(rol === 'cajero') payload.cajas = window.equipoCajasGetSeleccionadas();
+      const res = await fetch('/.netlify/functions/create-operator', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+idToken,'X-Cliente-UID':currentClientUID},
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if(!res.ok) throw new Error(data.error || 'Error del servidor');
+      equipoNuevoUsuarioCerrar();
+      if(password) {
+        showToast('Cambios guardados. La nueva contraseña ya está activa — el cajero deberá ingresarla en su próximo login.','success');
+      } else {
+        showToast('Cambios guardados.','success');
+      }
+      loadEquipoModule();
+    } catch(e) {
+      errEl.textContent = e.message || 'Error al guardar los cambios.';
+      errEl.style.display = 'block';
+      btn.disabled=false; btn.textContent='Guardar cambios';
+    }
   }
 };
 window.equipoDesactivar = function(docId, usuarioNombre, uid, btnEl) {

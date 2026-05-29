@@ -133,6 +133,51 @@ exports.handler = async function(event) {
       return { statusCode: 200, headers: corsHeaders, body: JSON.stringify({ ok: true, uid: newUid }) };
     }
 
+    // ── ACCIÓN: editar operador ───────────────────────────────
+    if (accion === 'editar') {
+      const { uid: opUid, nombre, rol, password, cajas } = body;
+      if (!opUid) return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: 'Falta uid del operador' }) };
+      if (!nombre || !rol) return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: 'Faltan campos: nombre, rol' }) };
+      const ROLES_VALIDOS_EDIT = ['cajero', 'compras', 'comercial', 'vendedor'];
+      if (!ROLES_VALIDOS_EDIT.includes(rol)) {
+        return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: `Rol inválido. Debe ser uno de: ${ROLES_VALIDOS_EDIT.join(', ')}` }) };
+      }
+      if (password && password.length < 6) {
+        return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: 'La contraseña debe tener al menos 6 caracteres' }) };
+      }
+
+      const opRef = db.collection('clientes').doc(clienteUID).collection('operadores').doc(opUid);
+      const opSnap = await opRef.get();
+      if (!opSnap.exists) {
+        return { statusCode: 404, headers: corsHeaders, body: JSON.stringify({ error: 'Operador no encontrado' }) };
+      }
+
+      if (rol === 'cajero') {
+        if (!Array.isArray(cajas) || cajas.length === 0) {
+          return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: 'Asigná al menos una caja al cajero.' }) };
+        }
+        const cajasSnap = await db.collection('clientes').doc(clienteUID).collection('cajas').get();
+        const cajasMap = {};
+        cajasSnap.forEach(d => { cajasMap[d.id] = d.data(); });
+        const invalidos = [];
+        for (const cid of cajas) {
+          const cdata = cajasMap[cid];
+          if (!cdata || cdata.activa === false) invalidos.push(cid);
+        }
+        if (invalidos.length) {
+          return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: `Cajas inválidas o inactivas: ${invalidos.join(', ')}` }) };
+        }
+      }
+
+      await opRef.update({ nombre, rol, cajas: rol === 'cajero' ? cajas : [] });
+
+      if (password) {
+        await admin.auth().updateUser(opUid, { password });
+      }
+
+      return { statusCode: 200, headers: corsHeaders, body: JSON.stringify({ ok: true }) };
+    }
+
     // ── ACCIÓN: desactivar operador ───────────────────────────
     if (accion === 'desactivar') {
       const { docId, usuario: usuarioRawD, uid: opUid } = body;
