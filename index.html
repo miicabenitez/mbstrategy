@@ -6800,7 +6800,6 @@ window.mb_doLogin = async function() {
     await window._signInWithEmailAndPassword(window._auth, email, pass);
     sessionStorage.removeItem('mb_turno_cerrado');
     sessionStorage.setItem('mb_login_pending', '1');
-    console.log('[3D-DEBUG] mb_doLogin antes de reload, flag mb_login_pending set');
     location.reload();
   } catch(e) {
     window._mbLoginInProgress = false;
@@ -6911,12 +6910,10 @@ function _resetCajeroState() {
 onAuthStateChanged(auth, async (user) => {
   const lo = document.getElementById('lo');
   if(lo){ lo.style.opacity='0'; lo.style.display='none'; }
-  console.log('[3D-DEBUG] onAuth flag leído:', sessionStorage.getItem('mb_login_pending'));
   if(sessionStorage.getItem('mb_login_pending')) {
     document.body.style.background = 'linear-gradient(135deg,#1a3528 0%,#0d1f1a 60%,#060e0b 100%)';
     sessionStorage.removeItem('mb_login_pending');
   }
-  console.log('[3D-DEBUG] body bg actual:', document.body.style.background);
   if (user) {
     _resetCajeroState();
     window._mbLoginInProgress = false;
@@ -7077,8 +7074,6 @@ window.showClientUI = async function(email, clientData) {
   if(btnSalir) btnSalir.style.display = 'none';
   document.getElementById('ub').style.display = 'none';
   document.getElementById('lp').style.display = 'none';
-  console.log('[3D-DEBUG] showClientUI inicio - currentUser:', currentUser?.uid, 'clientData.uid:', clientData?.uid);
-  console.log('[3D-DEBUG] showClientUI - es admin?', currentUser?.uid === clientData?.uid);
   // SUB-FASE 3.D.2: solo agregar .visible si es admin. Para operadores no-admin
   // (cajero/compras/comercial), se decide más abajo según rol/turno/caja activa.
   // Durante los awaits intermedios, body con gradiente verde para coherencia visual.
@@ -7169,9 +7164,7 @@ window.showClientUI = async function(email, clientData) {
             } else if (window.currentRol === 'cajero') {
               // SUB-FASE 3.D — resolver cajas asignadas y elegir o mostrar selector
               try {
-                console.log('[3D-DEBUG] cajero detectado, resolviendo cajas...');
                 const _cajas = await window.cajeroResolveCajas(_op);
-                console.log('[3D-DEBUG] cajas resueltas, count:', _cajas.length);
                 if (_cajas.length === 0) {
                   sessionStorage.setItem('mb_login_err', 'No tenés cajas asignadas. Avisale al dueño para que te configure el acceso.');
                   try { await signOut(auth); } catch(_se) {}
@@ -7206,8 +7199,6 @@ window.showClientUI = async function(email, clientData) {
 
       // SUB-FASE 3.D.2: asegurar que #app sea visible salvo que el cajero esté esperando elegir caja
       const _isMultiCajaPending = window.currentRol === 'cajero' && !window.turnoActual && !window._cajaActivaId;
-      console.log('[3D-DEBUG] safety net - isMultiCajaPending:', _isMultiCajaPending);
-      console.log('[3D-DEBUG] safety net - app visible?', document.getElementById('app').classList.contains('visible'));
       if (!_isMultiCajaPending) {
         document.getElementById('app').classList.add('visible');
         document.body.style.background = '';
