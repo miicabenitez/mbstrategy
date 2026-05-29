@@ -26449,43 +26449,53 @@ window.equipoNuevoUsuarioGuardar = async function() {
     btn.disabled=false; btn.textContent='Crear usuario';
   }
 };
-window.equipoDesactivar = async function(docId, usuarioNombre, uid, btnEl) {
-  if(!confirm('¿Desactivar a "'+usuarioNombre+'"? Ya no podrá iniciar sesión.')) return;
-  if(btnEl) { btnEl.disabled=true; btnEl.textContent='...'; }
-  try {
-    const idToken = await window._auth?.currentUser?.getIdToken(true);
-    const res = await fetch('/.netlify/functions/create-operator', {
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+idToken,'X-Cliente-UID':currentClientUID},
-      body: JSON.stringify({accion:'desactivar', docId, usuario:usuarioNombre, uid})
-    });
-    const data = await res.json();
-    if(!res.ok) throw new Error(data.error || 'Error del servidor');
-    showToast('Usuario desactivado','success');
-    loadEquipoModule();
-  } catch(e) {
-    showToast('Error: '+(e?.message||e),'error');
-    if(btnEl) { btnEl.disabled=false; btnEl.textContent='Desactivar'; }
-  }
+window.equipoDesactivar = function(docId, usuarioNombre, uid, btnEl) {
+  showConfirm(
+    '¿Desactivar a "'+usuarioNombre+'"? Ya no podrá iniciar sesión.',
+    async () => {
+      if(btnEl) { btnEl.disabled=true; btnEl.textContent='...'; }
+      try {
+        const idToken = await window._auth?.currentUser?.getIdToken(true);
+        const res = await fetch('/.netlify/functions/create-operator', {
+          method:'POST',
+          headers:{'Content-Type':'application/json','Authorization':'Bearer '+idToken,'X-Cliente-UID':currentClientUID},
+          body: JSON.stringify({accion:'desactivar', docId, usuario:usuarioNombre, uid})
+        });
+        const data = await res.json();
+        if(!res.ok) throw new Error(data.error || 'Error del servidor');
+        showToast('Usuario desactivado','success');
+        loadEquipoModule();
+      } catch(e) {
+        showToast('Error: '+(e?.message||e),'error');
+        if(btnEl) { btnEl.disabled=false; btnEl.textContent='Desactivar'; }
+      }
+    },
+    'Desactivar usuario'
+  );
 };
-window.equipoEliminar = async function(docId, usuarioNombre, uid, btnEl) {
-  if(!confirm('¿Eliminar permanentemente a "'+usuarioNombre+'"? Esta acción no se puede deshacer.')) return;
-  if(btnEl) { btnEl.disabled=true; btnEl.textContent='...'; }
-  try {
-    const idToken = await window._auth?.currentUser?.getIdToken(true);
-    const res = await fetch('/.netlify/functions/create-operator', {
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+idToken,'X-Cliente-UID':currentClientUID},
-      body: JSON.stringify({accion:'eliminar', docId, usuario:usuarioNombre, uid})
-    });
-    const data = await res.json();
-    if(!res.ok) throw new Error(data.error || 'Error del servidor');
-    showToast('Usuario eliminado','success');
-    loadEquipoModule();
-  } catch(e) {
-    showToast('Error: '+(e?.message||e),'error');
-    if(btnEl) { btnEl.disabled=false; btnEl.textContent='Eliminar'; }
-  }
+window.equipoEliminar = function(docId, usuarioNombre, uid, btnEl) {
+  showConfirm(
+    '¿Eliminar permanentemente a "'+usuarioNombre+'"? Esta acción no se puede deshacer.',
+    async () => {
+      if(btnEl) { btnEl.disabled=true; btnEl.textContent='...'; }
+      try {
+        const idToken = await window._auth?.currentUser?.getIdToken(true);
+        const res = await fetch('/.netlify/functions/create-operator', {
+          method:'POST',
+          headers:{'Content-Type':'application/json','Authorization':'Bearer '+idToken,'X-Cliente-UID':currentClientUID},
+          body: JSON.stringify({accion:'eliminar', docId, usuario:usuarioNombre, uid})
+        });
+        const data = await res.json();
+        if(!res.ok) throw new Error(data.error || 'Error del servidor');
+        showToast('Usuario eliminado','success');
+        loadEquipoModule();
+      } catch(e) {
+        showToast('Error: '+(e?.message||e),'error');
+        if(btnEl) { btnEl.disabled=false; btnEl.textContent='Eliminar'; }
+      }
+    },
+    'Eliminar usuario'
+  );
 };
 
 // ─── ADMIN: Panel de usuarios ────────────────────────────────
@@ -26600,24 +26610,29 @@ window.adminNuevoUsuarioGuardar = async function() {
   }
 };
 
-window.adminUsuarioDesactivar = async function(docId, usuarioNombre, uid, btnEl) {
-  if(!confirm('¿Desactivar al usuario "'+usuarioNombre+'"? Ya no podrá iniciar sesión.')) return;
-  if(btnEl) { btnEl.disabled=true; btnEl.textContent='...'; }
-  try {
-    const idToken = await window._auth?.currentUser?.getIdToken(true);
-    const res = await fetch('/.netlify/functions/create-operator', {
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+idToken,'X-Cliente-UID':currentClientUID},
-      body: JSON.stringify({accion:'desactivar', docId, usuario:usuarioNombre, uid})
-    });
-    const data = await res.json();
-    if(!res.ok) throw new Error(data.error || 'Error del servidor');
-    showToast('Usuario desactivado','success');
-    loadAdminUsuarios();
-  } catch(e) {
-    showToast('Error: '+(e?.message||e),'error');
-    if(btnEl) { btnEl.disabled=false; btnEl.textContent='Desactivar'; }
-  }
+window.adminUsuarioDesactivar = function(docId, usuarioNombre, uid, btnEl) {
+  showConfirm(
+    '¿Desactivar al usuario "'+usuarioNombre+'"? Ya no podrá iniciar sesión.',
+    async () => {
+      if(btnEl) { btnEl.disabled=true; btnEl.textContent='...'; }
+      try {
+        const idToken = await window._auth?.currentUser?.getIdToken(true);
+        const res = await fetch('/.netlify/functions/create-operator', {
+          method:'POST',
+          headers:{'Content-Type':'application/json','Authorization':'Bearer '+idToken,'X-Cliente-UID':currentClientUID},
+          body: JSON.stringify({accion:'desactivar', docId, usuario:usuarioNombre, uid})
+        });
+        const data = await res.json();
+        if(!res.ok) throw new Error(data.error || 'Error del servidor');
+        showToast('Usuario desactivado','success');
+        loadAdminUsuarios();
+      } catch(e) {
+        showToast('Error: '+(e?.message||e),'error');
+        if(btnEl) { btnEl.disabled=false; btnEl.textContent='Desactivar'; }
+      }
+    },
+    'Desactivar usuario'
+  );
 };
 
 // ─── CAJERO: Retiro a caja general ───────────────────────────
