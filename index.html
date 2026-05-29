@@ -6764,6 +6764,7 @@ window.cajeroSelectorCajaElegir = function(cajaId, cajaNombre) {
   if(screen) screen.style.display = 'none';
   var appEl = document.getElementById('app');
   if(appEl) appEl.classList.add('visible');
+  document.body.style.background = '';
   if(window.cajaAperturaShow) window.cajaAperturaShow();
 };
 
@@ -7068,7 +7069,14 @@ window.showClientUI = async function(email, clientData) {
   if(btnSalir) btnSalir.style.display = 'none';
   document.getElementById('ub').style.display = 'none';
   document.getElementById('lp').style.display = 'none';
-  document.getElementById('app').classList.add('visible');
+  // SUB-FASE 3.D.2: solo agregar .visible si es admin. Para operadores no-admin
+  // (cajero/compras/comercial), se decide más abajo según rol/turno/caja activa.
+  // Durante los awaits intermedios, body con gradiente verde para coherencia visual.
+  if (currentUser && clientData && currentUser.uid === clientData.uid) {
+    document.getElementById('app').classList.add('visible');
+  } else {
+    document.body.style.background = 'linear-gradient(135deg,#1a3528 0%,#0d1f1a 60%,#060e0b 100%)';
+  }
   document.getElementById('aArea').style.display = 'none';
   document.getElementById('cArea').style.display = 'block';
   document.getElementById('aNav').style.display = 'none';
@@ -7169,6 +7177,8 @@ window.showClientUI = async function(email, clientData) {
                 }
               } catch(_re) {
                 console.error('cajeroResolveCajas:', _re);
+                document.getElementById('app').classList.add('visible');
+                document.body.style.background = '';
                 setTimeout(() => { if(window.cajaAperturaShow) window.cajaAperturaShow(); }, 400);
               }
             }
@@ -7179,6 +7189,13 @@ window.showClientUI = async function(email, clientData) {
             return;
           }
         } catch(_e) { console.log('resolución rol:', _e); }
+      }
+
+      // SUB-FASE 3.D.2: asegurar que #app sea visible salvo que el cajero esté esperando elegir caja
+      const _isMultiCajaPending = window.currentRol === 'cajero' && !window.turnoActual && !window._cajaActivaId;
+      if (!_isMultiCajaPending) {
+        document.getElementById('app').classList.add('visible');
+        document.body.style.background = '';
       }
 
       // Mostrar módulo inicial inmediatamente, sin esperar los awaits de datos
