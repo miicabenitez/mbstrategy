@@ -6799,6 +6799,7 @@ window.mb_doLogin = async function() {
     }
     await window._signInWithEmailAndPassword(window._auth, email, pass);
     sessionStorage.removeItem('mb_turno_cerrado');
+    sessionStorage.setItem('mb_login_pending', '1');
     location.reload();
   } catch(e) {
     window._mbLoginInProgress = false;
@@ -6909,6 +6910,10 @@ function _resetCajeroState() {
 onAuthStateChanged(auth, async (user) => {
   const lo = document.getElementById('lo');
   if(lo){ lo.style.opacity='0'; lo.style.display='none'; }
+  if(sessionStorage.getItem('mb_login_pending')) {
+    document.body.style.background = 'linear-gradient(135deg,#1a3528 0%,#0d1f1a 60%,#060e0b 100%)';
+    sessionStorage.removeItem('mb_login_pending');
+  }
   if (user) {
     _resetCajeroState();
     window._mbLoginInProgress = false;
@@ -7074,6 +7079,7 @@ window.showClientUI = async function(email, clientData) {
   // Durante los awaits intermedios, body con gradiente verde para coherencia visual.
   if (currentUser && clientData && currentUser.uid === clientData.uid) {
     document.getElementById('app').classList.add('visible');
+    document.body.style.background = '';
   } else {
     document.body.style.background = 'linear-gradient(135deg,#1a3528 0%,#0d1f1a 60%,#060e0b 100%)';
   }
