@@ -57,7 +57,7 @@ exports.handler = async function(event) {
 
     // ── ACCIÓN: crear operador ────────────────────────────────
     if (accion === 'crear') {
-      const { nombre, usuario: usuarioRaw, password, rol } = body;
+      const { nombre, usuario: usuarioRaw, password, rol, cajas } = body;
       if (!nombre || !usuarioRaw || !password || !rol) {
         return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: 'Faltan campos: nombre, usuario, password, rol' }) };
       }
@@ -75,6 +75,24 @@ exports.handler = async function(event) {
 
       if (!negocioId) {
         return { statusCode: 500, headers: corsHeaders, body: JSON.stringify({ error: 'El negocio no tiene negocioId asignado. Ejecutar la migración primero.' }) };
+      }
+
+      // Validación de cajas (solo para rol cajero)
+      if (rol === 'cajero') {
+        if (!Array.isArray(cajas) || cajas.length === 0) {
+          return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: 'Asigná al menos una caja al cajero.' }) };
+        }
+        const cajasSnap = await db.collection('clientes').doc(clienteUID).collection('cajas').get();
+        const cajasMap = {};
+        cajasSnap.forEach(d => { cajasMap[d.id] = d.data(); });
+        const invalidos = [];
+        for (const cid of cajas) {
+          const cdata = cajasMap[cid];
+          if (!cdata || cdata.activa === false) invalidos.push(cid);
+        }
+        if (invalidos.length) {
+          return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: `Cajas inválidas o inactivas: ${invalidos.join(', ')}` }) };
+        }
       }
 
       const emailSintetico = `${usuario}@${clienteUID}.op.mbstrategy.internal`;
@@ -100,6 +118,7 @@ exports.handler = async function(event) {
         nombre,
         rol,
         negocioId,
+        cajas: rol === 'cajero' ? cajas : [],
         emailSintetico,
         activo: true,
         creadoEn: new Date().toISOString()
@@ -110,18 +129,6 @@ exports.handler = async function(event) {
         emailSintetico: emailSintetico.toLowerCase(),
         clienteUID
       });
-
-      // Si es cajero, asegurar que existe "Caja mostrador"
-      if (rol === 'cajero') {
-        const cuentasSnap = await db.collection('clientes').doc(clienteUID).collection('cuentas').get();
-        const nombresExistentes = new Set(cuentasSnap.docs.map(d => (d.data().nombre || '').toLowerCase()));
-        const ahora = new Date().toISOString();
-        if (!nombresExistentes.has('caja mostrador')) {
-          await db.collection('clientes').doc(clienteUID).collection('cuentas').add({
-            nombre: 'Caja mostrador', tipo: 'efectivo', saldoInicial: 0, orden: 10, activo: true, creadoEn: ahora
-          });
-        }
-      }
 
       return { statusCode: 200, headers: corsHeaders, body: JSON.stringify({ ok: true, uid: newUid }) };
     }

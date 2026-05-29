@@ -5142,6 +5142,14 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
                 <button type="button" class="equipo-rol-pill" data-rol="comercial" onclick="equipoRolSeleccionar(this)" style="flex:1;padding:9px 0;border-radius:20px;background:#fff;border:.5px solid #d0ccc6;color:#aaa;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">Comercial</button>
               </div>
               <input id="equipo-rol" type="hidden" value="cajero">
+              <div id="equipo-cajas-block" style="margin-bottom:14px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                  <div style="font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:#888;">Cajas asignadas</div>
+                  <div id="equipo-cajas-obligatorio" style="font-size:10px;color:#b09088;font-weight:500;">Obligatorio</div>
+                </div>
+                <div id="equipo-cajas-list" style="border:.5px solid #d0ccc6;border-radius:8px;padding:4px;background:#fff;max-height:160px;overflow-y:auto;"></div>
+                <div id="equipo-cajas-helper" style="font-size:11px;color:#888;margin-top:6px;line-height:1.4;">Si tiene más de una caja, podrá elegir al iniciar sesión.</div>
+              </div>
               <div id="equipo-modal-error" style="display:none;color:#e53e3e;font-size:12px;margin-bottom:10px;"></div>
             </div>
             <div style="display:flex;gap:8px;justify-content:flex-end;padding:14px 24px;border-top:.5px solid #f0ece6;">
@@ -26161,6 +26169,14 @@ window.loadEquipoModule = async function() {
     const snap = await window._getDocs(window._collection(window.db,'clientes',currentClientUID,'operadores'));
     const ops = [];
     snap.forEach(d => ops.push({id:d.id,...d.data()}));
+    if(!window._equipoCajas || !window._equipoCajas.length) {
+      try {
+        const _cajasSnap = await window._getDocs(window._collection(window.db,'clientes',currentClientUID,'cajas'));
+        const _cajasArr = [];
+        _cajasSnap.forEach(d => _cajasArr.push({id:d.id, ...d.data()}));
+        window._equipoCajas = _cajasArr;
+      } catch(_e) { console.error('loadEquipoModule cajas:', _e); }
+    }
     const total = ops.length;
     const activos = ops.filter(o => o.activo !== false).length;
     const kEl = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
@@ -26192,11 +26208,23 @@ window.loadEquipoModule = async function() {
       return;
     }
     const ROL_LABEL = {cajero:'Cajero',compras:'Compras + Stock',comercial:'Comercial',admin:'Admin'};
+    const _cajasNombreMap = {};
+    (window._equipoCajas||[]).forEach(c => { _cajasNombreMap[c.id] = c.nombre || '—'; });
     const filas = ops.map(o => {
       const activo = o.activo !== false;
       const badge = activo
         ? '<span style="background:#e8f0e8;color:#4a5e4d;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600;">Activo</span>'
         : '<span style="background:#f9f0ee;color:#b09088;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600;">Inactivo</span>';
+      const rolBadge = `<span style="background:#e8f0e8;color:#4a5e4d;border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600;display:inline-block;">${ROL_LABEL[o.rol]||o.rol||'—'}</span>`;
+      let cajasHtml = '';
+      if(o.rol === 'cajero') {
+        if(Array.isArray(o.cajas) && o.cajas.length > 0) {
+          cajasHtml = o.cajas.map(cid => `<span style="background:#e8f0e8;color:#4a5e4d;border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600;display:inline-block;">${_cajasNombreMap[cid] || '?'}</span>`).join('');
+        } else {
+          cajasHtml = `<span style="background:#f0ece6;color:#888;border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600;display:inline-block;">Todas las cajas</span>`;
+        }
+      }
+      const rolCell = `<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start;">${rolBadge}${cajasHtml ? '<div style="display:flex;flex-wrap:wrap;gap:4px;">'+cajasHtml+'</div>' : ''}</div>`;
       const btnDesact = activo
         ? `<button onclick="equipoDesactivar('${o.id}','${(o.usuario||'').replace(/'/g,"\\'")}','${(o.uid||'').replace(/'/g,"\\'")}',this)" style="padding:5px 12px;border-radius:6px;border:.5px solid #d4bfbb;background:#f9f4f3;color:#b09088;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;">Desactivar</button>`
         : '<span style="color:var(--text-l);font-size:11px;">—</span>';
@@ -26394,6 +26422,9 @@ window.equipoNuevoUsuarioShow = function() {
     b.style.borderColor = on ? '#4a5e4d' : '#d0ccc6';
     b.style.color = on ? '#4a5e4d' : '#aaa';
   });
+  var cajasBlock = document.getElementById('equipo-cajas-block');
+  if(cajasBlock) cajasBlock.style.display = 'block';
+  if(window.equipoCajasRenderCheckboxes) window.equipoCajasRenderCheckboxes();
   var errEl = document.getElementById('equipo-modal-error');
   if(errEl) errEl.style.display='none';
   var btn = document.getElementById('equipo-modal-btn');
@@ -26418,6 +26449,94 @@ window.equipoRolSeleccionar = function(btn) {
   btn.style.color = '#4a5e4d';
   var hid = document.getElementById('equipo-rol');
   if(hid) hid.value = btn.dataset.rol;
+  var cajasBlock = document.getElementById('equipo-cajas-block');
+  if(cajasBlock) cajasBlock.style.display = btn.dataset.rol === 'cajero' ? 'block' : 'none';
+};
+
+window.equipoGetCajasOperador = function(operador) {
+  if(!operador || operador.rol !== 'cajero') return [];
+  if(Array.isArray(operador.cajas) && operador.cajas.length > 0) {
+    return operador.cajas;
+  }
+  return (window._equipoCajas || []).filter(c => c.activa !== false).map(c => c.id);
+};
+
+window.equipoCajasRenderCheckboxes = async function(initialIds) {
+  var list = document.getElementById('equipo-cajas-list');
+  if(!list) return;
+  if(!window._equipoCajas || !window._equipoCajas.length) {
+    list.innerHTML = '<div style="padding:12px;font-size:12px;color:#888;text-align:center;">Cargando cajas...</div>';
+    try {
+      var snap = await window._getDocs(window._collection(window.db,'clientes',currentClientUID,'cajas'));
+      var arr = [];
+      snap.forEach(d => arr.push({id:d.id, ...d.data()}));
+      window._equipoCajas = arr;
+    } catch(e) {
+      console.error('equipoCajasRenderCheckboxes carga:', e);
+      list.innerHTML = '<div style="padding:12px;font-size:12px;color:#b09088;text-align:center;">Error al cargar cajas</div>';
+      return;
+    }
+  }
+  var cajas = (window._equipoCajas || []).filter(c => c.activa !== false);
+  var locked = cajas.length === 1;
+  var initial = Array.isArray(initialIds) ? initialIds : null;
+  list.innerHTML = '';
+  if(!cajas.length) {
+    list.innerHTML = '<div style="padding:12px;font-size:12px;color:#888;text-align:center;">No hay cajas activas</div>';
+    return;
+  }
+  cajas.forEach(function(c) {
+    var selected = locked || (initial ? initial.includes(c.id) : false);
+    var row = document.createElement('div');
+    row.className = 'equipo-caja-checkbox-row';
+    row.dataset.cajaId = c.id;
+    row.dataset.selected = selected ? 'true' : 'false';
+    if(locked) row.dataset.locked = 'true';
+    row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:6px;cursor:'+(locked?'default':'pointer')+';font-size:13px;font-family:DM Sans,sans-serif;color:#1a1a1a;'+(selected?'background:#e8f0e8;':'background:#fff;');
+    row.innerHTML = '<div class="equipo-caja-check" style="width:16px;height:16px;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;font-weight:700;'+(selected?'background:#4a5e4d;border:none;color:#fff;':'background:#fff;border:.5px solid #d0ccc6;color:transparent;')+'">✓</div><div>'+(c.nombre||'—')+(c.esCajaMostrador?' <span style="font-size:10px;color:#888;margin-left:4px;">(principal)</span>':'')+'</div>';
+    if(!locked) row.addEventListener('click', function(){ window.equipoCajaToggleSeleccion(row); });
+    list.appendChild(row);
+  });
+  var helper = document.getElementById('equipo-cajas-helper');
+  if(helper) { helper.textContent = 'Si tiene más de una caja, podrá elegir al iniciar sesión.'; helper.style.color = '#888'; }
+};
+
+window.equipoCajaToggleSeleccion = function(row) {
+  if(row.dataset.locked === 'true') return;
+  var selected = row.dataset.selected === 'true';
+  var newSel = !selected;
+  row.dataset.selected = newSel ? 'true' : 'false';
+  row.style.background = newSel ? '#e8f0e8' : '#fff';
+  var chk = row.querySelector('.equipo-caja-check');
+  if(chk) {
+    if(newSel) {
+      chk.style.background = '#4a5e4d';
+      chk.style.border = 'none';
+      chk.style.color = '#fff';
+    } else {
+      chk.style.background = '#fff';
+      chk.style.border = '.5px solid #d0ccc6';
+      chk.style.color = 'transparent';
+    }
+  }
+};
+
+window.equipoCajasGetSeleccionadas = function() {
+  var rows = document.querySelectorAll('.equipo-caja-checkbox-row');
+  var ids = [];
+  rows.forEach(function(r) { if(r.dataset.selected === 'true') ids.push(r.dataset.cajaId); });
+  return ids;
+};
+
+window.equipoCajasValidar = function() {
+  var ids = window.equipoCajasGetSeleccionadas();
+  var helper = document.getElementById('equipo-cajas-helper');
+  if(ids.length === 0) {
+    if(helper) { helper.textContent = 'Tenés que asignar al menos una caja.'; helper.style.color = '#b09088'; }
+    return false;
+  }
+  if(helper) { helper.textContent = 'Si tiene más de una caja, podrá elegir al iniciar sesión.'; helper.style.color = '#888'; }
+  return true;
 };
 window.equipoNuevoUsuarioGuardar = async function() {
   var nombre   = document.getElementById('equipo-nombre').value.trim();
@@ -26430,13 +26549,16 @@ window.equipoNuevoUsuarioGuardar = async function() {
   if(!nombre||!usuario||!password||!rol) { errEl.textContent='Completá todos los campos.'; errEl.style.display='block'; return; }
   if(password.length < 6) { errEl.textContent='La contraseña debe tener al menos 6 caracteres.'; errEl.style.display='block'; return; }
   if(/\s|@/.test(usuario)) { errEl.textContent='El usuario no puede tener espacios ni @.'; errEl.style.display='block'; return; }
+  if(rol === 'cajero' && !window.equipoCajasValidar()) { return; }
   btn.disabled=true; btn.textContent='Creando...';
   try {
     const idToken = await window._auth?.currentUser?.getIdToken(true);
+    const payload = {accion:'crear', nombre, usuario, password, rol, clienteUID:currentClientUID};
+    if(rol === 'cajero') payload.cajas = window.equipoCajasGetSeleccionadas();
     const res = await fetch('/.netlify/functions/create-operator', {
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+idToken,'X-Cliente-UID':currentClientUID},
-      body: JSON.stringify({accion:'crear', nombre, usuario, password, rol, clienteUID:currentClientUID})
+      body: JSON.stringify(payload)
     });
     const data = await res.json();
     if(!res.ok) throw new Error(data.error || 'Error del servidor');
