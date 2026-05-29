@@ -1323,9 +1323,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
   <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 16px;">
     <div style="width:100%;max-width:480px;">
       <div style="text-align:center;margin-bottom:36px;">
-        <div style="display:inline-flex;align-items:center;justify-content:center;width:88px;height:88px;border-radius:50%;background:#4a5e4d;">
-          <img src="/logo-login.png" alt="MB Strategy" style="width:80px;height:80px;display:block;border-radius:50%;">
-        </div>
+        <img src="/logo-login.png" alt="MB Strategy" style="width:80px;height:80px;display:block;border-radius:50%;margin:0 auto;background:transparent;">
         <div style="font-size:10px;font-weight:500;letter-spacing:1.8px;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-top:18px;margin-bottom:10px;">Hola, <span id="cajeroSelectorNombre"></span></div>
         <div style="font-family:'Cormorant Garamond',serif;font-size:30px;color:#f4f0ea;line-height:1.15;margin-bottom:8px;">¿En qué <span style="color:#b09088;font-style:italic;">caja</span> vas a trabajar hoy?</div>
         <div style="font-size:13px;color:rgba(255,255,255,0.5);line-height:1.5;">Elegí una para arrancar tu turno.</div>
@@ -6752,7 +6750,7 @@ window.cajeroSelectorCajaMostrar = function(operador, cajasAsignadas) {
       var eyebrow = c.esCajaMostrador ? 'PRINCIPAL' : 'SUCURSAL';
       var idEsc = (c.id || '').replace(/'/g, "\\'");
       var nomEsc = (c.nombre || '').replace(/'/g, "\\'");
-      return '<div onclick="cajeroSelectorCajaElegir(\''+idEsc+'\',\''+nomEsc+'\')" style="background:#f4f0ea;border-radius:14px;border-top:3px solid #b09088;padding:20px 22px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:transform .15s,box-shadow .15s;" onmouseover="this.style.transform=\'translateY(-1px)\';this.style.boxShadow=\'0 8px 24px rgba(0,0,0,.18)\';" onmouseout="this.style.transform=\'\';this.style.boxShadow=\'\';"><div><div style="font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#888;margin-bottom:4px;">'+eyebrow+'</div><div style="font-family:\'Cormorant Garamond\',serif;font-size:24px;font-weight:400;color:#1a1a1a;line-height:1;">'+(c.nombre||'—')+'</div></div><div style="width:36px;height:36px;border-radius:50%;background:#e8f0e8;display:flex;align-items:center;justify-content:center;color:#4a5e4d;font-size:18px;flex-shrink:0;">→</div></div>';
+      return '<div onclick="cajeroSelectorCajaElegir(\''+idEsc+'\',\''+nomEsc+'\')" style="background:#f4f0ea;border-radius:14px;border-top:3px solid #b09088;padding:20px 22px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:transform .15s,box-shadow .15s;" onmouseover="this.style.transform=\'translateY(-1px)\';this.style.boxShadow=\'0 8px 24px rgba(0,0,0,.18)\';" onmouseout="this.style.transform=\'\';this.style.boxShadow=\'\';"><div><div style="font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#555;margin-bottom:4px;">'+eyebrow+'</div><div style="font-family:\'Cormorant Garamond\',serif;font-size:24px;font-weight:400;color:#000;line-height:1;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;">'+(c.nombre||'—')+'</div></div><div style="width:36px;height:36px;border-radius:50%;background:#e8f0e8;display:flex;align-items:center;justify-content:center;color:#4a5e4d;font-size:18px;flex-shrink:0;">→</div></div>';
     }).join('');
   }
   var screen = document.getElementById('cajeroSelectorCajaScreen');
@@ -6764,6 +6762,8 @@ window.cajeroSelectorCajaElegir = function(cajaId, cajaNombre) {
   window._cajaActivaNombre = cajaNombre;
   var screen = document.getElementById('cajeroSelectorCajaScreen');
   if(screen) screen.style.display = 'none';
+  var appEl = document.getElementById('app');
+  if(appEl) appEl.classList.add('visible');
   if(window.cajaAperturaShow) window.cajaAperturaShow();
 };
 
@@ -7162,6 +7162,9 @@ window.showClientUI = async function(email, clientData) {
                   window._cajaActivaNombre = _cajas[0].nombre;
                   setTimeout(() => { if(window.cajaAperturaShow) window.cajaAperturaShow(); }, 400);
                 } else {
+                  // Ocultar la vista del cajero mientras se muestra el selector (evita flash)
+                  const _appEl = document.getElementById('app');
+                  if(_appEl) _appEl.classList.remove('visible');
                   setTimeout(() => { if(window.cajeroSelectorCajaMostrar) window.cajeroSelectorCajaMostrar(_op, _cajas); }, 400);
                 }
               } catch(_re) {
