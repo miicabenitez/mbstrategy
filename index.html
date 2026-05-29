@@ -15822,7 +15822,7 @@ window.vrcGuardar = async function() {
       const _medioPago = _vrcMetodo === '__tarjeta__'
         ? (_vrcTarjetaTipo === 'credito' ? 'Tarjeta Crédito' : 'Tarjeta Débito')
         : _cuentaObj?.tipo === 'banco' ? 'Transferencia'
-        : _cuentaObj?.nombre === _cajaActiva ? 'Efectivo'
+        : _cuentaObj?.tipo === 'efectivo' ? 'Efectivo'
         : _cuentaObj?.nombre || 'Efectivo';
       const _cuentaGuardar = _cajaActiva;
       const _vcDocRef = await addDoc(collection(db,'clientes',currentClientUID,'libroCaja'), {
@@ -27047,7 +27047,7 @@ window.cajaDepositoGuardar = async function() {
     var uid = currentClientUID;
     const _cajaActiva = window._cajaActivaNombre || 'Caja mostrador';
     await window._addDoc(window._collection(window.db,'clientes',uid,'libroCaja'),{
-      tipo:'ingreso', cuenta: _cajaActiva, monto:monto,
+      tipo:'ingreso', cuenta: _cajaActiva, medioPago: 'Efectivo', monto:monto,
       concepto:'Depósito', detalle: obs||'',
       fecha: hoy, mes: mes, uid: uid, eliminado: false,
       origen:'deposito_cajero', turnoId: window.turnoActual?.id||'',
@@ -27122,7 +27122,7 @@ window.cajaEgresoGuardar = async function() {
     var operador = window.currentOperadorNombre || 'Cajero';
     const _cajaActiva = window._cajaActivaNombre || 'Caja mostrador';
     await window._addDoc(window._collection(window.db,'clientes',uid,'libroCaja'),{
-      tipo:'egreso', cuenta: _cajaActiva, monto:monto,
+      tipo:'egreso', cuenta: _cajaActiva, medioPago: 'Efectivo', monto:monto,
       concepto:_cajaEgresoMotivo, detalle: obs||'',
       fecha: hoy, mes: mes, uid: uid, eliminado: false,
       origen:'egreso_cajero', turnoId: window.turnoActual?.id||'',
@@ -27165,7 +27165,7 @@ window.cajaRetiroGuardar = async function() {
     const _cajaActiva = window._cajaActivaNombre || 'Caja mostrador';
     // Egreso del cajero (sale de la caja activa)
     await window._addDoc(window._collection(window.db,'clientes',uid,'libroCaja'),{
-      tipo:'egreso', cuenta: _cajaActiva, monto:monto,
+      tipo:'egreso', cuenta: _cajaActiva, medioPago: 'Efectivo', monto:monto,
       concepto:'Retiro por cierre', origen:'retiro_cajero',
       creadoPor: operador, detalle: obs||'',
       fecha: hoy, mes: mes, uid: uid, eliminado: false,
@@ -27489,10 +27489,11 @@ window.cajaMovDevolverConfirmar = async function(id) {
     var mes = mesHoyARG(hoy);
     const _cajaActiva = window._cajaActivaNombre || 'Caja mostrador';
     var _cuentaOriginal = _esEfectivoDev ? medio : _cajaActiva;
+    var _medioPagoFinal = _esEfectivoDev ? 'Efectivo' : medio;
     await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'libroCaja'),{
       uid:currentClientUID, fecha:hoy, mes:mes,
       tipo:'egreso', concepto:'Devolución: '+(m.concepto||'venta'),
-      cuenta:_cuentaOriginal, medioPago:medio, monto:parseFloat(m.monto)||0,
+      cuenta:_cuentaOriginal, medioPago:_medioPagoFinal, monto:parseFloat(m.monto)||0,
       origen:'devolucion_caja', refMovId:id,
       eliminado:false, creadoEn:new Date().toISOString(),
       turnoId:window.turnoActual?.id||'',
@@ -27741,7 +27742,7 @@ window.cajaCierreConfirmar = async function() {
         await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'libroCaja'), {
           uid: currentClientUID, fecha: _hoyC, mes: _mesC,
           tipo: 'egreso', concepto: 'Cierre de turno',
-          cuenta: (window._cajaActivaNombre || 'Caja mostrador'), monto: saldo,
+          cuenta: (window._cajaActivaNombre || 'Caja mostrador'), medioPago: 'Efectivo', monto: saldo,
           origen: 'cierre_turno', eliminado: false,
           creadoEn: _ahoraCierre, creadoPor: operador,
           turnoId: window.turnoActual.id
@@ -27921,7 +27922,7 @@ window.cajaAperturaConfirmar = async function() {
       var _hoy = fechaHoyARG(); var _mes = mesHoyARG(_hoy);
       await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'libroCaja'), {
         uid:currentClientUID, fecha:_hoy, tipo:'ingreso', concepto:'Apertura de turno',
-        cuenta: (window._cajaActivaNombre || 'Caja mostrador'), monto:monto, mes:_mes, origen:'apertura_turno',
+        cuenta: (window._cajaActivaNombre || 'Caja mostrador'), medioPago: 'Efectivo', monto:monto, mes:_mes, origen:'apertura_turno',
         eliminado:false, creadoEn:ahora, creadoPor:window.currentOperadorNombre||'Cajero'
       });
     }
