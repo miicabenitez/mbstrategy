@@ -26496,9 +26496,11 @@ window.equipoEditarUsuario = async function(uid) {
 
   if(rol === 'cajero' && window.equipoCajasRenderCheckboxes) {
     var initialIds;
-    if(Array.isArray(operador.cajas) && operador.cajas.length > 0) {
+    if(Array.isArray(operador.cajas)) {
+      // Array (incluso []) respeta selección guardada — vacío significa "ninguna marcada"
       initialIds = operador.cajas;
     } else {
+      // Legacy: campo cajas ausente → fallback a todas las activas
       initialIds = (window._equipoCajas || []).filter(c => c.activa !== false).map(c => c.id);
     }
     await window.equipoCajasRenderCheckboxes(initialIds);
@@ -26528,6 +26530,20 @@ window.equipoRolSeleccionar = function(btn) {
   if(hid) hid.value = btn.dataset.rol;
   var cajasBlock = document.getElementById('equipo-cajas-block');
   if(cajasBlock) cajasBlock.style.display = btn.dataset.rol === 'cajero' ? 'block' : 'none';
+  // Solo en modo editar: re-renderizar checkboxes según el operador editado.
+  // En modo crear preservamos el estado actual de los checkboxes para no perder selecciones del usuario.
+  if(btn.dataset.rol === 'cajero' && window._equipoModalMode === 'editar' && window.equipoCajasRenderCheckboxes) {
+    var op = (window._equipoOperadores || []).find(o => o.id === window._equipoModalEditandoUid);
+    var initialIds;
+    if(op && Array.isArray(op.cajas)) {
+      initialIds = op.cajas;
+    } else if(op) {
+      initialIds = (window._equipoCajas || []).filter(c => c.activa !== false).map(c => c.id);
+    } else {
+      initialIds = [];
+    }
+    window.equipoCajasRenderCheckboxes(initialIds);
+  }
 };
 
 window.equipoGetCajasOperador = function(operador) {
