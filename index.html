@@ -27812,19 +27812,22 @@ window.cajaAperturaShow = async function() {
     console.log('[cajaAperturaShow] haciendo getDocs...');
     var _movsSnap = await window._getDocs(window._collection(window.db,'clientes',currentClientUID,'libroCaja'));
     console.log('[cajaAperturaShow] docs:', _movsSnap.size);
+    const _cajaActiva = window._cajaActivaNombre || 'Caja mostrador';
     var _aperturas = [];
     var _movimientos = [];
     _movsSnap.forEach(function(d) {
       var _m = d.data();
       if(_m.eliminado) return;
-      if(_m.origen === 'apertura_turno') _aperturas.push(_m);
-      else _movimientos.push(_m);
+      if(_m.origen === 'apertura_turno') {
+        if(_m.cuenta === _cajaActiva) _aperturas.push(_m);
+      } else {
+        _movimientos.push(_m);
+      }
     });
     _aperturas.sort(function(a,b){ return (b.creadoEn||'').localeCompare(a.creadoEn||''); });
     var _ultimaApertura = _aperturas[0];
     var _saldo = _ultimaApertura ? (parseFloat(_ultimaApertura.monto)||0) : 0;
     var _baseTs = _ultimaApertura ? (_ultimaApertura.creadoEn||'') : '';
-    const _cajaActiva = window._cajaActivaNombre || 'Caja mostrador';
     _movimientos.forEach(function(_m) {
       if(_m.origen === 'cierre_turno') return;
       if(_baseTs && (_m.creadoEn||'') < _baseTs) return;
