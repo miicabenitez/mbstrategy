@@ -11262,6 +11262,7 @@ window.renderCajaCuentasCards = function(cuentas, movs, saldos, cuentaActiva) {
 async function loadCajaModule() {
   if(!currentClientUID) return;
   if(window.currentRol === 'cajero' && !window.turnoActual) {
+    if(!window._cajaActivaId) return;
     if(window.cajaAperturaShow) window.cajaAperturaShow();
     return;
   }
