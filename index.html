@@ -11596,7 +11596,8 @@ window._aplicarFiltrosCaja = function() {
 window.cajaToggleOrigenDrop = function(e) {
   if(e) e.stopPropagation();
   const drop = document.getElementById('cfil-origen-drop');
-  if(!drop) return;
+  const btn = document.getElementById('cfil-origen-btn');
+  if(!drop || !btn) return;
   if(drop.style.display === 'block') {
     drop.style.display = 'none';
     document.removeEventListener('click', window._cajaOrigenClickOutside);
@@ -11615,7 +11616,14 @@ window.cajaToggleOrigenDrop = function(e) {
     opts.push(`<div onclick="cajaSeleccionarOrigen('${cs}')" style="${_itemStyle}${isActive?'background:'+_activeBg+';font-weight:600;':''}" onmouseover="this.style.background='rgba(168,212,172,.1)'" onmouseout="this.style.background='${isActive?_activeBg:''}'">${c}</div>`);
   });
   drop.innerHTML = opts.join('');
+  // Escapar overflow:hidden del banner padre — mover al body con position:fixed (mismo patrón que toggleCajaMesDrop)
+  document.body.appendChild(drop);
+  const rect = btn.getBoundingClientRect();
+  drop.style.position = 'fixed';
+  drop.style.top = (rect.bottom + 4) + 'px';
+  drop.style.left = rect.left + 'px';
   drop.style.display = 'block';
+  drop.style.zIndex = '9999';
   setTimeout(() => { document.addEventListener('click', window._cajaOrigenClickOutside); }, 0);
 };
 
