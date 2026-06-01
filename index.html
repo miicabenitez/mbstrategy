@@ -2831,6 +2831,16 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
       <div onclick="cajaFiltrarTipo('egreso')" id="cfil-egreso" style="padding:5px 14px;border-radius:20px;font-size:12px;cursor:pointer;border:0.5px solid #e0dbd6;color:#888;background:#fff;font-family:'DM Sans',sans-serif;">Egresos</div>
     </div>
     <div style="width:0.5px;height:18px;background:#e0dbd6;margin:0 4px;"></div>
+    <!-- Filtro caja origen (solo dueño/admin) — Fase 4.A -->
+    <div id="caja-filter-origen-wrap" style="position:relative;display:none;">
+      <div onclick="cajaToggleOrigenDrop(event)" id="cfil-origen-btn" style="padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;border:0.5px solid #e0dbd6;color:#555;background:#fff;display:flex;align-items:center;gap:6px;font-family:'DM Sans',sans-serif;">
+        <span id="cfil-origen-prefix" style="font-size:10px;color:#888;">Caja origen:</span>
+        <span id="cfil-origen-label" style="font-weight:600;">Todas</span>
+        <svg width="8" height="5" viewBox="0 0 8 5" fill="none"><path d="M0 0l4 5 4-5z" fill="#888"/></svg>
+      </div>
+      <div id="cfil-origen-drop" style="display:none;position:absolute;top:calc(100% + 4px);left:0;background:#fff;border:0.5px solid #e0dbd6;border-radius:8px;padding:4px;min-width:180px;box-shadow:0 4px 16px rgba(0,0,0,.1);z-index:9999;"></div>
+    </div>
+    <div id="caja-filter-origen-sep" style="display:none;width:0.5px;height:18px;background:#e0dbd6;margin:0 4px;"></div>
     <!-- Buscador sin doble recuadro -->
     <div style="display:flex;align-items:center;gap:6px;flex:1;max-width:260px;">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -11385,6 +11395,16 @@ async function loadCajaModule() {
     });
     window._facturadosMap = facturadosMap;
     renderCajaTable(movs, facturadosMap);
+    // FASE 4.A — Mostrar selector caja origen solo para dueño/admin
+    const _origenWrap = document.getElementById('caja-filter-origen-wrap');
+    const _origenSep = document.getElementById('caja-filter-origen-sep');
+    const _showOrigen = window.currentRol !== 'cajero';
+    if(_origenWrap) _origenWrap.style.display = _showOrigen ? 'inline-block' : 'none';
+    if(_origenSep) _origenSep.style.display = _showOrigen ? 'inline-block' : 'none';
+    // Si hay filtros activos (caja origen o cuenta), re-aplicar tras re-fetch
+    if(window._cajaOrigenFiltro || _cajaCuentaFiltro) {
+      _aplicarFiltrosCaja();
+    }
     // Animación staggered de cards
     document.querySelectorAll('#ct-contabilidad .dash-card').forEach((c,i) => {
       c.classList.remove('in');
@@ -11523,11 +11543,7 @@ async function preloadCajaSaldo(uid) {
 
 window.cajaFiltrarCuenta = function(nombre, _el) {
   _cajaCuentaFiltro = (_cajaCuentaFiltro === nombre) ? null : nombre;
-  const movs = window._cajaMovimientos || [];
-  const filtrados = (_cajaCuentaFiltro
-    ? movs.filter(m => m.cuenta === _cajaCuentaFiltro || m.cuentaDesde === _cajaCuentaFiltro || m.cuentaHacia === _cajaCuentaFiltro)
-    : [...movs]).sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')||((a.creadoEn||'').localeCompare(b.creadoEn||'')));
-  // Re-render chips, KPIs y tabla según cuenta seleccionada
+  // Re-render chips según cuenta seleccionada
   const cuentasContainer = document.getElementById('caja-chips');
   if(cuentasContainer) {
     cuentasContainer.querySelectorAll('.caja-chip').forEach(ch => {
@@ -11547,8 +11563,7 @@ window.cajaFiltrarCuenta = function(nombre, _el) {
       if(dot) dot.style.background = sel ? 'white' : (dot.dataset.color || '#888');
     });
   }
-  renderCajaKPIs(filtrados);
-  renderCajaTable(filtrados);
+  _aplicarFiltrosCaja();
   const cardsContainer = document.getElementById('caja-cuentas-cards');
   if(cardsContainer) {
     cardsContainer.querySelectorAll('div[data-cuenta]').forEach(card => {
@@ -11559,6 +11574,87 @@ window.cajaFiltrarCuenta = function(nombre, _el) {
       card.style.borderBottomColor = isOn ? '#b09088' : 'transparent';
     });
   }
+};
+
+// FASE 4.A — Filtro por caja origen
+window._cajaOrigenFiltro = '';
+
+window._aplicarFiltrosCaja = function() {
+  const movs = window._cajaMovimientos || [];
+  let filtrados = [...movs];
+  if(window._cajaOrigenFiltro) {
+    filtrados = filtrados.filter(m => m.cajaOrigenNombre === window._cajaOrigenFiltro);
+  }
+  if(_cajaCuentaFiltro) {
+    filtrados = filtrados.filter(m => m.cuenta === _cajaCuentaFiltro || m.cuentaDesde === _cajaCuentaFiltro || m.cuentaHacia === _cajaCuentaFiltro);
+  }
+  filtrados.sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')||((a.creadoEn||'').localeCompare(b.creadoEn||'')));
+  renderCajaKPIs(filtrados);
+  renderCajaTable(filtrados);
+};
+
+window.cajaToggleOrigenDrop = function(e) {
+  if(e) e.stopPropagation();
+  const drop = document.getElementById('cfil-origen-drop');
+  if(!drop) return;
+  if(drop.style.display === 'block') {
+    drop.style.display = 'none';
+    document.removeEventListener('click', window._cajaOrigenClickOutside);
+    return;
+  }
+  // Popular dropdown con cajas únicas del período
+  const movs = window._cajaMovimientos || [];
+  const cajasUnicas = [...new Set(movs.map(m => m.cajaOrigenNombre).filter(Boolean))].sort();
+  const _activa = window._cajaOrigenFiltro || '';
+  const _itemStyle = 'padding:7px 12px;font-size:12px;cursor:pointer;border-radius:5px;font-family:\'DM Sans\',sans-serif;color:#1a1a1a;';
+  const _activeBg = 'rgba(74,94,77,.15)';
+  const opts = [`<div onclick="cajaSeleccionarOrigen('')" style="${_itemStyle}${_activa===''?'background:'+_activeBg+';font-weight:600;':''}" onmouseover="this.style.background='rgba(168,212,172,.1)'" onmouseout="this.style.background='${_activa===''?_activeBg:''}'">Todas las cajas</div>`];
+  cajasUnicas.forEach(c => {
+    const cs = c.replace(/'/g, "\\'");
+    const isActive = c === _activa;
+    opts.push(`<div onclick="cajaSeleccionarOrigen('${cs}')" style="${_itemStyle}${isActive?'background:'+_activeBg+';font-weight:600;':''}" onmouseover="this.style.background='rgba(168,212,172,.1)'" onmouseout="this.style.background='${isActive?_activeBg:''}'">${c}</div>`);
+  });
+  drop.innerHTML = opts.join('');
+  drop.style.display = 'block';
+  setTimeout(() => { document.addEventListener('click', window._cajaOrigenClickOutside); }, 0);
+};
+
+window._cajaOrigenClickOutside = function(e) {
+  const drop = document.getElementById('cfil-origen-drop');
+  const btn = document.getElementById('cfil-origen-btn');
+  if(!drop || drop.style.display !== 'block') {
+    document.removeEventListener('click', window._cajaOrigenClickOutside);
+    return;
+  }
+  if(drop.contains(e.target) || (btn && btn.contains(e.target))) return;
+  drop.style.display = 'none';
+  document.removeEventListener('click', window._cajaOrigenClickOutside);
+};
+
+window.cajaSeleccionarOrigen = function(nombre) {
+  window._cajaOrigenFiltro = nombre || '';
+  const label = document.getElementById('cfil-origen-label');
+  if(label) label.textContent = nombre || 'Todas';
+  const drop = document.getElementById('cfil-origen-drop');
+  if(drop) drop.style.display = 'none';
+  document.removeEventListener('click', window._cajaOrigenClickOutside);
+  // Estilo activo del chip: negro (coherente con Todos/Ingresos/Egresos activos)
+  const btn = document.getElementById('cfil-origen-btn');
+  const prefix = document.getElementById('cfil-origen-prefix');
+  if(btn) {
+    if(nombre) {
+      btn.style.background = '#1a1a1a';
+      btn.style.color = '#fff';
+      btn.style.borderColor = '#1a1a1a';
+      if(prefix) prefix.style.color = 'rgba(255,255,255,.6)';
+    } else {
+      btn.style.background = '#fff';
+      btn.style.color = '#555';
+      btn.style.borderColor = '#e0dbd6';
+      if(prefix) prefix.style.color = '#888';
+    }
+  }
+  _aplicarFiltrosCaja();
 };
 
 function renderCajaTable(movs, facturadosMap = window._facturadosMap || new Map()) {
