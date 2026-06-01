@@ -1511,7 +1511,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         </button>
         <div class="sb-sub" id="sbsub-finanzas">
           <button class="sb-subitem active" data-sub="caja" onclick="sidebarNav('finanzas','caja')">Caja</button>
-          <button class="sb-subitem" data-sub="auditoria-cajero" onclick="sidebarNav('finanzas','auditoria-cajero')">Auditoría caja mostrador</button>
+          <button class="sb-subitem" data-sub="auditoria-cajero" onclick="sidebarNav('finanzas','auditoria-cajero')">Auditoría cajas mostrador</button>
           <button class="sb-subitem" data-sub="cierre-periodo" onclick="sidebarNav('finanzas','cierre-periodo')">Cierre de período</button>
           <button class="sb-subitem" data-sub="caja-config" onclick="sidebarNav('finanzas','caja-config')">Configuración</button>
           <button class="sb-subitem" data-sub="mis-facturas" onclick="sidebarNav('finanzas','mis-facturas')">Mis Facturas</button>
@@ -11001,6 +11001,7 @@ window._auditoriaFiltroMedio = null;
 window._auditoriaUnsub = null;
 window._auditoriaMovsEncurso = null;
 window._auditoriaCajero = null;
+window._auditoriaCajaFiltro = null;
 
 window.loadAuditoriaCajero = async function() {
   const root = document.getElementById('auditoria-cajero-root');
@@ -11152,7 +11153,12 @@ window._auditoriaRender = function() {
   <div style="border-radius:16px;overflow:hidden;margin-bottom:12px;">
   <div style="background:linear-gradient(135deg,#1a3528 0%,#0d1f1a 60%,#060e0b 100%);padding:${_isMobile ? '16px 16px 14px' : '24px 28px 20px'};">
     <div style="display:flex;align-items:center;${_isMobile ? 'flex-direction:column;gap:12px;' : 'justify-content:space-between;'}margin-bottom:20px;">
-      <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:${_isMobile ? '28px' : '38px'};font-weight:300;color:#f5f0eb;">Caja <em style="font-style:italic;color:#b09088;">mostrador</em></div>
+      <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:${_isMobile ? '28px' : '38px'};font-weight:300;color:#f5f0eb;">${(() => {
+        if(!window._auditoriaCajaFiltro) return 'Cajas <em style="font-style:italic;color:#b09088;">mostrador</em>';
+        const _cajaSel = (window._equipoCajas||[]).find(c => c.id === window._auditoriaCajaFiltro);
+        const _nombre = _cajaSel?.nombre || 'caja';
+        return `Caja <em style="font-style:italic;color:#b09088;">${_nombre}</em>`;
+      })()}</div>
       <div style="display:flex;align-items:center;gap:3px;background:rgba(0,0,0,.2);border-radius:10px;padding:3px;">
         ${['todo','hoy','ayer'].map(id => `<button onclick="if(window._auditoriaUnsub){window._auditoriaUnsub();window._auditoriaUnsub=null;}window._auditoriaFiltro='${id}';window._auditoriaFechaCustom=null;window._auditoriaFiltroMedio=null;window._auditoriaCajero=null;_auditoriaRender()" style="padding:6px 14px;font-size:12px;color:${window._auditoriaFiltro===id?'#f5f0eb':'rgba(255,255,255,.45)'};background:${window._auditoriaFiltro===id?'rgba(255,255,255,.15)':'transparent'};border:none;border-radius:7px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:${window._auditoriaFiltro===id?'600':'400'};white-space:nowrap;">${id==='todo'?'Todo':id.charAt(0).toUpperCase()+id.slice(1)}</button>`).join('')}
         <button onclick="window._auditoriaFiltro='encurso';window._auditoriaFechaCustom=null;window._auditoriaFiltroMedio=null;_auditoriaActivarEncurso()" style="padding:6px 14px;font-size:12px;display:flex;align-items:center;gap:5px;color:${window._auditoriaFiltro==='encurso'?'#f5f0eb':'rgba(255,255,255,.45)'};background:${window._auditoriaFiltro==='encurso'?'rgba(255,255,255,.15)':'transparent'};border:none;border-radius:7px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:${window._auditoriaFiltro==='encurso'?'600':'400'};white-space:nowrap;"><span style="width:6px;height:6px;border-radius:50%;background:#7dd98a;display:inline-block;${window._auditoriaFiltro==='encurso'?'animation:pulse 1.2s infinite;':'opacity:.5;'}"></span>En curso</button>
