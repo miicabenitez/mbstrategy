@@ -2888,7 +2888,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
   </div>
 
   <!-- Tabla (Fase 5.B PASO 1.1: card con borde + "Cargar más" integrado como primera fila) -->
-  <div id="caja-table-card" style="background:white;border-radius:16px;overflow:hidden;border:0.5px solid #e0dbd6;">
+  <div id="caja-table-card" style="background:white;border-radius:16px;overflow:hidden;border:0.5px solid #e0dbd6;margin-top:12px;">
     <div id="caja-cargar-mas-row" style="display:none;background:#fafaf7;padding:12px 22px;cursor:pointer;border-bottom:0.5px solid #f0eae3;align-items:center;justify-content:center;gap:8px;color:#4a5e4d;font-size:12px;font-weight:500;transition:background .15s;" onclick="cajaCargarMasAntiguos()" onmouseover="this.style.background='#f0ebe5'" onmouseout="this.style.background='#fafaf7'">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
       <span id="caja-cargar-mas-label">Cargar 15 más antiguos</span>
@@ -11844,12 +11844,17 @@ function renderCajaTable(movs, facturadosMap = window._facturadosMap || new Map(
       : '';
     const facturaIconHtml = (m.tipo === 'ingreso' && !noFacturable)
       ? facInfo
-        ? `<div style="width:32px;height:32px;border-radius:8px;border:.5px solid #4a5e4d;display:flex;align-items:center;justify-content:center;color:#4a5e4d;background:#e8ede8;cursor:default;" onclick="event.stopPropagation();showToast('Factura ya generada · N° ${facNro}','info')" title="Factura ya emitida"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M3 8l3.5 3.5L12 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`
-        : `<div style="width:32px;height:32px;border-radius:8px;border:.5px solid rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;color:#9ca3af;cursor:pointer;transition:all .15s;" onclick="event.stopPropagation();abrirModalFacturaCaja('${m.id}')" title="Emitir factura" onmouseover="this.style.background='#e8ede8';this.style.borderColor='#4a5e4d';this.style.color='#4a5e4d'" onmouseout="this.style.background='';this.style.borderColor='rgba(0,0,0,.08)';this.style.color='#9ca3af'"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="2.5" y="1.5" width="10" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M5 5h5M5 7.5h5M5 10h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></div>`
-      : `<div style="width:32px;height:32px;"></div>`;
+        ? `<div style="width:32px;height:32px;border-radius:8px;border:.5px solid #4a5e4d;display:flex;align-items:center;justify-content:center;color:#4a5e4d;background:#e8ede8;cursor:default;flex-shrink:0;" onclick="event.stopPropagation();showToast('Factura ya generada · N° ${facNro}','info')" title="Factura ya emitida"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M3 8l3.5 3.5L12 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`
+        : `<div style="width:32px;height:32px;border-radius:8px;border:.5px solid rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;color:#9ca3af;cursor:pointer;transition:all .15s;flex-shrink:0;" onclick="event.stopPropagation();abrirModalFacturaCaja('${m.id}')" title="Emitir factura" onmouseover="this.style.background='#e8ede8';this.style.borderColor='#4a5e4d';this.style.color='#4a5e4d'" onmouseout="this.style.background='';this.style.borderColor='rgba(0,0,0,.08)';this.style.color='#9ca3af'"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="2.5" y="1.5" width="10" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M5 5h5M5 7.5h5M5 10h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></div>`
+      : `<div style="width:32px;height:32px;flex-shrink:0;"></div>`;
+    const facturaIconHtmlMobile = (m.tipo === 'ingreso' && !noFacturable)
+      ? facInfo
+        ? `<div style="width:28px;height:28px;border-radius:7px;border:.5px solid #4a5e4d;display:flex;align-items:center;justify-content:center;color:#4a5e4d;background:#e8ede8;cursor:default;flex-shrink:0;" onclick="event.stopPropagation();showToast('Factura ya generada · N° ${facNro}','info')" title="Factura ya emitida"><svg width="13" height="13" viewBox="0 0 15 15" fill="none"><path d="M3 8l3.5 3.5L12 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`
+        : `<div style="width:28px;height:28px;border-radius:7px;border:.5px solid rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;color:#9ca3af;cursor:pointer;transition:all .15s;flex-shrink:0;" onclick="event.stopPropagation();abrirModalFacturaCaja('${m.id}')" title="Emitir factura"><svg width="13" height="13" viewBox="0 0 15 15" fill="none"><rect x="2.5" y="1.5" width="10" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M5 5h5M5 7.5h5M5 10h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></div>`
+      : '';
     const isMobile = window.innerWidth <= 768;
     if (isMobile) {
-      return `<div data-tipo="${m.tipo||''}" data-concepto="${(m.concepto||'').toLowerCase()}" data-fecha="${m.fecha||''}" onclick="cajaMostrarMovimiento('${m.id||m.docId||''}')" style="display:flex;align-items:center;background:#fff;border-bottom:0.5px solid #f0eae3;padding:14px 16px;cursor:pointer;gap:10px;opacity:0;animation:fadeUp .3s ease both;animation-delay:${80+i*50}ms;">
+      return `<div data-tipo="${m.tipo||''}" data-concepto="${(m.concepto||'').toLowerCase()}" data-fecha="${m.fecha||''}" onclick="cajaMostrarMovimiento('${m.id||m.docId||''}')" style="display:flex;flex-wrap:nowrap;align-items:center;background:#fff;border-bottom:0.5px solid #f0eae3;padding:14px 16px;cursor:pointer;gap:10px;opacity:0;animation:fadeUp .3s ease both;animation-delay:${80+i*50}ms;">
         <div style="width:3px;height:32px;border-radius:2px;background:${borderColor};flex-shrink:0;"></div>
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex:1;min-width:0;">
           <div style="flex:1;min-width:0;">
@@ -11861,9 +11866,10 @@ function renderCajaTable(movs, facturadosMap = window._facturadosMap || new Map(
             <span style="font-size:10px;background:#f0ebe5;color:#555;padding:3px 10px;border-radius:6px;white-space:nowrap;font-weight:500;">${cuentaLabel}</span>
           </div>
         </div>
+        ${facturaIconHtmlMobile}
       </div>`;
     }
-    return `<div data-tipo="${m.tipo||''}" data-concepto="${(m.concepto||'').toLowerCase()}" data-fecha="${m.fecha||''}" onclick="cajaMostrarMovimiento('${m.id}')" style="display:flex;align-items:center;gap:14px;padding:20px 22px;border-bottom:0.5px solid #f0eae3;cursor:pointer;background:#fff;opacity:0;animation:fadeUp .3s ease both;animation-delay:${80+i*50}ms;transition:background .15s;" onmouseover="this.style.background='#fafaf7'" onmouseout="this.style.background='#fff'">
+    return `<div data-tipo="${m.tipo||''}" data-concepto="${(m.concepto||'').toLowerCase()}" data-fecha="${m.fecha||''}" onclick="cajaMostrarMovimiento('${m.id}')" style="display:flex;flex-wrap:nowrap;align-items:center;gap:14px;padding:20px 22px;border-bottom:0.5px solid #f0eae3;cursor:pointer;background:#fff;opacity:0;animation:fadeUp .3s ease both;animation-delay:${80+i*50}ms;transition:background .15s;" onmouseover="this.style.background='#fafaf7'" onmouseout="this.style.background='#fff'">
       <div style="width:3px;height:32px;border-radius:2px;background:${borderColor};flex-shrink:0;"></div>
       <div style="font-size:11px;color:#aaa;min-width:60px;font-weight:500;flex-shrink:0;">${fechaStr}</div>
       <div style="flex:1;min-width:0;">
