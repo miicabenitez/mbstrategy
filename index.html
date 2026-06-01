@@ -11330,6 +11330,7 @@ async function loadCajaModule() {
     const cuentas = [];
     cuentasSnap2.forEach(d => cuentas.push({id:d.id,...d.data()}));
     const seenC = new Set(); const cuentasUnicas = cuentas.filter(c=>{ if(seenC.has(c.nombre))return false; seenC.add(c.nombre); return true; });
+    window._cajaCuentasUnicas = cuentasUnicas;
     cuentasUnicas.sort((a,b)=>(a.orden||0)-(b.orden||0));
     // 3. Cargar todos los movimientos desde libroCaja
     const movsSnap = await getDocs(collection(db,'clientes',uid,'libroCaja'));
@@ -11378,6 +11379,15 @@ async function loadCajaModule() {
     // Verificar si hay cajeros activos → alias "Caja general" para Efectivo
     const _opSnap = await getDocs(query(collection(db,'clientes',uid,'operadores'), where('activo','==',true)));
     window._tieneOperadores = !_opSnap.empty;
+    // Cargar cajas físicas para el dropdown filtro caja origen (Fase 4.A)
+    if(!window._equipoCajas || !window._equipoCajas.length) {
+      try {
+        const _cajasSnap = await getDocs(collection(db,'clientes',uid,'cajas'));
+        const _cajasArr = [];
+        _cajasSnap.forEach(d => _cajasArr.push({id:d.id, ...d.data()}));
+        window._equipoCajas = _cajasArr;
+      } catch(_ce) { console.error('loadCajaModule cajas fetch:', _ce); }
+    }
     // 4. Renderizar
     movs = movs.filter(m =>
       (m.cuenta||'').toLowerCase() !== 'caja mostrador' &&
@@ -11582,7 +11592,9 @@ window._cajaOrigenFiltro = '';
 window._aplicarFiltrosCaja = function() {
   const movs = window._cajaMovimientos || [];
   let filtrados = [...movs];
-  if(window._cajaOrigenFiltro) {
+  if(window._cajaOrigenFiltro === '__sin_caja__') {
+    filtrados = filtrados.filter(m => !m.cajaOrigenNombre);
+  } else if(window._cajaOrigenFiltro) {
     filtrados = filtrados.filter(m => m.cajaOrigenNombre === window._cajaOrigenFiltro);
   }
   if(_cajaCuentaFiltro) {
@@ -11591,6 +11603,10 @@ window._aplicarFiltrosCaja = function() {
   filtrados.sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')||((a.creadoEn||'').localeCompare(b.creadoEn||'')));
   renderCajaKPIs(filtrados);
   renderCajaTable(filtrados);
+  // Re-render KPI cards (TODAS/EFECTIVO/MP/BANCO) con los movs filtrados
+  if(window._cajaCuentasUnicas) {
+    renderCajaChips(window._cajaCuentasUnicas, filtrados);
+  }
 };
 
 window.cajaToggleOrigenDrop = function(e) {
@@ -11603,18 +11619,23 @@ window.cajaToggleOrigenDrop = function(e) {
     document.removeEventListener('click', window._cajaOrigenClickOutside);
     return;
   }
-  // Popular dropdown con cajas únicas del período
-  const movs = window._cajaMovimientos || [];
-  const cajasUnicas = [...new Set(movs.map(m => m.cajaOrigenNombre).filter(Boolean))].sort();
+  // Popular dropdown con 3 niveles: Todas / Solo dueño / Cajas físicas
+  const cajasActivas = (window._equipoCajas || []).filter(c => c.activa !== false);
   const _activa = window._cajaOrigenFiltro || '';
   const _itemStyle = 'padding:7px 12px;font-size:12px;cursor:pointer;border-radius:5px;font-family:\'DM Sans\',sans-serif;color:#1a1a1a;';
   const _activeBg = 'rgba(74,94,77,.15)';
-  const opts = [`<div onclick="cajaSeleccionarOrigen('')" style="${_itemStyle}${_activa===''?'background:'+_activeBg+';font-weight:600;':''}" onmouseover="this.style.background='rgba(168,212,172,.1)'" onmouseout="this.style.background='${_activa===''?_activeBg:''}'">Todas las cajas</div>`];
-  cajasUnicas.forEach(c => {
-    const cs = c.replace(/'/g, "\\'");
-    const isActive = c === _activa;
-    opts.push(`<div onclick="cajaSeleccionarOrigen('${cs}')" style="${_itemStyle}${isActive?'background:'+_activeBg+';font-weight:600;':''}" onmouseover="this.style.background='rgba(168,212,172,.1)'" onmouseout="this.style.background='${isActive?_activeBg:''}'">${c}</div>`);
-  });
+  const buildOpt = (val, label, isActive) => {
+    const vs = String(val).replace(/'/g, "\\'");
+    return `<div onclick="cajaSeleccionarOrigen('${vs}')" style="${_itemStyle}${isActive?'background:'+_activeBg+';font-weight:600;':''}" onmouseover="this.style.background='rgba(168,212,172,.1)'" onmouseout="this.style.background='${isActive?_activeBg:''}'">${label}</div>`;
+  };
+  const opts = [];
+  opts.push(buildOpt('', 'Todas las cajas', _activa === ''));
+  opts.push(buildOpt('__sin_caja__', 'Solo movimientos del dueño', _activa === '__sin_caja__'));
+  if(cajasActivas.length > 0) {
+    opts.push('<div style="height:1px;background:#e0dbd6;margin:4px 8px;"></div>');
+    cajasActivas.slice().sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||''))
+      .forEach(c => opts.push(buildOpt(c.nombre, c.nombre, _activa === c.nombre)));
+  }
   drop.innerHTML = opts.join('');
   // Escapar overflow:hidden del banner padre — mover al body con position:fixed (mismo patrón que toggleCajaMesDrop)
   document.body.appendChild(drop);
@@ -11642,7 +11663,8 @@ window._cajaOrigenClickOutside = function(e) {
 window.cajaSeleccionarOrigen = function(nombre) {
   window._cajaOrigenFiltro = nombre || '';
   const label = document.getElementById('cfil-origen-label');
-  if(label) label.textContent = nombre || 'Todas';
+  const labelText = !nombre ? 'Todas' : (nombre === '__sin_caja__' ? 'Solo dueño' : nombre);
+  if(label) label.textContent = labelText;
   const drop = document.getElementById('cfil-origen-drop');
   if(drop) drop.style.display = 'none';
   document.removeEventListener('click', window._cajaOrigenClickOutside);
