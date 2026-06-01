@@ -12155,13 +12155,35 @@ window.cajaRangoToggle = function(e) {
     window._cajaRangoCalMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
   }
   const btn = document.getElementById('caja-rango-btn');
-  const rect = btn.getBoundingClientRect();
-  document.body.appendChild(drop);
-  drop.style.position = 'fixed';
-  drop.style.top = (rect.bottom + 4) + 'px';
-  drop.style.left = rect.left + 'px';
-  drop.style.display = 'block';
-  drop.style.zIndex = '9999';
+  const isMobile = window.innerWidth <= 768;
+  if(isMobile) {
+    let backdrop = document.getElementById('caja-rango-backdrop');
+    if(!backdrop) {
+      backdrop = document.createElement('div');
+      backdrop.id = 'caja-rango-backdrop';
+      backdrop.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:9998;display:none;';
+      backdrop.onclick = cajaRangoCancelar;
+      document.body.appendChild(backdrop);
+    }
+    backdrop.style.display = 'block';
+    document.body.appendChild(drop);
+    drop.style.position = 'fixed';
+    drop.style.top = '50%';
+    drop.style.left = '50%';
+    drop.style.transform = 'translate(-50%, -50%)';
+    drop.style.display = 'block';
+    drop.style.zIndex = '9999';
+    drop.style.maxHeight = '90vh';
+    drop.style.overflowY = 'auto';
+  } else {
+    const rect = btn.getBoundingClientRect();
+    document.body.appendChild(drop);
+    drop.style.position = 'fixed';
+    drop.style.top = (rect.bottom + 4) + 'px';
+    drop.style.left = rect.left + 'px';
+    drop.style.display = 'block';
+    drop.style.zIndex = '9999';
+  }
   cajaRangoRenderCal();
   setTimeout(() => document.addEventListener('click', _cajaRangoClickOutside), 0);
 };
@@ -12276,7 +12298,14 @@ window.cajaRangoCancelar = function() { _cajaRangoCerrar(); };
 
 function _cajaRangoCerrar() {
   const drop = document.getElementById('caja-rango-drop');
-  if(drop) drop.style.display = 'none';
+  if(drop) {
+    drop.style.display = 'none';
+    drop.style.transform = '';
+    drop.style.maxHeight = '';
+    drop.style.overflowY = '';
+  }
+  const backdrop = document.getElementById('caja-rango-backdrop');
+  if(backdrop) backdrop.style.display = 'none';
   document.removeEventListener('click', _cajaRangoClickOutside);
 }
 
