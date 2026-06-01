@@ -2813,14 +2813,49 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 
   <!-- Barra de controles — una sola línea -->
   <div style="background:#fff;border-bottom:0.5px solid #e8e3de;padding:10px 28px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-    <!-- Selector de mes -->
+    <!-- Selector de rango con calendario (Fase 5.A PASO 4) -->
     <div style="position:relative;z-index:100;">
-      <button id="caja-mes-btn" onclick="toggleCajaMesDrop()" style="background:#f5f0eb;border:none;color:#555;border-radius:8px;padding:6px 12px;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;font-weight:500;">
-        <span id="caja-mes-label">—</span>
-        <svg width="8" height="5" viewBox="0 0 8 5" fill="none"><path d="M0 0l4 5 4-5z" fill="#888"/></svg>
+      <button id="caja-rango-btn" onclick="cajaRangoToggle(event)" style="background:#f5f0eb;border:none;color:#555;border-radius:8px;padding:6px 12px;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;font-weight:500;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span id="caja-rango-label">Filtrar por fecha</span>
+        <svg id="caja-rango-arrow" width="8" height="5" viewBox="0 0 8 5" fill="none"><path d="M0 0l4 5 4-5z" fill="#888"/></svg>
+        <svg id="caja-rango-x" onclick="cajaRangoLimpiarAplicado(event)" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2.5" stroke-linecap="round" style="display:none;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
-      <div id="caja-mes-drop" style="display:none;position:absolute;left:0;top:calc(100% + 4px);background:#fff;border:0.5px solid #e0dbd6;border-radius:8px;padding:4px;min-width:130px;box-shadow:0 4px 16px rgba(0,0,0,.1);z-index:9999;">
-        <div id="caja-mes-options"></div>
+      <div id="caja-rango-drop" style="display:none;background:#fff;border:0.5px solid #e0dbd6;border-radius:12px;padding:12px;width:290px;box-shadow:0 4px 20px rgba(0,0,0,.12);font-family:'DM Sans',sans-serif;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <button onclick="cajaRangoNavMes(-1)" style="border:none;background:transparent;cursor:pointer;color:#555;font-size:16px;padding:4px 8px;line-height:1;">‹</button>
+          <span id="caja-rango-mes-titulo" style="font-size:13px;font-weight:600;color:#1a1a1a;">—</span>
+          <button onclick="cajaRangoNavMes(1)" style="border:none;background:transparent;cursor:pointer;color:#555;font-size:16px;padding:4px 8px;line-height:1;">›</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:0;margin-bottom:6px;">
+          <div style="font-size:10px;color:#888;text-align:center;font-weight:600;">L</div>
+          <div style="font-size:10px;color:#888;text-align:center;font-weight:600;">M</div>
+          <div style="font-size:10px;color:#888;text-align:center;font-weight:600;">M</div>
+          <div style="font-size:10px;color:#888;text-align:center;font-weight:600;">J</div>
+          <div style="font-size:10px;color:#888;text-align:center;font-weight:600;">V</div>
+          <div style="font-size:10px;color:#888;text-align:center;font-weight:600;">S</div>
+          <div style="font-size:10px;color:#888;text-align:center;font-weight:600;">D</div>
+        </div>
+        <div id="caja-rango-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;"></div>
+        <div style="display:flex;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:0.5px solid #e0dbd6;font-size:11px;color:#555;">
+          <div>Desde: <span id="caja-rango-preview-desde" style="font-weight:600;color:#1a1a1a;">—</span></div>
+          <div>Hasta: <span id="caja-rango-preview-hasta" style="font-weight:600;color:#1a1a1a;">—</span></div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:6px;margin-top:8px;font-size:11px;color:#888;">
+          <span onclick="cajaRangoShortcut('hoy')" style="cursor:pointer;" onmouseover="this.style.color='#4a5e4d'" onmouseout="this.style.color='#888'">Hoy</span>
+          <span style="color:#ccc;">·</span>
+          <span onclick="cajaRangoShortcut('semana')" style="cursor:pointer;" onmouseover="this.style.color='#4a5e4d'" onmouseout="this.style.color='#888'">Esta semana</span>
+          <span style="color:#ccc;">·</span>
+          <span onclick="cajaRangoShortcut('mes')" style="cursor:pointer;" onmouseover="this.style.color='#4a5e4d'" onmouseout="this.style.color='#888'">Este mes</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:0.5px solid #e0dbd6;position:relative;">
+          <button id="caja-rango-limpiar-btn" onclick="cajaRangoLimpiarTemp()" style="border:none;background:transparent;color:#888;font-size:11px;cursor:pointer;padding:6px 0;font-family:'DM Sans',sans-serif;">Limpiar</button>
+          <div style="display:flex;gap:6px;">
+            <button onclick="cajaRangoCancelar()" style="border:0.5px solid #e0dbd6;background:#fff;color:#555;border-radius:6px;padding:6px 12px;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;">Cancelar</button>
+            <button onclick="cajaRangoAplicar()" style="border:none;background:#4a5e4d;color:#fff;border-radius:6px;padding:6px 14px;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;">Aplicar</button>
+          </div>
+          <div id="caja-rango-tooltip" style="display:none;position:absolute;bottom:calc(100% + 6px);right:0;background:#2d3d30;color:#fff;font-size:11px;padding:6px 10px;border-radius:6px;white-space:nowrap;pointer-events:none;">Rango máximo 31 días</div>
+        </div>
       </div>
     </div>
     <div style="width:0.5px;height:18px;background:#e0dbd6;margin:0 4px;"></div>
@@ -2845,14 +2880,6 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
     <div style="display:flex;align-items:center;gap:6px;flex:1;max-width:260px;">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       <input id="caja-filter-buscar" oninput="cajaFiltrar()" placeholder="Buscar concepto..." style="border:none;outline:none;font-size:12px;font-family:'DM Sans',sans-serif;color:#555;background:transparent;width:100%;"/>
-    </div>
-    <!-- Calendario -->
-    <div style="display:flex;align-items:center;gap:4px;margin-left:auto;flex-shrink:0;">
-      <input id="caja-filter-desde" type="date" onchange="cajaFiltrar()" style="position:absolute;opacity:0;width:0;height:0;"/>
-      <input id="caja-filter-hasta" type="date" onchange="cajaFiltrar()" style="position:absolute;opacity:0;width:0;height:0;"/>
-      <button onclick="document.getElementById('caja-filter-desde').showPicker?.()" style="width:30px;height:30px;border-radius:8px;border:0.5px solid #e0dbd6;background:#fff;cursor:pointer;color:#888;display:flex;align-items:center;justify-content:center;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      </button>
     </div>
   </div>
 
@@ -10937,20 +10964,9 @@ async function loadClientContabilidad() {
 }
 
 // ─── CAJA MODULE ───
-window._cajaMesOffset = 0;
-
-function cajaMesDesde(offset) {
-  const d = new Date();
-  d.setDate(1);
-  d.setMonth(d.getMonth() + offset);
-  const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-  const nombre = meses[d.getMonth()];
-  const anio = d.getFullYear();
-  return {
-    label: nombre.charAt(0).toUpperCase()+nombre.slice(1)+' '+anio,
-    stored: nombre.charAt(0).toUpperCase()+nombre.slice(1)+' de '+anio
-  };
-}
+// FASE 5.A PASO 4: rango de fechas (reemplaza el selector mensual)
+window._cajaRangoDesde = '';
+window._cajaRangoHasta = '';
 
 // Init lock por sesión — evita que llamadas concurrentes dupliquen escrituras
 let _cajaInitPromise = null;
@@ -11320,15 +11336,12 @@ async function loadCajaModule() {
   const tbody = document.getElementById('caja-tbody');
   if(tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:28px;color:#bbb;font-size:13px;">Cargando...</td></tr>';
 
-  initCajaMesDrop();
-
-  // Actualizar mes ANTES de cualquier await para que no quede "—"
-  const _offset = window._cajaMesOffset;
-  const mes = _offset === 'todo' ? { label: 'Todo el año ' + new Date().getFullYear(), stored: 'todo' } : cajaMesDesde(_offset ?? 0);
-  const mesLabel = document.getElementById('caja-mes-label');
-  if(mesLabel) mesLabel.textContent = mes.label;
-  const sigBtn = document.getElementById('caja-mes-sig');
-  if(sigBtn) sigBtn.style.opacity = (window._cajaMesOffset === 'todo' || (window._cajaMesOffset||0) >= 0) ? '.3' : '1';
+  // FASE 5.A PASO 4: reset del rango de fechas en cada entrada al módulo
+  if(window.currentRol !== 'cajero') {
+    window._cajaRangoDesde = '';
+    window._cajaRangoHasta = '';
+    if(typeof _cajaRangoActualizarChip === 'function') _cajaRangoActualizarChip();
+  }
 
   try {
     // 1. Init/dedup cuentas y conceptos (solo corre una vez por sesión)
@@ -11354,14 +11367,10 @@ async function loadCajaModule() {
     if(window.currentRol === 'cajero' && _turnoStart) {
       movsVista = todosMovs.filter(m => (m.creadoEn||'') >= _turnoStart);
     }
-    // Cajero: filtrado por mes (mantiene su vista del turno).
-    // Dueño: TODOS los movs del cliente sin filtros — FASE 5.A PASO 3.
-    // El filtrado de "solo dueño / por caja física" lo maneja el selector "Caja origen" (Fase 4.A).
-    let movs;
-    if(window.currentRol === 'cajero') {
-      movs = mes.stored === 'todo' ? movsVista : movsVista.filter(m => m.mes === mes.stored);
-    } else {
-      movs = movsVista;
+    // Cajero: solo movs del turno actual (ya filtrados por _turnoStart arriba).
+    // Dueño: TODOS los movs del cliente; filtros opcionales via Caja origen (Fase 4.A) y Rango fechas (Fase 5.A).
+    let movs = movsVista;
+    if(window.currentRol !== 'cajero') {
       window._cajaPaginaLimite = 15;
     }
     movs.sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')||((a.creadoEn||'').localeCompare(b.creadoEn||'')));
@@ -11620,6 +11629,13 @@ window._aplicarFiltrosCaja = function() {
   if(_cajaCuentaFiltro) {
     filtrados = filtrados.filter(m => m.cuenta === _cajaCuentaFiltro || m.cuentaDesde === _cajaCuentaFiltro || m.cuentaHacia === _cajaCuentaFiltro);
   }
+  // FASE 5.A PASO 4: filtro por rango de fechas
+  if(window._cajaRangoDesde && window._cajaRangoHasta) {
+    filtrados = filtrados.filter(m => {
+      const f = m.fecha || '';
+      return f >= window._cajaRangoDesde && f <= window._cajaRangoHasta;
+    });
+  }
   filtrados.sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')||((a.creadoEn||'').localeCompare(b.creadoEn||'')));
   // FASE 5.A PASO 3: paginación — tabla muestra los últimos N (más recientes en ASC)
   const limite = window._cajaPaginaLimite || 15;
@@ -11679,7 +11695,7 @@ window.cajaToggleOrigenDrop = function(e) {
       .forEach(c => opts.push(buildOpt(c.nombre, c.nombre, _activa === c.nombre)));
   }
   drop.innerHTML = opts.join('');
-  // Escapar overflow:hidden del banner padre — mover al body con position:fixed (mismo patrón que toggleCajaMesDrop)
+  // Escapar overflow:hidden del banner padre — mover al body con position:fixed (mismo patrón que cajaRangoToggle)
   document.body.appendChild(drop);
   const rect = btn.getBoundingClientRect();
   drop.style.position = 'fixed';
@@ -12056,14 +12072,8 @@ window.emitirFacturaCaja = async function() {
   }
 }
 
-// FASE 5.A PASO 3: navegación por mes neutralizada (reemplazada por selector de rango en PASO 4)
-window.cajaMesAnterior = function() { return; };
-window.cajaMesSiguiente = function() { return; };
-
 window._cajaFilTipo = 'todos';
 window._cajaFilBuscar = '';
-window._cajaFilDesde = '';
-window._cajaFilHasta = '';
 
 window.cajaFiltrarTipo = function(tipo) {
   window._cajaFilTipo = tipo;
@@ -12078,25 +12088,78 @@ window.cajaFiltrarTipo = function(tipo) {
 
 window.cajaFiltrar = function() {
   window._cajaFilBuscar = (document.getElementById('caja-filter-buscar')?.value||'').toLowerCase();
-  window._cajaFilDesde = document.getElementById('caja-filter-desde')?.value||'';
-  window._cajaFilHasta = document.getElementById('caja-filter-hasta')?.value||'';
   const rows = document.querySelectorAll('#caja-tbody tr[data-tipo]');
   rows.forEach(row => {
     const tipo = row.dataset.tipo||'';
     const concepto = (row.dataset.concepto||'').toLowerCase();
-    const fecha = row.dataset.fecha||'';
     const matchTipo = window._cajaFilTipo==='todos' || tipo===window._cajaFilTipo;
     const matchBuscar = !window._cajaFilBuscar || concepto.includes(window._cajaFilBuscar);
-    const matchDesde = !window._cajaFilDesde || fecha >= window._cajaFilDesde;
-    const matchHasta = !window._cajaFilHasta || fecha <= window._cajaFilHasta;
-    row.style.display = (matchTipo && matchBuscar && matchDesde && matchHasta) ? '' : 'none';
+    row.style.display = (matchTipo && matchBuscar) ? '' : 'none';
   });
 };
 
-window.toggleCajaMesDrop = function() {
-  const btn = document.getElementById('caja-mes-btn');
-  let drop = document.getElementById('caja-mes-drop');
-  if(drop.style.display !== 'none') { drop.style.display = 'none'; return; }
+// ─── FASE 5.A PASO 4: SELECTOR DE RANGO CON CALENDARIO CUSTOM ───
+window._cajaRangoTempDesde = '';
+window._cajaRangoTempHasta = '';
+window._cajaRangoCalMes = null;
+
+function _cajaIsoLocal(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${dd}`;
+}
+function _cajaParseIso(iso) {
+  if(!iso) return null;
+  const [y,m,d] = iso.split('-').map(Number);
+  return new Date(y, m-1, d);
+}
+function _cajaFmtDia(iso, withYear) {
+  if(!iso) return '';
+  const [y,m,d] = iso.split('-');
+  return withYear ? `${d}/${m}/${y.slice(-2)}` : `${d}/${m}`;
+}
+
+window.cajaRangoFormatLabel = function() {
+  const d = window._cajaRangoDesde, h = window._cajaRangoHasta;
+  if(!d || !h) return '';
+  if(d === h) return _cajaFmtDia(d, false);
+  const sameYear = d.slice(0,4) === h.slice(0,4);
+  return sameYear
+    ? `Del ${_cajaFmtDia(d, false)} al ${_cajaFmtDia(h, false)}`
+    : `Del ${_cajaFmtDia(d, true)} al ${_cajaFmtDia(h, true)}`;
+};
+
+window._cajaRangoActualizarChip = function() {
+  const label = document.getElementById('caja-rango-label');
+  const x = document.getElementById('caja-rango-x');
+  const arrow = document.getElementById('caja-rango-arrow');
+  if(window._cajaRangoDesde && window._cajaRangoHasta) {
+    if(label) label.textContent = cajaRangoFormatLabel();
+    if(x) x.style.display = '';
+    if(arrow) arrow.style.display = 'none';
+  } else {
+    if(label) label.textContent = 'Filtrar por fecha';
+    if(x) x.style.display = 'none';
+    if(arrow) arrow.style.display = '';
+  }
+};
+
+window.cajaRangoToggle = function(e) {
+  if(e) e.stopPropagation();
+  const drop = document.getElementById('caja-rango-drop');
+  if(!drop) return;
+  if(drop.style.display === 'block') { cajaRangoCancelar(); return; }
+  window._cajaRangoTempDesde = window._cajaRangoDesde;
+  window._cajaRangoTempHasta = window._cajaRangoHasta;
+  if(window._cajaRangoDesde) {
+    const d = _cajaParseIso(window._cajaRangoDesde);
+    window._cajaRangoCalMes = new Date(d.getFullYear(), d.getMonth(), 1);
+  } else {
+    const hoy = new Date();
+    window._cajaRangoCalMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+  }
+  const btn = document.getElementById('caja-rango-btn');
   const rect = btn.getBoundingClientRect();
   document.body.appendChild(drop);
   drop.style.position = 'fixed';
@@ -12104,31 +12167,159 @@ window.toggleCajaMesDrop = function() {
   drop.style.left = rect.left + 'px';
   drop.style.display = 'block';
   drop.style.zIndex = '9999';
+  cajaRangoRenderCal();
+  setTimeout(() => document.addEventListener('click', _cajaRangoClickOutside), 0);
 };
 
-// FASE 5.A PASO 3: selector de mes neutralizado (reemplazado por selector de rango en PASO 4)
-window.selectCajaMes = function(offset) {
-  const drop = document.getElementById('caja-mes-drop');
-  if(drop) drop.style.display = 'none';
+window._cajaRangoClickOutside = function(e) {
+  const drop = document.getElementById('caja-rango-drop');
+  const btn = document.getElementById('caja-rango-btn');
+  if(!drop || !btn) return;
+  if(drop.contains(e.target) || btn.contains(e.target)) return;
+  cajaRangoCancelar();
 };
 
-window.initCajaMesDrop = function() {
-  const container = document.getElementById('caja-mes-options');
-  if(!container) return;
-  const hoy = new Date();
-  const anio = hoy.getFullYear();
+window.cajaRangoNavMes = function(delta) {
+  if(!window._cajaRangoCalMes) return;
+  const d = window._cajaRangoCalMes;
+  window._cajaRangoCalMes = new Date(d.getFullYear(), d.getMonth() + delta, 1);
+  cajaRangoRenderCal();
+};
+
+function _cajaRangoMostrarTooltip() {
+  const tooltip = document.getElementById('caja-rango-tooltip');
+  if(!tooltip) return;
+  tooltip.style.display = 'block';
+  clearTimeout(window._cajaRangoTipTimer);
+  window._cajaRangoTipTimer = setTimeout(() => { tooltip.style.display = 'none'; }, 2000);
+}
+
+window.cajaRangoClickDia = function(iso) {
+  const clicked = _cajaParseIso(iso);
+  const cal = window._cajaRangoCalMes;
+  if(clicked.getMonth() !== cal.getMonth() || clicked.getFullYear() !== cal.getFullYear()) {
+    window._cajaRangoCalMes = new Date(clicked.getFullYear(), clicked.getMonth(), 1);
+  }
+  const td = window._cajaRangoTempDesde;
+  const th = window._cajaRangoTempHasta;
+  if(!td || (td && th)) {
+    window._cajaRangoTempDesde = iso;
+    window._cajaRangoTempHasta = '';
+  } else if(!th) {
+    if(iso < td) {
+      window._cajaRangoTempDesde = iso;
+      window._cajaRangoTempHasta = '';
+    } else {
+      const desde = _cajaParseIso(td);
+      const hasta = _cajaParseIso(iso);
+      const diff = Math.round((hasta - desde) / 86400000) + 1;
+      if(diff > 31) { _cajaRangoMostrarTooltip(); return; }
+      window._cajaRangoTempHasta = iso;
+    }
+  }
+  cajaRangoRenderCal();
+};
+
+window.cajaRangoRenderCal = function() {
+  const cal = window._cajaRangoCalMes;
+  if(!cal) return;
   const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-  const opts = [
-    { label: 'Todo el año', offset: 'todo' },
-    ...MESES.map((m, i) => ({ label: `${m} ${anio}`, offset: i - hoy.getMonth() }))
-  ];
-  container.innerHTML = opts.map(o => `
-    <div onclick="selectCajaMes(${typeof o.offset === 'string' ? `'${o.offset}'` : o.offset})" style="padding:7px 12px;font-size:11px;color:#1a1a1a;cursor:pointer;border-radius:5px;font-family:'DM Sans',sans-serif;"
-    onmouseover="this.style.background='rgba(168,212,172,.1)'" onmouseout="this.style.background=''">${o.label}</div>
-  `).join('');
-  const mesActual = `${MESES[hoy.getMonth()]} ${anio}`;
-  const labelEl = document.getElementById('caja-mes-label');
-  if(labelEl) labelEl.textContent = mesActual;
+  const titulo = document.getElementById('caja-rango-mes-titulo');
+  if(titulo) titulo.textContent = `${MESES[cal.getMonth()]} ${cal.getFullYear()}`;
+  const firstDay = new Date(cal.getFullYear(), cal.getMonth(), 1);
+  let dowFirst = (firstDay.getDay() + 6) % 7;
+  const startDate = new Date(firstDay);
+  startDate.setDate(1 - dowFirst);
+  const td = window._cajaRangoTempDesde;
+  const th = window._cajaRangoTempHasta;
+  const today = _cajaIsoLocal(new Date());
+  let html = '';
+  for(let i=0; i<42; i++) {
+    const d = new Date(startDate);
+    d.setDate(startDate.getDate() + i);
+    const iso = _cajaIsoLocal(d);
+    const isOutside = d.getMonth() !== cal.getMonth();
+    const isToday = iso === today;
+    const isDesde = iso === td;
+    const isHasta = iso === th;
+    const inRange = td && th && iso > td && iso < th;
+    let bg = 'transparent', color = isOutside ? '#ccc' : '#1a1a1a', radius = '50%', border = 'none', weight = '400';
+    if(isDesde || isHasta) { bg = '#4a5e4d'; color = '#fff'; weight = '600'; }
+    else if(inRange) { bg = '#e8ede8'; radius = '0'; }
+    if(isToday && !isDesde && !isHasta) border = '0.5px solid #4a5e4d';
+    html += `<div onclick="cajaRangoClickDia('${iso}')" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;border-radius:${radius};background:${bg};color:${color};border:${border};font-weight:${weight};font-family:'DM Sans',sans-serif;margin:0 auto;">${d.getDate()}</div>`;
+  }
+  const grid = document.getElementById('caja-rango-grid');
+  if(grid) grid.innerHTML = html;
+  const prevDesde = document.getElementById('caja-rango-preview-desde');
+  const prevHasta = document.getElementById('caja-rango-preview-hasta');
+  if(prevDesde) prevDesde.textContent = td ? _cajaFmtDia(td, false) : '—';
+  if(prevHasta) prevHasta.textContent = th ? _cajaFmtDia(th, false) : '—';
+  const limpiarBtn = document.getElementById('caja-rango-limpiar-btn');
+  if(limpiarBtn) {
+    if(td || th) { limpiarBtn.style.opacity = '1'; limpiarBtn.style.pointerEvents = ''; }
+    else { limpiarBtn.style.opacity = '.3'; limpiarBtn.style.pointerEvents = 'none'; }
+  }
+};
+
+window.cajaRangoAplicar = function() {
+  const td = window._cajaRangoTempDesde;
+  const th = window._cajaRangoTempHasta;
+  if(td && !th) {
+    window._cajaRangoTempHasta = td;
+  }
+  window._cajaRangoDesde = window._cajaRangoTempDesde;
+  window._cajaRangoHasta = window._cajaRangoTempHasta;
+  window._cajaPaginaLimite = 15;
+  _cajaRangoCerrar();
+  _cajaRangoActualizarChip();
+  _aplicarFiltrosCaja();
+};
+
+window.cajaRangoCancelar = function() { _cajaRangoCerrar(); };
+
+function _cajaRangoCerrar() {
+  const drop = document.getElementById('caja-rango-drop');
+  if(drop) drop.style.display = 'none';
+  document.removeEventListener('click', _cajaRangoClickOutside);
+}
+
+window.cajaRangoLimpiarTemp = function() {
+  window._cajaRangoTempDesde = '';
+  window._cajaRangoTempHasta = '';
+  cajaRangoRenderCal();
+};
+
+window.cajaRangoLimpiarAplicado = function(e) {
+  if(e) e.stopPropagation();
+  window._cajaRangoDesde = '';
+  window._cajaRangoHasta = '';
+  window._cajaPaginaLimite = 15;
+  _cajaRangoActualizarChip();
+  _aplicarFiltrosCaja();
+};
+
+window.cajaRangoShortcut = function(tipo) {
+  const hoy = new Date();
+  const hoyIso = _cajaIsoLocal(hoy);
+  if(tipo === 'hoy') {
+    window._cajaRangoTempDesde = hoyIso;
+    window._cajaRangoTempHasta = hoyIso;
+    window._cajaRangoCalMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+  } else if(tipo === 'semana') {
+    const dow = (hoy.getDay() + 6) % 7;
+    const lunes = new Date(hoy);
+    lunes.setDate(hoy.getDate() - dow);
+    window._cajaRangoTempDesde = _cajaIsoLocal(lunes);
+    window._cajaRangoTempHasta = hoyIso;
+    window._cajaRangoCalMes = new Date(lunes.getFullYear(), lunes.getMonth(), 1);
+  } else if(tipo === 'mes') {
+    const dia1 = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+    window._cajaRangoTempDesde = _cajaIsoLocal(dia1);
+    window._cajaRangoTempHasta = hoyIso;
+    window._cajaRangoCalMes = dia1;
+  }
+  cajaRangoRenderCal();
 };
 // ─── MODAL DETALLE MOVIMIENTO ───
 let _mdvMovimiento = null, _mdvEditing = false, _mdvOverlayCuentas = [], _mdvOverlayConceptos = [];
@@ -12497,7 +12688,7 @@ window.exportarCajaExcel = async function() {
       document.head.appendChild(s);
     });
   }
-  const periodo = document.getElementById('caja-mes-label')?.textContent || '';
+  const periodo = (window._cajaRangoDesde && window._cajaRangoHasta) ? cajaRangoFormatLabel() : 'Todos los movimientos';
   const nombreNegocio = document.getElementById('negocio-nombre-display')?.textContent || 'Mi negocio';
   const wb = new ExcelJS.Workbook();
   wb.creator = 'MB Strategy'; wb.created = new Date();
@@ -12550,7 +12741,7 @@ window.exportarCajaExcel = async function() {
 window.exportarCajaCsv = function() {
   const movs = window._cajaMovimientos || [];
   if (!movs.length) return showToast('Sin movimientos en el período', 'info');
-  const periodo = document.getElementById('caja-mes-label')?.textContent || '';
+  const periodo = (window._cajaRangoDesde && window._cajaRangoHasta) ? cajaRangoFormatLabel() : 'Todos los movimientos';
   const headers = ['Fecha','Tipo','Concepto','Cuenta','Monto'];
   const rows = movs.map(m=>[
     m.fecha||'',
