@@ -11300,11 +11300,14 @@ window.renderCajaCuentasCards = function(cuentas, movs, saldos, cuentaActiva) {
   const dotColors = {'Caja general':'#7dd98a','Efectivo':'#7dd98a','Mercado Pago':'#5bb8f5','Banco':'#e8c584'};
   const getColor = nombre => dotColors[nombre] || '#b09088';
   const labelUI = nombre => nombre === 'Caja general' ? 'Efectivo' : nombre;
+  const _labelKpi = (window._cajaRangoDesde && window._cajaRangoHasta)
+    ? `del rango ${_cajaFmtDia(window._cajaRangoDesde, false)} - ${_cajaFmtDia(window._cajaRangoHasta, false)}`
+    : 'saldo actual';
 
   const todasCard = `<div onclick="cajaFiltrarCuenta(null,this)" data-cuenta="" style="padding:14px 18px;background:${cuentaActiva===null?'rgba(255,255,255,.13)':'rgba(255,255,255,.06)'};cursor:pointer;border-radius:12px;border-bottom:2px solid ${cuentaActiva===null?'#b09088':'transparent'};transition:all .2s;">
     <div style="font-size:9px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;display:flex;align-items:center;gap:5px;"><span style="width:6px;height:6px;border-radius:50%;background:#7dd98a;display:inline-block;"></span>Todas</div>
     <div style="font-size:18px;font-weight:700;color:#f5f0eb;font-family:'DM Sans',sans-serif;line-height:1;">${fmt(totalSaldo)}</div>
-    <div style="font-size:10px;color:rgba(255,255,255,.25);margin-top:3px;">resultado del mes</div>
+    <div style="font-size:10px;color:rgba(255,255,255,.25);margin-top:3px;">${_labelKpi}</div>
     <div style="height:2px;border-radius:2px;margin-top:10px;background:rgba(255,255,255,.08);"><div style="background:#7dd98a;width:100%;height:100%;border-radius:2px;"></div></div>
   </div>`;
 
