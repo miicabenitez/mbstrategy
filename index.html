@@ -2860,6 +2860,14 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
   <div id="caja-chips" style="display:none;"></div>
   </div>
 
+  <!-- Botón "Cargar más antiguos" (Fase 5.A PASO 3) -->
+  <div id="caja-cargar-mas-wrap" style="display:none;margin-bottom:8px;text-align:left;">
+    <button id="caja-cargar-mas-btn" onclick="cajaCargarMasAntiguos()" style="display:inline-flex;align-items:center;gap:6px;background:#f5f0eb;border:0.5px solid #e0dbd6;color:#555;border-radius:8px;padding:8px 14px;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;font-weight:500;transition:background .15s;" onmouseover="this.style.background='#ebe5dd'" onmouseout="this.style.background='#f5f0eb'">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+      <span id="caja-cargar-mas-label">Cargar 15 más antiguos</span>
+    </button>
+  </div>
+
   <!-- Tabla -->
   <div id="caja-table-card" style="background:white;border-radius:16px;overflow:hidden;">
     <div style="overflow-x:auto;">
@@ -11346,8 +11354,16 @@ async function loadCajaModule() {
     if(window.currentRol === 'cajero' && _turnoStart) {
       movsVista = todosMovs.filter(m => (m.creadoEn||'') >= _turnoStart);
     }
-    // Filtrar por mes para tabla y KPIs
-    let movs = mes.stored === 'todo' ? movsVista : movsVista.filter(m => m.mes === mes.stored);
+    // Cajero: filtrado por mes (mantiene su vista del turno).
+    // Dueño: TODOS los movs del cliente sin filtros — FASE 5.A PASO 3.
+    // El filtrado de "solo dueño / por caja física" lo maneja el selector "Caja origen" (Fase 4.A).
+    let movs;
+    if(window.currentRol === 'cajero') {
+      movs = mes.stored === 'todo' ? movsVista : movsVista.filter(m => m.mes === mes.stored);
+    } else {
+      movs = movsVista;
+      window._cajaPaginaLimite = 15;
+    }
     movs.sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')||((a.creadoEn||'').localeCompare(b.creadoEn||'')));
     window._cajaMovimientos = movs;
     if(window.currentRol === 'cajero') {
@@ -11388,14 +11404,8 @@ async function loadCajaModule() {
         window._equipoCajas = _cajasArr;
       } catch(_ce) { console.error('loadCajaModule cajas fetch:', _ce); }
     }
-    // 4. Renderizar
-    movs = movs.filter(m =>
-      (m.cuenta||'').toLowerCase() !== 'caja mostrador' &&
-      !((m.cuenta||'').toLowerCase() === 'efectivo' && ['venta_caja','apertura_turno','cierre_turno','pedido_cta'].includes(m.origen)) ||
-      m.origen === 'retiro_cajero_cierre'
-    );
-    renderCajaKPIs(movs);
-    renderCajaChips(cuentasUnicas, todosMovs);
+    // FASE 5.A PASO 3: el filtro de dueño-view ya está bakeado en _cajaMovimientos.
+    // Cargar facturas y construir map para badges
     const facturasSnap = await getDocs(collection(db, 'clientes', uid, 'facturas'));
     const facturadosMap = new Map();
     facturasSnap.forEach(d => {
@@ -11404,17 +11414,14 @@ async function loadCajaModule() {
       if(fd.ticketNum) facturadosMap.set(fd.ticketNum, {nroComprobante: fd.nroComprobante, puntoVenta: fd.puntoVenta});
     });
     window._facturadosMap = facturadosMap;
-    renderCajaTable(movs, facturadosMap);
     // FASE 4.A — Mostrar selector caja origen solo para dueño/admin
     const _origenWrap = document.getElementById('caja-filter-origen-wrap');
     const _origenSep = document.getElementById('caja-filter-origen-sep');
     const _showOrigen = window.currentRol !== 'cajero';
     if(_origenWrap) _origenWrap.style.display = _showOrigen ? 'inline-block' : 'none';
     if(_origenSep) _origenSep.style.display = _showOrigen ? 'inline-block' : 'none';
-    // Si hay filtros activos (caja origen o cuenta), re-aplicar tras re-fetch
-    if(window._cajaOrigenFiltro || _cajaCuentaFiltro) {
-      _aplicarFiltrosCaja();
-    }
+    // Render unificado: aplica filtros + paginación + KPIs + chips + tabla + botón "Cargar más"
+    _aplicarFiltrosCaja();
     // Animación staggered de cards
     document.querySelectorAll('#ct-contabilidad .dash-card').forEach((c,i) => {
       c.classList.remove('in');
@@ -11553,6 +11560,7 @@ async function preloadCajaSaldo(uid) {
 
 window.cajaFiltrarCuenta = function(nombre, _el) {
   _cajaCuentaFiltro = (_cajaCuentaFiltro === nombre) ? null : nombre;
+  window._cajaPaginaLimite = 15;
   // Re-render chips según cuenta seleccionada
   const cuentasContainer = document.getElementById('caja-chips');
   if(cuentasContainer) {
@@ -11613,12 +11621,34 @@ window._aplicarFiltrosCaja = function() {
     filtrados = filtrados.filter(m => m.cuenta === _cajaCuentaFiltro || m.cuentaDesde === _cajaCuentaFiltro || m.cuentaHacia === _cajaCuentaFiltro);
   }
   filtrados.sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')||((a.creadoEn||'').localeCompare(b.creadoEn||'')));
+  // FASE 5.A PASO 3: paginación — tabla muestra los últimos N (más recientes en ASC)
+  const limite = window._cajaPaginaLimite || 15;
+  const paginados = filtrados.length > limite ? filtrados.slice(-limite) : filtrados;
   renderCajaKPIs(filtrados);
-  renderCajaTable(filtrados);
-  // Re-render KPI cards (TODAS/EFECTIVO/MP/BANCO) con los movs filtrados
+  renderCajaTable(paginados);
+  // Re-render KPI cards (TODAS/EFECTIVO/MP/BANCO) con los movs filtrados (no paginados)
   if(window._cajaCuentasUnicas) {
     renderCajaChips(window._cajaCuentasUnicas, filtrados);
   }
+  // Visibilidad y label del botón "Cargar más antiguos"
+  const cargarMasWrap = document.getElementById('caja-cargar-mas-wrap');
+  const cargarMasLabel = document.getElementById('caja-cargar-mas-label');
+  const restantes = filtrados.length - limite;
+  if(cargarMasWrap && cargarMasLabel) {
+    if(restantes > 0 && window.currentRol !== 'cajero') {
+      cargarMasLabel.textContent = restantes > 15
+        ? `Cargar 15 más antiguos (faltan ${restantes})`
+        : `Cargar ${restantes} más antiguos`;
+      cargarMasWrap.style.display = '';
+    } else {
+      cargarMasWrap.style.display = 'none';
+    }
+  }
+};
+
+window.cajaCargarMasAntiguos = function() {
+  window._cajaPaginaLimite = (window._cajaPaginaLimite || 15) + 15;
+  _aplicarFiltrosCaja();
 };
 
 window.cajaToggleOrigenDrop = function(e) {
@@ -11674,6 +11704,7 @@ window._cajaOrigenClickOutside = function(e) {
 
 window.cajaSeleccionarOrigen = function(nombre) {
   window._cajaOrigenFiltro = nombre || '';
+  window._cajaPaginaLimite = 15;
   const label = document.getElementById('cfil-origen-label');
   const labelText = !nombre ? 'Todas' : (nombre === '__sin_caja__' ? 'Solo dueño' : nombre);
   if(label) label.textContent = labelText;
@@ -12025,19 +12056,9 @@ window.emitirFacturaCaja = async function() {
   }
 }
 
-window.cajaMesAnterior = function() {
-  _cajaCuentaFiltro = null;
-  const _cur = window._cajaMesOffset === 'todo' ? 0 : (window._cajaMesOffset||0);
-  window._cajaMesOffset = _cur - 1;
-  loadCajaModule();
-};
-window.cajaMesSiguiente = function() {
-  const _cur = window._cajaMesOffset === 'todo' ? 0 : (window._cajaMesOffset||0);
-  if(_cur >= 0) return;
-  _cajaCuentaFiltro = null;
-  window._cajaMesOffset = _cur + 1;
-  loadCajaModule();
-};
+// FASE 5.A PASO 3: navegación por mes neutralizada (reemplazada por selector de rango en PASO 4)
+window.cajaMesAnterior = function() { return; };
+window.cajaMesSiguiente = function() { return; };
 
 window._cajaFilTipo = 'todos';
 window._cajaFilBuscar = '';
@@ -12085,10 +12106,10 @@ window.toggleCajaMesDrop = function() {
   drop.style.zIndex = '9999';
 };
 
+// FASE 5.A PASO 3: selector de mes neutralizado (reemplazado por selector de rango en PASO 4)
 window.selectCajaMes = function(offset) {
-  window._cajaMesOffset = offset;
-  document.getElementById('caja-mes-drop').style.display = 'none';
-  loadCajaModule();
+  const drop = document.getElementById('caja-mes-drop');
+  if(drop) drop.style.display = 'none';
 };
 
 window.initCajaMesDrop = function() {
