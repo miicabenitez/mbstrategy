@@ -11010,9 +11010,10 @@ window.loadAuditoriaCajero = async function() {
   const uid = currentClientUID;
   if(!uid) return;
   try {
+    // FASE 6 COMMIT 3: removido filtro hardcoded de cuenta. Trae todos los movs del cliente.
+    // El filtrado por caja se aplica en memoria en _auditoriaRender (por cajaId/cajaOrigenId).
     const snap = await getDocs(query(
       collection(db,'clientes',uid,'libroCaja'),
-      where('cuenta','==', window._cajaActivaNombre || 'Caja mostrador'),
       where('eliminado','==',false),
       orderBy('creadoEn','desc'),
       limit(500)
@@ -11056,7 +11057,7 @@ window._auditoriaActivarEncurso = async function() {
     const _tIdsSet = new Set(tIds);
     const _aperturaTs = new Set(tDocs.map(d => d.apertura?.creadoEn).filter(Boolean));
     window._auditoriaUnsub = onSnapshot(
-      query(collection(db,'clientes',uid,'libroCaja'), where('cuenta','==', window._cajaActivaNombre || 'Caja mostrador'), where('eliminado','==',false), orderBy('creadoEn','desc'), limit(500)),
+      query(collection(db,'clientes',uid,'libroCaja'), where('eliminado','==',false), orderBy('creadoEn','desc'), limit(500)),
       snap => {
         window._auditoriaMovsEncurso = snap.docs.map(d=>({id:d.id,...d.data()})).filter(m => _tIdsSet.has(m.turnoId) || (m.origen === 'apertura_turno' && _aperturaTs.has(m.creadoEn)));
         if(window._auditoriaFiltro === 'encurso') _auditoriaRender();
@@ -11091,6 +11092,21 @@ window._auditoriaRender = function() {
   }
   if(window._auditoriaTipos.size > 0) movs = movs.filter(m => window._auditoriaTipos.has(m.origen));
   if(window._auditoriaCajero) movs = movs.filter(m => m.creadoPor === window._auditoriaCajero);
+
+  // FASE 6 COMMIT 3: filtro por caja física.
+  // Auditoría solo muestra movs de cajas físicas (con cajaId/cajaOrigenId).
+  // Fallback legacy: movs pre-Fase 3 sin cajaId se rescatan si m.cuenta matchea el nombre de una caja física.
+  const _cajasNombres = new Set((window._equipoCajas||[]).map(c => c.nombre).filter(Boolean));
+  movs = movs.filter(m => m.cajaId || m.cajaOrigenId || (m.cuenta && _cajasNombres.has(m.cuenta)));
+  if(window._auditoriaCajaFiltro) {
+    const _cajaSel = (window._equipoCajas||[]).find(c => c.id === window._auditoriaCajaFiltro);
+    const _cajaNombre = _cajaSel?.nombre || '';
+    movs = movs.filter(m =>
+      m.cajaId === window._auditoriaCajaFiltro ||
+      m.cajaOrigenId === window._auditoriaCajaFiltro ||
+      (!m.cajaId && !m.cajaOrigenId && m.cuenta === _cajaNombre)
+    );
+  }
 
   // Totales por medio — calculados sobre el período completo, antes del filtro de medio
   const medios = {Efectivo:0,'Mercado Pago':0,Transferencia:0,Tarjeta:0};
@@ -11333,15 +11349,8 @@ window.audSeleccionarCaja = function(cajaId) {
   const backdrop = document.getElementById('aud-caja-backdrop');
   if(drop) drop.style.display = 'none';
   if(backdrop) backdrop.style.display = 'none';
-  const label = document.getElementById('aud-caja-label');
-  if(label) {
-    if(!cajaId) label.textContent = 'Todas';
-    else {
-      const caja = (window._equipoCajas||[]).find(c => c.id === cajaId);
-      label.textContent = caja?.nombre || 'Caja';
-    }
-  }
-  // POR AHORA (COMMIT 2): solo actualizar UI. La lógica de filtrado real va en COMMIT 3.
+  // FASE 6 COMMIT 3: re-render para aplicar filtro (label, header y movs se actualizan en _auditoriaRender)
+  _auditoriaRender();
 };
 
 window.toggleCajaPlus = function(e) {
