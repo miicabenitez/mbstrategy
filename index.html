@@ -12194,7 +12194,8 @@ function _cajaRangoMostrarTooltip() {
   window._cajaRangoTipTimer = setTimeout(() => { tooltip.style.display = 'none'; }, 2000);
 }
 
-window.cajaRangoClickDia = function(iso) {
+window.cajaRangoClickDia = function(iso, e) {
+  if(e) e.stopPropagation();
   const clicked = _cajaParseIso(iso);
   const cal = window._cajaRangoCalMes;
   if(clicked.getMonth() !== cal.getMonth() || clicked.getFullYear() !== cal.getFullYear()) {
@@ -12247,7 +12248,7 @@ window.cajaRangoRenderCal = function() {
     if(isDesde || isHasta) { bg = '#4a5e4d'; color = '#fff'; weight = '600'; }
     else if(inRange) { bg = '#e8ede8'; radius = '0'; }
     if(isToday && !isDesde && !isHasta) border = '0.5px solid #4a5e4d';
-    html += `<div onclick="cajaRangoClickDia('${iso}')" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;border-radius:${radius};background:${bg};color:${color};border:${border};font-weight:${weight};font-family:'DM Sans',sans-serif;margin:0 auto;">${d.getDate()}</div>`;
+    html += `<div onclick="cajaRangoClickDia('${iso}', event)" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;border-radius:${radius};background:${bg};color:${color};border:${border};font-weight:${weight};font-family:'DM Sans',sans-serif;margin:0 auto;">${d.getDate()}</div>`;
   }
   const grid = document.getElementById('caja-rango-grid');
   if(grid) grid.innerHTML = html;
