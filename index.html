@@ -11851,7 +11851,7 @@ function renderCajaTable(movs, facturadosMap = window._facturadosMap || new Map(
       ? facInfo
         ? `<div style="width:28px;height:28px;border-radius:7px;border:.5px solid #4a5e4d;display:flex;align-items:center;justify-content:center;color:#4a5e4d;background:#e8ede8;cursor:default;flex-shrink:0;" onclick="event.stopPropagation();showToast('Factura ya generada · N° ${facNro}','info')" title="Factura ya emitida"><svg width="13" height="13" viewBox="0 0 15 15" fill="none"><path d="M3 8l3.5 3.5L12 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`
         : `<div style="width:28px;height:28px;border-radius:7px;border:.5px solid rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;color:#9ca3af;cursor:pointer;transition:all .15s;flex-shrink:0;" onclick="event.stopPropagation();abrirModalFacturaCaja('${m.id}')" title="Emitir factura"><svg width="13" height="13" viewBox="0 0 15 15" fill="none"><rect x="2.5" y="1.5" width="10" height="12" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M5 5h5M5 7.5h5M5 10h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></div>`
-      : '';
+      : `<div style="width:28px;height:28px;flex-shrink:0;"></div>`;
     const isMobile = window.innerWidth <= 768;
     if (isMobile) {
       return `<div data-tipo="${m.tipo||''}" data-concepto="${(m.concepto||'').toLowerCase()}" data-fecha="${m.fecha||''}" onclick="cajaMostrarMovimiento('${m.id||m.docId||''}')" style="display:flex;flex-wrap:nowrap;align-items:center;background:#fff;border-bottom:0.5px solid #f0eae3;padding:14px 16px;cursor:pointer;gap:10px;opacity:0;animation:fadeUp .3s ease both;animation-delay:${80+i*50}ms;">
