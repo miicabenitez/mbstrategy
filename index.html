@@ -11593,8 +11593,19 @@ window._aplicarFiltrosCaja = function() {
   const movs = window._cajaMovimientos || [];
   let filtrados = [...movs];
   if(window._cajaOrigenFiltro === '__sin_caja__') {
-    const _origenesCajero = ['venta_caja_espejo', 'devolucion_caja_espejo', 'retiro_cajero_cierre'];
-    filtrados = filtrados.filter(m => !_origenesCajero.includes(m.origen));
+    const _origenesCajero = [
+      'apertura_turno',
+      'cierre_turno',
+      'venta_caja_espejo',
+      'devolucion_caja_espejo',
+      'devolucion_caja',
+      'retiro_cajero',
+      'retiro_cajero_cierre',
+      'egreso_cajero',
+      'deposito_cajero',
+      'caja_cajero'
+    ];
+    filtrados = filtrados.filter(m => !m.turnoId && !_origenesCajero.includes(m.origen));
   } else if(window._cajaOrigenFiltro) {
     filtrados = filtrados.filter(m => m.cajaOrigenNombre === window._cajaOrigenFiltro);
   }
