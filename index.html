@@ -11819,7 +11819,16 @@ function renderCajaTable(movs, facturadosMap = window._facturadosMap || new Map(
     const cuentaLabel = m.tipo==='transfer'
       ? `${_aliasEfectivo(m.cuentaDesde||'?')} → ${_aliasEfectivo(m.cuentaHacia||'?')}`
       : m.tipo==='transferencia' ? (m.cuentaOrigen||'—') : (_aliasEfectivo(m.cuenta||'—'));
-    const noFacturable = ['apertura de caja','retiro de socio'].includes((m.concepto||'').toLowerCase()) || m.origen === 'cierre';
+    const _conceptoLow = (m.concepto||'').toLowerCase();
+    const noFacturable =
+      _conceptoLow.includes('apertura') ||
+      _conceptoLow.includes('cierre') ||
+      _conceptoLow.includes('retiro') ||
+      m.origen === 'cierre' ||
+      m.origen === 'apertura_turno' ||
+      m.origen === 'cierre_turno' ||
+      m.origen === 'retiro_cajero' ||
+      m.origen === 'retiro_cajero_cierre';
     const facInfo = facturadosMap.get(m.id) || facturadosMap.get(m.ticketNum) || facturadosMap.get(m.refMovId);
     const facNro = facInfo ? ('0000'+(facInfo.puntoVenta||2)).slice(-4)+'-'+('00000000'+(facInfo.nroComprobante||0)).slice(-8) : '';
     const isEntrada = m.tipo==='ingreso' || esTransferEntrada;
