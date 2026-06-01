@@ -2887,16 +2887,12 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
   <div id="caja-chips" style="display:none;"></div>
   </div>
 
-  <!-- Botón "Cargar más antiguos" (Fase 5.A PASO 3) -->
-  <div id="caja-cargar-mas-wrap" style="display:none;margin-bottom:8px;text-align:left;">
-    <button id="caja-cargar-mas-btn" onclick="cajaCargarMasAntiguos()" style="display:inline-flex;align-items:center;gap:6px;background:#f5f0eb;border:0.5px solid #e0dbd6;color:#555;border-radius:8px;padding:8px 14px;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;font-weight:500;transition:background .15s;" onmouseover="this.style.background='#ebe5dd'" onmouseout="this.style.background='#f5f0eb'">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+  <!-- Tabla (Fase 5.B PASO 1.1: card con borde + "Cargar más" integrado como primera fila) -->
+  <div id="caja-table-card" style="background:white;border-radius:16px;overflow:hidden;border:0.5px solid #e0dbd6;">
+    <div id="caja-cargar-mas-row" style="display:none;background:#fafaf7;padding:12px 22px;cursor:pointer;border-bottom:0.5px solid #f0eae3;align-items:center;justify-content:center;gap:8px;color:#4a5e4d;font-size:12px;font-weight:500;transition:background .15s;" onclick="cajaCargarMasAntiguos()" onmouseover="this.style.background='#f0ebe5'" onmouseout="this.style.background='#fafaf7'">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
       <span id="caja-cargar-mas-label">Cargar 15 más antiguos</span>
-    </button>
-  </div>
-
-  <!-- Tabla (Fase 5.B PASO 1: refacción visual a divs con flexbox) -->
-  <div id="caja-table-card" style="background:white;border-radius:16px;overflow:hidden;">
+    </div>
     <div id="caja-tbody">
       <div style="text-align:center;padding:36px;color:#bbb;font-size:13px;">Cargando...</div>
     </div>
@@ -11636,18 +11632,17 @@ window._aplicarFiltrosCaja = function() {
   if(window._cajaCuentasUnicas) {
     renderCajaChips(window._cajaCuentasUnicas, filtrados);
   }
-  // Visibilidad y label del botón "Cargar más antiguos"
-  const cargarMasWrap = document.getElementById('caja-cargar-mas-wrap');
+  // Visibilidad y label de la fila "Cargar más antiguos" (Fase 5.B PASO 1.1: integrada al card)
+  const cargarMasRow = document.getElementById('caja-cargar-mas-row');
   const cargarMasLabel = document.getElementById('caja-cargar-mas-label');
   const restantes = filtrados.length - limite;
-  if(cargarMasWrap && cargarMasLabel) {
+  if(cargarMasRow && cargarMasLabel) {
     if(restantes > 0 && window.currentRol !== 'cajero') {
-      cargarMasLabel.textContent = restantes > 15
-        ? `Cargar 15 más antiguos (faltan ${restantes})`
-        : `Cargar ${restantes} más antiguos`;
-      cargarMasWrap.style.display = '';
+      const cant = Math.min(15, restantes);
+      cargarMasLabel.textContent = `Cargar ${cant} más antiguos`;
+      cargarMasRow.style.display = 'flex';
     } else {
-      cargarMasWrap.style.display = 'none';
+      cargarMasRow.style.display = 'none';
     }
   }
 };
@@ -11845,8 +11840,9 @@ function renderCajaTable(movs, facturadosMap = window._facturadosMap || new Map(
       : `<div style="width:32px;height:32px;"></div>`;
     const isMobile = window.innerWidth <= 768;
     if (isMobile) {
-      return `<div data-tipo="${m.tipo||''}" data-concepto="${(m.concepto||'').toLowerCase()}" data-fecha="${m.fecha||''}" onclick="cajaMostrarMovimiento('${m.id||m.docId||''}')" style="display:flex;align-items:stretch;background:#fff;border-bottom:0.5px solid #f0eae3;border-left:3px solid ${borderColor};padding:14px 16px;cursor:pointer;opacity:0;animation:fadeUp .3s ease both;animation-delay:${80+i*50}ms;">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex:1;">
+      return `<div data-tipo="${m.tipo||''}" data-concepto="${(m.concepto||'').toLowerCase()}" data-fecha="${m.fecha||''}" onclick="cajaMostrarMovimiento('${m.id||m.docId||''}')" style="display:flex;align-items:center;background:#fff;border-bottom:0.5px solid #f0eae3;padding:14px 16px;cursor:pointer;gap:10px;opacity:0;animation:fadeUp .3s ease both;animation-delay:${80+i*50}ms;">
+        <div style="width:3px;height:32px;border-radius:2px;background:${borderColor};flex-shrink:0;"></div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex:1;min-width:0;">
           <div style="flex:1;min-width:0;">
             <div style="font-size:13px;font-weight:600;color:#1a1a1a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:3px;">${m.concepto||'—'}</div>
             <div style="font-size:11px;color:#aaa;">${fechaStr}${m.hora?' · '+m.hora:''}${m.creadoPor?' · '+m.creadoPor:''}${m.cajaOrigenNombre && window.currentRol !== 'cajero' ? ' · '+m.cajaOrigenNombre : ''}</div>
@@ -11858,7 +11854,8 @@ function renderCajaTable(movs, facturadosMap = window._facturadosMap || new Map(
         </div>
       </div>`;
     }
-    return `<div data-tipo="${m.tipo||''}" data-concepto="${(m.concepto||'').toLowerCase()}" data-fecha="${m.fecha||''}" onclick="cajaMostrarMovimiento('${m.id}')" style="display:flex;align-items:center;gap:14px;padding:20px 22px;border-bottom:0.5px solid #f0eae3;border-left:3px solid ${borderColor};cursor:pointer;background:#fff;opacity:0;animation:fadeUp .3s ease both;animation-delay:${80+i*50}ms;transition:background .15s;" onmouseover="this.style.background='#fafaf7'" onmouseout="this.style.background='#fff'">
+    return `<div data-tipo="${m.tipo||''}" data-concepto="${(m.concepto||'').toLowerCase()}" data-fecha="${m.fecha||''}" onclick="cajaMostrarMovimiento('${m.id}')" style="display:flex;align-items:center;gap:14px;padding:20px 22px;border-bottom:0.5px solid #f0eae3;cursor:pointer;background:#fff;opacity:0;animation:fadeUp .3s ease both;animation-delay:${80+i*50}ms;transition:background .15s;" onmouseover="this.style.background='#fafaf7'" onmouseout="this.style.background='#fff'">
+      <div style="width:3px;height:32px;border-radius:2px;background:${borderColor};flex-shrink:0;"></div>
       <div style="font-size:11px;color:#aaa;min-width:60px;font-weight:500;flex-shrink:0;">${fechaStr}</div>
       <div style="flex:1;min-width:0;">
         <div style="font-size:14px;font-weight:500;color:#1a1a1a;">${m.concepto||'—'}</div>
@@ -11868,8 +11865,8 @@ function renderCajaTable(movs, facturadosMap = window._facturadosMap || new Map(
       <div style="font-size:14px;font-weight:600;color:${montoColor};white-space:nowrap;min-width:100px;text-align:right;flex-shrink:0;">${montoText}</div>
       <div style="width:0.5px;height:32px;background:#e0dbd6;flex-shrink:0;"></div>
       <div style="text-align:right;min-width:80px;flex-shrink:0;">
-        <div style="font-size:9px;color:#aaa;letter-spacing:0.5px;font-weight:600;">SALDO</div>
-        <div style="font-size:13px;font-weight:700;color:#1a1a1a;">$${Math.round(saldo).toLocaleString('es-AR')}</div>
+        <div style="font-size:10px;color:#aaa;letter-spacing:0.5px;font-weight:600;">SALDO</div>
+        <div style="font-size:15px;font-weight:700;color:#1a1a1a;">$${Math.round(saldo).toLocaleString('es-AR')}</div>
       </div>
       <div style="flex-shrink:0;">${facturaIconHtml}</div>
     </div>`;
