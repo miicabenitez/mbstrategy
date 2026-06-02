@@ -4868,8 +4868,15 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
           </div>
         </div>
 
-        <div style="margin-top:24px;font-family:'DM Sans',sans-serif;font-size:24px;font-weight:600;color:#1a1a1a;">Órdenes de producción</div>
-        <div style="background:#fff;border:0.5px solid #e0dbd6;border-radius:12px;padding:40px;text-align:center;color:#aaa;font-size:13px;margin-top:10px;">Próximamente (COMMIT 3.3.3)</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:24px;margin-bottom:12px;flex-wrap:wrap;gap:10px;">
+          <div style="font-family:'DM Sans',sans-serif;font-size:24px;font-weight:600;color:#1a1a1a;">Órdenes de producción</div>
+          <div id="prod-filtros-chips" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+        </div>
+        <div style="background:#fff;border:0.5px solid #e0dbd6;border-radius:12px;overflow:hidden;">
+          <div id="prod-ordenes-lista">
+            <div style="padding:40px;text-align:center;color:#aaa;font-size:13px;">Cargando...</div>
+          </div>
+        </div>
       </div>
 
       <!-- MEMBRESIA -->
@@ -6646,6 +6653,29 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px;">
       <button class="bs" onclick="closeModal('stock-receta-modal')">Cancelar</button>
       <button class="bp" onclick="stkGuardarReceta()">Guardar receta</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal detalle de orden de producción (COMMIT 3.3.3) -->
+<div class="mo" id="prod-detalle-modal">
+  <div class="md" style="max-width:min(560px,92vw);padding:0;overflow:hidden;position:relative;border:none;">
+    <button class="mc2" onclick="closeModal('prod-detalle-modal')" style="position:absolute;top:12px;right:14px;z-index:2;color:#f5f0eb;background:none;border:none;font-size:24px;line-height:1;padding:0;">×</button>
+    <div style="background:linear-gradient(135deg, #1e2e22 0%, #3d5242 100%);padding:22px 24px 18px;">
+      <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;" id="prod-det-numero">P-—</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;color:#fff;">Orden de <em style="font-style:italic;color:#b09088;">producción</em></div>
+      <div id="prod-det-meta" style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap;"></div>
+    </div>
+    <div style="padding:22px 24px;">
+      <div style="font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:#1a1a1a;margin-bottom:10px;">Ítems</div>
+      <div id="prod-det-lineas" style="margin-bottom:14px;"></div>
+      <div id="prod-det-notas-wrap" style="display:none;margin-bottom:14px;">
+        <div style="font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:#1a1a1a;margin-bottom:6px;">Notas</div>
+        <div id="prod-det-notas" style="font-size:12px;color:#555;background:#fafaf7;padding:10px 12px;border-radius:8px;line-height:1.5;"></div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:4px;">
+        <button class="bs" onclick="closeModal('prod-detalle-modal')">Cerrar</button>
+      </div>
     </div>
   </div>
 </div>
@@ -18493,6 +18523,139 @@ window.prodRender = function() {
     </div>`;
   }).join('');
   lista.innerHTML = header + rows;
+  // COMMIT 3.3.3: chips de filtro + lista de órdenes
+  _prodRenderChips();
+  prodRenderOrdenes();
+};
+
+// ─── COMMIT 3.3.3: chips de filtro + lista de órdenes + modal detalle ──
+window._prodFiltroEstado = 'todas';
+
+function _prodFechaCorta(iso) {
+  if(!iso) return '';
+  const d = new Date(iso);
+  if(isNaN(d.getTime())) return '';
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const yy = String(d.getFullYear()).slice(-2);
+  return `${dd}/${mm}/${yy}`;
+}
+
+function _prodBadgeEstado(estado) {
+  let bg = '#eceae3', color = '#7a766d', label = 'PENDIENTE';
+  if(estado === 'finalizada') { bg = '#e3ede3'; color = '#4a5e4d'; label = 'FINALIZADA'; }
+  else if(estado === 'en_curso') { bg = '#ede5e8'; color = '#8e5c7d'; label = 'EN CURSO'; }
+  return `<span style="font-size:9px;background:${bg};color:${color};padding:3px 8px;border-radius:10px;font-weight:600;letter-spacing:0.3px;">${label}</span>`;
+}
+
+function _prodBadgeEstadoLinea(estado) {
+  if(estado === 'finalizada') return '<span style="font-size:9px;background:#e3ede3;color:#4a5e4d;padding:2px 6px;border-radius:8px;font-weight:600;letter-spacing:0.3px;">FINALIZADA</span>';
+  if(estado === 'iniciada') return '<span style="font-size:9px;background:#ede5e8;color:#8e5c7d;padding:2px 6px;border-radius:8px;font-weight:600;letter-spacing:0.3px;">INICIADA</span>';
+  return '<span style="font-size:9px;background:#eceae3;color:#7a766d;padding:2px 6px;border-radius:8px;font-weight:600;letter-spacing:0.3px;">PENDIENTE</span>';
+}
+
+function _prodRenderChips() {
+  const cont = document.getElementById('prod-filtros-chips');
+  if(!cont) return;
+  const filtros = [
+    { id: 'todas', label: 'Todas' },
+    { id: 'en_curso', label: 'En curso' },
+    { id: 'pendiente', label: 'Pendientes' },
+    { id: 'finalizada', label: 'Finalizadas' }
+  ];
+  const activo = window._prodFiltroEstado || 'todas';
+  cont.innerHTML = filtros.map(f => {
+    const isActive = f.id === activo;
+    const styleActive = 'background:linear-gradient(135deg, #1e2e22 0%, #3d5242 100%);border:1px solid #1e2e22;color:#fff;font-weight:600;';
+    const styleInactive = 'background:#fff;border:1px solid #d8d0c4;color:#555;font-weight:500;';
+    return `<button type="button" onclick="prodSetFiltroEstado('${f.id}')" style="padding:5px 14px;border-radius:20px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;${isActive ? styleActive : styleInactive}">${f.label}</button>`;
+  }).join('');
+}
+
+window.prodSetFiltroEstado = function(estado) {
+  window._prodFiltroEstado = estado;
+  _prodRenderChips();
+  prodRenderOrdenes();
+};
+
+window.prodRenderOrdenes = function() {
+  const cont = document.getElementById('prod-ordenes-lista');
+  if(!cont) return;
+  const ordenesAll = window._ordenesProduccion || [];
+  const filtro = window._prodFiltroEstado || 'todas';
+  let ordenes = filtro === 'todas' ? ordenesAll : ordenesAll.filter(o => o.estado === filtro);
+  // Sort: en_curso → pendiente → finalizada; dentro de cada grupo creadoEn desc
+  const orden = { en_curso: 0, pendiente: 1, finalizada: 2 };
+  ordenes = [...ordenes].sort((a, b) => {
+    const oa = orden[a.estado] ?? 99;
+    const ob = orden[b.estado] ?? 99;
+    if(oa !== ob) return oa - ob;
+    return (b.creadoEn || '').localeCompare(a.creadoEn || '');
+  });
+  if(!ordenes.length) {
+    const msg = filtro === 'todas' ? 'Todavía no hay órdenes de producción.' : 'No hay órdenes con este filtro.';
+    cont.innerHTML = `<div style="padding:40px;text-align:center;color:#aaa;font-size:13px;">${msg}</div>`;
+    return;
+  }
+  cont.innerHTML = ordenes.map(o => {
+    const fecha = _prodFechaCorta(o.creadoEn);
+    const nLineas = (o.lineas || []).length;
+    const sectorBadge = o.sector
+      ? `<span style="font-size:9px;background:#ede5e8;color:#8e5c7d;padding:3px 8px;border-radius:10px;font-weight:600;letter-spacing:0.3px;">${o.sector.toUpperCase()}</span>`
+      : '';
+    return `<div onclick="prodAbrirDetalle('${o.id}')" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;border-bottom:0.5px solid #f0eae3;cursor:pointer;transition:background .15s;flex-wrap:wrap;background:#fff;" onmouseover="this.style.background='#fafaf7'" onmouseout="this.style.background='#fff'">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex:1;min-width:0;">
+        <span style="font-size:13px;color:#1a1a1a;font-weight:500;font-family:'DM Sans',sans-serif;">${o.numero || '—'}</span>
+        ${sectorBadge}
+        <span style="font-size:11px;color:#888;">${fecha}</span>
+        <span style="font-size:11px;color:#ccc;">·</span>
+        <span style="font-size:11px;color:#555;">${nLineas} ítem${nLineas === 1 ? '' : 's'}</span>
+      </div>
+      <div>${_prodBadgeEstado(o.estado)}</div>
+    </div>`;
+  }).join('');
+};
+
+window.prodAbrirDetalle = function(ordenId) {
+  const orden = (window._ordenesProduccion || []).find(o => o.id === ordenId);
+  if(!orden) return;
+  const setEl = (id, v) => { const el = document.getElementById(id); if(el) el.textContent = v; };
+  setEl('prod-det-numero', orden.numero || 'P-—');
+  const meta = document.getElementById('prod-det-meta');
+  if(meta) {
+    let html = '';
+    if(orden.sector) html += `<span style="font-size:10px;background:rgba(255,255,255,.15);color:#fff;padding:4px 10px;border-radius:10px;font-weight:500;letter-spacing:0.3px;">${orden.sector}</span>`;
+    html += _prodBadgeEstado(orden.estado);
+    meta.innerHTML = html;
+  }
+  const lineasCont = document.getElementById('prod-det-lineas');
+  if(lineasCont) {
+    lineasCont.innerHTML = (orden.lineas || []).map(l => {
+      const tipoBadge = l.itemTipo === 'insumo'
+        ? '<span style="font-size:9px;background:#ede5e8;color:#8e5c7d;padding:2px 6px;border-radius:8px;font-weight:600;letter-spacing:0.3px;">INSUMO</span>'
+        : '<span style="font-size:9px;background:#e8ede8;color:#4a5e4d;padding:2px 6px;border-radius:8px;font-weight:600;letter-spacing:0.3px;">MOSTRADOR</span>';
+      const lineaBadge = _prodBadgeEstadoLinea(l.estado);
+      const btnDisabledStyle = `style="background:#fff;border:0.5px solid #d8d0c4;color:#aaa;padding:5px 12px;border-radius:6px;font-size:11px;cursor:not-allowed;opacity:0.6;font-family:'DM Sans',sans-serif;" title="Próximamente (COMMIT 3.4)"`;
+      const iniciar = l.estado === 'pendiente' ? `<button disabled ${btnDisabledStyle}>Iniciar</button>` : '';
+      const finalizar = l.estado === 'iniciada' ? `<button disabled ${btnDisabledStyle}>Finalizar</button>` : '';
+      return `<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px;border:0.5px solid #f0eae3;border-radius:8px;margin-bottom:6px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:140px;display:flex;flex-direction:column;gap:6px;">
+          <div style="font-size:13px;color:#1a1a1a;font-weight:500;">${l.itemNombre || '—'} <span style="color:#888;font-weight:400;">× ${l.cantidad}</span></div>
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">${tipoBadge}${lineaBadge}</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">${iniciar}${finalizar}</div>
+      </div>`;
+    }).join('');
+  }
+  const notasWrap = document.getElementById('prod-det-notas-wrap');
+  const notasEl = document.getElementById('prod-det-notas');
+  if(orden.notas && orden.notas.trim()) {
+    if(notasWrap) notasWrap.style.display = '';
+    if(notasEl) notasEl.textContent = orden.notas;
+  } else {
+    if(notasWrap) notasWrap.style.display = 'none';
+  }
+  openModal('prod-detalle-modal');
 };
 
 // COMMIT 3.3.2: modal Nueva orden de producción
