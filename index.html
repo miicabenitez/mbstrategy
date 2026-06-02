@@ -6349,13 +6349,18 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
     <button class="bp" id="pl-btn" onclick="confirmarPrimerLogin()" style="width:100%;">Guardar contraseña</button>
   </div>
 </div>
-<div class="mo" id="confirmModal">
-  <div class="md" style="max-width:380px;">
-    <div class="mt" id="confirmTitle">¿Confirmar acción?</div>
-    <p id="confirmMsg" style="font-size:14px;color:var(--text-m);margin-bottom:20px;line-height:1.6;"></p>
-    <div class="br2">
-      <button class="bp" id="confirmOk">Confirmar</button>
-      <button class="bs" onclick="closeModal('confirmModal')">Cancelar</button>
+<div class="mo" id="confirmModal" style="z-index:1500;">
+  <div class="md" style="max-width:420px;padding:0;overflow:hidden;border:none;border-radius:14px;">
+    <div style="background:linear-gradient(135deg,#1e2e22 0%,#3d5242 100%);padding:18px 22px;">
+      <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">MB Strategy</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:400;color:#fff;line-height:1.2;" id="confirmTitle">¿Confirmar acción?</div>
+    </div>
+    <div style="padding:20px 22px;">
+      <p id="confirmMsg" style="font-family:'DM Sans',sans-serif;font-size:14px;color:#3a3a36;line-height:1.55;margin:0 0 22px;"></p>
+      <div style="display:flex;justify-content:flex-end;gap:8px;">
+        <button onclick="closeModal('confirmModal')" style="background:#fff;border:0.5px solid #d8d0c4;color:#666;padding:9px 18px;border-radius:8px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;">Cancelar</button>
+        <button id="confirmOk" style="background:linear-gradient(135deg,#1e2e22 0%,#3d5242 100%);border:1px solid #1e2e22;color:#fff;padding:9px 18px;border-radius:8px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;">Confirmar</button>
+      </div>
     </div>
   </div>
 </div>
@@ -18052,6 +18057,8 @@ window.loadMovimientosStock = async function() {
     const { limit: fsLimit } = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
     const snap = await getDocs(query(collection(db,'clientes',currentClientUID,'movimientosStock'), orderBy('fecha','desc'), fsLimit(100)));
     const movs = snap.docs.map(d=>({id:d.id,...d.data()}));
+    // Sort por creadoEn desc (timestamp ISO) — más recientes arriba dentro del mismo día
+    movs.sort((a,b) => (b.creadoEn||'').localeCompare(a.creadoEn||''));
     window._stkMovs = movs;
     const mesActual = fechaHoyARG().slice(0,7);
     const lblMes = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
