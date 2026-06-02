@@ -6571,11 +6571,19 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
     <button class="mc2" onclick="closeModal('stock-receta-modal')">×</button>
     <div class="mt" id="stk-rec-titulo">Nueva receta</div>
     <input type="hidden" id="stk-rec-id">
-    <input type="hidden" id="stk-rec-prod-id">
+    <input type="hidden" id="stk-rec-item-id">
+    <input type="hidden" id="stk-rec-item-tipo" value="producto">
+    <div class="fg">
+      <label class="fl">¿Es receta de un producto o de un insumo?</label>
+      <div style="display:flex;gap:6px;">
+        <button type="button" id="stk-rec-tipo-producto" data-tipo="producto" onclick="stkRecSetTipo('producto')" style="background:linear-gradient(135deg, #1e2e22 0%, #3d5242 100%);border:1px solid #1e2e22;color:#fff;padding:8px 16px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;">Producto</button>
+        <button type="button" id="stk-rec-tipo-insumo" data-tipo="insumo" onclick="stkRecSetTipo('insumo')" style="background:#fff;border:1px solid #d8d0c4;color:#555;padding:8px 16px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;">Insumo</button>
+      </div>
+    </div>
     <div class="fg" style="position:relative;">
-      <label class="fl">Producto del catálogo</label>
-      <input type="text" class="fi" id="stk-rec-prod-search" placeholder="Buscá un producto..." autocomplete="off" oninput="stkBuscarProductoRec(this.value)" onkeydown="stkRecProdKeydown(event)" onblur="setTimeout(()=>{ const d=document.getElementById('stk-rec-prod-dropdown'); if(d && !d.contains(document.activeElement)) d.style.display='none'; },180)"/>
-      <div id="stk-rec-prod-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.12);z-index:600;max-height:200px;overflow-y:auto;"></div>
+      <label class="fl" id="stk-rec-item-label">Producto del catálogo</label>
+      <input type="text" class="fi" id="stk-rec-item-search" placeholder="Buscá un producto..." autocomplete="off" oninput="stkBuscarItemRec(this.value)" onkeydown="stkRecItemKeydown(event)" onblur="setTimeout(()=>{ const d=document.getElementById('stk-rec-item-dropdown'); if(d && !d.contains(document.activeElement)) d.style.display='none'; },180)"/>
+      <div id="stk-rec-item-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.12);z-index:600;max-height:200px;overflow-y:auto;"></div>
     </div>
     <div class="fg">
       <label class="fl">Insumos de la receta</label>
@@ -17607,7 +17615,7 @@ window.loadRecetasModule = async function() {
   window._stkRecProdIdx = -1;
   try {
     const snap = await getDocs(query(collection(db,'clientes',currentClientUID,'recetas'), where('activo','==',true)));
-    window._stockRecetas = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.productoNombre||'').localeCompare(b.productoNombre||'','es'));
+    window._stockRecetas = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>((a.itemNombre||a.productoNombre||'')).localeCompare(b.itemNombre||b.productoNombre||'','es'));
   } catch(e) {
     console.log('loadRecetasModule:',e);
     window._stockRecetas = window._stockRecetas || [];
@@ -17639,8 +17647,13 @@ function stkRenderRecetas() {
   lista.innerHTML = recs.map(r=>{
     const resumen = (r.items||[]).map(it=>it.insumoNombre).filter(Boolean).join(', ').slice(0,60)||'—';
     const costoStr = '$'+parseFloat(r.costoTotal||0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
+    const itemNombre = r.itemNombre || r.productoNombre || '—';
+    const itemTipo = r.itemTipo || 'producto';
+    const tipoBadge = itemTipo === 'insumo'
+      ? '<span style="font-size:9px;background:#ede5e8;color:#8e5c7d;padding:2px 6px;border-radius:8px;font-weight:600;letter-spacing:0.3px;margin-left:6px;vertical-align:middle;">INSUMO</span>'
+      : '<span style="font-size:9px;background:#e8ede8;color:#4a5e4d;padding:2px 6px;border-radius:8px;font-weight:600;letter-spacing:0.3px;margin-left:6px;vertical-align:middle;">PRODUCTO</span>';
     return `<div onclick="stkEditarReceta('${r.id}')" style="display:grid;grid-template-columns:1fr 140px 100px 64px;gap:10px;padding:10px 14px;border-bottom:.5px solid var(--cream-d);min-width:400px;cursor:pointer;transition:background .1s;" onmouseover="this.style.background='#faf8f5'" onmouseout="this.style.background=''">
-      <span style="font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;font-weight:500;">${r.productoNombre||'—'}</span>
+      <span style="font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;font-weight:500;">${itemNombre}${tipoBadge}</span>
       <span style="font-size:12px;color:var(--text-m);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${resumen}</span>
       <span style="font-size:13px;color:var(--text);text-align:right;">${costoStr}</span>
       <span style="display:flex;justify-content:flex-end;align-items:center;">
@@ -17652,11 +17665,45 @@ function stkRenderRecetas() {
 
 window._stkRecetaItems = [];
 
+window.stkRecSetTipo = function(tipo) {
+  const tipoInput = document.getElementById('stk-rec-item-tipo');
+  if(tipoInput) tipoInput.value = tipo;
+  // Pill visual
+  document.querySelectorAll('#stock-receta-modal [data-tipo]').forEach(b => {
+    const active = b.dataset.tipo === tipo;
+    if(active) {
+      b.style.background = 'linear-gradient(135deg, #1e2e22 0%, #3d5242 100%)';
+      b.style.color = '#fff';
+      b.style.borderColor = '#1e2e22';
+      b.style.fontWeight = '600';
+    } else {
+      b.style.background = '#fff';
+      b.style.color = '#555';
+      b.style.borderColor = '#d8d0c4';
+      b.style.fontWeight = '500';
+    }
+  });
+  // Reset selección al cambiar de tipo
+  document.getElementById('stk-rec-item-id').value = '';
+  document.getElementById('stk-rec-item-search').value = '';
+  const dd = document.getElementById('stk-rec-item-dropdown');
+  if(dd) dd.style.display = 'none';
+  // Label + placeholder dinámicos
+  const label = document.getElementById('stk-rec-item-label');
+  const search = document.getElementById('stk-rec-item-search');
+  if(tipo === 'insumo') {
+    if(label) label.textContent = 'Insumo';
+    if(search) search.placeholder = 'Buscá un insumo...';
+  } else {
+    if(label) label.textContent = 'Producto del catálogo';
+    if(search) search.placeholder = 'Buscá un producto...';
+  }
+};
+
 window.stkNuevaReceta = function() {
   document.getElementById('stk-rec-titulo').textContent='Nueva receta';
   document.getElementById('stk-rec-id').value='';
-  document.getElementById('stk-rec-prod-id').value='';
-  document.getElementById('stk-rec-prod-search').value='';
+  stkRecSetTipo('producto');
   window._stkRecetaItems=[];
   stkRecRenderItems();
   stkRecActualizarCosto();
@@ -17669,8 +17716,10 @@ window.stkEditarReceta = function(id) {
   if(!r) return;
   document.getElementById('stk-rec-titulo').textContent='Editar receta';
   document.getElementById('stk-rec-id').value=id;
-  document.getElementById('stk-rec-prod-id').value=r.productoId||'';
-  document.getElementById('stk-rec-prod-search').value=r.productoNombre||'';
+  const itemTipo = r.itemTipo || 'producto';
+  stkRecSetTipo(itemTipo);
+  document.getElementById('stk-rec-item-id').value = r.itemId || r.productoId || '';
+  document.getElementById('stk-rec-item-search').value = r.itemNombre || r.productoNombre || '';
   window._stkRecetaItems=(r.items||[]).map(it=>{
     const insumo=(window._stockInsumos||[]).find(x=>x.id===it.insumoId);
     return {...it,unidadBase:it.unidadBase||insumo?.unidad||'',unidad:it.unidad||insumo?.unidad||''};
@@ -17681,18 +17730,20 @@ window.stkEditarReceta = function(id) {
   openModal('stock-receta-modal');
 };
 
-window.stkBuscarProductoRec = function(q) {
-  const dd=document.getElementById('stk-rec-prod-dropdown');
+window.stkBuscarItemRec = function(q) {
+  const dd=document.getElementById('stk-rec-item-dropdown');
   if(!q.trim()){dd.style.display='none';return;}
-  const prods=(window._productos||_productos||[]).filter(p=>p.activo!==false&&(p.nombre||'').toLowerCase().includes(q.toLowerCase())).slice(0,6);
-  if(!prods.length){dd.style.display='none';return;}
-  dd.innerHTML=prods.map((p,i)=>`<div data-idx="${i}" onmousedown="event.preventDefault();stkSeleccionarProductoRec('${p.id}')" style="padding:10px 14px;cursor:pointer;border-bottom:.5px solid var(--cream-d);font-size:13px;" onmouseenter="this.style.background='var(--cream)'" onmouseleave="this.style.background=''"><div style="font-weight:500;color:var(--text);">${p.nombre||''}</div></div>`).join('');
+  const tipo = document.getElementById('stk-rec-item-tipo')?.value || 'producto';
+  const source = tipo === 'insumo' ? (window._stockInsumos||[]) : (window._productos||_productos||[]);
+  const items = source.filter(x=>x.activo!==false&&(x.nombre||'').toLowerCase().includes(q.toLowerCase())).slice(0,6);
+  if(!items.length){dd.style.display='none';return;}
+  dd.innerHTML=items.map((it,i)=>`<div data-idx="${i}" onmousedown="event.preventDefault();stkSeleccionarItemRec('${it.id}')" style="padding:10px 14px;cursor:pointer;border-bottom:.5px solid var(--cream-d);font-size:13px;" onmouseenter="this.style.background='var(--cream)'" onmouseleave="this.style.background=''"><div style="font-weight:500;color:var(--text);">${it.nombre||''}</div></div>`).join('');
   window._stkRecProdIdx = -1;
   dd.style.display='block';
 };
 
-window.stkRecProdKeydown = function(e) {
-  const dd=document.getElementById('stk-rec-prod-dropdown');
+window.stkRecItemKeydown = function(e) {
+  const dd=document.getElementById('stk-rec-item-dropdown');
   if(!dd||dd.style.display==='none') return;
   const items=dd.querySelectorAll('[data-idx]');
   if(!items.length) return;
@@ -17700,7 +17751,7 @@ window.stkRecProdKeydown = function(e) {
   let idx=window._stkRecProdIdx ?? -1;
   if(e.key==='ArrowDown'){e.preventDefault();idx=(idx+1)%total;}
   else if(e.key==='ArrowUp'){e.preventDefault();idx=idx<=0?total-1:idx-1;}
-  else if(e.key==='Enter'){e.preventDefault();if(idx>=0&&items[idx]){const id=items[idx].getAttribute('onmousedown').match(/stkSeleccionarProductoRec\('([^']+)'\)/)?.[1];if(id)stkSeleccionarProductoRec(id);}return;}
+  else if(e.key==='Enter'){e.preventDefault();if(idx>=0&&items[idx]){const id=items[idx].getAttribute('onmousedown').match(/stkSeleccionarItemRec\('([^']+)'\)/)?.[1];if(id)stkSeleccionarItemRec(id);}return;}
   else if(e.key==='Escape'){dd.style.display='none';return;}
   else return;
   window._stkRecProdIdx=idx;
@@ -17708,12 +17759,14 @@ window.stkRecProdKeydown = function(e) {
   items[idx]?.scrollIntoView({block:'nearest'});
 };
 
-window.stkSeleccionarProductoRec = function(id) {
-  const p=(window._productos||_productos||[]).find(x=>x.id===id);
-  if(!p) return;
-  document.getElementById('stk-rec-prod-id').value=id;
-  document.getElementById('stk-rec-prod-search').value=p.nombre||'';
-  document.getElementById('stk-rec-prod-dropdown').style.display='none';
+window.stkSeleccionarItemRec = function(id) {
+  const tipo = document.getElementById('stk-rec-item-tipo')?.value || 'producto';
+  const source = tipo === 'insumo' ? (window._stockInsumos||[]) : (window._productos||_productos||[]);
+  const it = source.find(x=>x.id===id);
+  if(!it) return;
+  document.getElementById('stk-rec-item-id').value=id;
+  document.getElementById('stk-rec-item-search').value=it.nombre||'';
+  document.getElementById('stk-rec-item-dropdown').style.display='none';
 };
 
 window.stkRecAgregarItem = function() {
@@ -17834,16 +17887,22 @@ function stkRecActualizarCosto() {
 }
 
 window.stkGuardarReceta = async function() {
-  const prodId=document.getElementById('stk-rec-prod-id').value;
-  const prodNombre=document.getElementById('stk-rec-prod-search').value.trim();
+  const itemId=document.getElementById('stk-rec-item-id').value;
+  const itemNombre=document.getElementById('stk-rec-item-search').value.trim();
+  const itemTipo=document.getElementById('stk-rec-item-tipo')?.value || 'producto';
   const err=document.getElementById('stk-rec-error');
-  if(!prodId){err.textContent='Seleccioná un producto del catálogo.';err.style.display='block';return;}
+  if(!itemId){err.textContent='Seleccioná un '+(itemTipo==='insumo'?'insumo':'producto')+'.';err.style.display='block';return;}
   const items=window._stkRecetaItems||[];
   if(!items.length||!items.some(it=>it.insumoId)){err.textContent='Agregá al menos un insumo.';err.style.display='block';return;}
   err.style.display='none';
   const id=document.getElementById('stk-rec-id').value;
-  const existente=(window._stockRecetas||[]).find(r=>r.productoId===prodId&&r.id!==id);
-  if(existente){err.textContent='Este producto ya tiene una receta activa.';err.style.display='block';return;}
+  // Validación: una receta activa por dueño (itemId + itemTipo). Legacy fallback a productoId.
+  const existente=(window._stockRecetas||[]).find(r=>{
+    const _rid = r.itemId || r.productoId;
+    const _rtipo = r.itemTipo || 'producto';
+    return _rid===itemId && _rtipo===itemTipo && r.id!==id;
+  });
+  if(existente){err.textContent='Este '+(itemTipo==='insumo'?'insumo':'producto')+' ya tiene una receta activa.';err.style.display='block';return;}
   const costoTotal=items.reduce((s,it)=>{
     const ins=(window._stockInsumos||[]).find(x=>x.id===it.insumoId);
     const cantidadBase=_stkConvertirABase(it.cantidad,it.unidad||it.unidadBase||'',it.unidadBase||it.unidad||'');
@@ -17852,12 +17911,12 @@ window.stkGuardarReceta = async function() {
   const itemsConvertidos=items.filter(it=>it.insumoId).map(it=>({
     ...it,cantidadBase:_stkConvertirABase(it.cantidad,it.unidad||it.unidadBase||'',it.unidadBase||it.unidad||'')
   }));
-  const data={productoId:prodId,productoNombre:prodNombre,items:itemsConvertidos,costoTotal,activo:true};
+  const data={itemId,itemNombre,itemTipo,items:itemsConvertidos,costoTotal,activo:true};
   try {
     if(id){
       await updateDoc(doc(db,'clientes',currentClientUID,'recetas',id),data);
     } else {
-      // PRODUCCIÓN COMMIT 1: rendimiento default 1 (compat con flujo al_momento). Configurable desde COMMIT futuro.
+      // rendimiento default 1 (compat con flujo de descuento por unidad). Configurable en commit futuro.
       data.creadoEn=new Date().toISOString();
       data.rendimiento=1;
       await addDoc(collection(db,'clientes',currentClientUID,'recetas'),data);
@@ -18086,7 +18145,12 @@ window._triggerStockPorVenta = async function(carrito, refId) {
       const entry = carrito[productoId];
       const qty = parseFloat(entry.qty)||1;
       const nombreProd = entry.producto?.nombre||'';
-      const receta = (window._stockRecetas||[]).find(r=>r.productoId===productoId);
+      // Buscar receta del producto (modelo nuevo itemId+itemTipo, con fallback legacy a productoId)
+      const receta = (window._stockRecetas||[]).find(r=>{
+        const _rid = r.itemId || r.productoId;
+        const _rtipo = r.itemTipo || 'producto';
+        return _rid===productoId && _rtipo==='producto';
+      });
       if(!receta || !receta.items?.length) continue;
       for(const it of receta.items) {
         if(!it.insumoId) continue;
@@ -18121,7 +18185,11 @@ window._triggerStockPorPresupuesto = async function(p) {
     if(!it.productoId) continue;
     const qty = parseFloat(it.cant)||1;
     const nombreProd = it.desc||'';
-    const receta = (window._stockRecetas||[]).find(r=>r.productoId===it.productoId);
+    const receta = (window._stockRecetas||[]).find(r=>{
+      const _rid = r.itemId || r.productoId;
+      const _rtipo = r.itemTipo || 'producto';
+      return _rid===it.productoId && _rtipo==='producto';
+    });
     if(!receta || !receta.items?.length) continue;
     for(const ri of receta.items) {
       if(!ri.insumoId) continue;
@@ -18156,7 +18224,11 @@ window.stkDescontarPresupuesto = async function(presupId) {
   const lineas = [];
   for(const it of (presup.items||[])) {
     if(!it.productoId) continue;
-    const receta = (window._stockRecetas||[]).find(r=>r.productoId===it.productoId);
+    const receta = (window._stockRecetas||[]).find(r=>{
+      const _rid = r.itemId || r.productoId;
+      const _rtipo = r.itemTipo || 'producto';
+      return _rid===it.productoId && _rtipo==='producto';
+    });
     if(!receta?.items?.length) continue;
     const qty = parseFloat(it.cant)||1;
     for(const ri of receta.items) {
