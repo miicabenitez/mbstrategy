@@ -176,6 +176,11 @@ body.es-cajero .mc-card-actions{display:none !important;}
 body.es-cajero #mc-btn-pdf,body.es-cajero #mc-btn-excel{display:none !important;}
 body.es-cajero .fc-icon-btn.danger{display:none;}
 body.es-cajero #mcd-quick-cobro{display:none !important;}
+/* COMMIT 3.5.1: rol produccion → insumos read-only (oculta botones agregar/editar/eliminar) */
+body.es-produccion #ct-insumos button[onclick*="stkNuevoInsumo"]{display:none !important;}
+body.es-produccion #ct-insumos button[onclick*="stkEditarInsumo"]{display:none !important;}
+body.es-produccion #stock-insumo-modal .bp,
+body.es-produccion #stock-insumo-modal #stk-btn-eliminar{display:none !important;}
 @media(max-width:768px){
   body.es-cajero .mod-subnav{display:none !important;}
   body.es-cajero #bottomNav{display:none !important;}
@@ -5241,6 +5246,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
                 <button type="button" class="equipo-rol-pill" data-rol="cajero" onclick="equipoRolSeleccionar(this)" style="flex:1;padding:9px 0;border-radius:20px;background:#e8f0e8;border:.5px solid #4a5e4d;color:#4a5e4d;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">Cajero</button>
                 <button type="button" class="equipo-rol-pill" data-rol="compras" onclick="equipoRolSeleccionar(this)" style="flex:1;padding:9px 0;border-radius:20px;background:#fff;border:.5px solid #d0ccc6;color:#aaa;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">Compras</button>
                 <button type="button" class="equipo-rol-pill" data-rol="comercial" onclick="equipoRolSeleccionar(this)" style="flex:1;padding:9px 0;border-radius:20px;background:#fff;border:.5px solid #d0ccc6;color:#aaa;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">Comercial</button>
+                <button type="button" class="equipo-rol-pill" data-rol="produccion" onclick="equipoRolSeleccionar(this)" style="flex:1;padding:9px 0;border-radius:20px;background:#fff;border:.5px solid #d0ccc6;color:#aaa;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">Producción</button>
               </div>
               <input id="equipo-rol" type="hidden" value="cajero">
               <div id="equipo-cajas-block" style="margin-bottom:14px;">
@@ -6974,6 +6980,12 @@ window.fechaHoyARG = function() {
   return new Date().toLocaleDateString('es-AR',{timeZone:'America/Argentina/Buenos_Aires'}).split('/').reverse().map(p=>p.padStart(2,'0')).join('-');
 };
 
+// COMMIT 3.6.1: helper multi-rol (lee tanto el formato nuevo roles[] como el legacy rol string)
+window.hasRol = function(op, rol) {
+  if(!op || !rol) return false;
+  return Array.isArray(op.roles) ? op.roles.includes(rol) : op.rol === rol;
+};
+
 window.mesHoyARG = function(fechaStr) {
   const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
   const d = fechaStr ? new Date(fechaStr+'T12:00:00') : new Date(fechaHoyARG()+'T12:00:00');
@@ -7360,7 +7372,7 @@ window.showClientUI = async function(email, clientData) {
 
       // Mostrar módulo inicial inmediatamente, sin esperar los awaits de datos
       const _savedMod0 = (() => { try { return localStorage.getItem('mbst_lastmod'); } catch(e) { return null; } })();
-      const _modToShow0 = window.currentRol === 'cajero' ? 'finanzas' : window.currentRol === 'comercial' ? 'comercial' : window.currentRol === 'compras' ? 'compras' : (_savedMod0 || 'inicio');
+      const _modToShow0 = window.currentRol === 'cajero' ? 'finanzas' : window.currentRol === 'comercial' ? 'comercial' : window.currentRol === 'compras' ? 'compras' : window.currentRol === 'produccion' ? 'stock' : (_savedMod0 || 'inicio');
       const _modBtn0 = document.querySelector('#cNav .nt[onclick*="\''+_modToShow0+'\'"]') || document.querySelector('#cNav .nt');
       getDocs(collection(db,'clientes',currentClientUID,'tareas')).then(function(_tSnap){
         window._clientTareas=[];
@@ -7368,6 +7380,10 @@ window.showClientUI = async function(email, clientData) {
         if(_modToShow0==='inicio'&&typeof loadInicio==='function')loadInicio();
       }).catch(function(){});
       window.showClientMod(_modToShow0, _modBtn0);
+      // COMMIT 3.5.1: rol produccion entra directo al sub-item Producción
+      if(window.currentRol === 'produccion') {
+        setTimeout(() => { try { if(window.sidebarNav) sidebarNav('stock','produccion'); } catch(_){} }, 100);
+      }
 
       (async () => {
         try {
@@ -18454,8 +18470,10 @@ window.prodCargarOrdenes = async function() {
 };
 
 // ─── COMMIT 3.4: lógica iniciar/finalizar líneas (mueve stock) ───────────────
-// Hook permisos (gancho para sub-rol Producción 3.5). Por ahora siempre true.
-window._prodPuedeEjecutar = function() { return true; };
+// Hook permisos (COMMIT 3.5.1: admin y rol produccion pueden ejecutar).
+window._prodPuedeEjecutar = function() {
+  return window.currentRol === 'admin' || window.currentRol === 'produccion';
+};
 
 // COMMIT 3.4.2: helpers de autoría
 function _prodNombreUsuarioActual() {
@@ -18861,7 +18879,9 @@ function _prodGetProducibles() {
 window._prodOrdenLineas = [];
 
 // Hook de permisos para sub-rol Producción (gancho para COMMIT 3.5). Por ahora siempre true.
-window._prodPuedeCrearOrden = function() { return true; };
+window._prodPuedeCrearOrden = function() {
+  return window.currentRol === 'admin' || window.currentRol === 'produccion';
+};
 
 window.prodAbrirNuevaOrden = function(itemId, itemTipo) {
   if(typeof window._prodPuedeCrearOrden === 'function' && !window._prodPuedeCrearOrden()) {
@@ -29526,7 +29546,8 @@ window._aplicarRestriccionesRol = function() {
     cajero:   ['sbg-inicio','sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion','btn-mi-cuenta','mc-kpi-clientes-grid'],
     compras:  ['sbg-finanzas','sbg-ventas','sbg-herramientas','sbg-gestion'],
     comercial:['sbg-finanzas','sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion'],
-    vendedor: ['sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion']
+    vendedor: ['sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion'],
+    produccion:['sbg-inicio','sbg-finanzas','sbg-ventas','sbg-compras','sbg-herramientas','sbg-gestion','btn-mi-cuenta']
   }[rol] || [];
   _ocultar.forEach(function(id) {
     var el = document.getElementById(id);
@@ -29573,9 +29594,19 @@ window._aplicarRestriccionesRol = function() {
       });
     }
   }
+  // COMMIT 3.5.1: rol produccion → filtrar sub-items de Stock (solo Producción + Insumos)
+  if(rol === 'produccion') {
+    var sbsubStock = document.getElementById('sbsub-stock');
+    if (sbsubStock) {
+      sbsubStock.querySelectorAll('.sb-subitem').forEach(function(btn) {
+        if (btn.dataset.sub !== 'produccion' && btn.dataset.sub !== 'insumos') btn.style.display = 'none';
+      });
+    }
+  }
   if(window.currentRol === 'cajero') document.body.classList.add('es-cajero');
   if(window.currentRol === 'comercial') document.body.classList.add('es-comercial');
   if(window.currentRol === 'compras') document.body.classList.add('es-compras');
+  if(window.currentRol === 'produccion') document.body.classList.add('es-produccion');
 };
 
 // Abre un PDF guardado como Base64 en nueva pestaña
