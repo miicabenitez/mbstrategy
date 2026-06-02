@@ -1566,6 +1566,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         <div class="sb-sub" id="sbsub-stock">
           <button class="sb-subitem" data-sub="insumos" onclick="sidebarNav('stock','insumos')">Insumos</button>
           <button class="sb-subitem" data-sub="recetas" onclick="sidebarNav('stock','recetas')">Recetas</button>
+          <button class="sb-subitem" data-sub="produccion" onclick="sidebarNav('stock','produccion')">Producción</button>
           <button class="sb-subitem" data-sub="movimientos" onclick="sidebarNav('stock','movimientos')">Movimientos</button>
         </div>
       </div>
@@ -2596,6 +2597,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
       <div id="subnav-stock" class="mod-subnav" style="display:none !important;gap:4px;margin-bottom:14px;">
         <button class="subctab active" onclick="showCTab('insumos',this)">Insumos</button>
         <button class="subctab" onclick="showCTab('recetas',this)">Recetas</button>
+        <button class="subctab" onclick="showCTab('produccion',this)">Producción</button>
         <button class="subctab" onclick="showCTab('movimientos-stock',this)">Movimientos</button>
       </div>
 
@@ -4822,6 +4824,49 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- PRODUCCIÓN (COMMIT 3.3.1) -->
+      <div id="ct-produccion" style="display:none;">
+        <div style="border-radius:16px;overflow:hidden;margin-bottom:12px">
+        <div style="background:linear-gradient(180deg,#16241b 0%,#3d5242 100%);padding:20px 24px;color:#fff;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:38px;font-weight:300;">Mi <em style="font-style:italic;color:#b09088;">producción</em></div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;">
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
+              <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Ítems producibles</div>
+              <div style="font-family:'DM Sans',sans-serif;font-size:22px;font-weight:700;color:#fff;line-height:1;" id="prod-kpi-items">—</div>
+              <div style="height:2px;border-radius:2px;margin-top:8px;background:rgba(255,255,255,.08);"><div style="background:#5a7a5e;width:100%;height:100%;border-radius:2px;"></div></div>
+            </div>
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
+              <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Órdenes en curso</div>
+              <div style="font-family:'DM Sans',sans-serif;font-size:22px;font-weight:700;color:#fff;line-height:1;" id="prod-kpi-encurso">—</div>
+              <div style="height:2px;border-radius:2px;margin-top:8px;background:rgba(255,255,255,.08);"><div style="background:#5a7a5e;width:100%;height:100%;border-radius:2px;"></div></div>
+            </div>
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
+              <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Stock bajo mínimo</div>
+              <div style="font-family:'DM Sans',sans-serif;font-size:22px;font-weight:700;color:#fff;line-height:1;" id="prod-kpi-bajo">—</div>
+              <div style="height:2px;border-radius:2px;margin-top:8px;background:rgba(255,255,255,.08);"><div style="background:#b09088;width:100%;height:100%;border-radius:2px;"></div></div>
+            </div>
+          </div>
+        </div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin:18px 0 10px;">
+          <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:24px;font-weight:400;color:#1a1a1a;">Stock <em style="font-style:italic;color:#b09088;">de producción</em></div>
+          <button onclick="prodAbrirNuevaOrden()" disabled style="background:linear-gradient(135deg, #1e2e22 0%, #3d5242 100%);border:1px solid #1e2e22;color:#fff;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:500;cursor:not-allowed;opacity:0.5;font-family:'DM Sans',sans-serif;" title="Próximamente (COMMIT 3.3.2)">+ Nueva orden</button>
+        </div>
+        <div style="background:#fff;border:0.5px solid #e0dbd6;border-radius:12px;overflow:hidden;">
+          <div style="overflow-x:auto;">
+            <div id="prod-stock-lista">
+              <div style="padding:36px;text-align:center;color:#aaa;font-size:13px;">Cargando...</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:24px;font-family:'Cormorant Garamond',Georgia,serif;font-size:24px;font-weight:400;color:#1a1a1a;">Órdenes <em style="font-style:italic;color:#b09088;">de producción</em></div>
+        <div style="background:#fff;border:0.5px solid #e0dbd6;border-radius:12px;padding:40px;text-align:center;color:#aaa;font-size:13px;margin-top:10px;">Próximamente (COMMIT 3.3.3)</div>
       </div>
 
       <!-- MEMBRESIA -->
@@ -18330,6 +18375,90 @@ window.prodCargarOrdenes = async function() {
   return arr;
 };
 
+// ─── PRODUCCIÓN — pantalla (COMMIT 3.3.1) ────────────────────────────────────
+window.loadProduccionModule = async function() {
+  if(!currentClientUID) return;
+  // Asegurar caches base
+  if(!window._productos || !window._productos.length) {
+    if(window.loadProductos) try { await window.loadProductos(); } catch(_){}
+  }
+  if(!window._stockInsumos || !window._stockInsumos.length) {
+    if(window.loadStockModule) try { await window.loadStockModule(); } catch(_){}
+  }
+  if(!window._stockRecetas || !window._stockRecetas.length) {
+    if(window.loadRecetasModule) try { await window.loadRecetasModule(); } catch(_){}
+  }
+  if(window.prodCargarOrdenes) try { await window.prodCargarOrdenes(); } catch(_){}
+  prodRender();
+};
+
+window.prodRender = function() {
+  const recetas = window._stockRecetas || [];
+  const productos = window._productos || [];
+  const insumos = window._stockInsumos || [];
+  const ordenes = window._ordenesProduccion || [];
+  // Ítems producibles = items con receta activa (cruzando con productos / insumos para stock)
+  const producibles = recetas.map(r => {
+    const tipo = r.itemTipo || 'producto';
+    const id = r.itemId || r.productoId;
+    if(!id) return null;
+    const source = tipo === 'insumo' ? insumos : productos;
+    const item = source.find(x => x.id === id);
+    return {
+      itemId: id,
+      itemNombre: r.itemNombre || r.productoNombre || item?.nombre || '—',
+      itemTipo: tipo,
+      stockActual: item?.stockActual,
+      stockMinimo: item?.stockMinimo,
+      unidad: tipo === 'insumo' ? (item?.unidad || '') : 'u'
+    };
+  }).filter(Boolean);
+  // KPIs
+  const setEl = (id, v) => { const el = document.getElementById(id); if(el) el.textContent = v; };
+  setEl('prod-kpi-items', producibles.length);
+  setEl('prod-kpi-encurso', ordenes.filter(o => o.estado === 'en_curso').length);
+  const bajoMinimo = producibles.filter(p => {
+    const min = parseFloat(p.stockMinimo);
+    const act = parseFloat(p.stockActual);
+    return !isNaN(min) && !isNaN(act) && act < min;
+  });
+  setEl('prod-kpi-bajo', bajoMinimo.length);
+  // Tabla stock
+  const lista = document.getElementById('prod-stock-lista');
+  if(!lista) return;
+  if(!producibles.length) {
+    lista.innerHTML = '<div style="padding:36px;text-align:center;color:#aaa;font-size:13px;">No hay ítems con receta cargada. Creá una receta primero para poder producir.</div>';
+    return;
+  }
+  const header = `<div style="display:grid;grid-template-columns:1fr 130px 130px 110px;gap:12px;padding:10px 16px;background:#fafaf7;border-bottom:0.5px solid #f0eae3;font-size:10px;color:#888;letter-spacing:0.5px;font-weight:600;text-transform:uppercase;">
+    <div>Ítem</div><div>Destino</div><div style="text-align:right;">Stock</div><div></div>
+  </div>`;
+  const rows = producibles.map(p => {
+    const tipoBadge = p.itemTipo === 'insumo'
+      ? '<span style="font-size:9px;background:#ede5e8;color:#8e5c7d;padding:3px 8px;border-radius:10px;font-weight:600;letter-spacing:0.3px;">INSUMO</span>'
+      : '<span style="font-size:9px;background:#e8ede8;color:#4a5e4d;padding:3px 8px;border-radius:10px;font-weight:600;letter-spacing:0.3px;">MOSTRADOR</span>';
+    const min = parseFloat(p.stockMinimo);
+    const act = parseFloat(p.stockActual);
+    const bajo = !isNaN(min) && !isNaN(act) && act < min;
+    const stockStr = isNaN(act) ? '—' : `${act.toLocaleString('es-AR')} ${p.unidad||''}`.trim();
+    const stockHtml = `<span style="font-family:'DM Sans',sans-serif;font-size:13px;${bajo ? 'color:#b09088;font-weight:700;' : 'color:#1a1a1a;font-weight:500;'}">${stockStr}</span>`;
+    return `<div style="display:grid;grid-template-columns:1fr 130px 130px 110px;gap:12px;padding:12px 16px;align-items:center;border-bottom:0.5px solid #f0eae3;">
+      <div style="font-size:13px;color:#1a1a1a;font-weight:500;">${p.itemNombre}</div>
+      <div>${tipoBadge}</div>
+      <div style="text-align:right;">${stockHtml}</div>
+      <div style="text-align:right;">
+        <button disabled style="background:#fff;border:0.5px solid #d8d0c4;color:#555;padding:6px 14px;border-radius:8px;font-size:11px;font-weight:500;cursor:not-allowed;opacity:0.5;font-family:'DM Sans',sans-serif;" title="Próximamente (COMMIT 3.3.2)">Producir</button>
+      </div>
+    </div>`;
+  }).join('');
+  lista.innerHTML = header + rows;
+};
+
+window.prodAbrirNuevaOrden = function() {
+  // Stub: viene en COMMIT 3.3.2
+  if(typeof showToast === 'function') showToast('Próximamente: modal de Nueva orden', 'info');
+};
+
 window.loadContentAdmin = loadContentAdmin;
 
 window.toggleCkMesDrop = function() {
@@ -27077,6 +27206,7 @@ window.showCTab = function(tab, btn) {
   if(tab==='tareas') { if(typeof loadListas==='function') loadListas(); }
   if(tab==='insumos') { if(window.loadStockModule) loadStockModule(); }
   if(tab==='recetas') { if(window.loadRecetasModule) loadRecetasModule(); }
+  if(tab==='produccion') { if(window.loadProduccionModule) loadProduccionModule(); }
   if(tab==='movimientos-stock') { if(window.loadMovimientosStock) loadMovimientosStock(); }
 };
 
@@ -30364,6 +30494,7 @@ window.sidebarNav=function(mod,sub){
     }else if(mod==='stock'){
       if(sub==='insumos')window.showCTab('insumos',null);
       else if(sub==='recetas')window.showCTab('recetas',null);
+      else if(sub==='produccion')window.showCTab('produccion',null);
       else if(sub==='movimientos')window.showCTab('movimientos-stock',null);
     }
   });
