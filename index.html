@@ -7311,6 +7311,9 @@ window.showClientUI = async function(email, clientData) {
           ));
           if (!_opSnap.empty) {
             const _op = _opSnap.docs[0].data();
+            // COMMIT 3.6.3: expone array de roles del operador (para multi-rol en modo sistema).
+            // currentRol queda como string único (legacy) — el circuito cajero no se toca.
+            window._operadorRoles = Array.isArray(_op.roles) ? _op.roles : (_op.rol ? [_op.rol] : []);
             window.currentRol = _op.rol;
             window.currentOperadorNombre = _op.nombre;
             window.currentOperadorId = _op.uid;
@@ -29560,14 +29563,37 @@ async function turnoGenerarPDF(operador, ingresos, egresos, saldo, movs) {
 
 window._aplicarRestriccionesRol = function() {
   var rol = window.currentRol || 'admin';
-  var _ocultar = {
+  // COMMIT 3.6.3: map de qué oculta cada rol (single source of truth)
+  var _ocultaMap = {
     cajero:   ['sbg-inicio','sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion','btn-mi-cuenta','mc-kpi-clientes-grid'],
     compras:  ['sbg-finanzas','sbg-ventas','sbg-herramientas','sbg-gestion'],
     comercial:['sbg-finanzas','sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion'],
     vendedor: ['sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion'],
     produccion:['sbg-inicio','sbg-finanzas','sbg-ventas','sbg-compras','sbg-herramientas','sbg-gestion','btn-mi-cuenta'],
     stock:    ['sbg-inicio','sbg-finanzas','sbg-ventas','sbg-compras','sbg-herramientas','sbg-gestion','btn-mi-cuenta']
-  }[rol] || [];
+  };
+  // Roles del operador (cajero queda fuera del modo sistema; se procesa por separado)
+  var _rolesSistema = [];
+  var _ocultar;
+  if(rol === 'cajero') {
+    // MODO CAJA — comportamiento exacto como antes (sin tocar)
+    _ocultar = _ocultaMap.cajero || [];
+  } else {
+    // MODO SISTEMA — intersección de las listas _ocultar de los roles del operador
+    _rolesSistema = (window._operadorRoles && window._operadorRoles.length)
+      ? window._operadorRoles.filter(function(r) { return r !== 'cajero'; })
+      : [rol];
+    if(_rolesSistema.length === 0) _rolesSistema = [rol];
+    var _listas = _rolesSistema.map(function(r) { return _ocultaMap[r] || []; });
+    if(_listas.length === 1) {
+      _ocultar = _listas[0];
+    } else {
+      // Oculto un id solo si TODOS los roles lo ocultan
+      _ocultar = _listas[0].filter(function(id) {
+        return _listas.every(function(l) { return l.includes(id); });
+      });
+    }
+  }
   _ocultar.forEach(function(id) {
     var el = document.getElementById(id);
     if (el) el.style.display = 'none';
@@ -29613,19 +29639,33 @@ window._aplicarRestriccionesRol = function() {
       });
     }
   }
-  // COMMIT 3.5.1: rol produccion → filtrar sub-items de Stock (solo Producción + Insumos)
-  if(rol === 'produccion') {
-    var sbsubStock = document.getElementById('sbsub-stock');
-    if (sbsubStock) {
-      sbsubStock.querySelectorAll('.sb-subitem').forEach(function(btn) {
-        if (btn.dataset.sub !== 'produccion' && btn.dataset.sub !== 'insumos') btn.style.display = 'none';
-      });
+  // COMMIT 3.6.3: filtro de sub-items de Stock para produccion — SOLO si no hay otro rol que edita stock completo
+  if(rol !== 'cajero') {
+    var _ROLES_EDITAN_STOCK = ['compras','stock','admin'];
+    var _tieneEditorStock = _rolesSistema.some(function(r) { return _ROLES_EDITAN_STOCK.includes(r); });
+    if(_rolesSistema.includes('produccion') && !_tieneEditorStock) {
+      var sbsubStock = document.getElementById('sbsub-stock');
+      if (sbsubStock) {
+        sbsubStock.querySelectorAll('.sb-subitem').forEach(function(btn) {
+          if (btn.dataset.sub !== 'produccion' && btn.dataset.sub !== 'insumos') btn.style.display = 'none';
+        });
+      }
     }
   }
-  if(window.currentRol === 'cajero') document.body.classList.add('es-cajero');
-  if(window.currentRol === 'comercial') document.body.classList.add('es-comercial');
-  if(window.currentRol === 'compras') document.body.classList.add('es-compras');
-  if(window.currentRol === 'produccion') document.body.classList.add('es-produccion');
+  // COMMIT 3.6.3: clases body.es-{rol}
+  // - En modo Caja: solo es-cajero (el resto de roles esperan al modo Sistema, 3.6.4).
+  // - En modo Sistema: una clase por rol, con conflicto read-only resuelto (si tiene editor de insumos, skip es-produccion).
+  if(rol === 'cajero') {
+    document.body.classList.add('es-cajero');
+  } else {
+    var _ROLES_EDITAN_INSUMOS = ['compras','stock','admin'];
+    var _tieneEditorInsumos = _rolesSistema.some(function(r) { return _ROLES_EDITAN_INSUMOS.includes(r); });
+    _rolesSistema.forEach(function(r) {
+      if(r === 'produccion' && _tieneEditorInsumos) return;
+      if(['admin','vendedor'].includes(r)) return;
+      document.body.classList.add('es-' + r);
+    });
+  }
 };
 
 // Abre un PDF guardado como Base64 en nueva pestaña
