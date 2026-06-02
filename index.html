@@ -1612,6 +1612,11 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><path d="M16 3.13a4 4 0 010 7.75"/><path d="M21 21v-2a4 4 0 00-3-3.87"/></svg>
         <div class="sb-footer-label">Equipo</div>
       </button>
+      <!-- COMMIT 3.6.4: visible solo para operadores mixtos (cajero + sistema) -->
+      <button id="sb-cambiar-modo-btn" class="sb-footer-btn" style="display:none;" onclick="cambiarModoOperador()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 019-9 9.75 9.75 0 016.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 01-9 9 9.75 9.75 0 01-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg>
+        <div class="sb-footer-label" id="sb-cambiar-modo-label">Cambiar modo</div>
+      </button>
       <div style="height:.5px;background:rgba(255,255,255,.1);margin:4px 8px;"></div>
       <a href="#" onclick="event.preventDefault();window.open('https://sistema.mbstrategy.com.ar/instructivo.html'+(window.currentRol==='cajero'?'?rol=cajero':''),'_blank','noopener')" class="sb-footer-btn" style="text-decoration:none;">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b09088" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
@@ -2566,6 +2571,29 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
           <div style="padding:0 24px 24px;display:flex;gap:8px;">
             <button onclick="doLogout()" style="flex:0.7;padding:13px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;background:#fff;color:#888;border:1.5px solid #e0ddd8;">Cerrar sesión</button>
             <button id="cajero-apertura-btn" onclick="cajaAperturaConfirmar()" style="flex:1;padding:13px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;border:none;background:#4a5e4d;color:#f4f0ea;">Iniciar turno</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- COMMIT 3.6.4: Selector Modo Caja / Modo Sistema (operador mixto) — no cancelable -->
+      <style>.btn-modo-op:hover{border-color:#b09088 !important;background:#fafaf7 !important;}.btn-modo-op:hover .btn-modo-op-title{color:#3a4e3d !important;}</style>
+      <div id="modoOperadorOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:10000;align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:14px;width:380px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.22);">
+          <div style="height:3px;background:linear-gradient(90deg,#b09088,#c4a098,#b09088)"></div>
+          <div style="background:linear-gradient(135deg,#1e2e22 0%,#3d5242 100%);padding:22px 24px;">
+            <div style="font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:4px;">MB Strategy</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:#fff;letter-spacing:-.2px;line-height:1.15;">Hola, <span id="modoOperador-nombre"></span></div>
+            <div style="font-size:12px;color:rgba(255,255,255,.55);margin-top:4px;font-family:'DM Sans',sans-serif;">¿Cómo querés trabajar hoy?</div>
+          </div>
+          <div style="padding:18px 22px 22px;display:flex;flex-direction:column;gap:10px;">
+            <button onclick="modoOperadorElegirSet('caja')" class="btn-modo-op" style="text-align:left;background:#fff;border:1.5px solid #e8e4de;border-radius:12px;padding:14px 16px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;">
+              <div class="btn-modo-op-title" style="font-size:14px;font-weight:600;color:#1e2a1c;margin-bottom:3px;">Modo Caja</div>
+              <div style="font-size:11px;color:#888;">Apertura, ventas, turno</div>
+            </button>
+            <button onclick="modoOperadorElegirSet('sistema')" class="btn-modo-op" style="text-align:left;background:#fff;border:1.5px solid #e8e4de;border-radius:12px;padding:14px 16px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;">
+              <div class="btn-modo-op-title" style="font-size:14px;font-weight:600;color:#1e2a1c;margin-bottom:3px;">Modo Sistema</div>
+              <div style="font-size:11px;color:#888;" id="modoOperador-modulos"></div>
+            </button>
           </div>
         </div>
       </div>
@@ -7314,7 +7342,30 @@ window.showClientUI = async function(email, clientData) {
             // COMMIT 3.6.3: expone array de roles del operador (para multi-rol en modo sistema).
             // currentRol queda como string único (legacy) — el circuito cajero no se toca.
             window._operadorRoles = Array.isArray(_op.roles) ? _op.roles : (_op.rol ? [_op.rol] : []);
-            window.currentRol = _op.rol;
+            // COMMIT 3.6.4: bifurcación Modo Caja / Modo Sistema para operadores mixtos.
+            // Si tiene cajero + algún rol de sistema, preguntamos antes de arrancar el circuito cajero.
+            // Si vino del botón "Cambiar modo" (sessionStorage), usamos ese modo sin preguntar.
+            const _hasCajero  = window._operadorRoles.includes('cajero');
+            const _hasSistema = window._operadorRoles.some(function(r){return r !== 'cajero';});
+            let _modoActivo;
+            if (_hasCajero && _hasSistema) {
+              let _modoForzado = null;
+              try { _modoForzado = sessionStorage.getItem('mb_modo_forzado'); } catch(_se) {}
+              if (_modoForzado === 'caja' || _modoForzado === 'sistema') {
+                _modoActivo = _modoForzado;
+                try { sessionStorage.removeItem('mb_modo_forzado'); } catch(_se2) {}
+              } else {
+                _modoActivo = await window.modoOperadorElegir(_op);
+              }
+            } else if (_hasCajero) {
+              _modoActivo = 'caja';
+            } else {
+              _modoActivo = 'sistema';
+            }
+            window._modoActivo = _modoActivo;
+            window.currentRol = (_modoActivo === 'caja')
+              ? 'cajero'
+              : (window._operadorRoles.find(function(r){return r !== 'cajero';}) || _op.rol);
             window.currentOperadorNombre = _op.nombre;
             window.currentOperadorId = _op.uid;
             window.turnoActual = null;
@@ -29618,6 +29669,44 @@ window.tieneAccesoATab = function(tab) {
   });
 };
 
+// COMMIT 3.6.4: Selector Modo Caja / Modo Sistema para operador mixto (cajero + sistema)
+// Promise-based para integrarse en el flujo async del login sin romper el orden.
+window.modoOperadorElegir = function(_op) {
+  return new Promise(function(resolve){
+    var nombreEl = document.getElementById('modoOperador-nombre');
+    var modulosEl = document.getElementById('modoOperador-modulos');
+    if(nombreEl) nombreEl.textContent = _op.nombre || '';
+    if(modulosEl) {
+      var LABEL = { comercial:'Ventas', compras:'Compras', vendedor:'Ventas', produccion:'Producción', stock:'Stock' };
+      var mods = (window._operadorRoles || []).filter(function(r){return r !== 'cajero';})
+                  .map(function(r){return LABEL[r] || r;});
+      modulosEl.textContent = mods.join(' · ');
+    }
+    window._modoOperadorResolve = resolve;
+    var ov = document.getElementById('modoOperadorOverlay');
+    if(ov) ov.style.display = 'flex';
+  });
+};
+window.modoOperadorElegirSet = function(modo) {
+  var ov = document.getElementById('modoOperadorOverlay');
+  if(ov) ov.style.display = 'none';
+  if(window._modoOperadorResolve) {
+    var r = window._modoOperadorResolve;
+    window._modoOperadorResolve = null;
+    r(modo);
+  }
+};
+
+// COMMIT 3.6.4: botón "Cambiar modo" — marca el modo opuesto en sessionStorage y recarga.
+// El reload pasa por el login, que detecta la marca y entra directo al modo forzado sin re-preguntar.
+// sessionStorage se borra apenas se usa, así que un cierre+login normal vuelve a preguntar.
+window.cambiarModoOperador = function() {
+  var actual = window._modoActivo || 'caja';
+  var nuevo = (actual === 'caja') ? 'sistema' : 'caja';
+  try { sessionStorage.setItem('mb_modo_forzado', nuevo); } catch(e) {}
+  location.reload();
+};
+
 window._aplicarRestriccionesRol = function() {
   var rol = window.currentRol || 'admin';
   // COMMIT 3.6.3: map de qué oculta cada rol (single source of truth)
@@ -29660,6 +29749,18 @@ window._aplicarRestriccionesRol = function() {
     // Mostrar botón Equipo solo para el dueño del negocio
     var btnEquipo = document.getElementById('sb-equipo-btn');
     if (btnEquipo) btnEquipo.style.display = '';
+  }
+  // COMMIT 3.6.4: botón "Cambiar modo" visible solo para operadores mixtos (cajero + sistema)
+  var _btnCambiarModo = document.getElementById('sb-cambiar-modo-btn');
+  if (_btnCambiarModo) {
+    var _esMixto = window._operadorRoles
+      && window._operadorRoles.includes('cajero')
+      && window._operadorRoles.some(function(r){return r !== 'cajero';});
+    if (_esMixto) {
+      _btnCambiarModo.style.display = '';
+      var _lbl = document.getElementById('sb-cambiar-modo-label');
+      if (_lbl) _lbl.textContent = (window._modoActivo === 'caja') ? 'Ir a Sistema' : 'Ir a Caja';
+    }
   }
   if (rol === 'cajero') {
     // Mostrar botones de cajero en subnav-finanzas
