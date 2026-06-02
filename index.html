@@ -21580,6 +21580,7 @@ async function loadProductos() {
     snap.forEach(d => { const data=d.data(); if(!data.eliminado) _productos.push({id:d.id,...data}); });
     _productos.sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||''));
     window._productos = _productos;
+    window._productosData = _productos;
     renderProductosModule();
     actualizarSelectorProductos();
   } catch(e){
