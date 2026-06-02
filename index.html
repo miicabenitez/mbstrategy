@@ -18261,16 +18261,20 @@ window._triggerStockPorVenta = async function(carrito, refId) {
       if(!receta || !receta.items?.length) continue;
       for(const it of receta.items) {
         if(!it.insumoId) continue;
-        const delta = parseFloat(it.cantidadBase??it.cantidad??0)*qty;
-        if(!delta) continue;
+        // deltaBase: cantidad real a descontar del stockActual (en unidadBase del insumo, ej 0.08 kg)
+        // cantidadShow + unidadShow: lo que se muestra en el movimiento (en unidad de la receta, ej 80 g)
+        const deltaBase = parseFloat(it.cantidadBase??it.cantidad??0)*qty;
+        const cantidadShow = parseFloat(it.cantidad??it.cantidadBase??0)*qty;
+        const unidadShow = it.unidad || '';
+        if(!deltaBase) continue;
         try {
           // stockResultante estimado desde cache (no atómico, solo para historial)
           const _cached = (window._stockInsumos||[]).find(x=>x.id===it.insumoId);
-          const stockResultante = _cached ? (parseFloat(_cached.stockActual||0) - delta) : null;
-          await updateDoc(doc(db,'clientes',currentClientUID,'insumos',it.insumoId),{stockActual:increment(-delta)});
+          const stockResultante = _cached ? (parseFloat(_cached.stockActual||0) - deltaBase) : null;
+          await updateDoc(doc(db,'clientes',currentClientUID,'insumos',it.insumoId),{stockActual:increment(-deltaBase)});
           await addDoc(collection(db,'clientes',currentClientUID,'movimientosStock'),{
-            tipo:'salida', insumoId:it.insumoId, insumoNombre:it.insumoNombre||'', cantidad:delta,
-            unidad:it.unidad||'', stockResultante, origen:'venta', referenciaId:refId||'',
+            tipo:'salida', insumoId:it.insumoId, insumoNombre:it.insumoNombre||'', cantidad:cantidadShow,
+            unidad:unidadShow, stockResultante, origen:'venta', referenciaId:refId||'',
             notas:nombreProd, fecha:hoy, creadoEn:new Date().toISOString()
           });
         } catch(eItem) { console.error('_triggerStockPorVenta insumo error:',it.insumoId, eItem); _errCount++; }
@@ -18300,16 +18304,19 @@ window._triggerStockPorPresupuesto = async function(p) {
     if(!receta || !receta.items?.length) continue;
     for(const ri of receta.items) {
       if(!ri.insumoId) continue;
-      const delta = parseFloat(ri.cantidadBase??ri.cantidad??0)*qty;
-      if(!delta) continue;
+      // deltaBase: descuento real (unidadBase del insumo); cantidadShow/unidadShow: display (unidad receta)
+      const deltaBase = parseFloat(ri.cantidadBase??ri.cantidad??0)*qty;
+      const cantidadShow = parseFloat(ri.cantidad??ri.cantidadBase??0)*qty;
+      const unidadShow = ri.unidad || '';
+      if(!deltaBase) continue;
       try {
         // stockResultante estimado desde cache (no atómico, solo para historial)
         const _cached = (window._stockInsumos||[]).find(x=>x.id===ri.insumoId);
-        const stockResultante = _cached ? (parseFloat(_cached.stockActual||0) - delta) : null;
-        await updateDoc(doc(db,'clientes',currentClientUID,'insumos',ri.insumoId),{stockActual:increment(-delta)});
+        const stockResultante = _cached ? (parseFloat(_cached.stockActual||0) - deltaBase) : null;
+        await updateDoc(doc(db,'clientes',currentClientUID,'insumos',ri.insumoId),{stockActual:increment(-deltaBase)});
         await addDoc(collection(db,'clientes',currentClientUID,'movimientosStock'),{
-          tipo:'salida', insumoId:ri.insumoId, insumoNombre:ri.insumoNombre||'', cantidad:delta,
-          unidad:ri.unidad||'', stockResultante, origen:'presupuesto', referenciaId:p.id||'',
+          tipo:'salida', insumoId:ri.insumoId, insumoNombre:ri.insumoNombre||'', cantidad:cantidadShow,
+          unidad:unidadShow, stockResultante, origen:'presupuesto', referenciaId:p.id||'',
           notas:nombreProd, fecha:hoy, creadoEn:new Date().toISOString()
         });
       } catch(eItem) { console.error('_triggerStockPorPresupuesto insumo error:',ri.insumoId, eItem); }
