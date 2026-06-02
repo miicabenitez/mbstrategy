@@ -18258,6 +18258,78 @@ window.stkDescontarPresupuesto = async function(presupId) {
   );
 };
 
+// ─── MÓDULO PRODUCCIÓN — datos base (COMMIT 3.2) ─────────────────────────────
+// Modelo: clientes/{uid}/ordenesProduccion. Orden multi-línea con estado por línea.
+// Estado general derivado: pendiente | en_curso | finalizada.
+
+window._getNextProduccionNum = async function(uid) {
+  const ref = window._doc(window.db, 'clientes', uid, 'config', 'contadores');
+  let num;
+  await window._runTransaction(window.db, async function(tx) {
+    const snap = await tx.get(ref);
+    num = (snap.exists() ? (snap.data().ultimoProduccion || 0) : 0) + 1;
+    tx.set(ref, { ultimoProduccion: num }, { merge: true });
+  });
+  return 'P-' + String(num).padStart(4, '0');
+};
+
+window._prodCalcularEstadoOrden = function(lineas) {
+  if(!lineas || !lineas.length) return 'pendiente';
+  if(lineas.every(l => l.estado === 'finalizada')) return 'finalizada';
+  if(lineas.some(l => l.estado === 'iniciada' || l.estado === 'finalizada')) return 'en_curso';
+  return 'pendiente';
+};
+
+window.prodCrearOrden = async function(lineas, notas) {
+  if(!currentClientUID) throw new Error('Sesión no iniciada');
+  if(!Array.isArray(lineas) || !lineas.length) throw new Error('La orden debe tener al menos una línea');
+  const uid = currentClientUID;
+  const numero = await window._getNextProduccionNum(uid);
+  const now = new Date().toISOString();
+  const lineasNormalizadas = lineas.map((l, i) => {
+    const tipo = l.itemTipo || 'producto';
+    const source = tipo === 'insumo' ? (window._stockInsumos || []) : (window._productos || []);
+    const item = source.find(x => x.id === l.itemId);
+    const lineaId = l.lineaId || (now.replace(/[^0-9]/g, '') + '-' + i + '-' + Math.random().toString(36).slice(2, 6));
+    return {
+      lineaId,
+      itemId: l.itemId,
+      itemNombre: l.itemNombre || item?.nombre || '',
+      itemTipo: tipo,
+      rubro: l.rubro || item?.rubro || '',
+      cantidad: parseFloat(l.cantidad) || 0,
+      estado: 'pendiente',
+      iniciadaEn: null,
+      finalizadaEn: null
+    };
+  });
+  const data = {
+    numero,
+    estado: window._prodCalcularEstadoOrden(lineasNormalizadas),
+    lineas: lineasNormalizadas,
+    notas: notas || '',
+    creadoEn: now,
+    updatedAt: now,
+    eliminado: false
+  };
+  const ref = await window._addDoc(window._collection(window.db, 'clientes', uid, 'ordenesProduccion'), data);
+  return { id: ref.id, ...data };
+};
+
+window.prodCargarOrdenes = async function() {
+  if(!currentClientUID) return [];
+  const uid = currentClientUID;
+  const snap = await window._getDocs(window._collection(window.db, 'clientes', uid, 'ordenesProduccion'));
+  const arr = [];
+  snap.forEach(d => {
+    const data = d.data();
+    if(!data.eliminado) arr.push({ id: d.id, ...data });
+  });
+  arr.sort((a, b) => (b.creadoEn || '').localeCompare(a.creadoEn || ''));
+  window._ordenesProduccion = arr;
+  return arr;
+};
+
 window.loadContentAdmin = loadContentAdmin;
 
 window.toggleCkMesDrop = function() {
