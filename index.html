@@ -1273,6 +1273,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 @keyframes calcFloat3{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-12px) rotate(2deg)}}
 @keyframes calcFadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes calcPillPop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+.prod-tipo-chip:hover:not([data-active="true"]){background:#f7f8f5 !important;border-color:#b09088 !important;}
 </style>
 <!-- deploy force 023 -->
 </head>
@@ -5719,11 +5720,11 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 <!-- Modal nuevo proveedor -->
 <!-- Modal nuevo producto -->
 <div class="mo" id="newProductoModal">
-  <div class="md" style="max-width:420px;padding:0;overflow:hidden;position:relative;">
+  <div class="md" style="max-width:min(480px,92vw);padding:0;overflow:hidden;position:relative;">
     <button class="mc2" onclick="closeModal('newProductoModal')" style="position:absolute;top:14px;right:14px;z-index:2;color:#fff;background:rgba(255,255,255,.15);border:none;">×</button>
     <div style="background:#A1B1A4;padding:22px 24px 18px;">
       <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">MB Strategy</div>
-      <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;color:#fff;" id="prod-modal-titulo">Agregar al catálogo</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;color:#fff;" id="prod-modal-titulo">Nuevo <em style="font-style:italic;color:#b09088;">producto</em></div>
     </div>
     <div style="padding:22px 24px;">
       <input type="hidden" id="prod-edit-id"/>
@@ -5733,9 +5734,9 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
       <div class="fg">
         <label class="fl">Tipo de producto</label>
         <div id="prod-tipo-chips" style="display:flex;gap:6px;flex-wrap:wrap;">
-          <button type="button" onclick="prodSeleccionarTipo('simple')" data-tipo="simple" class="prod-tipo-chip" style="background:#fff;border:0.5px solid #d8d0c4;color:#555;padding:8px 16px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">Reventa</button>
-          <button type="button" onclick="prodSeleccionarTipo('produccion')" data-tipo="produccion" class="prod-tipo-chip" style="background:#fff;border:0.5px solid #d8d0c4;color:#555;padding:8px 16px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">Producción</button>
-          <button type="button" onclick="prodSeleccionarTipo('al_momento')" data-tipo="al_momento" class="prod-tipo-chip" style="background:#fff;border:0.5px solid #d8d0c4;color:#555;padding:8px 16px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">Elaboración en el momento</button>
+          <button type="button" onclick="prodSeleccionarTipo('simple')" data-tipo="simple" class="prod-tipo-chip" style="background:#fff;border:1px solid #d8d0c4;color:#555;padding:8px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s,border-color .15s;">Reventa</button>
+          <button type="button" onclick="prodSeleccionarTipo('produccion')" data-tipo="produccion" class="prod-tipo-chip" style="background:#fff;border:1px solid #d8d0c4;color:#555;padding:8px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s,border-color .15s;">Producción</button>
+          <button type="button" onclick="prodSeleccionarTipo('al_momento')" data-tipo="al_momento" class="prod-tipo-chip" style="background:#fff;border:1px solid #d8d0c4;color:#555;padding:8px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s,border-color .15s;">Elaboración en el momento</button>
         </div>
         <div id="prod-tipo-desc" style="margin-top:10px;background:#f7f8f5;border-left:3px solid #4a5e4d;padding:10px 12px;border-radius:6px;font-size:11px;color:#555;line-height:1.5;"></div>
       </div>
@@ -29337,7 +29338,7 @@ async function createProducto() {
       closeModal('newProductoModal');
       ['prod-nombre','prod-precio','prod-desc'].forEach(function(fid){var el=document.getElementById(fid);if(el)el.value='';});
       document.getElementById('prod-edit-id').value='';
-      document.getElementById('prod-modal-titulo').textContent='Agregar al catálogo';
+      document.getElementById('prod-modal-titulo').innerHTML='Nuevo <em style="font-style:italic;color:#b09088;">producto</em>';
       var btn=document.getElementById('prod-modal-btn');
       if(btn){btn.textContent='Guardar';}
     }, 1500);
@@ -29356,9 +29357,9 @@ window.prodSeleccionarTipo = function(tipo) {
     const active = c.dataset.tipo === tipo;
     c.dataset.active = active ? 'true' : 'false';
     if(active) {
-      c.style.background = '#1a1a1a';
+      c.style.background = '#4a5e4d';
       c.style.color = '#fff';
-      c.style.borderColor = '#1a1a1a';
+      c.style.borderColor = '#4a5e4d';
       c.style.fontWeight = '600';
     } else {
       c.style.background = '#fff';
@@ -29377,7 +29378,7 @@ window.abrirNuevoProducto = function() {
   const precioEl = document.getElementById('prod-precio');
   if(precioEl) precioEl.value = '';
   document.getElementById('prod-desc').value = '';
-  document.getElementById('prod-modal-titulo').textContent = 'Agregar al catálogo';
+  document.getElementById('prod-modal-titulo').innerHTML = 'Nuevo <em style="font-style:italic;color:#b09088;">producto</em>';
   const btn = document.getElementById('prod-modal-btn');
   if(btn){ btn.textContent='Guardar'; btn.onclick=createProducto; }
   // PRODUCCIÓN COMMIT 2: default desde clientData.configProductos.tipoDefault (fallback al_momento)
@@ -29397,7 +29398,7 @@ window.editProducto = function(id) {
   const precioEl = document.getElementById('prod-precio');
   if(precioEl) { precioEl.value = p.precio ? Math.round(parseFloat(p.precio)).toLocaleString('es-AR') : ''; }
   document.getElementById('prod-desc').value = p.descripcion||'';
-  document.getElementById('prod-modal-titulo').textContent = 'Editar ítem';
+  document.getElementById('prod-modal-titulo').innerHTML = 'Editar <em style="font-style:italic;color:#b09088;">producto</em>';
   var btn = document.getElementById('prod-modal-btn');
   if(btn){ btn.textContent='Guardar cambios'; btn.onclick=createProducto; }
   // PRODUCCIÓN COMMIT 2: leer tipo + esInsumo con fallback para docs viejos
