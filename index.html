@@ -31950,25 +31950,38 @@ window.doResetPassword = async function(){
 </script>
 
 <!-- COMMIT 3.6.4 (fix): Selector Modo Caja / Modo Sistema — fuera de #app porque #app arranca con display:none -->
-<style>.btn-modo-op:hover{border-color:#b09088 !important;background:#fafaf7 !important;}.btn-modo-op:hover .btn-modo-op-title{color:#3a4e3d !important;}</style>
-<div id="modoOperadorOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:10000;align-items:center;justify-content:center;">
-  <div style="background:#fff;border-radius:14px;width:380px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.22);">
-    <div style="height:3px;background:linear-gradient(90deg,#b09088,#c4a098,#b09088)"></div>
-    <div style="background:linear-gradient(135deg,#1e2e22 0%,#3d5242 100%);padding:22px 24px;">
-      <div style="font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:4px;">MB Strategy</div>
-      <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:#fff;letter-spacing:-.2px;line-height:1.15;">Hola, <span id="modoOperador-nombre"></span></div>
-      <div style="font-size:12px;color:rgba(255,255,255,.55);margin-top:4px;font-family:'DM Sans',sans-serif;">¿Cómo querés trabajar hoy?</div>
+<!-- COMMIT 3.6.4.2: rediseño visual (pantalla completa estilo MB, cards con icono) -->
+<style>.modo-card:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,.35) !important;}</style>
+<div id="modoOperadorOverlay" style="display:none;position:fixed;inset:0;z-index:10000;background:linear-gradient(150deg,#16241b 0%,#0d1f1a 55%,#060e0b 100%);align-items:center;justify-content:center;flex-direction:column;">
+  <div style="text-align:center;margin-bottom:2.5rem;">
+    <div style="font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(176,144,136,.7);margin-bottom:10px;font-family:'DM Sans',sans-serif;">MB Strategy</div>
+    <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:38px;font-weight:500;color:#fff;line-height:1.1;">Hola, <em id="modoOperador-nombre" style="font-style:italic;color:#c4a098;"></em></div>
+    <div style="font-size:14px;color:rgba(255,255,255,.5);margin-top:8px;font-family:'DM Sans',sans-serif;">¿Cómo querés trabajar hoy?</div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:14px;width:100%;max-width:400px;padding:0 20px;box-sizing:border-box;">
+
+    <div onclick="modoOperadorElegirSet('caja')" class="modo-card" role="button" style="display:flex;align-items:center;gap:16px;background:#f4f0ea;border-radius:16px;padding:18px 20px;cursor:pointer;transition:all .2s;box-shadow:0 4px 20px rgba(0,0,0,.25);">
+      <div style="width:50px;height:50px;flex-shrink:0;border-radius:13px;background:linear-gradient(135deg,#1e2e22,#3d5242);display:flex;align-items:center;justify-content:center;">
+        <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#c4a098" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M2 11h20"/><path d="M6 15h4"/></svg>
+      </div>
+      <div style="flex:1;">
+        <div style="font-family:'DM Sans',sans-serif;font-size:16px;font-weight:600;color:#1e2a1c;">Modo Caja</div>
+        <div style="font-size:12px;color:#8a857d;font-family:'DM Sans',sans-serif;margin-top:2px;">Apertura, ventas, turno</div>
+      </div>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c0b8ab" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
     </div>
-    <div style="padding:18px 22px 22px;display:flex;flex-direction:column;gap:10px;">
-      <button onclick="modoOperadorElegirSet('caja')" class="btn-modo-op" style="text-align:left;background:#fff;border:1.5px solid #e8e4de;border-radius:12px;padding:14px 16px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;">
-        <div class="btn-modo-op-title" style="font-size:14px;font-weight:600;color:#1e2a1c;margin-bottom:3px;">Modo Caja</div>
-        <div style="font-size:11px;color:#888;">Apertura, ventas, turno</div>
-      </button>
-      <button onclick="modoOperadorElegirSet('sistema')" class="btn-modo-op" style="text-align:left;background:#fff;border:1.5px solid #e8e4de;border-radius:12px;padding:14px 16px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;">
-        <div class="btn-modo-op-title" style="font-size:14px;font-weight:600;color:#1e2a1c;margin-bottom:3px;">Modo Sistema</div>
-        <div style="font-size:11px;color:#888;" id="modoOperador-modulos"></div>
-      </button>
+
+    <div onclick="modoOperadorElegirSet('sistema')" class="modo-card" role="button" style="display:flex;align-items:center;gap:16px;background:#f4f0ea;border-radius:16px;padding:18px 20px;cursor:pointer;transition:all .2s;box-shadow:0 4px 20px rgba(0,0,0,.25);">
+      <div style="width:50px;height:50px;flex-shrink:0;border-radius:13px;background:linear-gradient(135deg,#3d5242,#5a7060);display:flex;align-items:center;justify-content:center;">
+        <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      </div>
+      <div style="flex:1;">
+        <div style="font-family:'DM Sans',sans-serif;font-size:16px;font-weight:600;color:#1e2a1c;">Modo Sistema</div>
+        <div id="modoOperador-modulos" style="font-size:12px;color:#8a857d;font-family:'DM Sans',sans-serif;margin-top:2px;"></div>
+      </div>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c0b8ab" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
     </div>
+
   </div>
 </div>
 </body>
