@@ -64,7 +64,7 @@ exports.handler = async function(event) {
         return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: 'Faltan campos: nombre, usuario, password, roles' }) };
       }
       const usuario = usuarioRaw.toLowerCase().trim();
-      const ROLES_VALIDOS = ['cajero', 'compras', 'comercial', 'vendedor', 'produccion'];
+      const ROLES_VALIDOS = ['cajero', 'compras', 'comercial', 'vendedor', 'produccion', 'stock'];
       if (!rolesArr.every(r => ROLES_VALIDOS.includes(r))) {
         return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: `Roles inválidos. Cada uno debe ser uno de: ${ROLES_VALIDOS.join(', ')}` }) };
       }
@@ -145,7 +145,7 @@ exports.handler = async function(event) {
       const rolesArr = Array.isArray(body.roles) ? body.roles : (body.rol ? [body.rol] : []);
       if (!opUid) return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: 'Falta uid del operador' }) };
       if (!nombre || rolesArr.length === 0) return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: 'Faltan campos: nombre, roles' }) };
-      const ROLES_VALIDOS_EDIT = ['cajero', 'compras', 'comercial', 'vendedor', 'produccion'];
+      const ROLES_VALIDOS_EDIT = ['cajero', 'compras', 'comercial', 'vendedor', 'produccion', 'stock'];
       if (!rolesArr.every(r => ROLES_VALIDOS_EDIT.includes(r))) {
         return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: `Roles inválidos. Cada uno debe ser uno de: ${ROLES_VALIDOS_EDIT.join(', ')}` }) };
       }

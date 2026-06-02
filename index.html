@@ -5247,6 +5247,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
                 <button type="button" class="equipo-rol-pill" data-rol="compras" onclick="equipoRolSeleccionar(this)" style="flex:1;padding:9px 0;border-radius:20px;background:#fff;border:.5px solid #d0ccc6;color:#aaa;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">Compras</button>
                 <button type="button" class="equipo-rol-pill" data-rol="comercial" onclick="equipoRolSeleccionar(this)" style="flex:1;padding:9px 0;border-radius:20px;background:#fff;border:.5px solid #d0ccc6;color:#aaa;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">Comercial</button>
                 <button type="button" class="equipo-rol-pill" data-rol="produccion" onclick="equipoRolSeleccionar(this)" style="flex:1;padding:9px 0;border-radius:20px;background:#fff;border:.5px solid #d0ccc6;color:#aaa;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">Producción</button>
+                <button type="button" class="equipo-rol-pill" data-rol="stock" onclick="equipoRolSeleccionar(this)" style="flex:1;padding:9px 0;border-radius:20px;background:#fff;border:.5px solid #d0ccc6;color:#aaa;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">Stock</button>
               </div>
               <input id="equipo-rol" type="hidden" value="cajero">
               <div id="equipo-cajas-block" style="margin-bottom:14px;">
@@ -7372,7 +7373,7 @@ window.showClientUI = async function(email, clientData) {
 
       // Mostrar módulo inicial inmediatamente, sin esperar los awaits de datos
       const _savedMod0 = (() => { try { return localStorage.getItem('mbst_lastmod'); } catch(e) { return null; } })();
-      const _modToShow0 = window.currentRol === 'cajero' ? 'finanzas' : window.currentRol === 'comercial' ? 'comercial' : window.currentRol === 'compras' ? 'compras' : window.currentRol === 'produccion' ? 'stock' : (_savedMod0 || 'inicio');
+      const _modToShow0 = window.currentRol === 'cajero' ? 'finanzas' : window.currentRol === 'comercial' ? 'comercial' : window.currentRol === 'compras' ? 'compras' : (window.currentRol === 'produccion' || window.currentRol === 'stock') ? 'stock' : (_savedMod0 || 'inicio');
       const _modBtn0 = document.querySelector('#cNav .nt[onclick*="\''+_modToShow0+'\'"]') || document.querySelector('#cNav .nt');
       getDocs(collection(db,'clientes',currentClientUID,'tareas')).then(function(_tSnap){
         window._clientTareas=[];
@@ -18472,7 +18473,7 @@ window.prodCargarOrdenes = async function() {
 // ─── COMMIT 3.4: lógica iniciar/finalizar líneas (mueve stock) ───────────────
 // Hook permisos (COMMIT 3.5.1: admin y rol produccion pueden ejecutar).
 window._prodPuedeEjecutar = function() {
-  return window.currentRol === 'admin' || window.currentRol === 'produccion';
+  return window.currentRol === 'admin' || window.currentRol === 'produccion' || window.currentRol === 'stock';
 };
 
 // COMMIT 3.4.2: helpers de autoría
@@ -18880,7 +18881,7 @@ window._prodOrdenLineas = [];
 
 // Hook de permisos para sub-rol Producción (gancho para COMMIT 3.5). Por ahora siempre true.
 window._prodPuedeCrearOrden = function() {
-  return window.currentRol === 'admin' || window.currentRol === 'produccion';
+  return window.currentRol === 'admin' || window.currentRol === 'produccion' || window.currentRol === 'stock';
 };
 
 window.prodAbrirNuevaOrden = function(itemId, itemTipo) {
@@ -27868,7 +27869,7 @@ window.loadEquipoModule = async function() {
 </div>`;
       return;
     }
-    const ROL_LABEL = {cajero:'Cajero',compras:'Compras + Stock',comercial:'Comercial',admin:'Admin'};
+    const ROL_LABEL = {cajero:'Cajero',compras:'Compras',comercial:'Comercial',admin:'Admin',produccion:'Producción',stock:'Stock'};
     const _cajasNombreMap = {};
     (window._equipoCajas||[]).forEach(c => { _cajasNombreMap[c.id] = c.nombre || '—'; });
     const filas = ops.map(o => {
@@ -27876,16 +27877,20 @@ window.loadEquipoModule = async function() {
       const badge = activo
         ? '<span style="background:#e8f0e8;color:#4a5e4d;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600;">Activo</span>'
         : '<span style="background:#f9f0ee;color:#b09088;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600;">Inactivo</span>';
-      const rolBadge = `<span style="background:#e8f0e8;color:#4a5e4d;border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600;display:inline-block;">${ROL_LABEL[o.rol]||o.rol||'—'}</span>`;
+      // COMMIT 3.6.2: mostrar todos los roles si tiene roles[] (multi-rol), fallback a rol string
+      const rolesArrFila = Array.isArray(o.roles) ? o.roles : (o.rol ? [o.rol] : []);
+      const rolBadge = rolesArrFila.length
+        ? rolesArrFila.map(r => `<span style="background:#e8f0e8;color:#4a5e4d;border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600;display:inline-block;">${ROL_LABEL[r]||r}</span>`).join(' ')
+        : `<span style="background:#f0ece6;color:#888;border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600;display:inline-block;">—</span>`;
       let cajasHtml = '';
-      if(o.rol === 'cajero') {
+      if(rolesArrFila.includes('cajero')) {
         if(Array.isArray(o.cajas) && o.cajas.length > 0) {
           cajasHtml = o.cajas.map(cid => `<span style="background:#e8f0e8;color:#4a5e4d;border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600;display:inline-block;">${_cajasNombreMap[cid] || '?'}</span>`).join('');
         } else {
           cajasHtml = `<span style="background:#f0ece6;color:#888;border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600;display:inline-block;">Todas las cajas</span>`;
         }
       }
-      const rolCell = `<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start;">${rolBadge}${cajasHtml ? '<div style="display:flex;flex-wrap:wrap;gap:4px;">'+cajasHtml+'</div>' : ''}</div>`;
+      const rolCell = `<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start;"><div style="display:flex;flex-wrap:wrap;gap:4px;">${rolBadge}</div>${cajasHtml ? '<div style="display:flex;flex-wrap:wrap;gap:4px;">'+cajasHtml+'</div>' : ''}</div>`;
       const btnEditar = `<button onclick="equipoEditarUsuario('${o.id}')" style="padding:5px 12px;border-radius:6px;border:.5px solid #c0d0c0;background:#f4f8f4;color:#4a5e4d;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;">Editar</button>`;
       const btnDesact = activo
         ? `<button onclick="equipoDesactivar('${o.id}','${(o.usuario||'').replace(/'/g,"\\'")}','${(o.uid||'').replace(/'/g,"\\'")}',this)" style="padding:5px 12px;border-radius:6px;border:.5px solid #d4bfbb;background:#f9f4f3;color:#b09088;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;">Desactivar</button>`
@@ -28086,8 +28091,10 @@ window.equipoNuevoUsuarioShow = function() {
   var _eyebrow = document.getElementById('equipo-modal-eyebrow');
   if(_eyebrow) _eyebrow.textContent = 'Nuevo';
   document.getElementById('equipo-rol').value = 'cajero';
+  // COMMIT 3.6.2: multi-selección — default solo cajero activo
   document.querySelectorAll('.equipo-rol-pill').forEach(b => {
     var on = b.dataset.rol === 'cajero';
+    b.dataset.active = on ? 'true' : 'false';
     b.style.background = on ? '#e8f0e8' : '#fff';
     b.style.borderColor = on ? '#4a5e4d' : '#d0ccc6';
     b.style.color = on ? '#4a5e4d' : '#aaa';
@@ -28142,19 +28149,22 @@ window.equipoEditarUsuario = async function(uid) {
   var passEl = document.getElementById('equipo-password');
   if(passEl) { passEl.value = ''; passEl.placeholder = 'Dejar vacío para no cambiarla'; }
 
-  var rol = operador.rol || 'cajero';
-  document.getElementById('equipo-rol').value = rol;
+  // COMMIT 3.6.2: leer roles[] (nuevo) con fallback a rol (legacy)
+  var rolesArr = Array.isArray(operador.roles) ? operador.roles : (operador.rol ? [operador.rol] : []);
+  var tieneCajero = rolesArr.includes('cajero');
+  document.getElementById('equipo-rol').value = rolesArr[0] || '';
   document.querySelectorAll('.equipo-rol-pill').forEach(b => {
-    var on = b.dataset.rol === rol;
+    var on = rolesArr.includes(b.dataset.rol);
+    b.dataset.active = on ? 'true' : 'false';
     b.style.background = on ? '#e8f0e8' : '#fff';
     b.style.borderColor = on ? '#4a5e4d' : '#d0ccc6';
     b.style.color = on ? '#4a5e4d' : '#aaa';
   });
 
   var cajasBlock = document.getElementById('equipo-cajas-block');
-  if(cajasBlock) cajasBlock.style.display = rol === 'cajero' ? 'block' : 'none';
+  if(cajasBlock) cajasBlock.style.display = tieneCajero ? 'block' : 'none';
 
-  if(rol === 'cajero' && window.equipoCajasRenderCheckboxes) {
+  if(tieneCajero && window.equipoCajasRenderCheckboxes) {
     var initialIds;
     if(Array.isArray(operador.cajas)) {
       // Array (incluso []) respeta selección guardada — vacío significa "ninguna marcada"
@@ -28178,21 +28188,27 @@ window.equipoUsuarioValidar = function(input) {
   input.value = input.value.replace(/\s|@/g,'');
 };
 window.equipoRolSeleccionar = function(btn) {
-  document.querySelectorAll('.equipo-rol-pill').forEach(b => {
-    b.style.background = '#fff';
-    b.style.borderColor = '#d0ccc6';
-    b.style.color = '#aaa';
-  });
-  btn.style.background = '#e8f0e8';
-  btn.style.borderColor = '#4a5e4d';
-  btn.style.color = '#4a5e4d';
+  // COMMIT 3.6.2: multi-selección — toggle individual sin apagar otras pills
+  var nuevo = btn.dataset.active !== 'true';
+  btn.dataset.active = nuevo ? 'true' : 'false';
+  if(nuevo) {
+    btn.style.background = '#e8f0e8';
+    btn.style.borderColor = '#4a5e4d';
+    btn.style.color = '#4a5e4d';
+  } else {
+    btn.style.background = '#fff';
+    btn.style.borderColor = '#d0ccc6';
+    btn.style.color = '#aaa';
+  }
+  // Recolectar pills activas
+  var rolesActivos = Array.from(document.querySelectorAll('.equipo-rol-pill[data-active="true"]')).map(b => b.dataset.rol);
   var hid = document.getElementById('equipo-rol');
-  if(hid) hid.value = btn.dataset.rol;
+  if(hid) hid.value = rolesActivos[0] || '';  // legacy compat (primer rol activo)
+  var tieneCajero = rolesActivos.includes('cajero');
   var cajasBlock = document.getElementById('equipo-cajas-block');
-  if(cajasBlock) cajasBlock.style.display = btn.dataset.rol === 'cajero' ? 'block' : 'none';
-  // Solo en modo editar: re-renderizar checkboxes según el operador editado.
-  // En modo crear preservamos el estado actual de los checkboxes para no perder selecciones del usuario.
-  if(btn.dataset.rol === 'cajero' && window._equipoModalMode === 'editar' && window.equipoCajasRenderCheckboxes) {
+  if(cajasBlock) cajasBlock.style.display = tieneCajero ? 'block' : 'none';
+  // En modo editar, al activar cajero re-renderizar checkboxes desde el operador
+  if(tieneCajero && nuevo && btn.dataset.rol === 'cajero' && window._equipoModalMode === 'editar' && window.equipoCajasRenderCheckboxes) {
     var op = (window._equipoOperadores || []).find(o => o.id === window._equipoModalEditandoUid);
     var initialIds;
     if(op && Array.isArray(op.cajas)) {
@@ -28295,21 +28311,23 @@ window.equipoNuevoUsuarioGuardar = async function() {
   var nombre   = document.getElementById('equipo-nombre').value.trim();
   var usuario  = document.getElementById('equipo-usuario').value.trim();
   var password = document.getElementById('equipo-password').value;
-  var rol      = document.getElementById('equipo-rol').value;
+  // COMMIT 3.6.2: recolectar TODAS las pills activas (multi-rol)
+  var roles = Array.from(document.querySelectorAll('.equipo-rol-pill[data-active="true"]')).map(b => b.dataset.rol);
+  var tieneCajero = roles.includes('cajero');
   var errEl    = document.getElementById('equipo-modal-error');
   var btn      = document.getElementById('equipo-modal-btn');
   errEl.style.display = 'none';
   var mode = window._equipoModalMode === 'editar' ? 'editar' : 'crear';
   if(mode === 'crear') {
-    if(!nombre||!usuario||!password||!rol) { errEl.textContent='Completá todos los campos.'; errEl.style.display='block'; return; }
+    if(!nombre||!usuario||!password||!roles.length) { errEl.textContent='Completá todos los campos y asigná al menos un rol.'; errEl.style.display='block'; return; }
     if(password.length < 6) { errEl.textContent='La contraseña debe tener al menos 6 caracteres.'; errEl.style.display='block'; return; }
     if(/\s|@/.test(usuario)) { errEl.textContent='El usuario no puede tener espacios ni @.'; errEl.style.display='block'; return; }
-    if(rol === 'cajero' && !window.equipoCajasValidar()) { return; }
+    if(tieneCajero && !window.equipoCajasValidar()) { return; }
     btn.disabled=true; btn.textContent='Creando...';
     try {
       const idToken = await window._auth?.currentUser?.getIdToken(true);
-      const payload = {accion:'crear', nombre, usuario, password, rol, clienteUID:currentClientUID};
-      if(rol === 'cajero') payload.cajas = window.equipoCajasGetSeleccionadas();
+      const payload = {accion:'crear', nombre, usuario, password, roles, clienteUID:currentClientUID};
+      if(tieneCajero) payload.cajas = window.equipoCajasGetSeleccionadas();
       const res = await fetch('/.netlify/functions/create-operator', {
         method:'POST',
         headers:{'Content-Type':'application/json','Authorization':'Bearer '+idToken,'X-Cliente-UID':currentClientUID},
@@ -28326,15 +28344,15 @@ window.equipoNuevoUsuarioGuardar = async function() {
       btn.disabled=false; btn.textContent='Crear usuario';
     }
   } else {
-    if(!nombre || !rol) { errEl.textContent='Completá nombre y rol.'; errEl.style.display='block'; return; }
+    if(!nombre || !roles.length) { errEl.textContent='Completá nombre y asigná al menos un rol.'; errEl.style.display='block'; return; }
     if(password && password.length < 6) { errEl.textContent='La contraseña debe tener al menos 6 caracteres.'; errEl.style.display='block'; return; }
-    if(rol === 'cajero' && !window.equipoCajasValidar()) { return; }
+    if(tieneCajero && !window.equipoCajasValidar()) { return; }
     btn.disabled=true; btn.textContent='Guardando...';
     try {
       const idToken = await window._auth?.currentUser?.getIdToken(true);
-      const payload = {accion:'editar', uid: window._equipoModalEditandoUid, nombre, rol, clienteUID: currentClientUID};
+      const payload = {accion:'editar', uid: window._equipoModalEditandoUid, nombre, roles, clienteUID: currentClientUID};
       if(password) payload.password = password;
-      if(rol === 'cajero') payload.cajas = window.equipoCajasGetSeleccionadas();
+      if(tieneCajero) payload.cajas = window.equipoCajasGetSeleccionadas();
       const res = await fetch('/.netlify/functions/create-operator', {
         method:'POST',
         headers:{'Content-Type':'application/json','Authorization':'Bearer '+idToken,'X-Cliente-UID':currentClientUID},
@@ -29547,7 +29565,8 @@ window._aplicarRestriccionesRol = function() {
     compras:  ['sbg-finanzas','sbg-ventas','sbg-herramientas','sbg-gestion'],
     comercial:['sbg-finanzas','sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion'],
     vendedor: ['sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion'],
-    produccion:['sbg-inicio','sbg-finanzas','sbg-ventas','sbg-compras','sbg-herramientas','sbg-gestion','btn-mi-cuenta']
+    produccion:['sbg-inicio','sbg-finanzas','sbg-ventas','sbg-compras','sbg-herramientas','sbg-gestion','btn-mi-cuenta'],
+    stock:    ['sbg-inicio','sbg-finanzas','sbg-ventas','sbg-compras','sbg-herramientas','sbg-gestion','btn-mi-cuenta']
   }[rol] || [];
   _ocultar.forEach(function(id) {
     var el = document.getElementById(id);
