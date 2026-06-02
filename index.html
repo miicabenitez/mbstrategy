@@ -18431,6 +18431,7 @@ window.prodCrearOrden = async function(lineas, notas, sector) {
     lineas: lineasNormalizadas,
     notas: notas || '',
     creadoEn: now,
+    creadoPor: _prodNombreUsuarioActual(),
     updatedAt: now,
     eliminado: false
   };
@@ -18455,6 +18456,20 @@ window.prodCargarOrdenes = async function() {
 // ─── COMMIT 3.4: lógica iniciar/finalizar líneas (mueve stock) ───────────────
 // Hook permisos (gancho para sub-rol Producción 3.5). Por ahora siempre true.
 window._prodPuedeEjecutar = function() { return true; };
+
+// COMMIT 3.4.2: helpers de autoría
+function _prodNombreUsuarioActual() {
+  if(window.currentRol === 'admin') {
+    return (window.currentClientData?.negocioNombre) || (window.currentClientData?.nombre) || (window.currentNegocioNombre) || 'Dueño';
+  }
+  return window.currentOperadorNombre || 'Operador';
+}
+function _prodHoraCorta(iso) {
+  if(!iso) return '';
+  const d = new Date(iso);
+  if(isNaN(d.getTime())) return '';
+  return d.toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit', timeZone:'America/Argentina/Buenos_Aires'});
+}
 
 // Helper interno: actualiza una línea de orden + recalcula estado general + persiste + sincroniza cache local.
 async function _prodActualizarLinea(ordenId, lineaId, cambios) {
@@ -18528,7 +18543,7 @@ window.prodIniciarLinea = async function(ordenId, lineaId) {
         } catch(eItem) { console.error('prodIniciarLinea insumo error:', it.insumoId, eItem); _errCount++; }
       }
       try {
-        await _prodActualizarLinea(ordenId, lineaId, { estado: 'iniciada', iniciadaEn: new Date().toISOString() });
+        await _prodActualizarLinea(ordenId, lineaId, { estado: 'iniciada', iniciadaEn: new Date().toISOString(), iniciadaPor: _prodNombreUsuarioActual() });
         if(typeof showToast === 'function') {
           if(_errCount > 0) showToast('Producción iniciada con errores en algunos insumos. Revisá Movimientos.', 'warning');
           else showToast('Producción iniciada', 'ok');
@@ -18582,7 +18597,7 @@ window.prodFinalizarLinea = async function(ordenId, lineaId) {
           notas: 'Producción ' + (orden.numero||''),
           itemTipo: tipo, fecha: hoy, creadoEn: new Date().toISOString()
         });
-        await _prodActualizarLinea(ordenId, lineaId, { estado: 'finalizada', finalizadaEn: new Date().toISOString() });
+        await _prodActualizarLinea(ordenId, lineaId, { estado: 'finalizada', finalizadaEn: new Date().toISOString(), finalizadaPor: _prodNombreUsuarioActual() });
         if(typeof showToast === 'function') showToast('Producción finalizada', 'ok');
         prodRender();
         prodAbrirDetalle(ordenId);
@@ -18757,6 +18772,9 @@ window.prodRenderOrdenes = function() {
     const sectorBadge = o.sector
       ? `<span style="font-size:9px;background:#e3cbd5;color:#5a3147;padding:3px 8px;border-radius:10px;font-weight:600;letter-spacing:0.3px;">${o.sector.toUpperCase()}</span>`
       : '';
+    const creadorChip = o.creadoPor
+      ? `<span style="font-size:9px;background:#eceae3;color:#5a5a54;padding:3px 8px;border-radius:10px;display:inline-flex;align-items:center;gap:4px;font-weight:500;letter-spacing:0.2px;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>${o.creadoPor}</span>`
+      : '';
     return `<div onclick="prodAbrirDetalle('${o.id}')" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;border-bottom:0.5px solid #f0eae3;cursor:pointer;transition:background .15s;flex-wrap:wrap;background:#fff;" onmouseover="this.style.background='#fafaf7'" onmouseout="this.style.background='#fff'">
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex:1;min-width:0;">
         <span style="font-size:13px;color:#1a1a1a;font-weight:500;font-family:'DM Sans',sans-serif;">${o.numero || '—'}</span>
@@ -18764,6 +18782,7 @@ window.prodRenderOrdenes = function() {
         <span style="font-size:11px;color:#4a4a45;">${fecha}</span>
         <span style="font-size:11px;color:#8a8a83;">·</span>
         <span style="font-size:11px;color:#4a4a45;">${nLineas} ítem${nLineas === 1 ? '' : 's'}</span>
+        ${creadorChip}
       </div>
       <div>${_prodBadgeEstado(o.estado)}</div>
     </div>`;
@@ -18794,10 +18813,16 @@ window.prodAbrirDetalle = function(ordenId) {
       const btnFinalizarStyle = `style="background:#fff;border:1px solid #4a5e4d;color:#4a5e4d;padding:5px 12px;border-radius:6px;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;"`;
       const iniciar = l.estado === 'pendiente' ? `<button onclick="prodIniciarLinea('${ordenId}','${l.lineaId}')" ${btnIniciarStyle}>Iniciar</button>` : '';
       const finalizar = l.estado === 'iniciada' ? `<button onclick="prodFinalizarLinea('${ordenId}','${l.lineaId}')" ${btnFinalizarStyle}>Finalizar</button>` : '';
+      // COMMIT 3.4.2: línea de autoría (iniciada por / finalizada por + hora)
+      let autoria = '';
+      if(l.iniciadaPor && l.iniciadaEn) autoria += `Iniciada por ${l.iniciadaPor} · ${_prodHoraCorta(l.iniciadaEn)}`;
+      if(l.finalizadaPor && l.finalizadaEn) autoria += (autoria ? ' | ' : '') + `Finalizada por ${l.finalizadaPor} · ${_prodHoraCorta(l.finalizadaEn)}`;
+      const autoriaHtml = autoria ? `<div style="font-size:11px;color:#7a766d;margin-top:2px;font-family:'DM Sans',sans-serif;">${autoria}</div>` : '';
       return `<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px;border:0.5px solid #f0eae3;border-radius:8px;margin-bottom:6px;flex-wrap:wrap;">
         <div style="flex:1;min-width:140px;display:flex;flex-direction:column;gap:6px;">
           <div style="font-size:13px;color:#1a1a1a;font-weight:500;">${l.itemNombre || '—'} <span style="color:#888;font-weight:400;">× ${l.cantidad}</span></div>
           <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">${tipoBadge}${lineaBadge}</div>
+          ${autoriaHtml}
         </div>
         <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">${iniciar}${finalizar}</div>
       </div>`;
