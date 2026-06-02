@@ -11036,6 +11036,17 @@ window.loadAuditoriaCajero = async function() {
         if(cajaId) window._auditoriaCajasAbiertas.add(cajaId);
       });
     } catch(_te) { console.error('loadAuditoriaCajero turnos abiertos:', _te); window._auditoriaCajasAbiertas = new Set(); }
+    // FASE 6 COMMIT 4: lazy-load de cajeros (operadores con rol='cajero') para el dropdown
+    if(!window._auditoriaOperadores) {
+      try {
+        const _opSnap = await getDocs(collection(db,'clientes',uid,'operadores'));
+        window._auditoriaOperadores = [];
+        _opSnap.forEach(d => {
+          const op = {id:d.id, ...d.data()};
+          if(op.rol === 'cajero') window._auditoriaOperadores.push(op);
+        });
+      } catch(_oe) { console.error('loadAuditoriaCajero operadores fetch:', _oe); window._auditoriaOperadores = []; }
+    }
     _auditoriaRender();
   } catch(e) {
     root.innerHTML = '<div style="padding:32px;text-align:center;color:#993C1D;font-family:\'DM Sans\',sans-serif;font-size:13px;">Error al cargar: '+(e?.message||e)+'</div>';
@@ -11232,43 +11243,46 @@ window._auditoriaRender = function() {
       </div>
     </div>
   </div>
-  <div style="background:#fff;border-bottom:0.5px solid #e8e3de;padding:11px 28px;display:flex;gap:6px;flex-wrap:wrap;">
-    ${[
-      [null,'Todos'],
-      ['venta_caja','Venta caja'],
-      ['cobro_cliente','Cobro CC'],
-      ['egreso_cajero','Egreso'],
-      ['retiro_cajero','Retiro'],
-      ['apertura_turno','Apertura'],
-      ['cierre_turno','Cierre']
-    ].map(([id,label]) => {
-      const isActive = id === null ? window._auditoriaTipos.size === 0 : window._auditoriaTipos.has(id);
-      const onclick = id === null
-        ? "window._auditoriaTipos=new Set();_auditoriaRender()"
-        : `if(window._auditoriaTipos.has('${id}')){window._auditoriaTipos.delete('${id}');}else{window._auditoriaTipos.add('${id}');}_auditoriaRender()`;
-      return `<button onclick="${onclick}" style="padding:5px 14px;border-radius:20px;border:0.5px solid ${isActive?'#2d3d30':'#e0dbd6'};background:${isActive?'#2d3d30':'#fff'};color:${isActive?'#f5f0eb':'#888'};font-size:12px;font-weight:${isActive?'600':'400'};cursor:pointer;font-family:'DM Sans',sans-serif;">${label}</button>`;
-    }).join('')}
-    <div style="width:1px;height:20px;background:#e0dbd6;margin:0 4px;align-self:center;"></div>
-    <div style="position:relative;">
-      <button id="aud-caja-btn" onclick="audToggleCajaDrop(event)" style="background:#fff;border:0.5px solid #e0dbd6;padding:5px 12px;border-radius:20px;font-size:12px;color:#555;display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:500;font-family:'DM Sans',sans-serif;">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/></svg>
-        Caja: <strong id="aud-caja-label" style="color:#1a1a1a;">${window._auditoriaCajaFiltro ? ((window._equipoCajas||[]).find(c=>c.id===window._auditoriaCajaFiltro)?.nombre || 'Caja') : 'Todas'}</strong>
-        <svg width="8" height="5" viewBox="0 0 8 5" fill="none"><path d="M0 0l4 5 4-5z" fill="#888"/></svg>
-      </button>
-      <div id="aud-caja-drop" style="display:none;background:#fff;border:0.5px solid #c8c0b6;border-top:3px solid #b09088;border-radius:12px;padding:8px;width:240px;box-shadow:0 6px 20px rgba(0,0,0,0.12);font-family:'DM Sans',sans-serif;"></div>
+  <div style="background:#fff;border-bottom:0.5px solid #e8e3de;padding:10px 28px;">
+    <!-- LÍNEA 1: Dropdowns Caja + Cajero (FASE 6 COMMIT 4) -->
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+      <div style="position:relative;">
+        <button id="aud-caja-btn" onclick="audToggleCajaDrop(event)" style="background:#fff;border:0.5px solid #e0dbd6;padding:5px 12px;border-radius:20px;font-size:12px;color:#555;display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:500;font-family:'DM Sans',sans-serif;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/></svg>
+          Caja: <strong id="aud-caja-label" style="color:#1a1a1a;">${window._auditoriaCajaFiltro ? ((window._equipoCajas||[]).find(c=>c.id===window._auditoriaCajaFiltro)?.nombre || 'Caja') : 'Todas'}</strong>
+          <svg width="8" height="5" viewBox="0 0 8 5" fill="none"><path d="M0 0l4 5 4-5z" fill="#888"/></svg>
+        </button>
+        <div id="aud-caja-drop" style="display:none;background:#fff;border:0.5px solid #c8c0b6;border-top:3px solid #b09088;border-radius:12px;padding:8px;width:240px;box-shadow:0 6px 20px rgba(0,0,0,0.12);font-family:'DM Sans',sans-serif;"></div>
+      </div>
+      ${(window._auditoriaOperadores||[]).length > 0 ? `
+      <div style="position:relative;">
+        <button id="aud-cajero-btn" onclick="audToggleCajeroDrop(event)" style="background:#fff;border:0.5px solid #e0dbd6;padding:5px 12px;border-radius:20px;font-size:12px;color:#555;display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:500;font-family:'DM Sans',sans-serif;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Cajero: <strong id="aud-cajero-label" style="color:#1a1a1a;">${window._auditoriaCajero || 'Todos'}</strong>
+          <svg width="8" height="5" viewBox="0 0 8 5" fill="none"><path d="M0 0l4 5 4-5z" fill="#888"/></svg>
+        </button>
+        <div id="aud-cajero-drop" style="display:none;background:#fff;border:0.5px solid #c8c0b6;border-top:3px solid #b09088;border-radius:12px;padding:8px;width:220px;box-shadow:0 6px 20px rgba(0,0,0,0.12);font-family:'DM Sans',sans-serif;"></div>
+      </div>` : ''}
     </div>
-    ${(() => {
-      const cajerosList = [...new Set(
-        movs.map(m => (m.creadoPor||'').trim())
-            .filter(n => n && n.toLowerCase() !== 'admin' && n.toLowerCase() !== 'cajero')
-      )];
-      if(cajerosList.length <= 1) return '';
-      return `<div style="width:1px;height:20px;background:#e0dbd6;margin:0 4px;align-self:center;"></div>`
-        + cajerosList.map(nombre => {
-          const isActive = window._auditoriaCajero === nombre;
-          return `<button onclick="window._auditoriaCajero=window._auditoriaCajero==='${nombre}'?null:'${nombre}';_auditoriaRender()" style="padding:5px 14px;border-radius:20px;border:0.5px solid ${isActive?'#2d3d30':'#e0dbd6'};background:${isActive?'#2d3d30':'#fff'};color:${isActive?'#f5f0eb':'#888'};font-size:12px;font-weight:${isActive?'600':'400'};cursor:pointer;font-family:'DM Sans',sans-serif;">${nombre}</button>`;
-        }).join('');
-    })()}
+    <!-- LÍNEA 2: Chips de tipo (FASE 6 COMMIT 4) -->
+    <div style="border-top:0.5px solid #f0eae3;padding-top:10px;margin-top:10px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+      <span style="font-size:11px;color:#888;letter-spacing:0.3px;font-weight:600;margin-right:4px;">TIPO:</span>
+      ${[
+        [null,'Todos'],
+        ['venta_caja','Venta caja'],
+        ['cobro_cliente','Cobro CC'],
+        ['egreso_cajero','Egreso'],
+        ['retiro_cajero','Retiro'],
+        ['apertura_turno','Apertura'],
+        ['cierre_turno','Cierre']
+      ].map(([id,label]) => {
+        const isActive = id === null ? window._auditoriaTipos.size === 0 : window._auditoriaTipos.has(id);
+        const onclick = id === null
+          ? "window._auditoriaTipos=new Set();_auditoriaRender()"
+          : `if(window._auditoriaTipos.has('${id}')){window._auditoriaTipos.delete('${id}');}else{window._auditoriaTipos.add('${id}');}_auditoriaRender()`;
+        return `<button onclick="${onclick}" style="padding:5px 14px;border-radius:20px;border:0.5px solid ${isActive?'#2d3d30':'#e0dbd6'};background:${isActive?'#2d3d30':'#fff'};color:${isActive?'#f5f0eb':'#888'};font-size:12px;font-weight:${isActive?'600':'400'};cursor:pointer;font-family:'DM Sans',sans-serif;">${label}</button>`;
+      }).join('')}
+    </div>
   </div>
   </div>
   <div style="background:#fff;border-radius:16px;overflow:hidden;">
@@ -11350,6 +11364,77 @@ window.audSeleccionarCaja = function(cajaId) {
   if(drop) drop.style.display = 'none';
   if(backdrop) backdrop.style.display = 'none';
   // FASE 6 COMMIT 3: re-render para aplicar filtro (label, header y movs se actualizan en _auditoriaRender)
+  _auditoriaRender();
+};
+
+// FASE 6 COMMIT 4: dropdown selector de cajero en módulo Auditoría
+window.audPopulateCajeroDrop = function() {
+  const drop = document.getElementById('aud-cajero-drop');
+  if(!drop) return;
+  const cajeros = window._auditoriaOperadores || [];
+  const activo = window._auditoriaCajero;
+  let html = '';
+  const todosSel = !activo;
+  html += `<div onclick="audSeleccionarCajero(null)" style="padding:8px 10px;background:${todosSel?'#f5f0eb':'transparent'};color:#1a1a1a;font-size:12px;cursor:pointer;border-radius:6px;font-weight:${todosSel?'600':'400'};display:flex;align-items:center;gap:8px;margin-bottom:2px;">
+    ${todosSel ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4a5e4d" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>' : '<div style="width:12px;"></div>'}
+    Todos los cajeros
+    <span style="margin-left:auto;color:#888;font-weight:400;font-size:10px;">${cajeros.length}</span>
+  </div>`;
+  html += '<div style="height:0.5px;background:#f0eae3;margin:4px 0;"></div>';
+  cajeros.forEach(op => {
+    const sel = activo === op.nombre;
+    const inicial = (op.nombre||'?').charAt(0).toUpperCase();
+    html += `<div onclick="audSeleccionarCajero('${(op.nombre||'').replace(/'/g,"\\'")}')" style="padding:8px 10px;background:${sel?'#f5f0eb':'transparent'};color:#1a1a1a;font-size:12px;cursor:pointer;border-radius:6px;font-weight:${sel?'600':'400'};display:flex;align-items:center;gap:8px;margin-bottom:2px;">
+      ${sel ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4a5e4d" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>' : `<div style="width:12px;height:12px;border-radius:50%;background:#b09088;color:#fff;font-size:9px;display:flex;align-items:center;justify-content:center;font-weight:600;">${inicial}</div>`}
+      ${op.nombre||'Sin nombre'}
+    </div>`;
+  });
+  drop.innerHTML = html;
+};
+
+window.audToggleCajeroDrop = function(e) {
+  if(e) e.stopPropagation();
+  const drop = document.getElementById('aud-cajero-drop');
+  const btn = document.getElementById('aud-cajero-btn');
+  if(!drop || !btn) return;
+  if(drop.style.display === 'block') { drop.style.display = 'none'; return; }
+  audPopulateCajeroDrop();
+  const isMobile = window.innerWidth <= 768;
+  if(isMobile) {
+    let backdrop = document.getElementById('aud-cajero-backdrop');
+    if(!backdrop) {
+      backdrop = document.createElement('div');
+      backdrop.id = 'aud-cajero-backdrop';
+      backdrop.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:9998;';
+      backdrop.onclick = () => { drop.style.display = 'none'; backdrop.style.display = 'none'; };
+      document.body.appendChild(backdrop);
+    }
+    backdrop.style.display = 'block';
+    document.body.appendChild(drop);
+    drop.style.position = 'fixed';
+    drop.style.top = '50%';
+    drop.style.left = '50%';
+    drop.style.transform = 'translate(-50%, -50%)';
+    drop.style.display = 'block';
+    drop.style.zIndex = '9999';
+  } else {
+    const rect = btn.getBoundingClientRect();
+    document.body.appendChild(drop);
+    drop.style.position = 'fixed';
+    drop.style.top = (rect.bottom + 4) + 'px';
+    drop.style.left = rect.left + 'px';
+    drop.style.transform = '';
+    drop.style.display = 'block';
+    drop.style.zIndex = '9999';
+  }
+};
+
+window.audSeleccionarCajero = function(nombre) {
+  window._auditoriaCajero = nombre;
+  const drop = document.getElementById('aud-cajero-drop');
+  const backdrop = document.getElementById('aud-cajero-backdrop');
+  if(drop) drop.style.display = 'none';
+  if(backdrop) backdrop.style.display = 'none';
   _auditoriaRender();
 };
 
