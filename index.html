@@ -17856,7 +17856,9 @@ window.stkGuardarReceta = async function() {
     if(id){
       await updateDoc(doc(db,'clientes',currentClientUID,'recetas',id),data);
     } else {
+      // PRODUCCIÓN COMMIT 1: rendimiento default 1 (compat con flujo al_momento). Configurable desde COMMIT futuro.
       data.creadoEn=new Date().toISOString();
+      data.rendimiento=1;
       await addDoc(collection(db,'clientes',currentClientUID,'recetas'),data);
     }
     closeModal('stock-receta-modal');
@@ -29290,15 +29292,22 @@ async function createProducto() {
     precio:      parseFloat((document.getElementById('prod-precio')?.value||'').replace(/\./g,'').replace(',','.')) || 0,
     descripcion: document.getElementById('prod-desc').value,
     activo: true,
-    updatedAt: new Date().toISOString(),
-    creadoEn:  new Date().toISOString()
+    updatedAt: new Date().toISOString()
   };
   try {
     const fsi = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
     const fdb = window.db || fsi.getFirestore();
     if(id) {
+      // PRODUCCIÓN COMMIT 1: no machaca creadoEn ni los campos nuevos (tipo/stock/esInsumo) al editar
       await fsi.updateDoc(fsi.doc(fdb,'clientes',uid,'productos',id), data);
     } else {
+      // PRODUCCIÓN COMMIT 1: campos nuevos solo en creación (retro-compat con docs viejos)
+      data.creadoEn = new Date().toISOString();
+      data.tipo = 'al_momento';
+      data.stockActual = 0;
+      data.stockMinimo = null;
+      data.costoUnitario = 0;
+      data.esInsumo = false;
       await fsi.addDoc(fsi.collection(fdb,'clientes',uid,'productos'), data);
     }
     const s = document.getElementById('prod-saved');
