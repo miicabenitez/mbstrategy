@@ -29578,15 +29578,17 @@ async function turnoGenerarPDF(operador, ingresos, egresos, saldo, movs) {
 window._MOD_POR_ROL = {
   admin:      null,  // null = sin filtro
   comercial:  ['ventas'],
-  compras:    ['compras','stock'],
+  compras:    ['compras'],
   vendedor:   ['ventas','finanzas'],
   produccion: ['stock'],
   stock:      ['stock']
 };
+// COMMIT 3.6.3.2: nombres reales de tabs (alineados con showCTab + DOM ct-*)
+// compras: separado de stock. Quien necesite stock → rol stock aparte.
 window._TAB_POR_ROL = {
   admin:      null,
   comercial:  ['mclientes','cobranzas','presupuestos','productos','catalogo'],
-  compras:    ['proveedores','productos','necesidades','ordenes','historial','stock','stock-movimientos','stock-alertas','insumos','recetas','movimientos-stock','produccion'],
+  compras:    ['proveedores','necesidades','ordenes-compra','historial-compra','prod-compra','categorias-compra'],
   vendedor:   ['mclientes','cobranzas','presupuestos','productos','catalogo','caja'],
   produccion: ['insumos','produccion'],
   stock:      ['insumos','recetas','movimientos-stock','produccion']
@@ -29622,7 +29624,7 @@ window._aplicarRestriccionesRol = function() {
   // COMMIT 3.6.3.1: agregado 'sbg-inicio' a comercial, compras, vendedor (solo admin ve Inicio)
   var _ocultaMap = {
     cajero:   ['sbg-inicio','sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion','btn-mi-cuenta','mc-kpi-clientes-grid'],
-    compras:  ['sbg-inicio','sbg-finanzas','sbg-ventas','sbg-herramientas','sbg-gestion'],
+    compras:  ['sbg-inicio','sbg-finanzas','sbg-ventas','sbg-stock','sbg-herramientas','sbg-gestion'],
     comercial:['sbg-inicio','sbg-finanzas','sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion'],
     vendedor: ['sbg-inicio','sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion'],
     produccion:['sbg-inicio','sbg-finanzas','sbg-ventas','sbg-compras','sbg-herramientas','sbg-gestion','btn-mi-cuenta'],
