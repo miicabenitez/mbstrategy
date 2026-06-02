@@ -7376,7 +7376,17 @@ window.showClientUI = async function(email, clientData) {
 
       // Mostrar módulo inicial inmediatamente, sin esperar los awaits de datos
       const _savedMod0 = (() => { try { return localStorage.getItem('mbst_lastmod'); } catch(e) { return null; } })();
-      const _modToShow0 = window.currentRol === 'cajero' ? 'finanzas' : window.currentRol === 'comercial' ? 'comercial' : window.currentRol === 'compras' ? 'compras' : (window.currentRol === 'produccion' || window.currentRol === 'stock') ? 'stock' : (_savedMod0 || 'inicio');
+      // COMMIT 3.6.3.1: módulo inicial calculado por orden de prioridad + acceso real del operador
+      // Admin: respeta su último módulo (localStorage). Cajero: 'finanzas' intacto. Otros: primer módulo visible según roles.
+      const _ORDEN_MODULO_INICIAL = ['inicio','ventas','compras','stock','finanzas'];
+      let _modToShow0;
+      if(window.currentRol === 'cajero') {
+        _modToShow0 = 'finanzas';
+      } else if(window.currentRol === 'admin' || !window.currentRol) {
+        _modToShow0 = _savedMod0 || 'inicio';
+      } else {
+        _modToShow0 = _ORDEN_MODULO_INICIAL.find(m => window.tieneAccesoAModulo(m)) || 'inicio';
+      }
       const _modBtn0 = document.querySelector('#cNav .nt[onclick*="\''+_modToShow0+'\'"]') || document.querySelector('#cNav .nt');
       getDocs(collection(db,'clientes',currentClientUID,'tareas')).then(function(_tSnap){
         window._clientTareas=[];
@@ -27535,8 +27545,8 @@ window.backToAdmin = function() {
 // Navegación cliente — 5 módulos en topbar
 window.showClientMod = function(mod, btn) {
   if(window.currentRol==='cajero'){var _p=['finanzas','comercial','ventas'];if(!_p.includes(mod))return;}
-  if(window.currentRol==='comercial'){if(!['comercial'].includes(mod))return;}
-  if(window.currentRol==='compras'){if(!['compras','stock'].includes(mod))return;}
+  // COMMIT 3.6.3.1: para roles de sistema (no cajero), permite si CUALQUIER rol del operador habilita el módulo
+  if(window.currentRol !== 'cajero' && !window.tieneAccesoAModulo(mod)) return;
   // Persistir módulo activo para restaurar en recarga
   try { localStorage.setItem('mbst_lastmod', mod); } catch(e) {}
   // Activar tab en topbar
@@ -27652,8 +27662,8 @@ window.bottomNavGestion = function(btn) {
 
 window.showCTab = function(tab, btn) {
   if(window.currentRol==='cajero'){var _p=['caja','contabilidad','mclientes','cobranzas','mis-facturas'];if(!_p.includes(tab))return;}
-  if(window.currentRol==='comercial'){if(!['mclientes','cobranzas','presupuestos','catalogo'].includes(tab))return;}
-  if(window.currentRol==='compras'){if(!['proveedores','productos','necesidades','ordenes','historial','stock','stock-movimientos','stock-alertas'].includes(tab))return;}
+  // COMMIT 3.6.3.1: para roles de sistema (no cajero), permite si CUALQUIER rol del operador habilita el tab
+  if(window.currentRol !== 'cajero' && !window.tieneAccesoATab(tab)) return;
   document.querySelectorAll('[id^="ct-"]').forEach(el => el.style.display = 'none');
   const el = document.getElementById('ct-' + tab);
   if(el) el.style.display = 'block';
@@ -29561,14 +29571,60 @@ async function turnoGenerarPDF(operador, ingresos, egresos, saldo, movs) {
   } catch(e) { console.log('turnoGenerarPDF error:',e); return null; }
 }
 
+// COMMIT 3.6.3.1: mapas + helpers de acceso por rol (single source of truth)
+// Usados por _modToShow0, showClientMod, sidebarNav, showCTab. Cajero NO se procesa acá (rama propia intacta).
+// Nota: el módulo se llama 'ventas' internamente (sbg-ventas, showClientMod('ventas')),
+// aunque el rol que lo usa se llame 'comercial' y el label visible en sidebar diga "Comercial".
+window._MOD_POR_ROL = {
+  admin:      null,  // null = sin filtro
+  comercial:  ['ventas'],
+  compras:    ['compras','stock'],
+  vendedor:   ['ventas','finanzas'],
+  produccion: ['stock'],
+  stock:      ['stock']
+};
+window._TAB_POR_ROL = {
+  admin:      null,
+  comercial:  ['mclientes','cobranzas','presupuestos','productos','catalogo'],
+  compras:    ['proveedores','productos','necesidades','ordenes','historial','stock','stock-movimientos','stock-alertas','insumos','recetas','movimientos-stock','produccion'],
+  vendedor:   ['mclientes','cobranzas','presupuestos','productos','catalogo','caja'],
+  produccion: ['insumos','produccion'],
+  stock:      ['insumos','recetas','movimientos-stock','produccion']
+};
+
+window.tieneAccesoAModulo = function(mod) {
+  if(window.currentRol === 'admin' || !window.currentRol) return true;
+  var roles = (window._operadorRoles && window._operadorRoles.length)
+    ? window._operadorRoles.filter(function(r){return r !== 'cajero';})
+    : [window.currentRol];
+  if(roles.length === 0) return true;
+  return roles.some(function(r) {
+    var lista = window._MOD_POR_ROL[r];
+    return lista === null || (lista && lista.includes(mod));
+  });
+};
+
+window.tieneAccesoATab = function(tab) {
+  if(window.currentRol === 'admin' || !window.currentRol) return true;
+  var roles = (window._operadorRoles && window._operadorRoles.length)
+    ? window._operadorRoles.filter(function(r){return r !== 'cajero';})
+    : [window.currentRol];
+  if(roles.length === 0) return true;
+  return roles.some(function(r) {
+    var lista = window._TAB_POR_ROL[r];
+    return lista === null || (lista && lista.includes(tab));
+  });
+};
+
 window._aplicarRestriccionesRol = function() {
   var rol = window.currentRol || 'admin';
   // COMMIT 3.6.3: map de qué oculta cada rol (single source of truth)
+  // COMMIT 3.6.3.1: agregado 'sbg-inicio' a comercial, compras, vendedor (solo admin ve Inicio)
   var _ocultaMap = {
     cajero:   ['sbg-inicio','sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion','btn-mi-cuenta','mc-kpi-clientes-grid'],
-    compras:  ['sbg-finanzas','sbg-ventas','sbg-herramientas','sbg-gestion'],
-    comercial:['sbg-finanzas','sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion'],
-    vendedor: ['sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion'],
+    compras:  ['sbg-inicio','sbg-finanzas','sbg-ventas','sbg-herramientas','sbg-gestion'],
+    comercial:['sbg-inicio','sbg-finanzas','sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion'],
+    vendedor: ['sbg-inicio','sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion'],
     produccion:['sbg-inicio','sbg-finanzas','sbg-ventas','sbg-compras','sbg-herramientas','sbg-gestion','btn-mi-cuenta'],
     stock:    ['sbg-inicio','sbg-finanzas','sbg-ventas','sbg-compras','sbg-herramientas','sbg-gestion','btn-mi-cuenta']
   };
@@ -31049,8 +31105,8 @@ function navTransition(callback){
 }
 window.sidebarNav=function(mod,sub){
   if(window.currentRol==='cajero'){var _p=['finanzas','comercial','ventas'];if(!_p.includes(mod))return;}
-  if(window.currentRol==='comercial'){if(!['comercial'].includes(mod))return;}
-  if(window.currentRol==='compras'){if(!['compras','stock'].includes(mod))return;}
+  // COMMIT 3.6.3.1: para roles de sistema (no cajero), permite si CUALQUIER rol del operador habilita el módulo
+  if(window.currentRol !== 'cajero' && !window.tieneAccesoAModulo(mod)) return;
   navTransition(function(){
     try{localStorage.setItem('mbst_sb_mod',mod);localStorage.setItem('mbst_sb_sub',sub||'');}catch(e){}
     sidebarSetActive(mod,sub);
