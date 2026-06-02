@@ -4868,10 +4868,8 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
           </div>
         </div>
 
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:24px;margin-bottom:12px;flex-wrap:wrap;gap:10px;">
-          <div style="font-family:'DM Sans',sans-serif;font-size:24px;font-weight:600;color:#1a1a1a;">Órdenes de producción</div>
-          <div id="prod-filtros-chips" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
-        </div>
+        <div style="margin-top:24px;font-family:'DM Sans',sans-serif;font-size:24px;font-weight:600;color:#1a1a1a;">Órdenes de producción</div>
+        <div id="prod-filtros-chips" style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 12px;"></div>
         <div style="background:#fff;border:0.5px solid #e0dbd6;border-radius:12px;overflow:hidden;">
           <div id="prod-ordenes-lista">
             <div style="padding:40px;text-align:center;color:#aaa;font-size:13px;">Cargando...</div>
@@ -18601,15 +18599,15 @@ window.prodRenderOrdenes = function() {
     const fecha = _prodFechaCorta(o.creadoEn);
     const nLineas = (o.lineas || []).length;
     const sectorBadge = o.sector
-      ? `<span style="font-size:9px;background:#ede5e8;color:#8e5c7d;padding:3px 8px;border-radius:10px;font-weight:600;letter-spacing:0.3px;">${o.sector.toUpperCase()}</span>`
+      ? `<span style="font-size:9px;background:#e3cbd5;color:#5a3147;padding:3px 8px;border-radius:10px;font-weight:600;letter-spacing:0.3px;">${o.sector.toUpperCase()}</span>`
       : '';
     return `<div onclick="prodAbrirDetalle('${o.id}')" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;border-bottom:0.5px solid #f0eae3;cursor:pointer;transition:background .15s;flex-wrap:wrap;background:#fff;" onmouseover="this.style.background='#fafaf7'" onmouseout="this.style.background='#fff'">
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex:1;min-width:0;">
         <span style="font-size:13px;color:#1a1a1a;font-weight:500;font-family:'DM Sans',sans-serif;">${o.numero || '—'}</span>
         ${sectorBadge}
-        <span style="font-size:11px;color:#888;">${fecha}</span>
-        <span style="font-size:11px;color:#ccc;">·</span>
-        <span style="font-size:11px;color:#555;">${nLineas} ítem${nLineas === 1 ? '' : 's'}</span>
+        <span style="font-size:11px;color:#6a6a64;">${fecha}</span>
+        <span style="font-size:11px;color:#b8b8b3;">·</span>
+        <span style="font-size:11px;color:#6a6a64;">${nLineas} ítem${nLineas === 1 ? '' : 's'}</span>
       </div>
       <div>${_prodBadgeEstado(o.estado)}</div>
     </div>`;
