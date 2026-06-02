@@ -2575,29 +2575,6 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         </div>
       </div>
 
-      <!-- COMMIT 3.6.4: Selector Modo Caja / Modo Sistema (operador mixto) — no cancelable -->
-      <style>.btn-modo-op:hover{border-color:#b09088 !important;background:#fafaf7 !important;}.btn-modo-op:hover .btn-modo-op-title{color:#3a4e3d !important;}</style>
-      <div id="modoOperadorOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:10000;align-items:center;justify-content:center;">
-        <div style="background:#fff;border-radius:14px;width:380px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.22);">
-          <div style="height:3px;background:linear-gradient(90deg,#b09088,#c4a098,#b09088)"></div>
-          <div style="background:linear-gradient(135deg,#1e2e22 0%,#3d5242 100%);padding:22px 24px;">
-            <div style="font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:4px;">MB Strategy</div>
-            <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:#fff;letter-spacing:-.2px;line-height:1.15;">Hola, <span id="modoOperador-nombre"></span></div>
-            <div style="font-size:12px;color:rgba(255,255,255,.55);margin-top:4px;font-family:'DM Sans',sans-serif;">¿Cómo querés trabajar hoy?</div>
-          </div>
-          <div style="padding:18px 22px 22px;display:flex;flex-direction:column;gap:10px;">
-            <button onclick="modoOperadorElegirSet('caja')" class="btn-modo-op" style="text-align:left;background:#fff;border:1.5px solid #e8e4de;border-radius:12px;padding:14px 16px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;">
-              <div class="btn-modo-op-title" style="font-size:14px;font-weight:600;color:#1e2a1c;margin-bottom:3px;">Modo Caja</div>
-              <div style="font-size:11px;color:#888;">Apertura, ventas, turno</div>
-            </button>
-            <button onclick="modoOperadorElegirSet('sistema')" class="btn-modo-op" style="text-align:left;background:#fff;border:1.5px solid #e8e4de;border-radius:12px;padding:14px 16px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;">
-              <div class="btn-modo-op-title" style="font-size:14px;font-weight:600;color:#1e2a1c;margin-bottom:3px;">Modo Sistema</div>
-              <div style="font-size:11px;color:#888;" id="modoOperador-modulos"></div>
-            </button>
-          </div>
-        </div>
-      </div>
-
       <!-- PRO LOCK — Finanzas -->
       <div id="ct-finanzas-pro-lock" style="display:none;padding:60px 24px;">
         <div style="background:#fff;border-radius:12px;padding:36px 24px;text-align:center;max-width:280px;margin:0 auto;box-shadow:0 2px 16px rgba(0,0,0,0.08);">
@@ -31971,5 +31948,28 @@ window.doResetPassword = async function(){
   };
 })();
 </script>
+
+<!-- COMMIT 3.6.4 (fix): Selector Modo Caja / Modo Sistema — fuera de #app porque #app arranca con display:none -->
+<style>.btn-modo-op:hover{border-color:#b09088 !important;background:#fafaf7 !important;}.btn-modo-op:hover .btn-modo-op-title{color:#3a4e3d !important;}</style>
+<div id="modoOperadorOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:10000;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:14px;width:380px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.22);">
+    <div style="height:3px;background:linear-gradient(90deg,#b09088,#c4a098,#b09088)"></div>
+    <div style="background:linear-gradient(135deg,#1e2e22 0%,#3d5242 100%);padding:22px 24px;">
+      <div style="font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:4px;">MB Strategy</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:#fff;letter-spacing:-.2px;line-height:1.15;">Hola, <span id="modoOperador-nombre"></span></div>
+      <div style="font-size:12px;color:rgba(255,255,255,.55);margin-top:4px;font-family:'DM Sans',sans-serif;">¿Cómo querés trabajar hoy?</div>
+    </div>
+    <div style="padding:18px 22px 22px;display:flex;flex-direction:column;gap:10px;">
+      <button onclick="modoOperadorElegirSet('caja')" class="btn-modo-op" style="text-align:left;background:#fff;border:1.5px solid #e8e4de;border-radius:12px;padding:14px 16px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;">
+        <div class="btn-modo-op-title" style="font-size:14px;font-weight:600;color:#1e2a1c;margin-bottom:3px;">Modo Caja</div>
+        <div style="font-size:11px;color:#888;">Apertura, ventas, turno</div>
+      </button>
+      <button onclick="modoOperadorElegirSet('sistema')" class="btn-modo-op" style="text-align:left;background:#fff;border:1.5px solid #e8e4de;border-radius:12px;padding:14px 16px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;">
+        <div class="btn-modo-op-title" style="font-size:14px;font-weight:600;color:#1e2a1c;margin-bottom:3px;">Modo Sistema</div>
+        <div style="font-size:11px;color:#888;" id="modoOperador-modulos"></div>
+      </button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
