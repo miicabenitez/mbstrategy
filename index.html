@@ -1274,6 +1274,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 @keyframes calcFadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes calcPillPop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
 #newProductoModal #prod-modal-btn{background:linear-gradient(135deg, #1e2e22 0%, #3d5242 100%) !important;border-color:#1e2e22 !important;color:#fff !important;}
+#prod-nueva-orden-modal #prod-orden-guardar-btn{background:linear-gradient(135deg, #1e2e22 0%, #3d5242 100%) !important;border-color:#1e2e22 !important;color:#fff !important;}
 </style>
 <!-- deploy force 023 -->
 </head>
@@ -4829,9 +4830,12 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
       <!-- PRODUCCIÓN (COMMIT 3.3.1) -->
       <div id="ct-produccion" style="display:none;">
         <div style="border-radius:16px;overflow:hidden;margin-bottom:12px">
-        <div style="background:linear-gradient(180deg,#16241b 0%,#3d5242 100%);padding:20px 24px;color:#fff;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-            <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:38px;font-weight:300;">Mi <em style="font-style:italic;color:#b09088;">producción</em></div>
+        <div style="background:linear-gradient(135deg,#1a3528 0%,#0d1f1a 60%,#060e0b 100%);padding:24px 28px 16px;color:#fff;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+            <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:38px;font-weight:300;color:#f5f0eb;line-height:1;">Mi <em style="font-style:italic;color:#b09088;">producción</em></div>
+            <button id="prod-plus-btn" onclick="prodAbrirNuevaOrden()" title="Nueva orden" style="width:34px;height:34px;border-radius:50%;background:#b09088;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#f5f0eb" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
           </div>
           <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;">
             <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
@@ -4853,9 +4857,8 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         </div>
         </div>
 
-        <div style="display:flex;justify-content:space-between;align-items:center;margin:18px 0 10px;">
-          <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:24px;font-weight:400;color:#1a1a1a;">Stock <em style="font-style:italic;color:#b09088;">de producción</em></div>
-          <button onclick="prodAbrirNuevaOrden()" disabled style="background:linear-gradient(135deg, #1e2e22 0%, #3d5242 100%);border:1px solid #1e2e22;color:#fff;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:500;cursor:not-allowed;opacity:0.5;font-family:'DM Sans',sans-serif;" title="Próximamente (COMMIT 3.3.2)">+ Nueva orden</button>
+        <div style="margin:18px 0 10px;">
+          <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:24px;font-weight:400;color:#1a1a1a;">Stock de producción</div>
         </div>
         <div style="background:#fff;border:0.5px solid #e0dbd6;border-radius:12px;overflow:hidden;">
           <div style="overflow-x:auto;">
@@ -4865,7 +4868,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
           </div>
         </div>
 
-        <div style="margin-top:24px;font-family:'Cormorant Garamond',Georgia,serif;font-size:24px;font-weight:400;color:#1a1a1a;">Órdenes <em style="font-style:italic;color:#b09088;">de producción</em></div>
+        <div style="margin-top:24px;font-family:'Cormorant Garamond',Georgia,serif;font-size:24px;font-weight:400;color:#1a1a1a;">Órdenes de producción</div>
         <div style="background:#fff;border:0.5px solid #e0dbd6;border-radius:12px;padding:40px;text-align:center;color:#aaa;font-size:13px;margin-top:10px;">Próximamente (COMMIT 3.3.3)</div>
       </div>
 
@@ -6643,6 +6646,37 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px;">
       <button class="bs" onclick="closeModal('stock-receta-modal')">Cancelar</button>
       <button class="bp" onclick="stkGuardarReceta()">Guardar receta</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal nueva orden de producción (COMMIT 3.3.2) -->
+<div class="mo" id="prod-nueva-orden-modal">
+  <div class="md" style="max-width:min(560px,92vw);padding:0;overflow:hidden;position:relative;">
+    <button class="mc2" onclick="closeModal('prod-nueva-orden-modal')" style="position:absolute;top:14px;right:14px;z-index:2;color:#fff;background:rgba(255,255,255,.15);border:none;">×</button>
+    <div style="background:linear-gradient(135deg, #1e2e22 0%, #3d5242 100%);padding:22px 24px 18px;">
+      <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">MB Strategy</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;color:#fff;">Nueva orden de <em style="font-style:italic;color:#b09088;">producción</em></div>
+    </div>
+    <div style="padding:22px 24px;">
+      <div class="fg">
+        <label class="fl">Sector <span style="color:#888;font-weight:400;">(opcional)</span></label>
+        <input type="text" class="fi" id="prod-orden-sector" placeholder="Ej: Pastelería, Taller, Cocina..."/>
+      </div>
+      <div class="fg">
+        <label class="fl">Ítems a producir</label>
+        <div id="prod-orden-lineas-list" style="margin-bottom:8px;"></div>
+        <button type="button" onclick="prodAgregarLinea()" style="background:none;border:.5px solid #d8d0c4;border-radius:8px;padding:6px 14px;font-size:12px;font-family:'DM Sans',sans-serif;color:#555;cursor:pointer;">+ Agregar ítem</button>
+      </div>
+      <div class="fg">
+        <label class="fl">Notas <span style="color:#888;font-weight:400;">(opcional)</span></label>
+        <textarea class="na" id="prod-orden-notas" style="min-height:60px;" placeholder="Anotaciones para el equipo de producción..."></textarea>
+      </div>
+      <div id="prod-orden-error" style="display:none;color:#c0392b;font-size:12px;margin-bottom:8px;"></div>
+      <div class="br2">
+        <button class="bp" id="prod-orden-guardar-btn" onclick="prodGuardarOrden()">Guardar orden</button>
+        <button class="bs" onclick="closeModal('prod-nueva-orden-modal')">Cancelar</button>
+      </div>
     </div>
   </div>
 </div>
@@ -18325,7 +18359,7 @@ window._prodCalcularEstadoOrden = function(lineas) {
   return 'pendiente';
 };
 
-window.prodCrearOrden = async function(lineas, notas) {
+window.prodCrearOrden = async function(lineas, notas, sector) {
   if(!currentClientUID) throw new Error('Sesión no iniciada');
   if(!Array.isArray(lineas) || !lineas.length) throw new Error('La orden debe tener al menos una línea');
   const uid = currentClientUID;
@@ -18351,6 +18385,7 @@ window.prodCrearOrden = async function(lineas, notas) {
   const data = {
     numero,
     estado: window._prodCalcularEstadoOrden(lineasNormalizadas),
+    sector: sector || '',
     lineas: lineasNormalizadas,
     notas: notas || '',
     creadoEn: now,
@@ -18430,8 +18465,11 @@ window.prodRender = function() {
     lista.innerHTML = '<div style="padding:36px;text-align:center;color:#aaa;font-size:13px;">No hay ítems con receta cargada. Creá una receta primero para poder producir.</div>';
     return;
   }
-  const header = `<div style="display:grid;grid-template-columns:1fr 130px 130px 110px;gap:12px;padding:10px 16px;background:#fafaf7;border-bottom:0.5px solid #f0eae3;font-size:10px;color:#888;letter-spacing:0.5px;font-weight:600;text-transform:uppercase;">
-    <div>Ítem</div><div>Destino</div><div style="text-align:right;">Stock</div><div></div>
+  // Mobile (≤600px): destino se muestra inline bajo el nombre, no en columna propia (3 cols en vez de 4)
+  const isMobile = window.innerWidth <= 600;
+  const cols = isMobile ? '1fr 100px 90px' : '1fr 130px 130px 110px';
+  const header = `<div style="display:grid;grid-template-columns:${cols};gap:12px;padding:10px 16px;background:#fafaf7;border-bottom:0.5px solid #f0eae3;font-size:10px;color:#888;letter-spacing:0.5px;font-weight:600;text-transform:uppercase;">
+    <div>Ítem</div>${isMobile ? '' : '<div>Destino</div>'}<div style="text-align:right;">Stock</div><div></div>
   </div>`;
   const rows = producibles.map(p => {
     const tipoBadge = p.itemTipo === 'insumo'
@@ -18442,21 +18480,149 @@ window.prodRender = function() {
     const bajo = !isNaN(min) && !isNaN(act) && act < min;
     const stockStr = isNaN(act) ? '—' : `${act.toLocaleString('es-AR')} ${p.unidad||''}`.trim();
     const stockHtml = `<span style="font-family:'DM Sans',sans-serif;font-size:13px;${bajo ? 'color:#b09088;font-weight:700;' : 'color:#1a1a1a;font-weight:500;'}">${stockStr}</span>`;
-    return `<div style="display:grid;grid-template-columns:1fr 130px 130px 110px;gap:12px;padding:12px 16px;align-items:center;border-bottom:0.5px solid #f0eae3;">
-      <div style="font-size:13px;color:#1a1a1a;font-weight:500;">${p.itemNombre}</div>
-      <div>${tipoBadge}</div>
+    const nombreCell = isMobile
+      ? `<div><div style="font-size:13px;color:#1a1a1a;font-weight:500;">${p.itemNombre}</div><div style="margin-top:4px;">${tipoBadge}</div></div>`
+      : `<div style="font-size:13px;color:#1a1a1a;font-weight:500;">${p.itemNombre}</div>`;
+    return `<div style="display:grid;grid-template-columns:${cols};gap:12px;padding:12px 16px;align-items:center;border-bottom:0.5px solid #f0eae3;">
+      ${nombreCell}
+      ${isMobile ? '' : `<div>${tipoBadge}</div>`}
       <div style="text-align:right;">${stockHtml}</div>
       <div style="text-align:right;">
-        <button disabled style="background:#fff;border:0.5px solid #d8d0c4;color:#555;padding:6px 14px;border-radius:8px;font-size:11px;font-weight:500;cursor:not-allowed;opacity:0.5;font-family:'DM Sans',sans-serif;" title="Próximamente (COMMIT 3.3.2)">Producir</button>
+        <button onclick="prodAbrirNuevaOrden('${p.itemId}','${p.itemTipo}')" style="background:#fff;border:0.5px solid #d8d0c4;color:#555;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;" onmouseover="this.style.background='#f7f8f5';this.style.borderColor='#b09088'" onmouseout="this.style.background='#fff';this.style.borderColor='#d8d0c4'">Producir</button>
       </div>
     </div>`;
   }).join('');
   lista.innerHTML = header + rows;
 };
 
-window.prodAbrirNuevaOrden = function() {
-  // Stub: viene en COMMIT 3.3.2
-  if(typeof showToast === 'function') showToast('Próximamente: modal de Nueva orden', 'info');
+// COMMIT 3.3.2: modal Nueva orden de producción
+function _prodGetProducibles() {
+  const recetas = window._stockRecetas || [];
+  const productos = window._productos || [];
+  const insumos = window._stockInsumos || [];
+  return recetas.map(r => {
+    const tipo = r.itemTipo || 'producto';
+    const id = r.itemId || r.productoId;
+    if(!id) return null;
+    const source = tipo === 'insumo' ? insumos : productos;
+    const item = source.find(x => x.id === id);
+    return {
+      itemId: id,
+      itemNombre: r.itemNombre || r.productoNombre || item?.nombre || '—',
+      itemTipo: tipo
+    };
+  }).filter(Boolean).sort((a, b) => (a.itemNombre || '').localeCompare(b.itemNombre || '', 'es'));
+}
+
+window._prodOrdenLineas = [];
+
+// Hook de permisos para sub-rol Producción (gancho para COMMIT 3.5). Por ahora siempre true.
+window._prodPuedeCrearOrden = function() { return true; };
+
+window.prodAbrirNuevaOrden = function(itemId, itemTipo) {
+  if(typeof window._prodPuedeCrearOrden === 'function' && !window._prodPuedeCrearOrden()) {
+    if(typeof showToast === 'function') showToast('No tenés permiso para crear órdenes de producción', 'info');
+    return;
+  }
+  const producibles = _prodGetProducibles();
+  if(!producibles.length) {
+    if(typeof showToast === 'function') showToast('Creá una receta primero para poder producir un ítem.', 'info');
+    return;
+  }
+  const secEl = document.getElementById('prod-orden-sector'); if(secEl) secEl.value = '';
+  const notEl = document.getElementById('prod-orden-notas'); if(notEl) notEl.value = '';
+  const err = document.getElementById('prod-orden-error'); if(err) err.style.display = 'none';
+  if(itemId) {
+    window._prodOrdenLineas = [{ itemId, itemTipo: itemTipo || 'producto', cantidad: '' }];
+  } else {
+    window._prodOrdenLineas = [{ itemId: '', itemTipo: '', cantidad: '' }];
+  }
+  prodRenderLineas();
+  openModal('prod-nueva-orden-modal');
+};
+
+window.prodRenderLineas = function() {
+  const cont = document.getElementById('prod-orden-lineas-list');
+  if(!cont) return;
+  const lineas = window._prodOrdenLineas || [];
+  const producibles = _prodGetProducibles();
+  const optsBase = producibles.map(p => {
+    const v = `${p.itemTipo}|${p.itemId}`;
+    const tipoLabel = p.itemTipo === 'insumo' ? '[Insumo]' : '[Mostrador]';
+    return { v, label: `${p.itemNombre} ${tipoLabel}` };
+  });
+  cont.innerHTML = lineas.map((l, idx) => {
+    const value = l.itemId ? `${l.itemTipo}|${l.itemId}` : '';
+    const opts = optsBase.map(o => `<option value="${o.v}" ${o.v===value?'selected':''}>${o.label}</option>`).join('');
+    const removeBtn = lineas.length > 1
+      ? `<button type="button" onclick="prodQuitarLinea(${idx})" title="Quitar línea" style="background:none;border:none;cursor:pointer;color:#888;padding:0 8px;font-size:20px;line-height:1;flex-shrink:0;">×</button>`
+      : '<div style="width:24px;flex-shrink:0;"></div>';
+    // Mobile-friendly: flex-wrap permite que select tome línea completa cuando el viewport es angosto (min-width:200px del select fuerza el wrap)
+    return `<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;">
+      <select class="fi" onchange="prodLineaSetItem(${idx}, this.value)" style="flex:1 1 200px;min-width:200px;margin:0;">
+        <option value="">— Seleccioná un ítem —</option>
+        ${opts}
+      </select>
+      <input type="number" min="0" step="any" placeholder="Cant." class="fi" value="${l.cantidad ?? ''}" oninput="prodLineaSetCantidad(${idx}, this.value)" style="flex:1 1 90px;max-width:120px;margin:0;"/>
+      ${removeBtn}
+    </div>`;
+  }).join('');
+};
+
+window.prodAgregarLinea = function() {
+  if(!Array.isArray(window._prodOrdenLineas)) window._prodOrdenLineas = [];
+  window._prodOrdenLineas.push({ itemId: '', itemTipo: '', cantidad: '' });
+  prodRenderLineas();
+};
+
+window.prodQuitarLinea = function(idx) {
+  if(!Array.isArray(window._prodOrdenLineas)) return;
+  window._prodOrdenLineas.splice(idx, 1);
+  if(!window._prodOrdenLineas.length) window._prodOrdenLineas = [{ itemId: '', itemTipo: '', cantidad: '' }];
+  prodRenderLineas();
+};
+
+window.prodLineaSetItem = function(idx, value) {
+  if(!Array.isArray(window._prodOrdenLineas)) return;
+  if(!window._prodOrdenLineas[idx]) return;
+  if(!value) {
+    window._prodOrdenLineas[idx].itemId = '';
+    window._prodOrdenLineas[idx].itemTipo = '';
+  } else {
+    const [tipo, id] = value.split('|');
+    window._prodOrdenLineas[idx].itemTipo = tipo;
+    window._prodOrdenLineas[idx].itemId = id;
+  }
+};
+
+window.prodLineaSetCantidad = function(idx, val) {
+  if(!Array.isArray(window._prodOrdenLineas)) return;
+  if(!window._prodOrdenLineas[idx]) return;
+  window._prodOrdenLineas[idx].cantidad = val;
+};
+
+window.prodGuardarOrden = async function() {
+  const sector = document.getElementById('prod-orden-sector')?.value.trim() || '';
+  const notas = document.getElementById('prod-orden-notas')?.value.trim() || '';
+  const lineas = (window._prodOrdenLineas || []).filter(l => l.itemId && parseFloat(l.cantidad) > 0);
+  const err = document.getElementById('prod-orden-error');
+  if(!lineas.length) {
+    if(err) { err.textContent = 'Agregá al menos un ítem con cantidad mayor a 0.'; err.style.display = 'block'; }
+    return;
+  }
+  if(err) err.style.display = 'none';
+  const btn = document.getElementById('prod-orden-guardar-btn');
+  if(btn) { btn.textContent = 'Guardando...'; btn.disabled = true; }
+  try {
+    await window.prodCrearOrden(lineas, notas, sector);
+    closeModal('prod-nueva-orden-modal');
+    if(typeof showToast === 'function') showToast('Orden creada', 'ok');
+    if(window.loadProduccionModule) await window.loadProduccionModule();
+  } catch(e) {
+    if(err) { err.textContent = 'Error: ' + (e.message || e); err.style.display = 'block'; }
+  } finally {
+    if(btn) { btn.textContent = 'Guardar orden'; btn.disabled = false; }
+  }
 };
 
 window.loadContentAdmin = loadContentAdmin;
