@@ -18445,6 +18445,148 @@ window.prodCargarOrdenes = async function() {
   return arr;
 };
 
+// ─── COMMIT 3.4: lógica iniciar/finalizar líneas (mueve stock) ───────────────
+// Hook permisos (gancho para sub-rol Producción 3.5). Por ahora siempre true.
+window._prodPuedeEjecutar = function() { return true; };
+
+// Helper interno: actualiza una línea de orden + recalcula estado general + persiste + sincroniza cache local.
+async function _prodActualizarLinea(ordenId, lineaId, cambios) {
+  const orden = (window._ordenesProduccion || []).find(o => o.id === ordenId);
+  if(!orden) throw new Error('Orden no encontrada');
+  const lineasNuevas = (orden.lineas || []).map(l => l.lineaId === lineaId ? { ...l, ...cambios } : l);
+  const nuevoEstado = window._prodCalcularEstadoOrden(lineasNuevas);
+  const updatedAt = new Date().toISOString();
+  await updateDoc(doc(db, 'clientes', currentClientUID, 'ordenesProduccion', ordenId), {
+    lineas: lineasNuevas, estado: nuevoEstado, updatedAt
+  });
+  orden.lineas = lineasNuevas;
+  orden.estado = nuevoEstado;
+  orden.updatedAt = updatedAt;
+}
+
+window.prodIniciarLinea = async function(ordenId, lineaId) {
+  if(typeof window._prodPuedeEjecutar === 'function' && !window._prodPuedeEjecutar()) {
+    if(typeof showToast === 'function') showToast('No tenés permiso para ejecutar órdenes de producción', 'info');
+    return;
+  }
+  const orden = (window._ordenesProduccion || []).find(o => o.id === ordenId);
+  if(!orden) return;
+  const linea = (orden.lineas || []).find(l => l.lineaId === lineaId);
+  if(!linea) return;
+  if(linea.estado !== 'pendiente') {
+    if(typeof showToast === 'function') showToast('La línea ya está iniciada o finalizada.', 'info');
+    return;
+  }
+  // Asegurar caches de recetas/insumos
+  if(!window._stockRecetas || !window._stockRecetas.length) {
+    try {
+      const snap = await getDocs(query(collection(db,'clientes',currentClientUID,'recetas'), where('activo','==',true)));
+      window._stockRecetas = snap.docs.map(d=>({id:d.id,...d.data()}));
+    } catch(_){}
+  }
+  // Buscar receta del item (modelo nuevo itemId+itemTipo, fallback productoId)
+  const receta = (window._stockRecetas||[]).find(r => {
+    const _rid = r.itemId || r.productoId;
+    const _rtipo = r.itemTipo || 'producto';
+    return _rid === linea.itemId && _rtipo === linea.itemTipo;
+  });
+  if(!receta || !receta.items?.length) {
+    if(typeof showToast === 'function') showToast('No se puede iniciar: "' + (linea.itemNombre||'ítem') + '" no tiene receta cargada.', 'warning');
+    return;
+  }
+  showConfirm(
+    'Iniciar producción de ' + linea.itemNombre + ' × ' + linea.cantidad + '? Se descontarán los insumos de la receta del stock.',
+    async () => {
+      const hoy = fechaHoyARG();
+      const qty = parseFloat(linea.cantidad) || 0;
+      let _errCount = 0;
+      for(const it of receta.items) {
+        if(!it.insumoId) continue;
+        // Mismo patrón que _triggerStockPorVenta (post-fix 3.4.0): deltaBase para descuento, cantidadShow para display
+        const deltaBase = parseFloat(it.cantidadBase ?? it.cantidad ?? 0) * qty;
+        const cantidadShow = parseFloat(it.cantidad ?? it.cantidadBase ?? 0) * qty;
+        const unidadShow = it.unidad || '';
+        if(!deltaBase) continue;
+        try {
+          const _cached = (window._stockInsumos||[]).find(x => x.id === it.insumoId);
+          const stockResultante = _cached ? (parseFloat(_cached.stockActual||0) - deltaBase) : null;
+          await updateDoc(doc(db, 'clientes', currentClientUID, 'insumos', it.insumoId), { stockActual: increment(-deltaBase) });
+          if(_cached) _cached.stockActual = (parseFloat(_cached.stockActual||0) - deltaBase);
+          await addDoc(collection(db, 'clientes', currentClientUID, 'movimientosStock'), {
+            tipo:'salida', insumoId: it.insumoId, insumoNombre: it.insumoNombre || '', cantidad: cantidadShow,
+            unidad: unidadShow, stockResultante, origen: 'produccion', referenciaId: ordenId,
+            notas: 'Producción ' + (orden.numero||'') + ': ' + (linea.itemNombre||''),
+            fecha: hoy, creadoEn: new Date().toISOString()
+          });
+        } catch(eItem) { console.error('prodIniciarLinea insumo error:', it.insumoId, eItem); _errCount++; }
+      }
+      try {
+        await _prodActualizarLinea(ordenId, lineaId, { estado: 'iniciada', iniciadaEn: new Date().toISOString() });
+        if(typeof showToast === 'function') {
+          if(_errCount > 0) showToast('Producción iniciada con errores en algunos insumos. Revisá Movimientos.', 'warning');
+          else showToast('Producción iniciada', 'ok');
+        }
+        prodRender();
+        prodAbrirDetalle(ordenId);
+      } catch(e) {
+        if(typeof showToast === 'function') showToast('Error al actualizar la orden: ' + (e.message||e), 'error');
+      }
+    },
+    'Iniciar producción'
+  );
+};
+
+window.prodFinalizarLinea = async function(ordenId, lineaId) {
+  if(typeof window._prodPuedeEjecutar === 'function' && !window._prodPuedeEjecutar()) {
+    if(typeof showToast === 'function') showToast('No tenés permiso para ejecutar órdenes de producción', 'info');
+    return;
+  }
+  const orden = (window._ordenesProduccion || []).find(o => o.id === ordenId);
+  if(!orden) return;
+  const linea = (orden.lineas || []).find(l => l.lineaId === lineaId);
+  if(!linea) return;
+  if(linea.estado !== 'iniciada') {
+    if(typeof showToast === 'function') showToast('La línea no está iniciada.', 'info');
+    return;
+  }
+  const tipo = linea.itemTipo || 'producto';
+  const destinoLabel = tipo === 'insumo' ? 'insumos' : 'productos';
+  let unidadItem = 'u';
+  if(tipo === 'insumo') {
+    const insumo = (window._stockInsumos||[]).find(x => x.id === linea.itemId);
+    unidadItem = insumo?.unidad || 'u';
+  }
+  showConfirm(
+    'Finalizar producción de ' + linea.itemNombre + ' × ' + linea.cantidad + '? Se sumarán al stock como ' + destinoLabel + '.',
+    async () => {
+      const hoy = fechaHoyARG();
+      const qty = parseFloat(linea.cantidad) || 0;
+      try {
+        const col = tipo === 'insumo' ? 'insumos' : 'productos';
+        const _cached = tipo === 'insumo'
+          ? (window._stockInsumos||[]).find(x => x.id === linea.itemId)
+          : (window._productos||[]).find(x => x.id === linea.itemId);
+        const stockResultante = _cached ? (parseFloat(_cached.stockActual||0) + qty) : null;
+        await updateDoc(doc(db, 'clientes', currentClientUID, col, linea.itemId), { stockActual: increment(qty) });
+        if(_cached) _cached.stockActual = (parseFloat(_cached.stockActual||0) + qty);
+        await addDoc(collection(db, 'clientes', currentClientUID, 'movimientosStock'), {
+          tipo: 'entrada', insumoId: linea.itemId, insumoNombre: linea.itemNombre || '', cantidad: qty,
+          unidad: unidadItem, stockResultante, origen: 'produccion', referenciaId: ordenId,
+          notas: 'Producción ' + (orden.numero||''),
+          itemTipo: tipo, fecha: hoy, creadoEn: new Date().toISOString()
+        });
+        await _prodActualizarLinea(ordenId, lineaId, { estado: 'finalizada', finalizadaEn: new Date().toISOString() });
+        if(typeof showToast === 'function') showToast('Producción finalizada', 'ok');
+        prodRender();
+        prodAbrirDetalle(ordenId);
+      } catch(e) {
+        if(typeof showToast === 'function') showToast('Error al finalizar: ' + (e.message||e), 'error');
+      }
+    },
+    'Finalizar producción'
+  );
+};
+
 // ─── PRODUCCIÓN — pantalla (COMMIT 3.3.1) ────────────────────────────────────
 window.loadProduccionModule = async function() {
   if(!currentClientUID) return;
@@ -18640,9 +18782,11 @@ window.prodAbrirDetalle = function(ordenId) {
         ? '<span style="font-size:9px;background:#ede5e8;color:#8e5c7d;padding:2px 6px;border-radius:8px;font-weight:600;letter-spacing:0.3px;">INSUMO</span>'
         : '<span style="font-size:9px;background:#e8ede8;color:#4a5e4d;padding:2px 6px;border-radius:8px;font-weight:600;letter-spacing:0.3px;">MOSTRADOR</span>';
       const lineaBadge = _prodBadgeEstadoLinea(l.estado);
-      const btnDisabledStyle = `style="background:#fff;border:0.5px solid #d8d0c4;color:#aaa;padding:5px 12px;border-radius:6px;font-size:11px;cursor:not-allowed;opacity:0.6;font-family:'DM Sans',sans-serif;" title="Próximamente (COMMIT 3.4)"`;
-      const iniciar = l.estado === 'pendiente' ? `<button disabled ${btnDisabledStyle}>Iniciar</button>` : '';
-      const finalizar = l.estado === 'iniciada' ? `<button disabled ${btnDisabledStyle}>Finalizar</button>` : '';
+      // COMMIT 3.4: botones activos
+      const btnIniciarStyle = `style="background:linear-gradient(135deg,#1e2e22 0%,#3d5242 100%);border:1px solid #1e2e22;color:#fff;padding:5px 12px;border-radius:6px;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;"`;
+      const btnFinalizarStyle = `style="background:#fff;border:1px solid #4a5e4d;color:#4a5e4d;padding:5px 12px;border-radius:6px;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;"`;
+      const iniciar = l.estado === 'pendiente' ? `<button onclick="prodIniciarLinea('${ordenId}','${l.lineaId}')" ${btnIniciarStyle}>Iniciar</button>` : '';
+      const finalizar = l.estado === 'iniciada' ? `<button onclick="prodFinalizarLinea('${ordenId}','${l.lineaId}')" ${btnFinalizarStyle}>Finalizar</button>` : '';
       return `<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px;border:0.5px solid #f0eae3;border-radius:8px;margin-bottom:6px;flex-wrap:wrap;">
         <div style="flex:1;min-width:140px;display:flex;flex-direction:column;gap:6px;">
           <div style="font-size:13px;color:#1a1a1a;font-weight:500;">${l.itemNombre || '—'} <span style="color:#888;font-weight:400;">× ${l.cantidad}</span></div>
