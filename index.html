@@ -5730,6 +5730,21 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
       <div class="fg"><label class="fl">Nombre</label><input type="text" class="fi" id="prod-nombre" placeholder="Ej: Consultoría inicial, Pack mensual, Taller..."/></div>
       <div class="fg"><label class="fl">Precio</label><input type="text" inputmode="numeric" class="fi" id="prod-precio" placeholder="0" oninput="mvmFormatMonto(this)"/></div>
       <div class="fg"><label class="fl">Descripción (opcional)</label><textarea class="na" id="prod-desc" style="min-height:60px;" placeholder="Una línea que describa este ítem..."></textarea></div>
+      <div class="fg">
+        <label class="fl">Tipo de producto</label>
+        <div id="prod-tipo-chips" style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button type="button" onclick="prodSeleccionarTipo('simple')" data-tipo="simple" class="prod-tipo-chip" style="background:#fff;border:0.5px solid #d8d0c4;color:#555;padding:8px 16px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">Reventa</button>
+          <button type="button" onclick="prodSeleccionarTipo('produccion')" data-tipo="produccion" class="prod-tipo-chip" style="background:#fff;border:0.5px solid #d8d0c4;color:#555;padding:8px 16px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">Producción</button>
+          <button type="button" onclick="prodSeleccionarTipo('al_momento')" data-tipo="al_momento" class="prod-tipo-chip" style="background:#fff;border:0.5px solid #d8d0c4;color:#555;padding:8px 16px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">Elaboración en el momento</button>
+        </div>
+        <div id="prod-tipo-desc" style="margin-top:10px;background:#f7f8f5;border-left:3px solid #4a5e4d;padding:10px 12px;border-radius:6px;font-size:11px;color:#555;line-height:1.5;"></div>
+      </div>
+      <div class="fg" style="border-top:0.5px solid #f0eae3;padding-top:14px;">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:12px;color:#1a1a1a;">
+          <input type="checkbox" id="prod-es-insumo" style="width:16px;height:16px;border-radius:4px;cursor:pointer;">
+          También se usa como ingrediente de otros productos
+        </label>
+      </div>
       <div class="br2">
         <button class="bp" id="prod-modal-btn" onclick="createProducto()">Guardar</button>
         <button class="bs" onclick="closeModal('newProductoModal')">Cancelar</button>
@@ -29288,27 +29303,30 @@ async function createProducto() {
   const id     = document.getElementById('prod-edit-id').value;
   const nombre = document.getElementById('prod-nombre').value.trim();
   if(!nombre){ showToast('Ingresá un nombre', 'info'); return; }
+  // PRODUCCIÓN COMMIT 2: leer tipo y esInsumo del UI (chips + checkbox)
+  const _tipoActivo = document.querySelector('#prod-tipo-chips .prod-tipo-chip[data-active="true"]')?.dataset.tipo || 'al_momento';
+  const _esInsumo = !!document.getElementById('prod-es-insumo')?.checked;
   const data = {
     nombre,
     precio:      parseFloat((document.getElementById('prod-precio')?.value||'').replace(/\./g,'').replace(',','.')) || 0,
     descripcion: document.getElementById('prod-desc').value,
     activo: true,
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date().toISOString(),
+    tipo: _tipoActivo,
+    esInsumo: _esInsumo
   };
   try {
     const fsi = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
     const fdb = window.db || fsi.getFirestore();
     if(id) {
-      // PRODUCCIÓN COMMIT 1: no machaca creadoEn ni los campos nuevos (tipo/stock/esInsumo) al editar
+      // PRODUCCIÓN COMMIT 1+2: no machaca creadoEn ni stock fields al editar. tipo y esInsumo SÍ se actualizan.
       await fsi.updateDoc(fsi.doc(fdb,'clientes',uid,'productos',id), data);
     } else {
-      // PRODUCCIÓN COMMIT 1: campos nuevos solo en creación (retro-compat con docs viejos)
+      // PRODUCCIÓN COMMIT 1: stock fields solo en creación (retro-compat con docs viejos)
       data.creadoEn = new Date().toISOString();
-      data.tipo = 'al_momento';
       data.stockActual = 0;
       data.stockMinimo = null;
       data.costoUnitario = 0;
-      data.esInsumo = false;
       await fsi.addDoc(fsi.collection(fdb,'clientes',uid,'productos'), data);
     }
     const s = document.getElementById('prod-saved');
@@ -29327,6 +29345,32 @@ async function createProducto() {
 }
 
 // editProducto y deleteProducto usan window._productosData (seteado por loadProductos plain)
+// PRODUCCIÓN COMMIT 2: helper para selección de tipo en el modal de producto
+window.prodSeleccionarTipo = function(tipo) {
+  const descripciones = {
+    simple: 'Lo comprás y lo vendés. Ej: indumentaria, bebidas, papelería.',
+    produccion: 'Lo producís antes de venderlo y queda en stock. Ej: muebles, prendas confeccionadas, alimentos preparados.',
+    al_momento: 'Lo preparás cuando te lo piden. Ej: arreglo personalizado, plato del día, servicio armado.'
+  };
+  document.querySelectorAll('#prod-tipo-chips .prod-tipo-chip').forEach(c => {
+    const active = c.dataset.tipo === tipo;
+    c.dataset.active = active ? 'true' : 'false';
+    if(active) {
+      c.style.background = '#1a1a1a';
+      c.style.color = '#fff';
+      c.style.borderColor = '#1a1a1a';
+      c.style.fontWeight = '600';
+    } else {
+      c.style.background = '#fff';
+      c.style.color = '#555';
+      c.style.borderColor = '#d8d0c4';
+      c.style.fontWeight = '500';
+    }
+  });
+  const desc = document.getElementById('prod-tipo-desc');
+  if(desc) desc.textContent = descripciones[tipo] || '';
+};
+
 window.abrirNuevoProducto = function() {
   document.getElementById('prod-edit-id').value = '';
   document.getElementById('prod-nombre').value = '';
@@ -29336,6 +29380,11 @@ window.abrirNuevoProducto = function() {
   document.getElementById('prod-modal-titulo').textContent = 'Agregar al catálogo';
   const btn = document.getElementById('prod-modal-btn');
   if(btn){ btn.textContent='Guardar'; btn.onclick=createProducto; }
+  // PRODUCCIÓN COMMIT 2: default desde clientData.configProductos.tipoDefault (fallback al_momento)
+  const _tipoDefault = (window.currentClientData?.configProductos?.tipoDefault) || 'al_momento';
+  prodSeleccionarTipo(_tipoDefault);
+  const esIns = document.getElementById('prod-es-insumo');
+  if(esIns) esIns.checked = false;
   openModal('newProductoModal');
 };
 
@@ -29351,6 +29400,10 @@ window.editProducto = function(id) {
   document.getElementById('prod-modal-titulo').textContent = 'Editar ítem';
   var btn = document.getElementById('prod-modal-btn');
   if(btn){ btn.textContent='Guardar cambios'; btn.onclick=createProducto; }
+  // PRODUCCIÓN COMMIT 2: leer tipo + esInsumo con fallback para docs viejos
+  prodSeleccionarTipo(p.tipo || 'al_momento');
+  const esIns = document.getElementById('prod-es-insumo');
+  if(esIns) esIns.checked = !!p.esInsumo;
   openModal('newProductoModal');
 };
 
