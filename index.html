@@ -29694,8 +29694,15 @@ window._aplicarRestriccionesRol = function() {
   var rol = window.currentRol || 'admin';
   // COMMIT 3.6.4.7: reset previo — restaura visibilidad para que la función sea idempotente
   // (un operador previo en la misma sesión pudo haber ocultado cosas; sin reset persisten al loguear otro usuario)
-  ['sbg-inicio','sbg-finanzas','sbg-ventas','sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion','btn-mi-cuenta','mc-kpi-clientes-grid','sb-equipo-btn','sb-cambiar-modo-btn']
+  // COMMIT 3.6.4.9: elementos con display inline distinto de block se restauran a su valor original
+  // (mc-kpi-clientes-grid → 'grid'; btn-mi-cuenta legacy → 'none').
+  // sb-equipo-btn y sb-cambiar-modo-btn: el reset los pone visibles, después su bloque condicional los oculta si corresponde.
+  ['sbg-inicio','sbg-finanzas','sbg-ventas','sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion','sb-equipo-btn','sb-cambiar-modo-btn']
     .forEach(function(id){ var el = document.getElementById(id); if(el) el.style.display = ''; });
+  var _mcGrid = document.getElementById('mc-kpi-clientes-grid');
+  if(_mcGrid) _mcGrid.style.display = 'grid';
+  var _btnMiCuenta = document.getElementById('btn-mi-cuenta');
+  if(_btnMiCuenta) _btnMiCuenta.style.display = 'none';
   ['sbsub-finanzas','sbsub-ventas','sbsub-stock'].forEach(function(id){
     var c = document.getElementById(id);
     if(c) c.querySelectorAll('.sb-subitem').forEach(function(b){ b.style.display = ''; });
@@ -29738,10 +29745,11 @@ window._aplicarRestriccionesRol = function() {
     var el = document.getElementById(id);
     if (el) el.style.display = 'none';
   });
-  if (rol === 'admin') {
-    // Mostrar botón Equipo solo para el dueño del negocio
-    var btnEquipo = document.getElementById('sb-equipo-btn');
-    if (btnEquipo) btnEquipo.style.display = '';
+  // COMMIT 3.6.4.9: sb-equipo-btn visible solo para admin (else explícito por reset del 3.6.4.7)
+  var btnEquipo = document.getElementById('sb-equipo-btn');
+  if (btnEquipo) {
+    if (rol === 'admin') btnEquipo.style.display = '';
+    else btnEquipo.style.display = 'none';
   }
   // COMMIT 3.6.4: botón "Cambiar modo" visible solo para operadores mixtos (cajero + sistema)
   // COMMIT 3.6.4.8: agregado else explícito porque el reset del 3.6.4.7 deja el botón visible
