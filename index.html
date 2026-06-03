@@ -15707,7 +15707,19 @@ function _ccfgRenderConceptos(conceptos, tipo, conceptosConMovs) {
 function _ccfgAbrirModalCuenta({id='', nombre='', tipo='efectivo', banco='', saldo=0, tieneMovimientos=false}) {
   _ccfgCuentaTipoSel = tipo;
   document.getElementById('ccfg-cuenta-id').value = id;
-  document.getElementById('ccfg-cuenta-nombre').value = nombre;
+  const _nombreEl = document.getElementById('ccfg-cuenta-nombre');
+  _nombreEl.value = nombre;
+  // COMMIT BLINDAJE 1: el nombre de una cuenta es inmutable (evita huerfanos al renombrar).
+  // En edicion, input readonly visual. Defensa en profundidad: validar igual en ccfgCuentaGuardar.
+  if (id) {
+    _nombreEl.readOnly = true;
+    _nombreEl.style.cssText = 'background:#f5f4f0;color:#999;cursor:not-allowed;';
+    _nombreEl.title = 'El nombre no se puede cambiar. Si necesitás otro, creá una cuenta nueva.';
+  } else {
+    _nombreEl.readOnly = false;
+    _nombreEl.style.cssText = '';
+    _nombreEl.title = '';
+  }
   document.getElementById('ccfg-cuenta-banco').value = banco;
   document.querySelectorAll('.ccfg-tipo-btn').forEach(b=>b.classList.toggle('active', b.dataset.tipo===tipo));
   document.getElementById('ccfg-banco-field').style.display = tipo==='banco' ? 'block' : 'none';
@@ -15778,9 +15790,18 @@ window.ccfgCuentaGuardar = async function() {
   btn.disabled = true; btn.textContent = 'Guardando...';
   try {
     if(esEdicion) {
-      // Editar cuenta existente
-      await updateDoc(doc(db,'clientes',currentClientUID,'cuentas',cuentaId), {
-        nombre, tipo, ...(banco?{banco}:{banco:''}), ...(saldo>0?{saldo}:{}),
+      // COMMIT BLINDAJE 1: bloquear cambio de nombre (defensa server-side; el input ya es readonly)
+      const _docRef = doc(db,'clientes',currentClientUID,'cuentas',cuentaId);
+      const _docSnap = await getDoc(_docRef);
+      const _nombreOriginal = _docSnap.exists() ? _docSnap.data().nombre : '';
+      if (_nombreOriginal && nombre !== _nombreOriginal) {
+        showToast('No se puede cambiar el nombre. Creá una cuenta nueva si necesitás otra.', 'error');
+        btn.disabled = false; btn.textContent = 'Guardar cambios';
+        return;
+      }
+      // Editar cuenta existente (sin tocar nombre — queda fijo)
+      await updateDoc(_docRef, {
+        tipo, ...(banco?{banco}:{banco:''}), ...(saldo>0?{saldo}:{}),
       });
     } else {
       // Agregar nueva cuenta
@@ -15818,6 +15839,11 @@ window.ccfgCuentaGuardar = async function() {
 };
 
 window.ccfgDesactivarCuenta = function(id, nombre, tieneMov) {
+  // COMMIT BLINDAJE 1: las 4 cuentas base nunca se borran (el circuito cajero las necesita)
+  if ((window._CUENTAS_BASE || []).includes(nombre)) {
+    showToast(`"${nombre}" es una cuenta base del sistema y no se puede borrar.`, 'info');
+    return;
+  }
   if(tieneMov) { showToast(`"${nombre}" tiene movimientos asociados y no puede desactivarse.`, 'info'); return; }
   if(!confirm(`¿Desactivar la cuenta "${nombre}"?`)) return;
   deleteDoc(doc(db,'clientes',currentClientUID,'cuentas',id))
@@ -15899,6 +15925,36 @@ window.ccfgEliminarConcepto = function(id, nombre, tieneMov) {
 
 // ─── MODAL NUEVO MOVIMIENTO ───
 let _mvmTipo = 'ingreso', _mvmConceptoSel = null, _mvmConceptos = [], _mvmCuentas = [], _mvmEfectivoSaldo = 0;
+
+// COMMIT BLINDAJE 1: nombres de las cuentas base que el sistema necesita siempre.
+// No se pueden borrar ni renombrar (junto con TODAS las custom — ver ccfgCuentaGuardar).
+window._CUENTAS_BASE = ['Efectivo','Mercado Pago','Banco','Caja mostrador'];
+
+// COMMIT BLINDAJE 1: validador anti-huerfanos. Una venta/movimiento que se guarde con
+// cuenta="" o con un nombre que no existe en /cuentas queda fuera de todos los saldos.
+// Por eso TODO write a libroCaja debe pasar antes por esta validacion.
+// Estrategia: cache en memoria (rapido, sin query) → fallback query → en error de red
+// asumir valida (no bloquear UX por problema tecnico; peor caso, 1 huerfano recuperable).
+window._validarCuentaExiste = async function(nombre) {
+  if(!nombre || !currentClientUID) return false;
+  // 1. Cache: si una funcion ya cargo cuentas (mvm/vrc), usar eso
+  const cacheSources = [window._mvmCuentas, window._vrcCuentas];
+  for (const cache of cacheSources) {
+    if (Array.isArray(cache) && cache.length > 0) {
+      return cache.some(c => c.nombre === nombre);
+    }
+  }
+  // 2. Query Firestore. En error de red, asumir valida para no bloquear UX.
+  try {
+    const snap = await getDocs(collection(db,'clientes',currentClientUID,'cuentas'));
+    let found = false;
+    snap.forEach(d => { if(d.data().nombre === nombre) found = true; });
+    return found;
+  } catch(e) {
+    console.log('_validarCuentaExiste error (asumiendo valida):', e);
+    return true;
+  }
+};
 
 window.cajaNuevoMovimiento = async function() {
   if(window.currentRol==='cajero') return;
@@ -16080,6 +16136,11 @@ window.mvmGuardar = async function() {
       const hacia = document.getElementById('mvm-tr-hacia')?.value;
       const detalle = document.getElementById('mvm-tr-detalle')?.value||'';
       if(!monto) return;
+      // COMMIT BLINDAJE 1: validar cuentas para evitar huerfanos
+      if(!desde || !hacia) { showToast('Elegí las cuentas Desde y Hacia.', 'info'); return; }
+      const _desdeOk = await window._validarCuentaExiste(desde);
+      const _haciaOk = await window._validarCuentaExiste(hacia);
+      if(!_desdeOk || !_haciaOk) { showToast('Alguna cuenta no existe. Recargá la pantalla.', 'error'); return; }
       if(desde===hacia){showToast('Las cuentas no pueden ser iguales.', 'info');return;}
       docs.push({fecha,tipo:'transfer',concepto:'Transferencia entre cuentas',cuentaDesde:desde,cuentaHacia:hacia,monto,detalle,mes:mkMes(fecha),origen:'manual',eliminado:false,creadoEn:new Date().toISOString()});
     } else {
@@ -16087,6 +16148,10 @@ window.mvmGuardar = async function() {
       const cuenta = document.getElementById('mvm-cuenta')?.value||'';
       const detalle = document.getElementById('mvm-detalle')?.value||'';
       const mesFecha = mkMes(fecha);
+      // COMMIT BLINDAJE 1: cuenta obligatoria y existente (evita huerfanos)
+      if(!cuenta) { showToast('Elegí una cuenta.', 'info'); return; }
+      const _cuentaOk = await window._validarCuentaExiste(cuenta);
+      if(!_cuentaOk) { showToast('La cuenta "'+cuenta+'" no existe. Recargá la pantalla.', 'error'); return; }
       if(_mvmConceptoSel==='Cierre de caja') {
         const contado = _mvmParseMonto('mvm-contado');
         if(!contado) return;
@@ -30756,12 +30821,20 @@ async function embiEjecutarAccion(tipo,datos){
     var mesTxt=d.toLocaleDateString('es-AR',{month:'long',year:'numeric'});
     mesTxt=mesTxt.charAt(0).toUpperCase()+mesTxt.slice(1);
     if(tipo==='INGRESO'){
-      await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'libroCaja'),{uid:currentClientUID,fecha:datos.fecha||hoy,tipo:'ingreso',concepto:datos.concepto||'Ingreso',cuenta:datos.cuenta||'',monto:parseFloat(datos.monto)||0,detalle:datos.detalle||'',mes:mesTxt,origen:'embi',eliminado:false,creadoEn:new Date().toISOString(),creadoPor:window.currentOperadorNombre||'Admin'});
+      // COMMIT BLINDAJE 1: cuenta obligatoria y existente (evita huerfanos)
+      if(!datos.cuenta) { embiAddMsg('bot','Necesito que me digas en qué cuenta registrar el ingreso (Efectivo, Mercado Pago, etc).'); return; }
+      const _okIng = await window._validarCuentaExiste(datos.cuenta);
+      if(!_okIng) { embiAddMsg('bot','La cuenta "'+datos.cuenta+'" no existe. ¿A qué cuenta querés registrar el ingreso?'); return; }
+      await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'libroCaja'),{uid:currentClientUID,fecha:datos.fecha||hoy,tipo:'ingreso',concepto:datos.concepto||'Ingreso',cuenta:datos.cuenta,monto:parseFloat(datos.monto)||0,detalle:datos.detalle||'',mes:mesTxt,origen:'embi',eliminado:false,creadoEn:new Date().toISOString(),creadoPor:window.currentOperadorNombre||'Admin'});
       if(window.loadCajaModule)window.loadCajaModule();
       if(window.loadInicio)window.loadInicio();
       embiAddMsg('bot','Ingreso de $'+parseFloat(datos.monto).toLocaleString('es-AR')+' registrado en Finanzas.');
     }else if(tipo==='EGRESO'){
-      await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'libroCaja'),{uid:currentClientUID,fecha:datos.fecha||hoy,tipo:'egreso',concepto:datos.concepto||'Egreso',cuenta:datos.cuenta||'',monto:parseFloat(datos.monto)||0,detalle:datos.detalle||'',mes:mesTxt,origen:'embi',eliminado:false,creadoEn:new Date().toISOString(),creadoPor:window.currentOperadorNombre||'Admin'});
+      // COMMIT BLINDAJE 1: cuenta obligatoria y existente (evita huerfanos)
+      if(!datos.cuenta) { embiAddMsg('bot','Necesito que me digas de qué cuenta sale el egreso (Efectivo, Mercado Pago, etc).'); return; }
+      const _okEg = await window._validarCuentaExiste(datos.cuenta);
+      if(!_okEg) { embiAddMsg('bot','La cuenta "'+datos.cuenta+'" no existe. ¿De qué cuenta querés que salga?'); return; }
+      await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'libroCaja'),{uid:currentClientUID,fecha:datos.fecha||hoy,tipo:'egreso',concepto:datos.concepto||'Egreso',cuenta:datos.cuenta,monto:parseFloat(datos.monto)||0,detalle:datos.detalle||'',mes:mesTxt,origen:'embi',eliminado:false,creadoEn:new Date().toISOString(),creadoPor:window.currentOperadorNombre||'Admin'});
       if(window.loadCajaModule)window.loadCajaModule();
       if(window.loadInicio)window.loadInicio();
       embiAddMsg('bot','Egreso de $'+parseFloat(datos.monto).toLocaleString('es-AR')+' registrado en Finanzas.');
@@ -30868,8 +30941,12 @@ async function embiEjecutarAccion(tipo,datos){
       var _cbMonto=parseFloat(datos.monto)||0;
       var _cbConcepto='Cobro presupuesto '+datos.cliente;
       var _cbMesStr=mesHoyARG(_cbFecha);
+      // COMMIT BLINDAJE 1: cuenta obligatoria y existente (evita huerfanos)
+      if(!datos.cuenta) { embiAddMsg('bot','Necesito que me digas en qué cuenta registrar el cobro (Efectivo, Mercado Pago, etc).'); return; }
+      const _okCb = await window._validarCuentaExiste(datos.cuenta);
+      if(!_okCb) { embiAddMsg('bot','La cuenta "'+datos.cuenta+'" no existe. ¿A qué cuenta querés registrar el cobro?'); return; }
       await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'cobros'),{concepto:_cbConcepto,monto:_cbMonto,estado:'Cobrado',fecha:_cbFecha,saldoPendiente:0,totalAcumulado:_cbMonto,origen:'embi'});
-      await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'libroCaja'),{uid:currentClientUID,fecha:_cbFecha,tipo:'ingreso',concepto:'Cobro '+datos.cliente,cuenta:datos.cuenta||'',monto:_cbMonto,origen:'embi',detalle:'Cobro presupuesto',mes:_cbMesStr,eliminado:false,creadoEn:new Date().toISOString(),creadoPor:window.currentOperadorNombre||'Admin'});
+      await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'libroCaja'),{uid:currentClientUID,fecha:_cbFecha,tipo:'ingreso',concepto:'Cobro '+datos.cliente,cuenta:datos.cuenta,monto:_cbMonto,origen:'embi',detalle:'Cobro presupuesto',mes:_cbMesStr,eliminado:false,creadoEn:new Date().toISOString(),creadoPor:window.currentOperadorNombre||'Admin'});
       if(datos.presupuestoId)await window._updateDoc(window._doc(window.db,'clientes',currentClientUID,'presupuestos',datos.presupuestoId),{estado:'Cobrado',actualizadoEn:new Date().toISOString()});
       if(window.loadClientPresupuestos)await window.loadClientPresupuestos();
       if(window.loadClientContabilidad)await window.loadClientContabilidad();
@@ -30882,8 +30959,12 @@ async function embiEjecutarAccion(tipo,datos){
       var _ppConcepto='Pago a '+datos.proveedor;
       var _ppMesStr=mesHoyARG(_ppFecha);
       var _ppProvId=datos.proveedorId||((window._proveedores||[]).find(function(p){return p.nombre===datos.proveedor;})||{}).id||'';
-      if(_ppProvId)await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'proveedores',_ppProvId,'pagos'),{tipo:'pago',monto:_ppMonto,fecha:_ppFecha,medio:datos.cuenta||'',concepto:_ppConcepto,creadoEn:new Date().toISOString()});
-      await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'libroCaja'),{uid:currentClientUID,fecha:_ppFecha,tipo:'egreso',concepto:_ppConcepto,cuenta:datos.cuenta||'',monto:_ppMonto,origen:'embi',detalle:'Pago proveedor: '+datos.proveedor,mes:_ppMesStr,eliminado:false,creadoEn:new Date().toISOString(),creadoPor:window.currentOperadorNombre||'Admin'});
+      // COMMIT BLINDAJE 1: cuenta obligatoria y existente (evita huerfanos)
+      if(!datos.cuenta) { embiAddMsg('bot','Necesito que me digas de qué cuenta sale el pago (Efectivo, Mercado Pago, etc).'); return; }
+      const _okPp = await window._validarCuentaExiste(datos.cuenta);
+      if(!_okPp) { embiAddMsg('bot','La cuenta "'+datos.cuenta+'" no existe. ¿De qué cuenta querés que salga el pago?'); return; }
+      if(_ppProvId)await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'proveedores',_ppProvId,'pagos'),{tipo:'pago',monto:_ppMonto,fecha:_ppFecha,medio:datos.cuenta,concepto:_ppConcepto,creadoEn:new Date().toISOString()});
+      await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'libroCaja'),{uid:currentClientUID,fecha:_ppFecha,tipo:'egreso',concepto:_ppConcepto,cuenta:datos.cuenta,monto:_ppMonto,origen:'embi',detalle:'Pago proveedor: '+datos.proveedor,mes:_ppMesStr,eliminado:false,creadoEn:new Date().toISOString(),creadoPor:window.currentOperadorNombre||'Admin'});
       if(window.loadProveedores)await window.loadProveedores();
       if(window._ccProvId && _ppProvId && window._ccProvId===_ppProvId && window.abrirCuentaCorriente) await window.abrirCuentaCorriente(_ppProvId);
       if(window.loadCajaModule)window.loadCajaModule();
