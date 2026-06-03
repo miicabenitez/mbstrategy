@@ -16722,7 +16722,10 @@ window.vrcGuardar = async function() {
         : _cuentaObj?.tipo === 'banco' ? 'Transferencia'
         : _cuentaObj?.tipo === 'efectivo' ? 'Efectivo'
         : _cuentaObj?.nombre || 'Efectivo';
-      const _cuentaGuardar = _cajaActiva;
+      // Fix venta dueño: el espejo es para el flujo cajero (efectivo va a Caja mostrador + banco va a cuenta bancaria).
+      // Para el dueño (sin caja física asignada) escribimos UN solo doc en la cuenta seleccionada.
+      const _esCajero = window.currentRol === 'cajero' && !!window._cajaActivaId;
+      const _cuentaGuardar = _esCajero ? _cajaActiva : (_cuentaObj?.nombre || _cajaActiva);
       const _vcDocRef = await addDoc(collection(db,'clientes',currentClientUID,'libroCaja'), {
         uid:currentClientUID,
         fecha:hoy, tipo:'ingreso', concepto:'Venta caja',
@@ -16733,9 +16736,10 @@ window.vrcGuardar = async function() {
         ticketNum: _ticketNum,
         creadoPor: window.currentOperadorNombre || 'Admin'
       });
-      // Espejo en cuenta del dueño para MP y transferencias
+      // Espejo SOLO para el flujo cajero (cajero vende con MP/transferencia → primary en Caja mostrador, espejo en cuenta bancaria).
+      // Para el dueño no se crea espejo: el primary ya tiene la cuenta correcta.
       const _esEfectivoCajero = _cuentaObj?.nombre === 'Caja mostrador' || _vrcMetodo === '__tarjeta__';
-      if (!_esEfectivoCajero) {
+      if (_esCajero && !_esEfectivoCajero) {
         // Resolver cuenta real: si _cuentaObj existe usar su nombre; si no, buscar primer cuenta tipo banco; fallback 'Mercado Pago'
         const _cuentaEspejo = _cuentaObj?.nombre || (_vrcCuentas.find(x => x.tipo === 'banco')?.nombre) || 'Mercado Pago';
         await addDoc(collection(db, 'clientes', currentClientUID, 'libroCaja'), {
