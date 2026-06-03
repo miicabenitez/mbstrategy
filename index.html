@@ -12141,7 +12141,8 @@ window._aplicarFiltrosCaja = function() {
   const limite = window._cajaPaginaLimite || 15;
   const paginados = filtrados.length > limite ? filtrados.slice(-limite) : filtrados;
   renderCajaKPIs(filtrados);
-  renderCajaTable(paginados);
+  // COMMIT FIX SALDO: pasa filtrados para el banner (acumulado real) + paginados para rows visibles
+  renderCajaTable(paginados, undefined, filtrados);
   // Re-render KPI cards (TODAS/EFECTIVO/MP/BANCO) con los movs filtrados (no paginados)
   if(window._cajaCuentasUnicas) {
     renderCajaChips(window._cajaCuentasUnicas, filtrados);
@@ -12245,7 +12246,8 @@ window.cajaSeleccionarOrigen = function(nombre) {
   _aplicarFiltrosCaja();
 };
 
-function renderCajaTable(movs, facturadosMap = window._facturadosMap || new Map()) {
+// COMMIT FIX SALDO: banner usa filtrados (acumulado real), tabla muestra paginados (rows visibles)
+function renderCajaTable(movs, facturadosMap = window._facturadosMap || new Map(), filtradosForBanner = null) {
   const tbody = document.getElementById('caja-tbody');
   if(!tbody) return;
   const tableCard = document.getElementById('caja-table-card');
@@ -12310,8 +12312,10 @@ function renderCajaTable(movs, facturadosMap = window._facturadosMap || new Map(
   }
   if(tableCard) tableCard.style.display = '';
   if(emptyState) emptyState.style.display = 'none';
+  // COMMIT FIX SALDO: banner se calcula con todos los filtrados (no paginados) para reflejar acumulado real
   let saldo = 0, totalEntradas = 0, totalSalidas = 0;
-  let _rowsHtml = movs.map((m, i) => {
+  const _movsParaBanner = filtradosForBanner || movs;
+  _movsParaBanner.forEach(m => {
     const monto = parseFloat(m.monto)||0;
     if(m.tipo==='ingreso') { saldo += monto; totalEntradas += monto; }
     else if(m.tipo==='egreso') { saldo -= monto; totalSalidas += monto; }
@@ -12322,6 +12326,9 @@ function renderCajaTable(movs, facturadosMap = window._facturadosMap || new Map(
       else if((m.cuentaHacia||'').startsWith('Retiros ')) saldo -= monto;
       if((m.cuentaHacia||'').startsWith('Retiros ')) totalSalidas += monto;
     }
+  });
+  let _rowsHtml = movs.map((m, i) => {
+    const monto = parseFloat(m.monto)||0;
     let fechaStr = '—';
     if(m.fecha) {
       const p = m.fecha.split('-');
@@ -12403,10 +12410,13 @@ function renderCajaTable(movs, facturadosMap = window._facturadosMap || new Map(
   tbody.innerHTML = _rowsHtml;
   const banner = document.getElementById('caja-totales-banner');
   if(banner) {
+    // COMMIT FIX SALDO: label dinamico - "TOTAL" sin filtros / "TOTAL DEL PERÍODO" con filtros
+    const _hayFiltros = !!(window._cajaRangoDesde && window._cajaRangoHasta) || !!_cajaCuentaFiltro || !!window._cajaOrigenFiltro;
+    const _labelBanner = _hayFiltros ? 'TOTAL DEL PERÍODO' : 'TOTAL';
     banner.style.display = '';
     banner.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:center;gap:32px;flex-wrap:wrap;">
-        <div style="font-size:11px;color:rgba(255,255,255,.6);letter-spacing:1px;font-weight:600;">TOTALES DEL PERÍODO</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.6);letter-spacing:1px;font-weight:600;">${_labelBanner}</div>
         <div style="display:flex;gap:32px;align-items:center;">
           <div style="text-align:right;">
             <div style="font-size:9px;color:rgba(255,255,255,.4);letter-spacing:0.5px;text-transform:uppercase;">Entradas</div>
