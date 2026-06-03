@@ -6983,6 +6983,9 @@ window.doLogout = async function() {
   document.getElementById('lp').style.display = 'flex';
   document.getElementById('app').classList.remove('visible');
   currentUser = null;
+  // COMMIT 3.6.4.7: reset variables del operador para evitar leak entre logins en la misma pestaña
+  window._operadorRoles = null;
+  window._modoActivo = null;
 };
 
 window.fechaHoyARG = function() {
@@ -29689,6 +29692,16 @@ window.cambiarModoOperador = function() {
 
 window._aplicarRestriccionesRol = function() {
   var rol = window.currentRol || 'admin';
+  // COMMIT 3.6.4.7: reset previo — restaura visibilidad para que la función sea idempotente
+  // (un operador previo en la misma sesión pudo haber ocultado cosas; sin reset persisten al loguear otro usuario)
+  ['sbg-inicio','sbg-finanzas','sbg-ventas','sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion','btn-mi-cuenta','mc-kpi-clientes-grid','sb-equipo-btn','sb-cambiar-modo-btn']
+    .forEach(function(id){ var el = document.getElementById(id); if(el) el.style.display = ''; });
+  ['sbsub-finanzas','sbsub-ventas','sbsub-stock'].forEach(function(id){
+    var c = document.getElementById(id);
+    if(c) c.querySelectorAll('.sb-subitem').forEach(function(b){ b.style.display = ''; });
+  });
+  ['es-cajero','es-comercial','es-compras','es-produccion','es-stock','es-vendedor']
+    .forEach(function(c){ document.body.classList.remove(c); });
   // COMMIT 3.6.3: map de qué oculta cada rol (single source of truth)
   // COMMIT 3.6.3.1: agregado 'sbg-inicio' a comercial, compras, vendedor (solo admin ve Inicio)
   var _ocultaMap = {
