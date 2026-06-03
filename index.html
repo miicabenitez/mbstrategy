@@ -29744,15 +29744,19 @@ window._aplicarRestriccionesRol = function() {
     if (btnEquipo) btnEquipo.style.display = '';
   }
   // COMMIT 3.6.4: botón "Cambiar modo" visible solo para operadores mixtos (cajero + sistema)
+  // COMMIT 3.6.4.8: agregado else explícito porque el reset del 3.6.4.7 deja el botón visible
   var _btnCambiarModo = document.getElementById('sb-cambiar-modo-btn');
   if (_btnCambiarModo) {
-    var _esMixto = window._operadorRoles
+    var _esMixto = window.currentRol !== 'admin'
+      && window._operadorRoles
       && window._operadorRoles.includes('cajero')
       && window._operadorRoles.some(function(r){return r !== 'cajero';});
     if (_esMixto) {
       _btnCambiarModo.style.display = '';
       var _lbl = document.getElementById('sb-cambiar-modo-label');
       if (_lbl) _lbl.textContent = (window._modoActivo === 'caja') ? 'Ir a Sistema' : 'Ir a Caja';
+    } else {
+      _btnCambiarModo.style.display = 'none';
     }
   }
   if (rol === 'cajero') {
