@@ -15987,8 +15987,10 @@ window.cajaNuevoMovimiento = async function() {
     _mvmConceptos = [];
     conceptosSnap.forEach(d => _mvmConceptos.push({id:d.id,...d.data()}));
     // FIX SALDOS: usa helper unico (igual que cards/chips/preload/cierre)
+    // COMMIT B: cachear movs para recalcular saldo dinamicamente segun cuenta elegida
     const movsArr = [];
     movsSnap.forEach(d => movsArr.push(d.data()));
+    window._mvmMovsCache = movsArr;
     _mvmEfectivoSaldo = window._calcularSaldoCuenta('Efectivo', movsArr);
     _mvmTipo = 'ingreso'; _mvmConceptoSel = null;
     _mvmRenderCuentas();
@@ -16052,12 +16054,34 @@ window.mvmSetTipo = function(tipo, btn) {
   }
 };
 
+// COMMIT B: helper que devuelve true si la cuenta elegida en el modal es tipo efectivo.
+// Usado para filtrar "Cierre de caja" (solo aplica a arqueo de efectivo).
+function _mvmCuentaElegidaEsEfectivo() {
+  const cuentaSel = document.getElementById('mvm-cuenta')?.value || '';
+  if(!cuentaSel) return false;
+  const cuentaObj = (_mvmCuentas || []).find(c => c.nombre === cuentaSel);
+  return cuentaObj?.tipo === 'efectivo';
+}
+
+// COMMIT B: recalcula saldo esperado segun cuenta elegida (cierre de caja por cuenta).
+function _mvmRecalcSaldoEsperado() {
+  const cuentaSel = document.getElementById('mvm-cuenta')?.value || '';
+  if(!cuentaSel) { _mvmEfectivoSaldo = 0; return; }
+  _mvmEfectivoSaldo = window._calcularSaldoCuenta(cuentaSel, window._mvmMovsCache || []);
+  const espEl = document.getElementById('mvm-saldo-esp');
+  if(espEl) espEl.textContent = '$'+Math.round(_mvmEfectivoSaldo).toLocaleString('es-AR');
+  if(window.mvmActualizarCierre) window.mvmActualizarCierre();
+}
+
 function _mvmRenderConceptos() {
   const list = document.getElementById('mvm-conceptos-list');
   if(!list) return;
   const isEg = _mvmTipo === 'egreso';
+  // COMMIT B: "Cierre de caja" solo aparece cuando la cuenta elegida es tipo efectivo
+  const cuentaEsEfectivo = _mvmCuentaElegidaEsEfectivo();
   const filtered = _mvmConceptos
     .filter(c=>c.tipo===_mvmTipo)
+    .filter(c=> c.nombre !== 'Cierre de caja' || cuentaEsEfectivo)
     .sort((a,b)=>{ if(a.sistema&&!b.sistema)return -1; if(!a.sistema&&b.sistema)return 1; return (a.nombre||'').localeCompare(b.nombre||''); });
   if(!_mvmConceptoSel && filtered.length) _mvmConceptoSel = filtered[0].nombre;
   const selCls = isEg ? 'sel-eg' : 'sel-ing';
@@ -16078,13 +16102,31 @@ window.mvmSelConcepto = function(btn, nombre) {
   const diffEl = document.getElementById('mvm-cierre-diff');
   if(nombre==='Cierre de caja') {
     if(cierreSec) cierreSec.style.display = '';
-    const espEl = document.getElementById('mvm-saldo-esp');
-    if(espEl) espEl.textContent = '$'+Math.round(_mvmEfectivoSaldo).toLocaleString('es-AR');
-    window.mvmActualizarCierre();
+    // COMMIT B: saldo esperado dinamico segun la cuenta elegida (no Efectivo hardcoded)
+    _mvmRecalcSaldoEsperado();
   } else {
     if(cierreSec) cierreSec.style.display = 'none';
     if(diffEl) diffEl.style.display = 'none';
   }
+};
+
+// COMMIT B: handler de cambio de cuenta. Refresca conceptos (oculta/muestra "Cierre"),
+// deselecciona "Cierre" si la nueva cuenta no es efectivo, recalcula saldo si sigue activo.
+window.mvmCuentaChange = function() {
+  if(_mvmConceptoSel === 'Cierre de caja') {
+    if(!_mvmCuentaElegidaEsEfectivo()) {
+      // La nueva cuenta no admite cierre — deseleccionar y ocultar sub-seccion
+      _mvmConceptoSel = null;
+      const cierreSec = document.getElementById('mvm-cierre-sec');
+      const diffEl = document.getElementById('mvm-cierre-diff');
+      if(cierreSec) cierreSec.style.display = 'none';
+      if(diffEl) diffEl.style.display = 'none';
+    } else {
+      // Sigue siendo efectivo: recalcular saldo de la nueva cuenta
+      _mvmRecalcSaldoEsperado();
+    }
+  }
+  _mvmRenderConceptos();
 };
 
 window.mvmToggleNuevo = function() {
@@ -16154,6 +16196,12 @@ window.mvmGuardar = async function() {
       const _cuentaOk = await window._validarCuentaExiste(cuenta);
       if(!_cuentaOk) { showToast('La cuenta "'+cuenta+'" no existe. Recargá la pantalla.', 'error'); return; }
       if(_mvmConceptoSel==='Cierre de caja') {
+        // COMMIT B: defensa server-side — "Cierre de caja" solo para cuentas tipo efectivo
+        const cuentaObjCierre = (_mvmCuentas || []).find(c => c.nombre === cuenta);
+        if(cuentaObjCierre?.tipo !== 'efectivo') {
+          showToast('"Cierre de caja" solo aplica a cuentas de efectivo.', 'error');
+          return;
+        }
         const contado = _mvmParseMonto('mvm-contado');
         if(!contado) return;
         const diff = contado - _mvmEfectivoSaldo;
@@ -31573,7 +31621,7 @@ window.doResetPassword = async function(){
           <div class="cj-field"><label>FECHA</label><input type="date" id="mvm-fecha"></div>
           <div class="cj-field"><label>MONTO ($)</label><input type="text" id="mvm-monto" inputmode="numeric" placeholder="0" oninput="mvmFormatMonto(this)"></div>
         </div>
-        <div class="cj-field" style="margin-top:12px;"><label>CUENTA</label><select id="mvm-cuenta"></select></div>
+        <div class="cj-field" style="margin-top:12px;"><label>CUENTA</label><select id="mvm-cuenta" onchange="mvmCuentaChange()"></select></div>
         <div class="cj-field" style="margin-top:12px;"><label>DETALLE (opcional)</label><textarea id="mvm-detalle" placeholder="Descripción adicional..."></textarea></div>
         <div id="mvm-cierre-sec" style="display:none;margin-top:12px;">
           <div class="cj-row2">
