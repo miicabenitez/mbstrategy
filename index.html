@@ -1482,7 +1482,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
     <div id="client-mobile-menu-wrap" style="display:none;position:relative;">
       <button onclick="toggleClientMobileMenu(event)" style="background:none;border:none;cursor:pointer;padding:8px 10px;color:rgba(255,255,255,.85);font-size:22px;line-height:1;letter-spacing:.5px;">⋮</button>
       <div id="client-mobile-menu-drop" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:#fff;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.13);min-width:170px;z-index:400;overflow:hidden;">
-        <button onclick="navigateToMiCuenta();closeClientMobileMenu()" style="width:100%;text-align:left;padding:13px 16px;border:none;background:none;font-size:13px;font-family:'DM Sans',sans-serif;color:#1a1a1a;cursor:pointer;">Mi cuenta</button>
+        <button id="mobile-mi-cuenta-btn" onclick="navigateToMiCuenta();closeClientMobileMenu()" style="width:100%;text-align:left;padding:13px 16px;border:none;background:none;font-size:13px;font-family:'DM Sans',sans-serif;color:#1a1a1a;cursor:pointer;">Mi cuenta</button>
         <div style="border-top:.5px solid #f0f0f0;margin:0;"></div>
         <button onclick="doLogout()" style="width:100%;text-align:left;padding:13px 16px;border:none;background:none;font-size:13px;font-family:'DM Sans',sans-serif;color:#C4786A;cursor:pointer;">Cerrar sesión</button>
       </div>
@@ -1600,7 +1600,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
       </div>
     </nav>
     <div class="sb-footer">
-      <button class="sb-footer-btn" onclick="navigateToMiCuenta()">
+      <button id="sb-mi-cuenta-btn" class="sb-footer-btn" onclick="navigateToMiCuenta()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0112 0v1"/></svg>
         <div>
           <div class="sb-footer-label">Mi cuenta</div>
@@ -23097,6 +23097,9 @@ window.cambiarPlan = async function(nuevoPlan) {
 
 
 window.navigateToMiCuenta = function() {
+  // SEGURIDAD: defensa en profundidad. Solo el dueño/admin puede entrar a "Mi cuenta"
+  // (datos del negocio, datos fiscales, cambio de contraseña, suscripción).
+  if(window.currentRol !== 'admin') return;
   // Ocultar todas las vistas ct-*
   document.querySelectorAll('[id^="ct-"]').forEach(el => el.style.display = 'none');
   const el = document.getElementById('ct-micuenta');
@@ -29937,8 +29940,9 @@ window._aplicarRestriccionesRol = function() {
   // (un operador previo en la misma sesión pudo haber ocultado cosas; sin reset persisten al loguear otro usuario)
   // COMMIT 3.6.4.9: elementos con display inline distinto de block se restauran a su valor original
   // (mc-kpi-clientes-grid → 'grid'; btn-mi-cuenta legacy → 'none').
-  // sb-equipo-btn y sb-cambiar-modo-btn: el reset los pone visibles, después su bloque condicional los oculta si corresponde.
-  ['sbg-inicio','sbg-finanzas','sbg-ventas','sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion','sb-equipo-btn','sb-cambiar-modo-btn']
+  // sb-equipo-btn, sb-cambiar-modo-btn, sb-mi-cuenta-btn, mobile-mi-cuenta-btn: el reset los pone visibles,
+  // después sus bloques condicionales los ocultan si corresponde.
+  ['sbg-inicio','sbg-finanzas','sbg-ventas','sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion','sb-equipo-btn','sb-cambiar-modo-btn','sb-mi-cuenta-btn','mobile-mi-cuenta-btn']
     .forEach(function(id){ var el = document.getElementById(id); if(el) el.style.display = ''; });
   var _mcGrid = document.getElementById('mc-kpi-clientes-grid');
   if(_mcGrid) _mcGrid.style.display = 'grid';
@@ -29991,6 +29995,18 @@ window._aplicarRestriccionesRol = function() {
   if (btnEquipo) {
     if (rol === 'admin') btnEquipo.style.display = '';
     else btnEquipo.style.display = 'none';
+  }
+  // SEGURIDAD: "Mi cuenta" solo para el dueño/admin (datos del negocio + datos fiscales + cambio de
+  // contraseña + suscripción). Un operador NO debe acceder ni cambiar la contraseña del dueño.
+  var btnMiCuenta = document.getElementById('sb-mi-cuenta-btn');
+  if (btnMiCuenta) {
+    if (rol === 'admin') btnMiCuenta.style.display = '';
+    else btnMiCuenta.style.display = 'none';
+  }
+  var btnMiCuentaMobile = document.getElementById('mobile-mi-cuenta-btn');
+  if (btnMiCuentaMobile) {
+    if (rol === 'admin') btnMiCuentaMobile.style.display = '';
+    else btnMiCuentaMobile.style.display = 'none';
   }
   // COMMIT 3.6.4: botón "Cambiar modo" visible solo para operadores mixtos (cajero + sistema)
   // COMMIT 3.6.4.8: agregado else explícito porque el reset del 3.6.4.7 deja el botón visible
@@ -30225,6 +30241,9 @@ window.onPDFSelected = function(input) {
 window.updateSemanasSelect = function() {};
 
 window.openModal = function(id) {
+  // SEGURIDAD: "Mi cuenta" solo para el dueño/admin (datos del negocio, fiscales, contraseña, suscripción).
+  // Cierra paths legacy y desde onboarding/errores ARCA si fueran invocados por no-admin.
+  if(id === 'miCuentaModal' && window.currentRol !== 'admin') return;
   document.getElementById(id).classList.add('open');
   if(id === 'newClientPresupModal') {
     // Reset search input
