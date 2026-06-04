@@ -16088,7 +16088,8 @@ function _mvmIcono(tipo, nombre) {
 
 // REDISEÑO: rendera las cards de cuenta a partir del select oculto.
 // El MutationObserver del IIFE al final del modal dispara esta fn cuando _mvmRenderCuentas cambia las options.
-function _mvmRenderCuentaCards() {
+// FIX: asignado a window para que el IIFE (fuera del module scope) lo pueda invocar.
+window._mvmRenderCuentaCards = function() {
   const sel = document.getElementById('mvm-cuenta');
   const cont = document.getElementById('mvm-cuenta-cards');
   if(!sel || !cont) return;
@@ -16103,7 +16104,7 @@ function _mvmRenderCuentaCards() {
       + '<div class="mvm-ccard-name">'+(c.nombre||'')+'</div>'
       + '</button>';
   }).join('');
-}
+};
 
 // REDISEÑO: click en una card. Setea value del select oculto y dispara mvmCuentaChange.
 window._mvmSelectCuentaCard = function(nombre) {
@@ -16126,11 +16127,12 @@ window._mvmToggleConceptoDrop = function() {
 };
 
 // REDISEÑO: actualiza el texto del trigger del dropdown segun _mvmConceptoSel.
-function _mvmUpdateConceptoTrigger() {
+// FIX: asignado a window para que el IIFE (fuera del module scope) lo pueda invocar.
+window._mvmUpdateConceptoTrigger = function() {
   const txt = document.getElementById('mvm-concepto-trigger-text');
   if(!txt) return;
   txt.textContent = _mvmConceptoSel || 'Elegí un concepto';
-}
+};
 
 // COMMIT B: recalcula saldo esperado segun cuenta elegida (cierre de caja por cuenta).
 function _mvmRecalcSaldoEsperado() {
@@ -16152,13 +16154,16 @@ function _mvmRenderConceptos() {
     .filter(c=>c.tipo===_mvmTipo)
     .filter(c=> c.nombre !== 'Cierre de caja' || cuentaEsEfectivo)
     .sort((a,b)=>{ if(a.sistema&&!b.sistema)return -1; if(!a.sistema&&b.sistema)return 1; return (a.nombre||'').localeCompare(b.nombre||''); });
-  if(!_mvmConceptoSel && filtered.length) _mvmConceptoSel = filtered[0].nombre;
+  // FIX 3: SIN auto-seleccion del primer concepto. El usuario tiene que elegir activamente.
+  // Validacion en mvmGuardar (toast "Elegí un concepto" si _mvmConceptoSel es null al guardar).
   const selCls = isEg ? 'sel-eg' : 'sel-ing';
   list.innerHTML = filtered.map(c=>{
     const isSel = _mvmConceptoSel===c.nombre;
     const safe = c.nombre.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
     return `<button class="cj-chip${isSel?' '+selCls:''}" onclick="mvmSelConcepto(this,'${safe}')">${c.nombre}</button>`;
   }).join('') + `<button class="cj-chip nuevo-chip" onclick="mvmToggleNuevo()">+ Nuevo</button>`;
+  // FIX 3: actualizar trigger del dropdown (muestra "Elegí un concepto" o el seleccionado).
+  if(window._mvmUpdateConceptoTrigger) window._mvmUpdateConceptoTrigger();
 }
 
 window.mvmSelConcepto = function(btn, nombre) {
@@ -16280,8 +16285,10 @@ window.mvmGuardar = async function() {
           else docs.push({fecha,tipo:'egreso',concepto:'Faltante',cuenta,monto:Math.round(Math.abs(diff)*100)/100,detalle:'Auto-generado por cierre de caja',mes:mesFecha,origen:'manual',eliminado:false,creadoEn:new Date().toISOString(),creadoPor:window.currentOperadorNombre||'Admin'});
         }
       } else {
+        // FIX 3: validacion explicita de concepto con feedback al usuario (antes era silencioso)
+        if(!_mvmConceptoSel) { showToast('Elegí un concepto.', 'info'); return; }
         const monto = _mvmParseMonto('mvm-monto');
-        if(!monto||!_mvmConceptoSel) return;
+        if(!monto) return;
         docs.push({fecha,tipo:_mvmTipo,concepto:_mvmConceptoSel,cuenta,monto,detalle,mes:mesFecha,origen:'manual',eliminado:false,creadoEn:new Date().toISOString(),creadoPor:window.currentOperadorNombre||'Admin'});
       }
     }
@@ -31687,15 +31694,16 @@ window.doResetPassword = async function(){
 .mvm-cdrop-trigger.is-open{border-color:#4a5e4d !important;background:#fff !important;}
 .mvm-cdrop-chevron{transition:transform .2s !important;color:#7a7770 !important;flex-shrink:0 !important;}
 .mvm-cdrop-trigger.is-open .mvm-cdrop-chevron{transform:rotate(180deg) !important;}
-.mvm-cdrop-panel{margin-top:6px !important;background:#fff !important;border:1.5px solid #ebe6dd !important;border-radius:10px !important;padding:12px !important;box-shadow:0 4px 16px rgba(0,0,0,.06) !important;}
-#mvm-conceptos-list{display:flex !important;flex-wrap:wrap !important;gap:6px !important;}
-#mvm-conceptos-list .cj-chip{padding:7px 12px !important;border-radius:18px !important;border:1px solid #ebe6dd !important;background:#f7f4ef !important;font-size:12px !important;color:#4a4843 !important;cursor:pointer !important;font-family:'DM Sans',sans-serif !important;transition:all .15s !important;}
-#mvm-conceptos-list .cj-chip:hover{border-color:#b09088 !important;}
-#mvm-conceptos-list .cj-chip.sel-ing{background:#4a5e4d !important;color:#fff !important;border-color:#4a5e4d !important;}
-#mvm-conceptos-list .cj-chip.sel-eg{background:#b09088 !important;color:#fff !important;border-color:#b09088 !important;}
-#mvm-conceptos-list .cj-chip.nuevo-chip{background:transparent !important;border:1px dashed #b09088 !important;color:#b09088 !important;}
-#mvm-nuevo-input{display:none;margin-top:10px;gap:8px;align-items:center;}
-#mvm-nuevo-txt{flex:1 !important;padding:9px 12px !important;border:1.5px solid #ebe6dd !important;border-radius:8px !important;font-size:13px !important;outline:none !important;font-family:'DM Sans',sans-serif !important;color:#1e2a1c !important;background:#f7f4ef !important;}
+.mvm-cdrop-panel{margin-top:6px !important;background:#fff !important;border:1.5px solid #ebe6dd !important;border-radius:10px !important;padding:0 !important;box-shadow:0 4px 16px rgba(0,0,0,.08) !important;overflow:hidden !important;max-height:280px !important;overflow-y:auto !important;}
+#mvm-conceptos-list{display:flex !important;flex-direction:column !important;gap:0 !important;}
+#mvm-conceptos-list .cj-chip{display:block !important;width:100% !important;padding:11px 14px !important;border:none !important;border-bottom:1px solid #f4f1ea !important;border-radius:0 !important;background:#fff !important;font-size:13px !important;color:#1e2a1c !important;cursor:pointer !important;font-family:'DM Sans',sans-serif !important;text-align:left !important;transition:background .12s !important;font-weight:500 !important;}
+#mvm-conceptos-list .cj-chip:hover{background:#f7f4ef !important;}
+#mvm-conceptos-list .cj-chip.sel-ing{background:#eef4ec !important;color:#2f4232 !important;border-color:#f4f1ea !important;font-weight:600 !important;}
+#mvm-conceptos-list .cj-chip.sel-eg{background:#f5ebe6 !important;color:#7a5850 !important;border-color:#f4f1ea !important;font-weight:600 !important;}
+#mvm-conceptos-list .cj-chip.nuevo-chip{background:#fafaf7 !important;color:#b09088 !important;border-color:#f4f1ea !important;border-bottom:none !important;font-weight:600 !important;}
+#mvm-conceptos-list .cj-chip.nuevo-chip:hover{background:#f5ebe6 !important;}
+#mvm-nuevo-input{display:none;padding:10px 14px;gap:8px;align-items:center;border-top:1px solid #f4f1ea;background:#fafaf7;}
+#mvm-nuevo-txt{flex:1 !important;padding:9px 12px !important;border:1.5px solid #ebe6dd !important;border-radius:8px !important;font-size:13px !important;outline:none !important;font-family:'DM Sans',sans-serif !important;color:#1e2a1c !important;background:#fff !important;}
 #mvm-nuevo-txt:focus{border-color:#4a5e4d !important;background:#fff !important;}
 .mvm-nuevo-btn{padding:9px 14px !important;background:#4a5e4d !important;color:#fff !important;border:none !important;border-radius:8px !important;font-size:12px !important;font-weight:600 !important;cursor:pointer !important;font-family:'DM Sans',sans-serif !important;white-space:nowrap !important;}
 .mvm-ccards{display:grid !important;grid-template-columns:repeat(auto-fill,minmax(95px,1fr)) !important;gap:8px !important;}
