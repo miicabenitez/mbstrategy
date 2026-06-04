@@ -7471,10 +7471,12 @@ window.showClientUI = async function(email, clientData) {
     } else if(clientData && clientData.onboardingCompletado !== true) {
       setTimeout(() => window.showWelcomeScreen(clientData), 500);
     }
-    if(window.embiShow) window.embiShow(true, clientData.plan === 'pro' ? 'operativo' : 'explicativo');
+    // SEGURIDAD: Embi solo para el dueño/admin/roles sistema. El cajero NO debe ver Embi
+    // (Embi puede operar la caja del dueño y la administración — el cajero solo toca su turno).
+    if(window.currentRol !== 'cajero' && window.embiShow) window.embiShow(true, clientData.plan === 'pro' ? 'operativo' : 'explicativo');
     if(window.sidebarInit) window.sidebarInit();
     if(window._aplicarRestriccionesRol) window._aplicarRestriccionesRol();
-    if(window.embiPrecargarContexto) window.embiPrecargarContexto();
+    if(window.currentRol !== 'cajero' && window.embiPrecargarContexto) window.embiPrecargarContexto();
     if(window._aplicarLocksPlanBase) window._aplicarLocksPlanBase(clientData);
     // módulo ya mostrado antes de los awaits (ver arriba)
 };
@@ -31383,6 +31385,9 @@ function embiToggle(){
 function embiShow(show, modo){
   var fab=document.getElementById('embiFab');
   if(!fab)return;
+  // SEGURIDAD: defensa en profundidad. Cualquier intento de mostrar Embi mientras
+  // currentRol==='cajero' se rechaza (Embi no debe estar disponible en modo cajero).
+  if(window.currentRol === 'cajero'){fab.style.display='none';if(embiOpen)embiToggle();return;}
   if(!show){fab.style.display='none';if(embiOpen)embiToggle();return;}
   embiModo=modo||'operativo';
   fab.style.display='block';
