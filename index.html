@@ -30794,8 +30794,16 @@ window.embiPrecargarContexto = async function() {
     results[1].forEach(d=>{ var r=d.data(); if(!r.eliminado) window._embi_clientes.push({nombre:r.nombre||'',email:r.email||'',tel:r.tel||''}); });
     window._embi_presupuestos = [];
     results[2].forEach(d=>{ var r=d.data(); if(!r.eliminado) window._embi_presupuestos.push({id:d.id,cliente:r.cliente||'',descripcion:r.descripcion||'',monto:parseFloat(r.monto)||0,estado:r.estado||''}); });
+    // PARTE A: Embi solo ve las cuentas operables del dueño.
+    // Excluye "Caja mostrador" (caja del cajero), tipo 'reserva' y tipo 'retiros'.
+    // Agrega 'tipo' al objeto para que el system prompt pueda usar la info de tipo.
     window._embi_cuentas = [];
-    results[3].forEach(d=>{ var r=d.data(); window._embi_cuentas.push({nombre:r.nombre||'',saldo:parseFloat(r.saldo)||0}); });
+    results[3].forEach(d=>{
+      var r=d.data();
+      if(r.nombre === 'Caja mostrador') return;
+      if(r.tipo === 'reserva' || r.tipo === 'retiros') return;
+      window._embi_cuentas.push({nombre:r.nombre||'', tipo:r.tipo||'', saldo:parseFloat(r.saldo)||0});
+    });
     window._embi_ocs = [];
     results[4].forEach(d=>{ var r=d.data(); if(!r.eliminado && r.estadoPago!=='pagado' && r.estadoRecepcion!=='recibida') window._embi_ocs.push({ocId:d.id,numero:r.numero||'',proveedor:r.proveedorNombre||r.proveedor||'',monto:parseFloat(r.monto)||0,total:parseFloat(r.total)||0,proveedorId:r.proveedorId||''}); });
     window._embi_catalogo = [];
