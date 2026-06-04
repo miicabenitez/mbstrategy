@@ -15990,13 +15990,19 @@ window.cajaNuevoMovimiento = async function() {
     }
     _mvmConceptos = [];
     conceptosSnap.forEach(d => _mvmConceptos.push({id:d.id,...d.data()}));
-    const ef = _mvmCuentas.find(c=>c.nombre==='Efectivo');
-    _mvmEfectivoSaldo = parseFloat(ef?.saldo)||0;
+    // FIX SALDO MODAL: misma logica que renderCajaChips (la card de Efectivo).
+    // Antes: semilla con ef.saldo + ignoraba transfers → discrepancia con la card.
+    // Ahora: arranca de 0 + procesa ingreso/egreso/transfer igual que la card.
+    _mvmEfectivoSaldo = 0;
     movsSnap.forEach(d => {
       const m = d.data();
-      if(!m.eliminado && m.cuenta==='Efectivo') {
-        if(m.tipo==='ingreso') _mvmEfectivoSaldo += parseFloat(m.monto)||0;
-        else if(m.tipo==='egreso') _mvmEfectivoSaldo -= parseFloat(m.monto)||0;
+      if(m.eliminado) return;
+      const monto = parseFloat(m.monto)||0;
+      if(m.tipo==='ingreso' && m.cuenta==='Efectivo') _mvmEfectivoSaldo += monto;
+      else if(m.tipo==='egreso' && m.cuenta==='Efectivo') _mvmEfectivoSaldo -= monto;
+      else if(m.tipo==='transfer') {
+        if(m.cuentaHacia==='Efectivo') _mvmEfectivoSaldo += monto;
+        if(m.cuentaDesde==='Efectivo') _mvmEfectivoSaldo -= monto;
       }
     });
     _mvmTipo = 'ingreso'; _mvmConceptoSel = null;
