@@ -13136,6 +13136,26 @@ window.mdvGuardar = async function() {
     if(detalleEl) updates.detalle = detalleEl.value.trim();
   }
 
+  // BLINDAJE EDICION: mismas validaciones que mvmGuardar (creación) para evitar huérfanos.
+  // Si la edición no tocó la cuenta (campo undefined), no se exige nada (edición parcial OK).
+  if(isTransfer) {
+    if(updates.cuentaDesde !== undefined || updates.cuentaHacia !== undefined) {
+      if(!updates.cuentaDesde || !updates.cuentaHacia) { showToast('Elegí las cuentas Desde y Hacia.', 'info'); return; }
+      if(updates.cuentaDesde === updates.cuentaHacia) { showToast('Las cuentas no pueden ser iguales.', 'info'); return; }
+      const _desdeOk = await window._validarCuentaExiste(updates.cuentaDesde);
+      const _haciaOk = await window._validarCuentaExiste(updates.cuentaHacia);
+      if(!_desdeOk || !_haciaOk) { showToast('Alguna cuenta no existe. Recargá la pantalla.', 'error'); return; }
+    }
+  } else if(updates.cuenta !== undefined) {
+    if(!updates.cuenta) { showToast('Elegí una cuenta.', 'info'); return; }
+    if(updates.cuenta === 'Caja mostrador' && window.currentRol !== 'cajero') {
+      showToast('"Caja mostrador" es la caja del cajero. No podés mover movimientos ahí.', 'error');
+      return;
+    }
+    const _cuentaOk = await window._validarCuentaExiste(updates.cuenta);
+    if(!_cuentaOk) { showToast('La cuenta "'+updates.cuenta+'" no existe. Recargá la pantalla.', 'error'); return; }
+  }
+
   // Recalculate mes field if date changed
   if(updates.fecha) {
     const [y,mo] = updates.fecha.split('-');
