@@ -16025,10 +16025,14 @@ window.onboardingAbrirMovimiento = async function(tipo) {
 };
 
 function _mvmRenderCuentas() {
-  const opts = _mvmCuentas.map(c=>`<option value="${c.nombre}">${c.nombre}</option>`).join('');
+  // FIX: el dueño no opera manualmente "Caja mostrador" (es la caja del cajero).
+  // La excluimos de los selects del modal "+ Movimiento". Sigue existiendo como cuenta
+  // (cajero la usa en venta/retiro/cierre; retiro por cierre la lee desde otro flujo).
+  const cuentasParaSelect = _mvmCuentas.filter(c => c.nombre !== 'Caja mostrador');
+  const opts = cuentasParaSelect.map(c=>`<option value="${c.nombre}">${c.nombre}</option>`).join('');
   ['mvm-cuenta','mvm-tr-desde','mvm-tr-hacia'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=opts;});
   const haciaEl = document.getElementById('mvm-tr-hacia');
-  if(haciaEl && _mvmCuentas.length>1) haciaEl.value = _mvmCuentas[1].nombre;
+  if(haciaEl && cuentasParaSelect.length>1) haciaEl.value = cuentasParaSelect[1].nombre;
 }
 
 window.mvmSetTipo = function(tipo, btn) {
@@ -30874,6 +30878,8 @@ async function embiEjecutarAccion(tipo,datos){
       if(!datos.cuenta) { embiAddMsg('bot','Necesito que me digas en qué cuenta registrar el ingreso (Efectivo, Mercado Pago, etc).'); return; }
       const _okIng = await window._validarCuentaExiste(datos.cuenta);
       if(!_okIng) { embiAddMsg('bot','La cuenta "'+datos.cuenta+'" no existe. ¿A qué cuenta querés registrar el ingreso?'); return; }
+      // FIX: "Caja mostrador" es del cajero; el dueño no debe escribir manualmente ahí
+      if(datos.cuenta === 'Caja mostrador') { embiAddMsg('bot','"Caja mostrador" es la caja del cajero. ¿En qué cuenta tuya querés registrar el ingreso (Efectivo, Mercado Pago, etc)?'); return; }
       await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'libroCaja'),{uid:currentClientUID,fecha:datos.fecha||hoy,tipo:'ingreso',concepto:datos.concepto||'Ingreso',cuenta:datos.cuenta,monto:parseFloat(datos.monto)||0,detalle:datos.detalle||'',mes:mesTxt,origen:'embi',eliminado:false,creadoEn:new Date().toISOString(),creadoPor:window.currentOperadorNombre||'Admin'});
       if(window.loadCajaModule)window.loadCajaModule();
       if(window.loadInicio)window.loadInicio();
@@ -30883,6 +30889,8 @@ async function embiEjecutarAccion(tipo,datos){
       if(!datos.cuenta) { embiAddMsg('bot','Necesito que me digas de qué cuenta sale el egreso (Efectivo, Mercado Pago, etc).'); return; }
       const _okEg = await window._validarCuentaExiste(datos.cuenta);
       if(!_okEg) { embiAddMsg('bot','La cuenta "'+datos.cuenta+'" no existe. ¿De qué cuenta querés que salga?'); return; }
+      // FIX: "Caja mostrador" es del cajero; el dueño no debe escribir manualmente ahí
+      if(datos.cuenta === 'Caja mostrador') { embiAddMsg('bot','"Caja mostrador" es la caja del cajero. ¿De qué cuenta tuya querés que salga el egreso?'); return; }
       await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'libroCaja'),{uid:currentClientUID,fecha:datos.fecha||hoy,tipo:'egreso',concepto:datos.concepto||'Egreso',cuenta:datos.cuenta,monto:parseFloat(datos.monto)||0,detalle:datos.detalle||'',mes:mesTxt,origen:'embi',eliminado:false,creadoEn:new Date().toISOString(),creadoPor:window.currentOperadorNombre||'Admin'});
       if(window.loadCajaModule)window.loadCajaModule();
       if(window.loadInicio)window.loadInicio();
@@ -30994,6 +31002,8 @@ async function embiEjecutarAccion(tipo,datos){
       if(!datos.cuenta) { embiAddMsg('bot','Necesito que me digas en qué cuenta registrar el cobro (Efectivo, Mercado Pago, etc).'); return; }
       const _okCb = await window._validarCuentaExiste(datos.cuenta);
       if(!_okCb) { embiAddMsg('bot','La cuenta "'+datos.cuenta+'" no existe. ¿A qué cuenta querés registrar el cobro?'); return; }
+      // FIX: "Caja mostrador" es del cajero; el dueño no debe escribir manualmente ahí
+      if(datos.cuenta === 'Caja mostrador') { embiAddMsg('bot','"Caja mostrador" es la caja del cajero. ¿En qué cuenta tuya querés registrar el cobro?'); return; }
       await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'cobros'),{concepto:_cbConcepto,monto:_cbMonto,estado:'Cobrado',fecha:_cbFecha,saldoPendiente:0,totalAcumulado:_cbMonto,origen:'embi'});
       await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'libroCaja'),{uid:currentClientUID,fecha:_cbFecha,tipo:'ingreso',concepto:'Cobro '+datos.cliente,cuenta:datos.cuenta,monto:_cbMonto,origen:'embi',detalle:'Cobro presupuesto',mes:_cbMesStr,eliminado:false,creadoEn:new Date().toISOString(),creadoPor:window.currentOperadorNombre||'Admin'});
       if(datos.presupuestoId)await window._updateDoc(window._doc(window.db,'clientes',currentClientUID,'presupuestos',datos.presupuestoId),{estado:'Cobrado',actualizadoEn:new Date().toISOString()});
@@ -31012,6 +31022,8 @@ async function embiEjecutarAccion(tipo,datos){
       if(!datos.cuenta) { embiAddMsg('bot','Necesito que me digas de qué cuenta sale el pago (Efectivo, Mercado Pago, etc).'); return; }
       const _okPp = await window._validarCuentaExiste(datos.cuenta);
       if(!_okPp) { embiAddMsg('bot','La cuenta "'+datos.cuenta+'" no existe. ¿De qué cuenta querés que salga el pago?'); return; }
+      // FIX: "Caja mostrador" es del cajero; el dueño no debe escribir manualmente ahí
+      if(datos.cuenta === 'Caja mostrador') { embiAddMsg('bot','"Caja mostrador" es la caja del cajero. ¿De qué cuenta tuya querés que salga el pago al proveedor?'); return; }
       if(_ppProvId)await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'proveedores',_ppProvId,'pagos'),{tipo:'pago',monto:_ppMonto,fecha:_ppFecha,medio:datos.cuenta,concepto:_ppConcepto,creadoEn:new Date().toISOString()});
       await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'libroCaja'),{uid:currentClientUID,fecha:_ppFecha,tipo:'egreso',concepto:_ppConcepto,cuenta:datos.cuenta,monto:_ppMonto,origen:'embi',detalle:'Pago proveedor: '+datos.proveedor,mes:_ppMesStr,eliminado:false,creadoEn:new Date().toISOString(),creadoPor:window.currentOperadorNombre||'Admin'});
       if(window.loadProveedores)await window.loadProveedores();
