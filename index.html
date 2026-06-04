@@ -11148,9 +11148,10 @@ async function _cajaMaybeInit(uid) {
     ]);
     // Cuentas
     if(cuentasSnap.empty) {
+      // FIX: seeds con tipo explicito (antes se creaban sin tipo y rompian helpers que filtran por tipo)
       await Promise.all([
-        addDoc(collection(db,'clientes',uid,'cuentas'), {nombre:'Efectivo', saldo:0, orden:0}),
-        addDoc(collection(db,'clientes',uid,'cuentas'), {nombre:'Mercado Pago', saldo:0, orden:1})
+        addDoc(collection(db,'clientes',uid,'cuentas'), {nombre:'Efectivo', tipo:'efectivo', saldo:0, orden:0}),
+        addDoc(collection(db,'clientes',uid,'cuentas'), {nombre:'Mercado Pago', tipo:'mp', saldo:0, orden:1})
       ]);
     } else {
       // Dedup cuentas por nombre
@@ -16060,11 +16061,17 @@ window.mvmSetTipo = function(tipo, btn) {
 
 // COMMIT B: helper que devuelve true si la cuenta elegida en el modal es tipo efectivo.
 // Usado para filtrar "Cierre de caja" (solo aplica a arqueo de efectivo).
+// FIX: la cuenta seed "Efectivo" se crea SIN campo tipo (convencion legacy);
+// se reconoce por nombre. Otras cuentas custom efectivo tienen tipo='efectivo'.
 function _mvmCuentaElegidaEsEfectivo() {
   const cuentaSel = document.getElementById('mvm-cuenta')?.value || '';
   if(!cuentaSel) return false;
   const cuentaObj = (_mvmCuentas || []).find(c => c.nombre === cuentaSel);
-  return cuentaObj?.tipo === 'efectivo';
+  if(!cuentaObj) return false;
+  if(cuentaObj.tipo === 'efectivo') return true;
+  // Convencion legacy del seed: cuenta "Efectivo" sin tipo se considera efectivo por nombre
+  if(!cuentaObj.tipo && cuentaObj.nombre === 'Efectivo') return true;
+  return false;
 }
 
 // COMMIT B: recalcula saldo esperado segun cuenta elegida (cierre de caja por cuenta).
