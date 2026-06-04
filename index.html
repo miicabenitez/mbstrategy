@@ -15743,6 +15743,9 @@ function _ccfgAbrirModalCuenta({id='', nombre='', tipo='efectivo', banco='', sal
     if(saldoLabel) saldoLabel.textContent = 'SALDO INICIAL';
     saldoEl.placeholder = esEdicion ? 'Saldo actual' : '0';
   }
+  // Mostrar nota informativa solo en modo creación (en edición ya están readonly/disabled).
+  const _notaCrear = document.getElementById('ccfg-crear-nota');
+  if(_notaCrear) _notaCrear.style.display = esEdicion ? 'none' : 'flex';
   document.getElementById('ccfg-cuenta-modal-title').textContent = esEdicion ? 'Editar cuenta' : 'Agregar cuenta';
   const saveBtn = document.getElementById('ccfg-cuenta-save');
   saveBtn.textContent = esEdicion ? 'Guardar cambios' : 'Agregar cuenta';
@@ -32010,6 +32013,10 @@ window.doResetPassword = async function(){
       <div id="ccfg-saldo-field">
         <label class="cj-slabel">SALDO INICIAL</label>
         <input type="text" inputmode="numeric" class="cj-input" id="ccfg-cuenta-saldo" placeholder="0" oninput="mvmFormatMonto(this)">
+      </div>
+      <div id="ccfg-crear-nota" style="display:none;align-items:flex-start;gap:8px;padding:10px 12px;background:rgba(176,144,136,.08);border:1px solid rgba(176,144,136,.22);border-radius:8px;margin-top:4px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b09088" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        <p style="font-size:11px;color:#7a5850;line-height:1.45;margin:0;font-family:'DM Sans',sans-serif;">El nombre y el tipo no se podrán cambiar después de crear la cuenta. Si más adelante necesitás otros, vas a tener que crear una cuenta nueva.</p>
       </div>
     </div>
     <div class="cj-mfooter" style="display:flex;gap:8px;">
