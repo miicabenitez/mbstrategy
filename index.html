@@ -7471,12 +7471,13 @@ window.showClientUI = async function(email, clientData) {
     } else if(clientData && clientData.onboardingCompletado !== true) {
       setTimeout(() => window.showWelcomeScreen(clientData), 500);
     }
-    // SEGURIDAD: Embi solo para el dueño/admin/roles sistema. El cajero NO debe ver Embi
-    // (Embi puede operar la caja del dueño y la administración — el cajero solo toca su turno).
-    if(window.currentRol !== 'cajero' && window.embiShow) window.embiShow(true, clientData.plan === 'pro' ? 'operativo' : 'explicativo');
+    // SEGURIDAD: Embi solo para el dueño/admin. Backend embi.js rechaza a no-dueños con 401
+    // (verifiedUid del idToken !== clienteUID). Alineamos el frontend: solo admin ve Embi
+    // y solo admin carga su contexto financiero (evita leak en navegador de operadores).
+    if(window.currentRol === 'admin' && window.embiShow) window.embiShow(true, clientData.plan === 'pro' ? 'operativo' : 'explicativo');
     if(window.sidebarInit) window.sidebarInit();
     if(window._aplicarRestriccionesRol) window._aplicarRestriccionesRol();
-    if(window.currentRol !== 'cajero' && window.embiPrecargarContexto) window.embiPrecargarContexto();
+    if(window.currentRol === 'admin' && window.embiPrecargarContexto) window.embiPrecargarContexto();
     if(window._aplicarLocksPlanBase) window._aplicarLocksPlanBase(clientData);
     // módulo ya mostrado antes de los awaits (ver arriba)
 };
@@ -31385,9 +31386,9 @@ function embiToggle(){
 function embiShow(show, modo){
   var fab=document.getElementById('embiFab');
   if(!fab)return;
-  // SEGURIDAD: defensa en profundidad. Cualquier intento de mostrar Embi mientras
-  // currentRol==='cajero' se rechaza (Embi no debe estar disponible en modo cajero).
-  if(window.currentRol === 'cajero'){fab.style.display='none';if(embiOpen)embiToggle();return;}
+  // SEGURIDAD: defensa en profundidad. Embi solo para el dueño/admin. Cualquier intento
+  // de mostrar Embi a un no-admin (cajero, comercial, compras, mixto, etc.) se rechaza.
+  if(window.currentRol !== 'admin'){fab.style.display='none';if(embiOpen)embiToggle();return;}
   if(!show){fab.style.display='none';if(embiOpen)embiToggle();return;}
   embiModo=modo||'operativo';
   fab.style.display='block';
