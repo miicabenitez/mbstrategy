@@ -22741,8 +22741,17 @@ function renderProductosModule() {
     return;
   }
   const isMobile = window.innerWidth <= 768;
-  lista.innerHTML = _productos.map(p => {
+  const headerDesktop = isMobile ? '' : `<div style="display:grid;grid-template-columns:1fr 120px 110px 50px 50px 60px;gap:10px;padding:8px 0;border-bottom:.5px solid var(--cream-d);font-size:10px;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;font-weight:600;">
+    <div>Producto</div>
+    <div style="text-align:right;">Precio</div>
+    <div style="text-align:right;">Nuevo precio</div>
+    <div style="text-align:center;">Stock</div>
+    <div style="text-align:center;">Activo</div>
+    <div></div>
+  </div>`;
+  lista.innerHTML = headerDesktop + _productos.map(p => {
     const inactivo = p.activo===false;
+    const manejaStock = p.manejaStock===true;
     const precio = parseFloat(p.precio)||0;
     if (isMobile) {
       return `<div style="display:block;background:#fff;border-radius:12px;border:0.5px solid var(--cream-d);margin-bottom:8px;padding:12px 14px;${inactivo?'opacity:.4;':''}">
@@ -22754,15 +22763,26 @@ function renderProductosModule() {
           <span style="font-family:'DM Sans',sans-serif;font-size:16px;color:var(--ok);font-weight:500;white-space:nowrap;">$${precio.toLocaleString('es-AR')}</span>
           <span style="font-size:14px;color:var(--text-l);">→</span>
           <input type="text" inputmode="numeric" value="${precio>0?precio.toLocaleString('es-AR'):''}" data-id="${p.id}" class="prod-precio-input" ${inactivo?'disabled':''} style="flex:1;min-width:80px;padding:6px 10px;border:.5px solid var(--cream-d);border-radius:8px;font-size:12px;color:var(--text);font-family:'DM Sans',sans-serif;text-align:right;${inactivo?'background:var(--cream);':''}" oninput="mvmFormatMonto(this);marcarCambioPrecio()"/>
-          <div onclick="toggleActivoProducto('${p.id}',${!inactivo})" style="width:36px;height:20px;border-radius:10px;background:${inactivo?'var(--cream-d)':'var(--topbar)'};position:relative;cursor:pointer;flex-shrink:0;">
-            <div style="position:absolute;width:14px;height:14px;border-radius:50%;background:#fff;top:3px;${inactivo?'left:3px':'left:19px'};transition:left .2s;"></div>
-          </div>
           <button onclick="editProducto('${p.id}')" style="width:28px;height:28px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           <button onclick="deleteProducto('${p.id}')" style="width:28px;height:28px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
         </div>
+        <div style="display:flex;align-items:center;gap:18px;padding-top:10px;margin-top:10px;border-top:.5px solid var(--cream-d);">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="font-size:11px;color:var(--text-l);font-weight:500;">Stock</span>
+            <div onclick="toggleManejaStock('${p.id}',${!manejaStock})" style="width:36px;height:20px;border-radius:10px;background:${manejaStock?'#4a5e4d':'var(--cream-d)'} !important;position:relative;cursor:pointer;flex-shrink:0;">
+              <div style="position:absolute;width:14px;height:14px;border-radius:50%;background:#fff;top:3px;${manejaStock?'left:19px':'left:3px'};transition:left .2s;"></div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="font-size:11px;color:var(--text-l);font-weight:500;">Activo</span>
+            <div onclick="toggleActivoProducto('${p.id}',${!inactivo})" style="width:36px;height:20px;border-radius:10px;background:${inactivo?'var(--cream-d)':'#4a5e4d'} !important;position:relative;cursor:pointer;flex-shrink:0;">
+              <div style="position:absolute;width:14px;height:14px;border-radius:50%;background:#fff;top:3px;${inactivo?'left:3px':'left:19px'};transition:left .2s;"></div>
+            </div>
+          </div>
+        </div>
       </div>`;
     }
-    return `<div style="display:grid;grid-template-columns:1fr 120px 110px 50px 60px;gap:10px;align-items:center;padding:13px 0;border-bottom:.5px solid var(--cream-d);${inactivo?'opacity:.4;':''}">
+    return `<div style="display:grid;grid-template-columns:1fr 120px 110px 50px 50px 60px;gap:10px;align-items:center;padding:13px 0;border-bottom:.5px solid var(--cream-d);${inactivo?'opacity:.4;':''}">
       <div>
         <div style="font-size:13px;font-weight:500;color:var(--text);${inactivo?'text-decoration:line-through;':''}">${esc(p.nombre)}</div>
         ${p.descripcion?`<div style="font-size:11px;color:var(--text-l);margin-top:1px;">${esc(p.descripcion)}</div>`:''}
@@ -22770,7 +22790,12 @@ function renderProductosModule() {
       <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--ok);font-weight:500;text-align:right;">$${precio.toLocaleString('es-AR')}</div>
       <input type="text" inputmode="numeric" value="${precio>0?precio.toLocaleString('es-AR'):''}" data-id="${p.id}" class="prod-precio-input" ${inactivo?'disabled':''} style="width:100%;padding:6px 10px;border:.5px solid var(--cream-d);border-radius:8px;font-size:12px;color:var(--text);font-family:'DM Sans',sans-serif;text-align:right;${inactivo?'background:var(--cream);':''}" oninput="mvmFormatMonto(this);marcarCambioPrecio()"/>
       <div style="display:flex;justify-content:center;">
-        <div onclick="toggleActivoProducto('${p.id}',${!inactivo})" style="width:36px;height:20px;border-radius:10px;background:${inactivo?'var(--cream-d)':'var(--topbar)'};position:relative;cursor:pointer;flex-shrink:0;">
+        <div onclick="toggleManejaStock('${p.id}',${!manejaStock})" style="width:36px;height:20px;border-radius:10px;background:${manejaStock?'#4a5e4d':'var(--cream-d)'} !important;position:relative;cursor:pointer;flex-shrink:0;">
+          <div style="position:absolute;width:14px;height:14px;border-radius:50%;background:#fff;top:3px;${manejaStock?'left:19px':'left:3px'};transition:left .2s;"></div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:center;">
+        <div onclick="toggleActivoProducto('${p.id}',${!inactivo})" style="width:36px;height:20px;border-radius:10px;background:${inactivo?'var(--cream-d)':'#4a5e4d'} !important;position:relative;cursor:pointer;flex-shrink:0;">
           <div style="position:absolute;width:14px;height:14px;border-radius:50%;background:#fff;top:3px;${inactivo?'left:3px':'left:19px'};transition:left .2s;"></div>
         </div>
       </div>
@@ -30512,16 +30537,26 @@ async function loadProductos() {
       if(prods.length===0){
         lista.innerHTML='<div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Sin ítems. ¡Agregá el primero!</div>';
       } else {
-        lista.innerHTML = prods.map(function(p){
+        const headerHtml = '<div style="display:grid;grid-template-columns:1fr 120px 110px 50px 50px 60px;gap:10px;padding:8px 0;border-bottom:.5px solid var(--cream-d);font-size:10px;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;font-weight:600;">'
+          +'<div>Producto</div>'
+          +'<div style="text-align:right;">Precio</div>'
+          +'<div style="text-align:right;">Nuevo precio</div>'
+          +'<div style="text-align:center;">Stock</div>'
+          +'<div style="text-align:center;">Activo</div>'
+          +'<div></div>'
+          +'</div>';
+        lista.innerHTML = headerHtml + prods.map(function(p){
           const pr = parseFloat(p.precio)||0;
           const inact = p.activo===false;
-          return '<div style="display:grid;grid-template-columns:1fr 120px 110px 50px 60px;gap:10px;align-items:center;padding:13px 0;border-bottom:.5px solid var(--cream-d);'+(inact?'opacity:.4;':'')+'">'
+          const ms = p.manejaStock===true;
+          return '<div style="display:grid;grid-template-columns:1fr 120px 110px 50px 50px 60px;gap:10px;align-items:center;padding:13px 0;border-bottom:.5px solid var(--cream-d);'+(inact?'opacity:.4;':'')+'">'
             +'<div><div style="font-size:13px;font-weight:500;color:var(--text);'+(inact?'text-decoration:line-through;':'')+'">'+p.nombre+'</div>'
             +(p.descripcion?'<div style="font-size:11px;color:var(--text-l);margin-top:1px;">'+p.descripcion+'</div>':'')
             +'</div>'
             +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:17px;color:var(--ok);font-weight:500;text-align:right;">$'+pr.toLocaleString('es-AR')+'</div>'
             +'<input type="number" value="'+pr+'" data-id="'+p.id+'" class="prod-precio-input" style="width:100%;padding:6px 10px;border:.5px solid var(--cream-d);border-radius:8px;font-size:12px;color:var(--text);font-family:\'DM Sans\',sans-serif;text-align:right;" onchange="marcarCambioPrecio()"/>'
-            +'<div style="display:flex;justify-content:center;"><div onclick="toggleActivoProducto(\''+p.id+'\','+inact+')" style="width:36px;height:20px;border-radius:10px;background:'+(inact?'var(--cream-d)':'var(--topbar)')+';position:relative;cursor:pointer;flex-shrink:0;"><div style="position:absolute;width:14px;height:14px;border-radius:50%;background:#fff;top:3px;'+(inact?'left:3px':'left:19px')+';"></div></div></div>'
+            +'<div style="display:flex;justify-content:center;"><div onclick="toggleManejaStock(\''+p.id+'\','+(!ms)+')" style="width:36px;height:20px;border-radius:10px;background:'+(ms?'#4a5e4d':'var(--cream-d)')+' !important;position:relative;cursor:pointer;flex-shrink:0;"><div style="position:absolute;width:14px;height:14px;border-radius:50%;background:#fff;top:3px;'+(ms?'left:19px':'left:3px')+';"></div></div></div>'
+            +'<div style="display:flex;justify-content:center;"><div onclick="toggleActivoProducto(\''+p.id+'\','+inact+')" style="width:36px;height:20px;border-radius:10px;background:'+(inact?'var(--cream-d)':'#4a5e4d')+' !important;position:relative;cursor:pointer;flex-shrink:0;"><div style="position:absolute;width:14px;height:14px;border-radius:50%;background:#fff;top:3px;'+(inact?'left:3px':'left:19px')+';"></div></div></div>'
             +'<div style="display:flex;gap:4px;justify-content:flex-end;">'
             +'<button onclick="editProducto(\''+p.id+'\')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>'
             +'<button onclick="deleteProducto(\''+p.id+'\')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>'
@@ -30606,6 +30641,7 @@ async function createProducto() {
       data.stockActual = 0;
       data.stockMinimo = null;
       data.costoUnitario = 0;
+      data.manejaStock = false;
       await fsi.addDoc(fsi.collection(fdb,'clientes',uid,'productos'), data);
     }
     const s = document.getElementById('prod-saved');
@@ -30671,6 +30707,17 @@ window.toggleActivoProducto = async function(id, nuevoEstado) {
     var fsi = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
     var fdb = window.db || fsi.getFirestore();
     await fsi.updateDoc(fsi.doc(fdb,'clientes',uid,'productos',id),{activo:nuevoEstado,updatedAt:new Date().toISOString()});
+    await loadProductos();
+  } catch(e){ console.error(e); }
+};
+
+window.toggleManejaStock = async function(id, nuevoEstado) {
+  var uid = window.currentClientUID;
+  if(!uid) return;
+  try {
+    var fsi = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
+    var fdb = window.db || fsi.getFirestore();
+    await fsi.updateDoc(fsi.doc(fdb,'clientes',uid,'productos',id),{manejaStock:nuevoEstado,updatedAt:new Date().toISOString()});
     await loadProductos();
   } catch(e){ console.error(e); }
 };
