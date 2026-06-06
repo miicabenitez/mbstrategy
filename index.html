@@ -18128,7 +18128,7 @@ window.stkGuardarAjuste = async function() {
   try {
     await updateDoc(doc(db,'clientes',currentClientUID,'insumos',insumoId), {stockActual: increment(delta)});
     await addDoc(collection(db,'clientes',currentClientUID,'movimientosStock'),{
-      tipo:'ajuste', insumoId, insumoNombre:insumo.nombre, cantidad, unidad:insumo.unidad,
+      tipo:'ajuste', insumoId, insumoNombre:insumo.nombre, cantidad, delta, unidad:insumo.unidad,
       stockResultante, origen:'ajuste', referenciaId:'', notas,
       fecha:fechaHoyARG(), creadoEn:new Date().toISOString()
     });
@@ -18310,6 +18310,7 @@ window.prdStkGuardarAjusteProducto = async function() {
       insumoId: prodId,
       insumoNombre: p.nombre || '',
       cantidad,
+      delta,
       unidad: 'u',
       stockResultante,
       origen: 'ajuste',
@@ -18719,8 +18720,11 @@ function _stkRenderMovs(mes, tipo) {
     const badgeBg = esEntrada ? 'rgba(74,94,77,.1)' : esAjuste ? 'rgba(156,163,175,.15)' : 'rgba(176,144,136,.15)';
     const badgeColor = esEntrada ? '#3d6644' : esAjuste ? '#6b7280' : '#7a4e46';
     const badgeLabel = esEntrada ? 'Entrada' : esAjuste ? 'Ajuste' : 'Salida';
-    const signo = esEntrada ? '+' : '−';
-    const signoColor = esEntrada ? '#3d6644' : '#c0392b';
+    // Ajustes nuevos guardan `delta` firmado: usar su signo. Movs viejos sin delta → comportamiento original (− rojo).
+    const ajusteConDelta = esAjuste && m.delta != null && !isNaN(parseFloat(m.delta));
+    const ajustePositivo = ajusteConDelta && parseFloat(m.delta) > 0;
+    const signo = (esEntrada || ajustePositivo) ? '+' : '−';
+    const signoColor = (esEntrada || ajustePositivo) ? '#3d6644' : '#c0392b';
     const cantStr = (parseFloat(m.cantidad||0)).toLocaleString('es-AR',{maximumFractionDigits:3})+' '+(m.unidad||'');
     if (isMobile) {
       return `<div style="background:#fff;border-radius:12px;border:0.5px solid var(--cream-d);margin-bottom:8px;padding:12px 14px;">
