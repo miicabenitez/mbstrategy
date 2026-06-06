@@ -1570,6 +1570,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         </button>
         <div class="sb-sub" id="sbsub-stock">
           <button class="sb-subitem" data-sub="insumos" onclick="sidebarNav('stock','insumos')">Insumos</button>
+          <button class="sb-subitem" data-sub="productos" onclick="sidebarNav('stock','productos')">Productos</button>
           <button class="sb-subitem" data-sub="recetas" onclick="sidebarNav('stock','recetas')">Recetas</button>
           <button class="sb-subitem" data-sub="produccion" onclick="sidebarNav('stock','produccion')">Producción</button>
           <button class="sb-subitem" data-sub="movimientos" onclick="sidebarNav('stock','movimientos')">Movimientos</button>
@@ -4689,6 +4690,59 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         </div>
       </div>
 
+      <!-- STOCK — Productos (ETAPA 1) -->
+      <div id="ct-productos-stock" style="display:none;">
+        <div style="background:linear-gradient(135deg,#1a3528 0%,#0d1f1a 60%,#060e0b 100%) !important;border-radius:16px;padding:20px 24px;margin-bottom:14px;color:#fff;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:38px;font-weight:300;">Mis <em style="font-style:italic;color:#b09088;">productos</em></div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <button onclick="if(window.prdStkAjusteModal)prdStkAjusteModal('')" style="width:34px;height:34px;border-radius:50%;background:#b09088;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;" title="Ajustar stock">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#f5f0eb" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </button>
+              <button onclick="if(window.exportarPrdStkExcel)exportarPrdStkExcel()" style="width:34px;height:34px;border-radius:50%;background:#b09088;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;" title="Exportar Excel">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#f5f0eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12m-4-4 4 4 4-4"/><line x1="4" y1="20" x2="20" y2="20"/></svg>
+              </button>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;">
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
+              <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Total productos</div>
+              <div style="font-family:'DM Sans',sans-serif;font-size:22px;font-weight:700;color:#fff;line-height:1;" id="prdstk-kpi-total">—</div>
+            </div>
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
+              <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Stock crítico</div>
+              <div style="font-family:'DM Sans',sans-serif;font-size:22px;font-weight:700;color:#fff;line-height:1;" id="prdstk-kpi-critico">—</div>
+            </div>
+            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
+              <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Valor inventario</div>
+              <div style="font-family:'DM Sans',sans-serif;font-size:22px;font-weight:700;color:#fff;line-height:1;" id="prdstk-kpi-valor">—</div>
+            </div>
+          </div>
+        </div>
+        <div id="prdstk-prods-welcome" style="display:none;padding:40px 16px;text-align:center;">
+          <div style="width:64px;height:64px;border-radius:50%;background:rgba(74,94,77,.08);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#4a5e4d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+          </div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:#2c2c2c;margin-bottom:8px;">Productos con stock</div>
+          <div style="font-size:13px;color:var(--text-m);margin-bottom:28px;line-height:1.5;max-width:480px;margin-left:auto;margin-right:auto;">Activá el toggle "Stock" en los productos del catálogo para trackear su stock acá.</div>
+          <button onclick="if(window.showCTab)showCTab('productos',null)" style="padding:10px 22px;background:linear-gradient(135deg,#3d5240 0%,#4a5e4d 45%,#5e7562 70%,#4a5e4d 100%);color:#e8f0e9;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Ir al catálogo</button>
+        </div>
+        <div id="prdstk-prods-content" style="display:none;">
+          <div class="card" style="overflow:hidden;">
+            <div style="overflow-x:auto;border-radius:12px;">
+              <div style="display:flex;align-items:center;box-sizing:border-box;padding:0 0 8px 16px;border-bottom:1.5px solid var(--cream-d);margin-bottom:4px;min-width:520px;">
+                <span style="flex:1;font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;box-sizing:border-box;">Producto</span>
+                <span style="width:110px;font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;text-align:center;box-sizing:border-box;">Stock actual</span>
+                <span style="width:80px;font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;text-align:center;box-sizing:border-box;">Mínimo</span>
+                <span style="width:110px;font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;text-align:right;box-sizing:border-box;">Costo unit.</span>
+                <span style="width:48px;box-sizing:border-box;"></span>
+              </div>
+              <div id="prdstk-prods-lista" style="min-width:520px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- STOCK — Recetas -->
       <div id="ct-recetas" style="display:none;">
         <div style="border-radius:16px;overflow:hidden;margin-bottom:12px">
@@ -6632,6 +6686,62 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px;">
       <button class="bs" onclick="closeModal('stock-ajuste-modal')">Cancelar</button>
       <button class="bp" onclick="stkGuardarAjuste()">Guardar ajuste</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Ajuste de stock de PRODUCTO (ETAPA 1) -->
+<div class="mo" id="stock-ajuste-producto-modal">
+  <div class="md" style="max-width:min(480px,94vw);padding:0;overflow:hidden;position:relative;border:none;">
+    <button class="mc2" onclick="closeModal('stock-ajuste-producto-modal')" style="position:absolute;top:12px;right:14px;z-index:2;color:#f5f0eb;background:none;border:none;font-size:24px;line-height:1;padding:0;">×</button>
+    <div style="background:linear-gradient(135deg,#1a3528 0%,#0d1f1a 60%,#060e0b 100%) !important;padding:22px 24px 18px;position:relative;">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:#b09088;"></div>
+      <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">Stock</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;color:#fff;">Ajustar <em style="font-style:italic;color:#b09088;">stock</em></div>
+      <div id="prdstk-aj-prod-nombre" style="font-size:13px;color:rgba(255,255,255,.85);margin-top:4px;font-family:'DM Sans',sans-serif;"></div>
+    </div>
+    <div style="padding:22px 24px;">
+      <input type="hidden" id="prdstk-aj-prod-id"/>
+      <div class="fg" id="prdstk-aj-selector-wrap">
+        <label class="fl">Producto</label>
+        <select class="fi" id="prdstk-aj-selector" style="margin-top:0;" onchange="prdStkAjusteCambiarProducto(this.value)"></select>
+      </div>
+      <div style="background:rgba(74,94,77,.06);border-radius:10px;padding:12px 14px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:12px;color:var(--text-m);font-family:'DM Sans',sans-serif;">Stock actual</span>
+        <span style="font-size:18px;font-family:'Cormorant Garamond',serif;color:#4a5e4d;font-weight:500;" id="prdstk-aj-stock-actual">—</span>
+      </div>
+      <div style="font-size:10px;font-weight:600;color:var(--text-l);text-transform:uppercase;letter-spacing:1px;margin:18px 4px 10px;">Movimiento</div>
+      <div class="fg">
+        <label class="fl">Tipo</label>
+        <div style="display:flex;gap:8px;">
+          <button type="button" id="prdstk-aj-tipo-entrada" data-active="1" onclick="prdStkAjusteSetTipo('entrada')" style="flex:1;background:linear-gradient(135deg,#1e2e22 0%,#3d5242 100%) !important;border:1px solid #1e2e22;color:#fff;padding:10px 14px;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;">Entrada</button>
+          <button type="button" id="prdstk-aj-tipo-salida" data-active="0" onclick="prdStkAjusteSetTipo('salida')" style="flex:1;background:#fff;border:1px solid var(--cream-d);color:var(--text-m);padding:10px 14px;border-radius:10px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;">Salida</button>
+        </div>
+      </div>
+      <div class="fg"><label class="fl">Cantidad</label><input type="number" class="fi" id="prdstk-aj-cantidad" placeholder="0" min="0" step="any" style="margin-top:0;"/></div>
+      <div class="fg"><label class="fl">Motivo <span style="color:var(--text-l);font-weight:400;">(opcional)</span></label>
+        <select class="fi" id="prdstk-aj-motivo" style="margin-top:0;" onchange="document.getElementById('prdstk-aj-motivo-otro').style.display=this.value==='Otro'?'block':'none'">
+          <option value="">— Sin especificar —</option>
+          <option value="Saldo inicial">Saldo inicial</option>
+          <option value="Compra / reposición">Compra / reposición</option>
+          <option value="Merma">Merma</option>
+          <option value="Error de conteo">Error de conteo</option>
+          <option value="Devolución">Devolución</option>
+          <option value="Robo o pérdida">Robo o pérdida</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+      <input type="text" class="fi" id="prdstk-aj-motivo-otro" placeholder="Describí el motivo..." style="display:none;margin-bottom:12px;"/>
+      <div style="font-size:10px;font-weight:600;color:var(--text-l);text-transform:uppercase;letter-spacing:1px;margin:18px 4px 10px;">Configuración del producto</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div class="fg" style="margin-bottom:0;"><label class="fl">Stock mínimo</label><input type="number" class="fi" id="prdstk-aj-min" placeholder="—" min="0" step="any" style="margin-top:0;"/></div>
+        <div class="fg" style="margin-bottom:0;"><label class="fl">Costo unitario</label><input type="number" class="fi" id="prdstk-aj-costo" placeholder="0" min="0" step="any" style="margin-top:0;"/></div>
+      </div>
+      <div id="prdstk-aj-error" style="display:none;color:#c0392b;font-size:12px;margin-top:12px;"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:18px;">
+        <button class="bs" onclick="closeModal('stock-ajuste-producto-modal')">Cancelar</button>
+        <button class="bp" id="prdstk-aj-btn-guardar" onclick="prdStkGuardarAjusteProducto()">Guardar</button>
+      </div>
     </div>
   </div>
 </div>
@@ -18027,6 +18137,199 @@ window.stkGuardarAjuste = async function() {
     await window.loadStockModule();
   } catch(e) { err.textContent='Error: '+e.message; err.style.display='block'; }
 };
+
+// ─── STOCK — Productos (ETAPA 1) ─────────────────────────────────────────
+window.loadProductosStockModule = async function() {
+  if(!currentClientUID) return;
+  if(!window._productos || !window._productos.length) {
+    if(window.loadProductos) try { await window.loadProductos(); } catch(_){}
+  }
+  prdStkRenderProductos();
+};
+
+function prdStkRenderProductos() {
+  const todos = window._productos || [];
+  const prods = todos.filter(p => p.manejaStock === true && !p.eliminado);
+  const welcome = document.getElementById('prdstk-prods-welcome');
+  const content = document.getElementById('prdstk-prods-content');
+  const setEl = (id, v) => { const el = document.getElementById(id); if(el) el.textContent = v; };
+  if(!prods.length) {
+    if(welcome) welcome.style.display='block';
+    if(content) content.style.display='none';
+    setEl('prdstk-kpi-total','0');
+    setEl('prdstk-kpi-critico','0');
+    setEl('prdstk-kpi-valor','$0');
+    return;
+  }
+  if(welcome) welcome.style.display='none';
+  if(content) content.style.display='block';
+  const criticos = prods.filter(p => p.stockMinimo!=null && p.stockMinimo!=='' && parseFloat(p.stockActual||0) <= parseFloat(p.stockMinimo));
+  const valorTotal = prods.reduce((s,p) => s + parseFloat(p.stockActual||0) * parseFloat(p.costoUnitario||0), 0);
+  setEl('prdstk-kpi-total', prods.length);
+  setEl('prdstk-kpi-critico', criticos.length);
+  setEl('prdstk-kpi-valor', '$' + valorTotal.toLocaleString('es-AR', {minimumFractionDigits:2, maximumFractionDigits:2}));
+  const lista = document.getElementById('prdstk-prods-lista');
+  if(!lista) return;
+  const isMobile = window.innerWidth <= 768;
+  const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  lista.innerHTML = prods.map(p => {
+    const stockActual = parseFloat(p.stockActual||0);
+    const bajo = p.stockMinimo!=null && p.stockMinimo!=='' && stockActual <= parseFloat(p.stockMinimo);
+    const negativo = stockActual < 0;
+    const stockColor = (bajo || negativo) ? '#c0392b' : 'var(--text)';
+    const stockWeight = (bajo || negativo) ? '600' : '400';
+    const minStr = p.stockMinimo!=null && p.stockMinimo!=='' ? (parseFloat(p.stockMinimo)).toLocaleString('es-AR',{maximumFractionDigits:3}) : '—';
+    const costoStr = p.costoUnitario ? '$' + parseFloat(p.costoUnitario).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) : '—';
+    const stockStr = stockActual.toLocaleString('es-AR',{maximumFractionDigits:3});
+    if(isMobile) {
+      return `<div onclick="prdStkAjusteModal('${p.id}')" style="display:block;background:${bajo?'#fff8f8':'#fff'};border-radius:12px;border:0.5px solid var(--cream-d);margin-bottom:8px;padding:12px 14px;cursor:pointer;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:13px;font-weight:600;color:var(--text);">${esc(p.nombre)}</span>
+            ${bajo?'<span style="font-size:10px;font-weight:600;background:#c0392b;color:#fff;border-radius:20px;padding:2px 8px;">BAJO</span>':''}
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div style="display:flex;gap:16px;">
+            <div>
+              <div style="font-size:9px;color:#aaa;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px;">Stock</div>
+              <div style="font-size:14px;font-weight:600;color:${stockColor};">${stockStr}</div>
+            </div>
+            <div>
+              <div style="font-size:9px;color:#aaa;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px;">Mínimo</div>
+              <div style="font-size:14px;font-weight:600;color:var(--text-m);">${minStr}</div>
+            </div>
+            <div>
+              <div style="font-size:9px;color:#aaa;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px;">Costo unit.</div>
+              <div style="font-size:14px;font-weight:600;color:var(--text-m);">${costoStr}</div>
+            </div>
+          </div>
+          <button onclick="event.stopPropagation();prdStkAjusteModal('${p.id}')" style="width:28px;height:28px;border-radius:7px;border:0.5px solid var(--cream-d);background:var(--cream);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;" title="Ajustar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+      </div>`;
+    }
+    return `<div onclick="prdStkAjusteModal('${p.id}')" style="display:flex;align-items:center;box-sizing:border-box;padding:10px 0 10px 16px;border-bottom:.5px solid var(--cream-d);min-width:520px;cursor:pointer;transition:background .1s;" onmouseover="this.style.background='#faf8f5'" onmouseout="this.style.background=''">
+      <span style="flex:1;font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:6px;box-sizing:border-box;">${esc(p.nombre)}${bajo?'<span style="background:#c0392b;color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:20px;letter-spacing:.4px;">BAJO</span>':''}</span>
+      <span style="width:110px;font-size:13px;color:${stockColor};font-weight:${stockWeight};text-align:center;box-sizing:border-box;">${stockStr}</span>
+      <span style="width:80px;font-size:13px;color:var(--text-m);text-align:center;box-sizing:border-box;">${minStr}</span>
+      <span style="width:110px;font-size:13px;color:var(--text-m);text-align:right;box-sizing:border-box;">${costoStr}</span>
+      <span style="width:48px;display:flex;justify-content:flex-end;align-items:center;box-sizing:border-box;">
+        <button onclick="event.stopPropagation();prdStkAjusteModal('${p.id}')" title="Ajustar" style="background:none;border:none;cursor:pointer;padding:4px;color:var(--text-l);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+      </span>
+    </div>`;
+  }).join('');
+}
+window.prdStkRenderProductos = prdStkRenderProductos;
+
+window.prdStkAjusteSetTipo = function(tipo) {
+  const ent = document.getElementById('prdstk-aj-tipo-entrada');
+  const sal = document.getElementById('prdstk-aj-tipo-salida');
+  if(!ent||!sal) return;
+  const activeStyle = {bg:'linear-gradient(135deg,#1e2e22 0%,#3d5242 100%)', color:'#fff', border:'1px solid #1e2e22', weight:'600'};
+  const inactiveStyle = {bg:'#fff', color:'var(--text-m)', border:'1px solid var(--cream-d)', weight:'500'};
+  const apply = (el, s, active) => {
+    el.style.background = s.bg;
+    el.style.color = s.color;
+    el.style.border = s.border;
+    el.style.fontWeight = s.weight;
+    el.dataset.active = active ? '1' : '0';
+  };
+  if(tipo==='entrada') { apply(ent, activeStyle, true); apply(sal, inactiveStyle, false); }
+  else { apply(sal, activeStyle, true); apply(ent, inactiveStyle, false); }
+};
+
+window.prdStkAjusteCambiarProducto = function(prodId) {
+  const todos = window._productos || [];
+  const p = todos.find(x => x.id === prodId);
+  const nombreEl = document.getElementById('prdstk-aj-prod-nombre');
+  const stockEl = document.getElementById('prdstk-aj-stock-actual');
+  const minEl = document.getElementById('prdstk-aj-min');
+  const costoEl = document.getElementById('prdstk-aj-costo');
+  if(nombreEl) nombreEl.textContent = p ? (p.nombre||'') : '';
+  if(stockEl) stockEl.textContent = p ? parseFloat(p.stockActual||0).toLocaleString('es-AR',{maximumFractionDigits:3}) : '—';
+  if(minEl) minEl.value = (p && p.stockMinimo!=null && p.stockMinimo!=='') ? p.stockMinimo : '';
+  if(costoEl) costoEl.value = (p && p.costoUnitario) ? p.costoUnitario : '';
+  const hidden = document.getElementById('prdstk-aj-prod-id');
+  if(hidden) hidden.value = prodId || '';
+};
+
+window.prdStkAjusteModal = function(prodId) {
+  const todos = window._productos || [];
+  const prodsManeja = todos.filter(p => p.manejaStock === true && !p.eliminado);
+  const selector = document.getElementById('prdstk-aj-selector');
+  if(selector) {
+    selector.innerHTML = '<option value="">— Elegí un producto —</option>' + prodsManeja.map(p => `<option value="${p.id}">${(p.nombre||'').replace(/</g,'&lt;')}</option>`).join('');
+    selector.value = prodId || '';
+  }
+  document.getElementById('prdstk-aj-prod-id').value = prodId || '';
+  prdStkAjusteSetTipo('entrada');
+  document.getElementById('prdstk-aj-cantidad').value = '';
+  document.getElementById('prdstk-aj-motivo').value = '';
+  document.getElementById('prdstk-aj-motivo-otro').value = '';
+  document.getElementById('prdstk-aj-motivo-otro').style.display = 'none';
+  const err = document.getElementById('prdstk-aj-error');
+  if(err){ err.style.display='none'; err.textContent=''; }
+  prdStkAjusteCambiarProducto(prodId || '');
+  openModal('stock-ajuste-producto-modal');
+};
+
+window.prdStkGuardarAjusteProducto = async function() {
+  if(!currentClientUID) return;
+  const err = document.getElementById('prdstk-aj-error');
+  const showErr = txt => { if(err){ err.textContent=txt; err.style.display='block'; } };
+  if(err) err.style.display='none';
+  const prodId = document.getElementById('prdstk-aj-prod-id').value;
+  if(!prodId) { showErr('Elegí un producto.'); return; }
+  const p = (window._productos||[]).find(x => x.id === prodId);
+  if(!p) { showErr('Producto no encontrado.'); return; }
+  const ent = document.getElementById('prdstk-aj-tipo-entrada');
+  const tipo = (ent && ent.dataset.active==='1') ? 'entrada' : 'salida';
+  const cantidad = parseFloat(document.getElementById('prdstk-aj-cantidad').value);
+  if(!cantidad || cantidad<=0) { showErr('Ingresá una cantidad válida.'); return; }
+  const motivoSel = document.getElementById('prdstk-aj-motivo').value;
+  const motivoOtro = document.getElementById('prdstk-aj-motivo-otro').value.trim();
+  const notas = motivoSel === 'Otro' ? (motivoOtro||'Otro') : (motivoSel||'');
+  const minRaw = document.getElementById('prdstk-aj-min').value;
+  const costoRaw = document.getElementById('prdstk-aj-costo').value;
+  const stockMinimo = minRaw !== '' ? parseFloat(minRaw) : null;
+  const costoUnitario = costoRaw !== '' ? parseFloat(costoRaw) : 0;
+  const delta = tipo==='entrada' ? cantidad : -cantidad;
+  const stockResultante = parseFloat(p.stockActual||0) + delta;
+  const hoy = fechaHoyARG();
+  const btn = document.getElementById('prdstk-aj-btn-guardar');
+  if(btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
+  try {
+    await updateDoc(doc(db,'clientes',currentClientUID,'productos',prodId), {
+      stockActual: increment(delta),
+      stockMinimo,
+      costoUnitario,
+      updatedAt: new Date().toISOString()
+    });
+    await addDoc(collection(db,'clientes',currentClientUID,'movimientosStock'), {
+      tipo: 'ajuste',
+      insumoId: prodId,
+      insumoNombre: p.nombre || '',
+      cantidad,
+      unidad: 'u',
+      stockResultante,
+      origen: 'ajuste',
+      referenciaId: '',
+      notas,
+      itemTipo: 'producto',
+      fecha: hoy,
+      creadoEn: new Date().toISOString()
+    });
+    if(p) { p.stockActual = stockResultante; p.stockMinimo = stockMinimo; p.costoUnitario = costoUnitario; }
+    if(stockResultante < 0) showToast('Stock en negativo para '+(p.nombre||'producto')+'. Revisá el inventario.','warning');
+    closeModal('stock-ajuste-producto-modal');
+    await loadProductosStockModule();
+  } catch(e) {
+    showErr('Error: '+(e.message||e));
+  } finally {
+    if(btn) { btn.disabled = false; btn.textContent = 'Guardar'; }
+  }
+};
+
 window.loadRecetasModule = async function() {
   if(!currentClientUID) return;
   window._stkRecProdIdx = -1;
@@ -27980,7 +28283,7 @@ window.showCTab = function(tab, btn) {
     if(ccv && ccv.style.display !== 'none') cerrarCCView();
   }
   // Ocultar subnavs de módulos distintos al que corresponde este tab
-  const _tabToMod = {contabilidad:'finanzas','cierre-periodo':'finanzas','auditoria-cajero':'finanzas','caja-config':'finanzas','mis-facturas':'finanzas','finanzas-pro-lock':'finanzas',mclientes:'ventas',presupuestos:'ventas',productos:'ventas',necesidades:'compras',proveedores:'compras','ordenes-compra':'compras','historial-compra':'compras','prod-compra':'compras','categorias-compra':'compras',calculador:'herramientas',kpis:'herramientas',tareas:'herramientas',insumos:'stock',recetas:'stock','movimientos-stock':'stock'};
+  const _tabToMod = {contabilidad:'finanzas','cierre-periodo':'finanzas','auditoria-cajero':'finanzas','caja-config':'finanzas','mis-facturas':'finanzas','finanzas-pro-lock':'finanzas',mclientes:'ventas',presupuestos:'ventas',productos:'ventas',necesidades:'compras',proveedores:'compras','ordenes-compra':'compras','historial-compra':'compras','prod-compra':'compras','categorias-compra':'compras',calculador:'herramientas',kpis:'herramientas',tareas:'herramientas',insumos:'stock',recetas:'stock','movimientos-stock':'stock',produccion:'stock','productos-stock':'stock'};
   const _thisMod = _tabToMod[tab];
   document.querySelectorAll('.mod-subnav').forEach(sn => {
     if(_thisMod && sn.id === 'subnav-'+_thisMod) return;
@@ -31599,6 +31902,7 @@ window.sidebarNav=function(mod,sub){
       if(sub==='planaccion')window.showCTab('tareas',null);
     }else if(mod==='stock'){
       if(sub==='insumos')window.showCTab('insumos',null);
+      else if(sub==='productos'){window.showCTab('productos-stock',null);if(window.loadProductosStockModule)loadProductosStockModule();}
       else if(sub==='recetas')window.showCTab('recetas',null);
       else if(sub==='produccion')window.showCTab('produccion',null);
       else if(sub==='movimientos')window.showCTab('movimientos-stock',null);
