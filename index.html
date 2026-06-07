@@ -13824,23 +13824,7 @@ async function _cierreCargarCompromisos(uid) {
     }
   } catch(e) { console.error('[compromisos CC]', e); }
 
-  // 2. OC Compras: órdenes emitidas aún no recibidas (las recibidas ya aparecen en CC como factura esOC)
-  try {
-    const ocSnap = await getDocs(collection(db,'clientes',uid,'ordenesCompra'));
-    ocSnap.forEach(d=>{
-      const o = d.data();
-      if(o.eliminado || o.estadoPago==='pagada') return;
-      if(o.estadoRecepcion==='recibida') return; // ya está en CC del proveedor
-      const monto = parseFloat(o.total)||0;
-      if(monto > 0) {
-        _cierreCompromisosLista.push({
-          id:'oc-'+d.id,
-          nombre:'OC-'+String(o.numero||0).padStart(3,'0')+' — '+(o.proveedor||'Sin proveedor'),
-          monto, origen:'oc', origenLabel:'OC Compras', pagado:false
-        });
-      }
-    });
-  } catch(e) { console.error('[compromisos OC]', e); }
+  // 2. OC Compras: las OCs emitidas NO son deuda — solo lo son al recibirse, y ahí ya entran por (B) CC Proveedor como factura esOC. No se listan como compromiso.
 }
 
 function _cierreRenderTodo() {
@@ -14098,6 +14082,8 @@ async function _cierreEjecutarCierre(movimientos, provPagos, retiroPagos) {
         ];
       }));
     }
+    // Éxito: el manual es de una sola vez (ya salió de caja). Limpiar para que no reaparezca en otro cierre de la misma sesión. Solo en éxito, nunca en error.
+    _cierreManualCompromisos = [];
     window._cierreDocCerrado = doc_;
     _cierreRenderBloqueado(doc_);
     await cierreGenerarPDF(doc_);
