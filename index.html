@@ -13742,6 +13742,7 @@ async function loadCierrePeriodo() {
       const c = d.data();
       if(!c.activa && c.activa!==undefined) return;
       if(['retiros','reserva'].includes(c.tipo)) return;
+      if(c.nombre === 'Caja mostrador') return;  // su plata ya está en las cuentas del dueño vía retiro de caja → incluirla = doble conteo
       _cierreCuentas.push({id:d.id,...c});
     });
     // 4. Calcular saldo real de cada cuenta desde libroCaja
