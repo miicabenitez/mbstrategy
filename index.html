@@ -13964,6 +13964,12 @@ window.cierreUpdateDist = function(idx, pct) {
   if(_cierreDistribucion[idx]) _cierreDistribucion[idx].pct = pct;
   const aDistribuir = Math.max(0, _cierreDisponibleTotal - _cierreCompromisosSeleccionados);
   _cierreDistribucion.forEach(d=>{ d.monto = aDistribuir * (d.pct||0) / 100; });
+  // Refrescar el $ de cada fila sin re-renderizar (para no perder el foco del input)
+  const list = document.getElementById('cierre-dist-list');
+  if(list) {
+    const montos = list.querySelectorAll('.cierre-dist-monto');
+    _cierreDistribucion.forEach((d,j)=>{ if(montos[j]) montos[j].textContent = _moneyFmt(d.monto); });
+  }
   _cierreUpdateDistBar();
   _cierreUpdateResumen();
 };
