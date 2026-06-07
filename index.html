@@ -6690,6 +6690,27 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
   </div>
 </div>
 
+<!-- Modal Agregar compromiso manual (Cierre de período) -->
+<div class="mo" id="cierre-compromiso-modal">
+  <div class="md" style="max-width:min(420px,94vw);padding:0;overflow:hidden;position:relative;border:none;">
+    <button class="mc2" onclick="closeModal('cierre-compromiso-modal')" style="position:absolute;top:12px;right:14px;z-index:2;color:#f5f0eb;background:none;border:none;font-size:24px;line-height:1;padding:0;">×</button>
+    <div style="background:linear-gradient(135deg,#1a3528 0%,#0d1f1a 60%,#060e0b 100%) !important;padding:22px 24px 18px;position:relative;">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:#b09088;"></div>
+      <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">Compromiso</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;color:#fff;">Agregar <em style="font-style:italic;color:#b09088;">compromiso</em></div>
+    </div>
+    <div style="padding:22px 24px;">
+      <div class="fg"><label class="fl">Nombre</label><input type="text" class="fi" id="cierre-comp-nombre" placeholder="Ej: Alquiler, Luz, Sueldo..." style="margin-top:0;"/></div>
+      <div class="fg"><label class="fl">Monto</label><input type="number" class="fi" id="cierre-comp-monto" placeholder="0" min="0" step="any" style="margin-top:0;"/></div>
+      <div id="cierre-comp-error" style="display:none;color:#c0392b;font-size:12px;margin-top:8px;"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:18px;">
+        <button class="bs" onclick="closeModal('cierre-compromiso-modal')">Cancelar</button>
+        <button class="bp" onclick="cierreConfirmarCompromisoManual()">Agregar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Modal Ajuste de stock de PRODUCTO (ETAPA 1) -->
 <div class="mo" id="stock-ajuste-producto-modal">
   <div class="md" style="max-width:min(480px,94vw);padding:0;overflow:hidden;position:relative;border:none;">
@@ -13871,16 +13892,29 @@ window.cierreToggleCompromiso = function(idx, checked) {
 };
 
 window.cierreAgregarCompromisoManual = function() {
-  const nombre = prompt('Nombre del compromiso:');
-  if(!nombre) return;
-  const montoStr = prompt('Monto ($):');
-  const monto = parseFloat(montoStr)||0;
-  if(!monto) return;
+  const nEl = document.getElementById('cierre-comp-nombre');
+  const mEl = document.getElementById('cierre-comp-monto');
+  const err = document.getElementById('cierre-comp-error');
+  if(nEl) nEl.value = '';
+  if(mEl) mEl.value = '';
+  if(err) { err.style.display = 'none'; err.textContent = ''; }
+  openModal('cierre-compromiso-modal');
+};
+
+window.cierreConfirmarCompromisoManual = function() {
+  const err = document.getElementById('cierre-comp-error');
+  const showErr = txt => { if(err) { err.textContent = txt; err.style.display = 'block'; } };
+  if(err) err.style.display = 'none';
+  const nombre = (document.getElementById('cierre-comp-nombre').value || '').trim();
+  if(!nombre) { showErr('Escribí un nombre.'); return; }
+  const monto = parseFloat(document.getElementById('cierre-comp-monto').value) || 0;
+  if(!monto || monto <= 0) { showErr('Ingresá un monto mayor a 0.'); return; }
   const item = {id:'manual-'+Date.now(),nombre,monto,origen:'manual',origenLabel:'Manual',pagado:true};
   _cierreManualCompromisos.push(item);
   _cierreCompromisosLista.push(item);
   _cierreRenderCompromisos();
   _cierreActualizarTotales();
+  closeModal('cierre-compromiso-modal');
 };
 
 function _cierreActualizarTotales() {
