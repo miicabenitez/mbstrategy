@@ -13214,15 +13214,15 @@ window.mdvCerrar = function() {
 window.mdvEliminar = async function() {
   if(!_mdvMovimiento) return;
   const m = _mdvMovimiento;
-  const ok = confirm('¿Eliminar este movimiento? Esta acción no se puede deshacer.');
-  if(!ok) return;
-  try {
-    await updateDoc(doc(db,'clientes',currentClientUID,'libroCaja',m.id), {eliminado:true});
-    window.mdvCerrar();
-    loadCajaModule();
-  } catch(e) {
-    showToast('Error al eliminar: '+(e?.message||e, 'error'));
-  }
+  showConfirm('¿Eliminar este movimiento? Esta acción no se puede deshacer.', async () => {
+    try {
+      await updateDoc(doc(db,'clientes',currentClientUID,'libroCaja',m.id), {eliminado:true});
+      window.mdvCerrar();
+      loadCajaModule();
+    } catch(e) {
+      showToast('Error al eliminar: '+(e?.message||e, 'error'));
+    }
+  }, 'Eliminar movimiento');
 };
 window.mdvGuardar = async function() {
   if(!_mdvMovimiento) return;
@@ -14003,9 +14003,10 @@ window.cierreGuardarBorrador = async function() {
 };
 
 window.cierreDescartar = function() {
-  if(!confirm('¿Descartás los cambios de esta sesión?')) return;
-  _cierreManualCompromisos=[];
-  loadCierrePeriodo();
+  showConfirm('¿Descartás los cambios de esta sesión?', () => {
+    _cierreManualCompromisos=[];
+    loadCierrePeriodo();
+  }, 'Descartar cambios');
 };
 
 window.cierreAccionPrincipal = async function() {
@@ -15989,10 +15990,11 @@ window.ccfgDesactivarCuenta = function(id, nombre, tieneMov) {
     return;
   }
   if(tieneMov) { showToast(`"${nombre}" tiene movimientos asociados y no puede desactivarse.`, 'info'); return; }
-  if(!confirm(`¿Desactivar la cuenta "${nombre}"?`)) return;
-  deleteDoc(doc(db,'clientes',currentClientUID,'cuentas',id))
-    .then(()=>loadCajaConfig())
-    .catch(e=>showToast('Error: '+(e?.message||e, 'error')));
+  showConfirm(`¿Desactivar la cuenta "${nombre}"?`, () => {
+    deleteDoc(doc(db,'clientes',currentClientUID,'cuentas',id))
+      .then(()=>loadCajaConfig())
+      .catch(e=>showToast('Error: '+(e?.message||e, 'error')));
+  }, 'Desactivar cuenta');
 };
 
 // ── Concepto: nuevo inline ──
@@ -16061,10 +16063,11 @@ window.ccfgConfirmarEdicionConcepto = async function(id, tipo) {
 // ── Concepto: eliminar ──
 window.ccfgEliminarConcepto = function(id, nombre, tieneMov) {
   if(tieneMov) { showToast(`"${nombre}" tiene movimientos asociados y no puede eliminarse.`, 'info'); return; }
-  if(!confirm(`¿Eliminar el concepto "${nombre}"?`)) return;
-  deleteDoc(doc(db,'clientes',currentClientUID,'conceptos',id))
-    .then(()=>loadCajaConfig())
-    .catch(e=>showToast('Error: '+(e?.message||e, 'error')));
+  showConfirm(`¿Eliminar el concepto "${nombre}"?`, () => {
+    deleteDoc(doc(db,'clientes',currentClientUID,'conceptos',id))
+      .then(()=>loadCajaConfig())
+      .catch(e=>showToast('Error: '+(e?.message||e, 'error')));
+  }, 'Eliminar concepto');
 };
 
 // ─── MODAL NUEVO MOVIMIENTO ───
@@ -26517,33 +26520,34 @@ window.verDetalleMovCC = async function(tipo, m) {
 };
 
 window.eliminarOP = async function(pagoId) {
-  if(!confirm('¿Eliminar este pago? Se revertirán los efectos en las facturas.')) return;
-  const pago = (_ccPagos||[]).find(p=>p.id===pagoId);
-  if(!pago) return;
-  try {
-    await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',_ccProvId,'pagos',pagoId), { eliminado:true, eliminadoEn:new Date() });
-    const ids = Array.isArray(pago.facturasIds) ? pago.facturasIds : [];
-    for(let i=0; i<ids.length; i++){
-      const fid = ids[i];
-      const montoARevertir = (pago.facturasMontos||[])[i] ?? (parseFloat(pago.monto)||0);
-      const fac = (_ccFacturas||[]).find(f=>f.id===fid)||(_ccOCsComoFactura||[]).find(f=>f.id===fid);
-      if(!fac) continue;
-      const nuevoMontoPagado = Math.max(0,(parseFloat(fac.montoPagado)||0)-montoARevertir);
-      const nuevoEstado = nuevoMontoPagado<=0?'pendiente':nuevoMontoPagado<parseFloat(fac.monto)?'parcial':'pagada';
-      await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',_ccProvId,'facturas',fid),{montoPagado:nuevoMontoPagado,estado:nuevoEstado});
-      fac.montoPagado=nuevoMontoPagado; fac.estado=nuevoEstado;
-      if(fac.esOC&&fac.ocId){try{await updateDoc(doc(db,'clientes',currentClientUID,'ordenesCompra',fac.ocId),{estadoPago:nuevoEstado});const oc=(_ordenesCompra||window._ordenesCompra||[]).find(o=>o.id===fac.ocId);if(oc)oc.estadoPago=nuevoEstado;}catch(e){}}
-    }
-    try{
-      const lbSnap=await getDocs(query(collection(db,'clientes',currentClientUID,'libroCaja'),where('referenciaId','==',pagoId)));
-      for(const d of lbSnap.docs) await updateDoc(doc(db,'clientes',currentClientUID,'libroCaja',d.id),{eliminado:true});
-    }catch(e){}
-    const idx=(_ccPagos||[]).findIndex(p=>p.id===pagoId);
-    if(idx>=0) _ccPagos.splice(idx,1);
-    closeModal('detalleMovCCModal');
-    showToast('Pago eliminado','ok');
-    renderCuentaCorriente();
-  } catch(e){ showToast('Error al eliminar: '+e.message,'error'); }
+  showConfirm('¿Eliminar este pago? Se revertirán los efectos en las facturas.', async () => {
+    const pago = (_ccPagos||[]).find(p=>p.id===pagoId);
+    if(!pago) return;
+    try {
+      await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',_ccProvId,'pagos',pagoId), { eliminado:true, eliminadoEn:new Date() });
+      const ids = Array.isArray(pago.facturasIds) ? pago.facturasIds : [];
+      for(let i=0; i<ids.length; i++){
+        const fid = ids[i];
+        const montoARevertir = (pago.facturasMontos||[])[i] ?? (parseFloat(pago.monto)||0);
+        const fac = (_ccFacturas||[]).find(f=>f.id===fid)||(_ccOCsComoFactura||[]).find(f=>f.id===fid);
+        if(!fac) continue;
+        const nuevoMontoPagado = Math.max(0,(parseFloat(fac.montoPagado)||0)-montoARevertir);
+        const nuevoEstado = nuevoMontoPagado<=0?'pendiente':nuevoMontoPagado<parseFloat(fac.monto)?'parcial':'pagada';
+        await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',_ccProvId,'facturas',fid),{montoPagado:nuevoMontoPagado,estado:nuevoEstado});
+        fac.montoPagado=nuevoMontoPagado; fac.estado=nuevoEstado;
+        if(fac.esOC&&fac.ocId){try{await updateDoc(doc(db,'clientes',currentClientUID,'ordenesCompra',fac.ocId),{estadoPago:nuevoEstado});const oc=(_ordenesCompra||window._ordenesCompra||[]).find(o=>o.id===fac.ocId);if(oc)oc.estadoPago=nuevoEstado;}catch(e){}}
+      }
+      try{
+        const lbSnap=await getDocs(query(collection(db,'clientes',currentClientUID,'libroCaja'),where('referenciaId','==',pagoId)));
+        for(const d of lbSnap.docs) await updateDoc(doc(db,'clientes',currentClientUID,'libroCaja',d.id),{eliminado:true});
+      }catch(e){}
+      const idx=(_ccPagos||[]).findIndex(p=>p.id===pagoId);
+      if(idx>=0) _ccPagos.splice(idx,1);
+      closeModal('detalleMovCCModal');
+      showToast('Pago eliminado','ok');
+      renderCuentaCorriente();
+    } catch(e){ showToast('Error al eliminar: '+e.message,'error'); }
+  }, 'Eliminar pago');
 };
 
 window.editarOP = function(pago) {
