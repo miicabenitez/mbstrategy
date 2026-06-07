@@ -25341,6 +25341,16 @@ window.marcarOCRecibida = async function(ocId) {
             });
           }
           await _batch.commit();
+          // FIX cache stale: refrescar productos/insumos en memoria y vistas de stock tras commit exitoso (try interno para no abortar el cierre normal de la OC si falla la recarga)
+          try {
+            if(_itemsConProducto.length > 0) {
+              if(window.loadProductos) await window.loadProductos();
+              if(window.prdStkRenderProductos) window.prdStkRenderProductos();
+            }
+            if(_itemsConInsumo.length > 0 && window.loadStockModule) {
+              await window.loadStockModule();
+            }
+          } catch(refErr) { console.error('Refresh post-OC error:', refErr); }
         }
       } catch(e) { console.error('Stock trigger OC recibida:', ocId, e); }
 
