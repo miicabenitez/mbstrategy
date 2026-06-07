@@ -13685,7 +13685,7 @@ window.cprdGuardarConfig = async function() {
     const cuentasExistentes = new Set();
     cuentasSnap.forEach(d=>cuentasExistentes.add(d.data().nombre));
     const nuevas = [];
-    _cprdParticipantes.forEach((p,i)=>{ if(p.nombre && !cuentasExistentes.has('Retiros '+p.nombre)) nuevas.push({nombre:'Retiros '+p.nombre,tipo:'retiros',saldo:0,orden:100+i,activa:true}); });
+    // Los retiros de socios NO usan caja propia: el control vive en la CC del proveedor-socio. Solo se crean las cuentas de reserva.
     _cprdReservas.forEach((r,i)=>{ if(r.nombre && !cuentasExistentes.has(r.nombre)) nuevas.push({nombre:r.nombre,tipo:'reserva',esReserva:true,saldo:0,orden:200+i,activa:true,creadoEn:new Date().toISOString()}); });
     await Promise.all(nuevas.map(c=>addDoc(collection(db,'clientes',currentClientUID,'cuentas'),c)));
     if(btn) { btn.textContent='✓ Guardado'; setTimeout(()=>{ btn.textContent='Guardar configuración'; btn.disabled=false; },2000); }
@@ -14249,8 +14249,8 @@ window.cierreConfirmarRevision = async function() {
       } else if(item.tipo==='reserva'){
         _cierreCuentas.forEach(c=>{ const m=Math.round((item.cuentas[c.nombre]||0)*100)/100; if(m>0) movimientos.push({tipo:'transfer',cuentaDesde:c.nombre,cuentaHacia:item.nombre,monto:m,concepto:item.nombre}); });
       } else {
-        // retiro
-        _cierreCuentas.forEach(c=>{ const m=Math.round((item.cuentas[c.nombre]||0)*100)/100; if(m>0) movimientos.push({tipo:'transfer',cuentaDesde:c.nombre,cuentaHacia:'Retiros '+item.nombre,monto:m,concepto:item.nombre}); });
+        // retiro: egreso de la cuenta real del dueño (igual que un compromiso). El control vive en la CC del proveedor-socio (retiroPagos), NO en una caja "Retiros {socio}".
+        _cierreCuentas.forEach(c=>{ const m=Math.round((item.cuentas[c.nombre]||0)*100)/100; if(m>0) movimientos.push({tipo:'egreso',cuenta:c.nombre,monto:m,concepto:item.nombre}); });
         const part = _cprdParticipantes.find(p=>p.nombre===item.nombre);
         if(part?.proveedorId) retiroPagos.push({provId:part.proveedorId, monto:Math.round(item.monto*100)/100, nombre:item.nombre});
       }
