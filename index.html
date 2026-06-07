@@ -13868,7 +13868,7 @@ function _cierreRenderTodo() {
   _cierreActualizarTotales();
 }
 
-function _moneyFmt(v) { return '$'+Math.round(parseFloat(v||0)).toLocaleString('es-AR'); }
+function _moneyFmt(v) { const c=Math.round(parseFloat(v||0)*100); return '$'+(c/100).toLocaleString('es-AR', c%100 ? {minimumFractionDigits:2,maximumFractionDigits:2} : {maximumFractionDigits:0}); }
 
 function _cierreRenderCompromisos() {
   const el = document.getElementById('cierre-compromisos-list');
@@ -14094,7 +14094,8 @@ async function _cierreEjecutarCierre(movimientos, provPagos, retiroPagos) {
     window._cierreDocCerrado = doc_;
     _cierreRenderBloqueado(doc_);
     await cierreGenerarPDF(doc_);
-  } catch(e) { showToast('Error al cerrar: '+e.message, 'error'); console.log(e); }
+    return true;
+  } catch(e) { showToast('Error al cerrar: '+e.message, 'error'); console.log(e); return false; }
 }
 
 function _cierreRenderBloqueado(doc_) {
@@ -14206,7 +14207,7 @@ window._cierreRevRecalc = function() {
     const diff = Math.round((item.monto-suma)*100)/100;
     const el = document.getElementById('crstatus-'+i);
     if(!el) return;
-    if(Math.abs(diff)<0.5){ el.textContent='✓ OK'; el.className='cierre-rev-status ok'; }
+    if(Math.abs(diff)<0.01){ el.textContent='✓ OK'; el.className='cierre-rev-status ok'; }
     else if(diff>0){ el.textContent='Falta '+_moneyFmt(diff); el.className='cierre-rev-status error'; todosOk=false; }
     else{ el.textContent='Excede '+_moneyFmt(-diff); el.className='cierre-rev-status error'; todosOk=false; }
   });
@@ -14222,26 +14223,37 @@ window._cierreRevRecalc = function() {
   if(btn) btn.disabled = !todosOk || algunaNegativa;
 };
 
+let _cierreCerrandoLock = false;
 window.cierreConfirmarRevision = async function() {
-  let todosOk = true;
-  _cierreRevItems.forEach(item=>{ const s=Object.values(item.cuentas).reduce((a,v)=>a+v,0); if(Math.abs(item.monto-s)>=0.5) todosOk=false; });
-  if(!todosOk){ showToast('Revisá que todos los ítems sumen correctamente','error'); return; }
-  const movimientos = [], provPagos = [], retiroPagos = [];
-  _cierreRevItems.forEach(item=>{
-    if(item.tipo==='compromiso'){
-      _cierreCuentas.forEach(c=>{ const m=Math.round(item.cuentas[c.nombre]||0); if(m>0) movimientos.push({tipo:'egreso',cuenta:c.nombre,monto:m,concepto:item.nombre}); });
-      if(item.origen==='proveedor') provPagos.push({provId:item.rawId.replace('prov-',''), monto:Math.round(item.monto)});
-    } else if(item.tipo==='reserva'){
-      _cierreCuentas.forEach(c=>{ const m=Math.round(item.cuentas[c.nombre]||0); if(m>0) movimientos.push({tipo:'transfer',cuentaDesde:c.nombre,cuentaHacia:item.nombre,monto:m,concepto:item.nombre}); });
-    } else {
-      // retiro
-      _cierreCuentas.forEach(c=>{ const m=Math.round(item.cuentas[c.nombre]||0); if(m>0) movimientos.push({tipo:'transfer',cuentaDesde:c.nombre,cuentaHacia:'Retiros '+item.nombre,monto:m,concepto:item.nombre}); });
-      const part = _cprdParticipantes.find(p=>p.nombre===item.nombre);
-      if(part?.proveedorId) retiroPagos.push({provId:part.proveedorId, monto:Math.round(item.monto), nombre:item.nombre});
-    }
-  });
-  _cierreRevCerrar();
-  await _cierreEjecutarCierre(movimientos, provPagos, retiroPagos);
+  if(_cierreCerrandoLock) return;                  // lock anti-doble-cierre
+  _cierreCerrandoLock = true;
+  const btn = document.getElementById('cierre-rev-confirm');
+  const btnTxtOriginal = btn ? btn.textContent : '';
+  if(btn) { btn.disabled = true; btn.textContent = 'Cerrando...'; }
+  try {
+    let todosOk = true;
+    _cierreRevItems.forEach(item=>{ const s=Object.values(item.cuentas).reduce((a,v)=>a+v,0); if(Math.abs(item.monto-s)>=0.01) todosOk=false; });
+    if(!todosOk){ showToast('Revisá que todos los ítems sumen correctamente','error'); return; }
+    const movimientos = [], provPagos = [], retiroPagos = [];
+    _cierreRevItems.forEach(item=>{
+      if(item.tipo==='compromiso'){
+        _cierreCuentas.forEach(c=>{ const m=Math.round((item.cuentas[c.nombre]||0)*100)/100; if(m>0) movimientos.push({tipo:'egreso',cuenta:c.nombre,monto:m,concepto:item.nombre}); });
+        if(item.origen==='proveedor') provPagos.push({provId:item.rawId.replace('prov-',''), monto:Math.round(item.monto*100)/100});
+      } else if(item.tipo==='reserva'){
+        _cierreCuentas.forEach(c=>{ const m=Math.round((item.cuentas[c.nombre]||0)*100)/100; if(m>0) movimientos.push({tipo:'transfer',cuentaDesde:c.nombre,cuentaHacia:item.nombre,monto:m,concepto:item.nombre}); });
+      } else {
+        // retiro
+        _cierreCuentas.forEach(c=>{ const m=Math.round((item.cuentas[c.nombre]||0)*100)/100; if(m>0) movimientos.push({tipo:'transfer',cuentaDesde:c.nombre,cuentaHacia:'Retiros '+item.nombre,monto:m,concepto:item.nombre}); });
+        const part = _cprdParticipantes.find(p=>p.nombre===item.nombre);
+        if(part?.proveedorId) retiroPagos.push({provId:part.proveedorId, monto:Math.round(item.monto*100)/100, nombre:item.nombre});
+      }
+    });
+    const ok = await _cierreEjecutarCierre(movimientos, provPagos, retiroPagos);
+    if(ok) _cierreRevCerrar();                     // solo cerrar overlay si el cierre fue exitoso
+  } finally {
+    _cierreCerrandoLock = false;
+    if(btn) { btn.disabled = false; btn.textContent = btnTxtOriginal; }
+  }
 };
 
 window._cierreRevCerrar = function() {
