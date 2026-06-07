@@ -10117,7 +10117,7 @@ window.showCalcForm = async function(id) {
       const d = snap.data();
       // Bloquear edición de cálculos antiguos hora/proyecto (schema viejo no compatible con el nuevo form)
       if(d.tipo === 'hora' || d.tipo === 'proyecto') {
-        alert('Este cálculo se creó con un formato anterior y no se puede editar. Si lo necesitás, creá uno nuevo.');
+        showToast('Este cálculo se creó con un formato anterior y no se puede editar. Si lo necesitás, creá uno nuevo.', 'info');
         showCalcList();
         return;
       }
@@ -10150,7 +10150,7 @@ window.saveCalc = async function() {
   if(!currentClientId) return;
   const id = document.getElementById('calcf-id').value;
   const nombre = document.getElementById('calcf-nombre').value.trim();
-  if(!nombre) { alert('Escribí el nombre del producto o servicio'); return; }
+  if(!nombre) { showToast('Escribí el nombre del producto o servicio', 'info'); return; }
 
   const mg = parseInt(document.getElementById('calcf-margen-manual').value) || parseInt(document.getElementById('calcf-margen').value) || 40;
   const unidades = parseInt(document.getElementById('calcf-unidades').value) || 1;
@@ -10211,7 +10211,7 @@ window.saveCalc = async function() {
     }
   } catch(err) {
     console.error('saveCalc error:', err);
-    alert('Error al guardar: ' + err.message);
+    showToast('Error al guardar: ' + err.message, 'error');
   }
 };
 // ─── FIN CALCULADOR NUEVO ────────────────────────────────────────
