@@ -24968,8 +24968,8 @@ function _nocRenderItems() {
       ? '<input type="text" class="fi" placeholder="Descripción..." value="'+(it.nombre||'').replace(/"/g,'&quot;')+'" style="margin-top:4px;font-size:13px;padding:6px 10px;" oninput="_nocSetNombre('+i+',this.value)">'
       : '';
     const insumoAC = '<div style="position:relative;margin-top:4px;">'
-      + '<input type="text" class="fi" placeholder="Vincular con insumo de stock (opcional)" '
-      + 'value="'+(it.insumoNombre||'').replace(/"/g,'&quot;')+'" '
+      + '<input type="text" class="fi" placeholder="Vincular con stock (opcional)" '
+      + 'value="'+((it.insumoNombre||it.productoNombre||'').replace(/"/g,'&quot;'))+'" '
       + 'style="margin-top:0;font-size:11px;padding:5px 8px;color:var(--text-l);" autocomplete="off" '
       + 'oninput="_nocBuscarInsumo(this.value,'+i+')" '
       + 'onfocus="_nocBuscarInsumo(this.value,'+i+')" '
@@ -25035,7 +25035,7 @@ window.abrirProdDesdeOC = function(i) {
   openModal('newProdCompraModal');
 };
 window.nocAgregarItem = function() {
-  _nocItems.push({ esOtro: false, prodId: null, nombre: '', cantidad: 1, precio: 0, insumoId: null, insumoNombre: '', insumoUnidad: '' });
+  _nocItems.push({ esOtro: false, prodId: null, nombre: '', cantidad: 1, precio: 0, insumoId: null, insumoNombre: '', insumoUnidad: '', productoId: null, productoNombre: '' });
   _nocRenderItems();
   setTimeout(() => {
     const inputs = document.querySelectorAll('#noc-items-container input[id^="noc-prod-input-"]');
@@ -25050,19 +25050,48 @@ window.nocEliminarItem = function(i) {
 window._nocBuscarInsumo = function(q, i) {
   const dd = document.getElementById('noc-ins-dd-'+i);
   if(!dd) return;
-  const ins = (window._stockInsumos||[]).filter(x=>(x.nombre||'').toLowerCase().includes((q||'').toLowerCase())).slice(0,6);
-  if(!ins.length) { dd.style.display='none'; dd.innerHTML=''; return; }
-  dd.innerHTML = ins.map(x=>'<div class="noc-ins-opt" onclick="_nocSelInsumo(\''+x.id+'\','+i+')" style="padding:9px 12px;cursor:pointer;border-bottom:.5px solid var(--cream-d);font-size:12px;" onmouseenter="this.style.background=\'var(--cream)\'" onmouseleave="this.style.background=\'\'"><span style="font-weight:500;">'+x.nombre+'</span> <span style="color:var(--text-l);">('+x.unidad+')</span></div>').join('');
+  const q2 = (q||'').toLowerCase();
+  const insumos = (window._stockInsumos||[])
+    .filter(x => (x.nombre||'').toLowerCase().includes(q2))
+    .slice(0,6)
+    .map(x => ({kind:'insumo', id:x.id, nombre:x.nombre, unidad:x.unidad}));
+  const productos = (window._productos||[])
+    .filter(p => p.manejaStock === true && !p.eliminado && (p.nombre||'').toLowerCase().includes(q2))
+    .slice(0,6)
+    .map(p => ({kind:'producto', id:p.id, nombre:p.nombre, unidad:'u'}));
+  if(!insumos.length && !productos.length) { dd.style.display='none'; dd.innerHTML=''; return; }
+  const badgeInsumo = '<span style="font-size:9px;background:#ede5e8;color:#8e5c7d;padding:2px 6px;border-radius:8px;font-weight:600;letter-spacing:.3px;margin-right:6px;">INSUMO</span>';
+  const badgeProducto = '<span style="font-size:9px;background:#e8ede8;color:#4a5e4d;padding:2px 6px;border-radius:8px;font-weight:600;letter-spacing:.3px;margin-right:6px;">PRODUCTO</span>';
+  const renderRow = x => '<div class="noc-ins-opt" onclick="_nocSelVinc(\''+x.kind+'\',\''+x.id+'\','+i+')" style="padding:9px 12px;cursor:pointer;border-bottom:.5px solid var(--cream-d);font-size:12px;" onmouseenter="this.style.background=\'var(--cream)\'" onmouseleave="this.style.background=\'\'">'+(x.kind==='insumo'?badgeInsumo:badgeProducto)+'<span style="font-weight:500;">'+x.nombre+'</span> <span style="color:var(--text-l);">('+x.unidad+')</span></div>';
+  let html = insumos.map(renderRow).join('');
+  if(insumos.length && productos.length) html += '<div style="border-top:.5px dashed var(--cream-d);margin:4px 0;"></div>';
+  html += productos.map(renderRow).join('');
+  dd.innerHTML = html;
   dd.dataset.active = '-1';
   dd.style.display = 'block';
 };
-window._nocSelInsumo = function(insumoId, i) {
-  const ins = (window._stockInsumos||[]).find(x=>x.id===insumoId);
-  if(!ins) return;
-  _nocItems[i] = { ..._nocItems[i], insumoId: ins.id, insumoNombre: ins.nombre, insumoUnidad: ins.unidad };
+window._nocSelVinc = function(kind, id, i) {
+  if(!_nocItems[i]) return;
+  if(kind === 'insumo') {
+    const ins = (window._stockInsumos||[]).find(x=>x.id===id);
+    if(!ins) return;
+    _nocItems[i] = { ..._nocItems[i],
+      insumoId: ins.id, insumoNombre: ins.nombre, insumoUnidad: ins.unidad,
+      productoId: null, productoNombre: ''
+    };
+  } else if(kind === 'producto') {
+    const p = (window._productos||[]).find(x=>x.id===id);
+    if(!p) return;
+    _nocItems[i] = { ..._nocItems[i],
+      productoId: p.id, productoNombre: p.nombre,
+      insumoId: null, insumoNombre: '', insumoUnidad: ''
+    };
+  }
   _nocRenderItems();
   const dd = document.getElementById('noc-ins-dd-'+i); if(dd) dd.style.display='none';
 };
+// Wrapper de compatibilidad por si algo legacy llama _nocSelInsumo directo.
+window._nocSelInsumo = function(insumoId, i) { _nocSelVinc('insumo', insumoId, i); };
 window._nocInsumoKeydown = function(e, i) {
   const dd = document.getElementById('noc-ins-dd-'+i);
   if(!dd || dd.style.display==='none') return;
@@ -25088,7 +25117,7 @@ window.abrirNuevaOCDirecta = async function() {
   if(!(window._stockInsumos && window._stockInsumos.length > 0)) {
     try { await window.loadStockModule(); } catch(e) {}
   }
-  _nocItems = [{ esOtro: false, prodId: null, nombre: '', cantidad: 1, precio: 0, insumoId: null, insumoNombre: '', insumoUnidad: '' }];
+  _nocItems = [{ esOtro: false, prodId: null, nombre: '', cantidad: 1, precio: 0, insumoId: null, insumoNombre: '', insumoUnidad: '', productoId: null, productoNombre: '' }];
   const modal = document.getElementById('modal-nueva-oc-directa');
   if(!modal) return;
   // Populate proveedor select
@@ -25138,7 +25167,7 @@ window.guardarNuevaOCDirecta = async function() {
       numero: nextNum,
       proveedor: prov.nombre,
       proveedorId: prov.id,
-      items: items.map(it => ({ nombre: (it.nombre||'').trim(), productId: it.prodId||null, cantidad: parseFloat(it.cantidad)||0, precioUnit: parseFloat(it.precio)||0, total: (parseFloat(it.cantidad)||0)*(parseFloat(it.precio)||0), insumoId: it.insumoId||null, insumoNombre: it.insumoNombre||'', insumoUnidad: it.insumoUnidad||'' })),
+      items: items.map(it => ({ nombre: (it.nombre||'').trim(), productId: it.prodId||null, cantidad: parseFloat(it.cantidad)||0, precioUnit: parseFloat(it.precio)||0, total: (parseFloat(it.cantidad)||0)*(parseFloat(it.precio)||0), insumoId: it.insumoId||null, insumoNombre: it.insumoNombre||'', insumoUnidad: it.insumoUnidad||'', productoId: it.productoId||null, productoNombre: it.productoNombre||'' })),
       total,
       fecha,
       ncId: null,
@@ -25275,10 +25304,11 @@ window.marcarOCRecibida = async function(ocId) {
         }
       }
 
-      // 3. Trigger stock: incrementar stockActual y costoUnitario por ítem vinculado
+      // 3. Trigger stock: incrementar stockActual y costoUnitario por ítem vinculado (insumos + productos en un solo batch atómico — ETAPA 3)
       try {
         const _itemsConInsumo = (oc.items||[]).filter(it => it.insumoId);
-        if(_itemsConInsumo.length > 0) {
+        const _itemsConProducto = (oc.items||[]).filter(it => it.productoId && !it.insumoId); // mutuamente exclusivo
+        if(_itemsConInsumo.length > 0 || _itemsConProducto.length > 0) {
           const _batch = writeBatch(db);
           for(const it of _itemsConInsumo) {
             const _insumoRef = doc(db,'clientes',currentClientUID,'insumos',it.insumoId);
@@ -25291,6 +25321,22 @@ window.marcarOCRecibida = async function(ocId) {
               cantidad: parseFloat(it.cantidad)||0, unidad: it.insumoUnidad||'',
               origen: 'compra', referenciaId: ocId,
               notas: oc.proveedor||oc.proveedorNombre||'',
+              fecha: hoy, creadoEn: new Date().toISOString()
+            });
+          }
+          // ETAPA 3 — bloque simétrico para productos de reventa
+          for(const it of _itemsConProducto) {
+            const _prodRef = doc(db,'clientes',currentClientUID,'productos',it.productoId);
+            const _upd = { stockActual: increment(parseFloat(it.cantidad)||0) };
+            if((parseFloat(it.precioUnit)||0) > 0) _upd.costoUnitario = parseFloat(it.precioUnit);
+            _batch.update(_prodRef, _upd);
+            const _movRef = doc(collection(db,'clientes',currentClientUID,'movimientosStock'));
+            _batch.set(_movRef, {
+              tipo: 'entrada', insumoId: it.productoId, insumoNombre: it.productoNombre||it.nombre||'',
+              cantidad: parseFloat(it.cantidad)||0, unidad: 'u',
+              origen: 'compra', referenciaId: ocId,
+              notas: oc.proveedor||oc.proveedorNombre||'',
+              itemTipo: 'producto',
               fecha: hoy, creadoEn: new Date().toISOString()
             });
           }
