@@ -1027,30 +1027,39 @@ textarea.cj-input{resize:none;}
 .cierre-step-card:nth-child(3){animation-delay:.1s;}
 /* ── Revisión pre-cierre ── */
 #cierre-rev-overlay{position:fixed;inset:0;background:rgba(26,42,30,.65);z-index:2000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px);}
-.cierre-rev-panel{background:#fff;border-radius:18px;width:92%;max-width:600px;max-height:92vh;overflow-y:auto;display:flex;flex-direction:column;}
-.cierre-rev-header{padding:20px 20px 0;display:flex;justify-content:space-between;align-items:center;}
-.cierre-rev-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:500;color:#1a1f1b;}
-.cierre-rev-close{background:none;border:none;font-size:22px;cursor:pointer;color:#aaa;line-height:1;padding:0;}
-.cierre-rev-banner{display:flex;gap:8px;flex-wrap:wrap;padding:14px 20px 8px;}
-.cierre-rev-chip{background:#edf2ed;border-radius:8px;padding:9px 13px;font-size:12px;color:#2d3d2e;transition:background .2s,color .2s;}
-.cierre-rev-chip strong{display:block;font-size:13px;font-family:'DM Mono',monospace,inherit;}
-.cierre-rev-chip.negativo{background:#fdecea;color:#c0392b;}
-.cierre-rev-section-label{font-size:10px;font-weight:700;color:#888;letter-spacing:.06em;text-transform:uppercase;padding:4px 20px 6px;}
-.cierre-rev-item{border:.5px solid #e4ebe4;border-radius:10px;padding:12px 14px;margin:0 20px 10px;}
-.cierre-rev-item-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.cierre-rev-panel{background:#fff;border-radius:18px;width:92%;max-width:600px;max-height:92vh;overflow:hidden;display:flex;flex-direction:column;}
+.cierre-rev-top{flex-shrink:0;background:linear-gradient(135deg,#1e2e22,#3d5242);}
+.cierre-rev-header{padding:18px 20px 14px;display:flex;justify-content:space-between;align-items:flex-start;}
+.cierre-rev-title{font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:600;color:#f4f0ea;line-height:1.1;}
+.cierre-rev-subtitle{font-size:12px;color:rgba(220,224,212,.6);margin-top:3px;}
+.cierre-rev-close{background:none;border:none;font-size:22px;cursor:pointer;color:rgba(244,240,234,.7);line-height:1;padding:0;}
+.cierre-rev-banner{padding:14px 18px 16px;}
+.cierre-rev-banner-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(220,224,212,.55);margin-bottom:10px;}
+.cierre-rev-banner-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.cierre-rev-chip{background:rgba(255,255,255,.06);border-top:2px solid #c9a59c;border-radius:8px;overflow:hidden;padding:9px 10px 8px;text-align:center;transition:background .2s;}
+.cierre-rev-chip:nth-child(even){border-top-color:#9dbd9c;}
+.cierre-rev-chip strong{display:block;font-size:17px;font-weight:600;color:#fff;font-family:'DM Sans',sans-serif;}
+.cierre-rev-chip-name{display:block;font-size:10px;color:rgba(220,224,212,.55);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cierre-rev-chip.negativo{background:rgba(196,57,43,.2);border-top-color:#e8a090;}
+.cierre-rev-chip.negativo strong{color:#f0b4a6;}
+.cierre-rev-scroll{flex:1 1 auto;overflow-y:auto;min-height:0;padding-top:6px;}
+.cierre-rev-section-label{font-size:10px;font-weight:700;color:#888;letter-spacing:.06em;text-transform:uppercase;padding:8px 20px;}
+.cierre-rev-item{background:#fff;border:.5px solid #e8ece6;border-radius:12px;margin:0 20px 12px;box-shadow:0 1px 4px rgba(0,0,0,.05);overflow:hidden;}
+.cierre-rev-item-header{display:flex;justify-content:space-between;align-items:center;padding:11px 14px;border-bottom:.5px solid #f0efeb;}
 .cierre-rev-item-name{font-size:13px;font-weight:600;color:#1a1f1b;}
-.cierre-rev-item-total{font-size:13px;font-weight:700;font-family:'DM Mono',monospace,inherit;color:#4a5e4d;}
+.cierre-rev-item-total{font-size:13px;font-weight:700;font-family:'DM Sans',sans-serif;color:#4a5e4d;}
+.cierre-rev-item-body{padding:8px 14px 10px;}
 .cierre-rev-badge{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:700;margin-right:6px;}
 .cierre-rev-badge.compromiso{background:#fef3c7;color:#92400e;}
 .cierre-rev-badge.reserva{background:#f3e9e6;color:#9a6f63;}
 .cierre-rev-badge.retiro{background:#eef2ec;color:#4a5e4d;}
 .cierre-rev-cuenta-row{display:flex;align-items:center;gap:8px;margin-top:6px;}
 .cierre-rev-cuenta-row label{font-size:12px;color:#666;flex:1;min-width:0;}
-.cierre-rev-cuenta-row input{width:100px;border:.5px solid #dde;border-radius:6px;padding:5px 8px;font-size:13px;text-align:right;font-family:'DM Mono',monospace,inherit;outline:none;}
+.cierre-rev-cuenta-row input{width:110px;border:.5px solid #dde;border-radius:6px;padding:5px 8px;font-size:13px;text-align:right;font-family:'DM Sans',sans-serif;outline:none;}
 .cierre-rev-cuenta-row input:focus{border-color:#4a5e4d;}
-.cierre-rev-status{font-size:11px;margin-top:6px;font-weight:600;}
-.cierre-rev-status.ok{color:#27ae60;}
-.cierre-rev-status.error{color:#c0392b;}
+.cierre-rev-status{font-size:11px;font-weight:700;padding:7px 14px;display:flex;justify-content:space-between;align-items:center;}
+.cierre-rev-status.ok{background:#eef3ec;color:#4a5e4d;}
+.cierre-rev-status.error{background:#fbf3ef;color:#a05f4e;}
 .cierre-rev-remanente{background:#f5f5f1;margin:4px 20px 14px;border-radius:10px;padding:12px 14px;}
 .cierre-rev-rem-title{font-size:10px;font-weight:700;color:#888;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;}
 .cierre-rev-rem-row{display:flex;justify-content:space-between;font-size:13px;margin-top:4px;}
@@ -1061,7 +1070,7 @@ textarea.cj-input{resize:none;}
 .cierre-rev-footer button:last-child{flex:2;padding:9px 16px;border-radius:9px;border:none;background:#4a5e4d;font-size:13px;font-weight:600;color:white;cursor:pointer;font-family:inherit;transition:background .15s;}
 .cierre-rev-footer button:last-child:hover:not(:disabled){background:#3d4f40;}
 .cierre-rev-footer button:last-child:disabled{opacity:.45;cursor:not-allowed;}
-@media(max-width:600px){#cierre-rev-overlay{align-items:flex-end;}.cierre-rev-panel{width:100%;max-height:96vh;border-radius:18px 18px 0 0;}.cierre-rev-cuenta-row input{width:80px;}}
+@media(max-width:600px){#cierre-rev-overlay{align-items:flex-end;}.cierre-rev-panel{width:100%;max-height:96vh;border-radius:18px 18px 0 0;}.cierre-rev-banner-grid{grid-template-columns:repeat(2,1fr);}.cierre-rev-cuenta-row input{width:90px;}}
 /* Calculador — reset globales */
 *,*:focus{outline:none !important;box-shadow:none !important;}
 .bp:focus-visible,.bs:focus-visible{outline:2px solid #4a5e4d !important;outline-offset:2px;}
@@ -14240,13 +14249,44 @@ function _cierreAbrirRevision() {
   _cierreRevRenderOverlay();
 }
 
+// ── Formateo es-AR de los inputs de monto (miles con punto, decimales con coma) ──
+function _cierreRevFmtNum(n){ return (!n) ? '' : Number(n).toLocaleString('es-AR',{maximumFractionDigits:2}); }   // número del modelo → string es-AR
+// Interpreta lo que tipea el usuario (punto o coma) → { ent:'dígitos enteros', dec:'decimales'|null }.
+// Regla: la coma SIEMPRE es decimal si está. Sin coma, el último punto es decimal solo si lo siguen 1 o 2 dígitos;
+// con exactamente 3 (o más) es separador de miles (caso "25.763" = veinticinco mil). 0 dígitos = decimal en curso ("25.").
+function _cierreRevNorm(s){
+  s = String(s).replace(/[^\d.,]/g,'');
+  let ent, dec=null;
+  if(s.indexOf(',') !== -1){                         // hay coma → la última coma manda como decimal
+    const k = s.lastIndexOf(',');
+    ent = s.slice(0,k).replace(/\D/g,'');
+    dec = s.slice(k+1).replace(/\D/g,'').slice(0,2);
+  } else if(s.indexOf('.') !== -1){                  // sin coma, hay punto → último punto: decimal si 1-2 dígitos, miles si 3+
+    const k = s.lastIndexOf('.');
+    const after = s.slice(k+1).replace(/\D/g,'');
+    if(after.length===1 || after.length===2){ ent = s.slice(0,k).replace(/\D/g,''); dec = after; }
+    else if(after.length===0){ ent = s.slice(0,k).replace(/\D/g,''); dec = ''; }   // "25." → decimal en curso
+    else { ent = s.replace(/\D/g,''); }              // "25.763" (3+ dígitos) → punto de miles
+  } else {
+    ent = s.replace(/\D/g,'');
+  }
+  return { ent, dec };
+}
+function _cierreRevFmtStr(s){                                                       // string es-AR para el display (miles . / decimal ,)
+  const o = _cierreRevNorm(s);
+  const entFmt = o.ent ? Number(o.ent).toLocaleString('es-AR') : (o.dec!==null ? '0' : '');
+  return o.dec!==null ? entFmt + ',' + o.dec : entFmt;
+}
+function _cierreRevParse(s){ const o = _cierreRevNorm(s); return parseFloat((o.ent||'0') + (o.dec ? '.'+o.dec : '')) || 0; }   // → número limpio
+window._cierreRevOnInput = function(inp){ inp.value = _cierreRevFmtStr(inp.value); _cierreRevRecalc(); };
+
 function _cierreRevRenderOverlay() {
   const prev = document.getElementById('cierre-rev-overlay');
   if(prev) prev.remove();
   const ol = document.createElement('div');
   ol.id = 'cierre-rev-overlay';
   const bannerHtml = _cierreCuentas.map(c=>
-    `<div class="cierre-rev-chip" id="crchip-${c.nombre.replace(/\s+/g,'_')}"><strong>${_moneyFmt(c.saldoReal||0)}</strong>${c.nombre}</div>`
+    `<div class="cierre-rev-chip" id="crchip-${c.nombre.replace(/\s+/g,'_')}"><strong>${_moneyFmt(c.saldoReal||0)}</strong><span class="cierre-rev-chip-name">${c.nombre}</span></div>`
   ).join('');
   const itemsHtml = _cierreRevItems.map((item,i)=>{
     const bc = item.tipo==='compromiso'?'compromiso':item.tipo==='reserva'?'reserva':'retiro';
@@ -14254,13 +14294,14 @@ function _cierreRevRenderOverlay() {
     const cuentasHtml = _cierreCuentas.map(c=>`
       <div class="cierre-rev-cuenta-row">
         <label>${c.nombre}</label>
-        <input type="number" min="0" value="${item.cuentas[c.nombre]||''}" data-item="${i}" data-cuenta="${c.nombre}" oninput="_cierreRevRecalc()">
+        <input type="text" inputmode="decimal" value="${_cierreRevFmtNum(item.cuentas[c.nombre])}" data-item="${i}" data-cuenta="${c.nombre}" oninput="_cierreRevOnInput(this)">
       </div>`).join('');
     return `<div class="cierre-rev-item">
       <div class="cierre-rev-item-header">
         <span><span class="cierre-rev-badge ${bc}">${bl}</span><span class="cierre-rev-item-name">${item.nombre}</span></span>
         <span class="cierre-rev-item-total">${_moneyFmt(item.monto)}</span>
-      </div>${cuentasHtml}
+      </div>
+      <div class="cierre-rev-item-body">${cuentasHtml}</div>
       <div class="cierre-rev-status" id="crstatus-${i}"></div>
     </div>`;
   }).join('');
@@ -14268,16 +14309,26 @@ function _cierreRevRenderOverlay() {
     `<div class="cierre-rev-rem-row" id="crrem-${c.nombre.replace(/\s+/g,'_')}"><span>${c.nombre}</span><span>${_moneyFmt(c.saldoReal||0)}</span></div>`
   ).join('');
   ol.innerHTML = `<div class="cierre-rev-panel">
-    <div class="cierre-rev-header">
-      <span class="cierre-rev-title">Revisión antes de cerrar</span>
-      <button class="cierre-rev-close" onclick="_cierreRevCerrar()">×</button>
+    <div class="cierre-rev-top">
+      <div class="cierre-rev-header">
+        <div>
+          <div class="cierre-rev-title">Distribución del cierre</div>
+          <div class="cierre-rev-subtitle">Repartí el resultado entre reserva y socios</div>
+        </div>
+        <button class="cierre-rev-close" onclick="_cierreRevCerrar()">×</button>
+      </div>
+      <div class="cierre-rev-banner">
+        <div class="cierre-rev-banner-label">Saldos disponibles</div>
+        <div class="cierre-rev-banner-grid">${bannerHtml}</div>
+      </div>
     </div>
-    <div class="cierre-rev-banner">${bannerHtml}</div>
-    ${_cierreRevItems.length?'<div class="cierre-rev-section-label">Ítems a distribuir</div>'+itemsHtml:''}
-    <div class="cierre-rev-remanente">
-      <div class="cierre-rev-rem-title">Remanente por cuenta</div>${remHtml}
+    <div class="cierre-rev-scroll">
+      ${_cierreRevItems.length?'<div class="cierre-rev-section-label">Ítems a distribuir</div>'+itemsHtml:''}
+      <div class="cierre-rev-remanente">
+        <div class="cierre-rev-rem-title">Remanente por cuenta</div>${remHtml}
+      </div>
+      <div class="cierre-rev-tip">El remanente pasa como saldo inicial del próximo período. Se recomienda registrar una apertura de caja.</div>
     </div>
-    <div class="cierre-rev-tip">El remanente pasa como saldo inicial del próximo período. Se recomienda registrar una apertura de caja.</div>
     <div class="cierre-rev-footer">
       <button onclick="_cierreRevCerrar()">Volver</button>
       <button id="cierre-rev-confirm" onclick="cierreConfirmarRevision()" disabled>Confirmar y generar PDF</button>
@@ -14290,7 +14341,7 @@ function _cierreRevRenderOverlay() {
 window._cierreRevRecalc = function() {
   document.querySelectorAll('#cierre-rev-overlay input[data-item]').forEach(inp=>{
     const i = parseInt(inp.dataset.item);
-    if(_cierreRevItems[i]) _cierreRevItems[i].cuentas[inp.dataset.cuenta] = parseFloat(inp.value)||0;
+    if(_cierreRevItems[i]) _cierreRevItems[i].cuentas[inp.dataset.cuenta] = _cierreRevParse(inp.value);
   });
   const comprometido = {};
   _cierreCuentas.forEach(c=>{ comprometido[c.nombre]=0; });
@@ -14308,9 +14359,9 @@ window._cierreRevRecalc = function() {
     const diff = Math.round((item.monto-suma)*100)/100;
     const el = document.getElementById('crstatus-'+i);
     if(!el) return;
-    if(Math.abs(diff)<0.01){ el.textContent='✓ OK'; el.className='cierre-rev-status ok'; }
-    else if(diff>0){ el.textContent='Falta '+_moneyFmt(diff); el.className='cierre-rev-status error'; todosOk=false; }
-    else{ el.textContent='Excede '+_moneyFmt(-diff); el.className='cierre-rev-status error'; todosOk=false; }
+    if(Math.abs(diff)<0.01){ el.innerHTML='<span>Distribuido</span><span>✓</span>'; el.className='cierre-rev-status ok'; }
+    else if(diff>0){ el.innerHTML='<span>Falta asignar</span><span>'+_moneyFmt(diff)+'</span>'; el.className='cierre-rev-status error'; todosOk=false; }
+    else{ el.innerHTML='<span>Excede</span><span>'+_moneyFmt(-diff)+'</span>'; el.className='cierre-rev-status error'; todosOk=false; }
   });
   _cierreCuentas.forEach(c=>{
     const el = document.getElementById('crrem-'+c.nombre.replace(/\s+/g,'_'));
