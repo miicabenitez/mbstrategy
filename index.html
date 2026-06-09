@@ -411,8 +411,8 @@ body.es-produccion #stock-insumo-modal #stk-btn-eliminar{display:none !important
 .br{background:var(--err-bg);color:var(--err);}
 .ba{background:var(--warn-bg);color:var(--warn);}
 .bgr{background:var(--sage-xl);color:var(--text-m);}
-.bp{padding:8px 16px;background:var(--topbar);color:#EEF4EE;border:none;border-radius:9px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;}
-.bp:hover{background:var(--topbar2);}
+.bp{padding:8px 16px;background:linear-gradient(135deg,#1e2e22,#3d5242);color:#EEF4EE;border:none;border-radius:9px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.bp:hover{background:linear-gradient(135deg,#16231a,#314235);}
 .bs{padding:8px 16px;background:var(--cream);color:var(--text-m);border:.5px solid var(--cream-d);border-radius:9px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;}
 .bs:hover{border-color:var(--sage);color:var(--text);}
 .na{width:100%;padding:10px 12px;border:.5px solid var(--cream-d);border-radius:9px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);background:var(--cream);resize:vertical;outline:none;min-height:70px;}
@@ -465,6 +465,9 @@ body.es-produccion #stock-insumo-modal #stk-btn-eliminar{display:none !important
 .mo{position:fixed;inset:0;background:rgba(26,42,30,.6);display:none;align-items:center;justify-content:center;z-index:1100;backdrop-filter:blur(3px);}
 .mo.open{display:flex;}
 .md{background:var(--white);border:.5px solid var(--cream-d);border-radius:18px;padding:26px;width:90%;max-width:500px;position:relative;max-height:90vh;overflow-y:auto;}
+.modal-header-verde{background:linear-gradient(135deg,#1e2e22,#3d5242);padding:20px 24px 16px;border-radius:18px 18px 0 0;}
+/* El panel con header verde no lleva borde cream (el overflow:hidden + border-radius del .md ya le dan la forma). isolation:isolate compone el recorte en su propio stacking context y mata el sangrado blanco de antialiasing en las esquinas. */
+.md:has(> .modal-header-verde){border:none;isolation:isolate;}
 .mt{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;margin-bottom:18px;color:var(--text);}
 .mc2{position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-l);line-height:1;transition:color .15s;}
 .mc2:hover{color:var(--topbar);}
@@ -2637,7 +2640,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
             </div>
             <div style="flex:1;min-width:0;">
               <div id="inicio-nombre-pill-wrap" style="display:flex;align-items:center;gap:8px;min-width:0;overflow:hidden;">
-                <div id="inicio-negocio-nombre" style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;line-height:1.15;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1;">Mi negocio</div>
+                <div id="inicio-negocio-nombre" style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;line-height:1.15;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1;">Mi negocio</div>
                 <span id="inicio-salud-pill" style="display:none;align-items:center;gap:5px;font-size:10px;font-weight:500;color:#e8f0e9;background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.15);padding:4px 12px;border-radius:20px;white-space:nowrap;flex-shrink:0;"></span>
               </div>
               <div id="inicio-fecha" style="font-size:12px;color:rgba(255,255,255,.6);margin-top:2px;"></div>
@@ -2646,34 +2649,26 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 
           <!-- KPIs dentro del banner -->
           <div id="inicio-kpis" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:10px;margin-top:8px;">
-            <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:14px;animation:fadeUp .5s ease both;animation-delay:0ms;">
-              <div style="font-size:11px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Ganancia del mes</div>
-              <div style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;color:#fff;line-height:1.1;" id="inicio-ganancia">$0</div>
-              <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:3px;" id="inicio-margen-neto"></div>
-              <div style="font-size:11px;margin-top:6px;animation:revealComp .5s ease both;animation-delay:.3s;" id="inicio-comp-ganancia"></div>
+            <div style="background:rgba(255,255,255,.13);border:0.5px solid rgba(255,255,255,.1);border-radius:10px;padding:14px;animation:fadeUp .5s ease both;animation-delay:0ms;">
+              <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Disponible</div>
+              <div style="font-family:'DM Sans',sans-serif;font-size:26px;font-weight:700;color:#fff;line-height:1.1;" id="client-disponible">—</div>
+              <div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:3px;">Caja + Reservas</div>
             </div>
             <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:14px;animation:fadeUp .5s ease both;animation-delay:80ms;">
-              <div style="font-size:11px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Por cobrar</div>
-              <div style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;color:#fff;" id="inicio-por-cobrar">$0</div>
-              <div style="font-size:11px;margin-top:6px;animation:revealComp .5s ease both;animation-delay:.38s;" id="inicio-comp-cobrar"></div>
+              <div style="font-size:11px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Resultado en curso</div>
+              <div style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;color:#fff;line-height:1.1;" id="inicio-resultado">$0</div>
             </div>
             <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:14px;animation:fadeUp .5s ease both;animation-delay:160ms;">
-              <div style="font-size:11px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Margen</div>
-              <div style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;color:#fff;" id="inicio-margen">0%</div>
-              <div style="margin-top:6px;height:4px;background:rgba(255,255,255,.2);border-radius:4px;overflow:hidden;">
-                <div id="inicio-margen-bar" style="height:100%;width:0%;background:rgba(255,255,255,.7);border-radius:4px;transition:width .4s;"></div>
-              </div>
-              <div style="font-size:11px;margin-top:6px;animation:revealComp .5s ease both;animation-delay:.46s;" id="inicio-comp-margen"></div>
+              <div style="font-size:11px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Reserva</div>
+              <div style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;color:#fff;" id="inicio-reserva">$0</div>
             </div>
             <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:14px;animation:fadeUp .5s ease both;animation-delay:240ms;">
-              <div style="font-size:11px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Egresos del mes</div>
-              <div style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;color:#fff;" id="inicio-egresos">$0</div>
-              <div style="font-size:11px;margin-top:6px;animation:revealComp .5s ease both;animation-delay:.54s;" id="inicio-comp-egresos"></div>
+              <div style="font-size:11px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Por cobrar</div>
+              <div style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;color:#fff;" id="inicio-por-cobrar">$0</div>
             </div>
             <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:14px;animation:fadeUp .5s ease both;animation-delay:320ms;">
-              <div style="font-size:11px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Disponible</div>
-              <div style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;color:#fff;" id="client-disponible">—</div>
-              <div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:3px;">en caja</div>
+              <div style="font-size:11px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Por pagar</div>
+              <div style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;color:#fff;" id="inicio-por-pagar">$0</div>
             </div>
           </div>
           <!-- Barra de período dentro del banner -->
@@ -2681,6 +2676,33 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
             <div style="font-size:10px;color:rgba(232,240,233,0.4);margin-bottom:5px;"><span id="inicio-dias-num">—</span> días · <span id="inicio-dias-start"></span> — <span id="inicio-dias-end"></span><span id="inicio-dias-row" style="display:none;"></span></div>
             <div id="inicio-periodo-bar" style="height:4px;border-radius:2px;background:rgba(255,255,255,0.1);overflow:hidden;">
               <div id="inicio-mes-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#9a7870,#ccb0a8);border-radius:2px;transition:width .7s ease;"></div>
+            </div>
+          </div>
+          <!-- Ciclo actual (desde el último cierre) -->
+          <div id="inicio-ciclo-wrap" style="margin-top:14px;background:rgba(255,255,255,.05);border:0.5px solid rgba(255,255,255,.09);border-radius:12px;padding:14px 16px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+              <div style="display:flex;align-items:center;gap:9px;min-width:0;flex-wrap:wrap;">
+                <span style="font-size:11px;font-weight:600;color:#3d2a25;background:linear-gradient(135deg,#c9a59c,#b0887f);border-radius:20px;padding:4px 13px;white-space:nowrap;">Ciclo actual</span>
+                <span style="font-size:12px;color:rgba(220,224,212,.5);">comenzó el <span id="inicio-ciclo-desde">—</span></span>
+              </div>
+              <span id="inicio-ver-cierre-pill" onclick="abrirModalCierreAnterior()" style="display:none;align-items:center;gap:5px;font-size:10px;font-weight:500;color:#e8f0e9;background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.15);padding:4px 12px;border-radius:20px;white-space:nowrap;flex-shrink:0;cursor:pointer;">Ver cierre anterior</span>
+            </div>
+            <div style="display:flex;justify-content:center;align-items:center;gap:48px;margin-top:16px;">
+              <div style="text-align:center;">
+                <div style="font-size:10.5px;color:rgba(220,224,212,.5);margin-bottom:3px;">Ingresos del ciclo</div>
+                <div style="display:flex;align-items:center;justify-content:center;gap:6px;">
+                  <i class="ti ti-arrow-up-right" aria-hidden="true" style="font-size:16px;color:#9dbd9c;"></i>
+                  <div id="inicio-ciclo-ing" style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;color:#fff;">$0</div>
+                </div>
+              </div>
+              <div style="width:0.5px;align-self:stretch;background:rgba(255,255,255,.12);"></div>
+              <div style="text-align:center;">
+                <div style="font-size:10.5px;color:rgba(220,224,212,.5);margin-bottom:3px;">Egresos del ciclo</div>
+                <div style="display:flex;align-items:center;justify-content:center;gap:6px;">
+                  <i class="ti ti-arrow-down-right" aria-hidden="true" style="font-size:16px;color:#c9a59c;"></i>
+                  <div id="inicio-ciclo-eg" style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:600;color:#fff;">$0</div>
+                </div>
+              </div>
             </div>
           </div>
           <!-- Accesos directos dentro del banner -->
@@ -5015,7 +5037,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
               <div id="micuenta-logo-wrap" style="width:56px;height:56px;border-radius:12px;background:var(--sage-xl);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="15" rx="2" stroke="var(--sage-dark)" stroke-width="1.5"/></svg>
               </div>
-              <label style="background:var(--sage-xl);color:var(--sage-dark);border:none;border-radius:20px;padding:8px 16px;font-size:12px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;">
+              <label style="background:linear-gradient(135deg,#1e2e22,#3d5242);color:#fff;border:none;border-radius:20px;padding:8px 16px;font-size:12px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;">
                 Subir logo
                 <input type="file" accept="image/*" id="micuenta-logo-input" style="display:none;" onchange="uploadMicuentaLogo(this)"/>
               </label>
@@ -5759,7 +5781,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 
 <div class="mo" id="presupPreviewModal">
   <div class="md" style="max-width:720px;padding:0;overflow:hidden;">
-    <div style="background:var(--topbar);padding:14px 20px;display:flex;justify-content:space-between;align-items:center;">
+    <div class="modal-header-verde" style="display:flex;justify-content:space-between;align-items:center;">
       <div style="font-size:13px;font-weight:500;color:#fff;">Vista previa del presupuesto</div>
       <div style="display:flex;gap:8px;align-items:center;">
         <button onclick="imprimirPresupuesto()" style="background:rgba(255,255,255,.2);color:#fff;border:none;border-radius:20px;padding:6px 14px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;">↓ Guardar PDF</button>
@@ -5863,7 +5885,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 <div class="mo" id="miCuentaModal">
   <div class="md" style="max-width:460px;padding:0;overflow:hidden;position:relative;">
     <button class="mc2" onclick="closeModal('miCuentaModal')" style="position:absolute;top:14px;right:14px;z-index:2;color:#fff;background:rgba(255,255,255,.15);border:none;">×</button>
-    <div style="background:var(--topbar);padding:20px 24px 16px;">
+    <div class="modal-header-verde">
       <div style="font-size:9px;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">MB Strategy</div>
       <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;color:#fff;">Mi cuenta</div>
       <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:3px;" id="mc-email-display"></div>
@@ -5878,7 +5900,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
           <div id="mc-logo-wrap" style="width:56px;height:56px;border-radius:12px;background:var(--sage-xl);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="15" rx="2" stroke="var(--sage-dark)" stroke-width="1.5"/></svg>
           </div>
-          <label style="background:var(--sage-xl);color:var(--sage-dark);border:none;border-radius:20px;padding:8px 16px;font-size:12px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;">
+          <label style="background:linear-gradient(135deg,#1e2e22,#3d5242);color:#fff;border:none;border-radius:20px;padding:8px 16px;font-size:12px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;">
             Subir logo
             <input type="file" accept="image/*" id="mc-logo-input" style="display:none;" onchange="uploadMcLogo(this)"/>
           </label>
@@ -5970,7 +5992,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 <div class="mo" id="newProdCompraModal">
   <div class="md" style="max-width:420px;padding:0;overflow:hidden;position:relative;">
     <button class="mc2" onclick="closeModal('newProdCompraModal')" style="position:absolute;top:14px;right:14px;z-index:2;color:#fff;background:rgba(255,255,255,.15);border:none;">×</button>
-    <div style="background:var(--topbar);padding:22px 24px 18px;">
+    <div class="modal-header-verde">
       <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">MB Strategy</div>
       <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;color:#fff;" id="pc-modal-titulo">Nuevo producto de compra</div>
     </div>
@@ -6002,7 +6024,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 <div class="mo" id="newNecesidadModal">
   <div class="md" style="max-width:480px;padding:0;overflow:hidden;position:relative;">
     <button class="mc2" onclick="closeModal('newNecesidadModal')" style="position:absolute;top:14px;right:14px;z-index:2;color:#fff;background:rgba(255,255,255,.15);border:none;">×</button>
-    <div style="background:var(--topbar);padding:22px 24px 18px;">
+    <div class="modal-header-verde">
       <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">MB Strategy</div>
       <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;color:#fff;">Nueva necesidad de compra</div>
     </div>
@@ -6046,7 +6068,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
   <div class="md" style="max-width:700px;padding:0;overflow:hidden;position:relative;">
     <button class="mc2" onclick="closeModal('cotizacionModal')" style="position:absolute;top:14px;right:14px;z-index:2;color:#fff;background:rgba(255,255,255,.15);border:none;">×</button>
     <!-- Header NC -->
-    <div style="background:var(--topbar);padding:18px 24px;">
+    <div class="modal-header-verde">
       <div style="font-size:9px;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:2px;margin-bottom:4px;">MB Strategy · Cotización</div>
       <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:#fff;" id="cot-titulo">Cotización</div>
       <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:3px;" id="cot-subtitulo"></div>
@@ -6097,7 +6119,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 <div class="mo" id="cuentaCorrienteModal">
   <div class="md" style="max-width:560px;padding:0;overflow:hidden;position:relative;">
     <button class="mc2" onclick="closeModal('cuentaCorrienteModal')" style="position:absolute;top:14px;right:14px;z-index:2;color:#fff;background:rgba(255,255,255,.15);border:none;">×</button>
-    <div style="background:var(--topbar);padding:18px 24px 16px;">
+    <div class="modal-header-verde">
       <div style="font-size:9px;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:2px;margin-bottom:4px;">MB Strategy · Cuenta corriente</div>
       <div style="display:flex;justify-content:space-between;align-items:flex-end;">
         <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;color:#fff;" id="cc-prov-nombre">Proveedor</div>
@@ -6161,7 +6183,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 <div class="mo" id="newFacturaModal">
   <div class="md" style="max-width:440px;padding:0;overflow:hidden;position:relative;">
     <button class="mc2" onclick="closeModal('newFacturaModal')" style="position:absolute;top:14px;right:14px;z-index:2;color:#fff;background:rgba(255,255,255,.15);border:none;">×</button>
-    <div style="background:var(--topbar);padding:20px 24px 16px;">
+    <div class="modal-header-verde">
       <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">MB Strategy</div>
       <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:#fff;">Cargar factura</div>
     </div>
@@ -6244,7 +6266,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 <div class="mo" id="verCotModal">
   <div class="md" style="max-width:560px;padding:0;overflow:hidden;position:relative;">
     <button class="mc2" onclick="closeModal('verCotModal')" style="position:absolute;top:14px;right:14px;z-index:2;color:#fff;background:rgba(255,255,255,.15);border:none;">×</button>
-    <div style="background:var(--topbar);padding:20px 24px 16px;">
+    <div class="modal-header-verde">
       <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">MB Strategy · Cotización</div>
       <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;color:#fff;" id="vcot-titulo">Alimentos</div>
       <div style="font-size:11px;color:rgba(255,255,255,.65);margin-top:3px;" id="vcot-sub"></div>
@@ -6263,7 +6285,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 <div class="mo" id="ocDetalleModal">
   <div class="md" style="max-width:560px;padding:0;overflow:hidden;position:relative;">
     <button class="mc2" onclick="closeModal('ocDetalleModal')" style="position:absolute;top:14px;right:14px;z-index:2;color:#fff;background:rgba(255,255,255,.15);border:none;">×</button>
-    <div style="background:var(--topbar);padding:20px 24px 16px;">
+    <div class="modal-header-verde">
       <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">MB Strategy · Compras</div>
       <div style="display:flex;justify-content:space-between;align-items:flex-end;">
         <div>
@@ -12151,7 +12173,7 @@ function renderCajaChips(cuentas, movs) {
 
   const _cuentasParaSaldo = window.currentRol === 'cajero'
     ? cuentasUnicas.filter(c => c.nombre === 'Caja mostrador')
-    : cuentasUnicas.filter(c => c.tipo !== 'retiros');
+    : cuentasUnicas.filter(_esCuentaDueno);   // mismo criterio que el Disponible del inicio (efectivo/banco/mp, sin mostrador ni reservas)
   window._cajaSaldoTotal = _cuentasParaSaldo.reduce((a,c) => a + (saldos[c.nombre]||0), 0);
   const dispEl = document.getElementById('cont-disponible');
   if(dispEl) dispEl.textContent = '$'+Math.round(window._cajaSaldoTotal).toLocaleString('es-AR');
@@ -12162,6 +12184,9 @@ function renderCajaChips(cuentas, movs) {
   container.innerHTML = chipTodas + chipsCuentas;
   window.renderCajaCuentasCards(cuentasUnicas, movs, saldos, _cajaCuentaFiltro);
 }
+
+// Cajas del dueño que cuentan como "Disponible": efectivo/banco/mp, sin Caja mostrador (su plata ya llega vía retiro de caja) ni reservas. Único criterio, compartido por el inicio y el módulo Caja.
+function _esCuentaDueno(c) { return ['efectivo','banco','mp'].includes(c.tipo) && c.nombre !== 'Caja mostrador'; }
 
 async function preloadCajaSaldo(uid) {
   try {
@@ -12176,14 +12201,17 @@ async function preloadCajaSaldo(uid) {
     movsSnap.forEach(d => movsArr.push(d.data()));
     const saldos = {};
     cuentasUnicas.forEach(c => { saldos[c.nombre] = window._calcularSaldoCuenta(c.nombre, movsArr); });
-    window._cajaSaldoTotal = cuentasUnicas
-      .filter(c => c.tipo !== 'retiros')
-      .reduce((a,c) => a + (saldos[c.nombre]||0), 0);
-    const _fmt = '$'+Math.round(window._cajaSaldoTotal).toLocaleString('es-AR');
+    // Disponible del dueño vía _esCuentaDueno (criterio compartido con el módulo Caja).
+    window._cajaSaldoTotal      = cuentasUnicas.filter(_esCuentaDueno).reduce((a,c) => a + (saldos[c.nombre]||0), 0);
+    window._reservaTotal        = cuentasUnicas.filter(c => c.tipo === 'reserva').reduce((a,c) => a + (saldos[c.nombre]||0), 0);
+    window._cuentasDuenoNombres = cuentasUnicas.filter(_esCuentaDueno).map(c => c.nombre);
+    const _fmt = '$'+Math.round(window._cajaSaldoTotal).toLocaleString('es-AR');                         // operativo (módulo Caja): caja sin reservas
     const _e1 = document.getElementById('cont-disponible');
     if(_e1) _e1.textContent = _fmt;
+    // Card Disponible del inicio = caja + reservas (control cruzado: Resultado en curso + Reserva = Disponible). NO modifica _cajaSaldoTotal.
+    const _fmtInicio = '$'+Math.round(window._cajaSaldoTotal + window._reservaTotal).toLocaleString('es-AR');
     const _e2 = document.getElementById('client-disponible');
-    if(_e2) _e2.textContent = _fmt;
+    if(_e2) _e2.textContent = _fmtInicio;
   } catch(e) { console.log('[preload] ERROR:', e); }
 }
 
@@ -13796,11 +13824,9 @@ async function _cierreSugerirFechas(uid) {
   } catch(e) {}
 }
 
-async function _cierreCargarCompromisos(uid) {
-  _cierreCompromisosLista = [..._cierreManualCompromisos];
-
-  // 1. CC Proveedores: saldo real = facturas - pagos (igual que renderCuentaCorriente)
-  // Antes leía de 'movimientos' (colección vacía/legacy); la deuda real está en 'facturas'+'pagos'
+// Compromisos pendientes = por cada proveedor, saldo (facturas - pagos) > 0. Helper compartido por el cierre y el inicio (una sola fuente de verdad).
+async function _calcularPorPagar(uid) {
+  const out = [];
   try {
     const provSnap = await getDocs(collection(db,'clientes',uid,'proveedores'));
     const provs = [];
@@ -13815,17 +13841,72 @@ async function _cierreCargarCompromisos(uid) {
       let totalPag = 0;
       pagSnap.forEach(d=>{ const p=d.data(); if(!p.eliminado) totalPag += parseFloat(p.monto)||0; });
       const saldo = totalFac - totalPag;
-      if(saldo > 0) {
-        _cierreCompromisosLista.push({
-          id:'prov-'+prov.id, nombre:prov.nombre+' — CC Proveedor',
-          monto: saldo, origen:'proveedor', origenLabel:'CC Proveedor', pagado:false
-        });
-      }
+      if(saldo > 0) out.push({ provId: prov.id, nombre: prov.nombre, saldo });
     }
+  } catch(e) { console.error('[_calcularPorPagar]', e); }
+  return out;
+}
+
+// Devuelve el doc del último cierre 'cerrado' (mayor fechaFin), o null. Mismo criterio que _cierreSugerirFechas.
+async function _getUltimoCierre(uid) {
+  try {
+    const snap = await getDocs(query(collection(db,'cierres'), where('uid','==',uid)));
+    let best = null;
+    snap.forEach(d=>{ const fd=d.data(); if(fd.estado!=='cerrado') return; if(!best || (fd.fechaFin||'') > (best.fechaFin||'')) best = {id:d.id,...fd}; });
+    return best;
+  } catch(e) { console.error('[_getUltimoCierre]', e); return null; }
+}
+
+async function _cierreCargarCompromisos(uid) {
+  _cierreCompromisosLista = [..._cierreManualCompromisos];
+
+  // 1. CC Proveedores: saldo (facturas - pagos) > 0. Vía helper compartido con el inicio.
+  try {
+    const porPagar = await _calcularPorPagar(uid);
+    porPagar.forEach(p=>{
+      _cierreCompromisosLista.push({
+        id:'prov-'+p.provId, nombre:p.nombre+' — CC Proveedor',
+        monto: p.saldo, origen:'proveedor', origenLabel:'CC Proveedor', pagado:false
+      });
+    });
   } catch(e) { console.error('[compromisos CC]', e); }
 
   // 2. OC Compras: las OCs emitidas NO son deuda — solo lo son al recibirse, y ahí ya entran por (B) CC Proveedor como factura esOC. No se listan como compromiso.
 }
+
+// ─── Modal "Cierre anterior" (desde el pill del inicio) ──────────
+window.abrirModalCierreAnterior = function() {
+  const c = window._ultimoCierreDoc;
+  if(!c) { showToast('Todavía no hay un cierre anterior.', 'info'); return; }
+  const fmt = v => '$'+Math.round(parseFloat(v||0)).toLocaleString('es-AR');
+  const dist = c.distribucion || [];
+  const retiros  = dist.filter(d=>d.tipo==='participante');
+  const reservas = dist.filter(d=>d.tipo==='reserva');
+  const totalRepartido = dist.reduce((a,d)=>a+(parseFloat(d.monto)||0),0);
+  const totalReserva   = reservas.reduce((a,d)=>a+(parseFloat(d.monto)||0),0);
+  const comprom = (c.compromisos||[]).filter(x=>x.pagado);
+  const row = (label,val,bold) => `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0efeb;font-size:13px;${bold?'font-weight:700;':''}"><span style="color:#555;">${label}</span><span style="font-family:'DM Mono',monospace;color:#1a1f1b;">${val}</span></div>`;
+  const prev = document.getElementById('cierre-anterior-overlay'); if(prev) prev.remove();
+  const ol = document.createElement('div');
+  ol.id = 'cierre-anterior-overlay';
+  ol.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+  ol.innerHTML = `<div style="background:#fff;border-radius:16px;max-width:440px;width:100%;max-height:85vh;overflow-y:auto;padding:22px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+      <span style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:#1a1f1b;">Cierre anterior</span>
+      <button onclick="document.getElementById('cierre-anterior-overlay').remove()" style="background:none;border:none;font-size:24px;color:#bbb;cursor:pointer;line-height:1;">×</button>
+    </div>
+    <div style="font-size:12px;color:#888;margin-bottom:14px;">Período ${c.fechaInicio||'—'} → ${c.fechaFin||'—'}</div>
+    ${row('Disponible al cerrar', fmt(c.disponibleTotal))}
+    ${comprom.length ? '<div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#aaa;margin:14px 0 2px;">Compromisos pagados</div>'+comprom.map(x=>row(x.nombre, fmt(x.monto))).join('') : ''}
+    ${retiros.length ? '<div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#aaa;margin:14px 0 2px;">Retiros por socio</div>'+retiros.map(d=>row(d.nombre+' ('+(d.pct||0)+'%)', fmt(d.monto))).join('') : ''}
+    ${row('Reserva', fmt(totalReserva))}
+    ${row('Total repartido', fmt(totalRepartido), true)}
+    ${row('Remanente (saldo inicial)', fmt(c.remanente), true)}
+    <button onclick="cierreGenerarPDF(window._ultimoCierreDoc); document.getElementById('cierre-anterior-overlay').remove();" style="margin-top:18px;width:100%;padding:11px;border:none;border-radius:10px;background:#4a5e4d;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Ver detalle completo</button>
+  </div>`;
+  ol.addEventListener('click', e=>{ if(e.target===ol) ol.remove(); });
+  document.body.appendChild(ol);
+};
 
 function _cierreRenderTodo() {
   // Modo
@@ -14235,8 +14316,8 @@ window.cierreConfirmarRevision = async function() {
       } else if(item.tipo==='reserva'){
         _cierreCuentas.forEach(c=>{ const m=Math.round((item.cuentas[c.nombre]||0)*100)/100; if(m>0) movimientos.push({tipo:'transfer',cuentaDesde:c.nombre,cuentaHacia:item.nombre,monto:m,concepto:item.nombre}); });
       } else {
-        // retiro: egreso de la cuenta real del dueño (igual que un compromiso). El control vive en la CC del proveedor-socio (retiroPagos), NO en una caja "Retiros {socio}".
-        _cierreCuentas.forEach(c=>{ const m=Math.round((item.cuentas[c.nombre]||0)*100)/100; if(m>0) movimientos.push({tipo:'egreso',cuenta:c.nombre,monto:m,concepto:item.nombre}); });
+        // retiro: egreso de la cuenta real del dueño (igual que un compromiso). El control vive en la CC del proveedor-socio (retiroPagos), NO en una caja "Retiros {socio}". esRetiroSocio:true lo distingue de un costo operativo (sobrevive vía ...m en _cierreEjecutarCierre).
+        _cierreCuentas.forEach(c=>{ const m=Math.round((item.cuentas[c.nombre]||0)*100)/100; if(m>0) movimientos.push({tipo:'egreso',cuenta:c.nombre,monto:m,concepto:item.nombre,esRetiroSocio:true}); });
         const part = _cprdParticipantes.find(p=>p.nombre===item.nombre);
         if(part?.proveedorId) retiroPagos.push({provId:part.proveedorId, monto:Math.round(item.monto*100)/100, nombre:item.nombre});
       }
@@ -17353,19 +17434,19 @@ async function loadInicio() {
     const totalEgAnt = egAnt.reduce((a,e)=>a+(parseFloat(e.monto)||0),0);
     const gananciaAnt = totalIngAnt - totalEgAnt;
 
-    // Setear KPIs
     const setEl = (id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
-    animateCounter(document.getElementById('inicio-ganancia'), gananciaMes, 800, v=>'$'+v.toLocaleString('es-AR'));
-    animateCounter(document.getElementById('inicio-egresos'), totalEgMes, 800, v=>'$'+v.toLocaleString('es-AR'));
-    animateCounter(document.getElementById('inicio-margen'), margen, 800, v=>v+'%');
+    // Ganancia/Egresos/Margen del mes calendario YA NO se muestran en el inicio (migran a Indicadores).
+    // Las consts de arriba (gananciaMes, totalEgMes, margen, *Ant) quedan vivas para esa migración; no se escriben cards acá.
 
-    // Margen neto sub-line
-    const margenNetoEl = document.getElementById('inicio-margen-neto');
-    if(margenNetoEl) margenNetoEl.textContent = margen > 0 ? margen+'% de margen neto' : '';
-
-    // Barra de margen
-    const margenBar = document.getElementById('inicio-margen-bar');
-    if(margenBar) { margenBar.style.width = Math.max(0,Math.min(margen,100))+'%'; margenBar.style.background = margen>=50?'#a8d8a0':margen>=25?'#f0d687':'#e8a090'; }
+    // ── Cards del inicio: Resultado en curso · Reserva · Por pagar (Disponible lo setea preloadCajaSaldo) ──
+    await preloadCajaSaldo(currentClientUID).catch(()=>{});   // corre ANTES del Resultado: deja frescos _cajaSaldoTotal, _reservaTotal y _cuentasDuenoNombres
+    const _disponible = window._cajaSaldoTotal || 0;
+    const _reserva    = window._reservaTotal || 0;
+    const _porPagar   = (await _calcularPorPagar(currentClientUID)).reduce((a,p)=>a+(p.saldo||0),0);
+    const _resultadoEnCurso = _disponible - _porPagar;
+    animateCounter(document.getElementById('inicio-resultado'), _resultadoEnCurso, 800, v=>'$'+v.toLocaleString('es-AR'));
+    animateCounter(document.getElementById('inicio-reserva'),   _reserva,   800, v=>'$'+v.toLocaleString('es-AR'));
+    animateCounter(document.getElementById('inicio-por-pagar'), _porPagar,  800, v=>'$'+v.toLocaleString('es-AR'));
 
     // Comparativas vs mes anterior
     function compHtml(curr, ant, isPositiveGood) {
@@ -17395,6 +17476,26 @@ async function loadInicio() {
     // Cobrar comparison
     const ccEl = document.getElementById('inicio-comp-cobrar');
     if(ccEl) ccEl.innerHTML = porCobrar > 0 ? '<span style="color:rgba(255,255,255,.5);">pendiente de cobro</span>' : '<span style="color:#a8d8a0;">Sin pendientes</span>';
+
+    // ── Ciclo actual: ingresos/egresos del dueño desde el último cierre + pill ──
+    try {
+      const ultimoCierre = await _getUltimoCierre(currentClientUID);
+      window._ultimoCierreDoc = ultimoCierre;
+      const _fmtDDMM = iso => { if(!iso) return '—'; const p=String(iso).split('-'); return p.length===3 ? p[2]+'/'+p[1] : iso; };
+      const _desdeEl = document.getElementById('inicio-ciclo-desde');
+      if(_desdeEl) _desdeEl.textContent = ultimoCierre ? _fmtDDMM(ultimoCierre.fechaFin) : 'el inicio';
+      const _cicloDesde = ultimoCierre ? (ultimoCierre.fechaFin||'') : '';
+      const _ctasDueno = new Set(window._cuentasDuenoNombres||[]);
+      // cuenta del dueño + fecha posterior al último cierre; los retiros de socio (esRetiroSocio) NO son egreso operativo
+      const _enCiclo = m => (!_cicloDesde || (m.fecha||'') > _cicloDesde) && _ctasDueno.has(m.cuenta);
+      const _ingCiclo = ingresos.filter(_enCiclo).reduce((a,i)=>a+(parseFloat(i.monto)||0),0);
+      const _egCiclo  = egresos.filter(m=>_enCiclo(m) && !m.esRetiroSocio).reduce((a,e)=>a+(parseFloat(e.monto)||0),0);
+      const _setTxt=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+      _setTxt('inicio-ciclo-ing', '$'+Math.round(_ingCiclo).toLocaleString('es-AR'));
+      _setTxt('inicio-ciclo-eg',  '$'+Math.round(_egCiclo).toLocaleString('es-AR'));
+      const _pill = document.getElementById('inicio-ver-cierre-pill');
+      if(_pill) _pill.style.display = ultimoCierre ? 'inline-flex' : 'none';
+    } catch(e) { console.error('[ciclo inicio]', e); }
 
     // ── Recordatorio cobranzas vencidas ──
     try {
@@ -17803,32 +17904,27 @@ window.checkOnboardingStatus = function() {
 async function renderOnboardingChecklist() {
   const el = document.getElementById('onboarding-checklist');
   if(!el) return;
-  // Build status from libroCaja (new system) instead of legacy _clientIngresos/_clientEgresos
   const d = currentClientData || {};
-  let hasIngreso = false, hasEgreso = false;
+  // Checks que leen colecciones aparte (async), igual que antes con libroCaja/presupuestos.
+  let tieneCierreCfg = false, tieneEquipo = false;
   if(currentClientUID) {
     try {
-      let cajMovs = window._cajaMovimientos;
-      if(!cajMovs) {
-        const snap = await getDocs(collection(db,'clientes',currentClientUID,'libroCaja'));
-        cajMovs = [];
-        snap.forEach(doc => { const m = doc.data(); if(!m.eliminado) cajMovs.push(m); });
-      }
-      hasIngreso = cajMovs.some(m => m.tipo === 'ingreso');
-      hasEgreso = cajMovs.some(m => m.tipo === 'egreso');
+      const cierreCfgSnap = await getDocs(query(collection(db,'configuracionCierre'), where('uid','==',currentClientUID)));
+      tieneCierreCfg = !cierreCfgSnap.empty;
     } catch(e) {}
-    if(!window._clientPresupuestos) { try { await loadClientPresupuestos(); } catch(e) {} }
+    try {
+      const opsSnap = await getDocs(collection(db,'clientes',currentClientUID,'operadores'));
+      tieneEquipo = !opsSnap.empty;
+    } catch(e) {}
   }
-  const isInicio = (currentClientData||{}).plan === 'inicio';
   const s = {
-    nombre: !!(d.negocioNombre && d.negocioNombre.trim()),
-    logo: !!d.logoNegocio,
-    ingreso: hasIngreso,
-    egreso: hasEgreso,
-    ...(isInicio ? {} : {presupuesto: (window._clientPresupuestos||[]).length > 0})
+    negocio: !!(d.negocioNombre?.trim() && d.logoNegocio && d.negocioEmail?.trim()),
+    fiscal:  !!(d.negocioCuit && d.negocioPuntoVenta && d.negocioCondicionIVA),
+    cierre:  tieneCierreCfg,
+    equipo:  tieneEquipo
   };
+  const total = 4;
   const done = Object.values(s).filter(Boolean).length;
-  const total = isInicio ? 4 : 5;
   if(done === total) {
     el.style.display = 'none';
     // Checklist completo: marcar onboarding como terminado y cerrar pantalla de bienvenida
@@ -17840,36 +17936,35 @@ async function renderOnboardingChecklist() {
   }
   const pct = Math.round((done/total)*100);
   const steps = [
-    { key:'nombre', label:'Cargá el nombre de tu negocio', sub:'', action:"openModal('miCuentaModal')", btn:'Completar' },
-    { key:'logo', label:'Subí tu logo', sub:'Aparece en presupuestos y PDFs', action:"openModal('miCuentaModal')", btn:'Subir' },
-    { key:'ingreso', label:'Registrá tu primer ingreso', sub:'En 30 segundos ves tu ganancia real', action:"onboardingAbrirMovimiento('ingreso')", btn:'Registrar' },
-    { key:'egreso', label:'Cargá un egreso', sub:'Para calcular tu ganancia real', action:"onboardingAbrirMovimiento('egreso')", btn:'Cargar' },
-    { key:'presupuesto', label:'Creá tu primer presupuesto', sub:'Profesionalizá tus propuestas en minutos', action:"openModal('newClientPresupModal')", btn:'Crear' }
-  ].filter(st => !((currentClientData||{}).plan === 'inicio' && st.key === 'presupuesto'));
-  const checkSvg = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 6l2.5 2.5L9 4" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-  let firstPending = true;
-  const stepsHtml = steps.map(st => {
+    { key:'negocio', label:'Datos del negocio',               sub:'Nombre, logo y mail',                        action:"openModal('miCuentaModal')", btn:'Configurar' },
+    { key:'fiscal',  label:'Datos fiscales',                  sub:'CUIT y condición frente a AFIP',             action:"openModal('miCuentaModal')", btn:'Configurar' },
+    { key:'cierre',  label:'Configurar el cierre de período', sub:'Socios, distribución, frecuencia y reserva', action:"sidebarNav('finanzas','caja-config'); setTimeout(function(){ if(window.cprdShowCfgTab) cprdShowCfgTab('cierre'); }, 300)", btn:'Configurar' },
+    { key:'equipo',  label:'Mi equipo',                       sub:'Creá los roles y usuarios de tu negocio',    action:"navigateToEquipo()", btn:'Cargar' }
+  ];
+  const checkSvg = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 6l2.5 2.5L9 4" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const stepsHtml = steps.map((st,i) => {
     const ok = s[st.key];
-    const highlight = !ok && firstPending;
-    if(highlight) firstPending = false;
+    const last = i === steps.length - 1;
     const chk = ok
-      ? '<div style="width:22px;height:22px;border-radius:6px;background:var(--sage);display:flex;align-items:center;justify-content:center;flex-shrink:0;">'+checkSvg+'</div>'
-      : '<div style="width:22px;height:22px;border-radius:6px;border:1.5px solid var(--cream-d);flex-shrink:0;"></div>';
+      ? '<div style="width:24px;height:24px;border-radius:7px;background:#4a5e4d;display:flex;align-items:center;justify-content:center;flex-shrink:0;">'+checkSvg+'</div>'
+      : '<div style="width:24px;height:24px;border-radius:7px;border:1.5px solid rgba(255,255,255,.25);flex-shrink:0;"></div>';
     const txt = ok
-      ? '<span style="font-size:13px;color:var(--text-l);text-decoration:line-through;">'+st.label+'</span>'
-      : '<div><span style="font-size:13px;font-weight:500;color:var(--text);">'+st.label+'</span>'+(st.sub?'<div style="font-size:11px;color:var(--text-l);margin-top:1px;">'+st.sub+'</div>':'')+'</div>';
-    const btnHtml = ok ? '' : '<button onclick="'+st.action+'" style="background:var(--topbar);color:#fff;border:none;border-radius:8px;padding:4px 12px;font-size:11px;font-family:\'DM Sans\',sans-serif;cursor:pointer;font-weight:500;white-space:nowrap;margin-left:auto;">'+st.btn+'</button>';
-    const bg = highlight ? 'background:var(--white);' : '';
-    return '<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:.5px solid var(--cream-d);'+bg+'">'+chk+txt+btnHtml+'</div>';
+      ? '<div style="min-width:0;"><div style="font-size:13px;color:rgba(244,240,234,.45);text-decoration:line-through;">'+st.label+'</div></div>'
+      : '<div style="min-width:0;"><div style="font-size:13px;font-weight:500;color:#fff;">'+st.label+'</div><div style="font-size:11px;color:rgba(220,224,212,.5);margin-top:1px;">'+st.sub+'</div></div>';
+    const btnHtml = ok ? '' : '<button onclick="'+st.action+'" style="background:linear-gradient(135deg,#c9a59c,#b0887f);color:#3d2a25;border:none;border-radius:8px;padding:5px 14px;font-size:11px;font-weight:600;font-family:\'DM Sans\',sans-serif;cursor:pointer;white-space:nowrap;margin-left:auto;">'+st.btn+'</button>';
+    const border = last ? '' : 'border-bottom:.5px solid rgba(255,255,255,.07);';
+    return '<div style="display:flex;align-items:center;gap:12px;padding:13px 2px;'+border+'">'+chk+txt+btnHtml+'</div>';
   }).join('');
 
-  el.innerHTML = '<div style="background:var(--white);border:.5px solid var(--cream-d);border-radius:12px;padding:20px;margin-bottom:14px;">'
-    + '<div style="font-family:\'Cormorant Garamond\',serif;font-size:18px;color:var(--text);margin-bottom:4px;">Bienvenido a MB Strategy</div>'
-    + '<div style="font-size:12px;color:var(--text-l);margin-bottom:14px;">Completá estos pasos para configurar tu negocio</div>'
-    + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">'
-    +   '<div style="flex:1;height:4px;background:var(--cream-d);border-radius:4px;overflow:hidden;"><div id="onboarding-bar" style="height:100%;width:0%;background:var(--sage);border-radius:4px;transition:width .6s ease;"></div></div>'
-    +   '<span style="font-size:11px;color:var(--text-l);white-space:nowrap;">'+done+' de 5 completados</span>'
+  el.innerHTML = '<div style="background:linear-gradient(135deg,#203d2d,#0d1f1a 60%,#081511);border-radius:16px;padding:20px 22px;margin-bottom:14px;">'
+    + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px;">'
+    +   '<div style="min-width:0;">'
+    +     '<div style="font-family:\'DM Sans\',sans-serif;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#f4f0ea;line-height:1.1;">Configurá tu cuenta</div>'
+    +     '<div style="font-size:12px;color:rgba(220,224,212,.5);margin-top:2px;">Dejá tu negocio listo para operar</div>'
+    +   '</div>'
+    +   '<span style="font-size:11px;color:rgba(220,224,212,.6);white-space:nowrap;flex-shrink:0;margin-top:4px;">'+done+' de '+total+'</span>'
     + '</div>'
+    + '<div style="height:4px;background:rgba(255,255,255,.1);border-radius:4px;overflow:hidden;margin-bottom:6px;"><div id="onboarding-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#9a7870,#ccb0a8);border-radius:4px;transition:width .6s ease;"></div></div>'
     + stepsHtml
     + '</div>';
   el.style.display = 'block';
@@ -23299,9 +23394,9 @@ window.selectMcCondicionIVA = function(val) {
     const pill = document.getElementById('mc-pill-' + v);
     if(!pill) return;
     if(v === val) {
-      pill.style.background = 'var(--sage-dark)';
+      pill.style.background = 'linear-gradient(135deg,#1e2e22,#3d5242)';
       pill.style.color = '#fff';
-      pill.style.border = '.5px solid var(--sage-dark)';
+      pill.style.border = '.5px solid #3d5242';
     } else {
       pill.style.background = 'var(--cream)';
       pill.style.color = 'var(--text-m)';
@@ -23789,9 +23884,9 @@ window.selectMiCuentaCondicionIVA = function(val) {
     const pill = document.getElementById('micuenta-pill-' + v);
     if(!pill) return;
     if(v === val) {
-      pill.style.background = 'var(--sage-dark)';
+      pill.style.background = 'linear-gradient(135deg,#1e2e22,#3d5242)';
       pill.style.color = '#fff';
-      pill.style.border = '.5px solid var(--sage-dark)';
+      pill.style.border = '.5px solid #3d5242';
     } else {
       pill.style.background = 'var(--cream)';
       pill.style.color = 'var(--text-m)';
@@ -32233,7 +32328,7 @@ window.doResetPassword = async function(){
 
 <div class="mo" id="cambioPassModal">
   <div class="md" style="max-width:440px;padding:0;overflow:hidden;">
-    <div style="background:var(--topbar);padding:22px 24px 18px;">
+    <div class="modal-header-verde">
       <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">MB Strategy</div>
       <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;color:#fff;">Cambiá tu contraseña</div>
       <div style="font-size:12px;color:rgba(255,255,255,.7);margin-top:6px;">Por seguridad, elegí una contraseña nueva para tu cuenta.</div>
