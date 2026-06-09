@@ -12187,7 +12187,12 @@ function renderCajaChips(cuentas, movs) {
 }
 
 // Cajas del dueño que cuentan como "Disponible": efectivo/banco/mp, sin Caja mostrador (su plata ya llega vía retiro de caja) ni reservas. Único criterio, compartido por el inicio y el módulo Caja.
-function _esCuentaDueno(c) { return ['efectivo','banco','mp'].includes(c.tipo) && c.nombre !== 'Caja mostrador'; }
+function _esCuentaDueno(c) {
+  if (c.nombre === 'Caja mostrador') return false;                          // la mostrador nunca es del dueño (excluida primero, explícita)
+  if (['efectivo','banco','mp'].includes(c.tipo)) return true;             // tipo correcto
+  // Cuentas base viejas creadas sin tipo (path viejo): inferir por nombre para no romper los cálculos del dueño.
+  return !c.tipo && ['Efectivo','Banco','Mercado Pago'].includes(c.nombre);
+}
 
 async function preloadCajaSaldo(uid) {
   try {
@@ -14146,6 +14151,18 @@ async function _cierreEjecutarCierre(movimientos, provPagos, retiroPagos) {
   const doc_ = _cierreBuildDoc('cerrado');
   doc_.cerradoEn = new Date().toISOString();
   try {
+    // Correlativo oficial AÑO-NNNN: contador transaccional por negocio/año (sin duplicados ni huecos)
+    try {
+      const anio = (doc_.fechaFin || fechaHoyARG()).slice(0,4);
+      const contRef = doc(db,'clientes',uid,'config','cierres_'+anio);
+      let n;
+      await runTransaction(db, async (tx)=>{
+        const snap = await tx.get(contRef);
+        n = (snap.exists() ? (snap.data().ultimo || 0) : 0) + 1;
+        tx.set(contRef, { ultimo: n }, { merge: true });
+      });
+      doc_.numero = anio + '-' + String(n).padStart(4,'0');
+    } catch(e) { console.log('[correlativo cierre]', e); }
     const cierreRef = await addDoc(collection(db,'cierres'), doc_);
     const fecha = document.getElementById('cierre-fecha-fin')?.value || fechaHoyARG();
     const mes = mesHoyARG(fecha);
@@ -14415,9 +14432,9 @@ async function cierreGenerarPDF(doc_) {
     st(WHITE); pdf.setFontSize(16); pdf.setFont('helvetica','bold');
     pdf.text('CIERRE DE PERÍODO', W-M, 14, {align:'right'});
     pdf.setFontSize(9); pdf.setFont('helvetica','normal'); st(HEAD2);
-    const numero = new Date().toISOString().replace(/[-:T.Z]/g,'').slice(0,12);
-    pdf.text('N° '+numero, W-M, 22, {align:'right'});
-    pdf.text(esCierre ? 'Cierre oficial' : 'Proyección', W-M, 27, {align:'right'});
+    const numeroPDF = doc_.numero || new Date().toISOString().replace(/[-:T.Z]/g,'').slice(0,12);   // correlativo real; fallback timestamp para cierres viejos sin número
+    pdf.text(esCierre ? ('N° '+numeroPDF) : 'Proyección', W-M, 22, {align:'right'});
+    if(esCierre) pdf.text('Cierre oficial', W-M, 27, {align:'right'});
     pdf.text(doc_.fechaFin||'', W-M, 32, {align:'right'});
 
     let y = headerH+10;
@@ -14514,7 +14531,7 @@ async function cierreGenerarPDF(doc_) {
       pdf.text('MB Strategy · sistema.mbstrategy.com.ar', W/2, 293.5, {align:'center'});
     }
 
-    pdf.save('cierre-periodo-'+numero+'.pdf');
+    pdf.save('cierre-periodo-'+numeroPDF+'.pdf');
   } catch(e) { console.log('PDF error:',e); }
 }
 window.cierreGenerarPDF = cierreGenerarPDF;
