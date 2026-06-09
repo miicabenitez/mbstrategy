@@ -13414,7 +13414,7 @@ window.exportarCajaExcel = async function() {
   const nombreNegocio = document.getElementById('negocio-nombre-display')?.textContent || 'Mi negocio';
   const wb = new ExcelJS.Workbook();
   wb.creator = 'MB Strategy'; wb.created = new Date();
-  const SAGE_DK='7A8E7D', CREAM='F5F6F3', TEXT='2C2C2C', GREEN='5A8A62', RED='C4786A';
+  const SAGE_DK='4A5E4D', CREAM='F5F6F3', TEXT='2C2C2C', GREEN='5A8A62', RED='C4786A';
   const sTitle={font:{bold:true,size:13,color:{argb:'FFFFFFFF'}},fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FF'+SAGE_DK}},alignment:{vertical:'middle',horizontal:'left'}};
   const sSub={font:{size:9,color:{argb:'FFFFFFFF'}},fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FF'+SAGE_DK}},alignment:{vertical:'middle'}};
   const sHead={font:{bold:true,size:10,color:{argb:'FFFFFFFF'}},fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FF'+SAGE_DK}},alignment:{horizontal:'center',vertical:'middle'}};
@@ -14378,8 +14378,10 @@ async function cierreGenerarPDF(doc_) {
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
     const W=210, M=20, cW=W-M*2;
-    const SAGE=[122,142,125], CREAM=[245,246,243], CREAM_D=[208,207,201];
+    const SAGE=[74,94,77], CREAM=[245,246,243], CREAM_D=[208,207,201], CREAM_L=[250,249,246];
     const TEXT=[44,44,44], TEXT_L=[136,135,128], WHITE=[255,255,255], HEAD2=[220,230,222];
+    const TERRA=[154,111,99], GREEN_T=[74,94,77];
+    const TOT_VERDE={bg:[238,241,236],fg:[74,94,77]}, TOT_TERRA={bg:[243,233,230],fg:[154,111,99]};
     const sf=c=>pdf.setFillColor(...c), sd=c=>pdf.setDrawColor(...c), st=c=>pdf.setTextColor(...c);
     pdf.setLineWidth(0.3);
 
@@ -14387,7 +14389,14 @@ async function cierreGenerarPDF(doc_) {
     const headerH = 34 + Math.max(0,(contactoLineas.length-2))*4;
     sf(SAGE); pdf.rect(0,0,W,headerH,'F');
     let logoX = M;
-    if(logoBase64){ try{ pdf.addImage(logoBase64,'PNG',M,6,18,18,undefined,'FAST'); logoX=M+22; }catch(e){} }
+    if(logoBase64){ try{
+      const lx=M, ly=6, ls=18;
+      sf([34,46,38]); pdf.rect(lx+0.7, ly+0.7, ls, ls, 'F');               // sombra suave (verde más oscuro, abajo-derecha)
+      sf([245,246,243]); pdf.rect(lx, ly, ls, ls, 'F');                    // recuadro de fondo claro (sirve para cualquier logo)
+      pdf.addImage(logoBase64,'PNG',lx,ly,ls,ls,undefined,'FAST');         // logo
+      sd([165,175,166]); pdf.setLineWidth(0.5); pdf.rect(lx, ly, ls, ls, 'S'); pdf.setLineWidth(0.3);   // marco fino (≈ blanco .5 sobre el verde)
+      logoX=M+22;
+    }catch(e){} }
     st(WHITE); pdf.setFontSize(14); pdf.setFont('helvetica','bold');
     pdf.text(negocioNombre, logoX, 14);
     pdf.setFontSize(8); pdf.setFont('helvetica','normal'); st(HEAD2);
@@ -14405,71 +14414,96 @@ async function cierreGenerarPDF(doc_) {
     let y = headerH+10;
 
     // helpers
-    const sectionTitle=(title)=>{
-      sf([245,245,245]); sd(CREAM_D); pdf.rect(M,y,cW,8,'FD');
-      st(TEXT_L); pdf.setFontSize(7); pdf.setFont('helvetica','bold');
-      pdf.text(title, M+3, y+5.5); y+=8;
-    };
-    const tableHeader=(cols)=>{
-      sf(SAGE); pdf.rect(M,y,cW,8,'F');
+    const FOOTER_Y = 288;                                   // tope inferior antes del footer
+    const PAGE_TOP = M;                                     // borde superior en páginas nuevas
+    const ensureSpace = h => { if(y + h > FOOTER_Y - 3){ pdf.addPage(); y = M; } };
+    // Salto a nivel BLOQUE: si la sección entera entra en una página pero no en lo que queda, la pasa completa.
+    // (Si es más alta que una página entera, no hace nada y deja que parta por fila.)
+    const ensureBlock = h => { if(h <= (FOOTER_Y - 3 - PAGE_TOP) && y + h > FOOTER_Y - 3){ pdf.addPage(); y = M; } };
+    // Una sola banda verde por sección: título a la izquierda + (opcional) nombres de columna a la derecha
+    const sectionBand=(title, cols)=>{
+      ensureSpace(9);
+      sf(SAGE); pdf.rect(M,y,cW,9,'F');
       st(WHITE); pdf.setFontSize(8); pdf.setFont('helvetica','bold');
-      cols.forEach(c=>pdf.text(c.text, c.x, y+5.5, c.opt||{}));
-      y+=8;
+      pdf.text(title, M+3, y+6);
+      if(cols){ pdf.setFontSize(7.5); cols.forEach(c=>pdf.text(c.text, c.x, y+6, c.opt||{})); }
+      y+=9;
     };
     const tableRow=(cols,idx,bold)=>{
-      sf(idx%2===0?CREAM:WHITE); pdf.rect(M,y,cW,8,'F');
-      st(TEXT); pdf.setFontSize(9); pdf.setFont('helvetica', bold?'bold':'normal');
-      cols.forEach(c=>pdf.text(c.text, c.x, y+5.5, c.opt||{}));
+      ensureSpace(8);
+      sf(idx%2===0?CREAM_L:WHITE); pdf.rect(M,y,cW,8,'F');
+      pdf.setFontSize(9); pdf.setFont('helvetica', bold?'bold':'normal');
+      cols.forEach(c=>{ st(c.color||TEXT); pdf.text(c.text, c.x, y+5.5, c.opt||{}); });
       y+=8;
     };
-    const totalRow=(label,val)=>{
-      sf(SAGE); pdf.rect(M,y,cW,10,'F');
-      st(WHITE); pdf.setFontSize(10); pdf.setFont('helvetica','bold');
+    // Total con esquema de color: fondo claro + texto del color (no franja oscura)
+    const totalRow=(label,val,scheme)=>{
+      const sc = scheme || TOT_VERDE;
+      ensureSpace(11);
+      sf(sc.bg); pdf.rect(M,y,cW,10,'F');
+      st(sc.fg); pdf.setFontSize(10); pdf.setFont('helvetica','bold');
       pdf.text(label, M+4, y+7);
       pdf.text(val, W-M-3, y+7, {align:'right'});
-      y+=14;
+      y+=13;
     };
 
     // ── PERÍODO ──
-    sectionTitle('PERÍODO');
+    ensureBlock(9 + 3*8);
+    sectionBand('PERÍODO');
     tableRow([{text:'Frecuencia',x:M+3},{text:doc_.frecuencia||'—',x:W-M-3,opt:{align:'right'}}],0);
     tableRow([{text:'Fecha inicio',x:M+3},{text:doc_.fechaInicio||'—',x:W-M-3,opt:{align:'right'}}],1);
     tableRow([{text:'Fecha fin',x:M+3},{text:doc_.fechaFin||'—',x:W-M-3,opt:{align:'right'}}],0);
     y+=4;
 
     // ── DISPONIBLE POR CUENTA ──
-    sectionTitle('DISPONIBLE POR CUENTA');
-    tableHeader([{text:'Cuenta',x:M+3},{text:'Saldo',x:W-M-3,opt:{align:'right'}}]);
+    ensureBlock(9 + (doc_.cuentasSnapshot||[]).length*8 + 13);
+    sectionBand('DISPONIBLE POR CUENTA', [{text:'Saldo',x:W-M-3,opt:{align:'right'}}]);
     (doc_.cuentasSnapshot||[]).forEach((c,i)=>tableRow([{text:c.nombre,x:M+3},{text:_moneyFmt(c.saldo),x:W-M-3,opt:{align:'right'}}],i));
-    totalRow('TOTAL DISPONIBLE', _moneyFmt(doc_.disponibleTotal));
+    totalRow('Total disponible', _moneyFmt(doc_.disponibleTotal), TOT_VERDE);
+    y+=4;
 
     // ── COMPROMISOS PAGADOS ──
     const pagados=(doc_.compromisos||[]).filter(c=>c.pagado);
-    sectionTitle('COMPROMISOS PAGADOS');
-    tableHeader([{text:'Concepto',x:M+3},{text:'Monto',x:W-M-3,opt:{align:'right'}}]);
+    ensureBlock(9 + Math.max(pagados.length,1)*8 + 13);
+    sectionBand('COMPROMISOS PAGADOS', [{text:'Monto',x:W-M-3,opt:{align:'right'}}]);
     if(pagados.length){ pagados.forEach((c,i)=>tableRow([{text:c.nombre,x:M+3},{text:_moneyFmt(c.monto),x:W-M-3,opt:{align:'right'}}],i)); }
-    else { sf(CREAM); pdf.rect(M,y,cW,8,'F'); st(TEXT_L); pdf.setFontSize(9); pdf.setFont('helvetica','italic'); pdf.text('Sin compromisos seleccionados',M+3,y+5.5); y+=8; }
+    else { ensureSpace(8); sf(CREAM_L); pdf.rect(M,y,cW,8,'F'); st(TEXT_L); pdf.setFontSize(9); pdf.setFont('helvetica','italic'); pdf.text('Sin compromisos seleccionados',M+3,y+5.5); y+=8; }
     const totalComp=pagados.reduce((a,c)=>a+(c.monto||0),0);
-    totalRow('TOTAL COMPROMISOS', _moneyFmt(totalComp));
+    totalRow('Total compromisos', _moneyFmt(totalComp), TOT_TERRA);
+    y+=4;
 
-    // ── DISTRIBUCIÓN ──
-    sectionTitle('DISTRIBUCIÓN DEL RESULTADO');
-    tableHeader([{text:'Destino',x:M+3},{text:'%',x:M+120},{text:'Monto',x:W-M-3,opt:{align:'right'}}]);
-    (doc_.distribucion||[]).forEach((d,i)=>tableRow([{text:d.nombre,x:M+3},{text:(d.pct||0)+'%',x:M+120},{text:_moneyFmt(d.monto),x:W-M-3,opt:{align:'right'}}],i));
-    tableRow([{text:'Remanente operativo',x:M+3},{text:'',x:M+120},{text:_moneyFmt(doc_.remanente),x:W-M-3,opt:{align:'right'}}],(doc_.distribucion||[]).length,true);
+    // ── DISTRIBUCIÓN ── (reserva en terracota, socios en verde)
+    ensureBlock(9 + (doc_.distribucion||[]).length*8 + 13);
+    sectionBand('DISTRIBUCIÓN DEL RESULTADO', [{text:'%',x:M+120},{text:'Monto',x:W-M-3,opt:{align:'right'}}]);
+    (doc_.distribucion||[]).forEach((d,i)=>{
+      const esRes = d.tipo==='reserva';
+      tableRow([
+        {text:d.nombre,x:M+3},
+        {text:(d.pct||0)+'%',x:M+120,color:esRes?TERRA:GREEN_T},
+        {text:_moneyFmt(d.monto),x:W-M-3,opt:{align:'right'},color:esRes?TERRA:TEXT}
+      ],i);
+    });
+    totalRow('Remanente operativo', _moneyFmt(doc_.remanente), TOT_VERDE);
     y+=4;
 
     // ── RESUMEN ──
     const aDistribuir=Math.max(0,doc_.disponibleTotal-totalComp);
-    sectionTitle('RESUMEN');
+    const totalReserva=(doc_.distribucion||[]).filter(d=>d.tipo==='reserva').reduce((a,d)=>a+(d.monto||0),0);
+    ensureBlock(9 + 3*8 + 13);
+    sectionBand('RESUMEN');
     tableRow([{text:'Disponible total',x:M+3},{text:_moneyFmt(doc_.disponibleTotal),x:W-M-3,opt:{align:'right'}}],0);
-    tableRow([{text:'− Compromisos pagados',x:M+3},{text:_moneyFmt(totalComp),x:W-M-3,opt:{align:'right'}}],1);
-    totalRow('= A DISTRIBUIR', _moneyFmt(aDistribuir));
+    tableRow([{text:'Compromisos pagados',x:M+3},{text:_moneyFmt(totalComp),x:W-M-3,opt:{align:'right'}}],1);
+    tableRow([{text:'Reserva del negocio',x:M+3,color:TERRA},{text:_moneyFmt(totalReserva),x:W-M-3,opt:{align:'right'},color:TERRA}],2);
+    totalRow('A distribuir', _moneyFmt(aDistribuir), TOT_VERDE);
 
-    // ── FOOTER ──
-    sf(SAGE); pdf.rect(0,277,W,20,'F');
-    st(HEAD2); pdf.setFontSize(8); pdf.setFont('helvetica','normal');
-    pdf.text('MB Strategy · sistema.mbstrategy.com.ar', W/2, 287, {align:'center'});
+    // ── FOOTER en TODAS las páginas (finito, ~9mm) ──
+    const totalPaginas = pdf.getNumberOfPages();
+    for(let p=1; p<=totalPaginas; p++){
+      pdf.setPage(p);
+      sf(SAGE); pdf.rect(0,288,W,9,'F');
+      st(HEAD2); pdf.setFontSize(8); pdf.setFont('helvetica','normal');
+      pdf.text('MB Strategy · sistema.mbstrategy.com.ar', W/2, 293.5, {align:'center'});
+    }
 
     pdf.save('cierre-periodo-'+numero+'.pdf');
   } catch(e) { console.log('PDF error:',e); }
@@ -15503,7 +15537,7 @@ window.exportarMfExcel = async function() {
   const nombreNegocio = document.getElementById('negocio-nombre-display')?.textContent || 'Mi negocio';
   const wb = new ExcelJS.Workbook();
   wb.creator = 'MB Strategy'; wb.created = new Date();
-  const SAGE_DK='7A8E7D', CREAM='F5F6F3', TEXT='2C2C2C', SAGE='4A5E4D';
+  const SAGE_DK='4A5E4D', CREAM='F5F6F3', TEXT='2C2C2C', SAGE='4A5E4D';
   const sTitle={font:{bold:true,size:13,color:{argb:'FFFFFFFF'}},fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FF'+SAGE_DK}},alignment:{vertical:'middle',horizontal:'left'}};
   const sSub={font:{size:9,color:{argb:'FFFFFFFF'}},fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FF'+SAGE_DK}},alignment:{vertical:'middle'}};
   const sHead={font:{bold:true,size:10,color:{argb:'FFFFFFFF'}},fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FF'+SAGE_DK}},alignment:{horizontal:'center',vertical:'middle'}};
@@ -24823,7 +24857,7 @@ window.generarPDFNecesidad = async function(ncId) {
   const contentW = W - margin*2;
   let y = 0;
 
-  const SAGE_DARK = [122, 142, 125];
+  const SAGE_DARK = [74, 94, 77];
   const SAGE      = [161, 177, 164];
   const SAGE_XL   = [237, 240, 234];
   const CREAM     = [245, 246, 243];
@@ -25558,7 +25592,7 @@ window.generarPDFOrdenCompra = async function() {
   const W=210, margin=20, contentW=W-margin*2;
   let y=0;
 
-  const SAGE_DARK=[122,142,125], SAGE=[161,177,164], SAGE_XL=[237,240,234];
+  const SAGE_DARK=[74,94,77], SAGE=[161,177,164], SAGE_XL=[237,240,234];
   const CREAM=[245,246,243], CREAM_D=[208,207,201];
   const TEXT=[44,44,44], TEXT_L=[154,172,160], WHITE_C=[255,255,255];
 
@@ -26429,7 +26463,7 @@ window.generarPDFOrdenPago = async function() {
   const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
   const W=210, M=20, contentW=W-M*2;
 
-  const SAGE_DARK=[122,142,125];
+  const SAGE_DARK=[74,94,77];
   const CREAM=[245,246,243], CREAM_D=[208,207,201];
   const TEXT=[44,44,44], TEXT_L=[136,135,128], WHITE_C=[255,255,255];
   const setFill=c=>pdf.setFillColor(...c);
@@ -27334,7 +27368,7 @@ async function exportarExcel(tipo, nombreNegocio, mes) {
 
   // Paleta
   const SAGE    = 'A1B1A4';
-  const SAGE_DK = '7A8E7D';
+  const SAGE_DK = '4A5E4D';
   const CREAM   = 'F5F6F3';
   const WHITE   = 'FFFFFFFF';
   const TEXT    = '2C2C2C';
@@ -27492,7 +27526,7 @@ async function exportarPDF(tipo, nombreNegocio, mes, fecha) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
   const sage = [161, 177, 164];
-  const sageDark = [122, 142, 125];
+  const sageDark = [74, 94, 77];
   const cream = [247, 246, 243];
   const textDark = [44, 44, 44];
   const textMid = [74, 90, 78];
@@ -30370,10 +30404,10 @@ async function turnoGenerarPDF(operador, ingresos, egresos, saldo, movs) {
     var { jsPDF } = window.jspdf;
     var pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
     var W=210, M=20, cW=W-M*2;
-    var SAGE=[122,142,125], CREAM=[245,246,243], TEXT=[44,44,44], TEXT_L=[136,135,128], WHITE=[255,255,255], HEAD2=[220,230,222];
+    var SAGE=[74,94,77], CREAM=[245,246,243], TEXT=[44,44,44], TEXT_L=[136,135,128], WHITE=[255,255,255], HEAD2=[220,230,222];
     pdf.setLineWidth(0.3);
     // Header
-    pdf.setFillColor(122,142,125); pdf.rect(0,0,W,28,'F');
+    pdf.setFillColor(74,94,77); pdf.rect(0,0,W,28,'F');
     pdf.setTextColor(255,255,255); pdf.setFontSize(13); pdf.setFont('helvetica','bold');
     pdf.text(negocioNombre, M, 13);
     pdf.setFontSize(14); pdf.setFont('helvetica','bold');
@@ -30406,7 +30440,7 @@ async function turnoGenerarPDF(operador, ingresos, egresos, saldo, movs) {
       pdf.setTextColor(44,44,44); pdf.setFontSize(9); pdf.setFont('helvetica','normal');
       pdf.text(r[0],M+3,y+5.5); pdf.text(r[1],W-M-3,y+5.5,{align:'right'}); y+=8;
     });
-    pdf.setFillColor(122,142,125); pdf.rect(M,y,cW,10,'F');
+    pdf.setFillColor(74,94,77); pdf.rect(M,y,cW,10,'F');
     pdf.setTextColor(255,255,255); pdf.setFontSize(10); pdf.setFont('helvetica','bold');
     pdf.text('SALDO FINAL',M+4,y+7); pdf.text('$'+saldo.toLocaleString('es-AR'),W-M-3,y+7,{align:'right'}); y+=14;
     // Detalle movimientos
@@ -30415,7 +30449,7 @@ async function turnoGenerarPDF(operador, ingresos, egresos, saldo, movs) {
       pdf.setFillColor(245,246,243); pdf.rect(M,y,cW,8,'F');
       pdf.setTextColor(136,135,128); pdf.setFontSize(7); pdf.setFont('helvetica','bold');
       pdf.text('MOVIMIENTOS DEL TURNO', M+3, y+5.5); y+=8;
-      pdf.setFillColor(122,142,125); pdf.rect(M,y,cW,8,'F');
+      pdf.setFillColor(74,94,77); pdf.rect(M,y,cW,8,'F');
       pdf.setTextColor(255,255,255); pdf.setFontSize(8); pdf.setFont('helvetica','bold');
       pdf.text('Concepto',M+3,y+5.5); pdf.text('Tipo',M+100,y+5.5); pdf.text('Monto',W-M-3,y+5.5,{align:'right'}); y+=8;
       movs.slice(0,30).forEach(function(m,i){
@@ -30429,7 +30463,7 @@ async function turnoGenerarPDF(operador, ingresos, egresos, saldo, movs) {
       });
     }
     // Footer
-    pdf.setFillColor(122,142,125); pdf.rect(0,277,W,20,'F');
+    pdf.setFillColor(74,94,77); pdf.rect(0,277,W,20,'F');
     pdf.setTextColor(220,230,222); pdf.setFontSize(8); pdf.setFont('helvetica','normal');
     pdf.text('MB Strategy · sistema.mbstrategy.com.ar', W/2, 287, {align:'center'});
     // Retornar base64
