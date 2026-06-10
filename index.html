@@ -3785,12 +3785,24 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 
   <div class="g2" style="margin-bottom:14px;">
     <div class="card">
-      <div class="ct">Egresos anuales por concepto</div>
+      <div class="ct" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+        <span>Egresos anuales</span>
+        <div style="display:flex;gap:4px;">
+          <button class="ck-eg-vista-chip" data-vista="concepto" onclick="setCkEgVista('concepto')" style="padding:3px 10px;font-size:10px;font-weight:500;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.3px;text-transform:none;background:linear-gradient(135deg,#3d5240 0%,#4a5e4d 45%,#5e7562 70%,#4a5e4d 100%);color:#e8f0e9;border:1px solid transparent;">Conceptos</button>
+          <button class="ck-eg-vista-chip" data-vista="proveedor" onclick="setCkEgVista('proveedor')" style="padding:3px 10px;font-size:10px;font-weight:500;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.3px;text-transform:none;background:#fff;color:var(--text-m);border:1px solid var(--cream-d);">Proveedores</button>
+        </div>
+      </div>
       <div id="ck-eg-anual-empty" style="text-align:center;padding:40px 0;color:var(--text-l);font-size:13px;">Sin egresos registrados.</div>
       <div id="ckEgAnualChart" style="width:100%;"></div>
     </div>
     <div class="card">
-      <div id="ck-eg-mes-title" class="ct">Egresos del mes por concepto</div>
+      <div class="ct" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+        <span id="ck-eg-mes-title">Egresos del mes</span>
+        <div style="display:flex;gap:4px;">
+          <button class="ck-eg-vista-chip" data-vista="concepto" onclick="setCkEgVista('concepto')" style="padding:3px 10px;font-size:10px;font-weight:500;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.3px;text-transform:none;background:linear-gradient(135deg,#3d5240 0%,#4a5e4d 45%,#5e7562 70%,#4a5e4d 100%);color:#e8f0e9;border:1px solid transparent;">Conceptos</button>
+          <button class="ck-eg-vista-chip" data-vista="proveedor" onclick="setCkEgVista('proveedor')" style="padding:3px 10px;font-size:10px;font-weight:500;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.3px;text-transform:none;background:#fff;color:var(--text-m);border:1px solid var(--cream-d);">Proveedores</button>
+        </div>
+      </div>
       <div id="ck-eg-mes-empty" style="text-align:center;padding:40px 0;color:var(--text-l);font-size:13px;">Seleccioná un mes para ver el detalle</div>
       <div id="ck-eg-mes-wrap" style="display:none;"><div id="ckEgMesChart" style="width:100%;"></div></div>
     </div>
@@ -10993,6 +11005,19 @@ function _ckEsRetiroSocio(m){
 // Exponer a window: showCTab vive en otro <script> (plano) y no ve estas funciones del módulo (daba ReferenceError).
 window._ckEsDueno = _ckEsDueno;
 window._ckEsRetiroSocio = _ckEsRetiroSocio;
+// Resuelve el proveedor de un egreso para la vista "por proveedor" de Indicadores.
+// Prioridad: (c) campo nuevo (data nueva) → (a) parseo por origen (data vieja, strings generados por código) → null (no es proveedor → "Gastos generales").
+function resolverProveedor(m){
+  if(m.proveedorNombre) return m.proveedorNombre;
+  if(m.origen==='proveedor' && (m.detalle||'').startsWith('Pago a ')) return m.detalle.slice(7).split(' · ')[0].trim();
+  if(m.origen==='cierre' && (m.concepto||'').endsWith(' — CC Proveedor')) return m.concepto.replace(' — CC Proveedor','').trim();
+  // Data vieja: compromiso de cierre con concepto "OC-XXX — <proveedor>" (sin proveedorNombre). El nombre va después del " — ".
+  if(m.origen==='cierre'){ const _oc=(m.concepto||'').match(/^OC-\d+ — (.+)$/); if(_oc) return _oc[1].trim(); }
+  if(m.origen==='embi' && (m.detalle||'').startsWith('Pago proveedor: ')) return m.detalle.slice(16).trim();
+  return null;
+}
+window.resolverProveedor = resolverProveedor;
+window._ckEgVista = 'concepto';   // vista del gráfico de egresos de Indicadores: 'concepto' | 'proveedor'
 window.filterCkByMes = function(mes) {
   const ing = (window._clientIngresos||[]).filter(_ckEsDueno);
   const eg  = (window._clientEgresos ||[]).filter(m => _ckEsDueno(m) && !_ckEsRetiroSocio(m));
@@ -11005,6 +11030,19 @@ window.filterCkByMes = function(mes) {
   initCkEgAnualChart(eg);                 // egresos anuales por cat
   initCkEgMesChart(filtEg, mes);          // egresos mes por cat
   renderCkFunnel(presups);
+};
+
+// Toggle de la vista de egresos (concepto ↔ proveedor): setea estado, re-sincroniza los chips y re-renderiza.
+window.setCkEgVista = function(v){
+  window._ckEgVista = v;
+  document.querySelectorAll('.ck-eg-vista-chip').forEach(ch=>{
+    const on = ch.dataset.vista === v;
+    ch.style.background = on ? 'linear-gradient(135deg,#3d5240 0%,#4a5e4d 45%,#5e7562 70%,#4a5e4d 100%)' : '#fff';
+    ch.style.color = on ? '#e8f0e9' : 'var(--text-m)';
+    ch.style.borderColor = on ? 'transparent' : 'var(--cream-d)';
+  });
+  const mes = document.getElementById('ck-mes-sel')?.value || 'todo';
+  if(window.filterCkByMes) window.filterCkByMes(mes);
 };
 
 // ===== VALOR AGREGADO CLIENTE =====
@@ -14415,7 +14453,9 @@ window.cierreConfirmarRevision = async function() {
     const movimientos = [], provPagos = [], retiroPagos = [];
     _cierreRevItems.forEach(item=>{
       if(item.tipo==='compromiso'){
-        _cierreCuentas.forEach(c=>{ const m=Math.round((item.cuentas[c.nombre]||0)*100)/100; if(m>0) movimientos.push({tipo:'egreso',cuenta:c.nombre,monto:m,concepto:item.nombre}); });
+        // Campo nuevo (c): si el compromiso es de un proveedor CC, etiquetar el egreso con proveedorNombre/Id (los manuales no son proveedor → quedan sin campo).
+        const _provData = item.origen==='proveedor' ? {proveedorNombre:item.nombre.replace(' — CC Proveedor',''), proveedorId:item.rawId.replace('prov-','')} : {};
+        _cierreCuentas.forEach(c=>{ const m=Math.round((item.cuentas[c.nombre]||0)*100)/100; if(m>0) movimientos.push({tipo:'egreso',cuenta:c.nombre,monto:m,concepto:item.nombre,..._provData}); });
         if(item.origen==='proveedor') provPagos.push({provId:item.rawId.replace('prov-',''), monto:Math.round(item.monto*100)/100});
       } else if(item.tipo==='reserva'){
         _cierreCuentas.forEach(c=>{ const m=Math.round((item.cuentas[c.nombre]||0)*100)/100; if(m>0) movimientos.push({tipo:'transfer',cuentaDesde:c.nombre,cuentaHacia:item.nombre,monto:m,concepto:item.nombre}); });
@@ -19969,13 +20009,18 @@ function initCkEgAnualChart(egresos) {
   const emptyEl = document.getElementById('ck-eg-anual-empty');
   const el = document.getElementById('ckEgAnualChart');
   if(!el) return;
-  if(!egresos.length) {
-    if(emptyEl) emptyEl.style.display='block';
+  // Vistas como universos separados: Proveedores = egresos a proveedor; Conceptos = el resto.
+  const _vista = window._ckEgVista || 'concepto';
+  const _esProv = e => !!window.resolverProveedor(e);
+  const _egVista = egresos.filter(e => _vista==='proveedor' ? _esProv(e) : !_esProv(e));
+  if(!_egVista.length) {
+    if(emptyEl){ emptyEl.textContent = _vista==='proveedor' ? 'Sin pagos a proveedores.' : 'Sin gastos de concepto.'; emptyEl.style.display='block'; }
     el.innerHTML=''; return;
   }
   if(emptyEl) emptyEl.style.display='none';
   const cats={};
-  egresos.forEach(e=>{ const c=e.concepto||'Otros'; cats[c]=(cats[c]||0)+(parseFloat(e.monto)||0); });
+  const _keyEg = e => _vista==='proveedor' ? window.resolverProveedor(e) : (e.concepto||'Otros');
+  _egVista.forEach(e=>{ const c=_keyEg(e); cats[c]=(cats[c]||0)+(parseFloat(e.monto)||0); });
   const total=Object.values(cats).reduce((a,v)=>a+v,0);
   const sorted=Object.entries(cats).sort((a,b)=>b[1]-a[1]);
   const fmt=v=>'$'+Math.round(v).toLocaleString('es-AR');
@@ -20025,14 +20070,18 @@ function initCkEgMesChart(egresos, mes) {
   const wrapEl  = document.getElementById('ck-eg-mes-wrap');
   const titleEl = document.getElementById('ck-eg-mes-title');
   if (mes === 'todo') {
-    if (emptyEl) emptyEl.style.display = 'block';
+    if (emptyEl){ emptyEl.textContent = 'Seleccioná un mes para ver el detalle'; emptyEl.style.display = 'block'; }
     if (wrapEl)  wrapEl.style.display  = 'none';
-    if (titleEl) titleEl.textContent   = 'Egresos del mes por categoría';
+    if (titleEl) titleEl.textContent   = 'Egresos del mes';
     return;
   }
   if (titleEl) titleEl.textContent = 'Egresos · ' + mes;
-  if (egresos.length === 0) {
-    if (emptyEl) emptyEl.style.display = 'block';
+  // Vistas como universos separados: Proveedores = egresos a proveedor; Conceptos = el resto.
+  const _vista = window._ckEgVista || 'concepto';
+  const _esProv = e => !!window.resolverProveedor(e);
+  const _egVista = egresos.filter(e => _vista==='proveedor' ? _esProv(e) : !_esProv(e));
+  if (_egVista.length === 0) {
+    if (emptyEl){ emptyEl.textContent = _vista==='proveedor' ? 'Sin pagos a proveedores este mes.' : 'Sin gastos de concepto este mes.'; emptyEl.style.display = 'block'; }
     if (wrapEl)  wrapEl.style.display  = 'none';
     return;
   }
@@ -20041,7 +20090,8 @@ function initCkEgMesChart(egresos, mes) {
   const el = document.getElementById('ckEgMesChart');
   if (!el) return;
   const cats = {};
-  egresos.forEach(e => { const c = e.concepto||'Otros'; cats[c] = (cats[c]||0) + (parseFloat(e.monto)||0); });
+  const _keyEg = e => _vista==='proveedor' ? window.resolverProveedor(e) : (e.concepto||'Otros');
+  _egVista.forEach(e => { const c = _keyEg(e); cats[c] = (cats[c]||0) + (parseFloat(e.monto)||0); });
   const sorted = Object.entries(cats).sort((a,b) => b[1]-a[1]);
   const colors = ['#4a5e4d','#5a7a5e','#6b8f6e','#7aab7e','#3a4e3d','#b05a42','#c4786a','#8a3a28'];
   const rowH = 26, padL = 90, padR = 60, padT = 8, padB = 8;
@@ -26432,6 +26482,8 @@ window.savePagoProveedor = async function() {
       monto      : total,
       origen     : 'proveedor',
       referenciaId: opRef.id,
+      proveedorNombre: provNombre,
+      proveedorId: window._ccProvId,
       detalle    : `Pago a ${provNombre}${concepto ? ' · '+concepto : ''}`,
       mes        : mesEgreso,
       eliminado  : false,
@@ -31866,7 +31918,7 @@ async function embiEjecutarAccion(tipo,datos){
       // FIX: "Caja mostrador" es del cajero; el dueño no debe escribir manualmente ahí
       if(datos.cuenta === 'Caja mostrador') { embiAddMsg('bot','"Caja mostrador" es la caja del cajero. ¿De qué cuenta tuya querés que salga el pago al proveedor?'); return; }
       if(_ppProvId)await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'proveedores',_ppProvId,'pagos'),{tipo:'pago',monto:_ppMonto,fecha:_ppFecha,medio:datos.cuenta,concepto:_ppConcepto,creadoEn:new Date().toISOString()});
-      await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'libroCaja'),{uid:currentClientUID,fecha:_ppFecha,tipo:'egreso',concepto:_ppConcepto,cuenta:datos.cuenta,monto:_ppMonto,origen:'embi',detalle:'Pago proveedor: '+datos.proveedor,mes:_ppMesStr,eliminado:false,creadoEn:new Date().toISOString(),creadoPor:window.currentOperadorNombre||'Admin'});
+      await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'libroCaja'),{uid:currentClientUID,fecha:_ppFecha,tipo:'egreso',concepto:_ppConcepto,cuenta:datos.cuenta,monto:_ppMonto,origen:'embi',detalle:'Pago proveedor: '+datos.proveedor,proveedorNombre:datos.proveedor,mes:_ppMesStr,eliminado:false,creadoEn:new Date().toISOString(),creadoPor:window.currentOperadorNombre||'Admin'});
       if(window.loadProveedores)await window.loadProveedores();
       if(window._ccProvId && _ppProvId && window._ccProvId===_ppProvId && window.abrirCuentaCorriente) await window.abrirCuentaCorriente(_ppProvId);
       if(window.loadCajaModule)window.loadCajaModule();
