@@ -3715,11 +3715,11 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         <div id="ck-eg" style="font-family:'DM Sans',sans-serif;font-size:28px;font-weight:300;color:#fff;line-height:1;">$0</div>
         <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:4px;">costos del período</div>
       </div>
-      <div style="background:rgba(191,160,90,.12);border-radius:12px;padding:14px 16px;border:0.5px solid rgba(191,160,90,.4);">
+      <div style="background:rgba(176,144,136,.12);border-radius:12px;padding:14px 16px;border:0.5px solid rgba(176,144,136,.35);">
         <div style="font-size:9px;font-weight:500;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Ganancia neta</div>
-        <div id="ck-gan" style="font-family:'DM Sans',sans-serif;font-size:28px;font-weight:300;color:#d4a853;line-height:1;">$0</div>
+        <div id="ck-gan" style="font-family:'DM Sans',sans-serif;font-size:28px;font-weight:300;color:#e8c9bd;line-height:1;">$0</div>
         <div id="ck-margen-sub" style="font-size:10px;color:rgba(255,255,255,.4);margin-top:4px;">0% margen neto</div>
-        <div style="height:2px;background:rgba(255,255,255,.15);border-radius:1px;margin-top:8px;"><div id="ck-margen-barra" style="height:100%;border-radius:1px;background:#d4a853;width:0%;transition:width .6s;"></div></div>
+        <div style="height:2px;background:rgba(255,255,255,.15);border-radius:1px;margin-top:8px;"><div id="ck-margen-barra" style="height:100%;border-radius:1px;background:#b09088;width:0%;transition:width .6s;"></div></div>
       </div>
     </div>
     <!-- Fila 2: operacionales -->
@@ -3734,9 +3734,9 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         <div id="ck-tick" style="font-family:'DM Sans',sans-serif;font-size:24px;font-weight:300;color:#fff;line-height:1;">$0</div>
         <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:4px;">promedio por ingreso</div>
       </div>
-      <div style="background:rgba(186,117,23,.12);border-radius:12px;padding:14px 16px;border:0.5px solid rgba(186,117,23,.4);">
+      <div style="background:rgba(255,255,255,.08);border-radius:12px;padding:14px 16px;border:0.5px solid rgba(255,255,255,.1);">
         <div style="font-size:9px;font-weight:500;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Por cobrar</div>
-        <div id="ck-cobros-pend" style="font-family:'DM Sans',sans-serif;font-size:22px;font-weight:600;color:#EF9F27;line-height:1;">$0</div>
+        <div id="ck-cobros-pend" style="font-family:'DM Sans',sans-serif;font-size:22px;font-weight:600;color:#fff;line-height:1;">$0</div>
         <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:4px;">presupuestos aprobados</div>
       </div>
     </div>
@@ -18235,7 +18235,6 @@ function initCkChart(ingresos, egresos) {
   const ing = new Array(12).fill(0), eg = new Array(12).fill(0);
   ingresos.forEach(i => { const idx = MESES.findIndex(m => (i.mes||'').startsWith(m)); if (idx >= 0) ing[idx] += parseFloat(i.monto)||0; });
   egresos.forEach(e => { const idx = MESES.findIndex(m => (e.mes||'').startsWith(m)); if (idx >= 0) eg[idx] += parseFloat(e.monto)||0; });
-  const gan = ing.map((v,i) => Math.max(0, v - eg[i]));
   const maxVal = Math.max(...ing, ...eg, 1);
   const W = el.offsetWidth || 500, H = 180;
   const padL = 52, padR = 8, padT = 12, padB = 28;
@@ -18252,31 +18251,44 @@ function initCkChart(ingresos, egresos) {
     yLabels += `<text x="${padL - 4}" y="${y + 4}" text-anchor="end" font-size="9" fill="#888780" font-family="DM Sans">$${v >= 1000 ? Math.round(v/1000)+'k' : Math.round(v)}</text>`;
   }
 
-  let bars = '', linePts = '', xLabels = '';
-  gan.forEach((g, i) => {
+  let bars = '', xLabels = '';
+  ing.forEach((_v, i) => {
     const cx = padL + i * barGroupW + barGroupW / 2;
     const x1 = cx - barW - 1, x2 = cx + 1;
     const hIng = (ing[i] / maxVal) * chartH, hEg = (eg[i] / maxVal) * chartH;
-    bars += `<rect x="${x1}" y="${padT + chartH - hIng}" width="${barW}" height="${hIng}" rx="2" fill="#4a5e4d"/>`;
-    bars += `<rect x="${x2}" y="${padT + chartH - hEg}" width="${barW}" height="${hEg}" rx="2" fill="#b05a42"/>`;
-    const py = padT + chartH - (g / maxVal) * chartH;
-    linePts += (i === 0 ? `M${cx},${py}` : `L${cx},${py}`);
+    bars += `<rect x="${x1}" y="${padT + chartH - hIng}" width="${barW}" height="${hIng}" rx="2" fill="#4a5e4d" style="cursor:pointer;" data-tipo="Ingresos" data-mes="${MESES[i]}" data-monto="${ing[i]}" data-color="#4a5e4d" onmouseover="ckEvoTip(event,this)" onmouseout="ckEvoTipHide()" onclick="ckEvoTip(event,this)"/>`;
+    bars += `<rect x="${x2}" y="${padT + chartH - hEg}" width="${barW}" height="${hEg}" rx="2" fill="#b09088" style="cursor:pointer;" data-tipo="Egresos" data-mes="${MESES[i]}" data-monto="${eg[i]}" data-color="#b09088" onmouseover="ckEvoTip(event,this)" onmouseout="ckEvoTipHide()" onclick="ckEvoTip(event,this)"/>`;
     xLabels += `<text x="${cx}" y="${H - 4}" text-anchor="middle" font-size="9" fill="#888780" font-family="DM Sans">${MESES_SHORT[i]}</text>`;
   });
 
   // Legend
-  const legend = `<rect x="${padL}" y="2" width="8" height="8" rx="1" fill="#4a5e4d"/><text x="${padL+11}" y="10" font-size="9" fill="#888780" font-family="DM Sans">Ingresos</text><rect x="${padL+58}" y="2" width="8" height="8" rx="1" fill="#b05a42"/><text x="${padL+71}" y="10" font-size="9" fill="#888780" font-family="DM Sans">Egresos</text><line x1="${padL+120}" y1="6" x2="${padL+130}" y2="6" stroke="#7aab7e" stroke-width="2"/><text x="${padL+133}" y="10" font-size="9" fill="#888780" font-family="DM Sans">Ganancia</text>`;
+  const legX = W - padR - 116;   // bloque de leyenda (~116px) alineado al margen derecho
+  const legend = `<rect x="${legX}" y="2" width="8" height="8" rx="1" fill="#4a5e4d"/><text x="${legX+11}" y="10" font-size="9" fill="#888780" font-family="DM Sans">Ingresos</text><rect x="${legX+58}" y="2" width="8" height="8" rx="1" fill="#b09088"/><text x="${legX+71}" y="10" font-size="9" fill="#888780" font-family="DM Sans">Egresos</text>`;
 
   el.innerHTML = `<svg width="100%" height="${H}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
     ${gridLines}${yLabels}${bars}
-    <path d="${linePts}" fill="none" stroke="#7aab7e" stroke-width="2"/>
-    ${gan.map((g,i)=>{ const cx=padL+i*barGroupW+barGroupW/2; const py=padT+chartH-(g/maxVal)*chartH; return `<circle cx="${cx}" cy="${py}" r="3" fill="#7aab7e"/>`; }).join('')}
     ${xLabels}${legend}
   </svg>`;
 }
 window.initClientCashflow = initClientCashflow;
 window.initClientGastosDonut = initClientGastosDonut;
 window.initCkChart = initCkChart;
+// Tooltip del gráfico "Evolución anual" (anclado a #ckChart): hover (desktop) o tap (mobile) sobre una barra → globito con Ingresos/Egresos · mes · monto. Auto-oculta (mobile).
+window.ckEvoTip = function(evt, elBar){
+  const cont=document.getElementById('ckChart'); if(!cont) return;
+  cont.style.position='relative';
+  let tip=document.getElementById('ck-evo-tip');
+  if(!tip){ tip=document.createElement('div'); tip.id='ck-evo-tip'; tip.style.cssText='position:absolute;z-index:60;pointer-events:none;background:#1a1f1b;color:#fff;border-radius:8px;padding:7px 10px;font-family:DM Sans,sans-serif;font-size:11px;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.2);transform:translate(-50%,-118%);opacity:0;transition:opacity .12s;'; cont.appendChild(tip); }
+  const t=elBar.dataset.tipo, mes=elBar.dataset.mes, monto=+elBar.dataset.monto, col=elBar.dataset.color;
+  tip.innerHTML = `<span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${col};margin-right:6px;"></span><b>${t}</b> · ${mes}<br><span style="font-size:13px;font-weight:700;">$${monto.toLocaleString('es-AR')}</span>`;
+  const cr=cont.getBoundingClientRect(), br=elBar.getBoundingClientRect();
+  tip.style.left=(br.left-cr.left+br.width/2)+'px'; tip.style.top=(br.top-cr.top)+'px'; tip.style.opacity='1';
+  if(window._ckEvoTO) clearTimeout(window._ckEvoTO);
+  window._ckEvoTO = setTimeout(window.ckEvoTipHide, 2600);
+};
+window.ckEvoTipHide = function(){
+  const tip=document.getElementById('ck-evo-tip'); if(tip) tip.style.opacity='0';
+};
 window.initCkMesChart = initCkMesChart;
 window.initCkEgAnualChart = initCkEgAnualChart;
 window.initCkEgMesChart = initCkEgMesChart;
@@ -20016,11 +20028,11 @@ function initCkMesChart(ingresos, egresos, mes) {
   const hIng = (totalIng / maxVal) * chartH, hEg = (totalEg / maxVal) * chartH;
   const bars = `
     <rect x="${cx1 - barW/2}" y="${padT + chartH - hIng}" width="${barW}" height="${hIng}" rx="4" fill="#4a5e4d"/>
-    <rect x="${cx2 - barW/2}" y="${padT + chartH - hEg}"  width="${barW}" height="${hEg}"  rx="4" fill="#b05a42"/>
+    <rect x="${cx2 - barW/2}" y="${padT + chartH - hEg}"  width="${barW}" height="${hEg}"  rx="4" fill="#b09088"/>
     <text x="${cx1}" y="${H - 4}" text-anchor="middle" font-size="10" fill="#4A5A4E" font-family="DM Sans">Ingresos</text>
     <text x="${cx2}" y="${H - 4}" text-anchor="middle" font-size="10" fill="#4A5A4E" font-family="DM Sans">Egresos</text>
     <text x="${cx1}" y="${padT + chartH - hIng - 4}" text-anchor="middle" font-size="9" fill="#4a5e4d" font-family="DM Sans" font-weight="600">$${totalIng.toLocaleString('es-AR')}</text>
-    <text x="${cx2}" y="${padT + chartH - hEg - 4}"  text-anchor="middle" font-size="9" fill="#b05a42" font-family="DM Sans" font-weight="600">$${totalEg.toLocaleString('es-AR')}</text>`;
+    <text x="${cx2}" y="${padT + chartH - hEg - 4}"  text-anchor="middle" font-size="9" fill="#b09088" font-family="DM Sans" font-weight="600">$${totalEg.toLocaleString('es-AR')}</text>`;
 
   el.innerHTML = `<svg width="100%" height="${H}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
     ${gridLines}${yLabels}${bars}
@@ -20046,9 +20058,9 @@ function initCkEgAnualChart(egresos) {
   const total=Object.values(cats).reduce((a,v)=>a+v,0);
   const sorted=Object.entries(cats).sort((a,b)=>b[1]-a[1]);
   const fmt=v=>'$'+Math.round(v).toLocaleString('es-AR');
-  const COLS=[['#d4856a','#7a2e18'],['#e8a090','#c4786a'],['#c4786a','#a05040'],['#b05a42','#8a3020']];
-  const R=54, IR=34, CX=70, CY=70;
-  let offset=0, slices='', gradDefs='';
+  const PAL=['#4a5e4d','#7d9478','#b09088','#c9a59c','#5e7562','#a06658','#9aab93','#cf9b8d'];
+  const R=60, IR=42, CX=75, CY=75;
+  let offset=0, slices='';
   sorted.forEach(([cat,val],i)=>{
     const pct=val/total;
     const deg=pct*360;
@@ -20059,28 +20071,25 @@ function initCkEgAnualChart(egresos) {
     const ix1=CX+IR*Math.sin(start), iy1=CY-IR*Math.cos(start);
     const ix2=CX+IR*Math.sin(end), iy2=CY-IR*Math.cos(end);
     const large=deg>180?1:0;
-    const gid=`dg${i}`;
-    gradDefs+=`<linearGradient id="${gid}" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${COLS[i%4][0]}"/><stop offset="100%" stop-color="${COLS[i%4][1]}"/></linearGradient>`;
-    slices+=`<path d="M ${ix1} ${iy1} L ${x1} ${y1} A ${R} ${R} 0 ${large} 1 ${x2} ${y2} L ${ix2} ${iy2} A ${IR} ${IR} 0 ${large} 0 ${ix1} ${iy1} Z" fill="url(#${gid})" stroke="var(--color-background-primary)" stroke-width="2"/>`;
+    slices+=`<path d="M ${ix1} ${iy1} L ${x1} ${y1} A ${R} ${R} 0 ${large} 1 ${x2} ${y2} L ${ix2} ${iy2} A ${IR} ${IR} 0 ${large} 0 ${ix1} ${iy1} Z" fill="${PAL[i%PAL.length]}" stroke="#fff" stroke-width="2"/>`;
     offset+=deg;
   });
   const leyRows=sorted.map(([cat,val],i)=>{
     const pct=val/total;
     return `
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-      <div style="width:10px;height:10px;border-radius:2px;background:${COLS[i%4][0]};flex-shrink:0;"></div>
-      <span style="font-size:12px;color:var(--color-text-primary);flex:1;">${cat}</span>
-      <span style="font-size:12px;font-weight:500;color:var(--color-text-primary);">${fmt(val)}</span>
-      <span style="font-size:10px;color:var(--color-text-tertiary);min-width:32px;text-align:right;">${Math.round(pct*100)}%</span>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">
+      <div style="width:10px;height:10px;border-radius:3px;background:${PAL[i%PAL.length]};flex-shrink:0;"></div>
+      <span style="font-size:12px;color:#3a4039;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${cat}</span>
+      <span style="font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;color:#3d5242;">${fmt(val)}</span>
+      <span style="font-size:10px;color:#9aa39c;min-width:30px;text-align:right;">${Math.round(pct*100)}%</span>
     </div>`;
   }).join('');
   el.innerHTML=`<div style="display:flex;align-items:center;gap:20px;">
     <div style="flex-shrink:0;">
-      <svg width="140" height="140" viewBox="0 0 140 140">
-        <defs>${gradDefs}</defs>
+      <svg width="150" height="150" viewBox="0 0 150 150">
         ${slices}
-        <text x="${CX}" y="${CY-4}" font-size="13" font-family="Cormorant Garamond,serif" fill="var(--color-text-primary)" text-anchor="middle">${fmt(total)}</text>
-        <text x="${CX}" y="${CY+10}" font-size="8" font-family="DM Sans,sans-serif" fill="var(--color-text-tertiary)" text-anchor="middle">total egresos</text>
+        <text x="${CX}" y="${CY+1}" font-size="16" font-weight="700" font-family="DM Sans,sans-serif" fill="#3d5242" text-anchor="middle">${fmt(total)}</text>
+        <text x="${CX}" y="${CY+14}" font-size="7" font-family="DM Sans,sans-serif" fill="#9aa39c" text-anchor="middle">total egresos</text>
       </svg>
     </div>
     <div style="flex:1;">${leyRows}</div>
@@ -20115,7 +20124,7 @@ function initCkEgMesChart(egresos, mes) {
   const _keyEg = e => _vista==='proveedor' ? window.resolverProveedor(e) : (e.concepto||'Otros');
   _egVista.forEach(e => { const c = _keyEg(e); cats[c] = (cats[c]||0) + (parseFloat(e.monto)||0); });
   const sorted = Object.entries(cats).sort((a,b) => b[1]-a[1]);
-  const colors = ['#4a5e4d','#5a7a5e','#6b8f6e','#7aab7e','#3a4e3d','#b05a42','#c4786a','#8a3a28'];
+  const colors = ['#4a5e4d','#7d9478','#b09088','#c9a59c','#5e7562','#a06658','#9aab93','#cf9b8d'];
   const rowH = 26, padL = 90, padR = 60, padT = 8, padB = 8;
   const H = padT + sorted.length * rowH + padB;
   const W = el.offsetWidth || 400;
@@ -20220,7 +20229,7 @@ function renderCkKpis(ingresos, egresos, presupuestos, mcClientes) {
   setEl('ck-margen',margen+'%');
   setEl('ck-margen-sub',margen+'% margen neto');
   const barEl=document.getElementById('ck-margen-barra');
-  if(barEl){barEl.style.width=Math.min(Math.max(margen,0),100)+'%';barEl.style.background=margen>=70?'var(--ok)':margen>=40?'var(--warn)':'var(--err)';}
+  if(barEl){barEl.style.width=Math.min(Math.max(margen,0),100)+'%';barEl.style.background=margen>=70?'#4a5e4d':margen>=40?'#b09088':'#cf9b8d';}
 
   // Sub-label de ingresos: mostrar período activo
   const mesSel = document.getElementById('ck-mes-sel')?.value || 'todo';
@@ -20328,19 +20337,19 @@ function renderCkResumen(ingresos, egresos) {
   const totalEg = egresos.reduce((a,e)=>a+(parseFloat(e.monto)||0),0);
   const margen = totalIng > 0 ? Math.round((totalIng-totalEg)/totalIng*100) : 0;
   const lineas = [];
-  if(margen >= 70) lineas.push({color:'#3B6D11', texto:`Margen neto del ${margen}% — excelente rentabilidad.`});
-  else if(margen >= 40) lineas.push({color:'#BA7517', texto:`Margen neto del ${margen}% — dentro de lo esperado.`});
-  else lineas.push({color:'#993C1D', texto:`Margen neto del ${margen}% — revisá tus costos.`});
+  if(margen >= 70) lineas.push({color:'#4a5e4d', texto:`Margen neto del ${margen}% — excelente rentabilidad.`});
+  else if(margen >= 40) lineas.push({color:'#b09088', texto:`Margen neto del ${margen}% — dentro de lo esperado.`});
+  else lineas.push({color:'#a06658', texto:`Margen neto del ${margen}% — revisá tus costos.`});
   if(totalEg > 0) {
     const topEg = egresos.reduce((top, e) => (parseFloat(e.monto)||0) > (parseFloat(top.monto)||0) ? e : top, egresos[0]);
-    if(topEg) lineas.push({color:'#BA7517', texto:`Mayor egreso: ${topEg.concepto||'Sin concepto'} — $${Math.round(parseFloat(topEg.monto)||0).toLocaleString('es-AR')}.`});
+    if(topEg) lineas.push({color:'#b09088', texto:`Mayor egreso: ${topEg.concepto||'Sin concepto'} — $${Math.round(parseFloat(topEg.monto)||0).toLocaleString('es-AR')}.`});
   }
   const pend = (window._clientPresupuestos||[]).filter(p=>p.estado==='Aprobado');
   if(pend.length > 0) {
     const montoPend = pend.reduce((a,p)=>a+getPresupMonto(p),0);
-    lineas.push({color:'#BA7517', texto:`$${Math.round(montoPend).toLocaleString('es-AR')} en presupuestos aprobados sin cobrar.`});
+    lineas.push({color:'#b09088', texto:`$${Math.round(montoPend).toLocaleString('es-AR')} en presupuestos aprobados sin cobrar.`});
   }
-  if(ingresos.length > 0) lineas.push({color:'#185FA5', texto:`Ticket promedio: $${Math.round(totalIng/ingresos.length).toLocaleString('es-AR')} por transacción.`});
+  if(ingresos.length > 0) lineas.push({color:'#b09088', texto:`Ticket promedio: $${Math.round(totalIng/ingresos.length).toLocaleString('es-AR')} por transacción.`});
   cont.innerHTML = lineas.map(l=>`<div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text);">
     <div style="width:6px;height:6px;border-radius:50%;background:${l.color};flex-shrink:0;"></div>${l.texto}</div>`).join('');
   card.style.display = lineas.length ? 'block' : 'none';
@@ -20362,7 +20371,7 @@ function renderCkAlertas(ingresos, egresos) {
   if(margen >= 70) alertas.push({tipo:'ok', titulo:`Margen excelente — ${margen}%`, desc:'Tu rentabilidad está en un nivel óptimo.'});
   else if(margen < 40 && totalIng > 0) alertas.push({tipo:'danger', titulo:`Margen bajo — ${margen}%`, desc:'Revisá tus costos fijos y precios de venta.'});
   if(ingresos.length < 3 && totalIng > 0) alertas.push({tipo:'warn', titulo:'Pocas transacciones este mes', desc:'Considerá activar más presupuestos pendientes.'});
-  const colores = {warn:{border:'#BA7517',dot:'#BA7517',title:'#633806'}, danger:{border:'#993C1D',dot:'#993C1D',title:'#712B13'}, ok:{border:'#3B6D11',dot:'#3B6D11',title:'#27500A'}};
+  const colores = {warn:{border:'#b09088',dot:'#b09088',title:'#3a4039'}, danger:{border:'#a06658',dot:'#a06658',title:'#3a4039'}, ok:{border:'#4a5e4d',dot:'#4a5e4d',title:'#3a4039'}};
   grid.innerHTML = alertas.map(a=>{const c=colores[a.tipo];return `<div style="background:var(--white);border:0.5px solid var(--cream-d);border-left:3px solid ${c.border};border-radius:12px;padding:13px 16px;display:flex;align-items:flex-start;gap:10px;">
     <div style="width:8px;height:8px;border-radius:50%;background:${c.dot};flex-shrink:0;margin-top:4px;"></div>
     <div><div style="font-size:12px;font-weight:500;color:${c.title};margin-bottom:2px;">${a.titulo}</div>
