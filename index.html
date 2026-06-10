@@ -3796,12 +3796,6 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
     </div>
   </div>
 
-  <!-- Sankey -->
-  <div class="card" style="margin-bottom:14px;">
-    <div class="ct">Flujo de dinero</div>
-    <div id="ck-sankey" style="padding:8px 0;"></div>
-  </div>
-
   <div class="g2">
     <div class="card">
       <div class="ct">Funnel de presupuestos</div>
@@ -11308,16 +11302,22 @@ async function loadClientContabilidad() {
     const snap = await getDocs(
       query(collection(db,'clientes',currentClientUID,'libroCaja'))
     );
-    const ingresos = [], egresos = [];
+    const ingresos = [], egresos = [], ventas = [];
     snap.forEach(d => {
       const data = d.data();
       if(data.eliminado) return;
       const doc = {id: d.id, ...data, categoria: data.concepto || 'Otros'};
       if(data.tipo === 'ingreso') ingresos.push(doc);
       else if(data.tipo === 'egreso') egresos.push(doc);
+      // Ventas reales para los KPIs de Indicadores (conteo + ticket): venta directa mostrador/dueño
+      // (origen EXACTO 'venta_caja' → excluye el espejo 'venta_caja_espejo') + venta a cuenta cliente (pedido_cta).
+      // Rama independiente: NO altera ingresos/egresos (un venta_caja queda en ambos; un pedido_cta solo acá).
+      if((data.tipo === 'ingreso' && data.origen === 'venta_caja') || data.tipo === 'pedido_cta')
+        ventas.push({id: d.id, monto: data.monto, mes: data.mes, fecha: data.fecha});
     });
     window._clientIngresos = ingresos;
     window._clientEgresos  = egresos;
+    window._clientVentas   = ventas;
   } catch(e) { console.error('loadClientContabilidad:', e); }
 }
 
@@ -20154,10 +20154,17 @@ function renderCkKpis(ingresos, egresos, presupuestos, mcClientes) {
   const mesSel = document.getElementById('ck-mes-sel')?.value || 'todo';
   setEl('ck-ing-sub', mesSel === 'todo' ? 'año completo' : mesSel);
 
-  // Ticket promedio — promedio de ingresos del período
-  const ticketProm = ingresos.length > 0
-    ? ingresos.reduce((a,i) => a + (parseFloat(i.monto)||0), 0) / ingresos.length
-    : 0;
+  // Ventas reales del período (mostrador + cuenta cliente) desde _clientVentas, mismo criterio de mes (string m.mes).
+  // Fuente separada: NO afecta totalIng/totalEg/ganancia (siguen owner-only, sin mostrador).
+  const ventasPeriodo = (window._clientVentas||[]).filter(v => {
+    if(mesSel === 'todo') return true;
+    const m = (v.mes||'').replace(' de ',' ');
+    return m.toLowerCase().includes(mesSel.split(' ')[0].toLowerCase()) && m.includes(mesSel.split(' ')[1]);
+  });
+  const ventasMonto = ventasPeriodo.reduce((a,v) => a + (parseFloat(v.monto)||0), 0);
+
+  // Ticket promedio = monto total de ventas ÷ cantidad de ventas
+  const ticketProm = ventasPeriodo.length > 0 ? ventasMonto / ventasPeriodo.length : 0;
   setEl('ck-tick', '$' + Math.round(ticketProm).toLocaleString('es-AR'));
   // Banner KPIs
   setEl('bn-kpi-ing','$'+totalIng.toLocaleString('es-AR'));
@@ -20170,17 +20177,16 @@ function renderCkKpis(ingresos, egresos, presupuestos, mcClientes) {
   const cobrosPend = pendientes.reduce((a,p) => a + getPresupMonto(p), 0);
   setEl('ck-cobros-pend', '$' + cobrosPend.toLocaleString('es-AR'));
 
-  // Ventas del período — cantidad de ingresos en el período seleccionado
-  const ventasMes = ingresos.length;
+  // Ventas del período — cantidad de ventas reales (mostrador + cuenta cliente)
+  const ventasMes = ventasPeriodo.length;
   setEl('ck-clientes-nuevos', ventasMes);
 
   // Ranking clientes
   renderCkRankingClientes(ingresos);
 
-  // Resumen, alertas y sankey
+  // Resumen y alertas
   renderCkResumen(ingresos, egresos);
   renderCkAlertas(ingresos, egresos);
-  renderCkSankey(ingresos, egresos);
 }
 
 function renderCkRankingClientes(ingresos) {
@@ -20290,69 +20296,6 @@ function renderCkAlertas(ingresos, egresos) {
     <div><div style="font-size:12px;font-weight:500;color:${c.title};margin-bottom:2px;">${a.titulo}</div>
     <div style="font-size:11px;color:var(--text-l);line-height:1.4;">${a.desc}</div></div></div>`;}).join('');
   wrap.style.display = alertas.length ? 'block' : 'none';
-}
-
-function renderCkSankey(ingresos, egresos) {
-  const el = document.getElementById('ck-sankey');
-  if(!el) return;
-  const totalIng = ingresos.reduce((a,i)=>a+(parseFloat(i.monto)||0),0);
-  const totalEg = egresos.reduce((a,e)=>a+(parseFloat(e.monto)||0),0);
-  const ganancia = Math.max(0, totalIng - totalEg);
-  if(totalIng === 0) { el.innerHTML='<div style="text-align:center;padding:30px;color:var(--text-l);font-size:13px;">Sin datos para mostrar.</div>'; return; }
-  const cats = {};
-  egresos.forEach(e => {
-    let grupo;
-    if(e.origen === 'proveedor') grupo = 'Proveedores';
-    else if(e.origen === 'cierre') grupo = 'Cierre de período';
-    else grupo = e.concepto || 'Otros';
-    cats[grupo] = (cats[grupo]||0) + (parseFloat(e.monto)||0);
-  });
-  const catArr = Object.entries(cats).sort((a,b)=>b[1]-a[1]).slice(0,5);
-  const fmt = v => '$'+Math.round(v).toLocaleString('es-AR');
-  const pctGan = Math.round(ganancia/totalIng*100);
-  el.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-      <div style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.7px;">Flujo de dinero</div>
-      <div style="font-size:11px;color:var(--text-l);">Egresos totales ${fmt(totalEg)} · ${100-pctGan}% del ingreso</div>
-    </div>
-    <svg width="100%" viewBox="0 0 680 ${Math.max(240, 190 + catArr.length * 24 + 20)}" style="overflow:visible;">
-      <defs>
-        <linearGradient id="sk-i" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#5a7a5d"/><stop offset="100%" stop-color="#3a4e3d"/></linearGradient>
-        <linearGradient id="sk-g" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6b9e70"/><stop offset="100%" stop-color="#2d4a30"/></linearGradient>
-        <linearGradient id="sk-r" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7aab7e"/><stop offset="100%" stop-color="#3a5e3e"/></linearGradient>
-        <linearGradient id="sk-e1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#c4786a"/><stop offset="100%" stop-color="#8a3a28"/></linearGradient>
-        <linearGradient id="sk-fl1" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#4a5e4d" stop-opacity=".5"/><stop offset="100%" stop-color="#4a7a50" stop-opacity=".35"/></linearGradient>
-        <linearGradient id="sk-fl2" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#5a6e5d" stop-opacity=".35"/><stop offset="100%" stop-color="#c4786a" stop-opacity=".5"/></linearGradient>
-        <linearGradient id="sk-fl3" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#4a7a50" stop-opacity=".4"/><stop offset="100%" stop-color="#5a9060" stop-opacity=".3"/></linearGradient>
-      </defs>
-      <rect x="20" y="20" width="22" height="200" rx="6" fill="url(#sk-i)"/>
-      <text x="52" y="88" font-family="DM Sans" font-size="10" fill="var(--text-l)" dominant-baseline="central" letter-spacing=".5">INGRESOS</text>
-      <text x="52" y="116" font-family="DM Sans" font-size="28" font-weight="400" fill="var(--text)" dominant-baseline="central">${fmt(totalIng)}</text>
-      <path d="M 42 28 C 200 28 200 26 290 26 L 290 184 C 200 184 200 196 42 196 Z" fill="url(#sk-fl1)"/>
-      ${catArr.map(([cat,monto],i) => {
-        const y = 196 + i*24;
-        return `<path d="M 42 ${y} C 200 ${y} 200 ${y+4} 290 ${y+4} L 290 ${y+16} C 200 ${y+16} 200 ${y+12} 42 ${y+12} Z" fill="url(#sk-fl2)"/>`;
-      }).join('')}
-      <rect x="292" y="18" width="32" height="168" rx="6" fill="url(#sk-g)"/>
-      <text x="336" y="70" font-family="DM Sans" font-size="10" fill="var(--text-l)" dominant-baseline="central" letter-spacing=".5">GANANCIA NETA</text>
-      <text x="336" y="100" font-family="DM Sans" font-size="32" font-weight="500" fill="var(--text)" dominant-baseline="central">${fmt(ganancia)}</text>
-      <text x="336" y="128" font-family="DM Sans" font-size="13" font-weight="500" fill="#3B6D11" dominant-baseline="central">${pctGan}% del ingreso</text>
-      ${catArr.map(([cat,monto],i) => {
-        const y = 190 + i*24;
-        return `<rect x="292" y="${y}" width="32" height="20" rx="4" fill="url(#sk-e1)" opacity="${1-i*0.2}"/>
-        <text x="336" y="${y+7}" font-family="DM Sans" font-size="11" font-weight="500" fill="var(--text)" dominant-baseline="central">${cat}</text>
-        <text x="336" y="${y+17}" font-family="DM Sans" font-size="12" font-weight="500" fill="#993C1D" dominant-baseline="central">${fmt(monto)}</text>`;
-      }).join('')}
-      <path d="M 324 95 C 450 95 450 100 520 100 L 520 122 C 450 122 450 117 324 117 Z" fill="url(#sk-fl3)"/>
-      <rect x="522" y="18" width="28" height="168" rx="6" fill="url(#sk-r)"/>
-      <text x="562" y="70" font-family="DM Sans" font-size="10" fill="var(--text-l)" dominant-baseline="central" letter-spacing=".5">RESULTADO FINAL</text>
-      <text x="562" y="105" font-family="DM Sans" font-size="34" font-weight="500" fill="var(--text)" dominant-baseline="central">${fmt(ganancia)}</text>
-      <text x="562" y="136" font-family="DM Sans" font-size="12" fill="#3B6D11" dominant-baseline="central">neto del período</text>
-    </svg>
-    <div style="display:flex;gap:16px;margin-top:8px;padding-top:12px;border-top:.5px solid var(--cream-d);">
-      <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-l);"><div style="width:10px;height:10px;border-radius:2px;background:#4a5e4d;"></div>Ganancia</div>
-      <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-l);"><div style="width:10px;height:10px;border-radius:2px;background:#c4786a;"></div>Egresos</div>
-    </div>`;
 }
 
 window.embiAnalizarIndicadores = async function() {
