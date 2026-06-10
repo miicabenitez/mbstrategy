@@ -3808,7 +3808,10 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
       <div id="ck-funnel"></div>
     </div>
     <div class="card">
-      <div class="ct">Ranking de clientes</div>
+      <div class="ct" style="display:flex;align-items:baseline;justify-content:space-between;gap:8px;">
+        <span>Ranking de clientes</span>
+        <span style="text-transform:none;letter-spacing:0;font-weight:400;font-size:9px;color:var(--text-l);opacity:.7;font-family:'DM Sans',sans-serif;">Histórico · todos los períodos</span>
+      </div>
       <div id="ck-ranking-clientes"></div>
     </div>
   </div>
@@ -10982,9 +10985,23 @@ window.filterContByMes = function(mes) {
 window.filterKpiByMes = function(mes) { loadAdminData(); };
 
 
+// Indicadores — filtro base: ¿el movimiento es de una cuenta del dueño? (mismo criterio que el inicio vía _cuentasDuenoNombres). NO incluye el filtro de ciclo/fecha — Indicadores agrupa por mes calendario.
+function _ckEsDueno(m){ return (window._cuentasDuenoNombres||[]).includes(m.cuenta); }
+// ¿Es un retiro de socio? Flag nueva (esRetiroSocio) O heurística para data vieja sin flag:
+// egreso del cierre cuyo concepto es el nombre EXACTO de un socio. Los compromisos del cierre
+// no matchean (proveedor lleva sufijo " — CC Proveedor"); las reservas son 'transfer', no egreso.
+function _ckEsRetiroSocio(m){
+  if(m.esRetiroSocio) return true;
+  if(m.origen!=='cierre') return false;
+  const socios = (window._cprdParticipantes||[]).map(p=>p.nombre);
+  return socios.includes(m.concepto);
+}
+// Exponer a window: showCTab vive en otro <script> (plano) y no ve estas funciones del módulo (daba ReferenceError).
+window._ckEsDueno = _ckEsDueno;
+window._ckEsRetiroSocio = _ckEsRetiroSocio;
 window.filterCkByMes = function(mes) {
-  const ing = window._clientIngresos || [];
-  const eg  = window._clientEgresos  || [];
+  const ing = (window._clientIngresos||[]).filter(_ckEsDueno);
+  const eg  = (window._clientEgresos ||[]).filter(m => _ckEsDueno(m) && !_ckEsRetiroSocio(m));
   const filtIng = mes === 'todo' ? ing : ing.filter(i => { const m=(i.mes||'').replace(' de ',' '); return m.toLowerCase().includes(mes.split(' ')[0].toLowerCase()) && m.includes(mes.split(' ')[1]); });
   const filtEg  = mes === 'todo' ? eg  : eg.filter(e => { const m=(e.mes||'').replace(' de ',' '); return m.toLowerCase().includes(mes.split(' ')[0].toLowerCase()) && m.includes(mes.split(' ')[1]); });
   const presups = window._clientPresupuestos||[], mcs = window._mcClientes||_mcClientes||[];
@@ -13546,6 +13563,7 @@ async function loadCierreConfig() {
       _cprdReservas      = [{id:'r0',nombre:'Reserva del negocio',pct:15}];
     }
   } catch(e) { console.log(e); }
+  window._cprdParticipantes = _cprdParticipantes;   // espejo a window: Indicadores (script plano) lee los nombres de socios para excluir retiros viejos sin flag
   _cprdRenderConfig();
 }
 
@@ -20193,10 +20211,13 @@ function renderCkRankingClientes(ingresos) {
     </div>`;
     return;
   }
-  // Fallback: usar ingresos con campo cliente
-  if(ingresos.length===0){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--text-l);font-size:13px;">Sin ingresos registrados.</div>';return;}
+  // Fallback: usar ingresos con campo cliente. Fuente CRUDA (window._clientIngresos, sin _ckEsDueno):
+  // el ranking de clientes es facturación por cliente, NO debe heredar el filtro de cuenta del dueño
+  // (ese filtro es para el flujo de dinero — KPIs/egresos —, no para los nombres de cliente).
+  const fuenteRanking = window._clientIngresos || ingresos;
+  if(fuenteRanking.length===0){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--text-l);font-size:13px;">Sin ingresos registrados.</div>';return;}
   const clientes={};
-  ingresos.forEach(i=>{
+  fuenteRanking.forEach(i=>{
     const nombre=i.cliente||i.concepto||'Sin asignar';
     clientes[nombre]=(clientes[nombre]||0)+(parseFloat(i.monto)||0);
   });
@@ -28700,8 +28721,10 @@ window.showCTab = function(tab, btn) {
     if(!window._clientIngresos || window._clientIngresos.length===0) await loadClientContabilidad();
     if(!window._clientPresupuestos || window._clientPresupuestos.length===0) await loadClientPresupuestos();
     if(!window._mcClientes || window._mcClientes.length===0) await loadMcModule();
+    if(!window._cuentasDuenoNombres || !window._cuentasDuenoNombres.length) await preloadCajaSaldo(currentClientUID).catch(()=>{});   // asegura el set de cuentas del dueño antes de filtrar
+    if(!window._cprdParticipantes || !window._cprdParticipantes.length) await loadCierreConfig().catch(()=>{});   // asegura los nombres de socios (para excluir retiros de socio viejos sin flag)
     const mes = document.getElementById('ck-mes-sel')?.value || 'todo';
-    const ing = window._clientIngresos||[], eg = window._clientEgresos||[];
+    const ing = (window._clientIngresos||[]).filter(window._ckEsDueno), eg = (window._clientEgresos||[]).filter(m => window._ckEsDueno(m) && !window._ckEsRetiroSocio(m));
     const filtIng = mes === 'todo' ? ing : ing.filter(i => { const m=(i.mes||'').replace(' de ',' '); return m.toLowerCase().includes(mes.split(' ')[0].toLowerCase()) && m.includes(mes.split(' ')[1]); });
     const filtEg  = mes === 'todo' ? eg  : eg.filter(e => { const m=(e.mes||'').replace(' de ',' '); return m.toLowerCase().includes(mes.split(' ')[0].toLowerCase()) && m.includes(mes.split(' ')[1]); });
     const presups = window._clientPresupuestos||[], mcs = window._mcClientes||_mcClientes||[];
