@@ -3691,16 +3691,28 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
       <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:38px;font-weight:300;">Mis <em style="font-style:italic;color:#b09088;">indicadores</em></div>
       <div style="position:relative;z-index:100;">
-        <button id="ck-mes-btn" onclick="toggleCkMesDrop()" style="background:rgba(255,255,255,.12);border:0.5px solid rgba(255,255,255,.25);color:#fff;border-radius:6px;padding:5px 12px;font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px;white-space:nowrap;">
-          <span id="ck-mes-label">Abril 2026</span>
+        <button id="ck-cal-btn" onclick="_ckCalAbrir()" style="background:rgba(255,255,255,.12);border:0.5px solid rgba(255,255,255,.25);color:#fff;border-radius:6px;padding:5px 12px;font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px;white-space:nowrap;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>
+          <span id="ck-cal-label">Período</span>
           <svg width="8" height="5" viewBox="0 0 8 5" fill="none"><path d="M0 0l4 5 4-5z" fill="rgba(255,255,255,.6)"/></svg>
         </button>
-        <div id="ck-mes-drop" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:#2d3d2f;border:0.5px solid rgba(168,212,172,.2);border-radius:8px;padding:4px;min-width:130px;box-shadow:0 4px 16px rgba(0,0,0,.3);">
-          <div id="ck-mes-options"></div>
+        <div id="ck-cal-panel" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:#243528;border:0.5px solid rgba(168,212,172,.2);border-radius:12px;padding:12px;width:266px;box-shadow:0 8px 28px rgba(0,0,0,.4);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <button onclick="_ckCalNav(-1)" style="background:rgba(255,255,255,.08);border:none;color:#fff;border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:14px;line-height:1;">‹</button>
+            <span id="ck-cal-titulo" style="font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:#fff;">—</span>
+            <button onclick="_ckCalNav(1)" style="background:rgba(255,255,255,.08);border:none;color:#fff;border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:14px;line-height:1;">›</button>
+          </div>
+          <div id="ck-cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);column-gap:0;row-gap:2px;"></div>
+          <div style="display:flex;gap:6px;margin-top:11px;">
+            <button onclick="_ckCalMesCompleto()" style="flex:1;background:rgba(255,255,255,.08);border:0.5px solid rgba(255,255,255,.15);color:#e8f0e9;border-radius:7px;padding:7px 3px;font-size:9.5px;font-family:'DM Sans',sans-serif;cursor:pointer;">Mes completo</button>
+            <button onclick="_ckCalPorCierre()" style="flex:1;background:rgba(255,255,255,.08);border:0.5px solid rgba(255,255,255,.15);color:#e8f0e9;border-radius:7px;padding:7px 3px;font-size:9.5px;font-family:'DM Sans',sans-serif;cursor:pointer;">Por cierre</button>
+            <button onclick="_ckCalAntesCierre()" style="flex:1;background:rgba(255,255,255,.08);border:0.5px solid rgba(255,255,255,.15);color:#e8f0e9;border-radius:7px;padding:7px 3px;font-size:9.5px;font-family:'DM Sans',sans-serif;cursor:pointer;">Antes del cierre</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;margin-top:10px;padding-top:9px;border-top:0.5px solid rgba(255,255,255,.1);">
+            <span style="display:flex;align-items:center;gap:4px;font-size:9px;color:rgba(255,255,255,.5);"><span style="width:9px;height:9px;border-radius:3px;background:#4a5e4d;"></span><span style="width:9px;height:9px;border-radius:3px;background:#b09088;"></span>Cierres</span>
+            <span style="display:flex;align-items:center;gap:5px;font-size:9px;color:rgba(255,255,255,.5);"><span style="width:10px;height:9px;border-radius:3px;background:rgba(168,212,172,.3);border:1px solid #a8d4ac;"></span>Rango elegido</span>
+          </div>
         </div>
-        <select id="ck-mes-sel" style="display:none;" onchange="filterCkByMes(this.value)">
-          <option value="todo">Todo el año</option>
-        </select>
       </div>
     </div>
     <!-- Fila 1: financieros principales -->
@@ -11025,19 +11037,62 @@ function resolverProveedor(m){
 }
 window.resolverProveedor = resolverProveedor;
 window._ckEgVista = 'concepto';   // vista del gráfico de egresos de Indicadores: 'concepto' | 'proveedor'
-window.filterCkByMes = function(mes) {
+// ── Período de Indicadores: RANGO de fechas 'YYYY-MM-DD' (fuente de verdad). El dropdown de mes queda como wrapper hasta la Parte 2 (calendario). ──
+window._ckRango = window._ckRango || null;
+// Rango por defecto = el del ÚLTIMO cierre cerrado (mayor fechaFin): desde=fechaInicio, hasta=fechaFin. Si no hay cierres, el mes actual completo.
+window._ckRangoDefault = function(){
+  const hoy = fechaHoyARG();
+  const cierres = (window._clientCierres||[]).filter(c => c.estado==='cerrado' && !c.eliminado && c.fechaFin);
+  let desde, hasta;
+  if(cierres.length){
+    // "último cierre hecho" = el de cerradoEn más reciente (fecha real de ejecución, ISO); fallback a creadoEn/fechaFin para data vieja
+    const key = c => c.cerradoEn || c.creadoEn || c.fechaFin || '';
+    const ult = cierres.slice().sort((a,b)=> key(a)<key(b) ? 1 : -1)[0];
+    desde = ult.fechaInicio || ult.fechaFin;
+    hasta = ult.fechaFin;
+  } else {
+    const y = hoy.slice(0,4), m = hoy.slice(5,7), last = new Date(+y, +m, 0).getDate();
+    desde = `${y}-${m}-01`;
+    hasta = `${y}-${m}-${String(last).padStart(2,'0')}`;
+  }
+  if(hasta > hoy) hasta = hoy;                  // recorte de seguridad: el RANGO de filtro nunca pasa de hoy (la pintura del bloque NO se recorta)
+  if(desde > hasta){                            // borde: el período arranca en el futuro → mes actual hasta hoy
+    const y = hoy.slice(0,4), m = hoy.slice(5,7);
+    desde = `${y}-${m}-01`; hasta = hoy;
+  }
+  return { desde, hasta };
+};
+// Motor de filtrado por RANGO de fecha (i.fecha >= desde && i.fecha <= hasta; 'YYYY-MM-DD' ordena lexicográficamente). Setea window._ckRango y re-renderiza Indicadores.
+window.filterCkByRango = function(desde, hasta){
+  if(!desde || !hasta){ const d=window._ckRangoDefault(); desde=desde||d.desde; hasta=hasta||d.hasta; }
+  const _hoy = fechaHoyARG();
+  if(hasta > _hoy) hasta = _hoy;                                  // nunca filtrar más allá de hoy (solo el hasta; el desde no se toca)
+  if(desde > hasta){ const d = window._ckRangoDefault(); desde = d.desde; hasta = d.hasta; }  // borde: rango inválido tras recortar → default seguro
+  window._ckRango = { desde, hasta };
+  const enRango = m => { const f = m.fecha||''; return f && f>=desde && f<=hasta; };
   const ing = (window._clientIngresos||[]).filter(_ckEsDueno);
   const eg  = (window._clientEgresos ||[]).filter(m => _ckEsDueno(m) && !_ckEsRetiroSocio(m));
-  const filtIng = mes === 'todo' ? ing : ing.filter(i => { const m=(i.mes||'').replace(' de ',' '); return m.toLowerCase().includes(mes.split(' ')[0].toLowerCase()) && m.includes(mes.split(' ')[1]); });
-  const filtEg  = mes === 'todo' ? eg  : eg.filter(e => { const m=(e.mes||'').replace(' de ',' '); return m.toLowerCase().includes(mes.split(' ')[0].toLowerCase()) && m.includes(mes.split(' ')[1]); });
+  const filtIng = ing.filter(enRango);
+  const filtEg  = eg.filter(enRango);
   const presups = window._clientPresupuestos||[], mcs = window._mcClientes||_mcClientes||[];
+  const label = desde+' → '+hasta;
   renderCkKpis(filtIng, filtEg, presups, mcs);
-  initCkChart(ing, eg);                   // siempre año completo
-  initCkMesChart(filtIng, filtEg, mes);   // mes seleccionado
-  initCkEgAnualChart(eg);                 // egresos anuales por cat
-  initCkEgMesChart(filtEg, mes);          // egresos mes por cat
+  initCkChart(ing, eg);                   // año completo (no usa rango)
+  initCkMesChart(filtIng, filtEg, label); // rotulado por rango
+  initCkEgAnualChart(eg);                 // egresos anuales por cat (año completo)
+  initCkEgMesChart(filtEg, label);        // egresos del rango por cat
   renderCkFunnel(presups);
-  renderCkDistribucionSocios();           // distribución a socios desde los cierres (filtra por el mismo mes)
+  renderCkDistribucionSocios();
+};
+// Wrapper de compatibilidad: el dropdown de mes (#ck-mes-sel onchange) sigue llamando filterCkByMes(mes). Convierte mes→rango. Se reemplaza por el calendario en la Parte 2.
+window.filterCkByMes = function(mes){
+  if(!mes || mes==='todo'){ const d=window._ckRangoDefault(); return window.filterCkByRango(d.desde, d.hasta); }
+  const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const [nom, anio] = String(mes).split(' ');
+  const mi = MESES.indexOf(nom);
+  if(mi<0 || !anio){ const d=window._ckRangoDefault(); return window.filterCkByRango(d.desde, d.hasta); }
+  const mm = String(mi+1).padStart(2,'0'), last = new Date(+anio, mi+1, 0).getDate();
+  return window.filterCkByRango(`${anio}-${mm}-01`, `${anio}-${mm}-${String(last).padStart(2,'0')}`);
 };
 
 // Toggle de la vista de egresos (concepto ↔ proveedor): setea estado, re-sincroniza los chips y re-renderiza.
@@ -11049,9 +11104,132 @@ window.setCkEgVista = function(v){
     ch.style.color = on ? '#e8f0e9' : 'var(--text-m)';
     ch.style.borderColor = on ? 'transparent' : 'var(--cream-d)';
   });
-  const mes = document.getElementById('ck-mes-sel')?.value || 'todo';
-  if(window.filterCkByMes) window.filterCkByMes(mes);
+  const r = window._ckRango || window._ckRangoDefault();
+  if(window.filterCkByRango) window.filterCkByRango(r.desde, r.hasta);
 };
+
+// ===== Calendario de Indicadores (reemplaza el dropdown de mes). Maneja window._ckRango vía filterCkByRango. =====
+window._ckCal = { y:0, m:0 };     // mes visible (m: 0-11)
+window._ckSelDesde = null;        // primer click de una selección de rango en curso ('YYYY-MM-DD' | null)
+function _ckYmd(y,m,d){ return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
+
+window._ckCalAbrir = function(){
+  const p = document.getElementById('ck-cal-panel'); if(!p) return;
+  const abierto = p.style.display !== 'none';
+  p.style.display = abierto ? 'none' : 'block';
+  if(!abierto){                                   // al abrir: posicionar en el mes del rango activo
+    const r = window._ckRango || window._ckRangoDefault();
+    const base = (r && r.hasta) || fechaHoyARG();
+    window._ckCal = { y:+base.slice(0,4), m:+base.slice(5,7)-1 };
+    window._ckSelDesde = null;
+    window._ckRenderCal();
+  }
+};
+window._ckCalNav = function(delta){
+  let {y,m} = window._ckCal; m += delta;
+  if(m<0){ m=11; y--; } if(m>11){ m=0; y++; }
+  window._ckCal = {y,m}; window._ckRenderCal();
+};
+window._ckRenderCal = function(){
+  const cont = document.getElementById('ck-cal-grid'); if(!cont) return;
+  const {y,m} = window._ckCal;
+  const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const tEl = document.getElementById('ck-cal-titulo'); if(tEl) tEl.textContent = `${MESES[m]} ${y}`;
+  let offset = new Date(y,m,1).getDay();           // 0=Dom..6=Sab
+  offset = (offset===0) ? 6 : offset-1;            // → L=0..D=6
+  const diasMes = new Date(y, m+1, 0).getDate();
+  // cierres cerrados, orden cronológico (color estable) y alternado verde/terracota
+  const cierres = (window._clientCierres||[]).filter(c=>c.estado==='cerrado' && !c.eliminado && c.fechaInicio && c.fechaFin)
+                    .slice().sort((a,b)=>(a.fechaFin||'')<(b.fechaFin||'')?-1:1);
+  const colorDe = i => (i%2===0) ? '#4a5e4d' : '#b09088';
+  const infoCierre = ymd => {
+    for(let i=0;i<cierres.length;i++){ const c=cierres[i];
+      if(ymd>=c.fechaInicio && ymd<=c.fechaFin) return {color:colorDe(i), esInicio:ymd===c.fechaInicio, esFin:ymd===c.fechaFin}; }
+    return null;
+  };
+  const r = window._ckRango || {}, selDesde = window._ckSelDesde;
+  const dows = ['L','M','M','J','V','S','D'];
+  let html = dows.map(d=>`<div style="text-align:center;font-size:9px;font-weight:700;color:rgba(255,255,255,.4);padding:2px 0 4px;">${d}</div>`).join('');
+  for(let i=0;i<offset;i++) html += `<div></div>`;
+  for(let d=1; d<=diasMes; d++){
+    const ymd = _ckYmd(y,m,d);
+    const ci = infoCierre(ymd);
+    const enRango = r.desde && r.hasta && ymd>=r.desde && ymd<=r.hasta;
+    const esExtremo = ymd===r.desde || ymd===r.hasta;
+    const enSel = selDesde && ymd===selDesde;
+    let cierreLayer = '';
+    if(ci){
+      const rad = ci.esInicio && ci.esFin ? '8px' : ci.esInicio ? '8px 0 0 8px' : ci.esFin ? '0 8px 8px 0' : '0';
+      cierreLayer = `<div style="position:absolute;inset:3px 0;background:${ci.color};border-radius:${rad};opacity:.85;"></div>`;
+    }
+    const selLayer = enRango ? `<div style="position:absolute;inset:2px 0;background:rgba(168,212,172,.22);${esExtremo?'border:1.5px solid #a8d4ac;border-radius:7px;':''}"></div>` : '';
+    const selNow = enSel ? `<div style="position:absolute;inset:2px;border:1.5px dashed #fff;border-radius:7px;"></div>` : '';
+    const txtCol = ci ? '#fff' : 'rgba(255,255,255,.82)';
+    html += `<div onclick="_ckCalDia('${ymd}')" style="position:relative;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+      ${cierreLayer}${selLayer}${selNow}
+      <span style="position:relative;z-index:1;font-size:11px;color:${txtCol};font-weight:${esExtremo?'700':'400'};">${d}</span>
+    </div>`;
+  }
+  cont.innerHTML = html;
+};
+// Click en un día: 1er click = "desde"; 2º = "hasta" → aplica el rango
+window._ckCalDia = function(ymd){
+  if(!window._ckSelDesde){ window._ckSelDesde = ymd; window._ckRenderCal(); return; }
+  let desde = window._ckSelDesde, hasta = ymd;
+  if(hasta < desde){ const t=desde; desde=hasta; hasta=t; }   // ordenar
+  window._ckSelDesde = null;
+  window.filterCkByRango(desde, hasta);
+  window._ckSyncLabel();
+  const p=document.getElementById('ck-cal-panel'); if(p) p.style.display='none';
+};
+// Atajo: mes completo (del mes visible)
+window._ckCalMesCompleto = function(){
+  const {y,m}=window._ckCal, last=new Date(y,m+1,0).getDate();
+  window._ckSelDesde=null;
+  window.filterCkByRango(_ckYmd(y,m,1), _ckYmd(y,m,last));
+  window._ckSyncLabel(); window._ckRenderCal();
+};
+// Atajo: por cierre (el más reciente del mes visible)
+window._ckCalPorCierre = function(){
+  const {y,m}=window._ckCal, mm=`${y}-${String(m+1).padStart(2,'0')}`;
+  const cs = (window._clientCierres||[]).filter(c=>c.estado==='cerrado'&&!c.eliminado&&c.fechaFin&&c.fechaFin.slice(0,7)===mm)
+              .sort((a,b)=>(a.fechaFin||'')<(b.fechaFin||'')?1:-1);
+  if(!cs.length){ showToast('No hay cierres en este mes.','info'); return; }
+  const c=cs[0]; window._ckSelDesde=null;
+  window.filterCkByRango(c.fechaInicio||c.fechaFin, c.fechaFin);
+  window._ckSyncLabel(); window._ckRenderCal();
+};
+// Atajo: antes del cierre (día 1 → día anterior al inicio del último cierre del mes)
+window._ckCalAntesCierre = function(){
+  const {y,m}=window._ckCal, mm=`${y}-${String(m+1).padStart(2,'0')}`;
+  const cs = (window._clientCierres||[]).filter(c=>c.estado==='cerrado'&&!c.eliminado&&c.fechaInicio&&c.fechaInicio.slice(0,7)===mm)
+              .sort((a,b)=>(a.fechaInicio||'')<(b.fechaInicio||'')?1:-1);
+  if(!cs.length){ showToast('No hay cierres en este mes.','info'); return; }
+  const ini = new Date(cs[0].fechaInicio+'T12:00:00'); ini.setDate(ini.getDate()-1);
+  const hasta = _ckYmd(ini.getFullYear(), ini.getMonth(), ini.getDate()), desde=_ckYmd(y,m,1);
+  if(hasta < desde){ showToast('El cierre arranca el día 1; no hay días previos.','info'); return; }
+  window._ckSelDesde=null;
+  window.filterCkByRango(desde, hasta);
+  window._ckSyncLabel(); window._ckRenderCal();
+};
+// Label compacto del botón
+window._ckSyncLabel = function(){
+  const r=window._ckRango, el=document.getElementById('ck-cal-label'); if(!el||!r||!r.desde) return;
+  const MS=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  const p=s=>({d:+s.slice(8,10), m:+s.slice(5,7)-1, y:+s.slice(0,4)}), a=p(r.desde), b=p(r.hasta);
+  el.textContent = (a.y===b.y && a.m===b.m) ? `${a.d} — ${b.d} ${MS[b.m]}`
+                 : (a.y===b.y)              ? `${a.d} ${MS[a.m]} — ${b.d} ${MS[b.m]}`
+                 : `${a.d}/${a.m+1} — ${b.d}/${b.m+1}/${String(b.y).slice(2)}`;
+};
+// Cerrar el panel al clickear fuera. Chequeo por COORDENADAS (no por e.target): al tocar un día, _ckRenderCal regenera la grilla y el target queda detached → panel.contains(e.target) daría false y cerraría el panel a mitad de la selección. El bounding rect no depende de que el target siga en el DOM.
+document.addEventListener('click', function(e){
+  const panel = document.getElementById('ck-cal-panel');
+  if(!panel || panel.style.display==='none') return;
+  const btn = document.getElementById('ck-cal-btn');
+  const dentro = el => { if(!el) return false; const r = el.getBoundingClientRect(); return e.clientX>=r.left && e.clientX<=r.right && e.clientY>=r.top && e.clientY<=r.bottom; };
+  if(dentro(panel) || dentro(btn)) return;   // click dentro del panel o del botón → no cerrar
+  panel.style.display='none';
+});
 
 // ===== VALOR AGREGADO CLIENTE =====
 
@@ -13917,10 +14095,13 @@ async function _cierreSugerirFechas(uid) {
     const dias = {semanal:7,quincenal:15,mensual:30}[_cierreFrec]||15;
     finD.setDate(finD.getDate()+dias-1);
     fin = finD.toISOString().split('T')[0];
+    const _hoy = fechaHoyARG();
+    if(fin > _hoy) fin = _hoy;                       // tope: el fin propuesto nunca pasa de hoy
+    if(inicio > fin){ inicio = _hoy; fin = _hoy; }   // borde: el último cierre terminó hoy/futuro → proponer hoy–hoy (1 día)
     const elI = document.getElementById('cierre-fecha-inicio');
     const elF = document.getElementById('cierre-fecha-fin');
-    if(elI && !elI.value) elI.value = inicio;
-    if(elF && !elF.value) elF.value = fin;
+    if(elI){ elI.max = _hoy; if(!elI.value) elI.value = inicio; }   // max nativo del datepicker = hoy
+    if(elF){ elF.max = _hoy; if(!elF.value) elF.value = fin; }
   } catch(e) {}
 }
 
@@ -14210,6 +14391,7 @@ window.cierreSetFrec = function(btn) {
 // ─── Guardar borrador ─────────────────────────────────────────
 window.cierreGuardarBorrador = async function() {
   if(!currentClientUID) return;
+  if(!_cierreFechasValidas()) return;     // no guardar borrador con fechas inválidas/futuras
   const doc_ = _cierreBuildDoc('borrador');
   try {
     await addDoc(collection(db,'cierres'), doc_);
@@ -14225,7 +14407,19 @@ window.cierreDescartar = function() {
   }, 'Descartar cambios');
 };
 
+// Valida las fechas del período (no vacías, fin no futura, fin >= inicio). Toast + false si falla; true si OK. Gate compartido por cierreAccionPrincipal, cierreConfirmarRevision y cierreGuardarBorrador.
+function _cierreFechasValidas(){
+  const fi = document.getElementById('cierre-fecha-inicio')?.value || '';
+  const ff = document.getElementById('cierre-fecha-fin')?.value || '';
+  if(!fi || !ff){ showToast('Completá las fechas del período', 'error'); return false; }
+  if(ff > fechaHoyARG()){ showToast('La fecha de fin no puede ser futura.', 'error'); return false; }
+  if(ff < fi){ showToast('La fecha de fin no puede ser anterior al inicio.', 'error'); return false; }
+  return true;
+}
+window._cierreFechasValidas = _cierreFechasValidas;
+
 window.cierreAccionPrincipal = async function() {
+  if(!_cierreFechasValidas()) return;        // gate temprano: no avanzar (ni a proyección ni a revisión) con fechas inválidas/futuras
   if(_cierreModo==='proyeccion') {
     await _cierreGuardarProyeccion();
   } else {
@@ -14469,6 +14663,7 @@ window.cierreConfirmarRevision = async function() {
   const btnTxtOriginal = btn ? btn.textContent : '';
   if(btn) { btn.disabled = true; btn.textContent = 'Cerrando...'; }
   try {
+    if(!_cierreFechasValidas()) return;   // red de seguridad (cae en el finally → resetea lock/botón)
     let todosOk = true;
     _cierreRevItems.forEach(item=>{ const s=Object.values(item.cuentas).reduce((a,v)=>a+v,0); if(Math.abs(item.monto-s)>=0.01) todosOk=false; });
     if(!todosOk){ showToast('Revisá que todos los ítems sumen correctamente','error'); return; }
@@ -19980,17 +20175,7 @@ window.prodGuardarOrden = async function() {
 
 window.loadContentAdmin = loadContentAdmin;
 
-window.toggleCkMesDrop = function() {
-  const drop = document.getElementById('ck-mes-drop');
-  if(drop) drop.style.display = drop.style.display==='none' ? 'block' : 'none';
-};
-
-window.selectCkMes = function(val, label) {
-  document.getElementById('ck-mes-label').textContent = label;
-  document.getElementById('ck-mes-drop').style.display = 'none';
-  const sel = document.getElementById('ck-mes-sel');
-  if(sel) { sel.value = val; filterCkByMes(val); }
-};
+// (Dropdown de mes reemplazado por el calendario — toggleCkMesDrop/selectCkMes eliminados.)
 
 function initCkMesChart(ingresos, egresos, mes) {
   const emptyEl = document.getElementById('ck-mes-chart-empty');
@@ -20231,17 +20416,13 @@ function renderCkKpis(ingresos, egresos, presupuestos, mcClientes) {
   const barEl=document.getElementById('ck-margen-barra');
   if(barEl){barEl.style.width=Math.min(Math.max(margen,0),100)+'%';barEl.style.background=margen>=70?'#4a5e4d':margen>=40?'#b09088':'#cf9b8d';}
 
-  // Sub-label de ingresos: mostrar período activo
-  const mesSel = document.getElementById('ck-mes-sel')?.value || 'todo';
-  setEl('ck-ing-sub', mesSel === 'todo' ? 'año completo' : mesSel);
+  // Sub-label de ingresos: mostrar el rango activo (window._ckRango)
+  const _r = window._ckRango || (window._ckRangoDefault ? window._ckRangoDefault() : {desde:'',hasta:''});
+  setEl('ck-ing-sub', (_r.desde && _r.hasta) ? (_r.desde+' → '+_r.hasta) : 'período');
 
-  // Ventas reales del período (mostrador + cuenta cliente) desde _clientVentas, mismo criterio de mes (string m.mes).
+  // Ventas reales del período (mostrador + cuenta cliente) desde _clientVentas, por RANGO de fecha (v.fecha).
   // Fuente separada: NO afecta totalIng/totalEg/ganancia (siguen owner-only, sin mostrador).
-  const ventasPeriodo = (window._clientVentas||[]).filter(v => {
-    if(mesSel === 'todo') return true;
-    const m = (v.mes||'').replace(' de ',' ');
-    return m.toLowerCase().includes(mesSel.split(' ')[0].toLowerCase()) && m.includes(mesSel.split(' ')[1]);
-  });
+  const ventasPeriodo = (window._clientVentas||[]).filter(v => { const f=v.fecha||''; return f && f>=_r.desde && f<=_r.hasta; });
   const ventasMonto = ventasPeriodo.reduce((a,v) => a + (parseFloat(v.monto)||0), 0);
 
   // Ticket promedio = monto total de ventas ÷ cantidad de ventas
@@ -28980,48 +29161,17 @@ window.showCTab = function(tab, btn) {
     setTimeout(()=>{ const ing=window._clientIngresos||[]; const eg=window._clientEgresos||[]; initClientCashflow(ing,eg); initClientGastosDonut(eg); },200);
   }
   if(tab==='kpis') setTimeout(async()=>{
-    const selMes = document.getElementById('ck-mes-sel');
-    if(selMes && selMes.options.length <= 13) {
-      const hoy = new Date();
-      const mesActual = hoy.toLocaleString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase()).replace(' de ',' ');
-      selMes.innerHTML = '<option value="todo">Todo el año</option>';
-      const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-      const anio = hoy.getFullYear();
-      MESES.forEach(m => {
-        const opt = document.createElement('option');
-        opt.value = `${m} ${anio}`;
-        opt.textContent = `${m} ${anio}`;
-        if(`${m} ${anio}` === mesActual) opt.selected = true;
-        selMes.appendChild(opt);
-      });
-      const optContainer = document.getElementById('ck-mes-options');
-      if(optContainer) {
-        const allOpts = [{ val:'todo', label:'Todo el año' }, ...MESES.map(m=>({ val:`${m} ${anio}`, label:`${m} ${anio}` }))];
-        optContainer.innerHTML = allOpts.map(o=>`
-          <div onclick="selectCkMes('${o.val}','${o.label}')" style="padding:7px 12px;font-size:11px;color:rgba(255,255,255,.85);cursor:pointer;border-radius:5px;font-family:'DM Sans',sans-serif;"
-          onmouseover="this.style.background='rgba(168,212,172,.1)'" onmouseout="this.style.background=''">${o.label}</div>`).join('');
-        const current = `${MESES[hoy.getMonth()]} ${anio}`;
-        document.getElementById('ck-mes-label').textContent = current;
-      }
-    }
+    // (Población del dropdown de mes eliminada — ahora el período lo maneja el calendario.)
     if(!window._clientIngresos || window._clientIngresos.length===0) await loadClientContabilidad();
     if(!window._clientPresupuestos || window._clientPresupuestos.length===0) await loadClientPresupuestos();
     if(!window._mcClientes || window._mcClientes.length===0) await loadMcModule();
     if(!window._cuentasDuenoNombres || !window._cuentasDuenoNombres.length) await preloadCajaSaldo(currentClientUID).catch(()=>{});   // asegura el set de cuentas del dueño antes de filtrar
     if(!window._cprdParticipantes || !window._cprdParticipantes.length) await loadCierreConfig().catch(()=>{});   // asegura los nombres de socios (para excluir retiros de socio viejos sin flag)
     if(!window._clientCierres) await loadClientCierres().catch(()=>{});   // cierres ejecutados para el bloque "Distribución a socios"
-    const mes = document.getElementById('ck-mes-sel')?.value || 'todo';
-    const ing = (window._clientIngresos||[]).filter(window._ckEsDueno), eg = (window._clientEgresos||[]).filter(m => window._ckEsDueno(m) && !window._ckEsRetiroSocio(m));
-    const filtIng = mes === 'todo' ? ing : ing.filter(i => { const m=(i.mes||'').replace(' de ',' '); return m.toLowerCase().includes(mes.split(' ')[0].toLowerCase()) && m.includes(mes.split(' ')[1]); });
-    const filtEg  = mes === 'todo' ? eg  : eg.filter(e => { const m=(e.mes||'').replace(' de ',' '); return m.toLowerCase().includes(mes.split(' ')[0].toLowerCase()) && m.includes(mes.split(' ')[1]); });
-    const presups = window._clientPresupuestos||[], mcs = window._mcClientes||_mcClientes||[];
-    initCkChart(ing, eg);
-    initCkMesChart(filtIng, filtEg, mes);
-    initCkEgAnualChart(eg);
-    initCkEgMesChart(filtEg, mes);
-    renderCkFunnel(presups);
-    renderCkKpis(filtIng, filtEg, presups, mcs);
-    renderCkDistribucionSocios();   // distribución a socios desde los cierres
+    // Período por defecto al abrir = el del último cierre cerrado (motor por rango). filterCkByRango re-renderiza todo.
+    const _d = window._ckRangoDefault();
+    window.filterCkByRango(_d.desde, _d.hasta);
+    window._ckSyncLabel();   // refleja el rango en el botón del calendario
   },200);
   if(tab==='presupuestos') loadClientPresupuestos();
   if(tab==='proveedores') { loadProveedores(); loadCatsProveedor().then(()=>{ if(window.renderCatPanel) window.renderCatPanel(); }); }
