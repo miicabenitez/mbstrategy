@@ -564,7 +564,7 @@ exports.handler = async function(event) {
     const system = contextStr ? `${systemBase}\n\nCONTEXTO DEL NEGOCIO:\n${contextStr}` : systemBase;
 
     const payload = {
-      model: 'claude-sonnet-4-20250514',
+      model: process.env.EMBI_MODEL || 'claude-sonnet-4-6',
       max_tokens: 1024,
       system: [
         {
