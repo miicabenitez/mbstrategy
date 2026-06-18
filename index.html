@@ -20473,7 +20473,7 @@ function renderCkKpis(ingresos, egresos, presupuestos, mcClientes) {
   renderCkRankingClientes(ingresos);
 
   // Resumen y alertas
-  renderCkResumen(ingresos, egresos);
+  renderCkResumen(ingresos, egresos, ticketProm);
   renderCkAlertas(ingresos, egresos);
 }
 
@@ -20536,7 +20536,7 @@ function renderCkRankingClientes(ingresos) {
   </div>`;
 }
 
-function renderCkResumen(ingresos, egresos) {
+function renderCkResumen(ingresos, egresos, ticketProm) {
   const card = document.getElementById('ck-resumen-card');
   const cont = document.getElementById('ck-resumen-lineas');
   if(!card || !cont) return;
@@ -20556,7 +20556,7 @@ function renderCkResumen(ingresos, egresos) {
     const montoPend = pend.reduce((a,p)=>a+getPresupMonto(p),0);
     lineas.push({color:'#b09088', texto:`$${Math.round(montoPend).toLocaleString('es-AR')} en presupuestos aprobados sin cobrar.`});
   }
-  if(ingresos.length > 0) lineas.push({color:'#b09088', texto:`Ticket promedio: $${Math.round(totalIng/ingresos.length).toLocaleString('es-AR')} por transacción.`});
+  if(ticketProm > 0) lineas.push({color:'#b09088', texto:`Ticket promedio: $${Math.round(ticketProm).toLocaleString('es-AR')} por transacción.`});
   cont.innerHTML = lineas.map(l=>`<div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text);">
     <div style="width:6px;height:6px;border-radius:50%;background:${l.color};flex-shrink:0;"></div>${l.texto}</div>`).join('');
   card.style.display = lineas.length ? 'block' : 'none';
