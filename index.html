@@ -3715,6 +3715,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         </div>
       </div>
     </div>
+    <div id="ck-cierre-cruce" style="display:none;background:#e8c9bd;border-left:3px solid #a06658;border-radius:10px;padding:11px 14px;margin-bottom:10px;font-family:'DM Sans',sans-serif;font-size:13px;color:#3a4039;line-height:1.4;"></div>
     <!-- Fila 1: financieros principales -->
     <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:10px;">
       <div style="background:rgba(255,255,255,.08);border-radius:12px;padding:14px 16px;border:0.5px solid rgba(255,255,255,.1);">
@@ -20427,6 +20428,23 @@ function renderCkKpis(ingresos, egresos, presupuestos, mcClientes) {
   // Sub-label de ingresos: mostrar el rango activo (window._ckRango)
   const _r = window._ckRango || (window._ckRangoDefault ? window._ckRangoDefault() : {desde:'',hasta:''});
   setEl('ck-ing-sub', (_r.desde && _r.hasta) ? (_r.desde+' → '+_r.hasta) : 'período');
+
+  // Aviso: el rango incluye un cierre que CRUZA meses (fechaFin dentro del rango, pero fechaInicio anterior al desde).
+  // En ese caso se ven egresos del cierre cuyos ingresos de respaldo quedan fuera del rango → ganancia falsamente baja.
+  const _ckCruceEl = document.getElementById('ck-cierre-cruce');
+  if(_ckCruceEl){
+    const _cierreCruce = (window._clientCierres||[]).filter(c=>!c.eliminado)
+      .find(c => c.fechaInicio && c.fechaFin && c.fechaFin>=_r.desde && c.fechaFin<=_r.hasta && c.fechaInicio<_r.desde);
+    if(_cierreCruce){
+      const _MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+      const _mes = _MESES[(+_cierreCruce.fechaInicio.slice(5,7))-1] || '';
+      _ckCruceEl.textContent = 'Este período incluye un cierre que comienza en '+_mes+'. Parte de los ingresos que lo respaldan quedan fuera del rango.';
+      _ckCruceEl.style.display = 'block';
+    } else {
+      _ckCruceEl.style.display = 'none';
+      _ckCruceEl.textContent = '';
+    }
+  }
 
   // Ventas reales del período (mostrador + cuenta cliente) desde _clientVentas, por RANGO de fecha (v.fecha).
   // Fuente separada: NO afecta totalIng/totalEg/ganancia (siguen owner-only, sin mostrador).
