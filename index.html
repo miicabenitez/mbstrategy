@@ -3805,6 +3805,20 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
           <button class="ck-eg-vista-chip" data-vista="proveedor" onclick="setCkEgVista('proveedor')" style="padding:3px 10px;font-size:10px;font-weight:500;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.3px;text-transform:none;background:#fff;color:var(--text-m);border:1px solid var(--cream-d);">Proveedores</button>
         </div>
       </div>
+      <div style="margin-top:14px;">
+        <div id="ck-eg-anual-total" style="font-family:'DM Sans',sans-serif;font-size:30px;font-weight:600;color:#3a4039;line-height:1;">$0</div>
+        <div style="font-size:13px;color:#8a8578;margin-top:4px;">total egresos del año</div>
+      </div>
+      <div id="ck-eg-anual-cajas" style="display:flex;gap:10px;margin:16px 0 22px;">
+        <div style="flex:1;background:#f4f0ea;border-radius:9px;padding:11px 14px;border-left:3px solid #4a5e4d;">
+          <div style="font-size:11px;text-transform:uppercase;color:#8a8578;letter-spacing:.5px;">A proveedores</div>
+          <div id="ck-eg-anual-prov" style="font-family:'DM Sans',sans-serif;font-size:18px;font-weight:600;color:#3a4039;margin-top:3px;">$0</div>
+        </div>
+        <div style="flex:1;background:#f4f0ea;border-radius:9px;padding:11px 14px;border-left:3px solid #b09088;">
+          <div style="font-size:11px;text-transform:uppercase;color:#8a8578;letter-spacing:.5px;">Otros conceptos</div>
+          <div id="ck-eg-anual-conc" style="font-family:'DM Sans',sans-serif;font-size:18px;font-weight:600;color:#3a4039;margin-top:3px;">$0</div>
+        </div>
+      </div>
       <div id="ck-eg-anual-empty" style="text-align:center;padding:40px 0;color:var(--text-l);font-size:13px;">Sin egresos registrados.</div>
       <div id="ckEgAnualChart" style="width:100%;"></div>
     </div>
@@ -3814,6 +3828,20 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         <div style="display:flex;gap:4px;">
           <button class="ck-eg-vista-chip" data-vista="concepto" onclick="setCkEgVista('concepto')" style="padding:3px 10px;font-size:10px;font-weight:500;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.3px;text-transform:none;background:linear-gradient(135deg,#3d5240 0%,#4a5e4d 45%,#5e7562 70%,#4a5e4d 100%);color:#e8f0e9;border:1px solid transparent;">Conceptos</button>
           <button class="ck-eg-vista-chip" data-vista="proveedor" onclick="setCkEgVista('proveedor')" style="padding:3px 10px;font-size:10px;font-weight:500;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.3px;text-transform:none;background:#fff;color:var(--text-m);border:1px solid var(--cream-d);">Proveedores</button>
+        </div>
+      </div>
+      <div id="ck-eg-mes-total-wrap" style="margin-top:14px;display:none;">
+        <div id="ck-eg-mes-total" style="font-family:'DM Sans',sans-serif;font-size:30px;font-weight:600;color:#3a4039;line-height:1;">$0</div>
+        <div style="font-size:13px;color:#8a8578;margin-top:4px;">total egresos del período</div>
+      </div>
+      <div id="ck-eg-mes-cajas" style="display:none;gap:10px;margin:16px 0 22px;">
+        <div style="flex:1;background:#f4f0ea;border-radius:9px;padding:11px 14px;border-left:3px solid #4a5e4d;">
+          <div style="font-size:11px;text-transform:uppercase;color:#8a8578;letter-spacing:.5px;">A proveedores</div>
+          <div id="ck-eg-mes-prov" style="font-family:'DM Sans',sans-serif;font-size:18px;font-weight:600;color:#3a4039;margin-top:3px;">$0</div>
+        </div>
+        <div style="flex:1;background:#f4f0ea;border-radius:9px;padding:11px 14px;border-left:3px solid #b09088;">
+          <div style="font-size:11px;text-transform:uppercase;color:#8a8578;letter-spacing:.5px;">Otros conceptos</div>
+          <div id="ck-eg-mes-conc" style="font-family:'DM Sans',sans-serif;font-size:18px;font-weight:600;color:#3a4039;margin-top:3px;">$0</div>
         </div>
       </div>
       <div id="ck-eg-mes-empty" style="text-align:center;padding:40px 0;color:var(--text-l);font-size:13px;">Seleccioná un mes para ver el detalle</div>
@@ -20241,6 +20269,15 @@ function initCkEgAnualChart(egresos) {
   const _vista = window._ckEgVista || 'concepto';
   const _esProv = e => !!window.resolverProveedor(e);
   const _egVista = egresos.filter(e => _vista==='proveedor' ? _esProv(e) : !_esProv(e));
+  // Total REAL del año = ambas mitades (a proveedores + otros conceptos). Se pobla SIEMPRE, aun si la vista activa está vacía.
+  const _setEl = (id,v)=>{ const n=document.getElementById(id); if(n) n.textContent=v; };
+  const _fmt = v => '$'+Math.round(v).toLocaleString('es-AR');
+  const totalProv     = egresos.filter(_esProv).reduce((a,e)=>a+(parseFloat(e.monto)||0),0);
+  const totalConcepto = egresos.filter(e=>!_esProv(e)).reduce((a,e)=>a+(parseFloat(e.monto)||0),0);
+  const totalReal     = totalProv + totalConcepto;
+  _setEl('ck-eg-anual-total', _fmt(totalReal));
+  _setEl('ck-eg-anual-prov',  _fmt(totalProv));
+  _setEl('ck-eg-anual-conc',  _fmt(totalConcepto));
   if(!_egVista.length) {
     if(emptyEl){ emptyEl.textContent = _vista==='proveedor' ? 'Sin pagos a proveedores.' : 'Sin gastos de concepto.'; emptyEl.style.display='block'; }
     el.innerHTML=''; return;
@@ -20283,7 +20320,7 @@ function initCkEgAnualChart(egresos) {
       <svg width="150" height="150" viewBox="0 0 150 150">
         ${slices}
         <text x="${CX}" y="${CY+1}" font-size="16" font-weight="700" font-family="DM Sans,sans-serif" fill="#3d5242" text-anchor="middle">${fmt(total)}</text>
-        <text x="${CX}" y="${CY+14}" font-size="7" font-family="DM Sans,sans-serif" fill="#9aa39c" text-anchor="middle">total egresos</text>
+        <text x="${CX}" y="${CY+14}" font-size="7" font-family="DM Sans,sans-serif" fill="#9aa39c" text-anchor="middle">${_vista==='proveedor' ? 'a proveedores' : 'otros conceptos'}</text>
       </svg>
     </div>
     <div style="flex:1;">${leyRows}</div>
@@ -20294,10 +20331,15 @@ function initCkEgMesChart(egresos, mes) {
   const emptyEl = document.getElementById('ck-eg-mes-empty');
   const wrapEl  = document.getElementById('ck-eg-mes-wrap');
   const titleEl = document.getElementById('ck-eg-mes-title');
+  const _setEl   = (id,v)=>{ const n=document.getElementById(id); if(n) n.textContent=v; };
+  const _setDisp = (id,d)=>{ const n=document.getElementById(id); if(n) n.style.display=d; };
+  const _fmt     = v => '$'+Math.round(v).toLocaleString('es-AR');
   if (mes === 'todo') {
     if (emptyEl){ emptyEl.textContent = 'Seleccioná un mes para ver el detalle'; emptyEl.style.display = 'block'; }
     if (wrapEl)  wrapEl.style.display  = 'none';
     if (titleEl) titleEl.textContent   = 'Egresos del mes';
+    _setDisp('ck-eg-mes-total-wrap','none');   // sin rango → ocultar total y cajitas (no quedan colgados sin contexto)
+    _setDisp('ck-eg-mes-cajas','none');
     return;
   }
   if (titleEl) titleEl.textContent = 'Egresos · ' + mes;
@@ -20305,6 +20347,15 @@ function initCkEgMesChart(egresos, mes) {
   const _vista = window._ckEgVista || 'concepto';
   const _esProv = e => !!window.resolverProveedor(e);
   const _egVista = egresos.filter(e => _vista==='proveedor' ? _esProv(e) : !_esProv(e));
+  // Total REAL del período = ambas mitades (a proveedores + otros conceptos). Se pobla SIEMPRE que haya rango, aun si la vista activa está vacía.
+  const totalProv     = egresos.filter(_esProv).reduce((a,e)=>a+(parseFloat(e.monto)||0),0);
+  const totalConcepto = egresos.filter(e=>!_esProv(e)).reduce((a,e)=>a+(parseFloat(e.monto)||0),0);
+  const totalReal     = totalProv + totalConcepto;
+  _setEl('ck-eg-mes-total', _fmt(totalReal));
+  _setEl('ck-eg-mes-prov',  _fmt(totalProv));
+  _setEl('ck-eg-mes-conc',  _fmt(totalConcepto));
+  _setDisp('ck-eg-mes-total-wrap','block');
+  _setDisp('ck-eg-mes-cajas','flex');
   if (_egVista.length === 0) {
     if (emptyEl){ emptyEl.textContent = _vista==='proveedor' ? 'Sin pagos a proveedores este mes.' : 'Sin gastos de concepto este mes.'; emptyEl.style.display = 'block'; }
     if (wrapEl)  wrapEl.style.display  = 'none';
@@ -20855,10 +20906,8 @@ window.embiAnalizarIndicadores = async function() {
   if(!window._clientPresupuestos || window._clientPresupuestos.length === 0) await loadClientPresupuestos();
   if(!window._mcClientes || window._mcClientes.length === 0) await loadMcModule();
 
-  const ctx = typeof embiGetFinancialContext === 'function' ? embiGetFinancialContext() : '';
-  const msg = ctx
-    ? `Analizá mis indicadores del período actual y dame recomendaciones concretas para mejorar mi rentabilidad y reducir costos.\n\n${ctx}`
-    : 'Analizá mis indicadores del período actual y dame recomendaciones concretas.';
+  // El contexto financiero lo inyecta embiCallAPI UNA sola vez vía contextStr (modo operativo, embi.js system) → acá mandamos SOLO la consigna, sin duplicar la data.
+  const msg = 'Analizá mis indicadores del período actual y dame recomendaciones concretas para mejorar mi rentabilidad y reducir costos.';
 
   const input = document.getElementById('embiInput');
   if(input) { input.value = msg; embiSend(); }
@@ -32051,26 +32100,29 @@ window.embiPrecargarContexto = async function() {
 };
 function embiGetFinancialContext(){
   try{
-    var egresos=window._clientEgresos||[];
-    var ingresos=window._clientIngresos||[];
     var hoy=new Date();
     var mes=hoy.getMonth(),anio=hoy.getFullYear();
     var mesAnt=mes===0?11:mes-1,anioAnt=mes===0?anio-1:anio;
-    var ingMes=0,egrMes=0,ingAnt=0,egrAnt=0;
     var MESES_CTX=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-    ingresos.forEach(i=>{
-      var mesDoc=(i.mes||'').replace(' de ',' ');
-      var matchMes = mesDoc.toLowerCase().includes(MESES_CTX[mes].toLowerCase());
-      var matchAnio = mesDoc.includes(String(anio));
-      if(matchMes && matchAnio) ingMes+=(parseFloat(i.monto)||0);
-      if(mesDoc.toLowerCase().includes(MESES_CTX[mesAnt].toLowerCase())&&mesDoc.includes(String(anioAnt)))ingAnt+=(parseFloat(i.monto)||0);
-    });
-    egresos.forEach(e=>{
-      var mesDoc=(e.mes||'').replace(' de ',' ');
-      if(mesDoc.toLowerCase().includes(MESES_CTX[mes].toLowerCase())&&mesDoc.includes(String(anio)))egrMes+=(parseFloat(e.monto)||0);
-      if(mesDoc.toLowerCase().includes(MESES_CTX[mesAnt].toLowerCase())&&mesDoc.includes(String(anioAnt)))egrAnt+=(parseFloat(e.monto)||0);
-    });
+    // GRUPO A — período: MISMO motor que los KPIs de Indicadores (rango activo + _ckEsDueno + excluir retiros de socio).
+    // Degradado seguro: si no hay _ckRango ni _ckRangoDefault, _r queda null y no se filtra por fecha (cae a "todo lo cargado"); todo está dentro del try externo.
+    var _r = (window._ckRango && window._ckRango.desde && window._ckRango.hasta)
+      ? window._ckRango
+      : (typeof window._ckRangoDefault==='function' ? window._ckRangoDefault() : null);
+    var _enRango = function(m){ var f=(m&&m.fecha)||''; return _r ? (f && f>=_r.desde && f<=_r.hasta) : true; };
+    var _esDuenoFn  = (typeof _ckEsDueno==='function')       ? _ckEsDueno       : function(){return true;};
+    var _esRetiroFn = (typeof _ckEsRetiroSocio==='function') ? _ckEsRetiroSocio : function(){return false;};
+    var ingArr = (window._clientIngresos||[]).filter(_esDuenoFn).filter(_enRango);
+    var egArr  = (window._clientEgresos ||[]).filter(function(m){return _esDuenoFn(m) && !_esRetiroFn(m);}).filter(_enRango);
+    var ingMes = ingArr.reduce(function(a,i){return a+(parseFloat(i.monto)||0);},0);
+    var egrMes = egArr.reduce(function(a,e){return a+(parseFloat(e.monto)||0);},0);
     var ganancia=ingMes-egrMes,margen=ingMes>0?Math.round((ganancia/ingMes)*100):0;
+    // Ingresos del mes calendario anterior (solo para la proyección; por string sobre .mes). Se usa únicamente si el período activo es el mes en curso.
+    var ingAnt=0;
+    (window._clientIngresos||[]).forEach(function(i){ var md=(i.mes||'').replace(' de ',' '); if(md.toLowerCase().includes(MESES_CTX[mesAnt].toLowerCase())&&md.includes(String(anioAnt)))ingAnt+=(parseFloat(i.monto)||0); });
+    // Ticket promedio = ventas reales del rango ÷ cantidad de ventas (MISMA fórmula que la card/resumen de Indicadores)
+    var ventasR = (window._clientVentas||[]).filter(_enRango);
+    var ticketProm = ventasR.length>0 ? Math.round(ventasR.reduce(function(a,v){return a+(parseFloat(v.monto)||0);},0)/ventasR.length) : 0;
     var cobPend=(window._clientPresupuestos||[])
       .filter(p=>p.estado==='Aprobado')
       .reduce((a,p)=>{
@@ -32089,21 +32141,30 @@ function embiGetFinancialContext(){
     var presupDetalle=presupActivos.filter(p=>p.estado&&p.estado!=='Cobrado'&&p.estado!=='Rechazado');
     var presupStr=presupDetalle.length>0?presupDetalle.map(p=>p.cliente+' — '+p.descripcion+' $'+Math.round(p.monto).toLocaleString('es-AR')+' ('+p.estado+') [id:'+p.id+']').join(', '):'Sin presupuestos activos';
     var catEgr={};
-    egresos.forEach(e=>{
-      var mesDoc=(e.mes||'').replace(' de ',' ');
-      if(mesDoc.toLowerCase().includes(MESES_CTX[mes].toLowerCase())&&mesDoc.includes(String(anio))){
-        var cat=e.concepto||'Otros';
-        catEgr[cat]=(catEgr[cat]||0)+(parseFloat(e.monto)||0);
-      }
-    });
-    var catDetalle=Object.entries(catEgr).sort((a,b)=>b[1]-a[1]).map(([c,m])=>c+': $'+Math.round(m).toLocaleString('es-AR')).join(', ');
-    var diaDelMes=hoy.getDate();
-    var diasEnMes=new Date(anio,mes+1,0).getDate();
-    var diasRestantes=diasEnMes-diaDelMes;
-    var ritmoIngDiario=diaDelMes>0?ingMes/diaDelMes:0;
-    var proyIngreso=Math.round(ritmoIngDiario*diasEnMes);
-    var proyGanancia=proyIngreso-egrMes;
-    var varVsMesAnt=ingAnt>0?Math.round(((proyIngreso-ingAnt)/ingAnt)*100):0;
+    egArr.forEach(function(e){ var cat=e.concepto||'Otros'; catEgr[cat]=(catEgr[cat]||0)+(parseFloat(e.monto)||0); });
+    var catDetalle=Object.entries(catEgr).sort((a,b)=>b[1]-a[1]).map(function(en){return en[0]+': $'+Math.round(en[1]).toLocaleString('es-AR');}).join(', ');
+    // PROYECCIÓN MENSUAL: solo válida si el período activo ES el mes calendario en curso (desde=día 1, hasta=hoy o fin de mes). Para cualquier otro rango se omite.
+    var _esMesEnCurso = function(r){
+      if(!r||!r.desde||!r.hasta) return false;
+      var mm=String(mes+1).padStart(2,'0');
+      var primero = anio+'-'+mm+'-01';
+      var ultimo  = anio+'-'+mm+'-'+String(new Date(anio,mes+1,0).getDate()).padStart(2,'0');
+      var hoyStr  = anio+'-'+mm+'-'+String(hoy.getDate()).padStart(2,'0');
+      return r.desde===primero && (r.hasta===hoyStr || r.hasta===ultimo);
+    };
+    var proyeccionStr;
+    if(_esMesEnCurso(_r)){
+      var diaDelMes=hoy.getDate();
+      var diasEnMes=new Date(anio,mes+1,0).getDate();
+      var diasRestantes=diasEnMes-diaDelMes;
+      var ritmoIngDiario=diaDelMes>0?ingMes/diaDelMes:0;
+      var proyIngreso=Math.round(ritmoIngDiario*diasEnMes);
+      var proyGanancia=proyIngreso-egrMes;
+      var varVsMesAnt=ingAnt>0?Math.round(((proyIngreso-ingAnt)/ingAnt)*100):0;
+      proyeccionStr='\n\nPROYECCIÓN MENSUAL:\n- Día '+diaDelMes+' de '+diasEnMes+' del mes ('+diasRestantes+' días restantes)\n- Ingresos acumulados: $'+Math.round(ingMes).toLocaleString('es-AR')+'\n- Egresos acumulados: $'+Math.round(egrMes).toLocaleString('es-AR')+'\n- Ritmo diario de ingresos: $'+Math.round(ritmoIngDiario).toLocaleString('es-AR')+'/día\n- Proyección de ingresos al cierre: $'+proyIngreso.toLocaleString('es-AR')+'\n- Proyección de ganancia al cierre: $'+proyGanancia.toLocaleString('es-AR')+'\n- Mes anterior cerró en: $'+Math.round(ingAnt).toLocaleString('es-AR')+'\n- Variación proyectada vs mes anterior: '+(varVsMesAnt>0?'+':'')+varVsMesAnt+'%\nCuando el cliente pregunte sobre proyección, cierre del mes, o cómo va el negocio, usá estos datos para dar una respuesta clara y motivadora. Si la proyección es positiva respecto al mes anterior, felicitalo. Si es negativa, sugerí acciones concretas.';
+    } else {
+      proyeccionStr='\n\nPERÍODO CERRADO/PERSONALIZADO: el análisis corresponde al rango '+(_r?(_r.desde+' → '+_r.hasta):'seleccionado')+', no al mes en curso. No se incluye proyección mensual (la proyección solo aplica cuando el período es el mes calendario actual).';
+    }
     var presupAprobados=(window._clientPresupuestos||[]).filter(function(p){return p.estado==='Aprobado';});
     var montoSinCobrar=presupAprobados.reduce(function(s,p){
       if(p.items && p.items.length > 0)
@@ -32117,7 +32178,7 @@ function embiGetFinancialContext(){
     var listas=window._embi_listas||[];
     var listasStr=listas.length>0?listas.map(function(l){var pend=(l.items||[]).filter(function(i){return !i.completado;});return l.nombre+(pend.length>0?' ('+pend.map(function(i){return i.texto;}).join(', ')+')':' (vacía)');}).join('; '):'Sin listas';
     var ocsDetalle=ocsPend.length>0?ocsPend.map(function(o){return 'OC-'+String(o.numero).padStart(3,'0')+' · '+o.proveedor+' · $'+(o.total||o.monto||0).toLocaleString('es-AR')+' (id: '+o.ocId+')';}).join(', '):'Sin OC pendientes';
-    return '\n\nDATA FINANCIERA ('+hoy.toLocaleDateString('es-AR',{month:'long',year:'numeric'})+'):\n- Ingresos mes: $'+Math.round(ingMes).toLocaleString('es-AR')+'\n- Egresos mes: $'+Math.round(egrMes).toLocaleString('es-AR')+'\n- Ganancia: $'+Math.round(ganancia).toLocaleString('es-AR')+' | Margen: '+margen+'%\n- Cobros pendientes: $'+Math.round(cobPend).toLocaleString('es-AR')+'\n- Clientes ('+clientes.length+'): '+clientesNombres+'\n- Proveedores: '+provDetalle+'\n- OC pendientes ('+ocsPend.length+'): '+ocsDetalle+'\n- Egresos por categoría: '+(catDetalle||'sin datos')+'\n- Cuentas: '+cuentasDetalle+'\n- Presupuestos activos: '+presupStr+'\n\nPROYECCIÓN MENSUAL:\n- Día '+diaDelMes+' de '+diasEnMes+' del mes ('+diasRestantes+' días restantes)\n- Ingresos acumulados: $'+Math.round(ingMes).toLocaleString('es-AR')+'\n- Egresos acumulados: $'+Math.round(egrMes).toLocaleString('es-AR')+'\n- Ritmo diario de ingresos: $'+Math.round(ritmoIngDiario).toLocaleString('es-AR')+'/día\n- Proyección de ingresos al cierre: $'+proyIngreso.toLocaleString('es-AR')+'\n- Proyección de ganancia al cierre: $'+proyGanancia.toLocaleString('es-AR')+'\n- Mes anterior cerró en: $'+Math.round(ingAnt).toLocaleString('es-AR')+'\n- Variación proyectada vs mes anterior: '+(varVsMesAnt>0?'+':'')+varVsMesAnt+'%\n- Presupuestos aprobados sin cobrar: $'+Math.round(montoSinCobrar).toLocaleString('es-AR')+' (ingreso probable adicional)\nCuando el cliente pregunte sobre proyección, cierre del mes, o cómo va el negocio, usá estos datos para dar una respuesta clara y motivadora. Si la proyección es positiva respecto al mes anterior, felicitalo. Si es negativa, sugerí acciones concretas.'+'\nCATÁLOGO DE PRODUCTOS (ventas, '+catalogo.length+'): '+catalogoStr+'\nPRODUCTOS DE COMPRA ('+prodCompra.length+'): '+prodCompraStr+'\nMIS LISTAS ('+listas.length+'): '+listasStr;
+    return '\n\nDATA FINANCIERA (período '+(_r?(_r.desde+' → '+_r.hasta):'mes actual')+'):\n- Ingresos: $'+Math.round(ingMes).toLocaleString('es-AR')+'\n- Egresos: $'+Math.round(egrMes).toLocaleString('es-AR')+'\n- Ganancia: $'+Math.round(ganancia).toLocaleString('es-AR')+' | Margen: '+margen+'%\n- Ticket promedio: $'+ticketProm.toLocaleString('es-AR')+' ('+ventasR.length+' venta'+(ventasR.length===1?'':'s')+' en el período)\n- Cobros pendientes: $'+Math.round(cobPend).toLocaleString('es-AR')+'\n- Clientes ('+clientes.length+'): '+clientesNombres+'\n- Proveedores: '+provDetalle+'\n- OC pendientes ('+ocsPend.length+'): '+ocsDetalle+'\n- Egresos por categoría: '+(catDetalle||'sin datos')+'\n- Cuentas: '+cuentasDetalle+'\n- Presupuestos activos: '+presupStr+'\n- Presupuestos aprobados sin cobrar: $'+Math.round(montoSinCobrar).toLocaleString('es-AR')+' (ingreso probable adicional)'+proyeccionStr+'\nCATÁLOGO DE PRODUCTOS (ventas, '+catalogo.length+'): '+catalogoStr+'\nPRODUCTOS DE COMPRA ('+prodCompra.length+'): '+prodCompraStr+'\nMIS LISTAS ('+listas.length+'): '+listasStr;
   }catch(e){console.error('embiGetFinancialContext ERROR:', e); return '';}
 }
 
@@ -32185,6 +32246,8 @@ async function embiCallAPI(userMsg){
   if(embiHistory.length>10)embiHistory=embiHistory.slice(-10);
   try{
     var payload={messages:embiHistory,modo:embiModo||'explicativo',userId:window.currentClientUID||null,modulo:window._moduloActivo||'general'};
+    // _clientCierres es necesario para que _ckEsRetiroSocio excluya los retiros de socio; ni el chat ni "Ver análisis" lo precargan. Carga una sola vez (guard), no throwea.
+    if(embiModo==='operativo' && !window._clientCierres && window.loadClientCierres) await window.loadClientCierres();
     if(embiModo==='operativo')payload.contextStr=embiGetFinancialContext();
     var _embiUser=window._auth?.currentUser;
     var _embiToken=_embiUser?await _embiUser.getIdToken():null;
