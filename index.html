@@ -11015,9 +11015,17 @@ function _ckEsDueno(m){ return (window._cuentasDuenoNombres||[]).includes(m.cuen
 // ¿Es un retiro de socio? Flag nueva (esRetiroSocio) O heurística para data vieja sin flag:
 // egreso del cierre cuyo concepto es el nombre EXACTO de un socio. Los compromisos del cierre
 // no matchean (proveedor lleva sufijo " — CC Proveedor"); las reservas son 'transfer', no egreso.
+// Fuente de los participantes: el PROPIO cierre del movimiento (m.referenciaId → c.distribucion),
+// que en Indicadores SÍ está cargado (window._clientCierres). Fallback a _cprdParticipantes
+// (estado efímero del módulo de cierre, vacío en Indicadores) solo si no se encuentra el cierre.
 function _ckEsRetiroSocio(m){
   if(m.esRetiroSocio) return true;
   if(m.origen!=='cierre') return false;
+  const c = (window._clientCierres||[]).find(x => x.id === m.referenciaId);
+  if(c){
+    const participantes = (c.distribucion||[]).filter(d => d.tipo==='participante').map(d => d.nombre);
+    return participantes.includes(m.concepto);
+  }
   const socios = (window._cprdParticipantes||[]).map(p=>p.nombre);
   return socios.includes(m.concepto);
 }
