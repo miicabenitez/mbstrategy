@@ -6,6 +6,7 @@ if (!getApps().length) {
 }
 const db = getFirestore();
 const { PLAN_SERVER, normalizarPlan } = require('./_planConfig');
+const { verifyAuth } = require('./_auth');
 const ALLOWED_ORIGINS = ['https://sistema.mbstrategy.com.ar', 'https://dev--creative-griffin-98f177.netlify.app'];
 
 function getCorsHeaders(event) {
@@ -96,10 +97,13 @@ exports.handler = async (event) => {
       };
     }
 
-    // ── FLUJO INTERNO (desde Mi cuenta en el sistema) ──
+    // ── FLUJO INTERNO (desde Mi cuenta en el sistema) ── requiere token del dueño.
     if (!clienteId) {
       return { statusCode: 400, headers: HEADERS, body: JSON.stringify({ error: 'Datos inválidos' }) };
     }
+    const _a = await verifyAuth(event);
+    if (_a.error) return { statusCode: _a.statusCode, headers: HEADERS, body: JSON.stringify({ error: _a.error }) };
+    if (clienteId !== _a.uid) return { statusCode: 403, headers: HEADERS, body: JSON.stringify({ error: 'No autorizado' }) };
     const clienteSnap = await db.collection('clientes').doc(clienteId).get();
     if (!clienteSnap.exists) {
       return { statusCode: 404, headers: HEADERS, body: JSON.stringify({ error: 'Cliente no encontrado' }) };

@@ -5,6 +5,7 @@ if (!getApps().length) {
   initializeApp({ credential: cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)) });
 }
 const db = getFirestore();
+const { verifyAuth } = require('./_auth');
 const ALLOWED_ORIGINS = ['https://sistema.mbstrategy.com.ar', 'https://dev--creative-griffin-98f177.netlify.app'];
 
 function getCorsHeaders(event) {
@@ -12,7 +13,7 @@ function getCorsHeaders(event) {
   const corsOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
   return {
     'Access-Control-Allow-Origin': corsOrigin,
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Content-Type': 'application/json'
   };
 }
@@ -45,6 +46,9 @@ exports.handler = async (event) => {
     if (!clienteId) {
       return { statusCode: 400, headers: HEADERS, body: JSON.stringify({ error: 'clienteId requerido' }) };
     }
+    const _a = await verifyAuth(event);
+    if (_a.error) return { statusCode: _a.statusCode, headers: HEADERS, body: JSON.stringify({ error: _a.error }) };
+    if (clienteId !== _a.uid) return { statusCode: 403, headers: HEADERS, body: JSON.stringify({ error: 'No autorizado' }) };
 
     const clienteSnap = await db.collection('clientes').doc(clienteId).get();
     if (!clienteSnap.exists) {

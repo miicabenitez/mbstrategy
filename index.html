@@ -24218,9 +24218,11 @@ window.suscribirseMP = async function(plan) {
   if(errEl) errEl.style.display = 'none';
   if(btn) { btn.textContent = 'Procesando...'; btn.disabled = true; }
   try {
+    const _tk = await window._auth?.currentUser?.getIdToken(true);
+    if(!_tk){ if(errEl){ errEl.textContent = 'Tu sesión expiró. Recargá la página e ingresá de nuevo.'; errEl.style.display = 'block'; } if(btn){ btn.textContent = 'Suscribirme'; btn.disabled = false; } return; }
     const res = await fetch('/.netlify/functions/mp-subscription', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _tk },
       body: JSON.stringify({ clienteId: currentClientUID, plan })
     });
     const data = await res.json();
@@ -24248,9 +24250,11 @@ window.cancelarMembresia = function() {
       const btn = document.querySelector('#memb-activo button[onclick="cancelarMembresia()"]');
       if(btn) { btn.textContent = 'Cancelando...'; btn.disabled = true; }
       try {
+        const _tk = await window._auth?.currentUser?.getIdToken(true);
+        if(!_tk){ showToast('Tu sesión expiró. Recargá la página e ingresá de nuevo.', 'error'); if(btn){ btn.textContent = 'Cancelar suscripción'; btn.disabled = false; } return; }
         const res = await fetch('/.netlify/functions/mp-cancel', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _tk },
           body: JSON.stringify({ clienteId: currentClientUID })
         });
         const data = await res.json();
