@@ -29324,11 +29324,12 @@ window._proToast = function(titulo, plan) {
   if(old) old.remove();
   var t = document.createElement('div');
   t.id = '_pro-toast';
-  t.style.cssText = 'position:fixed;top:20px;right:20px;z-index:9999;background:#fff;border-radius:10px;padding:14px 16px;box-shadow:0 4px 20px rgba(0,0,0,0.13);display:flex;align-items:center;gap:12px;font-family:\'DM Sans\',sans-serif;max-width:320px;border:1px solid #e8e5e0;';
+  t.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.92);opacity:0;transition:opacity .2s ease,transform .25s cubic-bezier(.34,1.56,.64,1);z-index:9999;background:#fff;border-radius:12px;padding:16px 18px;box-shadow:0 10px 40px rgba(0,0,0,0.20);display:flex;align-items:center;gap:12px;font-family:\'DM Sans\',sans-serif;max-width:340px;width:calc(100% - 40px);box-sizing:border-box;border:1px solid #e8e5e0;';
   t.innerHTML = '<div style="flex:1;"><div style="font-size:13px;font-weight:600;color:#2c2c2c;margin-bottom:3px;">' + titulo + '</div><div style="font-size:12px;color:#73726c;">Disponible en el Plan ' + _planLabel + '.</div></div>'
     + '<button onclick="document.getElementById(\'_pro-toast\').remove();navigateToMiCuentaMembresia()" style="display:inline-block;background:#4a5e4d;color:#fff;border:none;cursor:pointer;padding:7px 14px;border-radius:7px;font-size:12px;font-weight:500;white-space:nowrap;">Ver Plan ' + _planLabel + '</button>'
     + '<button onclick="document.getElementById(\'_pro-toast\').remove()" style="background:none;border:none;cursor:pointer;color:#aaa;font-size:18px;padding:0 0 0 4px;line-height:1;">×</button>';
   document.body.appendChild(t);
+  requestAnimationFrame(function(){ requestAnimationFrame(function(){ t.style.opacity='1'; t.style.transform='translate(-50%,-50%) scale(1)'; }); });
   setTimeout(function(){ var el=document.getElementById('_pro-toast'); if(el) el.remove(); }, 5000);
 };
 
@@ -29481,10 +29482,17 @@ window.equipoTabSwitch = function(tab) {
   };
   if(tab === 'cajas') {
     setActive(tc); setInactive(tu);
+    if(!window.tieneAccesoPlan('gestionCajas')){
+      btn.style.display = 'none';
+      window._proLockEnTab('equipo-contenido', 'Gestión de cajas', true, 'pro');
+      return;
+    }
+    btn.style.display = '';
     btn.textContent = '+ Nueva caja';
     btn.onclick = function(){ equipoCajaShow(); };
     equipoLoadCajas();
   } else {
+    btn.style.display = '';
     setActive(tu); setInactive(tc);
     btn.textContent = '+ Nuevo usuario';
     btn.onclick = function(){ equipoNuevoUsuarioShow(); };
@@ -29545,9 +29553,16 @@ window.equipoLoadCajas = async function() {
   }
 };
 
+// Multicaja: crear cajas adicionales es SOLO Premium (Esencial/Pro no crean). Plan-based, sin conteo.
+// NO toca la colección 'cuentas' (administrativas) ni la caja mostrador.
+window._chequeoCajaCajero = function(){
+  return { ok: !!window.tieneAccesoPlan('multicaja'), plan: 'premium', titulo: 'Multicaja' };
+};
 window.equipoCajaShow = function() {
   var ov = document.getElementById('equipo-caja-modal-overlay');
   if(!ov) return;
+  var _cc = window._chequeoCajaCajero();
+  if(!_cc.ok){ window._proToast(_cc.titulo, _cc.plan); return; }   // gate: no abre el modal si se alcanzó el límite
   window._equipoCajaEditandoId = null;
   var nombreEl = document.getElementById('equipo-caja-nombre');
   if(nombreEl) nombreEl.value = '';
@@ -29577,6 +29592,8 @@ window.equipoCajaGuardar = async function() {
     if(editandoId) {
       await window._updateDoc(window._doc(window.db, 'clientes', currentClientUID, 'cajas', editandoId), { nombre });
     } else {
+      var _cc = window._chequeoCajaCajero();
+      if(!_cc.ok){ window._proToast(_cc.titulo, _cc.plan); btn.disabled = false; btn.textContent = 'Crear caja'; return; }
       await window._addDoc(window._collection(window.db, 'clientes', currentClientUID, 'cajas'), {
         nombre,
         activa: true,
@@ -31134,13 +31151,13 @@ window._TAB_POR_ROL = {
 window.PLAN_FEATURES = {
   esencial: { modulos:['inicio','finanzas','ventas','compras','herramientas','gestion'],
               embi:'explicativo', auditoriaCajero:false, stock:false, produccion:false,
-              cierrePeriodo:true, analisisEmbi:false, maxUsuarios:1, maxCajasCajero:0 },
+              cierrePeriodo:true, analisisEmbi:false, maxUsuarios:1, gestionCajas:false, multicaja:false },
   pro:      { modulos:['inicio','finanzas','ventas','compras','stock','herramientas','gestion'],
               embi:'operativo',  auditoriaCajero:true,  stock:true,  produccion:false,
-              cierrePeriodo:true, analisisEmbi:true, maxUsuarios:Infinity, maxCajasCajero:1 },
+              cierrePeriodo:true, analisisEmbi:true, maxUsuarios:Infinity, gestionCajas:true, multicaja:false },
   premium:  { modulos:['inicio','finanzas','ventas','compras','stock','produccion','herramientas','gestion'],
               embi:'operativo',  auditoriaCajero:true,  stock:true,  produccion:true,
-              cierrePeriodo:true, analisisEmbi:true, maxUsuarios:Infinity, maxCajasCajero:Infinity }
+              cierrePeriodo:true, analisisEmbi:true, maxUsuarios:Infinity, gestionCajas:true, multicaja:true }
 };
 
 // Mapea valores viejos/desconocidos al nuevo set. Default seguro = 'esencial' (menor privilegio).
