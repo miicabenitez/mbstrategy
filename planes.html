@@ -20,11 +20,11 @@ body{font-family:'DM Sans',sans-serif;background:#F5F4EF;color:#2C2C2C;min-heigh
 .plans{display:flex;gap:16px;max-width:960px;margin:0 auto 40px;padding:12px 24px 0;align-items:stretch;}
 .plan-card{flex:1;background:#fff;border-radius:12px;padding:28px 24px;border:.5px solid rgba(0,0,0,.08);position:relative;display:flex;flex-direction:column;}
 .plan-card.featured-pro{border:2px solid #b09088;box-shadow:0 4px 20px rgba(176,144,136,.2);}
-.plan-card.business{opacity:.85;border:1.5px solid #b09088;}
-.badge-top{position:absolute;top:0;left:50%;transform:translate(-50%,-50%);font-size:11px;font-weight:500;padding:4px 16px;border-radius:20px;letter-spacing:.8px;text-transform:uppercase;white-space:nowrap;color:#fff;z-index:1;}
+.plan-card.card-premium{border:1.5px solid #a06658;}
+.badge-top{display:inline-block;align-self:flex-start;font-size:11px;font-weight:500;padding:4px 14px;border-radius:20px;letter-spacing:.8px;text-transform:uppercase;white-space:nowrap;color:#fff;margin-bottom:14px;}
 .badge-base{background:#4a5e4d;}
 .badge-pro{background:linear-gradient(90deg,#7a5855,#b09088,#d4b0a8,#b09088,#7a5855);background-size:300% auto;animation:shimmer 3s linear infinite;}
-.badge-biz{background:#b5b0a8;}
+.badge-float{position:absolute;top:0;left:50%;transform:translate(-50%,-50%);font-size:11px;font-weight:500;padding:4px 16px;border-radius:20px;letter-spacing:.8px;text-transform:uppercase;white-space:nowrap;color:#fff;z-index:1;background:#a06658;}
 .plan-name{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#2C2C2C;margin-bottom:8px;}
 .plan-badge{display:inline-block;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;margin-bottom:14px;}
 .plan-price-row{margin-bottom:20px;}
@@ -37,16 +37,14 @@ body{font-family:'DM Sans',sans-serif;background:#F5F4EF;color:#2C2C2C;min-heigh
 .plan-features.blue li::before{color:#b09088;}
 .plan-features.gray li{color:#9c9a92;}
 .plan-features.gray li::before{color:#9c9a92;}
-.btn-base,.btn-pro,.btn-biz,.btn-inicio{width:100%;height:46px;border-radius:10px;font-size:14px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;border:none;}
+.btn-base,.btn-pro,.btn-premium,.btn-inicio{width:100%;height:46px;border-radius:10px;font-size:14px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;border:none;}
 .btn-base{background:linear-gradient(90deg,#354e3c,#4a5e4d,#6b8a6e,#4a5e4d,#354e3c);background-size:300% auto;animation:shimmer 4s linear infinite;color:#fff;}
 .btn-base:hover{opacity:.88;}
 .btn-pro{background:linear-gradient(90deg,#7a5855,#b09088,#d4b0a8,#b09088,#7a5855);background-size:300% auto;animation:shimmer 4s linear infinite;color:#fff;}
 .btn-pro:hover{opacity:.88;}
-.btn-biz{background:linear-gradient(135deg,#4a5e78,#6a7e98 40%,#7a8ea8 60%,#4a5e78);background-size:200%;animation:shimmer 4s linear infinite;color:#fff;border:none;border-radius:5px;cursor:pointer;}
-.waitlist-row{display:flex;gap:8px;margin-bottom:10px;}
-.waitlist-row input{flex:1;padding:10px 12px;border:.5px solid #D0CFC9;border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;}
-.waitlist-row input:focus{border-color:#4a5e4d;}
-.waitlist-msg{font-size:11px;color:#4a5e4d;margin-top:6px;display:none;}
+.btn-premium{background:linear-gradient(90deg,#7a4f4a,#a06658,#c08878,#a06658,#7a4f4a);background-size:300% auto;animation:shimmer 4s linear infinite;color:#fff;}
+.btn-premium:hover{opacity:.88;}
+.plan-trial-foot{font-size:11px;color:#73726c;text-align:center;margin-top:10px;letter-spacing:.3px;}
 .academia-section{max-width:960px;margin:0 auto 40px;padding:0 24px;}
 .academia-card{background:linear-gradient(135deg,#F5F4EF 0%,#EBF0EC 100%);border-radius:12px;padding:32px 28px;border:.5px solid #D4DCCE;display:flex;gap:20px;align-items:flex-start;}
 .academia-icon{width:52px;height:52px;background:#4a5e4d;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
@@ -95,42 +93,13 @@ body{font-family:'DM Sans',sans-serif;background:#F5F4EF;color:#2C2C2C;min-heigh
   .plan-card{padding:22px 18px;}
   .footer-section{padding:0 16px 32px;}
   .md{padding:22px;max-width:95%;}
-  .waitlist-row{flex-direction:column;}
 }
 @keyframes shimmer{0%{background-position:-200% center;}100%{background-position:200% center;}}
 .plan-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0;pointer-events:none;}
 .card-base{border:1.5px solid #4a5e4d;}
 .card-base::before{content:none;}
 .featured-pro::before{content:none;}
-.business::before{content:none;}
-/* ─── Waitlist Modal ─────────────────────────────────────────────── */
-@keyframes wlFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-7px);}}
-@keyframes wlSpin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
-@keyframes wlBounceIn{0%{transform:translateY(-60px) scale(.85);opacity:0;}60%{transform:translateY(6px) scale(1.04);opacity:1;}80%{transform:translateY(-3px) scale(.98);}100%{transform:translateY(0) scale(1);}}
-#wlModal{position:fixed;inset:0;background:rgba(26,42,30,.62);display:none;align-items:center;justify-content:center;z-index:600;backdrop-filter:blur(4px);}
-#wlModal.open{display:flex;}
-#wlBox{background:#f4f0ea;border-radius:22px;padding:36px 32px 28px;width:90%;max-width:380px;position:relative;text-align:center;}
-#wlClose{position:absolute;top:14px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:#aaa9a0;line-height:1;}
-.wl-rocket-wrap{position:relative;width:80px;height:80px;margin:0 auto 20px;animation:wlFloat 3s ease-in-out infinite;}
-.wl-rocket-ring{position:absolute;inset:0;border-radius:50%;border:2px dashed #b09088;animation:wlSpin 6s linear infinite;opacity:.7;}
-.wl-rocket-circle{width:80px;height:80px;border-radius:50%;background:#b09088;display:flex;align-items:center;justify-content:center;}
-.wl-title{font-family:'Cormorant Garamond',serif;font-size:40px;font-weight:300;color:#2C2C2C;line-height:1.1;margin-bottom:12px;}
-.wl-divider{width:44px;height:2px;background:#b09088;margin:0 auto 14px;border-radius:2px;}
-.wl-desc{font-size:13px;color:#73726c;line-height:1.65;margin-bottom:18px;max-width:280px;margin-left:auto;margin-right:auto;}
-.wl-capsule{display:flex;align-items:center;background:#ede8e0;border-radius:50px;padding:5px 5px 5px 16px;margin-bottom:8px;}
-.wl-cedit{flex:1;outline:none;font-size:13px;font-family:'DM Sans',sans-serif;color:#2C2C2C;background:transparent;min-height:20px;line-height:20px;white-space:nowrap;overflow:hidden;}
-.wl-cedit.ph{color:#aaa9a0;}
-.wl-cbtn{border-radius:50px;padding:9px 18px;font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;line-height:1;user-select:none;}
-.wl-cbtn-g{background:#4a5e4d;color:#fff;}
-.wl-cbtn-t{background:#b09088;color:#fff;}
-.wl-note{font-size:11px;color:#aaa9a0;margin-top:6px;}
-.wl-ok{font-size:12px;color:#4a5e4d;margin-top:8px;display:none;}
-.wl-err{font-size:12px;color:#C4786A;margin-top:8px;display:none;}
-.wl-countdown{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:18px;}
-.wl-cd-box{background:#4a5e4d;color:#fff;border-radius:10px;padding:10px 14px;min-width:54px;}
-.wl-cd-num{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:300;line-height:1;}
-.wl-cd-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.8px;opacity:.75;margin-top:2px;}
-.wl-cd-sep{font-family:'Cormorant Garamond',serif;font-size:30px;color:#4a5e4d;font-weight:300;margin-bottom:18px;}
+.card-premium::before{content:none;}
 .price-num{font-family:'DM Sans',sans-serif!important;font-size:42px;font-weight:700;font-style:normal;letter-spacing:-1px;color:#1a1a1a;}
 </style>
 </head>
@@ -148,40 +117,43 @@ body{font-family:'DM Sans',sans-serif;background:#F5F4EF;color:#2C2C2C;min-heigh
 <div class="plans">
   <!-- BASE -->
   <div class="plan-card card-base">
-    <div class="badge-top badge-base">PRUEBA GRATUITA</div>
     <div class="plan-content">
-      <div class="plan-name">Base</div>
+      <div class="badge-top badge-base">PRUEBA GRATUITA</div>
+      <div class="plan-name">Esencial</div>
       <div class="plan-price-row">
-        <span class="price-num">$105.000</span><span style="font-size:14px;color:#73726c;">/mes</span>
+        <span class="price-num">$110.000</span><span style="font-size:14px;color:#73726c;">/mes</span>
       </div>
-      <div style="font-size:12px;color:#4a5e4d;font-weight:500;margin-bottom:16px;">10 días para descubrirlo</div>
       <div style="font-size:13px;color:#73726c;font-style:italic;margin-bottom:16px;line-height:1.5;">Por primera vez, sabés exactamente cómo está tu negocio.</div>
       <ul class="plan-features green">
         <li>Caja completa — ingresos, egresos y cuentas</li>
         <li>Comercial — clientes, presupuestos y cobros</li>
         <li>Compras — proveedores, órdenes y cuenta corriente</li>
+        <li>Facturación electrónica AFIP</li>
         <li>Indicadores y control del negocio</li>
         <li>Plan de acción personal</li>
         <li>Embi — tu asistente que guía y responde</li>
       </ul>
     </div>
     <div class="plan-bottom">
-      <button class="btn-base" onclick="checkLaunch('base')">Suscribirme al Base</button>
+      <button class="btn-base" onclick="checkLaunch('esencial')">Suscribirme al Esencial</button>
+      <div class="plan-trial-foot">10 días de prueba gratuita</div>
     </div>
   </div>
 
   <!-- PRO -->
   <div class="plan-card featured-pro">
-    <div class="badge-top badge-base">PRUEBA GRATUITA</div>
+    <div class="badge-float">MÁS VENDIDO</div>
     <div class="plan-content">
+      <div class="badge-top badge-base">PRUEBA GRATUITA</div>
       <div class="plan-name">Pro</div>
       <div class="plan-price-row">
-        <span class="price-num">$157.000</span><span style="font-size:14px;color:#73726c;">/mes</span>
+        <span class="price-num">$175.000</span><span style="font-size:14px;color:#73726c;">/mes</span>
       </div>
-      <div style="font-size:12px;color:#4a5e4d;font-weight:500;margin-bottom:16px;">10 días para descubrirlo</div>
       <div style="font-size:13px;color:#73726c;font-style:italic;margin-bottom:16px;line-height:1.5;">Sabés cuánto ganaste. Ahora decidí qué hacer con eso.</div>
       <ul class="plan-features blue">
-        <li style="color:#73726c;">Todo el plan Base</li>
+        <li style="color:#73726c;">Todo el plan Esencial</li>
+        <li>Stock — insumos, productos y recetas</li>
+        <li>Auditoría de cajeros</li>
         <li>Cierre de período — distribuí ganancias, reservas y retiros en minutos</li>
         <li>Embi operativo — le hablás y ejecuta acciones en el sistema</li>
         <li>Análisis de Indicadores — Embi analiza tus números y te dice qué hacer</li>
@@ -190,30 +162,30 @@ body{font-family:'DM Sans',sans-serif;background:#F5F4EF;color:#2C2C2C;min-heigh
     </div>
     <div class="plan-bottom">
       <button class="btn-pro" onclick="checkLaunch('pro')">Suscribirme al Pro</button>
+      <div class="plan-trial-foot">10 días de prueba gratuita</div>
     </div>
   </div>
 
-  <!-- BUSINESS -->
-  <div class="plan-card business">
-    <div class="badge-top badge-biz">Próximamente</div>
+  <!-- PREMIUM -->
+  <div class="plan-card card-premium">
     <div class="plan-content">
-      <div class="plan-name">Business</div>
+      <div class="badge-top badge-base">PRUEBA GRATUITA</div>
+      <div class="plan-name">Premium</div>
       <div class="plan-price-row">
-        <span style="font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:300;color:#c8c4bc;">$ —</span>
+        <span class="price-num">$220.000</span><span style="font-size:14px;color:#73726c;">/mes</span>
       </div>
-      <ul class="plan-features gray" style="margin-top:0;">
-        <li>Todo lo del plan Pro</li>
-        <li><strong>Multi-usuarios con roles</strong></li>
-        <li>Facturación integrada con AFIP</li>
+      <div style="font-size:13px;color:#73726c;font-style:italic;margin-bottom:16px;line-height:1.5;">Producción, cajas y equipo sin límites.</div>
+      <ul class="plan-features blue">
+        <li style="color:#73726c;">Todo el plan Pro</li>
+        <li>Producción — órdenes, recetas y empleados</li>
+        <li>Multicaja — cajas ilimitadas</li>
+        <li>Multi-usuarios con roles</li>
         <li>Soporte prioritario dedicado</li>
       </ul>
     </div>
     <div class="plan-bottom">
-      <div class="waitlist-row">
-        <input type="email" id="wl-email" placeholder="tu@email.com" required/>
-      </div>
-      <div class="waitlist-msg" id="wl-msg">Listo, te avisamos cuando esté disponible.</div>
-      <button class="btn-biz" id="wl-btn" onclick="joinWaitlist()">Avisame cuando esté</button>
+      <button class="btn-premium" onclick="checkLaunch('premium')">Suscribirme al Premium</button>
+      <div class="plan-trial-foot">10 días de prueba gratuita</div>
     </div>
   </div>
 </div>
@@ -233,63 +205,11 @@ body{font-family:'DM Sans',sans-serif;background:#F5F4EF;color:#2C2C2C;min-heigh
   </div>
 </div>
 
-<!-- Modal Waitlist "Próximamente" -->
-<div id="wlModal">
-  <div id="wlBox">
-    <button id="wlClose" onclick="closeWlModal()">×</button>
-    <div class="wl-rocket-wrap">
-      <div class="wl-rocket-ring"></div>
-      <div class="wl-rocket-circle">
-        <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M19 5C19 5 26 9.5 26 19.5C26 23.5 24 27 21.5 29H16.5C14 27 12 23.5 12 19.5C12 9.5 19 5 19 5Z" fill="white" opacity=".95"/>
-          <circle cx="19" cy="18.5" r="3.2" fill="#b09088"/>
-          <path d="M13.5 28L10 34L16.5 31L13.5 28Z" fill="white" opacity=".8"/>
-          <path d="M24.5 28L28 34L21.5 31L24.5 28Z" fill="white" opacity=".8"/>
-          <path d="M12.5 19.5C10 22 9 26 10.5 29L13.5 28C12.5 25.5 12.5 22.5 12.5 19.5Z" fill="white" opacity=".55"/>
-          <path d="M25.5 19.5C28 22 29 26 27.5 29L24.5 28C25.5 25.5 25.5 22.5 25.5 19.5Z" fill="white" opacity=".55"/>
-        </svg>
-      </div>
-    </div>
-    <!-- Estado null: Ya está llegando -->
-    <div id="wlStateLlegando">
-      <div class="wl-title">Ya está<br>llegando.</div>
-      <div class="wl-divider"></div>
-      <p class="wl-desc">Dejá tu email y te avisamos en el momento en que abra.</p>
-      <div class="wl-capsule">
-        <div class="wl-cedit ph" id="wlEmailA" contenteditable="true">tu@email.com</div>
-        <div class="wl-cbtn wl-cbtn-g" onclick="joinWaitlistModal('a')">Anotarme</div>
-      </div>
-      <div class="wl-ok" id="wlOkA">Listo, te avisamos cuando abra.</div>
-      <div class="wl-err" id="wlErrA">Ingresá un email válido.</div>
-      <p class="wl-note">Sin spam. Solo el aviso de lanzamiento.</p>
-    </div>
-    <!-- Estado Date: Es ¡HOY! -->
-    <div id="wlStateHoy" style="display:none">
-      <div class="wl-title">Es<br>¡HOY!</div>
-      <div class="wl-divider"></div>
-      <div class="wl-countdown">
-        <div class="wl-cd-box"><div class="wl-cd-num" id="wlH">00</div><div class="wl-cd-lbl">horas</div></div>
-        <div class="wl-cd-sep">:</div>
-        <div class="wl-cd-box"><div class="wl-cd-num" id="wlM">00</div><div class="wl-cd-lbl">min</div></div>
-        <div class="wl-cd-sep">:</div>
-        <div class="wl-cd-box"><div class="wl-cd-num" id="wlS">00</div><div class="wl-cd-lbl">seg</div></div>
-      </div>
-      <div class="wl-capsule">
-        <div class="wl-cedit ph" id="wlEmailB" contenteditable="true">tu@email.com</div>
-        <div class="wl-cbtn wl-cbtn-t" onclick="joinWaitlistModal('b')">Avisarme</div>
-      </div>
-      <div class="wl-ok" id="wlOkB">Anotado, te avisamos cuando abra.</div>
-      <div class="wl-err" id="wlErrB">Ingresá un email válido.</div>
-      <p class="wl-note">Sin spam. Solo el aviso de lanzamiento.</p>
-    </div>
-  </div>
-</div>
-
 <!-- Modal pre-checkout -->
 <div class="mo" id="checkoutModal">
   <div class="md">
     <button type="button" class="md-close" onclick="closeCheckout()">×</button>
-    <h2 id="checkout-title">Empezar con Base</h2>
+    <h2 id="checkout-title">Suscribirme al Esencial</h2>
     <p id="checkout-sub">Completá tus datos para continuar al pago.</p>
     <form id="checkout-form" onsubmit="event.preventDefault();submitCheckout();">
       <div class="fg"><label class="fl">Email</label><input type="email" class="fi" id="co-email" placeholder="tu@email.com" required/></div>
@@ -303,93 +223,22 @@ body{font-family:'DM Sans',sans-serif;background:#F5F4EF;color:#2C2C2C;min-heigh
 </div>
 
 <script>
-// ─── Launch gate ──────────────────────────────────────────────────────────
-// null = próximamente | new Date('2025-06-01T10:00:00-03:00') = countdown | 'launched' = abierto
-const LAUNCH_DATE = 'launched';
+// ─── Checkout ───────────────────────────────────────────────────────────────
+let selectedPlan = 'esencial';
 
-window.checkLaunch = function(plan) {
-  if (LAUNCH_DATE === 'launched') { window.openCheckout(plan); return; }
-  openWlModal();
+const PLAN_INFO = {
+  esencial: { label: 'Esencial', precio: '$110.000' },
+  pro:      { label: 'Pro',      precio: '$175.000' },
+  premium:  { label: 'Premium',  precio: '$220.000' }
 };
 
-let _wlTimer = null;
-
-function openWlModal() {
-  var box = document.getElementById('wlBox');
-  document.getElementById('wlStateLlegando').style.display = LAUNCH_DATE instanceof Date ? 'none' : 'block';
-  document.getElementById('wlStateHoy').style.display      = LAUNCH_DATE instanceof Date ? 'block' : 'none';
-  ['wlOkA','wlErrA','wlOkB','wlErrB'].forEach(function(id){ document.getElementById(id).style.display='none'; });
-  if (LAUNCH_DATE instanceof Date) startWlCountdown(LAUNCH_DATE);
-  box.style.animation = 'none';
-  void box.offsetWidth;
-  box.style.animation = 'wlBounceIn .55s cubic-bezier(.22,.68,0,1.2) forwards';
-  document.getElementById('wlModal').classList.add('open');
-}
-
-window.closeWlModal = function() {
-  document.getElementById('wlModal').classList.remove('open');
-  if (_wlTimer) { clearInterval(_wlTimer); _wlTimer = null; }
-  window.history.back();
-};
-
-document.addEventListener('DOMContentLoaded', function() {
-  document.getElementById('wlModal').addEventListener('click', function(e) {
-    if (e.target === this) closeWlModal();
-  });
-  ['wlEmailA','wlEmailB'].forEach(function(id) {
-    var el = document.getElementById(id);
-    el.addEventListener('focus', function(){ if(this.classList.contains('ph')){ this.textContent=''; this.classList.remove('ph'); } });
-    el.addEventListener('blur',  function(){ if(!this.textContent.trim()){ this.textContent='tu@email.com'; this.classList.add('ph'); } });
-    el.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); this.nextElementSibling && this.nextElementSibling.click(); } });
-  });
-});
-
-function startWlCountdown(target) {
-  if (_wlTimer) clearInterval(_wlTimer);
-  function tick() {
-    var diff = target - Date.now();
-    if (diff <= 0) { clearInterval(_wlTimer); return; }
-    document.getElementById('wlH').textContent = String(Math.floor(diff/3600000)).padStart(2,'0');
-    document.getElementById('wlM').textContent = String(Math.floor(diff%3600000/60000)).padStart(2,'0');
-    document.getElementById('wlS').textContent = String(Math.floor(diff%60000/1000)).padStart(2,'0');
-  }
-  tick();
-  _wlTimer = setInterval(tick, 1000);
-}
-
-window.joinWaitlistModal = async function(slot) {
-  var emailEl = document.getElementById(slot==='b' ? 'wlEmailB' : 'wlEmailA');
-  var okEl    = document.getElementById(slot==='b' ? 'wlOkB'    : 'wlOkA');
-  var errEl   = document.getElementById(slot==='b' ? 'wlErrB'   : 'wlErrA');
-  var email   = (emailEl.textContent||'').trim();
-  okEl.style.display='none'; errEl.style.display='none';
-  if (!email || emailEl.classList.contains('ph') || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    errEl.textContent='Ingresá un email válido.'; errEl.style.display='block'; return;
-  }
-  try {
-    var res = await fetch('/.netlify/functions/waitlist',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email})});
-    if (!res.ok) throw new Error();
-    emailEl.textContent='tu@email.com'; emailEl.classList.add('ph');
-    okEl.style.display='block';
-  } catch(e) {
-    errEl.textContent='Algo falló, intentá de nuevo.'; errEl.style.display='block';
-  }
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-let selectedPlan = 'base';
+window.checkLaunch = function(plan) { window.openCheckout(plan); };
 
 window.openCheckout = function(plan) {
   selectedPlan = plan;
-  const title = document.getElementById('checkout-title');
-  const sub = document.getElementById('checkout-sub');
-  if(plan === 'base') {
-    title.textContent = 'Empezar con Base';
-    sub.textContent = '10 días gratis, después $105.000/mes. Completá tus datos.';
-  } else {
-    title.textContent = 'Suscribirme a Pro';
-    sub.textContent = '$157.000/mes. Completá tus datos para continuar.';
-  }
+  const info = PLAN_INFO[plan] || PLAN_INFO.esencial;
+  document.getElementById('checkout-title').textContent = 'Suscribirme al ' + info.label;
+  document.getElementById('checkout-sub').textContent = '10 días gratis, después ' + info.precio + '/mes. Completá tus datos.';
   document.getElementById('checkout-form').style.display = 'block';
   document.getElementById('co-loading').style.display = 'none';
   document.getElementById('co-error').style.display = 'none';
@@ -435,37 +284,10 @@ window.submitCheckout = async function() {
   }
 };
 
-window.joinWaitlist = async function() {
-  const input = document.getElementById('wl-email');
-  const email = (input?.value||'').trim();
-  const btn = document.getElementById('wl-btn');
-  const msg = document.getElementById('wl-msg');
-  if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    if(input) { input.style.borderColor='#C4786A'; setTimeout(()=>{ input.style.borderColor=''; },2000); }
-    return;
-  }
-  try {
-    const res = await fetch('/.netlify/functions/waitlist', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email })
-    });
-    if(!res.ok) throw new Error('Error');
-    if(input) input.value = '';
-    if(msg) msg.style.display = 'block';
-    if(btn) { btn.textContent='✓ Te avisamos cuando esté'; btn.disabled=true; btn.style.background='#EBF0EC'; btn.style.color='#5A8A62'; btn.style.cursor='default'; }
-  } catch(e) { console.error(e); }
-};
-
 (function() {
   window.addEventListener('load', function() {
-    if (LAUNCH_DATE !== 'launched') {
-      openWlModal();
-      return;
-    }
     var plan = new URLSearchParams(window.location.search).get('plan');
-    if(plan === 'base' && window.checkLaunch) window.checkLaunch('base');
-    else if(plan === 'pro' && window.checkLaunch) window.checkLaunch('pro');
+    if (['esencial','pro','premium'].includes(plan)) window.checkLaunch(plan);
   });
 })();
 </script>
