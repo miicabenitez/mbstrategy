@@ -15,6 +15,7 @@ if (!admin.apps.length) {
   admin.initializeApp({ credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)) });
 }
 const db = admin.firestore();
+const { PLAN_SERVER, normalizarPlan } = require('./_planConfig');
 
 const SYSTEM_EXPLICATIVO = `Sos Embi, el asistente de MB Strategy. Conocés el sistema en profundidad y ayudás a los dueños de negocio a entenderlo y usarlo bien. Respondés en español argentino, de forma directa y práctica.
 
@@ -568,11 +569,20 @@ exports.handler = async function(event) {
       return { statusCode: 401, headers: HEADERS, body: JSON.stringify({ error: 'Token no coincide con userId' }) };
     }
 
+    // SEGURIDAD: el modo NO se confía del body. Se deriva SERVER-SIDE del plan del cliente.
+    // (El front sigue mandando 'modo', pero acá se ignora.) Si la lectura falla → 'explicativo' (lado seguro).
+    let modoServer = 'explicativo';
+    try {
+      const _cdoc = await db.collection('clientes').doc(verifiedUid).get();
+      const _plan = _cdoc.exists ? (_cdoc.data().plan || _cdoc.data().membresia?.plan) : null;
+      modoServer = PLAN_SERVER[normalizarPlan(_plan)].embi;
+    } catch(e) { modoServer = 'explicativo'; }
+
     if (!messages || !Array.isArray(messages)) {
       return { statusCode: 400, headers: HEADERS, body: JSON.stringify({ error: 'messages requerido' }) };
     }
 
-    const systemBase = modo === 'operativo' ? SYSTEM_OPERATIVO : SYSTEM_EXPLICATIVO;
+    const systemBase = modoServer === 'operativo' ? SYSTEM_OPERATIVO : SYSTEM_EXPLICATIVO;
     const system = contextStr ? `${systemBase}\n\nCONTEXTO DEL NEGOCIO:\n${contextStr}` : systemBase;
 
     const payload = {
@@ -615,7 +625,7 @@ exports.handler = async function(event) {
         await db.collection('embiUsage').add({
           userId,
           modulo: modulo || 'desconocido',
-          modo,
+          modo: modoServer,
           inputTokens,
           outputTokens,
           costoUSD,
