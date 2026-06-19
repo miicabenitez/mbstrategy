@@ -78,6 +78,13 @@ exports.handler = async function(event) {
       return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: 'CUIT o punto de venta inválido' }) };
     }
 
+    // SEGURIDAD: solo podés verificar la delegación de TU propio negocio (el CUIT del body debe ser el del cliente).
+    const _cSnap = await db.collection('clientes').doc(uid).get();
+    const _cuitCliente = parseInt(String(_cSnap.exists ? (_cSnap.data().negocioCuit || '') : '').replace(/\D/g, ''));
+    if (!_cuitCliente || _cuitCliente !== cuitNum) {
+      return { statusCode: 403, headers: corsHeaders, body: JSON.stringify({ error: 'El CUIT no corresponde a tu negocio' }) };
+    }
+
     const afipConfigSnap = await db.collection('config').doc('afip').get();
     if (!afipConfigSnap.exists) {
       return { statusCode: 500, headers: corsHeaders, body: JSON.stringify({ error: 'Configuración AFIP no encontrada' }) };

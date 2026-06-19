@@ -3,6 +3,7 @@ const https = require('https');
 https.globalAgent.options.ciphers = 'DEFAULT@SECLEVEL=0';
 const admin = require('firebase-admin');
 const { Wsaa, Wsfe } = require('afipjs');
+const { requireOwner } = require('./_auth');
 
 // ── Firebase Admin singleton ──
 if (!admin.apps.length) {
@@ -128,10 +129,10 @@ exports.handler = async function(event) {
     const { accion } = body;
     if (!accion) return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: 'Falta accion' }) };
 
-    // ── Verificar que el cliente existe y está activo en Firestore ──
-    const clienteSnap = await db.collection('clientes').doc(clienteUID).get();
-    if (!clienteSnap.exists) return { statusCode: 403, headers: corsHeaders, body: JSON.stringify({ error: 'Cliente no encontrado' }) };
-    const clienteData = clienteSnap.data();
+    // ── Verificar PERTENENCIA (dueño u operador del x-cliente-uid) + estado activo ──
+    const _own = await requireOwner(db, uid, clienteUID);
+    if (_own.error) return { statusCode: _own.statusCode, headers: corsHeaders, body: JSON.stringify({ error: _own.error }) };
+    const clienteData = _own.data;
     if (clienteData.estado === 'inactivo' || clienteData.estado === 'suspendido') {
       return { statusCode: 403, headers: corsHeaders, body: JSON.stringify({ error: 'Cuenta inactiva' }) };
     }
