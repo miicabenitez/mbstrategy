@@ -30809,10 +30809,12 @@ window.cajaCierreConfirmar = async function() {
       });
       var _cierrePdfBase64 = null;
       try {
+        var _ccToken = await window._auth?.currentUser?.getIdToken(true);
         var _respCierre = await fetch('/.netlify/functions/caja-cierre-email',{
           method:'POST',
-          headers:{'Content-Type':'application/json'},
+          headers:{'Content-Type':'application/json','Authorization':'Bearer '+_ccToken},
           body:JSON.stringify({
+            clienteUID: window.currentClientUID||'',
             negocio: window.currentNegocioNombre||window.currentClientData?.negocioNombre||'',
             emailDueno: _emailDueno,
             cajera: window.currentOperadorNombre||'Cajero',

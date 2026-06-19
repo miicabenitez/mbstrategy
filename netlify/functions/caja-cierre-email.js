@@ -1,12 +1,18 @@
 const nodemailer = require('nodemailer');
 const PDFDocument = require('pdfkit');
+const { db, verifyAuth, requireOwner } = require('./_auth');
 
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Content-Type': 'application/json'
-};
+const ALLOWED_ORIGINS = ['https://sistema.mbstrategy.com.ar', 'https://dev--creative-griffin-98f177.netlify.app'];
+function getCorsHeaders(event) {
+  const origin = (event && event.headers && event.headers.origin) || '';
+  const corsOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  return {
+    'Access-Control-Allow-Origin': corsOrigin,
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Cliente-UID',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Content-Type': 'application/json'
+  };
+}
 
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com', port: 465, secure: true,
@@ -209,6 +215,7 @@ function generarPDF(d) {
 }
 
 exports.handler = async (event) => {
+  const CORS_HEADERS = getCorsHeaders(event);
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: CORS_HEADERS, body: '' };
   if (event.httpMethod !== 'POST') return { statusCode: 405, headers: CORS_HEADERS, body: 'Method not allowed' };
 
@@ -217,17 +224,24 @@ exports.handler = async (event) => {
     return { statusCode: 400, headers: CORS_HEADERS, body: 'Invalid JSON' };
   }
 
-  console.log('enviando mail a:', data.emailDueno);
+  // SEGURIDAD: requiere token válido + que el caller sea dueño u operador (cajero) del negocio.
+  const _auth = await verifyAuth(event);
+  if (_auth.error) return { statusCode: _auth.statusCode, headers: CORS_HEADERS, body: JSON.stringify({ error: _auth.error }) };
+  const _own = await requireOwner(db, _auth.uid, data.clienteUID);
+  if (_own.error) return { statusCode: _own.statusCode, headers: CORS_HEADERS, body: JSON.stringify({ error: _own.error }) };
+  // El destinatario lo deriva el SERVER del doc del cliente (ignora emailDueno del body → no se puede redirigir el mail).
+  const emailDestino = _own.data.email;
+  if (!emailDestino) return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'El negocio no tiene email configurado' }) };
+
+  console.log('enviando mail a:', emailDestino);
   console.log('datos recibidos:', JSON.stringify({ productos: data.productos, retiros: data.retiros, depositos: data.depositos }));
 
   const {
-    negocio, emailDueno, cajera, apertura, cierre,
+    negocio, cajera, apertura, cierre,
     saldoInicial, ingresos, egresos, saldoFinal,
     medios, productos, retiros, depositos, retirosDetalle,
     egresosCaja, egresosCajaTotal, cuentaCorriente, modificaciones
   } = data;
-
-  if (!emailDueno) return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Falta emailDueno' }) };
 
   try {
     const mediosRows = Object.entries(medios || {}).map(([k, v]) =>
@@ -337,7 +351,7 @@ exports.handler = async (event) => {
 
     await transporter.sendMail({
       from: `"MB Strategy" <${process.env.GMAIL_USER}>`,
-      to: emailDueno,
+      to: emailDestino,
       subject: `Cierre de caja — ${cajera || 'Cajero'} — ${_fechaCierreShort}`,
       html,
       attachments: [{
