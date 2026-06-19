@@ -7656,6 +7656,15 @@ window.showClientUI = async function(email, clientData) {
         if(_modToShow0==='inicio'&&typeof loadInicio==='function')loadInicio();
       }).catch(function(){});
       window.showClientMod(_modToShow0, _modBtn0);
+      // Restaurar la sub guardada YA, en el MISMO tick sincrónico (antes del primer await/paint) → el navegador no llega a pintar la primera sub, no hay parpadeo.
+      // Guards: _sbMod0===_modToShow0 (no pisa el módulo del bootstrap / casos cajero), _subOk0 (la sub existe para el rol+plan actual), y los propios de sidebarNav (cajero / tieneAccesoAModulo).
+      try {
+        var _sbSub0 = localStorage.getItem('mbst_sb_sub');
+        var _sbMod0 = localStorage.getItem('mbst_sb_mod');
+        var _subOk0 = _sbSub0 && _sbMod0===_modToShow0 &&
+                      document.querySelector('#sbsub-'+_modToShow0+' [data-sub="'+_sbSub0+'"]');
+        if (_subOk0 && window.sidebarNav) sidebarNav(_modToShow0, _sbSub0);
+      } catch(e) {}
       // COMMIT 3.5.1: rol produccion entra directo al sub-item Producción
       if(window.currentRol === 'produccion') {
         setTimeout(() => { try { if(window.sidebarNav) sidebarNav('stock','produccion'); } catch(_){} }, 100);
@@ -32898,7 +32907,7 @@ function sidebarInit(){
   // Plan badge
   var pb=document.getElementById('sb-plan-badge');
   if(pb){var memb=window.currentClientData&&window.currentClientData.membresia;if(memb&&memb.plan){pb.textContent='Plan '+(memb.plan==='pro'?'Pro':'Base');pb.style.display='';}else{pb.textContent='';pb.style.display='none';}}
-  // Restore last active module from localStorage
+  // Restore last active module from localStorage (solo highlight visual; la navegación REAL de sub la hace el bootstrap antes del primer paint, ver ~7659)
   try{
     var lastMod=localStorage.getItem('mbst_sb_mod');
     var lastSub=localStorage.getItem('mbst_sb_sub');
