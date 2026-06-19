@@ -31148,6 +31148,44 @@ window._TAB_POR_ROL = {
   stock:      ['insumos','recetas','movimientos-stock']
 };
 
+// ══════════════════════════════════════════════════════════════════════════════
+// MIGRACIÓN 3 PLANES — FASE 0: capa central de features por plan (single source of truth).
+// IMPORTANTE: definida pero NO conectada al gating todavía (el gating sigue usando los
+// === 'pro' actuales). La conexión es Fase 3. Esta fase no cambia nada visible.
+// Facturación NO se lista: va en los 3 planes (no se gatea por plan).
+// ══════════════════════════════════════════════════════════════════════════════
+window.PLAN_FEATURES = {
+  esencial: { modulos:['inicio','finanzas','ventas','compras','herramientas','gestion'],
+              embi:'explicativo', auditoriaCajero:false, stock:false, produccion:false,
+              cierrePeriodo:false, analisisEmbi:false, maxUsuarios:1, maxCajasCajero:0 },
+  pro:      { modulos:['inicio','finanzas','ventas','compras','stock','herramientas','gestion'],
+              embi:'operativo',  auditoriaCajero:true,  stock:true,  produccion:false,
+              cierrePeriodo:true, analisisEmbi:true, maxUsuarios:Infinity, maxCajasCajero:1 },
+  premium:  { modulos:['inicio','finanzas','ventas','compras','stock','produccion','herramientas','gestion'],
+              embi:'operativo',  auditoriaCajero:true,  stock:true,  produccion:true,
+              cierrePeriodo:true, analisisEmbi:true, maxUsuarios:Infinity, maxCajasCajero:Infinity }
+};
+
+// Mapea valores viejos/desconocidos al nuevo set. Default seguro = 'esencial' (menor privilegio).
+window.normalizarPlan = function(valor){
+  var v = (valor||'').toString().toLowerCase().trim();
+  if(v==='base' || v==='esencial') return 'esencial';
+  if(v==='pro') return 'pro';
+  if(v==='premium') return 'premium';
+  return 'esencial';   // 'business' (inerte), vacío, desconocido → esencial
+};
+
+// Plan normalizado del cliente actual (o del que se le pase).
+window._planActual = function(cd){
+  return window.normalizarPlan(((cd || window.currentClientData || {}).plan));
+};
+
+// Valor de una feature para el plan del cliente (booleano para flags; valor para embi/maxUsuarios/modulos).
+window.tieneAccesoPlan = function(feature, cd){
+  var f = window.PLAN_FEATURES[window._planActual(cd)] || window.PLAN_FEATURES.esencial;
+  return f[feature];
+};
+
 window.tieneAccesoAModulo = function(mod) {
   if(window.currentRol === 'admin' || !window.currentRol) return true;
   var roles = (window._operadorRoles && window._operadorRoles.length)
