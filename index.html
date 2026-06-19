@@ -518,6 +518,8 @@ input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus
 @media(max-width:768px){
   .mg{grid-template-columns:1fr 1fr;}
   .g2{grid-template-columns:1fr;}
+  .ck-eg-dona-row{flex-direction:column !important;align-items:stretch !important;gap:14px !important;}
+  .ck-eg-dona-row > div:first-child{align-self:center !important;}
   .sg{grid-template-columns:1fr 1fr;}
   .tasks-board{grid-template-columns:1fr;}
   .nav-tabs,#cNav{display:none !important;}
@@ -1122,7 +1124,8 @@ input[type=number]{-moz-appearance:textfield;}
 .pa-insight-icon{width:36px!important;height:36px!important;border-radius:50%!important;background:#4a5e4d!important;display:flex!important;align-items:center!important;justify-content:center!important;flex-shrink:0!important}
 .pa-insight-main{font-size:14px!important;font-weight:700!important;color:#2e4d31!important;margin-bottom:2px!important}
 .pa-insight-sub{font-size:12px!important;color:#4a6a4d!important;line-height:1.4!important}
-@media(max-width:768px){.pa-chart-cols{gap:12px!important;height:200px!important}.pa-bar{width:40px!important}.pa-bar-pill{font-size:9px!important;padding:2px 7px!important}.pa-prod-num{font-size:40px!important}.pa-bar-name{font-size:10px!important}}
+@media(max-width:768px){.pa-chart-cols{gap:6px!important;height:200px!important;padding:0 4px!important}.pa-chart-col{min-width:0!important}.pa-bar{width:100%!important;max-width:40px!important}.pa-bar-pill{font-size:8px!important;padding:2px 5px!important}.pa-prod-num{font-size:40px!important}.pa-bar-name{font-size:8.5px!important;line-height:1.15!important;text-align:center!important;width:100%!important;margin-top:8px!important}}
+@media(max-width:400px){.pa-chart-cols{gap:4px!important}.pa-bar-pill{font-size:7.5px!important;padding:1px 4px!important}}
 @keyframes btnGlow{0%{box-shadow:0 2px 8px rgba(61,82,64,0.15)}50%{box-shadow:0 4px 16px rgba(61,82,64,0.25)}100%{box-shadow:0 2px 8px rgba(61,82,64,0.15)}}
 @keyframes calPulse{0%{box-shadow:0 0 0 0 rgba(74,94,77,0.2)}50%{box-shadow:0 0 0 6px rgba(74,94,77,0)}100%{box-shadow:0 0 0 0 rgba(74,94,77,0)}}
 @keyframes bulbBreath{0%{box-shadow:0 0 8px rgba(204,176,168,0.3)}50%{box-shadow:0 0 20px rgba(204,176,168,0.5)}100%{box-shadow:0 0 8px rgba(204,176,168,0.3)}}
@@ -1586,9 +1589,15 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
           <button class="sb-subitem" data-sub="insumos" onclick="sidebarNav('stock','insumos')">Insumos</button>
           <button class="sb-subitem" data-sub="productos" onclick="sidebarNav('stock','productos')">Productos</button>
           <button class="sb-subitem" data-sub="recetas" onclick="sidebarNav('stock','recetas')">Recetas</button>
-          <button class="sb-subitem" data-sub="produccion" onclick="sidebarNav('stock','produccion')">Producción</button>
           <button class="sb-subitem" data-sub="movimientos" onclick="sidebarNav('stock','movimientos')">Movimientos</button>
         </div>
+      </div>
+      <!-- Producción -->
+      <div class="sb-group" id="sbg-produccion">
+        <button class="sb-btn" onclick="sidebarNav('produccion')">
+          <svg class="sb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h20M4 20V9l5 3V9l5 3V6l6 3v11"/></svg>
+          <span class="sb-label">Producción</span>
+        </button>
       </div>
       <!-- Herramientas → Control del negocio -->
       <div class="sb-group" id="sbg-herramientas">
@@ -7640,7 +7649,7 @@ window.showClientUI = async function(email, clientData) {
       const _savedMod0 = (() => { try { return localStorage.getItem('mbst_lastmod'); } catch(e) { return null; } })();
       // COMMIT 3.6.3.1: módulo inicial calculado por orden de prioridad + acceso real del operador
       // Admin: respeta su último módulo (localStorage). Cajero: 'finanzas' intacto. Otros: primer módulo visible según roles.
-      const _ORDEN_MODULO_INICIAL = ['inicio','ventas','compras','stock','finanzas'];
+      const _ORDEN_MODULO_INICIAL = ['inicio','ventas','compras','stock','produccion','finanzas'];
       let _modToShow0;
       if(window.currentRol === 'cajero') {
         _modToShow0 = 'finanzas';
@@ -7667,7 +7676,7 @@ window.showClientUI = async function(email, clientData) {
       } catch(e) {}
       // COMMIT 3.5.1: rol produccion entra directo al sub-item Producción
       if(window.currentRol === 'produccion') {
-        setTimeout(() => { try { if(window.sidebarNav) sidebarNav('stock','produccion'); } catch(_){} }, 100);
+        setTimeout(() => { try { if(window.sidebarNav) sidebarNav('produccion'); } catch(_){} }, 100);
       }
 
       (async () => {
@@ -19712,7 +19721,7 @@ window.prodCargarOrdenes = async function() {
 // ─── COMMIT 3.4: lógica iniciar/finalizar líneas (mueve stock) ───────────────
 // Hook permisos (COMMIT 3.5.1: admin y rol produccion pueden ejecutar).
 window._prodPuedeEjecutar = function() {
-  return window.currentRol === 'admin' || window.currentRol === 'produccion' || window.currentRol === 'stock';
+  return window.currentRol === 'admin' || window.currentRol === 'produccion';
 };
 
 // COMMIT 3.4.2: helpers de autoría
@@ -20120,7 +20129,7 @@ window._prodOrdenLineas = [];
 
 // Hook de permisos para sub-rol Producción (gancho para COMMIT 3.5). Por ahora siempre true.
 window._prodPuedeCrearOrden = function() {
-  return window.currentRol === 'admin' || window.currentRol === 'produccion' || window.currentRol === 'stock';
+  return window.currentRol === 'admin' || window.currentRol === 'produccion';
 };
 
 window.prodAbrirNuevaOrden = function(itemId, itemTipo) {
@@ -20329,12 +20338,12 @@ function initCkEgAnualChart(egresos) {
     return `
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">
       <div style="width:10px;height:10px;border-radius:3px;background:${PAL[i%PAL.length]};flex-shrink:0;"></div>
-      <span style="font-size:12px;color:#3a4039;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${cat}</span>
+      <span style="font-size:12px;color:#3a4039;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${cat}</span>
       <span style="font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;color:#3d5242;">${fmt(val)}</span>
       <span style="font-size:10px;color:#9aa39c;min-width:30px;text-align:right;">${Math.round(pct*100)}%</span>
     </div>`;
   }).join('');
-  el.innerHTML=`<div style="display:flex;align-items:center;gap:20px;">
+  el.innerHTML=`<div class="ck-eg-dona-row" style="display:flex;align-items:center;gap:20px;">
     <div style="flex-shrink:0;">
       <svg width="150" height="150" viewBox="0 0 150 150">
         ${slices}
@@ -20963,7 +20972,7 @@ async function loadClientTareas() {
       window.showClientMod = function(mod, btn) {
         paTrackModExit();
         const result = _origSCM.call(this, mod, btn);
-        const label = {inicio:'Inicio',finanzas:'Finanzas',ventas:'Comercial',compras:'Compras',stock:'Stock',herramientas:'Control del negocio',gestion:'Gestión'}[mod];
+        const label = {inicio:'Inicio',finanzas:'Finanzas',ventas:'Comercial',compras:'Compras',stock:'Stock',produccion:'Producción',herramientas:'Control del negocio',gestion:'Gestión'}[mod];
         if(label) paTrackModEntry(label); else _paSessionCurrentMod = null;
         return result;
       };
@@ -21365,13 +21374,14 @@ function paRenderProductividad() {
   else if(_paProdPeriod === 'mes') desde = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
   else { desde = new Date(hoy); desde.setDate(hoy.getDate() - hoy.getDay()); }
   const filtered = _paProdSesiones.filter(s => s.entrada && new Date(s.entrada) >= desde);
-  const MODS = ['Inicio','Finanzas','Comercial','Compras','Stock','Control del negocio','Gestión'];
+  const MODS = ['Inicio','Finanzas','Comercial','Compras','Stock','Producción','Control del negocio','Gestión'];
   const CONF = {
     'Inicio':              {pill:'#6b6b6b', grad:'linear-gradient(180deg,#9a9a9a,#7a7a7a,#6b6b6b)', glow:'rgba(107,107,107,0.25)', area:'tu panel principal'},
     'Finanzas':            {pill:'#3d5240', grad:'linear-gradient(180deg,#6a8a6e,#4a5e4d,#3d5240)', glow:'rgba(61,82,64,0.25)',    area:'tus finanzas'},
     'Comercial':           {pill:'#9a7870', grad:'linear-gradient(180deg,#d4beb6,#b09088,#9a7870)', glow:'rgba(154,120,112,0.25)', area:'tus ventas'},
     'Compras':             {pill:'#3d7a74', grad:'linear-gradient(180deg,#5aa09a,#4a908a,#3d7a74)', glow:'rgba(61,122,116,0.25)', area:'tus compras'},
     'Stock':               {pill:'#9a4a54', grad:'linear-gradient(180deg,#b56a72,#9a4a54,#7a3038)', glow:'rgba(154,74,84,0.25)', area:'tu stock'},
+    'Producción':          {pill:'#6e7a4a', grad:'linear-gradient(180deg,#8a965f,#6e7a4a,#566036)', glow:'rgba(110,122,74,0.25)', area:'tu producción'},
     'Control del negocio': {pill:'#4a6e8e', grad:'linear-gradient(180deg,#7a9abc,#5580a0,#4a6e8e)', glow:'rgba(74,110,142,0.25)', area:'tus indicadores'},
     'Gestión':             {pill:'#c8954a', grad:'linear-gradient(180deg,#ecc07a,#d4a050,#c8954a)', glow:'rgba(200,149,74,0.25)', area:'tu gestión'}
   };
@@ -21412,7 +21422,7 @@ function paRenderProductividad() {
         const delay = (i * 0.1).toFixed(1);
         const pillDelay = (i * 0.1 + 0.7).toFixed(1);
         const nameDelay = (i * 0.1 + 0.3).toFixed(1);
-        const label = SHORT[m] || m;
+        const label = isMobile ? m : (SHORT[m] || m);
         return `<div class="pa-chart-col">
           <div class="pa-bar-pill" style="background:${c.pill};animation:paPillPop 0.4s cubic-bezier(0.34,1.56,0.64,1) ${pillDelay}s both">${t}</div>
           <div class="pa-bar" style="background:${c.grad};--h:${px}px;height:${px}px;--glow:${c.glow};animation:paGrowUp 0.7s cubic-bezier(0.22,1,0.36,1) ${delay}s both,paBarGlow 2s ease-in-out ${(parseFloat(delay)+1.3).toFixed(1)}s 1"></div>
@@ -29154,6 +29164,9 @@ window.showClientMod = function(mod, btn) {
     showSubnav('subnav-stock');
     showCTab('insumos', null);
     if(window.loadStockModule) loadStockModule();
+  } else if(mod === 'produccion') {
+    showCTab('produccion', null);
+    if(window.loadProduccionModule) loadProduccionModule();
   }
 };
 
@@ -31121,7 +31134,7 @@ window._MOD_POR_ROL = {
   comercial:  ['ventas'],
   compras:    ['compras'],
   vendedor:   ['ventas','finanzas'],
-  produccion: ['stock'],
+  produccion: ['produccion'],
   stock:      ['stock']
 };
 // COMMIT 3.6.3.2: nombres reales de tabs (alineados con showCTab + DOM ct-*)
@@ -31131,8 +31144,8 @@ window._TAB_POR_ROL = {
   comercial:  ['mclientes','cobranzas','presupuestos','productos','catalogo'],
   compras:    ['proveedores','necesidades','ordenes-compra','historial-compra','prod-compra','categorias-compra'],
   vendedor:   ['mclientes','cobranzas','presupuestos','productos','catalogo','caja'],
-  produccion: ['insumos','produccion'],
-  stock:      ['insumos','recetas','movimientos-stock','produccion']
+  produccion: ['produccion'],
+  stock:      ['insumos','recetas','movimientos-stock']
 };
 
 window.tieneAccesoAModulo = function(mod) {
@@ -31205,7 +31218,7 @@ window._aplicarRestriccionesRol = function() {
   // (mc-kpi-clientes-grid → 'grid'; btn-mi-cuenta legacy → 'none').
   // sb-equipo-btn, sb-cambiar-modo-btn, sb-mi-cuenta-btn, mobile-mi-cuenta-btn: el reset los pone visibles,
   // después sus bloques condicionales los ocultan si corresponde.
-  ['sbg-inicio','sbg-finanzas','sbg-ventas','sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion','sb-equipo-btn','sb-cambiar-modo-btn','sb-mi-cuenta-btn','mobile-mi-cuenta-btn']
+  ['sbg-inicio','sbg-finanzas','sbg-ventas','sbg-compras','sbg-stock','sbg-produccion','sbg-herramientas','sbg-gestion','sb-equipo-btn','sb-cambiar-modo-btn','sb-mi-cuenta-btn','mobile-mi-cuenta-btn']
     .forEach(function(id){ var el = document.getElementById(id); if(el) el.style.display = ''; });
   var _mcGrid = document.getElementById('mc-kpi-clientes-grid');
   if(_mcGrid) _mcGrid.style.display = 'grid';
@@ -31220,12 +31233,12 @@ window._aplicarRestriccionesRol = function() {
   // COMMIT 3.6.3: map de qué oculta cada rol (single source of truth)
   // COMMIT 3.6.3.1: agregado 'sbg-inicio' a comercial, compras, vendedor (solo admin ve Inicio)
   var _ocultaMap = {
-    cajero:   ['sbg-inicio','sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion','btn-mi-cuenta','mc-kpi-clientes-grid'],
-    compras:  ['sbg-inicio','sbg-finanzas','sbg-ventas','sbg-stock','sbg-herramientas','sbg-gestion'],
-    comercial:['sbg-inicio','sbg-finanzas','sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion'],
-    vendedor: ['sbg-inicio','sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion'],
-    produccion:['sbg-inicio','sbg-finanzas','sbg-ventas','sbg-compras','sbg-herramientas','sbg-gestion','btn-mi-cuenta'],
-    stock:    ['sbg-inicio','sbg-finanzas','sbg-ventas','sbg-compras','sbg-herramientas','sbg-gestion','btn-mi-cuenta']
+    cajero:   ['sbg-inicio','sbg-compras','sbg-stock','sbg-produccion','sbg-herramientas','sbg-gestion','btn-mi-cuenta','mc-kpi-clientes-grid'],
+    compras:  ['sbg-inicio','sbg-finanzas','sbg-ventas','sbg-stock','sbg-produccion','sbg-herramientas','sbg-gestion'],
+    comercial:['sbg-inicio','sbg-finanzas','sbg-compras','sbg-stock','sbg-produccion','sbg-herramientas','sbg-gestion'],
+    vendedor: ['sbg-inicio','sbg-compras','sbg-stock','sbg-produccion','sbg-herramientas','sbg-gestion'],
+    produccion:['sbg-inicio','sbg-finanzas','sbg-ventas','sbg-compras','sbg-stock','sbg-herramientas','sbg-gestion','btn-mi-cuenta'],
+    stock:    ['sbg-inicio','sbg-finanzas','sbg-ventas','sbg-compras','sbg-produccion','sbg-herramientas','sbg-gestion','btn-mi-cuenta']
   };
   // Roles del operador (cajero queda fuera del modo sistema; se procesa por separado)
   var _rolesSistema = [];
@@ -32863,7 +32876,6 @@ window.sidebarNav=function(mod,sub){
       if(sub==='insumos')window.showCTab('insumos',null);
       else if(sub==='productos'){window.showCTab('productos-stock',null);if(window.loadProductosStockModule)loadProductosStockModule();}
       else if(sub==='recetas')window.showCTab('recetas',null);
-      else if(sub==='produccion')window.showCTab('produccion',null);
       else if(sub==='movimientos')window.showCTab('movimientos-stock',null);
     }
   });
