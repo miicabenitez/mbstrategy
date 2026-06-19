@@ -15582,6 +15582,45 @@ window.descargarPdfNcNd = async function(coleccion, docId) {
     showToast('Error al generar PDF: ' + e.message, 'error');
   }
 };
+window._nflActualizarHeader = function(tipoComp){
+  const sub = document.getElementById('nfl-banner-subtitle');
+  if (!sub) return;
+  const nflView = document.getElementById('nfl-view');
+  const c = currentClientData || {};
+  const puntoVenta = parseInt(c.negocioPuntoVenta) || 2;
+  const tipoLabel = {1:'Factura A', 6:'Factura B', 11:'Factura C'};
+  // Guard de secuencia: cada llamada incrementa el contador; al resolver el fetch, solo escribe si sigue siendo la más reciente (clicks rápidos no pisan el header con un número viejo).
+  const seq = (parseInt(nflView.dataset.headerSeq) || 0) + 1;
+  nflView.dataset.headerSeq = seq;
+  sub.style.color = 'rgba(255,255,255,.4)';
+  sub.textContent = 'Calculando número...';
+  (async () => {
+    try {
+      const idToken = await window._auth?.currentUser?.getIdToken(true);
+      const res = await fetch('/.netlify/functions/afip', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json','Authorization':'Bearer '+idToken,'X-Cliente-UID':window.currentClientUID||''},
+        body: JSON.stringify({accion:'ultimoComprobante', puntoVenta, tipoComprobante: tipoComp})
+      });
+      const data = await res.json();
+      if (parseInt(nflView.dataset.headerSeq) !== seq) return;   // llegó una llamada más nueva → descartar
+      if (res.ok && data.ok) {
+        const pv = ('0000'+puntoVenta).slice(-4);
+        const nro = ('00000000'+data.siguiente).slice(-8);
+        sub.style.color = 'rgba(255,255,255,.6)';
+        sub.textContent = (tipoLabel[tipoComp]||'Factura') + ' · ' + pv + '-' + nro;
+      } else {
+        sub.style.color = 'rgba(255,255,255,.5)';
+        sub.textContent = 'Factura electrónica ARCA';
+      }
+    } catch {
+      if (parseInt(nflView.dataset.headerSeq) !== seq) return;
+      sub.style.color = 'rgba(255,255,255,.5)';
+      sub.textContent = 'Factura electrónica ARCA';
+    }
+  })();
+};
+
 window.abrirNuevaFacturaLibre = function() {
   if (!_verificarDatosFiscales()) return;
   document.getElementById('mf-list-view').style.display = 'none';
@@ -15608,38 +15647,7 @@ window.abrirNuevaFacturaLibre = function() {
   selectNflCond(document.querySelector('.nfl-pill[data-cond="5"]'), '5', false);
   nflRenderItems();
   if (typeof loadProductos === 'function' && !_productos.length) loadProductos().catch(()=>{});
-  const sub = document.getElementById('nfl-banner-subtitle');
-  if (sub) {
-    sub.style.color = 'rgba(255,255,255,.4)';
-    sub.textContent = 'Calculando número...';
-    const condEmisor = c.negocioCondicionIVA || 'monotributista';
-    const puntoVenta = parseInt(c.negocioPuntoVenta) || 2;
-    const tipoComp = (condEmisor === 'responsable_inscripto' || condEmisor === 'exento') ? 6 : 11;
-    const tipoLabel = {1:'Factura A', 6:'Factura B', 11:'Factura C'};
-    (async () => {
-      try {
-        const idToken = await window._auth?.currentUser?.getIdToken(true);
-        const res = await fetch('/.netlify/functions/afip', {
-          method: 'POST',
-          headers: {'Content-Type':'application/json','Authorization':'Bearer '+idToken,'X-Cliente-UID':window.currentClientUID||''},
-          body: JSON.stringify({accion:'ultimoComprobante', puntoVenta, tipoComprobante: tipoComp})
-        });
-        const data = await res.json();
-        if (res.ok && data.ok) {
-          const pv = ('0000'+puntoVenta).slice(-4);
-          const nro = ('00000000'+data.siguiente).slice(-8);
-          sub.style.color = 'rgba(255,255,255,.6)';
-          sub.textContent = (tipoLabel[tipoComp]||'Factura') + ' · ' + pv + '-' + nro;
-        } else {
-          sub.style.color = 'rgba(255,255,255,.5)';
-          sub.textContent = 'Factura electrónica ARCA';
-        }
-      } catch {
-        sub.style.color = 'rgba(255,255,255,.5)';
-        sub.textContent = 'Factura electrónica ARCA';
-      }
-    })();
-  }
+  // El header (tipo + número) lo setea selectNflCond('5') más arriba (~línea 15608) vía _nflActualizarHeader, con el tipo correcto según emisor+receptor (_getMfcTipoComp). Se actualiza solo al cambiar la condición.
 };
 
 window.volverMisFacturas = function() {
@@ -15671,6 +15679,7 @@ window.selectNflCond = function(el, cond, needCuit) {
   const nflView = document.getElementById('nfl-view');
   nflView.dataset.condReceptor = cond;
   nflView.dataset.tipoComp = tipo;
+  window._nflActualizarHeader({A:1,B:6,C:11}[tipo] || 11);   // refetch del número del tipo correcto + actualiza el header (A/B/C tienen correlativo independiente en AFIP)
   document.getElementById('nfl-receptor-extra').style.display = needCuit ? 'block' : 'none';
   nflRecalcular();
 };
