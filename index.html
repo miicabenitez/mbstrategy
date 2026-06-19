@@ -7721,7 +7721,7 @@ window.showClientUI = async function(email, clientData) {
     // SEGURIDAD: Embi solo para el dueño/admin. Backend embi.js rechaza a no-dueños con 401
     // (verifiedUid del idToken !== clienteUID). Alineamos el frontend: solo admin ve Embi
     // y solo admin carga su contexto financiero (evita leak en navegador de operadores).
-    if(window.currentRol === 'admin' && window.embiShow) window.embiShow(true, clientData.plan === 'pro' ? 'operativo' : 'explicativo');
+    if(window.currentRol === 'admin' && window.embiShow) window.embiShow(true, window.tieneAccesoPlan('embi', clientData));
     if(window.sidebarInit) window.sidebarInit();
     if(window._aplicarRestriccionesRol) window._aplicarRestriccionesRol();
     if(window.currentRol === 'admin' && window.embiPrecargarContexto) window.embiPrecargarContexto();
@@ -20928,7 +20928,7 @@ window.ckDistTipHide = function(){
 };
 
 window.embiAnalizarIndicadores = async function() {
-  if(currentClientData?.plan !== 'pro') { window._proToast('Análisis con Embi'); return; }
+  if(!window.tieneAccesoPlan('analisisEmbi')) { window._proToast('Análisis con Embi'); return; }
   const btn = document.querySelector('[onclick="embiAnalizarIndicadores()"]');
   if(btn) { btn.textContent = 'Analizando...'; btn.disabled = true; btn.style.opacity = '0.7'; }
 
@@ -29168,10 +29168,10 @@ window.showClientMod = function(mod, btn) {
   } else if(mod === 'stock') {
     showSubnav('subnav-stock');
     showCTab('insumos', null);
-    if(window.loadStockModule) loadStockModule();
+    if(window.tieneAccesoPlan('stock') && window.loadStockModule) loadStockModule();
   } else if(mod === 'produccion') {
     showCTab('produccion', null);
-    if(window.loadProduccionModule) loadProduccionModule();
+    if(window.tieneAccesoPlan('produccion') && window.loadProduccionModule) loadProduccionModule();
   }
 };
 
@@ -29269,6 +29269,17 @@ window.showCTab = function(tab, btn) {
     if(_thisMod && sn.id === 'subnav-'+_thisMod) return;
     sn.style.display = 'none'; sn.classList.remove('visible');
   });
+  // ── Gating por PLAN (Fase 3): candado + corte de carga para tabs no incluidos en el plan ──
+  var _planGate = {
+    'auditoria-cajero': {feat:'auditoriaCajero', plan:'pro',     titulo:'Auditoría de cajas'},
+    'insumos':          {feat:'stock',           plan:'pro',     titulo:'Stock'},
+    'recetas':          {feat:'stock',           plan:'pro',     titulo:'Stock'},
+    'movimientos-stock':{feat:'stock',           plan:'pro',     titulo:'Stock'},
+    'productos-stock':  {feat:'stock',           plan:'pro',     titulo:'Stock'},
+    'produccion':       {feat:'produccion',      plan:'premium', titulo:'Producción'}
+  };
+  var _g = _planGate[tab];
+  if(_g && !window.tieneAccesoPlan(_g.feat)){ window._proLockEnTab('ct-'+tab, _g.titulo, true, _g.plan); return; }
   if(tab==='contabilidad') {
     showClientContView('home', null);
     setTimeout(()=>{ const ing=window._clientIngresos||[]; const eg=window._clientEgresos||[]; initClientCashflow(ing,eg); initClientGastosDonut(eg); },200);
@@ -29302,7 +29313,7 @@ window.showCTab = function(tab, btn) {
     loadClientPresupuestos();
   }
   if(tab==='caja-config') { loadCajaConfig(); }
-  if(tab==='cierre-periodo') { if(currentClientData?.plan==='pro') loadCierrePeriodo(); }
+  if(tab==='cierre-periodo') { loadCierrePeriodo(); }
   if(tab==='mis-facturas') { loadMisFacturasModule(); }
   if(tab==='resumen-ventas') { loadResumenVentas(); }
   if(tab==='resumen-compras') { loadResumenCompras(); }
@@ -29352,20 +29363,13 @@ window._proToast = function(titulo, plan) {
 };
 
 window._checkProTab = function(tab, btn) {
-  var plan = (window.currentClientData || currentClientData)?.plan;
-  var titulos = {'cierre-periodo':'Cierre de Período','cierre-config':'Configuración del Cierre'};
-  if(plan === 'pro') {
-    if(tab === 'cierre-config') { cprdShowCfgTab('cierre', btn); return; }
-    window.showCTab(tab, btn);
-  } else {
-    if(tab === 'cierre-config') { window._proToast(titulos[tab]); return; }
-    window.showCTab(tab, btn);
-    window._proLockEnTab('ct-' + tab, titulos[tab] || tab, true);
-  }
+  // Cierre de período es universal (los 3 planes) → sin candado.
+  if(tab === 'cierre-config') { cprdShowCfgTab('cierre', btn); return; }
+  window.showCTab(tab, btn);
 };
 
 window._aplicarLocksPlanBase = function(clientData) {
-  var esBase = (clientData || currentClientData)?.plan !== 'pro';
+  var esBase = !window.tieneAccesoPlan('analisisEmbi', clientData);   // botón "Ver análisis": bloqueado en Esencial
   var btn = document.getElementById('embi-analizar-btn');
   if(btn) {
     if(esBase) {
@@ -29376,11 +29380,7 @@ window._aplicarLocksPlanBase = function(clientData) {
       btn.style.opacity = '1';
     }
   }
-  var _lockSvg = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:5px;vertical-align:-1px;opacity:.85"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>';
-  var tabCierre = Array.from(document.querySelectorAll('#subnav-finanzas .subctab')).find(function(b){ return b.textContent.trim().replace(/^\S+\s/,'').startsWith('Cierre'); });
-  if(tabCierre) tabCierre.innerHTML = esBase ? _lockSvg + 'Cierre de período' : 'Cierre';
-  var btnCfgCierre = document.getElementById('cprd-cfg-tab-cierre');
-  if(btnCfgCierre) btnCfgCierre.innerHTML = esBase ? _lockSvg + 'Cierre de período' : 'Cierre de período';
+  // Cierre de período es universal (los 3 planes) → ya no se le pone candado.
 };
 
 // ─── EQUIPO (cliente): gestión de operadores desde el negocio ─
@@ -31164,7 +31164,7 @@ window._TAB_POR_ROL = {
 window.PLAN_FEATURES = {
   esencial: { modulos:['inicio','finanzas','ventas','compras','herramientas','gestion'],
               embi:'explicativo', auditoriaCajero:false, stock:false, produccion:false,
-              cierrePeriodo:false, analisisEmbi:false, maxUsuarios:1, maxCajasCajero:0 },
+              cierrePeriodo:true, analisisEmbi:false, maxUsuarios:1, maxCajasCajero:0 },
   pro:      { modulos:['inicio','finanzas','ventas','compras','stock','herramientas','gestion'],
               embi:'operativo',  auditoriaCajero:true,  stock:true,  produccion:false,
               cierrePeriodo:true, analisisEmbi:true, maxUsuarios:Infinity, maxCajasCajero:1 },
@@ -32890,9 +32890,8 @@ window.sidebarNav=function(mod,sub){
       else if(sub==='egresos')window.showClientContView('egresos',null);
       else if(sub==='cierre-periodo'){
         window.showCTab('cierre-periodo',null);
-        if((window.currentClientData||currentClientData)?.plan!=='pro') window._proLockEnTab('ct-cierre-periodo','Cierre de Período',true);
       }
-      else if(sub==='auditoria-cajero') { window.showCTab('auditoria-cajero',null); loadAuditoriaCajero(); }
+      else if(sub==='auditoria-cajero') { window.showCTab('auditoria-cajero',null); if(window.tieneAccesoPlan('auditoriaCajero')) loadAuditoriaCajero(); }
       else if(sub==='caja-config') window.showCTab('caja-config',null);
       else if(sub==='mis-facturas') window.showCTab('mis-facturas',null);
       else if(sub==='resumen-ventas') window.showCTab('resumen-ventas',null);
@@ -32919,7 +32918,7 @@ window.sidebarNav=function(mod,sub){
       if(sub==='planaccion')window.showCTab('tareas',null);
     }else if(mod==='stock'){
       if(sub==='insumos')window.showCTab('insumos',null);
-      else if(sub==='productos'){window.showCTab('productos-stock',null);if(window.loadProductosStockModule)loadProductosStockModule();}
+      else if(sub==='productos'){window.showCTab('productos-stock',null);if(window.tieneAccesoPlan('stock')&&window.loadProductosStockModule)loadProductosStockModule();}
       else if(sub==='recetas')window.showCTab('recetas',null);
       else if(sub==='movimientos')window.showCTab('movimientos-stock',null);
     }
