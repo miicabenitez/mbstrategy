@@ -1,6 +1,8 @@
 const nodemailer = require('nodemailer');
 const PDFDocument = require('pdfkit');
-const { db, verifyAuth, requireOwner } = require('./_auth');
+// NO se importa firebase-admin/_auth: choca con pdfkit (OpenSSL legacy provider). La auth se hace por Firestore REST.
+const FIRESTORE_PROJECT = process.env.FIRESTORE_PROJECT || 'mb-strategy';
+const FIRESTORE_BASE = `https://firestore.googleapis.com/v1/projects/${FIRESTORE_PROJECT}/databases/(default)/documents`;
 
 const ALLOWED_ORIGINS = ['https://sistema.mbstrategy.com.ar', 'https://dev--creative-griffin-98f177.netlify.app'];
 function getCorsHeaders(event) {
@@ -224,13 +226,28 @@ exports.handler = async (event) => {
     return { statusCode: 400, headers: CORS_HEADERS, body: 'Invalid JSON' };
   }
 
-  // SEGURIDAD: requiere token válido + que el caller sea dueño u operador (cajero) del negocio.
-  const _auth = await verifyAuth(event);
-  if (_auth.error) return { statusCode: _auth.statusCode, headers: CORS_HEADERS, body: JSON.stringify({ error: _auth.error }) };
-  const _own = await requireOwner(db, _auth.uid, data.clienteUID);
-  if (_own.error) return { statusCode: _own.statusCode, headers: CORS_HEADERS, body: JSON.stringify({ error: _own.error }) };
-  // El destinatario lo deriva el SERVER del doc del cliente (ignora emailDueno del body → no se puede redirigir el mail).
-  const emailDestino = _own.data.email;
+  // SEGURIDAD (sin firebase-admin, para no chocar con pdfkit):
+  // Lee clientes/{clienteUID} vía Firestore REST con el token del caller. Las reglas solo permiten
+  // leer ese doc al DUEÑO o a un OPERADOR del negocio → un 200 == token válido + autorizado.
+  const idToken = (event.headers?.authorization || event.headers?.Authorization || '').replace(/^Bearer /, '');
+  if (!idToken) return { statusCode: 401, headers: CORS_HEADERS, body: JSON.stringify({ error: 'No autorizado' }) };
+  const clienteUID = data.clienteUID;
+  if (!clienteUID) return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Falta clienteUID' }) };
+
+  let emailDestino;
+  try {
+    const _r = await fetch(`${FIRESTORE_BASE}/clientes/${clienteUID}`, { headers: { Authorization: 'Bearer ' + idToken } });
+    if (_r.status === 401) return { statusCode: 401, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Token inválido' }) };
+    if (_r.status === 403) return { statusCode: 403, headers: CORS_HEADERS, body: JSON.stringify({ error: 'No autorizado para este negocio' }) };
+    if (_r.status === 404) return { statusCode: 404, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Negocio no encontrado' }) };
+    if (!_r.ok)            return { statusCode: 403, headers: CORS_HEADERS, body: JSON.stringify({ error: 'No se pudo verificar el negocio' }) };
+    const _doc = await _r.json();
+    const f = _doc.fields || {};
+    // Email del dueño SERVER-SIDE (prioridad negocioEmail → email, igual que el front original). Anti-redirección.
+    emailDestino = (f.negocioEmail && f.negocioEmail.stringValue) || (f.email && f.email.stringValue) || '';
+  } catch (e) {
+    return { statusCode: 500, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Error de verificación' }) };
+  }
   if (!emailDestino) return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'El negocio no tiene email configurado' }) };
 
   console.log('enviando mail a:', emailDestino);
