@@ -1,33 +1,25 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // ── Helpers ────────────────────────────────────────────────
     function isAuthenticated() {
       return request.auth != null;
     }
-
     function isAdmin() {
       return isAuthenticated() &&
         exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
-
     function isOwner(resource) {
       return isAuthenticated() &&
         resource.data.uid == request.auth.uid;
     }
-
     function isOwnerWrite() {
       return isAuthenticated() &&
         request.resource.data.uid == request.auth.uid;
     }
-
     function isOperatorOf(clienteId) {
       return isAuthenticated() &&
         exists(/databases/$(database)/documents/clientes/$(clienteId)/operadores/$(request.auth.uid));
     }
-
-    // ── Reglas existentes ──────────────────────────────────────
     match /clientes/{clienteId} {
       allow get: if request.auth != null && (resource.data.uid == request.auth.uid || isOperatorOf(clienteId));
       allow list: if request.auth != null;
@@ -36,58 +28,51 @@ service cloud.firestore {
       allow update: if isAdmin() ||
         (request.auth != null && resource.data.uid == request.auth.uid &&
          request.resource.data.diff(resource.data).affectedKeys()
-           .hasOnly([
-             'titularNombre','negocioNombre','negocioRubro','negocioTel',
-             'negocioEmail','negocioCuit','negocioDir','negocioCondicionIVA',
-             'negocioPuntoVenta','negocioDomicilioFiscalIgual',
-             'negocioFiscalCalle','negocioFiscalLocalidad','negocioFiscalProvincia',
-             'negocioFiscalCp','negocioPvComprobante','logoNegocio'
-           ]));
-
+           .hasOnly(['titularNombre','negocioNombre','negocioRubro','negocioTel','negocioEmail','negocioCuit','negocioDir','negocioCondicionIVA','negocioPuntoVenta','negocioDomicilioFiscalIgual','negocioFiscalCalle','negocioFiscalLocalidad','negocioFiscalProvincia','negocioFiscalCp','negocioPvComprobante','logoNegocio']));
       match /{path=**} {
         allow read, write: if isAdmin() ||
           (isAuthenticated() && request.auth.uid == clienteId) ||
           isOperatorOf(clienteId);
       }
     }
-
-    // ── BUG-002: Cierre de Período ─────────────────────────────
     match /cierres/{docId} {
       allow read: if isAuthenticated() && (isAdmin() || isOwner(resource));
       allow create: if isAuthenticated() && isOwnerWrite();
       allow update, delete: if isAuthenticated() && (isAdmin() || isOwner(resource));
     }
-
     match /configuracionCierre/{docId} {
       allow read: if isAuthenticated() && (isAdmin() || isOwner(resource));
       allow create: if isAuthenticated() && isOwnerWrite();
       allow update, delete: if isAuthenticated() && (isAdmin() || isOwner(resource));
     }
-
     match /embiUsage/{docId} {
       allow read: if isAdmin();
       allow write: if false;
     }
-
     match /embiReports/{docId} {
       allow read: if isAdmin();
       allow create: if isAuthenticated();
       allow update: if isAdmin();
       allow delete: if isAdmin();
     }
-
     match /admins/{adminId} {
       allow read: if isAdmin();
       allow write: if false;
     }
-
     match /operadoresLookup/{docId} {
-      allow read: if request.auth != null;
+      allow read: if true;
       allow write: if false;
     }
-
     match /webhookProcessed/{docId} {
       allow read, write: if false;
+    }
+    match /config/{doc} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /waitlist/{docId} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
     }
   }
 }
