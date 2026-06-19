@@ -1,5 +1,6 @@
 // netlify/functions/send-welcome-email.js
 const nodemailer = require('nodemailer');
+const { PLAN_SERVER, TRIAL_DIAS, normalizarPlan } = require('./_planConfig');
 
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
@@ -12,7 +13,7 @@ const transporter = nodemailer.createTransport({
 });
 
 function buildEmailHTML({ nombre, negocioNombre, email, password, plan, trialEnd }) {
-  const planLabel = plan === 'pro' ? 'Pro · 10 días gratis' : 'Base · 10 días gratis';
+  const planLabel = PLAN_SERVER[normalizarPlan(plan)].label + ' · ' + TRIAL_DIAS + ' días gratis';
   const isBase = true;
   return `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
@@ -51,7 +52,7 @@ function buildEmailHTML({ nombre, negocioNombre, email, password, plan, trialEnd
   ${isBase ? `<!-- Pro upsell -->
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#F0F4F8;border-radius:12px;margin-bottom:24px;"><tr><td style="padding:20px 24px;">
     <div style="font-family:Georgia,'Times New Roman',serif;font-size:18px;color:#4A6A8A;margin-bottom:8px;">¿Querés que Embi trabaje por vos?</div>
-    <p style="font-size:13px;line-height:1.6;color:#4A5A4E;margin:0;">Con el plan <strong>Pro</strong>, Embi no solo te explica: ejecuta acciones por vos. Registra ingresos, crea clientes, genera cobros. Vos le pedís, Embi lo hace.</p>
+    <p style="font-size:13px;line-height:1.6;color:#4A5A4E;margin:0;">Con tu plan, Embi te acompaña en la gestión del negocio: te explica el sistema y, según tu plan, ejecuta acciones por vos —registra ingresos, crea clientes, genera cobros.</p>
   </td></tr></table>` : ''}
 
   <!-- Academia -->
@@ -116,7 +117,7 @@ exports.handler = async (event) => {
       from: `"MB Strategy" <${process.env.GMAIL_USER}>`,
       to: email,
       subject: `Bienvenido/a a MB Strategy, ${nombre} ✦`,
-      html: buildEmailHTML({ nombre, negocioNombre: negocioNombre || 'tu negocio', email, password, plan: plan || 'base', trialEnd: trialEnd || '' })
+      html: buildEmailHTML({ nombre, negocioNombre: negocioNombre || 'tu negocio', email, password, plan: normalizarPlan(plan), trialEnd: trialEnd || '' })
     });
     return { statusCode: 200, body: JSON.stringify({ success: true }) };
   } catch (err) {

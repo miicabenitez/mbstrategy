@@ -5,6 +5,7 @@ if (!getApps().length) {
   initializeApp({ credential: cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)) });
 }
 const db = getFirestore();
+const { PLAN_SERVER, normalizarPlan } = require('./_planConfig');
 const ALLOWED_ORIGINS = ['https://sistema.mbstrategy.com.ar', 'https://dev--creative-griffin-98f177.netlify.app'];
 
 function getCorsHeaders(event) {
@@ -34,7 +35,7 @@ async function crearSuscripcionMP(plan, planData, email, externalRef, freeTrial)
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      reason: `MB Strategy — Plan ${plan === 'base' ? 'Base' : 'Pro'}`,
+      reason: `MB Strategy — Plan ${(PLAN_SERVER[normalizarPlan(plan)] || PLAN_SERVER.esencial).label}`,
       external_reference: externalRef,
       payer_email: email,
       auto_recurring: autoRecurring,
@@ -54,7 +55,7 @@ exports.handler = async (event) => {
     const body = JSON.parse(event.body || '{}');
     const { clienteId, email, nombre, negocioNombre, plan } = body;
 
-    if (!['base', 'pro'].includes(plan)) {
+    if (!PLAN_SERVER[normalizarPlan(plan)]) {
       return { statusCode: 400, headers: HEADERS, body: JSON.stringify({ error: 'Plan inválido' }) };
     }
 
@@ -80,7 +81,7 @@ exports.handler = async (event) => {
       });
       const clientesSnap = await db.collection('clientes').where('email', '==', email).get();
       const tuvoTrial = !clientesSnap.empty && clientesSnap.docs.some(d => d.data().membresia?.activoDesde);
-      const freeTrial = ['base','pro'].includes(plan) && !tuvoTrial;
+      const freeTrial = (PLAN_SERVER[normalizarPlan(plan)]?.trial) && !tuvoTrial;
       const mpRes = await crearSuscripcionMP(plan, planData, email, pendienteRef.id, freeTrial);
       const mpData = await mpRes.json();
       if (!mpRes.ok || !mpData.init_point) {
@@ -108,7 +109,7 @@ exports.handler = async (event) => {
       return { statusCode: 409, headers: HEADERS, body: JSON.stringify({ error: 'El cliente ya tiene una suscripción activa' }) };
     }
     // Free trial solo si es base y no tiene historial de suscripción
-    const freeTrial = ['base','pro'].includes(plan) && !cliente.membresia?.activoDesde;
+    const freeTrial = (PLAN_SERVER[normalizarPlan(plan)]?.trial) && !cliente.membresia?.activoDesde;
     const mpRes = await crearSuscripcionMP(plan, planData, cliente.email, clienteId, freeTrial);
     const mpData = await mpRes.json();
     if (!mpRes.ok || !mpData.init_point) {

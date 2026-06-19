@@ -9,6 +9,7 @@ if (!getApps().length) {
 }
 const db = getFirestore();
 const auth = getAuth();
+const { PLAN_SERVER, TRIAL_DIAS, normalizarPlan } = require('./_planConfig');
 const HEADERS = { 'Content-Type': 'application/json' };
 
 function verificarFirma(event) {
@@ -158,8 +159,8 @@ exports.handler = async (event) => {
             'membresia.mpSubscriptionId': subscriptionId,
             'membresia.mpEstado': sub.status,
             'membresia.actualizadoEn': FieldValue.serverTimestamp(),
-            'productos.embi': (pendiente.plan || 'base') === 'pro' ? 'operativo' : 'explicativo',
-            'plan': pendiente.plan || 'base'
+            'productos.embi': PLAN_SERVER[normalizarPlan(pendiente.plan)].embi,
+            'plan': normalizarPlan(pendiente.plan)
           };
           if (sub.next_payment_date) update['membresia.proximoCobro'] = new Date(sub.next_payment_date);
           await clienteDoc.ref.update(update);
@@ -189,11 +190,11 @@ exports.handler = async (event) => {
         }
 
         // 3. Calcular trial end
-        const plan = pendiente.plan || 'base';
+        const plan = normalizarPlan(pendiente.plan);
         let trialEnd = '';
-        if (plan === 'base') {
+        if (PLAN_SERVER[plan].trial) {
           const trialDate = new Date();
-          trialDate.setDate(trialDate.getDate() + 7);
+          trialDate.setDate(trialDate.getDate() + TRIAL_DIAS);
           trialEnd = formatTrialEnd(trialDate);
         }
 
@@ -209,11 +210,11 @@ exports.handler = async (event) => {
           productos: {
             sistema: true,
             academia: false,
-            embi: plan === 'pro' ? 'operativo' : 'explicativo'
+            embi: PLAN_SERVER[plan].embi
           },
           membresia: {
             plan: plan,
-            estado: sub.status === 'authorized' ? (plan === 'base' ? 'trial' : 'activo') : 'pendiente',
+            estado: sub.status === 'authorized' ? (PLAN_SERVER[plan].trial ? 'trial' : 'activo') : 'pendiente',
             activoDesde: FieldValue.serverTimestamp(),
             mpSubscriptionId: subscriptionId,
             mpEstado: sub.status,
@@ -273,7 +274,7 @@ exports.handler = async (event) => {
       const existSnap = await db.collection('clientes').doc(externalRef).get();
       if (existSnap.exists) {
         const planActual = existSnap.data().membresia?.plan;
-        if (planActual) update['plan'] = planActual;
+        if (planActual) update['plan'] = normalizarPlan(planActual);
       }
     } catch(e) { console.warn('No se pudo leer plan del cliente:', e.message); }
     if (proximoCobro) update['membresia.proximoCobro'] = proximoCobro;
