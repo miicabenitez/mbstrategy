@@ -107,17 +107,25 @@
   .plan-btn{width:100%;margin-top:22px;padding:13px;border-radius:10px;font-size:13.5px;font-weight:500;cursor:pointer;border:none}
   .plan-foot{text-align:center;font-size:10.5px;color:var(--txt-dim);margin-top:11px}
 
-  .tabs{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:34px;position:relative;z-index:1}
-  .tab{font-family:var(--sans);font-size:14px;font-weight:500;padding:11px 22px;border-radius:30px;border:1px solid var(--panel-bd);background:rgba(244,240,234,.03);color:var(--txt-sub);cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:8px}
-  .tab svg{width:16px;height:16px}
-  .tab:hover{border-color:rgba(232,201,189,.4);color:var(--cream)}
-  .tab.active{background:var(--terra);color:var(--cream-cl);border-color:transparent}
+  .prod-card{background:rgba(244,240,234,.03);border:1px solid var(--panel-bd);border-radius:20px;padding:14px;position:relative;z-index:1}
+  #producto{padding:72px 0}
+  #producto .sec-head{max-width:none;margin:0 0 18px;text-align:center}
+  .prod-title{font-family:var(--serif);font-size:30px;font-weight:600;color:var(--cream);line-height:1.1;margin:0 0 16px}
+  .prod-title .ac{color:var(--terra-cl);font-style:italic}
+  .tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;background:rgba(10,24,19,.45);border:1px solid var(--panel-bd);border-radius:14px;padding:6px;margin-bottom:14px}
+  .tab{font-family:var(--sans);font-size:13.5px;font-weight:500;padding:11px 8px;border-radius:10px;border:none;background:transparent;color:var(--txt-sub);cursor:pointer;transition:background .25s,color .25s,box-shadow .25s,transform .15s;display:flex;align-items:center;justify-content:center;gap:8px;position:relative;overflow:hidden}
+  .tab svg{width:16px;height:16px;flex-shrink:0}
+  .tab::after{content:'';position:absolute;top:0;left:-120%;width:55%;height:100%;background:linear-gradient(110deg,transparent,rgba(255,255,255,.28),transparent);transition:left .55s;pointer-events:none}
+  .tab:hover::after{left:135%}
+  .tab:hover{color:var(--cream);background:rgba(244,240,234,.05)}
+  .tab.active{background:var(--terra);color:var(--cream-cl);box-shadow:0 6px 16px -6px rgba(160,102,88,.7)}
+  .tab.active:hover{transform:translateY(-1px)}
   .tab-panel{display:none}
   .tab-panel.active{display:block;animation:fade .4s ease}
   @keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-  .panel-grid{display:grid;grid-template-columns:1fr 1.1fr;gap:44px;align-items:center;background:rgba(244,240,234,.03);border:1px solid var(--panel-bd);border-radius:20px;padding:44px}
-  .panel-copy h3{font-family:var(--serif);font-size:32px;font-weight:600;margin-bottom:11px;color:var(--cream)}
-  .panel-copy p{font-size:15px;color:var(--txt-sub);margin-bottom:24px}
+  .panel-grid{display:grid;grid-template-columns:1fr 1.1fr;gap:32px;align-items:start;padding:6px 16px 16px}
+  .panel-copy h3{font-family:var(--serif);font-size:23px;font-weight:600;margin-bottom:10px;color:var(--cream)}
+  .panel-copy p{font-size:15px;color:var(--txt-sub);margin-bottom:20px}
   .panel-feats{list-style:none}
   .panel-feats li{display:flex;align-items:center;gap:12px;padding:10px 0;font-size:14.5px;color:var(--txt);border-top:1px solid rgba(244,240,234,.08)}
   .panel-feats li:first-child{border-top:none}
@@ -223,7 +231,7 @@
 
   @media(max-width:940px){
     .hero h1{font-size:50px}.embi-grid,.exp-grid{grid-template-columns:1fr;gap:44px}
-    .embi h2{font-size:36px}.panel-grid{grid-template-columns:1fr;gap:28px;padding:30px}
+    .embi h2{font-size:36px}.panel-grid{grid-template-columns:1fr;gap:20px;padding:8px}
     .plans{grid-template-columns:1fr;max-width:420px;margin:0 auto}
     .foot-grid{grid-template-columns:1fr 1fr;gap:26px}
     .hero-overlay{background:linear-gradient(180deg,rgba(10,24,19,.85) 0%,rgba(11,26,20,.55) 42%,rgba(13,31,26,.32) 100%)}
@@ -237,6 +245,9 @@
     .logo-txt b{font-size:15px}
     .nav-cta{display:none}
     .eyebrow{display:none}
+    .tabs{grid-template-columns:1fr 1fr}
+    .tab{font-size:13px;padding:10px 6px}
+    .prod-title{font-size:24px}
     .hero{align-items:stretch;padding:54px 0 12px}
     .hero-inner{transform:none;padding-top:0;display:flex;flex-direction:column}
     .hero-inner>div{display:flex;flex-direction:column;flex:1;max-width:280px}
@@ -307,19 +318,19 @@
   <div class="wrap">
     <div class="sec-head reveal">
       <div class="sec-eyebrow">El producto</div>
-      <h2 class="sec-title">Todo lo que necesitás,<br><span class="ac">conectado</span></h2>
-      <p class="sec-sub">Explorá cada área del sistema. Un solo lugar para gestionar todo.</p>
     </div>
-    <div class="tabs reveal">
+    <div class="prod-card reveal">
+    <div class="tabs">
       <button class="tab active" data-tab="fin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>Finanzas</button>
       <button class="tab" data-tab="ven"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Ventas</button>
       <button class="tab" data-tab="ope"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 16V8a2 2 0 00-1-1.7l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.7l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><path d="M3.3 7L12 12l8.7-5"/></svg>Operaciones</button>
       <button class="tab" data-tab="con"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg>Control</button>
     </div>
-    <div class="tab-panel active" data-panel="fin"><div class="panel-grid"><div class="panel-copy"><h3>Finanzas claras</h3><p>Sabé exactamente cómo está tu negocio. Ingresos, egresos, rentabilidad y flujo de fondos, en tiempo real.</p><ul class="panel-feats"><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></span>Caja y flujo de fondos</li><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></span>Rentabilidad y punto de equilibrio</li><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></span>Cierre de período automático</li></ul></div><div class="shot-img"><img src="finanzas.jpg" alt="Finanzas en MB Strategy"></div></div></div>
-    <div class="tab-panel" data-panel="ven"><div class="panel-grid"><div class="panel-copy"><h3>Ventas y facturación</h3><p>Vendé, facturá ante AFIP y cobrá, todo desde el sistema. Tickets, comandas y caja conectados.</p><ul class="panel-feats"><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></span>Facturación electrónica AFIP</li><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></span>Caja, comandas y cobranzas</li><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></span>Clientes y presupuestos</li></ul></div><div class="shot-img"><img src="ventas.jpg" alt="Ventas en MB Strategy"></div></div></div>
-    <div class="tab-panel" data-panel="ope"><div class="panel-grid"><div class="panel-copy"><h3>Operaciones bajo control</h3><p>Stock, compras y producción conectados. Sabé qué tenés, qué necesitás y qué estás produciendo.</p><ul class="panel-feats"><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></span>Stock inteligente con recetas</li><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></span>Compras y órdenes a proveedores</li><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></span>Producción con asignación de equipo</li></ul></div><div class="shot-img"><img src="operaciones.jpg" alt="Producción en MB Strategy"></div></div></div>
-    <div class="tab-panel" data-panel="con"><div class="panel-grid"><div class="panel-copy"><h3>Control y decisiones</h3><p>Indicadores, alertas y reportes que te dicen qué pasa y qué hacer. Información para decidir.</p><ul class="panel-feats"><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></span>Indicadores y KPIs en vivo</li><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></span>Alertas inteligentes</li><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></span>Reportes y plan de acción</li></ul></div><div class="shot-img"><img src="control.jpg" alt="Indicadores y control en MB Strategy"></div></div></div>
+    <div class="tab-panel active" data-panel="fin"><div class="panel-grid"><div class="panel-copy"><h2 class="prod-title">Todo lo que necesitás, <span class="ac">conectado</span></h2><h3>Finanzas claras</h3><p>Sabé exactamente cómo está tu negocio. Ingresos, egresos, rentabilidad y flujo de fondos, en tiempo real.</p><ul class="panel-feats"><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></span>Caja y flujo de fondos</li><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></span>Rentabilidad y punto de equilibrio</li><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></span>Cierre de período automático</li></ul></div><div class="shot-img"><img src="finanzas.jpg" alt="Finanzas en MB Strategy"></div></div></div>
+    <div class="tab-panel" data-panel="ven"><div class="panel-grid"><div class="panel-copy"><h2 class="prod-title">Todo lo que necesitás, <span class="ac">conectado</span></h2><h3>Ventas y facturación</h3><p>Vendé, facturá ante AFIP y cobrá, todo desde el sistema. Tickets, comandas y caja conectados.</p><ul class="panel-feats"><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></span>Facturación electrónica AFIP</li><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></span>Caja, comandas y cobranzas</li><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></span>Clientes y presupuestos</li></ul></div><div class="shot-img"><img src="ventas.jpg" alt="Ventas en MB Strategy"></div></div></div>
+    <div class="tab-panel" data-panel="ope"><div class="panel-grid"><div class="panel-copy"><h2 class="prod-title">Todo lo que necesitás, <span class="ac">conectado</span></h2><h3>Operaciones bajo control</h3><p>Stock, compras y producción conectados. Sabé qué tenés, qué necesitás y qué estás produciendo.</p><ul class="panel-feats"><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></span>Stock inteligente con recetas</li><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></span>Compras y órdenes a proveedores</li><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></span>Producción con asignación de equipo</li></ul></div><div class="shot-img"><img src="operaciones.jpg" alt="Producción en MB Strategy"></div></div></div>
+    <div class="tab-panel" data-panel="con"><div class="panel-grid"><div class="panel-copy"><h2 class="prod-title">Todo lo que necesitás, <span class="ac">conectado</span></h2><h3>Control y decisiones</h3><p>Indicadores, alertas y reportes que te dicen qué pasa y qué hacer. Información para decidir.</p><ul class="panel-feats"><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></span>Indicadores y KPIs en vivo</li><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></span>Alertas inteligentes</li><li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg></span>Reportes y plan de acción</li></ul></div><div class="shot-img"><img src="control.jpg" alt="Indicadores y control en MB Strategy"></div></div></div>
+    </div>
   </div>
 </section>
 
