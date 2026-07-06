@@ -19427,30 +19427,30 @@ window._triggerStockPorVenta = async function(carrito, refId) {
       const entry = carrito[productoId];
       const qty = parseFloat(entry.qty)||1;
       const nombreProd = entry.producto?.nombre||'';
-      // Buscar receta del producto (modelo nuevo itemId+itemTipo, con fallback legacy a productoId)
+      // PRECEDENCIA (fix manejaStock): si el producto maneja stock propio, descontar del
+      // PRODUCTO aunque exista receta activa. NO tocar la receta en ese caso.
+      const prod = (window._productos||[]).find(x => x.id === productoId);
+      if(prod && prod.manejaStock === true) {
+        try {
+          const stockResultante = parseFloat(prod.stockActual||0) - qty;
+          await updateDoc(doc(db,'clientes',currentClientUID,'productos',productoId), {stockActual: increment(-qty)});
+          await addDoc(collection(db,'clientes',currentClientUID,'movimientosStock'), {
+            tipo: 'salida', insumoId: productoId, insumoNombre: prod.nombre || nombreProd,
+            cantidad: qty, unidad: 'u', stockResultante,
+            origen: 'venta', referenciaId: refId || '', notas: nombreProd,
+            itemTipo: 'producto', fecha: hoy, creadoEn: new Date().toISOString()
+          });
+          prod.stockActual = stockResultante;
+        } catch(eItem) { console.error('_triggerStockPorVenta reventa error:', productoId, eItem); _errCount++; }
+        continue;
+      }
+      // Sin manejaStock: descontar insumos por receta (comportamiento actual)
       const receta = (window._stockRecetas||[]).find(r=>{
         const _rid = r.itemId || r.productoId;
         const _rtipo = r.itemTipo || 'producto';
         return _rid===productoId && _rtipo==='producto';
       });
-      if(!receta || !receta.items?.length) {
-        // ETAPA 2 — FALLBACK REVENTA: producto sin receta. Si maneja stock propio, descontar productos.stockActual.
-        const prod = (window._productos||[]).find(x => x.id === productoId);
-        if(prod && prod.manejaStock === true) {
-          try {
-            const stockResultante = parseFloat(prod.stockActual||0) - qty;
-            await updateDoc(doc(db,'clientes',currentClientUID,'productos',productoId), {stockActual: increment(-qty)});
-            await addDoc(collection(db,'clientes',currentClientUID,'movimientosStock'), {
-              tipo: 'salida', insumoId: productoId, insumoNombre: prod.nombre || nombreProd,
-              cantidad: qty, unidad: 'u', stockResultante,
-              origen: 'venta', referenciaId: refId || '', notas: nombreProd,
-              itemTipo: 'producto', fecha: hoy, creadoEn: new Date().toISOString()
-            });
-            prod.stockActual = stockResultante;
-          } catch(eItem) { console.error('_triggerStockPorVenta reventa error:', productoId, eItem); _errCount++; }
-        }
-        continue;
-      }
+      if(!receta || !receta.items?.length) continue;
       for(const it of receta.items) {
         if(!it.insumoId) continue;
         // deltaBase: cantidad real a descontar del stockActual (en unidadBase del insumo, ej 0.08 kg)
@@ -19493,29 +19493,30 @@ window._triggerStockPorPresupuesto = async function(p) {
     if(!it.productoId) continue;
     const qty = parseFloat(it.cant)||1;
     const nombreProd = it.desc||'';
+    // PRECEDENCIA (fix manejaStock): si el producto maneja stock propio, descontar del
+    // PRODUCTO aunque exista receta activa. NO tocar la receta en ese caso.
+    const prod = (window._productos||[]).find(x => x.id === it.productoId);
+    if(prod && prod.manejaStock === true) {
+      try {
+        const stockResultante = parseFloat(prod.stockActual||0) - qty;
+        await updateDoc(doc(db,'clientes',currentClientUID,'productos',it.productoId), {stockActual: increment(-qty)});
+        await addDoc(collection(db,'clientes',currentClientUID,'movimientosStock'), {
+          tipo: 'salida', insumoId: it.productoId, insumoNombre: prod.nombre || nombreProd,
+          cantidad: qty, unidad: 'u', stockResultante,
+          origen: 'presupuesto', referenciaId: p.id || '', notas: nombreProd,
+          itemTipo: 'producto', fecha: hoy, creadoEn: new Date().toISOString()
+        });
+        prod.stockActual = stockResultante;
+      } catch(eItem) { console.error('_triggerStockPorPresupuesto reventa error:', it.productoId, eItem); _errCount++; }
+      continue;
+    }
+    // Sin manejaStock: descontar insumos por receta (comportamiento actual)
     const receta = (window._stockRecetas||[]).find(r=>{
       const _rid = r.itemId || r.productoId;
       const _rtipo = r.itemTipo || 'producto';
       return _rid===it.productoId && _rtipo==='producto';
     });
-    if(!receta || !receta.items?.length) {
-      // ETAPA 2 — FALLBACK REVENTA: producto sin receta. Si maneja stock propio, descontar productos.stockActual.
-      const prod = (window._productos||[]).find(x => x.id === it.productoId);
-      if(prod && prod.manejaStock === true) {
-        try {
-          const stockResultante = parseFloat(prod.stockActual||0) - qty;
-          await updateDoc(doc(db,'clientes',currentClientUID,'productos',it.productoId), {stockActual: increment(-qty)});
-          await addDoc(collection(db,'clientes',currentClientUID,'movimientosStock'), {
-            tipo: 'salida', insumoId: it.productoId, insumoNombre: prod.nombre || nombreProd,
-            cantidad: qty, unidad: 'u', stockResultante,
-            origen: 'presupuesto', referenciaId: p.id || '', notas: nombreProd,
-            itemTipo: 'producto', fecha: hoy, creadoEn: new Date().toISOString()
-          });
-          prod.stockActual = stockResultante;
-        } catch(eItem) { console.error('_triggerStockPorPresupuesto reventa error:', it.productoId, eItem); _errCount++; }
-      }
-      continue;
-    }
+    if(!receta || !receta.items?.length) continue;
     for(const ri of receta.items) {
       if(!ri.insumoId) continue;
       // deltaBase: descuento real (unidadBase del insumo); cantidadShow/unidadShow: display (unidad receta)
@@ -19550,16 +19551,27 @@ window.stkDescontarPresupuesto = async function(presupId) {
       window._stockRecetas = snap.docs.map(d=>({id:d.id,...d.data()}));
     } catch(e) { console.log('stkDescontarPresupuesto error:',e); }
   }
+  // Defensiva: cache de productos para la precedencia manejaStock del preview
+  if(!window._productos || !window._productos.length) {
+    if(window.loadProductos) try { await window.loadProductos(); } catch(_){}
+  }
   const lineas = [];
   for(const it of (presup.items||[])) {
     if(!it.productoId) continue;
+    const qty = parseFloat(it.cant)||1;
+    // PRECEDENCIA (fix manejaStock): producto que maneja stock propio se descuenta como
+    // PRODUCTO (1 línea de unidades), aunque tenga receta activa.
+    const prod = (window._productos||[]).find(x => x.id === it.productoId);
+    if(prod && prod.manejaStock === true) {
+      lineas.push(`${prod.nombre||it.desc||it.productoId}: ${qty.toLocaleString('es-AR')} u`);
+      continue;
+    }
     const receta = (window._stockRecetas||[]).find(r=>{
       const _rid = r.itemId || r.productoId;
       const _rtipo = r.itemTipo || 'producto';
       return _rid===it.productoId && _rtipo==='producto';
     });
     if(!receta?.items?.length) continue;
-    const qty = parseFloat(it.cant)||1;
     for(const ri of receta.items) {
       if(!ri.insumoId) continue;
       const delta = parseFloat(ri.cantidad||0)*qty;
