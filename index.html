@@ -1332,6 +1332,27 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 .facd-row .r{text-align:right;}
 .facd-row .facd-sub{font-weight:600;color:#1e2e22;}
 .facd-lbl{display:none;}
+#ocRecepcionModal .md{max-width:560px;width:92vw;max-height:88vh;display:flex;flex-direction:column;padding:0;overflow:hidden;}
+#ocRecepcionModal .modal-header-verde{flex-shrink:0;}
+#ocRecepcionModal .ocr-body{padding:18px 22px;overflow-y:auto;flex:1;}
+#ocRecepcionModal .ocr-footer{flex-shrink:0;padding:14px 22px;border-top:.5px solid #e7e5df;background:#fff;}
+.ocr-head{display:grid;grid-template-columns:1fr 72px 92px;background:#f1efe8;border-radius:8px 8px 0 0;padding:8px 12px;}
+.ocr-head span{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:#5f5e5a;font-weight:700;font-family:'DM Sans',sans-serif;}
+.ocr-head span.r{text-align:right;}
+.ocr-row{display:grid;grid-template-columns:1fr 72px 92px;align-items:center;padding:9px 12px;border-top:.5px solid #e7e5df;font-size:13px;color:#2c2c2a;font-family:'DM Sans',sans-serif;}
+.ocr-nums{display:contents;}
+.ocr-row .r{text-align:right;}
+.ocr-ped{color:#8a8984;}
+.ocr-lbl{display:none;}
+.ocr-row input{width:84px;text-align:right;font-family:'DM Sans',sans-serif;margin-top:0;}
+@media(max-width:640px){
+  #ocRecepcionModal .md{width:100%;max-width:100%;margin:0 8px;max-height:92vh;}
+  #ocRecepcionModal .ocr-body{padding:14px;}
+  .ocr-head{display:none;}
+  .ocr-row{grid-template-columns:1fr;gap:4px;border:.5px solid #e7e5df;border-radius:10px;margin-bottom:8px;padding:12px;}
+  .ocr-nums{display:flex;justify-content:space-between;gap:12px;margin-top:6px;align-items:flex-end;}
+  .ocr-lbl{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:#8a8984;}
+}
 @media(max-width:640px){
   #newFacturaModal .md{width:100%;max-width:100%;margin:0 8px;max-height:92vh;}
   #newFacturaModal .fac-body{padding:14px;}
@@ -6409,12 +6430,12 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
     </div>
     <div style="padding:20px 24px;max-height:65vh;overflow-y:auto;">
       <!-- Meta -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;">
-        <div style="background:var(--cream);border-radius:8px;padding:10px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;">
+        <div style="background:#f1efe8;border:.5px solid #e7e5df;border-radius:10px;padding:12px;">
           <div style="font-size:11px;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Fecha</div>
           <div style="font-size:13px;font-weight:500;color:var(--text);" id="oc-det-fecha">—</div>
         </div>
-        <div style="background:var(--cream);border-radius:8px;padding:10px;">
+        <div style="background:#f1efe8;border:.5px solid #e7e5df;border-radius:10px;padding:12px;">
           <div style="font-size:11px;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Ítems</div>
           <div style="font-size:13px;font-weight:500;color:var(--text);" id="oc-det-items-count">—</div>
         </div>
@@ -6422,7 +6443,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
       <!-- Items table -->
       <div style="font-size:11px;color:var(--text-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Detalle de ítems</div>
       <div style="border:.5px solid var(--cream-d);border-radius:10px;overflow:hidden;margin-bottom:18px;">
-        <div style="display:grid;grid-template-columns:1fr 60px 70px 80px;gap:0;background:var(--sage-xl);padding:8px 12px;">
+        <div id="oc-det-items-head" style="display:grid;grid-template-columns:1fr 60px 70px 80px;gap:0;background:var(--sage-xl);padding:8px 12px;">
           <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;">Producto</span>
           <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;text-align:center;">Cant.</span>
           <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;text-align:right;">P. Unit.</span>
@@ -6430,16 +6451,42 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         </div>
         <div id="oc-det-items-list"></div>
         <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-top:.5px solid var(--cream-d);background:var(--cream);">
-          <span style="font-size:11px;font-weight:500;color:var(--text-l);">TOTAL</span>
+          <span style="font-size:11px;font-weight:700;color:var(--text-l);" id="oc-det-total-label">TOTAL</span>
           <span style="font-family:'DM Sans',sans-serif;font-size:20px;font-weight:500;color:var(--text);" id="oc-det-total-footer">$0</span>
         </div>
       </div>
+        <div id="oc-det-recepcion-info" style="margin:-6px 0 16px;"></div>
         <!-- Recepción -->
         <div id="oc-det-btn-recepcion" style="margin-bottom:10px;"></div>
         <!-- Actions -->
         <div style="display:flex;gap:10px;">
           <button class="bp" style="flex:1;" onclick="generarPDFOrdenCompra()">↓ Emitir PDF</button>
         <button class="bs" onclick="closeModal('ocDetalleModal')">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mo" id="ocRecepcionModal">
+  <div class="md" style="position:relative;">
+    <button class="mc2" onclick="closeModal('ocRecepcionModal')" style="position:absolute;top:14px;right:14px;z-index:2;color:rgba(244,240,234,.8);background:none;border:none;">×</button>
+    <div class="modal-header-verde" style="background:#1e2e22;">
+      <div style="font-size:9px;font-weight:700;color:#b09088;text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">MB Strategy · Compras</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700;color:#f4f0ea;">¿Qué llegó?</div>
+      <div id="oc-rec-sub" style="font-size:12px;color:rgba(244,240,234,.72);margin-top:3px;">OC-000 · Proveedor</div>
+    </div>
+    <div class="ocr-body">
+      <div style="font-size:11px;color:#5f5e5a;margin-bottom:12px;">Confirmá lo que entró físicamente. Si no cambiás nada, entra tal cual la orden.</div>
+      <div id="oc-rec-body"></div>
+    </div>
+    <div class="ocr-footer">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:13px;">
+        <span style="color:#5f5e5a;font-weight:700;">Total recibido</span>
+        <span id="oc-rec-total" style="font-family:'DM Sans',sans-serif;font-weight:700;color:#1e2e22;font-size:15px;">$0</span>
+      </div>
+      <div class="br2" style="margin-top:0;">
+        <button class="bp" onclick="confirmarRecepcionOC()" style="background:#1e2e22;color:#f4f0ea;">Confirmar recepción</button>
+        <button class="bs" onclick="closeModal('ocRecepcionModal')" style="border:.5px solid #d0cfc9;">Cancelar</button>
       </div>
     </div>
   </div>
@@ -19318,8 +19365,7 @@ window.loadMovimientosStock = async function() {
     const { limit: fsLimit } = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
     const snap = await getDocs(query(collection(db,'clientes',currentClientUID,'movimientosStock'), orderBy('fecha','desc'), fsLimit(100)));
     const movs = snap.docs.map(d=>({id:d.id,...d.data()}));
-    // Sort por creadoEn desc (timestamp ISO) — más recientes arriba dentro del mismo día
-    movs.sort((a,b) => (b.creadoEn||'').localeCompare(a.creadoEn||''));
+    movs.sort((a,b) => (b.fecha||'').localeCompare(a.fecha||'') || (b.creadoEn||'').localeCompare(a.creadoEn||''));
     window._stkMovs = movs;
     const mesActual = fechaHoyARG().slice(0,7);
     const lblMes = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -25145,7 +25191,7 @@ window.verOCsDeNecesidad = function(ncId) {
     // Varias OCs: mostrar selector rápido
     const lista = ocs.map(o=>`<div onclick="closeModal('ocSelectorModal');abrirDetalleOC('${o.id}')" style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--cream);border-radius:10px;cursor:pointer;margin-bottom:8px;" onmouseenter="this.style.background='var(--sage-xl)'" onmouseleave="this.style.background='var(--cream)'">
       <div><div style="font-size:13px;font-weight:500;color:var(--text);">OC-${String(o.numero||0).padStart(3,'0')} · ${o.proveedor||'—'}</div><div style="font-size:11px;color:var(--text-l);">${(o.items||[]).length} ítems</div></div>
-      <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--text);">$${(parseFloat(o.total)||0).toLocaleString('es-AR')}</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--text);">$${window._ocMontoReal(o).toLocaleString('es-AR')}</div>
     </div>`).join('');
     // Modal simple inline
     let sel=document.getElementById('ocSelectorModal');
@@ -25258,7 +25304,7 @@ window.verCotizacionExistente = function(ncId) {
             <div style="font-size:11px;color:var(--text-l);margin-top:2px;">${(o.items||[]).length} ítem${(o.items||[]).length!==1?'s':''} · ${o.fecha||''}</div>
           </div>
           <div style="text-align:right;">
-            <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:500;color:var(--text);">$${(parseFloat(o.total)||0).toLocaleString('es-AR')}</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:500;color:var(--text);">$${window._ocMontoReal(o).toLocaleString('es-AR')}</div>
             <span style="background:${bc.bg};color:${bc.tc};font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;">${bc.label}</span>
           </div>
         </div>
@@ -25789,6 +25835,9 @@ async function loadOrdenesCompra() {
   }catch(e){console.log(e);}
 }
 window.loadOrdenesCompra = loadOrdenesCompra;
+window._ocMontoReal = function(o) {
+  return ((o.estadoRecepcion==='recibida'||o.estadoRecepcion==='parcial') && o.totalRecibido!=null) ? (parseFloat(o.totalRecibido)||0) : (parseFloat(o.total)||0);
+};
 
 function renderOrdenesCompra() {
   const setEl=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
@@ -25798,8 +25847,8 @@ function renderOrdenesCompra() {
   setEl('oc-kpi-recibidas',recibidas);
   setEl('oc-kpi-pend-recibir',pendRec);
   // Banner KPIs (keep existing banner IDs for compatibility)
-  const pendientePago=_ordenesCompra.filter(o=>o.estadoPago!=='pagada').reduce((a,o)=>a+(parseFloat(o.total)||0),0);
-  const pagado=_ordenesCompra.filter(o=>o.estadoPago==='pagada').reduce((a,o)=>a+(parseFloat(o.total)||0),0);
+  const pendientePago=_ordenesCompra.filter(o=>o.estadoPago!=='pagada').reduce((a,o)=>a+window._ocMontoReal(o),0);
+  const pagado=_ordenesCompra.filter(o=>o.estadoPago==='pagada').reduce((a,o)=>a+window._ocMontoReal(o),0);
   setEl('bn-oc-total',_ordenesCompra.length);
   setEl('bn-oc-pend','$'+pendientePago.toLocaleString('es-AR'));
   setEl('bn-oc-pagado','$'+pagado.toLocaleString('es-AR'));
@@ -25863,7 +25912,7 @@ function renderOrdenesCompra() {
         <div style="font-size:13px;font-weight:500;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${o.proveedor||'—'}</div>
         <div style="font-size:11px;color:var(--text-l);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${(o.items||[]).length} ítem${(o.items||[]).length!==1?'s':''}${o.fecha?' · '+o.fecha:''}</div>
       </div>
-      <div class="oc-col-monto" style="text-align:right;"><span style="font-size:14px;font-weight:600;color:#2d2d2d;white-space:nowrap;">${fmtMonto(o.total)}</span></div>
+      <div class="oc-col-monto" style="text-align:right;"><span style="font-size:14px;font-weight:600;color:#2d2d2d;white-space:nowrap;">${fmtMonto(window._ocMontoReal(o))}</span></div>
       <div style="display:flex;justify-content:flex-end;white-space:nowrap;">${recPill}</div>
       <div class="oc-col-acciones" style="display:flex;justify-content:flex-end;gap:5px;" onclick="event.stopPropagation()">
         <button onclick="abrirDetalleOC('${o.id}')" style="width:26px;height:26px;border-radius:6px;background:#fff;border:1px solid rgba(0,0,0,0.09);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Ver detalle"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#888780" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
@@ -26198,129 +26247,195 @@ window.abrirDetalleOC = function(ocId) {
   const bc=badgeCfg[estadoPago]||badgeCfg.pendiente;
   const rc=recCfg[estadoRec]||recCfg.emitida;
 
+  const items=oc.items||[];
+  const mostrarRecibido = (estadoRec==='recibida'||estadoRec==='parcial') && items.some(it=>it.cantidadRecibida!=null);
+  const totalPedido = parseFloat(oc.total)||0;
+  const totalRec = (oc.totalRecibido!=null) ? (parseFloat(oc.totalRecibido)||0) : totalPedido;
+  const fmt = v => '$'+(Number(v)||0).toLocaleString('es-AR');
+
   setEl('oc-det-numero', `OC-${String(oc.numero||0).padStart(3,'0')}`);
   setEl('oc-det-proveedor', oc.proveedor||'—');
-  setEl('oc-det-total', `$${(parseFloat(oc.total)||0).toLocaleString('es-AR')}`);
-  setEl('oc-det-total-footer', `$${(parseFloat(oc.total)||0).toLocaleString('es-AR')}`);
+  setEl('oc-det-total', fmt(mostrarRecibido ? totalRec : totalPedido));
   setEl('oc-det-fecha', oc.fecha||'—');
-  setEl('oc-det-items-count', `${(oc.items||[]).length} ítem${(oc.items||[]).length!==1?'s':''}`);
-  // Estado recepción en modal (sin botón — se usa el toggle del listado)
+  setEl('oc-det-items-count', `${items.length} ítem${items.length!==1?'s':''}`);
   const btnRec = document.getElementById('oc-det-btn-recepcion');
   if(btnRec) btnRec.innerHTML = '';
 
-  const items=oc.items||[];
+  const _lblEl = document.getElementById('oc-det-total-label');
+  if(_lblEl) _lblEl.textContent = mostrarRecibido ? 'TOTAL RECIBIDO' : 'TOTAL';
+  setEl('oc-det-total-footer', (mostrarRecibido && totalRec!==totalPedido)
+    ? `${fmt(totalRec)} <span style="font-size:11px;color:var(--text-l);font-weight:400;">pedido ${fmt(totalPedido)}</span>`
+    : fmt(mostrarRecibido ? totalRec : totalPedido));
+
+  const headEl = document.getElementById('oc-det-items-head');
+  if(headEl) {
+    if(mostrarRecibido) {
+      headEl.style.gridTemplateColumns = '1fr 52px 62px 60px 74px';
+      headEl.innerHTML = `<span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;">Producto</span><span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;text-align:center;">Pedido</span><span style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;text-align:center;">Recibido</span><span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;text-align:right;">P.Unit.</span><span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;text-align:right;">Total</span>`;
+    } else {
+      headEl.style.gridTemplateColumns = '1fr 60px 70px 80px';
+      headEl.innerHTML = `<span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;">Producto</span><span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;text-align:center;">Cant.</span><span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;text-align:right;">P. Unit.</span><span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;text-align:right;">Total</span>`;
+    }
+  }
+
   setEl('oc-det-items-list', items.length===0
     ? '<div style="padding:14px;text-align:center;color:var(--text-l);font-size:12px;">Sin ítems.</div>'
-    : items.map(it=>`
-      <div style="display:grid;grid-template-columns:1fr 60px 80px 90px;gap:0;padding:11px 12px;border-bottom:.5px solid var(--cream-d);">
-        <div><div style="font-size:13px;font-weight:500;color:var(--text);">${it.nombre||'—'}</div>${it.unidad?`<div style="font-size:11px;color:var(--text-l);margin-top:1px;">${it.unidad}</div>`:''}</div>
-        <div style="font-size:13px;color:var(--text-m);text-align:center;align-self:center;">${it.cantidad||0}</div>
-        <div style="font-size:13px;color:var(--text-m);text-align:right;align-self:center;">$${(parseFloat(it.precioUnit)||0).toLocaleString('es-AR')}</div>
-        <div style="font-size:13px;font-weight:600;color:var(--text);text-align:right;align-self:center;">$${(parseFloat(it.total)||0).toLocaleString('es-AR')}</div>
-      </div>`).join(''));
+    : items.map(it=>{
+      const ped = parseFloat(it.cantidad)||0;
+      const pu = parseFloat(it.precioUnit)||0;
+      const nom = `<div><div style="font-size:13px;font-weight:500;color:var(--text);">${it.nombre||'—'}</div>${it.unidad?`<div style="font-size:11px;color:var(--text-l);margin-top:1px;">${it.unidad}</div>`:''}</div>`;
+      if(mostrarRecibido) {
+        const rec = (it.cantidadRecibida!=null) ? (parseFloat(it.cantidadRecibida)||0) : ped;
+        const difiere = rec !== ped;
+        return `<div style="display:grid;grid-template-columns:1fr 52px 62px 60px 74px;gap:0;padding:11px 12px;border-bottom:.5px solid var(--cream-d);">
+          ${nom}
+          <div style="font-size:13px;color:#8a8984;text-align:center;align-self:center;">${ped}</div>
+          <div style="font-size:13px;text-align:center;align-self:center;font-weight:${difiere?'700':'500'};color:${difiere?'#7a4e46':'var(--text-m)'};">${rec}</div>
+          <div style="font-size:13px;color:var(--text-m);text-align:right;align-self:center;">${fmt(pu)}</div>
+          <div style="font-size:13px;font-weight:600;color:var(--text);text-align:right;align-self:center;">${fmt(rec*pu)}</div>
+        </div>`;
+      }
+      return `<div style="display:grid;grid-template-columns:1fr 60px 80px 90px;gap:0;padding:11px 12px;border-bottom:.5px solid var(--cream-d);">
+        ${nom}
+        <div style="font-size:13px;color:var(--text-m);text-align:center;align-self:center;">${ped}</div>
+        <div style="font-size:13px;color:var(--text-m);text-align:right;align-self:center;">${fmt(pu)}</div>
+        <div style="font-size:13px;font-weight:600;color:var(--text);text-align:right;align-self:center;">${fmt(parseFloat(it.total)||0)}</div>
+      </div>`;
+    }).join(''));
+
+  const _recInfoEl = document.getElementById('oc-det-recepcion-info');
+  if(_recInfoEl) {
+    if(mostrarRecibido) {
+      const fr = oc.fechaRecepcion;
+      const frFmt = fr ? new Date(fr+'T12:00:00').toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit'}) : '—';
+      const hayDif = items.some(it => it.cantidadRecibida!=null && (parseFloat(it.cantidadRecibida)||0) !== (parseFloat(it.cantidad)||0));
+      _recInfoEl.innerHTML = hayDif
+        ? `<div style="font-size:11px;color:var(--text-l);line-height:1.5;">Recepción del ${frFmt} — el saldo en cuenta corriente corresponde a lo recibido.</div>`
+        : `<div style="font-size:11px;color:var(--text-l);line-height:1.5;">Recibida el ${frFmt}.</div>`;
+    } else {
+      _recInfoEl.innerHTML = '';
+    }
+  }
 
   openModal('ocDetalleModal');
 };
 
 window.marcarOCRecibida = async function(ocId) {
   if(!currentClientUID) return;
-  showConfirm('¿Confirmar que recibiste esta mercadería/servicio? Se registrará como deuda en la cuenta corriente del proveedor.', async()=>{
-    try {
-      const oc = _ordenesCompra.find(o=>o.id===ocId);
-      if(!oc) return;
-      if(oc.eliminado) return;
-      if(oc.estadoRecepcion === 'recibida') { showToast('Esta OC ya fue marcada como recibida.', 'info'); return; }
-      if((oc.estadoRecepcion||'emitida') !== 'emitida') { showToast('Solo se puede marcar como recibida una OC que esté emitida.', 'info'); return; }
-      const hoy = fechaHoyARG();
+  const oc = _ordenesCompra.find(o=>o.id===ocId);
+  if(!oc || oc.eliminado) return;
+  if(oc.estadoRecepcion === 'recibida') { showToast('Esta OC ya fue marcada como recibida.', 'info'); return; }
+  if((oc.estadoRecepcion||'emitida') !== 'emitida') { showToast('Solo se puede marcar como recibida una OC que esté emitida.', 'info'); return; }
+  window._ocRecOcId = ocId;
+  window._ocRecOcTotal = parseFloat(oc.total)||0;
+  window._ocRecItems = (oc.items||[]).map(it=>({...it}));
+  window._ocRecCant = window._ocRecItems.map(it=>parseFloat(it.cantidad)||0);
+  const sub = document.getElementById('oc-rec-sub');
+  if(sub) sub.textContent = `OC-${String(oc.numero||0).padStart(3,'0')} · ${oc.proveedor||oc.proveedorNombre||'—'}`;
+  ocRecRenderItems();
+  openModal('ocRecepcionModal');
+};
+window.ocRecRenderItems = function() {
+  const body = document.getElementById('oc-rec-body'); if(!body) return;
+  const items = window._ocRecItems||[], cant = window._ocRecCant||[];
+  if(!items.length) {
+    body.innerHTML = '<div style="font-size:12px;color:#5f5e5a;padding:8px 0;">Esta orden no tiene ítems detallados. Confirmá para marcarla como recibida.</div>';
+    ocRecActualizarTotal(); return;
+  }
+  body.innerHTML = `<div class="ocr-head"><span>Concepto / Insumo</span><span class="r">Pedido</span><span class="r">Recibido</span></div>` +
+    items.map((it,i)=>{
+      const nom = it.nombre||it.insumoNombre||it.productoNombre||'—';
+      return `<div class="ocr-row"><div class="ocr-nom">${nom}</div><div class="ocr-nums"><div class="r ocr-ped"><span class="ocr-lbl">Pedido</span>${it.cantidad||0}</div><div class="r"><span class="ocr-lbl">Recibido</span><input type="number" min="0" step="any" class="fi" value="${cant[i]}" oninput="ocRecSetCant(${i},this.value)"/></div></div></div>`;
+    }).join('');
+  ocRecActualizarTotal();
+};
+window.ocRecSetCant = function(i,val) { if(window._ocRecCant) window._ocRecCant[i] = (val===''?0:(parseFloat(val)||0)); ocRecActualizarTotal(); };
+window.ocRecActualizarTotal = function() {
+  const items = window._ocRecItems||[], cant = window._ocRecCant||[];
+  const total = items.length ? items.reduce((a,it,i)=>a+((cant[i]||0)*(parseFloat(it.precioUnit)||0)),0) : (window._ocRecOcTotal||0);
+  const el = document.getElementById('oc-rec-total'); if(el) el.textContent = '$'+Math.round(total).toLocaleString('es-AR');
+};
+window.ejecutarRecepcionOC = async function(ocId, cantidades) {
+  if(!currentClientUID || !ocId) throw new Error('Datos incompletos para la recepción');
+  const ocSnap = await getDoc(doc(db,'clientes',currentClientUID,'ordenesCompra',ocId));
+  if(!ocSnap.exists()) throw new Error('OC no encontrada');
+  const oc = { id: ocId, ...ocSnap.data() };
+  if(oc.estadoRecepcion === 'recibida') return { yaRecibida:true, oc, totalRecibido: parseFloat(oc.totalRecibido||oc.total)||0 };
+  const hoy = fechaHoyARG();
+  const itemsOrig = oc.items||[];
+  const cant = Array.isArray(cantidades) ? cantidades : null;
+  const itemsConRec = itemsOrig.map((it,i)=>({...it, cantidadRecibida: (cant && cant[i]!=null) ? cant[i] : (parseFloat(it.cantidad)||0)}));
+  const totalRecibido = itemsOrig.length
+    ? itemsConRec.reduce((a,it)=>a+((parseFloat(it.cantidadRecibida)||0)*(parseFloat(it.precioUnit)||0)),0)
+    : (parseFloat(oc.total)||0);
 
-      // 1. Actualizar estado de recepción en la OC
-      await updateDoc(doc(db,'clientes',currentClientUID,'ordenesCompra',ocId),{
-        estadoRecepcion:'recibida',
-        fechaRecepcion: hoy
+  await updateDoc(doc(db,'clientes',currentClientUID,'ordenesCompra',ocId),{
+    estadoRecepcion:'recibida', fechaRecepcion: hoy, items: itemsConRec, totalRecibido
+  });
+
+  if(oc.proveedorId) {
+    const facRef = collection(db,'clientes',currentClientUID,'proveedores',oc.proveedorId,'facturas');
+    const existing = await getDocs(facRef);
+    const yaExiste = [];
+    existing.forEach(d=>{ if(d.data().ocId===ocId) yaExiste.push(d.id); });
+    if(yaExiste.length===0) {
+      await addDoc(facRef,{
+        numero: `OC-${String(oc.numero||0).padStart(3,'0')}`, monto: totalRecibido, fecha: hoy, ocId,
+        desc: `Recepción OC-${String(oc.numero||0).padStart(3,'0')}`, estado: 'pendiente',
+        creadoEn: new Date().toISOString(), esOC: true
       });
+    }
+  }
 
-      // 2. Crear entrada de deuda en CC del proveedor (como "factura" de OC)
-      if(oc.proveedorId) {
-        // Verificar que no exista ya una entrada para esta OC
-        const facRef = collection(db,'clientes',currentClientUID,'proveedores',oc.proveedorId,'facturas');
-        const existing = await getDocs(facRef);
-        const yaExiste = [];
-        existing.forEach(d=>{ if(d.data().ocId===ocId) yaExiste.push(d.id); });
-
-        if(yaExiste.length===0) {
-          await addDoc(facRef,{
-            numero: `OC-${String(oc.numero||0).padStart(3,'0')}`,
-            monto: parseFloat(oc.total)||0,
-            fecha: hoy,
-            ocId: ocId,
-            desc: `Recepción OC-${String(oc.numero||0).padStart(3,'0')}`,
-            estado: 'pendiente',
-            creadoEn: new Date().toISOString(),
-            esOC: true
-          });
-        }
+  try {
+    const _ins = itemsConRec.filter(it => it.insumoId && (parseFloat(it.cantidadRecibida)||0) !== 0);
+    const _prod = itemsConRec.filter(it => it.productoId && !it.insumoId && (parseFloat(it.cantidadRecibida)||0) !== 0);
+    if(_ins.length > 0 || _prod.length > 0) {
+      const _batch = writeBatch(db);
+      for(const it of _ins) {
+        const q = parseFloat(it.cantidadRecibida)||0;
+        const _ref = doc(db,'clientes',currentClientUID,'insumos',it.insumoId);
+        const _upd = { stockActual: increment(q) };
+        if((parseFloat(it.precioUnit)||0) > 0) _upd.costoUnitario = parseFloat(it.precioUnit);
+        _batch.update(_ref, _upd);
+        const _mov = doc(collection(db,'clientes',currentClientUID,'movimientosStock'));
+        _batch.set(_mov, { tipo:'entrada', insumoId:it.insumoId, insumoNombre:it.insumoNombre||it.nombre||'', cantidad:q, unidad:it.insumoUnidad||'', origen:'compra', referenciaId:ocId, notas:oc.proveedor||oc.proveedorNombre||'', fecha:hoy, creadoEn:new Date().toISOString() });
       }
-
-      // 3. Trigger stock: incrementar stockActual y costoUnitario por ítem vinculado (insumos + productos en un solo batch atómico — ETAPA 3)
+      for(const it of _prod) {
+        const q = parseFloat(it.cantidadRecibida)||0;
+        const _ref = doc(db,'clientes',currentClientUID,'productos',it.productoId);
+        const _upd = { stockActual: increment(q) };
+        if((parseFloat(it.precioUnit)||0) > 0) _upd.costoUnitario = parseFloat(it.precioUnit);
+        _batch.update(_ref, _upd);
+        const _mov = doc(collection(db,'clientes',currentClientUID,'movimientosStock'));
+        _batch.set(_mov, { tipo:'entrada', insumoId:it.productoId, insumoNombre:it.productoNombre||it.nombre||'', cantidad:q, unidad:'u', origen:'compra', referenciaId:ocId, notas:oc.proveedor||oc.proveedorNombre||'', itemTipo:'producto', fecha:hoy, creadoEn:new Date().toISOString() });
+      }
+      await _batch.commit();
       try {
-        const _itemsConInsumo = (oc.items||[]).filter(it => it.insumoId);
-        const _itemsConProducto = (oc.items||[]).filter(it => it.productoId && !it.insumoId); // mutuamente exclusivo
-        if(_itemsConInsumo.length > 0 || _itemsConProducto.length > 0) {
-          const _batch = writeBatch(db);
-          for(const it of _itemsConInsumo) {
-            const _insumoRef = doc(db,'clientes',currentClientUID,'insumos',it.insumoId);
-            const _upd = { stockActual: increment(parseFloat(it.cantidad)||0) };
-            if((parseFloat(it.precioUnit)||0) > 0) _upd.costoUnitario = parseFloat(it.precioUnit);
-            _batch.update(_insumoRef, _upd);
-            const _movRef = doc(collection(db,'clientes',currentClientUID,'movimientosStock'));
-            _batch.set(_movRef, {
-              tipo: 'entrada', insumoId: it.insumoId, insumoNombre: it.insumoNombre||it.nombre||'',
-              cantidad: parseFloat(it.cantidad)||0, unidad: it.insumoUnidad||'',
-              origen: 'compra', referenciaId: ocId,
-              notas: oc.proveedor||oc.proveedorNombre||'',
-              fecha: hoy, creadoEn: new Date().toISOString()
-            });
-          }
-          // ETAPA 3 — bloque simétrico para productos de reventa
-          for(const it of _itemsConProducto) {
-            const _prodRef = doc(db,'clientes',currentClientUID,'productos',it.productoId);
-            const _upd = { stockActual: increment(parseFloat(it.cantidad)||0) };
-            if((parseFloat(it.precioUnit)||0) > 0) _upd.costoUnitario = parseFloat(it.precioUnit);
-            _batch.update(_prodRef, _upd);
-            const _movRef = doc(collection(db,'clientes',currentClientUID,'movimientosStock'));
-            _batch.set(_movRef, {
-              tipo: 'entrada', insumoId: it.productoId, insumoNombre: it.productoNombre||it.nombre||'',
-              cantidad: parseFloat(it.cantidad)||0, unidad: 'u',
-              origen: 'compra', referenciaId: ocId,
-              notas: oc.proveedor||oc.proveedorNombre||'',
-              itemTipo: 'producto',
-              fecha: hoy, creadoEn: new Date().toISOString()
-            });
-          }
-          await _batch.commit();
-          // FIX cache stale: refrescar productos/insumos en memoria y vistas de stock tras commit exitoso (try interno para no abortar el cierre normal de la OC si falla la recarga)
-          try {
-            if(_itemsConProducto.length > 0) {
-              if(window.loadProductos) await window.loadProductos();
-              if(window.prdStkRenderProductos) window.prdStkRenderProductos();
-            }
-            if(_itemsConInsumo.length > 0 && window.loadStockModule) {
-              await window.loadStockModule();
-            }
-          } catch(refErr) { console.error('Refresh post-OC error:', refErr); }
-        }
-      } catch(e) { console.error('Stock trigger OC recibida:', ocId, e); }
+        if(_prod.length > 0) { if(window.loadProductos) await window.loadProductos(); if(window.prdStkRenderProductos) window.prdStkRenderProductos(); }
+        if(_ins.length > 0 && window.loadStockModule) await window.loadStockModule();
+      } catch(refErr) { console.error('Refresh post-OC error:', refErr); }
+    }
+  } catch(e) { console.error('Stock trigger OC recibida:', ocId, e); }
 
-      await loadOrdenesCompra();
-      const ocActualizada = _ordenesCompra.find(o=>o.id===ocId);
-      if(ocActualizada) { _ocDetalleActual=ocActualizada; abrirDetalleOC(ocId); }
-
-      // 4. Si la CC del proveedor está abierta, refrescar
-      if(_ccProvId && oc.proveedorId===_ccProvId) {
-        await abrirCuentaCorriente(_ccProvId);
-      }
-    }catch(e){showToast('Error: '+e.message, 'error');}
-  },'Marcar como recibida');
+  return { totalRecibido, oc };
+};
+window.confirmarRecepcionOC = async function() {
+  const ocId = window._ocRecOcId;
+  if(!currentClientUID || !ocId) return;
+  const btn = document.querySelector('#ocRecepcionModal .bp');
+  if(btn){ btn.disabled=true; btn.style.opacity='0.6'; }
+  try {
+    const res = await window.ejecutarRecepcionOC(ocId, window._ocRecCant||null);
+    closeModal('ocRecepcionModal');
+    closeModal('ocDetalleModal');
+    if(res && res.yaRecibida){ showToast('Esta OC ya fue marcada como recibida.', 'info'); return; }
+    await loadOrdenesCompra();
+    const provId = res && res.oc ? res.oc.proveedorId : null;
+    if(_ccProvId && provId===_ccProvId) await abrirCuentaCorriente(_ccProvId);
+    showToast('Recepción registrada.', 'ok');
+  } catch(e) { showToast('Error: '+e.message, 'error'); }
+  finally { if(btn){ btn.disabled=false; btn.style.opacity='1'; } }
 };
 
 window.generarPDFOrdenCompra = async function() {
@@ -26532,7 +26647,7 @@ function renderHistorialCompra(q) {
     _ordenesCompra.forEach(o=>(o.items||[]).forEach(i=>{ if(i.nombre) all[i.nombre.trim()]=1; }));
     return all;
   })()).length;
-  const totalGastado=_ordenesCompra.reduce((a,o)=>a+(parseFloat(o.total)||0),0);
+  const totalGastado=_ordenesCompra.reduce((a,o)=>a+window._ocMontoReal(o),0);
 
   // Update banner KPIs
   const kpiOcsEl=document.getElementById('hc-kpi-ocs');
@@ -26544,7 +26659,7 @@ function renderHistorialCompra(q) {
 
   const fmtHC = v => '$' + new Intl.NumberFormat('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(parseFloat(v)||0);
   el.innerHTML = productos.map(nombre=>{
-    const lineas=porProducto[nombre].sort((a,b)=>(a.fecha||'')>(b.fecha||'')?-1:1);
+    const lineas=porProducto[nombre].sort((a,b)=>((b.fecha||'').localeCompare(a.fecha||''))||((b.creadoEn||'').localeCompare(a.creadoEn||'')));
     const precios=lineas.map(l=>parseFloat(l.precioUnit)||0).filter(p=>p>0);
     const min=Math.min(...precios),max=Math.max(...precios);
     const variacion=precios.length>1&&min>0?Math.round(((max-min)/min)*100):0;
@@ -26642,7 +26757,7 @@ window.abrirCuentaCorriente = async function(provId) {
             <span style="background:${rc.bg};color:${rc.tc};font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;margin-top:4px;display:inline-block;">${rc.lbl}</span>
           </div>
           <div style="text-align:right;">
-            <div style="font-size:13px;font-weight:500;color:var(--text);">$${(parseFloat(o.total)||0).toLocaleString('es-AR')}</div>
+            <div style="font-size:13px;font-weight:500;color:var(--text);">$${window._ocMontoReal(o).toLocaleString('es-AR')}</div>
             <span style="background:${bc.bg};color:${bc.tc};font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;">${bc.lbl}</span>
           </div>
         </div>`;
@@ -26658,12 +26773,12 @@ window.abrirCuentaCorriente = async function(provId) {
     ]);
     const todasFacturas = [];
     facSnap.forEach(d=>{ const data=d.data(); if(!data.eliminado) todasFacturas.push({id:d.id,...data}); });
-    todasFacturas.sort((a,b)=>(a.fecha||'')>(b.fecha||'')?-1:1);
+    todasFacturas.sort((a,b)=>((b.fecha||'').localeCompare(a.fecha||''))||((b.creadoEn||'').localeCompare(a.creadoEn||'')));
     _ccFacturas = todasFacturas.filter(f => !f.esOC);
     _ccOCsComoFactura = todasFacturas.filter(f => f.esOC === true);
     _ccPagos = [];
     pagSnap.forEach(d=>{ const data=d.data(); if(!data.eliminado) _ccPagos.push({id:d.id,...data}); });
-    _ccPagos.sort((a,b)=>(a.fecha||'')>(b.fecha||'')?-1:1);
+    _ccPagos.sort((a,b)=>((b.fecha||'').localeCompare(a.fecha||''))||((b.creadoEn||'').localeCompare(a.creadoEn||'')));
     renderCuentaCorriente();
   }catch(e){console.log(e);}
 };
@@ -26777,7 +26892,7 @@ function renderCuentaCorriente() {
   // Ítems principales ordenados por fecha desc
   const movsFacturas = _ccFacturas.map(f=>({...f,tipo:'factura'}));
   const itemsPrincipales = [...movsFacturas, ...ocsMovs, ...movsOCsFactura]
-    .sort((a,b)=>(a.fecha||'')>(b.fecha||'')?-1:1);
+    .sort((a,b)=>((b.fecha||'').localeCompare(a.fecha||''))||((b.creadoEn||'').localeCompare(a.creadoEn||'')));
 
   const el = document.getElementById('cc-movimientos-full') || document.getElementById('cc-movimientos');
   if(!el) return;
@@ -26816,7 +26931,7 @@ function renderCuentaCorriente() {
         </div>
       </div>`;
       // Pagos anidados bajo esta OC
-      pagosDeEstaOC.sort((a,b)=>(a.fecha||'')>(b.fecha||'')?-1:1).forEach((p, pi) => {
+      pagosDeEstaOC.sort((a,b)=>((b.fecha||'').localeCompare(a.fecha||''))||((b.creadoEn||'').localeCompare(a.creadoEn||''))).forEach((p, pi) => {
         const pgi = globalIdx++;
         window['_ccMov'+pgi] = {...p, tipo:'pago'};
         const isLast = pi === pagosDeEstaOC.length - 1;
@@ -26854,7 +26969,7 @@ function renderCuentaCorriente() {
         </div>
       </div>`;
       // Pagos anidados bajo esta factura
-      pagosDeEstaFac.sort((a,b)=>(a.fecha||'')>(b.fecha||'')?-1:1).forEach((p, pi) => {
+      pagosDeEstaFac.sort((a,b)=>((b.fecha||'').localeCompare(a.fecha||''))||((b.creadoEn||'').localeCompare(a.creadoEn||''))).forEach((p, pi) => {
         const pgi = globalIdx++;
         window['_ccMov'+pgi] = {...p, tipo:'pago'};
         const isLast = pi === pagosDeEstaFac.length - 1;
@@ -26878,7 +26993,7 @@ function renderCuentaCorriente() {
   // Pagos sin imputar
   if(pagosSinImputar.length > 0){
     html += `<div style="font-size:11px;color:var(--text-l);padding:12px 0 4px;letter-spacing:.04em;text-transform:uppercase;">Pagos sin imputar</div>`;
-    pagosSinImputar.sort((a,b)=>(a.fecha||'')>(b.fecha||'')?-1:1).forEach(p => {
+    pagosSinImputar.sort((a,b)=>((b.fecha||'').localeCompare(a.fecha||''))||((b.creadoEn||'').localeCompare(a.creadoEn||''))).forEach(p => {
       const pgi = globalIdx++;
       window['_ccMov'+pgi] = {...p, tipo:'pago'};
       html += `<div style="display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:.5px solid var(--cream-d);cursor:pointer;" onclick="verDetalleMovCC('pago',window['_ccMov${pgi}'])">
@@ -27232,7 +27347,7 @@ window.saveFactura = async function() {
       });
       const _i = _ccFacturas.findIndex(f=>f.id===editId);
       if(_i!==-1) _ccFacturas[_i] = {..._ccFacturas[_i], ...data, id: editId};
-      _ccFacturas.sort((a,b)=>(a.fecha||'')>(b.fecha||'')?-1:1);
+      _ccFacturas.sort((a,b)=>((b.fecha||'').localeCompare(a.fecha||''))||((b.creadoEn||'').localeCompare(a.creadoEn||'')));
     } else {
     // Si hay OC asociada, actualizar el movimiento existente en CC (esOC:true → esOC:false)
     let reemplazado = false;
@@ -27263,14 +27378,14 @@ window.saveFactura = async function() {
       const newRef = await addDoc(collection(db,'clientes',currentClientUID,'proveedores',_ccProvId,'facturas'),data);
       // Actualizar memoria para que renderCuentaCorriente() vea la nueva factura inmediatamente
       _ccFacturas.unshift({id: newRef.id, ...data});
-      _ccFacturas.sort((a,b)=>(a.fecha||'')>(b.fecha||'')?-1:1);
+      _ccFacturas.sort((a,b)=>((b.fecha||'').localeCompare(a.fecha||''))||((b.creadoEn||'').localeCompare(a.creadoEn||'')));
     } else {
       // Reemplazado: mover de _ccOCsComoFactura a _ccFacturas en memoria
       const idx = (_ccOCsComoFactura||[]).findIndex(f => f.ocId === data.ocId && !f.eliminado);
       if(idx !== -1) {
         const existing = _ccOCsComoFactura.splice(idx, 1)[0];
         _ccFacturas.unshift({...existing, numero: data.numero, monto: data.monto, fecha: data.fecha, desc: data.desc, estado: data.estado, esOC: false});
-        _ccFacturas.sort((a,b)=>(a.fecha||'')>(b.fecha||'')?-1:1);
+        _ccFacturas.sort((a,b)=>((b.fecha||'').localeCompare(a.fecha||''))||((b.creadoEn||'').localeCompare(a.creadoEn||'')));
       }
     }
     }
@@ -27453,7 +27568,7 @@ window.savePagoProveedor = async function() {
     const opRef = await addDoc(collection(db,'clientes',currentClientUID,'proveedores',window._ccProvId,'pagos'), opData);
     window._ultimaOP = { ...opData, id: opRef.id };
     _ccPagos.push({ ...opData, id: opRef.id });
-    _ccPagos.sort((a,b)=>(a.fecha||'')>(b.fecha||'')?-1:1);
+    _ccPagos.sort((a,b)=>((b.fecha||'').localeCompare(a.fecha||''))||((b.creadoEn||'').localeCompare(a.creadoEn||'')));
     // Registrar egreso automático en contabilidad
     const provSnap = await getDoc(doc(db,'clientes',currentClientUID,'proveedores',window._ccProvId));
     const provNombre = provSnap.exists() ? provSnap.data().nombre : 'Proveedor';
@@ -28272,7 +28387,7 @@ function renderProveedoresModule() {
   // También sumar lo de OC por proveedor
   (window._ordenesCompra||[]).forEach(o=>{
     if(o.proveedor && o.total && o.proveedorId && !o.eliminado && _proveedores.find(p=>p.id===o.proveedorId)){
-      gastosPorProv[o.proveedor]=(gastosPorProv[o.proveedor]||0)+(parseFloat(o.total)||0);
+      gastosPorProv[o.proveedor]=(gastosPorProv[o.proveedor]||0)+window._ocMontoReal(o);
     }
   });
 
@@ -32945,16 +33060,8 @@ async function embiEjecutarAccion(tipo,datos){
       if(!_ocDoc){embiAddMsg('bot','No encontré la OC '+(datos.ocId||'#'+datos.numero)+'.');return;}
       var _ocData=_ocDoc.data();
       if(_ocData.estadoRecepcion==='recibida'){embiAddMsg('bot','La OC #'+_ocData.numero+' ya fue marcada como recibida.');return;}
-      var _hoy=new Date().toISOString().split('T')[0];
-      await window._updateDoc(window._doc(window.db,'clientes',currentClientUID,'ordenesCompra',_ocDoc.id),{estadoRecepcion:'recibida',fechaRecepcion:_hoy});
       var _pvId=datos.proveedorId||_ocData.proveedorId||'';
-      if(_pvId){
-        var _facRef=window._collection(window.db,'clientes',currentClientUID,'proveedores',_pvId,'facturas');
-        var _ocNum='OC-'+String(_ocData.numero||datos.numero).padStart(3,'0');
-        var _facData={numero:_ocNum,monto:parseFloat(datos.total)||parseFloat(_ocData.total)||0,fecha:_hoy,ocId:_ocDoc.id,desc:'Recepción '+_ocNum,estado:'pendiente',creadoEn:new Date().toISOString(),esOC:true};
-        console.log('[OC_RECIBIDA] factura a crear:', JSON.stringify(_facData));
-        await window._addDoc(_facRef,_facData);
-      }
+      await window.ejecutarRecepcionOC(_ocDoc.id, null);
       if(window.loadOrdenesCompra)await window.loadOrdenesCompra();
       if(window.loadProveedores)await window.loadProveedores();
       if(window._ccProvId && _pvId && window._ccProvId===_pvId && window.abrirCuentaCorriente) await window.abrirCuentaCorriente(_pvId);
