@@ -6395,15 +6395,15 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 <div class="mo" id="ocDetalleModal">
   <div class="md" style="max-width:560px;padding:0;overflow:hidden;position:relative;">
     <button class="mc2" onclick="closeModal('ocDetalleModal')" style="position:absolute;top:14px;right:14px;z-index:2;color:rgba(244,240,234,.8);background:none;border:none;">×</button>
-    <div class="modal-header-verde">
-      <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">MB Strategy · Compras</div>
+    <div class="modal-header-verde" style="background:#1e2e22;">
+      <div style="font-size:9px;font-weight:700;color:#b09088;text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">MB Strategy · Compras</div>
       <div style="display:flex;justify-content:space-between;align-items:flex-end;">
         <div>
-          <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:#fff;" id="oc-det-numero">OC-001</div>
-          <div style="font-size:12px;color:rgba(255,255,255,.65);margin-top:3px;" id="oc-det-proveedor">Proveedor</div>
+          <div style="font-family:'DM Sans',sans-serif;font-size:24px;font-weight:700;color:#f4f0ea;" id="oc-det-numero">OC-001</div>
+          <div style="font-size:12px;color:rgba(244,240,234,.72);margin-top:3px;" id="oc-det-proveedor">Proveedor</div>
         </div>
         <div style="text-align:right;">
-          <div style="font-family:'DM Sans',sans-serif;font-size:24px;color:#fff;font-weight:500;" id="oc-det-total">$0</div>
+          <div style="font-family:'DM Sans',sans-serif;font-size:24px;color:#f4f0ea;font-weight:600;" id="oc-det-total">$0</div>
         </div>
       </div>
     </div>
@@ -14265,7 +14265,7 @@ window.abrirModalCierreAnterior = function(cierreDoc) {
   ol.innerHTML = `<div style="background:#fff;border-radius:16px;max-width:440px;width:100%;max-height:85vh;overflow:hidden;display:flex;flex-direction:column;">
     <div style="background:linear-gradient(135deg,#1e2e22,#3d5242);padding:20px;position:relative;">
       <button onclick="document.getElementById('cierre-anterior-overlay').remove()" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:22px;color:rgba(244,240,234,.7);cursor:pointer;line-height:1;">×</button>
-      <div style="font-family:'Cormorant Garamond',serif;font-size:23px;font-weight:700;color:#f4f0ea;line-height:1.1;">${c.numero ? 'Cierre '+c.numero : 'Detalle del cierre'}</div>
+      <div style="font-family:${c.numero ? "'DM Sans',sans-serif" : "'Cormorant Garamond',serif"};font-size:22px;font-weight:700;color:#f4f0ea;line-height:1.1;">${c.numero ? 'Cierre '+c.numero : 'Detalle del cierre'}</div>
       <div style="font-size:12px;color:rgba(220,224,212,.6);margin-top:3px;">Período ${c.fechaInicio||'—'} → ${c.fechaFin||'—'}</div>
     </div>
     <div style="padding:20px;overflow-y:auto;">
@@ -27049,13 +27049,104 @@ window.facOnSelectOC = function(val) {
       : [];
     facRenderItems();
     if(aviso) aviso.style.display = (val && window._facItems.length) ? 'block' : 'none';
+    if(window.facRenderOcToggle) facRenderOcToggle();
   };
   if(!val) {
-    if(yaEdit) { showConfirm('¿Vaciar los renglones y desvincular la OC?', ()=>{ window._facItems=[]; window._facOcActual=''; facRenderItems(); if(aviso) aviso.style.display='none'; }, 'Desvincular'); return; }
-    window._facOcActual=''; if(aviso) aviso.style.display='none'; return;
+    if(yaEdit) { showConfirm('¿Vaciar los renglones y desvincular la OC?', ()=>{ window._facItems=[]; window._facOcActual=''; facRenderItems(); if(aviso) aviso.style.display='none'; if(window.facRenderOcToggle) facRenderOcToggle(); }, 'Desvincular'); return; }
+    window._facOcActual=''; if(aviso) aviso.style.display='none'; if(window.facRenderOcToggle) facRenderOcToggle(); return;
   }
   if(yaEdit && prev!==val) showConfirm('Ya editaste renglones. ¿Reemplazarlos por los de esta OC?', aplicar, 'Reemplazar');
   else aplicar();
+};
+window._facAjustarOC = false;
+window._facOcAjustada = false;
+window.facRenderOcToggle = function() {
+  const wrap = document.getElementById('fac-oc-toggle-wrap');
+  if(!wrap) return;
+  const ocSel = document.getElementById('fac-oc');
+  const hasOC = !!(window._facOcActual || (ocSel && ocSel.value));
+  if(!hasOC) { wrap.style.display='none'; wrap.innerHTML=''; window._facAjustarOC=false; return; }
+  wrap.style.display='block';
+  if(window._facOcAjustada===true) {
+    wrap.innerHTML = `<div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:#e8ede8;border-radius:8px;font-size:12px;font-weight:700;color:#2d6a35;">✓ OC ajustada</div>`;
+    return;
+  }
+  const on = !!window._facAjustarOC;
+  wrap.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;background:#faf8f4;border-radius:8px;">
+    <div><div style="font-size:12px;font-weight:600;color:#1e2e22;">Ajustar OC y stock con esta factura</div><div style="font-size:10px;color:#5f5e5a;margin-top:2px;">cruza cantidades por insumo y corrige la OC o el stock</div></div>
+    <div onclick="facToggleAjuste()" style="width:40px;height:22px;border-radius:11px;background:${on?'#4a5e4d':'#d0cfc9'};position:relative;cursor:pointer;flex-shrink:0;"><div style="position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;top:3px;left:${on?'21px':'3px'};transition:left .2s;"></div></div>
+  </div>`;
+};
+window.facToggleAjuste = function() { window._facAjustarOC = !window._facAjustarOC; facRenderOcToggle(); };
+window._facEjecutarCruceOC = async function(oc, items, numLabel) {
+  if(!oc || !currentClientUID) return;
+  const sumBy = (arr, key) => { const m={}; (arr||[]).forEach(x=>{ const id=x[key]; if(id) m[id]=(m[id]||0)+(parseFloat(x.cantidad)||0); }); return m; };
+  const facIns = sumBy(items,'insumoId'), facProd = sumBy(items,'productoId');
+  const ocItems = Array.isArray(oc.items) ? oc.items.map(x=>({...x})) : [];
+  const ocIns = sumBy(ocItems,'insumoId'), ocProd = sumBy(ocItems,'productoId');
+  const deltasIns = [], deltasProd = [];
+  new Set([...Object.keys(facIns),...Object.keys(ocIns)]).forEach(id=>{ const d=(facIns[id]||0)-(ocIns[id]||0); if(Math.abs(d)>1e-9) deltasIns.push({id,delta:d}); });
+  new Set([...Object.keys(facProd),...Object.keys(ocProd)]).forEach(id=>{ const d=(facProd[id]||0)-(ocProd[id]||0); if(Math.abs(d)>1e-9) deltasProd.push({id,delta:d}); });
+  if(!deltasIns.length && !deltasProd.length) return;
+  const recibida = (oc.estadoRecepcion === 'recibida');
+  const nota = 'Ajustada por factura ' + (numLabel||'');
+  if(!recibida) {
+    const nuevos = ocItems.map(x=>{
+      if(x.insumoId && facIns[x.insumoId]!=null) return {...x, cantidad: facIns[x.insumoId], total:(parseFloat(x.precioUnit)||0)*facIns[x.insumoId]};
+      if(x.productoId && facProd[x.productoId]!=null) return {...x, cantidad: facProd[x.productoId], total:(parseFloat(x.precioUnit)||0)*facProd[x.productoId]};
+      if(x.insumoId && facIns[x.insumoId]==null) return {...x, cantidad:0, total:0};
+      if(x.productoId && facProd[x.productoId]==null) return {...x, cantidad:0, total:0};
+      return x;
+    });
+    Object.keys(facIns).forEach(id=>{
+      if(!ocItems.some(x=>x.insumoId===id)) {
+        const fi=(items||[]).find(it=>it.insumoId===id)||{}; const ins=(window._stockInsumos||[]).find(x=>x.id===id); const pu=parseFloat(fi.precioUnit)||0;
+        nuevos.push({insumoId:id, nombre:fi.nombre||(ins&&ins.nombre)||'', insumoNombre:(ins&&ins.nombre)||fi.nombre||'', cantidad:facIns[id], precioUnit:pu, insumoUnidad:(ins&&ins.unidad)||'', unidad:(ins&&ins.unidad)||'', total:pu*facIns[id]});
+      }
+    });
+    Object.keys(facProd).forEach(id=>{
+      if(!ocItems.some(x=>x.productoId===id)) {
+        const fi=(items||[]).find(it=>it.productoId===id)||{}; const p=(window._productos||[]).find(x=>x.id===id); const pu=parseFloat(fi.precioUnit)||0;
+        nuevos.push({productoId:id, nombre:fi.nombre||(p&&p.nombre)||'', productoNombre:(p&&p.nombre)||fi.nombre||'', cantidad:facProd[id], precioUnit:pu, unidad:'u', total:pu*facProd[id]});
+      }
+    });
+    const nuevoTotal = nuevos.reduce((a,x)=>a+(parseFloat(x.total)||0),0);
+    await updateDoc(doc(db,'clientes',currentClientUID,'ordenesCompra',oc.id), {items:nuevos, total:nuevoTotal, ajusteNota:nota});
+    const ocMem=(_ordenesCompra||window._ordenesCompra||[]).find(o=>o.id===oc.id);
+    if(ocMem){ ocMem.items=nuevos; ocMem.total=nuevoTotal; ocMem.ajusteNota=nota; }
+    if(typeof renderOrdenesCompra==='function'){ try { renderOrdenesCompra(); } catch(_){} }
+  } else {
+    const hoy = fechaHoyARG();
+    const notaAj = 'Ajuste por factura ' + (numLabel||'');
+    for(const d of deltasIns) {
+      const ins=(window._stockInsumos||[]).find(x=>x.id===d.id);
+      const stockResultante = ins ? (parseFloat(ins.stockActual||0)+d.delta) : null;
+      try {
+        await updateDoc(doc(db,'clientes',currentClientUID,'insumos',d.id), {stockActual: increment(d.delta)});
+        await addDoc(collection(db,'clientes',currentClientUID,'movimientosStock'), {
+          tipo:'ajuste', insumoId:d.id, insumoNombre: ins?ins.nombre:'', cantidad:Math.abs(d.delta), delta:d.delta,
+          unidad: ins?ins.unidad:'', stockResultante, origen:'ajuste', referenciaId:'', notas:notaAj, fecha:hoy, creadoEn:new Date().toISOString()
+        });
+        if(ins) ins.stockActual = stockResultante;
+      } catch(e){ console.error('cruce ajuste insumo error:', d.id, e); }
+    }
+    for(const d of deltasProd) {
+      const p=(window._productos||[]).find(x=>x.id===d.id);
+      const stockResultante = p ? (parseFloat(p.stockActual||0)+d.delta) : null;
+      try {
+        await updateDoc(doc(db,'clientes',currentClientUID,'productos',d.id), {stockActual: increment(d.delta)});
+        await addDoc(collection(db,'clientes',currentClientUID,'movimientosStock'), {
+          tipo:'ajuste', insumoId:d.id, insumoNombre: p?p.nombre:'', cantidad:Math.abs(d.delta), delta:d.delta,
+          unidad:'u', stockResultante, origen:'ajuste', referenciaId:'', notas:notaAj, itemTipo:'producto', fecha:hoy, creadoEn:new Date().toISOString()
+        });
+        if(p) p.stockActual = stockResultante;
+      } catch(e){ console.error('cruce ajuste producto error:', d.id, e); }
+    }
+    try {
+      if(deltasIns.length && window._stockInsumos && window._stockInsumos.length && window.loadStockModule) await window.loadStockModule();
+      if(deltasProd.length && window.loadProductos) await window.loadProductos();
+    } catch(_){}
+  }
 };
 window._inferTipoComprobante = function(prov) {
   if(prov && prov.categoria==='Retiro socio') return 'X';
@@ -27132,10 +27223,12 @@ window.saveFactura = async function() {
     creadoEn: new Date().toISOString()
   };
   if(tipo==='A' && hayItems){ data.netoGravado = calc.neto||0; data.iva21 = calc.iva||0; data.total = calc.total||monto; }
+  const debeAjustar = !!(window._facAjustarOC && data.ocId && window._facOcAjustada !== true);
+  if(window._facOcAjustada===true || debeAjustar) data.ocAjustada = true;
   try{
     if(editId){
       await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',_ccProvId,'facturas',editId), {
-        numero: data.numero, tipoComprobante: data.tipoComprobante, numeroComprobante: data.numeroComprobante, items: data.items, netoGravado: data.netoGravado??null, iva21: data.iva21??null, total: data.total??null, monto: data.monto, fecha: data.fecha, desc: data.desc, ocId: data.ocId, esOC: false
+        numero: data.numero, tipoComprobante: data.tipoComprobante, numeroComprobante: data.numeroComprobante, items: data.items, netoGravado: data.netoGravado??null, iva21: data.iva21??null, total: data.total??null, ocAjustada: data.ocAjustada??null, monto: data.monto, fecha: data.fecha, desc: data.desc, ocId: data.ocId, esOC: false
       });
       const _i = _ccFacturas.findIndex(f=>f.id===editId);
       if(_i!==-1) _ccFacturas[_i] = {..._ccFacturas[_i], ...data, id: editId};
@@ -27181,6 +27274,11 @@ window.saveFactura = async function() {
       }
     }
     }
+    if(debeAjustar) {
+      const ocSel = (_ordenesCompra||window._ordenesCompra||[]).find(o=>o.id===data.ocId);
+      try { await window._facEjecutarCruceOC(ocSel, data.items, data.numeroComprobante||data.numero); }
+      catch(e){ console.error('cruce OC error:', e); showToast('La factura se guardó pero hubo un error al ajustar OC/stock.', 'warning'); }
+    }
     // Refrescar KPIs y movimientos inmediatamente
     if(typeof renderCuentaCorriente === 'function') renderCuentaCorriente();
     const s=document.getElementById('fac-saved');if(s)s.style.display='block';
@@ -27190,8 +27288,10 @@ window.saveFactura = async function() {
       ['fac-numero','fac-monto','fac-fecha','fac-desc','fac-prefijo','fac-nrocomp'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
       window._facItems=[]; window._facOcActual=''; window._facPreciosConIVA=false;
       window._facEditId=''; window._facEditData=null; window._facEditLegacy=false;
+      window._facAjustarOC=false; window._facOcAjustada=false;
       const _ocSel=document.getElementById('fac-oc'); if(_ocSel) _ocSel.value='';
       const _tEl=document.getElementById('fac-modal-title'); if(_tEl) _tEl.textContent='Cargar factura';
+      if(window.facRenderOcToggle) facRenderOcToggle();
       if(window.facRenderItems) facRenderItems();
       await abrirCuentaCorriente(_ccProvId);
     },1500);
@@ -27952,6 +28052,9 @@ window._facturaModalCargarEdicion = function(m) {
   }
   window._facOcActual = m.ocId||'';
   if(el('fac-oc')) el('fac-oc').value = m.ocId||'';
+  window._facOcAjustada = (m.ocAjustada===true);
+  window._facAjustarOC = false;
+  if(window.facRenderOcToggle) facRenderOcToggle();
   const aviso = el('fac-oc-aviso'); if(aviso) aviso.style.display='none';
   window._facItems = (m.items||[]).map(it=>({nombre:it.nombre||'', cantidad:(it.cantidad??''), precioUnit:(it.precioUnit??''), insumoId:it.insumoId||null, prodCompraId:it.prodCompraId||null, productoId:it.productoId||null}));
   if(!window._facItems.length && el('fac-monto')) el('fac-monto').value = m.monto||'';
@@ -32038,7 +32141,8 @@ window.openModal = function(id) {
     const _editData = window._facEditData || null;
     window._facEditData = null;
     window._facEditLegacy = false;
-    if(!_editData) window._facEditId = '';
+    window._facAjustarOC = false;
+    if(!_editData) { window._facEditId = ''; window._facOcAjustada = false; }
     ['fac-prefijo','fac-nrocomp','fac-numero','fac-desc','fac-monto'].forEach(fid=>{const e=document.getElementById(fid);if(e)e.value='';});
     window._facItems=[]; window._facOcActual=''; window._facPreciosConIVA=false;
     const _cn=document.getElementById('fac-chip-neto'), _ci=document.getElementById('fac-chip-iva');
@@ -32049,8 +32153,9 @@ window.openModal = function(id) {
     const fechaEl=document.getElementById('fac-fecha'); if(fechaEl) fechaEl.value=_editData?'':fechaHoyARG();
     if((!window._stockInsumos||!window._stockInsumos.length)){ try { getDocs(query(collection(db,'clientes',currentClientUID,'insumos'), where('activo','==',true), orderBy('nombre','asc'))).then(s=>{ window._stockInsumos=s.docs.map(d=>({id:d.id,...d.data()})); }).catch(()=>{}); } catch(_){} }
     if((!window._prodCompra||!window._prodCompra.length)){ try { getDocs(collection(db,'clientes',currentClientUID,'prodCompra')).then(s=>{ window._prodCompra=s.docs.map(d=>({id:d.id,...d.data()})).filter(x=>!x.eliminado); }).catch(()=>{}); } catch(_){} }
+    if((!window._productos||!window._productos.length)){ try { getDocs(collection(db,'clientes',currentClientUID,'productos')).then(s=>{ window._productos=s.docs.map(d=>({id:d.id,...d.data()})).filter(x=>!x.eliminado); }).catch(()=>{}); } catch(_){} }
     if(_editData){ window._facturaModalCargarEdicion(_editData); }
-    else { if(window.facRenderItems) facRenderItems(); if(window._facturaModalAplicarTipo) window._facturaModalAplicarTipo(); }
+    else { if(window.facRenderItems) facRenderItems(); if(window._facturaModalAplicarTipo) window._facturaModalAplicarTipo(); if(window.facRenderOcToggle) facRenderOcToggle(); }
   }
   if(id === 'newProveedorModal') { renderCatSelect(); loadCatsProveedor(); document.getElementById('nueva-cat-form').style.display='none'; const t=document.querySelector('#newProveedorModal .mt'); if(t) t.textContent='Nuevo proveedor'; }
   if(id === 'newNecesidadModal') {
