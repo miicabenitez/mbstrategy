@@ -6206,7 +6206,23 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
       <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:#fff;">Cargar factura</div>
     </div>
     <div style="padding:20px 24px;max-height:65vh;overflow-y:auto;">
-      <div class="fg"><label class="fl">Número de factura</label><input type="text" class="fi" id="fac-numero" placeholder="Ej: F-0023, FAC-001..."/></div>
+      <div class="fg">
+        <label class="fl">Tipo de comprobante</label>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
+          <span id="fac-tipo-chip" style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:#f2ede9;color:#7a4e46;font-family:'DM Sans',sans-serif;">Tipo X</span>
+          <span id="fac-tipo-desc" style="font-size:11px;color:var(--text-l);"></span>
+        </div>
+        <div id="fac-cuit-warn" style="display:none;font-size:11px;color:#b0402f;background:#f8ece9;border-radius:8px;padding:8px 12px;margin-top:8px;">Completá el CUIT del proveedor para cargar facturas fiscales</div>
+      </div>
+      <div class="fg" id="fac-fiscal-nro" style="display:none;">
+        <label class="fl">Numeración fiscal</label>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input type="text" class="fi" id="fac-prefijo" maxlength="4" inputmode="numeric" placeholder="0001" style="margin-top:0;width:90px;text-align:center;"/>
+          <span style="color:var(--text-l);font-weight:600;">-</span>
+          <input type="text" class="fi" id="fac-nrocomp" maxlength="8" inputmode="numeric" placeholder="00001234" style="margin-top:0;flex:1;"/>
+        </div>
+      </div>
+      <div class="fg" id="fac-numero-wrap"><label class="fl">Número de factura (opcional)</label><input type="text" class="fi" id="fac-numero" placeholder="Ej: F-0023, FAC-001..."/></div>
       <div class="fg"><label class="fl">Monto total</label><input type="number" class="fi" id="fac-monto" placeholder="0"/></div>
       <div class="fg"><label class="fl">Fecha</label><input type="date" class="fi" id="fac-fecha"/></div>
       <div class="fg"><label class="fl">OC asociada (opcional)</label>
@@ -14473,7 +14489,7 @@ async function _cierreEjecutarCierre(movimientos, provPagos, retiroPagos) {
         const facRef = collection(db,'clientes',uid,'proveedores',r.provId,'facturas');
         const pagRef = collection(db,'clientes',uid,'proveedores',r.provId,'pagos');
         return [
-          addDoc(facRef, {numero:'Retiro '+mes, desc:'Retiro de socio - '+mes, monto:r.monto, montoPagado:r.monto, estado:'pagada', fecha, esOC:false, creadoEn, eliminado:false}),
+          addDoc(facRef, {numero:'Retiro '+mes, tipoComprobante:'X', desc:'Retiro de socio - '+mes, monto:r.monto, montoPagado:r.monto, estado:'pagada', fecha, esOC:false, creadoEn, eliminado:false}),
           addDoc(pagRef, {tipo:'pago', monto:r.monto, montoLibre:r.monto, fecha, medio:'cierre', concepto:'Pago desde cierre de período', facturasIds:[], facturasNombres:[], facturasMontos:[], creadoEn, eliminado:false})
         ];
       }));
@@ -15152,7 +15168,7 @@ async function loadMisFacturasModule() {
       }).join('');
     }
 
-    const delMes = facturas.filter(f => (f.creadoEn||'').slice(0,7) === window._mfMesSel);
+    const delMes = facturas.filter(f => (f.creadoEn||'').slice(0,7) === window._mfMesSel && f.tipoComprobante !== 'X');
     const totalBruto = delMes.reduce((s,f) => s + (f.importeTotal||0), 0);
     const totalNcMes = ncList.filter(x => (x.creadoEn||'').slice(0,7) === window._mfMesSel)
       .reduce((s,x) => s + (x.importeTotal||0), 0);
@@ -16048,7 +16064,7 @@ async function loadResumenVentas() {
     const todasFacs = facSnap.docs.map(d => ({id: d.id, ...d.data()}));
     const todasNc = ncSnap.docs.map(d => ({id: d.id, ...d.data()}));
     const todasNd = ndSnap.docs.map(d => ({id: d.id, ...d.data()}));
-    const facs = todasFacs.filter(f => (f.creadoEn||'').slice(0,7) === mesSel);
+    const facs = todasFacs.filter(f => (f.creadoEn||'').slice(0,7) === mesSel && f.tipoComprobante !== 'X');
     const normalizar = (doc, tipoKey) => ({
       id: doc.id,
       tipoComprobante: doc[tipoKey],
@@ -16210,7 +16226,7 @@ async function loadResumenCompras() {
         getDocs(collection(db, 'clientes', currentClientUID, 'proveedores', p.id, 'facturas'))
           .then(snap => snap.docs.map(d => {
             const data = d.data();
-            return {id: d.id, provId: p.id, provNombre: p.nombre || p.razonSocial || '—', ...data};
+            return {id: d.id, provId: p.id, provNombre: p.nombre || p.razonSocial || '—', provCategoria: p.categoria || '', ...data};
           }))
       )
     );
@@ -16227,30 +16243,41 @@ async function loadResumenCompras() {
         return `<option value="${ym}"${ym===mesSel?' selected':''}>${lblMes[m]} ${year}</option>`;
       }).join('');
     }
+    const resolverTipo = f => {
+      if(f.tipoComprobante) return f.tipoComprobante;
+      if(f.provCategoria==='Retiro socio' || /^retiro/i.test(f.numero||'') || /retiro de socio/i.test(f.desc||'')) return 'X';
+      return 'C';
+    };
     const facs = todas.filter(f => {
       const ym = (f.fecha || f.creadoEn || '').slice(0,7);
       return ym === mesSel;
-    });
+    }).filter(f => resolverTipo(f) !== 'X');
     facs.sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
     let totGral = 0, totNeto = 0, totIva21 = 0, totIva105 = 0, cantComp = 0;
     const fmt = v => '$' + Math.round(v).toLocaleString('es-AR');
     const filas = facs.map(f => {
+      const tipo = resolverTipo(f);
+      const esA = tipo === 'A';
       const total = Number(f.monto) || 0;
-      const neto = Math.round(total / 1.21);
-      const iva21 = total - neto;
+      const neto = esA ? Math.round(total / 1.21) : total;
+      const iva21 = esA ? (total - neto) : 0;
       const iva105 = 0;
       cantComp++;
-      totGral += total; totNeto += neto; totIva21 += iva21; totIva105 += iva105;
-      const numero = f.numero || '—';
+      totGral += total; totIva21 += iva21; totIva105 += iva105;
+      if(esA) totNeto += neto;
+      const numero = f.numeroComprobante || f.numero || '—';
       const fecha = f.fecha || (f.creadoEn||'').slice(0,10);
+      const ivaCell = esA ? fmt(iva21) : '—';
+      const iva105Cell = esA ? fmt(iva105) : '—';
+      const netoCell = esA ? fmt(neto) : '—';
       return `<tr>
         <td style="font-size:12px;color:var(--text-m)">${fecha}</td>
         <td>${f.provNombre}</td>
-        <td style="font-size:12px">Factura</td>
+        <td style="font-size:12px">Factura ${tipo}</td>
         <td style="font-size:11px;color:var(--text-m)">${numero}</td>
-        <td class="r" style="font-family:inherit;font-size:13px">${fmt(neto)}</td>
-        <td class="r" style="font-family:inherit;font-size:13px">${fmt(iva21)}</td>
-        <td class="r" style="font-family:inherit;font-size:13px">${fmt(iva105)}</td>
+        <td class="r" style="font-family:inherit;font-size:13px">${netoCell}</td>
+        <td class="r" style="font-family:inherit;font-size:13px">${ivaCell}</td>
+        <td class="r" style="font-family:inherit;font-size:13px">${iva105Cell}</td>
         <td class="r" style="font-family:inherit;font-size:13px;font-weight:500">${fmt(total)}</td>
       </tr>`;
     }).join('');
@@ -26800,16 +26827,60 @@ function renderCuentaCorriente() {
   el.innerHTML = html;
 }
 
+window._inferTipoComprobante = function(prov) {
+  if(prov && prov.categoria==='Retiro socio') return 'X';
+  const cond = prov ? prov.condicionIVA : null;
+  if(!cond) return 'X';
+  const c = String(cond);
+  if(c==='1') return (currentClientData && currentClientData.negocioCondicionIVA==='responsable_inscripto') ? 'A' : 'B';
+  if(c==='6'||c==='4') return 'C';
+  return 'X';
+};
+window._facturaModalAplicarTipo = function() {
+  const prov = (_proveedores||[]).find(p=>p.id===_ccProvId) || {};
+  const tipo = window._inferTipoComprobante(prov);
+  window._facTipoActual = tipo;
+  const fiscal = (tipo==='A'||tipo==='B'||tipo==='C');
+  const descMap = {A:'Factura A — discrimina IVA',B:'Factura B',C:'Factura C',X:'Comprobante interno — no fiscal'};
+  const chip = document.getElementById('fac-tipo-chip');
+  if(chip){ chip.textContent = 'Tipo '+tipo; chip.style.background = fiscal?'#e8ede8':'#f2ede9'; chip.style.color = fiscal?'#4a5e4d':'#7a4e46'; }
+  const desc = document.getElementById('fac-tipo-desc');
+  if(desc) desc.textContent = descMap[tipo]||'';
+  const fiscalNro = document.getElementById('fac-fiscal-nro');
+  if(fiscalNro) fiscalNro.style.display = fiscal?'block':'none';
+  const numWrap = document.getElementById('fac-numero-wrap');
+  if(numWrap) numWrap.style.display = fiscal?'none':'block';
+  const sinCuit = fiscal && !String(prov.cuit||'').trim();
+  const warn = document.getElementById('fac-cuit-warn');
+  if(warn) warn.style.display = sinCuit?'block':'none';
+  const btn = document.querySelector('#newFacturaModal .bp');
+  if(btn){ btn.disabled = sinCuit; btn.style.opacity = sinCuit?'0.5':'1'; btn.style.pointerEvents = sinCuit?'none':'auto'; }
+};
 window.saveFactura = async function() {
   if(!currentClientUID||!_ccProvId) return;
-  const numero = document.getElementById('fac-numero').value.trim();
+  const prov = (_proveedores||[]).find(p=>p.id===_ccProvId) || {};
+  const tipo = window._inferTipoComprobante(prov);
+  const fiscal = (tipo==='A'||tipo==='B'||tipo==='C');
   const monto = parseFloat(document.getElementById('fac-monto').value)||0;
   const fecha = document.getElementById('fac-fecha').value;
-  if(!numero){showToast('Ingresá el número de factura', 'info');return;}
+  let numero = '', numeroComprobante = '';
+  if(fiscal){
+    if(!String(prov.cuit||'').trim()){showToast('Completá el CUIT del proveedor para cargar facturas fiscales', 'info');return;}
+    const pref = String(document.getElementById('fac-prefijo').value||'').replace(/\D/g,'');
+    const nro = String(document.getElementById('fac-nrocomp').value||'').replace(/\D/g,'');
+    if(pref.length!==4){showToast('Ingresá el prefijo (4 dígitos)', 'info');return;}
+    if(nro.length!==8){showToast('Ingresá el número del comprobante (8 dígitos)', 'info');return;}
+    numeroComprobante = pref+'-'+nro;
+    numero = numeroComprobante;
+  } else {
+    numero = document.getElementById('fac-numero').value.trim();
+  }
   if(!monto){showToast('Ingresá el monto', 'info');return;}
   if(!fecha){showToast('Ingresá la fecha', 'info');return;}
   const data = {
     numero, monto, fecha,
+    tipoComprobante: tipo,
+    numeroComprobante,
     ocId: document.getElementById('fac-oc').value||'',
     desc: document.getElementById('fac-desc').value,
     esOC: false,
@@ -26824,7 +26895,7 @@ window.saveFactura = async function() {
       const existente = (_ccOCsComoFactura||[]).find(f => f.ocId === data.ocId && !f.eliminado);
       if(existente) {
         await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',_ccProvId,'facturas',existente.id), {
-          numero: data.numero, monto: data.monto, fecha: data.fecha, desc: data.desc, estado: data.estado, esOC: false
+          numero: data.numero, tipoComprobante: data.tipoComprobante, numeroComprobante: data.numeroComprobante, monto: data.monto, fecha: data.fecha, desc: data.desc, estado: data.estado, esOC: false
         });
         reemplazado = true;
       } else {
@@ -26834,7 +26905,7 @@ window.saveFactura = async function() {
           const fdata = fd.data();
           if(fdata.ocId === data.ocId && fdata.esOC === true && !fdata.eliminado) {
             await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',_ccProvId,'facturas',fd.id), {
-              numero: data.numero, monto: data.monto, fecha: data.fecha, desc: data.desc, estado: data.estado, esOC: false
+              numero: data.numero, tipoComprobante: data.tipoComprobante, numeroComprobante: data.numeroComprobante, monto: data.monto, fecha: data.fecha, desc: data.desc, estado: data.estado, esOC: false
             });
             reemplazado = true;
             break;
@@ -26862,7 +26933,7 @@ window.saveFactura = async function() {
     setTimeout(async()=>{
       if(s)s.style.display='none';
       closeModal('newFacturaModal');
-      ['fac-numero','fac-monto','fac-fecha','fac-desc'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+      ['fac-numero','fac-monto','fac-fecha','fac-desc','fac-prefijo','fac-nrocomp'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
       await abrirCuentaCorriente(_ccProvId);
     },1500);
   }catch(e){showToast('Error: '+e.message, 'error');}
@@ -31650,6 +31721,8 @@ window.openModal = function(id) {
     }
     const fechaEl=document.getElementById('fac-fecha');
     if(fechaEl&&!fechaEl.value) fechaEl.value=fechaHoyARG();
+    ['fac-prefijo','fac-nrocomp'].forEach(fid=>{const e=document.getElementById(fid);if(e)e.value='';});
+    if(window._facturaModalAplicarTipo) window._facturaModalAplicarTipo();
   }
   if(id === 'newProveedorModal') { renderCatSelect(); loadCatsProveedor(); document.getElementById('nueva-cat-form').style.display='none'; const t=document.querySelector('#newProveedorModal .mt'); if(t) t.textContent='Nuevo proveedor'; }
   if(id === 'newNecesidadModal') {
