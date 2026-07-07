@@ -1299,6 +1299,60 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 @keyframes calcPillPop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
 #newProductoModal #prod-modal-btn{background:linear-gradient(135deg, #1e2e22 0%, #3d5242 100%) !important;border-color:#1e2e22 !important;color:#fff !important;}
 #prod-nueva-orden-modal #prod-orden-guardar-btn{background:linear-gradient(135deg, #1e2e22 0%, #3d5242 100%) !important;border-color:#1e2e22 !important;color:#fff !important;}
+#newFacturaModal .md{max-width:720px;width:92vw;max-height:88vh;display:flex;flex-direction:column;padding:0;overflow:hidden;}
+#newFacturaModal .modal-header-verde{padding:16px 22px;border-radius:18px 18px 0 0;flex-shrink:0;}
+#newFacturaModal .fac-body{padding:18px 22px;overflow-y:auto;flex:1;}
+#newFacturaModal .fac-footer{flex-shrink:0;padding:14px 22px;border-top:.5px solid #e7e5df;background:#fff;}
+.fac-sec{margin-bottom:14px;}
+.fac-tbl-head{display:grid;grid-template-columns:1fr 90px 110px 110px 40px;background:#f1efe8;border-radius:8px 8px 0 0;padding:8px 12px;}
+.fac-tbl-head span{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:#5f5e5a;font-weight:700;font-family:'DM Sans',sans-serif;}
+.fac-tbl-head span.r{text-align:right;}
+.fac-row{display:grid;grid-template-columns:1fr 90px 110px 110px 40px;align-items:center;padding:8px 12px;border-top:.5px solid #e7e5df;background:#fff;}
+.fac-c-nums{display:contents;}
+.fac-c-cant,.fac-c-precio,.fac-c-sub{text-align:right;}
+.fac-row input{font-family:'DM Sans',sans-serif;}
+.fac-sub{font-size:13px;font-weight:600;color:#1e2e22;font-family:'DM Sans',sans-serif;}
+.fac-c-quitar{text-align:center;}
+.fac-c-badge{position:absolute;right:8px;top:50%;transform:translateY(-50%);pointer-events:none;display:inline-flex;}
+.fac-c-concepto input.fac-has-badge{padding-right:74px;}
+.fac-row-lbl{display:none;}
+.fac-dd .fac-opt:last-child{border-bottom:none;}
+.fac-chip-precio{padding:9px 16px;border-radius:20px;border:.5px solid #d0cfc9;background:#fff;color:var(--text-m);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;min-height:40px;}
+.fac-chip-precio.active{background:#4a5e4d;color:#f4f0ea;border-color:#4a5e4d;}
+#fac-resumen{background:#f1efe8;border-radius:10px;padding:12px 14px;}
+.fac-res-line{display:flex;justify-content:space-between;font-size:12px;color:#5f5e5a;font-family:'DM Sans',sans-serif;padding:2px 0;}
+.fac-res-line span:first-child{font-weight:700;}
+.fac-res-total{display:flex;justify-content:space-between;font-size:15px;font-weight:700;color:#1e2e22;font-family:'DM Sans',sans-serif;border-top:.5px solid #d8d6cf;margin-top:6px;padding-top:8px;}
+.fac-empty-zone{border:1.5px dashed #d0cfc9;border-radius:10px;padding:18px 14px;text-align:center;}
+.facd-head{display:grid;grid-template-columns:1fr 64px 96px 96px;background:#f1efe8;border-radius:8px 8px 0 0;padding:8px 12px;}
+.facd-head span{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:#5f5e5a;font-weight:700;font-family:'DM Sans',sans-serif;}
+.facd-head span.r{text-align:right;}
+.facd-row{display:grid;grid-template-columns:1fr 64px 96px 96px;align-items:center;padding:9px 12px;border-top:.5px solid #e7e5df;font-size:13px;color:#2c2c2a;font-family:'DM Sans',sans-serif;}
+.facd-nums{display:contents;}
+.facd-row .r{text-align:right;}
+.facd-row .facd-sub{font-weight:600;color:#1e2e22;}
+.facd-lbl{display:none;}
+@media(max-width:640px){
+  #newFacturaModal .md{width:100%;max-width:100%;margin:0 8px;max-height:92vh;}
+  #newFacturaModal .fac-body{padding:14px;}
+  #newFacturaModal .fac-footer{padding:12px 14px;}
+  .fac-tbl-head{display:none;}
+  .fac-row{display:block;position:relative;border:.5px solid #e7e5df;border-radius:10px;margin-bottom:8px;padding:12px;}
+  .fac-c-concepto{padding-right:34px;}
+  .fac-c-nums{display:flex;gap:10px;justify-content:space-between;align-items:flex-end;margin-top:10px;}
+  .fac-c-cant,.fac-c-precio{flex:1;text-align:left;}
+  .fac-c-sub{text-align:right;min-height:40px;display:flex;flex-direction:column;justify-content:flex-end;}
+  .fac-row-lbl{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:#8a8984;margin-bottom:3px;}
+  .fac-c-quitar{position:absolute;top:8px;right:6px;}
+  .fac-c-badge{right:44px;}
+  .fac-c-concepto input.fac-has-badge{padding-right:106px;}
+  .fac-chip-precio{flex:1;text-align:center;}
+  .facd-head{display:none;}
+  .facd-row{grid-template-columns:1fr;gap:6px;border:.5px solid #e7e5df;border-radius:10px;margin-bottom:6px;padding:10px 12px;}
+  .facd-nums{display:flex;justify-content:space-between;gap:10px;margin-top:2px;}
+  .facd-row .facd-sub{text-align:right;}
+  .facd-lbl{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:#8a8984;}
+}
 </style>
 <!-- deploy force 023 -->
 </head>
@@ -6199,39 +6253,57 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 
 <!-- Modal nueva factura -->
 <div class="mo" id="newFacturaModal">
-  <div class="md" style="max-width:440px;padding:0;overflow:hidden;position:relative;">
+  <div class="md" style="position:relative;">
     <button class="mc2" onclick="closeModal('newFacturaModal')" style="position:absolute;top:14px;right:14px;z-index:2;color:rgba(244,240,234,.8);background:none;border:none;">×</button>
     <div class="modal-header-verde">
-      <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">MB Strategy</div>
-      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:#fff;">Cargar factura</div>
+      <div style="font-size:10px;font-weight:700;color:#b09088;text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">MB Strategy</div>
+      <div id="fac-modal-title" style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700;color:#f4f0ea;">Cargar factura</div>
     </div>
-    <div style="padding:20px 24px;max-height:65vh;overflow-y:auto;">
-      <div class="fg">
-        <label class="fl">Tipo de comprobante</label>
-        <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
-          <span id="fac-tipo-chip" style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:#f2ede9;color:#7a4e46;font-family:'DM Sans',sans-serif;">Tipo X</span>
-          <span id="fac-tipo-desc" style="font-size:11px;color:var(--text-l);"></span>
-        </div>
-        <div id="fac-cuit-warn" style="display:none;font-size:11px;color:#b0402f;background:#f8ece9;border-radius:8px;padding:8px 12px;margin-top:8px;">Completá el CUIT del proveedor para cargar facturas fiscales</div>
+    <div class="fac-body">
+      <div class="fac-sec" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <span id="fac-tipo-chip" style="font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;background:#f4f0ea;border:2px solid #4a5e4d;color:#1e2e22;font-family:'DM Sans',sans-serif;">Comprobante X</span>
+        <span id="fac-tipo-desc" style="font-size:11px;color:var(--text-l);"></span>
       </div>
-      <div class="fg" id="fac-fiscal-nro" style="display:none;">
+      <div id="fac-cuit-warn" class="fac-sec" style="display:none;font-size:11px;color:#b0402f;background:#f8ece9;border-radius:8px;padding:8px 12px;">Completá el CUIT del proveedor para cargar facturas fiscales</div>
+      <div class="fac-sec" id="fac-fiscal-nro" style="display:none;">
         <label class="fl">Numeración fiscal</label>
-        <div style="display:flex;gap:8px;align-items:center;">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
           <input type="text" class="fi" id="fac-prefijo" maxlength="4" inputmode="numeric" placeholder="0001" style="margin-top:0;width:90px;text-align:center;"/>
           <span style="color:var(--text-l);font-weight:600;">-</span>
-          <input type="text" class="fi" id="fac-nrocomp" maxlength="8" inputmode="numeric" placeholder="00001234" style="margin-top:0;flex:1;"/>
+          <input type="text" class="fi" id="fac-nrocomp" maxlength="8" inputmode="numeric" placeholder="00001234" style="margin-top:0;flex:1;min-width:140px;"/>
         </div>
       </div>
-      <div class="fg" id="fac-numero-wrap"><label class="fl">Número de factura (opcional)</label><input type="text" class="fi" id="fac-numero" placeholder="Ej: F-0023, FAC-001..."/></div>
-      <div class="fg"><label class="fl">Monto total</label><input type="number" class="fi" id="fac-monto" placeholder="0"/></div>
-      <div class="fg"><label class="fl">Fecha</label><input type="date" class="fi" id="fac-fecha"/></div>
-      <div class="fg"><label class="fl">OC asociada (opcional)</label>
-        <select class="fi" id="fac-oc" style="margin-top:0;"><option value="">Sin OC asociada</option></select>
+      <div class="fac-sec" id="fac-numero-wrap"><label class="fl">Número de factura (opcional)</label><input type="text" class="fi" id="fac-numero" placeholder="Ej: F-0023, FAC-001..."/></div>
+      <div class="fac-sec"><label class="fl">Fecha</label><input type="date" class="fi" id="fac-fecha"/></div>
+      <div class="fac-sec"><label class="fl">OC asociada (opcional)</label>
+        <select class="fi" id="fac-oc" style="margin-top:0;" onchange="facOnSelectOC(this.value)"><option value="">Sin OC asociada</option></select>
+        <div id="fac-oc-aviso" style="display:none;font-size:11px;color:#4a5e4d;margin-top:6px;">✓ renglones precargados desde la OC — ajustá lo que facturaron distinto</div>
       </div>
-      <div class="fg"><label class="fl">Descripción (opcional)</label><input type="text" class="fi" id="fac-desc" placeholder="Detalle de la factura..."/></div>
-      <div class="br2">
-        <button class="bp" onclick="saveFactura()">Guardar factura</button>
-        <button class="bs" onclick="closeModal('newFacturaModal')">Cancelar</button>
+      <div id="fac-oc-toggle-wrap" style="display:none;"></div>
+      <div class="fac-sec">
+        <label class="fl">Renglones</label>
+        <div class="fac-tbl-head"><span>Concepto / Insumo</span><span class="r">Cant.</span><span class="r">Precio unit.</span><span class="r">Subtotal</span><span></span></div>
+        <div id="fac-items-body"></div>
+        <div id="fac-items-empty" class="fac-empty-zone">
+          <div style="font-size:12px;color:var(--text-l);margin-bottom:10px;">＋ Agregar renglón (opcional)<br/>o cargá directamente el monto total</div>
+          <div id="fac-monto-manual-wrap" style="max-width:220px;margin:0 auto 4px;"><input type="number" class="fi" id="fac-monto" placeholder="Monto total $" style="text-align:right;"/></div>
+        </div>
+        <button onclick="facAgregarItem()" style="margin-top:8px;background:none;border:.5px dashed #4a5e4d;border-radius:8px;padding:8px 14px;font-size:12px;color:#4a5e4d;cursor:pointer;font-family:'DM Sans',sans-serif;min-height:40px;">＋ Agregar renglón</button>
+      </div>
+      <div class="fac-sec" id="fac-precios-sel" style="display:none;">
+        <label class="fl">Precios cargados</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button type="button" id="fac-chip-neto" class="fac-chip-precio active" onclick="facSetPreciosIVA(false)">Sin IVA (neto)</button>
+          <button type="button" id="fac-chip-iva" class="fac-chip-precio" onclick="facSetPreciosIVA(true)">IVA incluido</button>
+        </div>
+      </div>
+      <div class="fac-sec" id="fac-resumen" style="display:none;"></div>
+      <div class="fac-sec"><label class="fl">Descripción (opcional)</label><input type="text" class="fi" id="fac-desc" placeholder="Detalle de la factura..."/></div>
+    </div>
+    <div class="fac-footer">
+      <div class="br2" style="margin-top:0;">
+        <button class="bp" onclick="saveFactura()" style="background:#1e2e22;color:#f4f0ea;">Guardar factura</button>
+        <button class="bs" onclick="closeModal('newFacturaModal')" style="border:.5px solid #d0cfc9;">Cancelar</button>
       </div>
       <div class="saved-msg" id="fac-saved">✓ Factura cargada</div>
     </div>
@@ -6243,7 +6315,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
   <div class="md" style="max-width:560px;padding:0;overflow:hidden;position:relative;">
     <button class="mc2" onclick="closeModal('newPagoProvModal')" style="position:absolute;top:14px;right:14px;z-index:2;color:rgba(244,240,234,.8);background:none;border:none;">×</button>
     <div class="modal-header-verde">
-      <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;color:#f4f0ea;">Nueva Orden de Pago</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700;color:#f4f0ea;">Nueva Orden de Pago</div>
     </div>
     <div style="padding:18px 24px;max-height:65vh;overflow-y:auto;">
     <div id="npp-proveedor-info" style="background:var(--sage-xl);border-radius:10px;padding:10px 14px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;">
@@ -16259,8 +16331,9 @@ async function loadResumenCompras() {
       const tipo = resolverTipo(f);
       const esA = tipo === 'A';
       const total = Number(f.monto) || 0;
-      const neto = esA ? Math.round(total / 1.21) : total;
-      const iva21 = esA ? (total - neto) : 0;
+      const _tieneGuardado = (f.netoGravado != null && f.iva21 != null);
+      const neto = esA ? (_tieneGuardado ? Number(f.netoGravado)||0 : Math.round(total / 1.21)) : total;
+      const iva21 = esA ? (_tieneGuardado ? Number(f.iva21)||0 : (total - neto)) : 0;
       const iva105 = 0;
       cantComp++;
       totGral += total; totIva21 += iva21; totIva105 += iva105;
@@ -26725,20 +26798,20 @@ function renderCuentaCorriente() {
       const totalPagadoOC = pagosDeEstaOC.reduce((a,p)=>a+(parseFloat(p.monto)||0),0);
       const montoOC = parseFloat(m.monto)||0;
       const ocBadge = pagosDeEstaOC.length===0
-        ? `<span style="background:var(--warn-bg);color:var(--warn);font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;">Pend. factura</span>`
+        ? `<span style="background:#f5ecd8;color:#a06a1f;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;">Pend. factura</span>`
         : totalPagadoOC >= montoOC
-          ? `<span style="background:var(--ok-bg);color:var(--ok);font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;">Pagada</span>`
-          : `<span style="background:var(--warn-bg);color:var(--warn);font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;">Pago parcial</span>`;
+          ? `<span style="background:#e8ede8;color:#2d6a35;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;">Pagada</span>`
+          : `<span style="background:#f5ecd8;color:#a06a1f;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;">Pago parcial</span>`;
       html += `<div style="display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:${pagosDeEstaOC.length?'none':'.5px solid var(--cream-d)'};cursor:pointer;" onclick="verDetalleMovCC('oc_recibida',window['_ccMov${gi}'])">
-        <div style="width:40px;height:40px;background:var(--sage-xl);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="12" rx="2" stroke="var(--sage-dark)" stroke-width="1.2"/><path d="M4 7h8M4 10h5" stroke="var(--sage-dark)" stroke-width="1.2" stroke-linecap="round"/></svg>
+        <div style="width:40px;height:40px;background:#f5eeec;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="12" rx="2" stroke="#7a4e46" stroke-width="1.2"/><path d="M4 7h8M4 10h5" stroke="#7a4e46" stroke-width="1.2" stroke-linecap="round"/></svg>
         </div>
         <div style="flex:1;min-width:0;">
           <div style="font-size:13px;font-weight:500;color:var(--text);">${m.numero} — Mercadería recibida</div>
           <div style="font-size:11px;color:var(--text-l);margin-top:2px;">${m.fecha||'—'} · Sin factura aún</div>
         </div>
         <div style="text-align:right;">
-          <div style="font-family:'DM Sans',sans-serif;font-size:14px;color:#b09088;font-weight:600;">-$${montoOC.toLocaleString('es-AR')}</div>
+          <div style="font-family:'DM Sans',sans-serif;font-size:14px;color:#7a4e46;font-weight:600;">-$${montoOC.toLocaleString('es-AR')}</div>
           ${ocBadge}
         </div>
       </div>`;
@@ -26748,35 +26821,35 @@ function renderCuentaCorriente() {
         window['_ccMov'+pgi] = {...p, tipo:'pago'};
         const isLast = pi === pagosDeEstaOC.length - 1;
         html += `<div style="display:flex;align-items:center;gap:12px;padding:10px 0 10px 52px;border-bottom:${isLast?'.5px solid var(--cream-d)':'none'};cursor:pointer;" onclick="verDetalleMovCC('pago',window['_ccMov${pgi}'])">
-          <div style="width:32px;height:32px;background:var(--ok-bg);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-            <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-6" stroke="var(--ok)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div style="width:32px;height:32px;background:#e8ede8;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-6" stroke="#4a5e4d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
           <div style="flex:1;min-width:0;">
             <div style="font-size:12px;font-weight:500;color:var(--text);">Pago registrado</div>
             <div style="font-size:11px;color:var(--text-l);margin-top:1px;">${p.fecha||''}${p.concepto?' · '+p.concepto:''}</div>
           </div>
           <div style="text-align:right;">
-            <div style="font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ok);font-weight:600;">+$${(parseFloat(p.monto)||0).toLocaleString('es-AR')}</div>
-            ${p.id ? `<button onclick="event.stopPropagation();verPDFop('${p.id}')" style="font-size:10px;background:none;border:.5px solid #7A8E7D;color:#7A8E7D;border-radius:5px;padding:2px 7px;cursor:pointer;font-family:'DM Sans',sans-serif;">PDF</button>` : ''}
+            <div style="font-family:'DM Sans',sans-serif;font-size:13px;color:#4a5e4d;font-weight:600;">+$${(parseFloat(p.monto)||0).toLocaleString('es-AR')}</div>
+            ${p.id ? `<button onclick="event.stopPropagation();verPDFop('${p.id}')" style="font-size:10px;background:none;border:.5px solid #d0cfc9;color:#4a5e4d;border-radius:5px;padding:2px 7px;cursor:pointer;font-family:'DM Sans',sans-serif;">PDF</button>` : ''}
           </div>
         </div>`;
       });
     } else {
       // Factura
       const estadoFac = m.estado||'pendiente';
-      const badgeCfg={pendiente:{bg:'var(--err-bg)',tc:'var(--err)',label:'Pendiente'},pagada:{bg:'var(--ok-bg)',tc:'var(--ok)',label:'Pagada'},parcial:{bg:'var(--warn-bg)',tc:'var(--warn)',label:'Pago parcial'}};
+      const badgeCfg={pendiente:{bg:'#f8ece9',tc:'#b0402f',label:'Pendiente'},pagada:{bg:'#e8ede8',tc:'#2d6a35',label:'Pagada'},parcial:{bg:'#f5ecd8',tc:'#a06a1f',label:'Pago parcial'}};
       const bc=badgeCfg[estadoFac]||badgeCfg.pendiente;
       const pagosDeEstaFac = pagosPorFactura[m.id] || [];
       html += `<div style="display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:${pagosDeEstaFac.length?'none':'.5px solid var(--cream-d)'};cursor:pointer;" onclick="verDetalleMovCC('factura',window['_ccMov${gi}'])">
-        <div style="width:40px;height:40px;background:#E6EEF5;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="1" width="12" height="14" rx="2" stroke="#2A4A6A" stroke-width="1.2"/><path d="M5 5h6M5 8h6M5 11h4" stroke="#2A4A6A" stroke-width="1.2" stroke-linecap="round"/></svg>
+        <div style="width:40px;height:40px;background:#f1efe8;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="1" width="12" height="14" rx="2" stroke="#7a4e46" stroke-width="1.2"/><path d="M5 5h6M5 8h6M5 11h4" stroke="#7a4e46" stroke-width="1.2" stroke-linecap="round"/></svg>
         </div>
         <div style="flex:1;min-width:0;">
           <div style="font-size:13px;font-weight:500;color:var(--text);">Factura ${m.numero||''}</div>
           <div style="font-size:11px;color:var(--text-l);margin-top:2px;">${m.fecha||''}${m.desc?' · '+m.desc:''}</div>
         </div>
         <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
-          <div style="font-family:'DM Sans',sans-serif;font-size:14px;color:#b09088;font-weight:600;">-$${(parseFloat(m.monto)||0).toLocaleString('es-AR')}</div>
+          <div style="font-family:'DM Sans',sans-serif;font-size:14px;color:#7a4e46;font-weight:600;">-$${(parseFloat(m.monto)||0).toLocaleString('es-AR')}</div>
           <span style="background:${bc.bg};color:${bc.tc};font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;">${bc.label}</span>
         </div>
       </div>`;
@@ -26786,16 +26859,16 @@ function renderCuentaCorriente() {
         window['_ccMov'+pgi] = {...p, tipo:'pago'};
         const isLast = pi === pagosDeEstaFac.length - 1;
         html += `<div style="display:flex;align-items:center;gap:12px;padding:10px 0 10px 52px;border-bottom:${isLast?'.5px solid var(--cream-d)':'none'};cursor:pointer;" onclick="verDetalleMovCC('pago',window['_ccMov${pgi}'])">
-          <div style="width:32px;height:32px;background:var(--ok-bg);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-            <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-6" stroke="var(--ok)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div style="width:32px;height:32px;background:#e8ede8;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-6" stroke="#4a5e4d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
           <div style="flex:1;min-width:0;">
             <div style="font-size:12px;font-weight:500;color:var(--text);">Pago registrado</div>
             <div style="font-size:11px;color:var(--text-l);margin-top:1px;">${p.fecha||''}${p.concepto?' · '+p.concepto:''}</div>
           </div>
           <div style="text-align:right;">
-            <div style="font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ok);font-weight:600;">+$${(parseFloat(p.monto)||0).toLocaleString('es-AR')}</div>
-            ${p.id ? `<button onclick="event.stopPropagation();verPDFop('${p.id}')" style="font-size:10px;background:none;border:.5px solid #7A8E7D;color:#7A8E7D;border-radius:5px;padding:2px 7px;cursor:pointer;font-family:'DM Sans',sans-serif;">PDF</button>` : ''}
+            <div style="font-family:'DM Sans',sans-serif;font-size:13px;color:#4a5e4d;font-weight:600;">+$${(parseFloat(p.monto)||0).toLocaleString('es-AR')}</div>
+            ${p.id ? `<button onclick="event.stopPropagation();verPDFop('${p.id}')" style="font-size:10px;background:none;border:.5px solid #d0cfc9;color:#4a5e4d;border-radius:5px;padding:2px 7px;cursor:pointer;font-family:'DM Sans',sans-serif;">PDF</button>` : ''}
           </div>
         </div>`;
       });
@@ -26809,16 +26882,16 @@ function renderCuentaCorriente() {
       const pgi = globalIdx++;
       window['_ccMov'+pgi] = {...p, tipo:'pago'};
       html += `<div style="display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:.5px solid var(--cream-d);cursor:pointer;" onclick="verDetalleMovCC('pago',window['_ccMov${pgi}'])">
-        <div style="width:40px;height:40px;background:var(--ok-bg);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-6" stroke="var(--ok)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div style="width:40px;height:40px;background:#e8ede8;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-6" stroke="#4a5e4d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
         <div style="flex:1;min-width:0;">
           <div style="font-size:13px;font-weight:500;color:var(--text);">Pago registrado</div>
           <div style="font-size:11px;color:var(--text-l);margin-top:2px;">${p.fecha||''}${p.concepto?' · '+p.concepto:''}</div>
         </div>
         <div style="text-align:right;">
-          <div style="font-family:'Cormorant Garamond',serif;font-size:19px;color:var(--ok);font-weight:500;">+$${(parseFloat(p.monto)||0).toLocaleString('es-AR')}</div>
-          <span style="background:var(--ok-bg);color:var(--ok);font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;">Pago</span>${p.id ? `<button onclick="event.stopPropagation();verPDFop('${p.id}')" style="font-size:10px;background:none;border:.5px solid #7A8E7D;color:#7A8E7D;border-radius:5px;padding:2px 7px;cursor:pointer;margin-left:6px;font-family:'DM Sans',sans-serif;">PDF</button>` : ''}
+          <div style="font-family:'DM Sans',sans-serif;font-size:15px;color:#4a5e4d;font-weight:600;">+$${(parseFloat(p.monto)||0).toLocaleString('es-AR')}</div>
+          <span style="background:#e8ede8;color:#2d6a35;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;">Pago</span>${p.id ? `<button onclick="event.stopPropagation();verPDFop('${p.id}')" style="font-size:10px;background:none;border:.5px solid #d0cfc9;color:#4a5e4d;border-radius:5px;padding:2px 7px;cursor:pointer;margin-left:6px;font-family:'DM Sans',sans-serif;">PDF</button>` : ''}
         </div>
       </div>`;
     });
@@ -26827,6 +26900,163 @@ function renderCuentaCorriente() {
   el.innerHTML = html;
 }
 
+window._facItems = [];
+window._facPreciosConIVA = false;
+window._facOcActual = '';
+window._facCalc = {neto:0,iva:0,total:0,hayItems:false};
+window._facFmt = n => Number(n||0).toLocaleString('es-AR',{minimumFractionDigits:0,maximumFractionDigits:2});
+const _facTacho = '<svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#b09088" stroke-width="1.3" stroke-linecap="round"/></svg>';
+window.facRenderItems = function() {
+  const cont = document.getElementById('fac-items-body');
+  const empty = document.getElementById('fac-items-empty');
+  const items = window._facItems || [];
+  if(cont) {
+    cont.innerHTML = items.map((it,i) => {
+      const sub = (parseFloat(it.cantidad)||0)*(parseFloat(it.precioUnit)||0);
+      const badge = it.insumoId ? '<span style="font-size:10px;padding:1px 7px;border-radius:10px;background:#e8ede8;color:#4a5e4d;">insumo</span>' : (it.prodCompraId ? '<span style="font-size:10px;padding:1px 7px;border-radius:10px;background:#f2ede9;color:#7a4e46;">compra</span>' : (it.productoId ? '<span style="font-size:10px;padding:1px 7px;border-radius:10px;background:#eef1f5;color:#4a6a8a;">producto</span>' : ''));
+      return `<div class="fac-row">
+        <div class="fac-c-concepto" style="position:relative;">
+          <input type="text" class="fi${badge?' fac-has-badge':''}" style="margin-top:0;" value="${String(it.nombre||'').replace(/"/g,'&quot;')}" placeholder="Concepto o insumo..." oninput="facItemConcepto(${i},this.value)" onkeydown="facInsumoKeydown(event,${i})" onblur="facItemBlur(${i})" autocomplete="off"/>
+          ${badge?`<span class="fac-c-badge">${badge}</span>`:''}
+          <div class="fac-dd" id="fac-ins-dd-${i}" style="display:none;position:absolute;left:0;right:0;top:calc(100% + 2px);background:#fff;border:.5px solid var(--cream-d);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.1);z-index:60;max-height:200px;overflow-y:auto;"></div>
+        </div>
+        <div class="fac-c-nums">
+          <div class="fac-c-cant"><span class="fac-row-lbl">Cant.</span><input type="number" min="0" step="any" class="fi" style="margin-top:0;text-align:right;" value="${it.cantidad??''}" oninput="facItemCantidad(${i},this.value)"/></div>
+          <div class="fac-c-precio"><span class="fac-row-lbl">Precio unit.</span><input type="number" min="0" step="any" class="fi" style="margin-top:0;text-align:right;" value="${it.precioUnit??''}" oninput="facItemPrecio(${i},this.value)"/></div>
+          <div class="fac-c-sub"><span class="fac-row-lbl">Subtotal</span><span class="fac-sub">$${window._facFmt(sub)}</span></div>
+        </div>
+        <div class="fac-c-quitar"><button onclick="facQuitarItem(${i})" title="Quitar" style="background:none;border:none;cursor:pointer;padding:8px;min-height:40px;">${_facTacho}</button></div>
+      </div>`;
+    }).join('');
+  }
+  if(empty) empty.style.display = items.length ? 'none' : 'block';
+  facActualizarTotales();
+};
+window.facAgregarItem = function() {
+  window._facItems = window._facItems || [];
+  window._facItems.push({nombre:'',cantidad:1,precioUnit:'',insumoId:null,productoId:null});
+  facRenderItems();
+};
+window.facQuitarItem = function(i) {
+  window._facItems.splice(i,1);
+  facRenderItems();
+};
+window.facItemCantidad = function(i,v) {
+  if(window._facItems[i]) window._facItems[i].cantidad = (v===''?'':(parseFloat(v)||0));
+  facRefrescarFila(i); facActualizarTotales();
+};
+window.facItemPrecio = function(i,v) {
+  if(window._facItems[i]) window._facItems[i].precioUnit = (v===''?'':(parseFloat(v)||0));
+  facRefrescarFila(i); facActualizarTotales();
+};
+window.facRefrescarFila = function(i) {
+  const it = window._facItems[i]; if(!it) return;
+  const sub = (parseFloat(it.cantidad)||0)*(parseFloat(it.precioUnit)||0);
+  const rows = document.querySelectorAll('#fac-items-body .fac-row');
+  const row = rows[i]; if(row){ const s = row.querySelector('.fac-sub'); if(s) s.textContent = '$'+window._facFmt(sub); }
+};
+window.facItemConcepto = function(i,val) {
+  if(window._facItems[i]) { window._facItems[i].nombre = val; window._facItems[i].insumoId = null; window._facItems[i].prodCompraId = null; window._facItems[i].productoId = null; }
+  facBuscarInsumo(val,i);
+};
+window.facBuscarInsumo = function(q,i) {
+  const dd = document.getElementById('fac-ins-dd-'+i); if(!dd) return;
+  const ql = (q||'').toLowerCase().trim();
+  if(!ql) { dd.style.display='none'; return; }
+  const ins = (window._stockInsumos||[]).filter(x=>(x.nombre||'').toLowerCase().includes(ql)).slice(0,5)
+    .map(x=>({tipo:'insumo',id:x.id,nombre:x.nombre}));
+  const compra = (window._prodCompra||[]).filter(p=>(p.nombre||'').toLowerCase().includes(ql)).slice(0,5)
+    .map(p=>({tipo:'compra',id:p.id,nombre:p.nombre}));
+  const opts = [...ins,...compra];
+  if(!opts.length) { dd.style.display='none'; return; }
+  dd.innerHTML = opts.map((o,k)=>`<div class="fac-opt" data-k="${k}" onmousedown="facSeleccionar(${i},'${o.tipo}','${o.id}')" style="padding:9px 12px;cursor:pointer;border-bottom:.5px solid var(--cream-d);font-size:12px;display:flex;justify-content:space-between;gap:8px;align-items:center;" onmouseenter="this.style.background='var(--cream)'" onmouseleave="this.style.background=''"><span style="font-weight:500;">${o.nombre}</span><span style="font-size:9px;padding:1px 7px;border-radius:10px;background:${o.tipo==='insumo'?'#e8ede8':'#f2ede9'};color:${o.tipo==='insumo'?'#4a5e4d':'#7a4e46'};">${o.tipo}</span></div>`).join('');
+  dd.dataset.active='-1'; dd.style.display='block';
+};
+window.facSeleccionar = function(i,tipo,id) {
+  const src = tipo==='insumo' ? (window._stockInsumos||[]).find(x=>x.id===id) : (window._prodCompra||[]).find(x=>x.id===id);
+  if(!src) return;
+  const it = window._facItems[i] || {};
+  it.nombre = src.nombre;
+  it.insumoId = tipo==='insumo' ? id : null;
+  it.prodCompraId = tipo==='compra' ? id : null;
+  it.productoId = null;
+  if(tipo==='insumo' && !(parseFloat(it.precioUnit)>0)) it.precioUnit = parseFloat(src.costoUnitario||0) || '';
+  window._facItems[i] = it;
+  const dd = document.getElementById('fac-ins-dd-'+i); if(dd) dd.style.display='none';
+  facRenderItems();
+};
+window.facItemBlur = function(i) {
+  setTimeout(()=>{ const dd=document.getElementById('fac-ins-dd-'+i); if(dd) dd.style.display='none'; },150);
+};
+window.facInsumoKeydown = function(e,i) {
+  const dd = document.getElementById('fac-ins-dd-'+i); if(!dd||dd.style.display==='none') return;
+  const opts = dd.querySelectorAll('.fac-opt'); if(!opts.length) return;
+  let active = parseInt(dd.dataset.active??'-1');
+  if(e.key==='ArrowDown'){e.preventDefault();active=Math.min(active+1,opts.length-1);}
+  else if(e.key==='ArrowUp'){e.preventDefault();active=Math.max(active-1,0);}
+  else if(e.key==='Enter'){e.preventDefault();if(active>=0&&opts[active])opts[active].dispatchEvent(new Event('mousedown'));return;}
+  else if(e.key==='Escape'){dd.style.display='none';return;}
+  else return;
+  dd.dataset.active=active;
+  opts.forEach((o,k)=>{o.style.background=k===active?'var(--cream)':'';});
+  if(opts[active])opts[active].scrollIntoView({block:'nearest'});
+};
+window.facSetPreciosIVA = function(con) {
+  window._facPreciosConIVA = !!con;
+  const cn=document.getElementById('fac-chip-neto'), ci=document.getElementById('fac-chip-iva');
+  if(cn) cn.classList.toggle('active',!con);
+  if(ci) ci.classList.toggle('active',con);
+  facActualizarTotales();
+};
+window.facActualizarTotales = function() {
+  const items = window._facItems || [];
+  const hayItems = items.length > 0;
+  const sumSub = items.reduce((a,it)=>a+(parseFloat(it.cantidad)||0)*(parseFloat(it.precioUnit)||0),0);
+  const tipo = window._facTipoActual || 'X';
+  const esA = tipo==='A';
+  let neto=0, iva=0, total=0;
+  if(hayItems) {
+    if(esA) {
+      if(window._facPreciosConIVA) { total=sumSub; neto=Math.round(total/1.21); iva=total-neto; }
+      else { neto=sumSub; iva=Math.round(neto*0.21); total=neto+iva; }
+    } else { total=sumSub; neto=total; iva=0; }
+  }
+  window._facCalc = {neto,iva,total,hayItems};
+  const manualWrap = document.getElementById('fac-monto-manual-wrap');
+  if(manualWrap) manualWrap.style.display = hayItems ? 'none' : 'block';
+  const selWrap = document.getElementById('fac-precios-sel');
+  if(selWrap) selWrap.style.display = (hayItems && esA) ? 'block' : 'none';
+  const box = document.getElementById('fac-resumen');
+  if(box) {
+    if(!hayItems) { box.style.display='none'; box.innerHTML=''; }
+    else {
+      box.style.display='block';
+      if(esA) box.innerHTML = `<div class="fac-res-line"><span>Neto gravado</span><span>$${window._facFmt(neto)}</span></div><div class="fac-res-line"><span>IVA 21%</span><span>$${window._facFmt(iva)}</span></div><div class="fac-res-total"><span>TOTAL</span><span>$${window._facFmt(total)}</span></div>`;
+      else if(tipo==='X') box.innerHTML = `<div class="fac-res-total"><span>TOTAL</span><span>$${window._facFmt(total)}</span></div><div style="font-size:10px;color:#8a8984;margin-top:6px;">calculado desde los renglones — sin desglose de IVA (comprobante interno)</div>`;
+      else box.innerHTML = `<div class="fac-res-total"><span>TOTAL</span><span>$${window._facFmt(total)}</span></div>`;
+    }
+  }
+};
+window.facOnSelectOC = function(val) {
+  const aviso = document.getElementById('fac-oc-aviso');
+  const prev = window._facOcActual;
+  const yaEdit = (window._facItems||[]).length > 0;
+  const aplicar = () => {
+    window._facOcActual = val;
+    const oc = (_ordenesCompra||[]).find(o=>o.id===val);
+    window._facItems = (oc && (oc.items||[]).length)
+      ? oc.items.map(it=>({nombre:it.nombre||it.insumoNombre||it.productoNombre||'', cantidad:parseFloat(it.cantidad)||0, precioUnit:parseFloat(it.precioUnit)||0, insumoId:it.insumoId||null, productoId:it.productoId||null}))
+      : [];
+    facRenderItems();
+    if(aviso) aviso.style.display = (val && window._facItems.length) ? 'block' : 'none';
+  };
+  if(!val) {
+    if(yaEdit) { showConfirm('¿Vaciar los renglones y desvincular la OC?', ()=>{ window._facItems=[]; window._facOcActual=''; facRenderItems(); if(aviso) aviso.style.display='none'; }, 'Desvincular'); return; }
+    window._facOcActual=''; if(aviso) aviso.style.display='none'; return;
+  }
+  if(yaEdit && prev!==val) showConfirm('Ya editaste renglones. ¿Reemplazarlos por los de esta OC?', aplicar, 'Reemplazar');
+  else aplicar();
+};
 window._inferTipoComprobante = function(prov) {
   if(prov && prov.categoria==='Retiro socio') return 'X';
   const cond = prov ? prov.condicionIVA : null;
@@ -26836,33 +27066,46 @@ window._inferTipoComprobante = function(prov) {
   if(c==='6'||c==='4') return 'C';
   return 'X';
 };
-window._facturaModalAplicarTipo = function() {
+window._facturaModalAplicarTipo = function(tipoOverride) {
   const prov = (_proveedores||[]).find(p=>p.id===_ccProvId) || {};
-  const tipo = window._inferTipoComprobante(prov);
+  const tipo = tipoOverride || window._inferTipoComprobante(prov);
   window._facTipoActual = tipo;
   const fiscal = (tipo==='A'||tipo==='B'||tipo==='C');
-  const descMap = {A:'Factura A — discrimina IVA',B:'Factura B',C:'Factura C',X:'Comprobante interno — no fiscal'};
   const chip = document.getElementById('fac-tipo-chip');
-  if(chip){ chip.textContent = 'Tipo '+tipo; chip.style.background = fiscal?'#e8ede8':'#f2ede9'; chip.style.color = fiscal?'#4a5e4d':'#7a4e46'; }
+  if(chip){
+    chip.textContent = fiscal ? ('Factura '+tipo) : 'Comprobante X';
+    if(fiscal){ chip.style.background='#4a5e4d'; chip.style.color='#f4f0ea'; chip.style.border='none'; }
+    else { chip.style.background='#f4f0ea'; chip.style.color='#1e2e22'; chip.style.border='2px solid #4a5e4d'; }
+  }
+  const legacyFree = !!window._facEditLegacy;
+  const usarFiscalNro = fiscal && !legacyFree;
   const desc = document.getElementById('fac-tipo-desc');
-  if(desc) desc.textContent = descMap[tipo]||'';
+  if(desc) desc.textContent = fiscal ? 'inferida por condición fiscal del proveedor' : 'interno — no entra al Libro IVA';
   const fiscalNro = document.getElementById('fac-fiscal-nro');
-  if(fiscalNro) fiscalNro.style.display = fiscal?'block':'none';
+  if(fiscalNro) fiscalNro.style.display = usarFiscalNro?'block':'none';
   const numWrap = document.getElementById('fac-numero-wrap');
-  if(numWrap) numWrap.style.display = fiscal?'none':'block';
-  const sinCuit = fiscal && !String(prov.cuit||'').trim();
+  if(numWrap) numWrap.style.display = usarFiscalNro?'none':'block';
+  const sinCuit = usarFiscalNro && !String(prov.cuit||'').trim();
   const warn = document.getElementById('fac-cuit-warn');
   if(warn) warn.style.display = sinCuit?'block':'none';
   const btn = document.querySelector('#newFacturaModal .bp');
   if(btn){ btn.disabled = sinCuit; btn.style.opacity = sinCuit?'0.5':'1'; btn.style.pointerEvents = sinCuit?'none':'auto'; }
+  if(window.facActualizarTotales) facActualizarTotales();
 };
 window.saveFactura = async function() {
   if(!currentClientUID||!_ccProvId) return;
   const prov = (_proveedores||[]).find(p=>p.id===_ccProvId) || {};
-  const tipo = window._inferTipoComprobante(prov);
-  const fiscal = (tipo==='A'||tipo==='B'||tipo==='C');
-  const monto = parseFloat(document.getElementById('fac-monto').value)||0;
+  const editId = window._facEditId || '';
+  const tipo = editId ? (window._facTipoActual || window._inferTipoComprobante(prov)) : window._inferTipoComprobante(prov);
+  const legacyFree = !!(editId && window._facEditLegacy);
+  const fiscal = (tipo==='A'||tipo==='B'||tipo==='C') && !legacyFree;
   const fecha = document.getElementById('fac-fecha').value;
+  const items = (window._facItems||[])
+    .filter(it=>String(it.nombre||'').trim() || it.insumoId || it.prodCompraId || it.productoId)
+    .map(it=>{ const cantidad=parseFloat(it.cantidad)||0, precioUnit=parseFloat(it.precioUnit)||0; return {insumoId:it.insumoId||null, prodCompraId:it.prodCompraId||null, productoId:it.productoId||null, nombre:String(it.nombre||'').trim(), cantidad, precioUnit, subtotal:Math.round(cantidad*precioUnit*100)/100}; });
+  const hayItems = items.length > 0;
+  const calc = window._facCalc || {};
+  const monto = hayItems ? (calc.total || items.reduce((a,x)=>a+x.subtotal,0)) : (parseFloat(document.getElementById('fac-monto').value)||0);
   let numero = '', numeroComprobante = '';
   if(fiscal){
     if(!String(prov.cuit||'').trim()){showToast('Completá el CUIT del proveedor para cargar facturas fiscales', 'info');return;}
@@ -26875,19 +27118,29 @@ window.saveFactura = async function() {
   } else {
     numero = document.getElementById('fac-numero').value.trim();
   }
-  if(!monto){showToast('Ingresá el monto', 'info');return;}
+  if(!monto){showToast(hayItems?'Completá cantidades y precios de los renglones':'Ingresá el monto o agregá renglones', 'info');return;}
   if(!fecha){showToast('Ingresá la fecha', 'info');return;}
   const data = {
     numero, monto, fecha,
     tipoComprobante: tipo,
     numeroComprobante,
+    items,
     ocId: document.getElementById('fac-oc').value||'',
     desc: document.getElementById('fac-desc').value,
     esOC: false,
     estado: 'pendiente',
     creadoEn: new Date().toISOString()
   };
+  if(tipo==='A' && hayItems){ data.netoGravado = calc.neto||0; data.iva21 = calc.iva||0; data.total = calc.total||monto; }
   try{
+    if(editId){
+      await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',_ccProvId,'facturas',editId), {
+        numero: data.numero, tipoComprobante: data.tipoComprobante, numeroComprobante: data.numeroComprobante, items: data.items, netoGravado: data.netoGravado??null, iva21: data.iva21??null, total: data.total??null, monto: data.monto, fecha: data.fecha, desc: data.desc, ocId: data.ocId, esOC: false
+      });
+      const _i = _ccFacturas.findIndex(f=>f.id===editId);
+      if(_i!==-1) _ccFacturas[_i] = {..._ccFacturas[_i], ...data, id: editId};
+      _ccFacturas.sort((a,b)=>(a.fecha||'')>(b.fecha||'')?-1:1);
+    } else {
     // Si hay OC asociada, actualizar el movimiento existente en CC (esOC:true → esOC:false)
     let reemplazado = false;
     if(data.ocId) {
@@ -26895,7 +27148,7 @@ window.saveFactura = async function() {
       const existente = (_ccOCsComoFactura||[]).find(f => f.ocId === data.ocId && !f.eliminado);
       if(existente) {
         await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',_ccProvId,'facturas',existente.id), {
-          numero: data.numero, tipoComprobante: data.tipoComprobante, numeroComprobante: data.numeroComprobante, monto: data.monto, fecha: data.fecha, desc: data.desc, estado: data.estado, esOC: false
+          numero: data.numero, tipoComprobante: data.tipoComprobante, numeroComprobante: data.numeroComprobante, items: data.items, netoGravado: data.netoGravado??null, iva21: data.iva21??null, total: data.total??null, monto: data.monto, fecha: data.fecha, desc: data.desc, estado: data.estado, esOC: false
         });
         reemplazado = true;
       } else {
@@ -26905,7 +27158,7 @@ window.saveFactura = async function() {
           const fdata = fd.data();
           if(fdata.ocId === data.ocId && fdata.esOC === true && !fdata.eliminado) {
             await updateDoc(doc(db,'clientes',currentClientUID,'proveedores',_ccProvId,'facturas',fd.id), {
-              numero: data.numero, tipoComprobante: data.tipoComprobante, numeroComprobante: data.numeroComprobante, monto: data.monto, fecha: data.fecha, desc: data.desc, estado: data.estado, esOC: false
+              numero: data.numero, tipoComprobante: data.tipoComprobante, numeroComprobante: data.numeroComprobante, items: data.items, netoGravado: data.netoGravado??null, iva21: data.iva21??null, total: data.total??null, monto: data.monto, fecha: data.fecha, desc: data.desc, estado: data.estado, esOC: false
             });
             reemplazado = true;
             break;
@@ -26927,6 +27180,7 @@ window.saveFactura = async function() {
         _ccFacturas.sort((a,b)=>(a.fecha||'')>(b.fecha||'')?-1:1);
       }
     }
+    }
     // Refrescar KPIs y movimientos inmediatamente
     if(typeof renderCuentaCorriente === 'function') renderCuentaCorriente();
     const s=document.getElementById('fac-saved');if(s)s.style.display='block';
@@ -26934,6 +27188,11 @@ window.saveFactura = async function() {
       if(s)s.style.display='none';
       closeModal('newFacturaModal');
       ['fac-numero','fac-monto','fac-fecha','fac-desc','fac-prefijo','fac-nrocomp'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+      window._facItems=[]; window._facOcActual=''; window._facPreciosConIVA=false;
+      window._facEditId=''; window._facEditData=null; window._facEditLegacy=false;
+      const _ocSel=document.getElementById('fac-oc'); if(_ocSel) _ocSel.value='';
+      const _tEl=document.getElementById('fac-modal-title'); if(_tEl) _tEl.textContent='Cargar factura';
+      if(window.facRenderItems) facRenderItems();
       await abrirCuentaCorriente(_ccProvId);
     },1500);
   }catch(e){showToast('Error: '+e.message, 'error');}
@@ -27007,12 +27266,12 @@ window.openModal_newPagoProvModal_extra = async function() {
         const row = document.createElement('div');
         row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--cream);border-radius:7px;cursor:pointer;border:.5px solid var(--cream-d);';
         row.innerHTML = `
-          <input type="checkbox" id="npp-fac-${i}" data-idx="${i}" data-monto="${f.pendiente}" onchange="recalcularTotalOP()" style="width:15px;height:15px;accent-color:#7A8E7D;cursor:pointer;flex-shrink:0;"/>
+          <input type="checkbox" id="npp-fac-${i}" data-idx="${i}" data-monto="${f.pendiente}" onchange="recalcularTotalOP()" style="width:15px;height:15px;accent-color:#4a5e4d;cursor:pointer;flex-shrink:0;"/>
           <div style="flex:1;">
             <div style="font-size:12px;font-weight:500;color:var(--text);">${f.numero || f.desc || f.descripcion || 'Factura'}</div>
             <div style="font-size:10px;color:var(--text-l);">${f.fecha ? 'Fecha: '+f.fecha : ''} ${(f.estado||f.estadoPago) === 'parcial' ? '· Pago parcial' : ''}</div>
           </div>
-          <div style="font-size:12px;font-weight:500;color:#C4786A;">$${f.pendiente.toLocaleString('es-AR')}</div>
+          <div style="font-size:12px;font-weight:600;color:#7a4e46;font-family:'DM Sans',sans-serif;">$${f.pendiente.toLocaleString('es-AR')}</div>
         `;
         row.onclick = (e) => { if(e.target.type !== 'checkbox') { const cb = row.querySelector('input'); cb.checked = !cb.checked; recalcularTotalOP(); } };
         if(lista) lista.appendChild(row);
@@ -27338,75 +27597,103 @@ window.verDetalleMovCC = async function(tipo, m) {
   if(!contenido) return;
   if(tipo === 'oc_recibida') {
     contenido.innerHTML = `
-      <div style="background:#7A8E7D;border-radius:10px;padding:14px 16px;margin-bottom:16px;">
-        <div style="font-size:10px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">OC recibida sin factura</div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:24px;color:#fff;font-weight:600;">${m.numero||'OC'}</div>
+      <div style="background:#1e2e22;border-radius:10px;padding:14px 16px;margin-bottom:16px;">
+        <div style="font-size:10px;font-weight:700;color:#b09088;text-transform:uppercase;letter-spacing:2px;margin-bottom:4px;">OC recibida sin factura</div>
+        <div style="font-family:'DM Sans',sans-serif;font-size:22px;color:#f4f0ea;font-weight:600;">${m.numero||'OC'}</div>
       </div>
       <div style="display:flex;flex-direction:column;">
-        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid rgba(0,0,0,.07);"><span style="color:#888780;">Proveedor</span><span style="font-weight:500;">${m.proveedorNombre||'—'}</span></div>
-        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid rgba(0,0,0,.07);"><span style="color:#888780;">Fecha</span><span style="font-weight:500;">${m.fecha||'—'}</span></div>
-        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid rgba(0,0,0,.07);"><span style="color:#888780;">Monto</span><span style="font-weight:500;color:#C4786A;">$${(m.monto||0).toLocaleString('es-AR')}</span></div>
-        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;"><span style="color:#888780;">Estado factura</span><span style="font-weight:500;color:#B08A42;">Pendiente de factura</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid #e7e5df;"><span style="color:#5f5e5a;">Proveedor</span><span style="font-weight:500;color:#1e2e22;">${m.proveedorNombre||'—'}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid #e7e5df;"><span style="color:#5f5e5a;">Fecha</span><span style="font-weight:500;color:#1e2e22;font-family:'DM Sans',sans-serif;">${m.fecha||'—'}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid #e7e5df;"><span style="color:#5f5e5a;">Monto</span><span style="font-weight:600;color:#7a4e46;font-family:'DM Sans',sans-serif;">$${(m.monto||0).toLocaleString('es-AR')}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;"><span style="color:#5f5e5a;">Estado factura</span><span style="font-weight:600;color:#a06a1f;">Pendiente de factura</span></div>
       </div>
       <div style="margin-top:14px;">
-        <button onclick="closeModal('detalleMovCCModal');abrirDetalleOC('${m.ocId||m.id}');" style="width:100%;display:flex;align-items:center;justify-content:center;gap:6px;background:#F5F6F3;border:.5px solid rgba(0,0,0,.1);border-radius:8px;padding:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:#3d3d3a;cursor:pointer;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Ver OC completa</button>
+        <button onclick="closeModal('detalleMovCCModal');abrirDetalleOC('${m.ocId||m.id}');" style="width:100%;display:flex;align-items:center;justify-content:center;gap:6px;background:#fff;border:.5px solid #d0cfc9;border-radius:8px;padding:11px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:#1e2e22;cursor:pointer;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Ver OC completa</button>
       </div>
     `;
     openModal('detalleMovCCModal');
     return;
   } else if(tipo === 'factura') {
-    const estadoColor = m.estadoPago==='pagada' ? '#5A8A62' : m.estadoPago==='parcial' ? '#B08A42' : '#C4786A';
-    const estadoLabel = m.estadoPago==='pagada' ? 'Pagada' : m.estadoPago==='parcial' ? 'Pago parcial' : 'Pendiente';
-    let ocNumero = null;
-    if(m.ocId) {
-      try {
-        const ocSnap = await getDoc(doc(db,'clientes',currentClientUID,'ordenes',m.ocId));
-        if(ocSnap.exists()) ocNumero = ocSnap.data().numero || null;
-      } catch(e) {}
-    }
+    const prov = (_proveedores||[]).find(p=>p.id===(_ccProvId||window._ccProvId)) || {};
+    let ftipo = m.tipoComprobante;
+    if(!ftipo) ftipo = (prov.categoria==='Retiro socio' || /^retiro/i.test(m.numero||'') || /retiro de socio/i.test(m.desc||m.descripcion||'')) ? 'X' : 'C';
+    const fiscal = (ftipo==='A'||ftipo==='B'||ftipo==='C');
+    const numeroDisplay = m.numeroComprobante || m.numero || m.descripcion || '—';
+    const estado = m.estado || ((parseFloat(m.montoPagado)||0) >= (parseFloat(m.monto)||0) && (parseFloat(m.monto)||0)>0 ? 'pagada' : 'pendiente');
+    const estadoLabel = estado==='pagada' ? 'Pagada' : estado==='parcial' ? 'Pago parcial' : 'Pendiente';
+    const estadoColor = estado==='pagada' ? '#2d6a35' : estado==='parcial' ? '#a06a1f' : '#b0402f';
+    const oc = m.ocId ? (_ordenesCompra||window._ordenesCompra||[]).find(o=>o.id===m.ocId) : null;
+    const ocLinea = oc ? `OC-${String(oc.numero||0).padStart(3,'0')} — $${(parseFloat(oc.total)||0).toLocaleString('es-AR')}` : (m.ocId ? 'OC asociada' : 'Sin OC asociada');
+    const fmt = v => '$'+Number(v||0).toLocaleString('es-AR');
+    const chipStyle = fiscal ? 'background:#4a5e4d;color:#f4f0ea;' : 'background:#f4f0ea;color:#1e2e22;border:2px solid #4a5e4d;';
+    const chipText = fiscal ? ('Factura '+ftipo) : 'Comprobante X';
+    const chipLeyenda = fiscal ? 'inferida por condición fiscal del proveedor' : 'interno — no entra al Libro IVA';
+    const items = Array.isArray(m.items) ? m.items : [];
+    const itemsHtml = items.length ? `
+      <div style="margin-bottom:14px;">
+        <div class="facd-head"><span>Concepto / Insumo</span><span class="r">Cant.</span><span class="r">Precio unit.</span><span class="r">Subtotal</span></div>
+        ${items.map(it=>{const sub=(it.subtotal!=null)?it.subtotal:((parseFloat(it.cantidad)||0)*(parseFloat(it.precioUnit)||0)); return `<div class="facd-row"><div class="facd-concepto">${it.nombre||'—'}</div><div class="facd-nums"><div class="r"><span class="facd-lbl">Cant.</span>${it.cantidad||0}</div><div class="r"><span class="facd-lbl">Precio unit.</span>${fmt(it.precioUnit)}</div><div class="r facd-sub"><span class="facd-lbl">Subtotal</span>${fmt(sub)}</div></div></div>`;}).join('')}
+      </div>` : '';
+    const resumenHtml = (ftipo==='A' && (m.netoGravado!=null || m.iva21!=null)) ? `
+      <div style="background:#f1efe8;border-radius:10px;padding:12px 14px;margin-bottom:14px;">
+        <div class="fac-res-line"><span>Neto gravado</span><span>${fmt(m.netoGravado)}</span></div>
+        <div class="fac-res-line"><span>IVA 21%</span><span>${fmt(m.iva21)}</span></div>
+        <div class="fac-res-total"><span>TOTAL</span><span>${fmt(m.total!=null?m.total:m.monto)}</span></div>
+      </div>` : `
+      <div style="background:#f1efe8;border-radius:10px;padding:12px 14px;margin-bottom:14px;">
+        <div class="fac-res-total"><span>TOTAL</span><span>${fmt(m.monto)}</span></div>
+      </div>`;
     contenido.innerHTML = `
-      <div style="background:#4A6A8A;border-radius:10px;padding:14px 16px;margin-bottom:16px;">
-        <div style="font-size:10px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Factura</div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:24px;color:#fff;font-weight:600;">${m.numero||m.descripcion||'—'}</div>
+      <div style="background:#1e2e22;border-radius:10px;padding:14px 16px;margin-bottom:14px;">
+        <div style="font-size:10px;font-weight:700;color:#b09088;text-transform:uppercase;letter-spacing:2px;margin-bottom:4px;">Factura</div>
+        <div style="font-family:'DM Sans',sans-serif;font-size:22px;color:#f4f0ea;font-weight:600;">${numeroDisplay}</div>
       </div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+        <span style="font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;font-family:'DM Sans',sans-serif;${chipStyle}">${chipText}</span>
+        <span style="font-size:11px;color:#5f5e5a;">${chipLeyenda}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:10px 12px;background:#faf8f4;border-radius:8px;margin-bottom:14px;">
+        <span style="color:#5f5e5a;font-weight:700;">OC asociada</span>
+        ${oc ? `<button onclick="closeModal('detalleMovCCModal');abrirDetalleOC('${oc.id}');" style="background:none;border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:#1e2e22;cursor:pointer;padding:0;text-decoration:underline;">${ocLinea}</button>` : `<span style="font-weight:500;color:#2c2c2a;">${ocLinea}</span>`}
+      </div>
+      ${itemsHtml}
+      ${resumenHtml}
       <div style="display:flex;flex-direction:column;">
-        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid rgba(0,0,0,.07);"><span style="color:#888780;">Fecha</span><span style="font-weight:500;">${m.fecha||'—'}</span></div>
-        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid rgba(0,0,0,.07);"><span style="color:#888780;">Monto</span><span style="font-weight:500;color:#C4786A;">$${(m.monto||0).toLocaleString('es-AR')}</span></div>
-        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid rgba(0,0,0,.07);"><span style="color:#888780;">Estado</span><span style="font-weight:500;color:${estadoColor};">${estadoLabel}</span></div>
-        ${ocNumero ? `<div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:8px 0;border-bottom:.5px solid rgba(0,0,0,.07);"><span style="color:#888780;">OC asociada</span><button onclick="closeModal('detalleMovCCModal');abrirDetalleOC('${m.ocId}');" style="display:flex;align-items:center;gap:5px;background:#EEF2EF;border:none;border-radius:6px;padding:3px 10px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;color:#5A8A62;cursor:pointer;">${ocNumero} <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button></div>` : ''}
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid #e7e5df;"><span style="color:#5f5e5a;">Fecha</span><span style="font-weight:500;color:#2c2c2a;font-family:'DM Sans',sans-serif;">${m.fecha||'—'}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;"><span style="color:#5f5e5a;">Estado</span><span style="font-weight:600;color:${estadoColor};">${estadoLabel}</span></div>
       </div>
-      <div style="display:flex;gap:8px;margin-top:14px;padding-top:12px;border-top:.5px solid rgba(0,0,0,.07);">
-        <button onclick="editarFacturaCC('${m.id}')" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;background:#F5F6F3;border:.5px solid rgba(0,0,0,.1);border-radius:8px;padding:9px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;color:#3d3d3a;cursor:pointer;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Editar</button>
-        <button id="btn-eliminar-factura-cc" data-movid="${m.id}" style="display:flex;align-items:center;justify-content:center;gap:6px;background:#FDF2F0;border:.5px solid #C4786A;border-radius:8px;padding:9px 14px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;color:#C4786A;cursor:pointer;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>Eliminar</button>
+      <div style="display:flex;gap:8px;margin-top:16px;padding-top:12px;border-top:.5px solid #e7e5df;">
+        <button onclick="editarFacturaCC('${m.id}')" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;background:#f4f0ea;border:.5px solid #d0cfc9;border-radius:8px;padding:10px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;color:#1e2e22;cursor:pointer;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Editar</button>
+        <button id="btn-eliminar-factura-cc" data-movid="${m.id}" style="display:flex;align-items:center;justify-content:center;gap:6px;background:#f8ece9;border:.5px solid #b0402f;border-radius:8px;padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;color:#b0402f;cursor:pointer;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>Eliminar</button>
       </div>
     `;
   } else if(tipo === 'pago') {
     const sinImputar = !m.facturasIds || m.facturasIds.length === 0;
     window._ccOpActual = m;
     contenido.innerHTML = `
-      <div style="background:#5A8A62;border-radius:10px;padding:14px 16px;margin-bottom:16px;">
-        <div style="font-size:10px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Orden de Pago</div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:24px;color:#fff;font-weight:600;">${m.numero||'OP'}</div>
+      <div style="background:#1e2e22;border-radius:10px;padding:14px 16px;margin-bottom:16px;">
+        <div style="font-size:10px;font-weight:700;color:#b09088;text-transform:uppercase;letter-spacing:2px;margin-bottom:4px;">Orden de Pago</div>
+        <div style="font-family:'DM Sans',sans-serif;font-size:22px;color:#f4f0ea;font-weight:600;">${m.numero||'OP'}</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:8px;">
-        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid var(--cream-d);">
-          <span style="color:var(--text-l);">Fecha</span><span style="font-weight:500;">${m.fecha||'—'}</span>
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid #e7e5df;">
+          <span style="color:#5f5e5a;">Fecha</span><span style="font-weight:500;color:#1e2e22;font-family:'DM Sans',sans-serif;">${m.fecha||'—'}</span>
         </div>
-        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid var(--cream-d);">
-          <span style="color:var(--text-l);">Monto pagado</span><span style="font-weight:500;color:#5A8A62;">$${(m.monto||0).toLocaleString('es-AR')}</span>
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid #e7e5df;">
+          <span style="color:#5f5e5a;">Monto pagado</span><span style="font-weight:600;color:#4a5e4d;font-family:'DM Sans',sans-serif;">$${(m.monto||0).toLocaleString('es-AR')}</span>
         </div>
-        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid var(--cream-d);">
-          <span style="color:var(--text-l);">Medio de pago</span><span style="font-weight:500;">${m.medio||'—'}</span>
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid #e7e5df;">
+          <span style="color:#5f5e5a;">Medio de pago</span><span style="font-weight:500;color:#1e2e22;">${m.medio||'—'}</span>
         </div>
-        ${m.facturasNombres?.length ? `<div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid var(--cream-d);"><span style="color:var(--text-l);">Facturas canceladas</span><span style="font-weight:500;text-align:right;">${m.facturasNombres.join(', ')}</span></div>` : ''}
-        ${m.concepto ? `<div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;"><span style="color:var(--text-l);">Concepto</span><span style="font-weight:500;">${m.concepto}</span></div>` : ''}
+        ${m.facturasNombres?.length ? `<div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:.5px solid #e7e5df;"><span style="color:#5f5e5a;">Facturas canceladas</span><span style="font-weight:500;text-align:right;color:#1e2e22;">${m.facturasNombres.join(', ')}</span></div>` : ''}
+        ${m.concepto ? `<div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;"><span style="color:#5f5e5a;">Concepto</span><span style="font-weight:500;color:#1e2e22;">${m.concepto}</span></div>` : ''}
       </div>
       <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px;">
-        <button id="detalle-pago-pdf-btn" style="width:100%;background:#5A8A62;color:#fff;border:none;border-radius:8px;padding:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;">Descargar PDF</button>
-        ${sinImputar ? `<button onclick="imputarPagoAFactura('${m.id}')" style="width:100%;background:#EEF2EF;color:#5A8A62;border:.5px solid #5A8A62;border-radius:8px;padding:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;">Imputar a factura</button>` : ''}
+        <button id="detalle-pago-pdf-btn" style="width:100%;background:#1e2e22;color:#f4f0ea;border:none;border-radius:8px;padding:11px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Descargar PDF</button>
+        ${sinImputar ? `<button onclick="imputarPagoAFactura('${m.id}')" style="width:100%;background:#fff;color:#1e2e22;border:.5px solid #d0cfc9;border-radius:8px;padding:11px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;">Imputar a factura</button>` : ''}
         <div style="display:flex;gap:8px;">
-          <button onclick="editarOP(window._ccOpActual)" style="flex:1;background:#F5F6F3;border:.5px solid rgba(0,0,0,.1);border-radius:8px;padding:9px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;color:#3d3d3a;cursor:pointer;">Editar</button>
-          <button id="btn-eliminar-op" style="display:flex;align-items:center;justify-content:center;gap:6px;background:#FDF2F0;border:.5px solid #C4786A;border-radius:8px;padding:9px 14px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;color:#C4786A;cursor:pointer;">Eliminar</button>
+          <button onclick="editarOP(window._ccOpActual)" style="flex:1;background:#fff;border:.5px solid #d0cfc9;border-radius:8px;padding:10px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;color:#1e2e22;cursor:pointer;">Editar</button>
+          <button id="btn-eliminar-op" style="display:flex;align-items:center;justify-content:center;gap:6px;background:#f8ece9;border:.5px solid #b0402f;border-radius:8px;padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;color:#b0402f;cursor:pointer;">Eliminar</button>
         </div>
       </div>
     `;
@@ -27492,8 +27779,8 @@ window.editarOP = function(pago) {
       ${todasFacturas.length ? `<div><label style="font-size:11px;color:var(--text-l);">Factura imputada (opcional)</label><div style="display:flex;flex-direction:column;gap:4px;margin-top:6px;"><label style="display:flex;align-items:center;gap:8px;font-size:12px;padding:6px 8px;background:var(--cream);border-radius:6px;cursor:pointer;"><input type="radio" name="edit-op-fac" value="" ${(!pago.facturasIds||!pago.facturasIds.length)?'checked':''}/> Sin imputar</label>${todasFacturas.map(f=>{const estaImputadaAqui=(pago.facturasIds||[]).includes(f.id);const montoImputadoAqui=estaImputadaAqui?(parseFloat(pago.monto)||0):0;const pend=Math.max(0,(parseFloat(f.monto)||0)-(parseFloat(f.montoPagado)||0)+montoImputadoAqui);const lbl=f.numero||f.desc||'Factura';const chk=(pago.facturasIds||[]).includes(f.id)?'checked':'';return '<label style="display:flex;align-items:center;gap:8px;font-size:12px;padding:6px 8px;background:var(--cream);border-radius:6px;cursor:pointer;"><input type="radio" name="edit-op-fac" value="'+f.id+'" '+chk+'/> '+lbl+' \u2014 '+(pend>0?'Pendiente: $'+pend.toLocaleString('es-AR'):'Pagada')+'</label>';}).join('')}</div></div>` : ''}
     </div>
     <div style="display:flex;gap:8px;">
-      <button onclick="verDetalleMovCC('pago',window._ccOpActual)" style="flex:1;background:var(--cream);border:.5px solid var(--cream-d);border-radius:8px;padding:10px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;">Cancelar</button>
-      <button onclick="guardarEdicionOP('${pago.id}')" style="flex:1;background:#5A8A62;color:#fff;border:none;border-radius:8px;padding:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;">Guardar</button>
+      <button onclick="verDetalleMovCC('pago',window._ccOpActual)" style="flex:1;background:#fff;border:.5px solid #d0cfc9;border-radius:8px;padding:10px;font-family:'DM Sans',sans-serif;font-size:13px;color:#1e2e22;cursor:pointer;">Cancelar</button>
+      <button onclick="guardarEdicionOP('${pago.id}')" style="flex:1;background:#1e2e22;color:#f4f0ea;border:none;border-radius:8px;padding:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Guardar</button>
     </div>
   `;
 };
@@ -27571,7 +27858,7 @@ window.imputarPagoAFactura = function(pagoId) {
         const pendiente = (parseFloat(f.monto)||0) - (parseFloat(f.montoPagado)||0);
         const label = f.numero || f.desc || f.descripcion || 'Factura';
         return `<label style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--cream);border-radius:8px;cursor:pointer;border:.5px solid var(--cream-d);">
-          <input type="radio" name="imputar-fac" value="${f.id}" style="accent-color:#5A8A62;width:15px;height:15px;flex-shrink:0;"/>
+          <input type="radio" name="imputar-fac" value="${f.id}" style="accent-color:#4a5e4d;width:15px;height:15px;flex-shrink:0;"/>
           <div style="flex:1;">
             <div style="font-size:12px;font-weight:500;color:var(--text);">${label}</div>
             <div style="font-size:11px;color:var(--text-l);">Pendiente: $${pendiente.toLocaleString('es-AR')}</div>
@@ -27580,8 +27867,8 @@ window.imputarPagoAFactura = function(pagoId) {
       }).join('')}
     </div>
     <div style="display:flex;gap:8px;">
-      <button onclick="verDetalleMovCC('pago',window._ccPagoImputar)" style="flex:1;background:var(--cream);border:.5px solid var(--cream-d);border-radius:8px;padding:10px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;">Cancelar</button>
-      <button onclick="confirmarImputacion('${pagoId}')" style="flex:1;background:#5A8A62;color:#fff;border:none;border-radius:8px;padding:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;">Confirmar</button>
+      <button onclick="verDetalleMovCC('pago',window._ccPagoImputar)" style="flex:1;background:#fff;border:.5px solid #d0cfc9;border-radius:8px;padding:10px;font-family:'DM Sans',sans-serif;font-size:13px;color:#1e2e22;cursor:pointer;">Cancelar</button>
+      <button onclick="confirmarImputacion('${pagoId}')" style="flex:1;background:#1e2e22;color:#f4f0ea;border:none;border-radius:8px;padding:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Confirmar</button>
     </div>
   `;
 };
@@ -27639,15 +27926,45 @@ window.eliminarFacturaCC = async function(movId) {
 window.editarFacturaCC = function(movId) {
   closeModal('detalleMovCCModal');
   const m = _ccFacturas.find(f => f.id === movId) || window._facturasOP?.find(f => f.id === movId);
-  if(!document.getElementById('newFacturaModal')) return;
-  const el = (id) => document.getElementById(id);
-  if(el('fac-numero')) el('fac-numero').value = m?.numero||'';
-  if(el('fac-monto')) el('fac-monto').value = m?.monto||'';
-  if(el('fac-fecha')) el('fac-fecha').value = m?.fecha||'';
-  if(el('fac-desc')) el('fac-desc').value = m?.desc||m?.descripcion||'';
-  if(el('fac-oc')) el('fac-oc').value = m?.ocId||'';
-  window._editandoFacturaId = movId;
+  if(!m || !document.getElementById('newFacturaModal')) return;
+  window._facEditId = movId;
+  window._facEditData = m;
   openModal('newFacturaModal');
+};
+window._facturaModalCargarEdicion = function(m) {
+  const prov = (_proveedores||[]).find(p=>p.id===_ccProvId) || {};
+  const legacy = !m.tipoComprobante;
+  window._facEditLegacy = legacy;
+  let tipo = m.tipoComprobante;
+  if(!tipo) tipo = (prov.categoria==='Retiro socio' || /^retiro/i.test(m.numero||'') || /retiro de socio/i.test(m.desc||m.descripcion||'')) ? 'X' : 'C';
+  const el = (id) => document.getElementById(id);
+  const titleEl = el('fac-modal-title'); if(titleEl) titleEl.textContent = 'Editar factura';
+  if(el('fac-fecha')) el('fac-fecha').value = m.fecha||'';
+  if(el('fac-desc')) el('fac-desc').value = m.desc||m.descripcion||'';
+  const fiscal = (tipo==='A'||tipo==='B'||tipo==='C') && !legacy;
+  if(fiscal){
+    const nc = String(m.numeroComprobante||'');
+    const partes = nc.split('-');
+    if(el('fac-prefijo')) el('fac-prefijo').value = partes[0]||'';
+    if(el('fac-nrocomp')) el('fac-nrocomp').value = partes[1]||'';
+  } else {
+    if(el('fac-numero')) el('fac-numero').value = m.numero||'';
+  }
+  window._facOcActual = m.ocId||'';
+  if(el('fac-oc')) el('fac-oc').value = m.ocId||'';
+  const aviso = el('fac-oc-aviso'); if(aviso) aviso.style.display='none';
+  window._facItems = (m.items||[]).map(it=>({nombre:it.nombre||'', cantidad:(it.cantidad??''), precioUnit:(it.precioUnit??''), insumoId:it.insumoId||null, prodCompraId:it.prodCompraId||null, productoId:it.productoId||null}));
+  if(!window._facItems.length && el('fac-monto')) el('fac-monto').value = m.monto||'';
+  if(tipo==='A'){
+    const sumSub = (window._facItems||[]).reduce((a,it)=>a+(parseFloat(it.cantidad)||0)*(parseFloat(it.precioUnit)||0),0);
+    const total = Number(m.total)||0, neto = Number(m.netoGravado)||0;
+    window._facPreciosConIVA = (total>0 && Math.abs(sumSub-total) < Math.abs(sumSub-neto));
+    const cn=el('fac-chip-neto'), ci=el('fac-chip-iva');
+    if(cn) cn.classList.toggle('active',!window._facPreciosConIVA);
+    if(ci) ci.classList.toggle('active',window._facPreciosConIVA);
+  }
+  if(window.facRenderItems) facRenderItems();
+  window._facturaModalAplicarTipo(tipo);
 };
 
 // ===== CATEGORÍAS DE PROVEEDORES =====
@@ -31713,16 +32030,27 @@ window.openModal = function(id) {
   if(id === 'miCuentaModal') { openModal_miCuentaModal_extra(); }
   if(id === 'newPagoProvModal') { openModal_newPagoProvModal_extra(); }
   if(id === 'newFacturaModal') {
-    // Populate OC selector with OC of this proveedor
     const sel=document.getElementById('fac-oc');
     if(sel){
       const ocsDelProv=_ordenesCompra.filter(o=>o.proveedorId===_ccProvId||o.proveedor===(_proveedores.find(p=>p.id===_ccProvId)?.nombre));
       sel.innerHTML='<option value="">Sin OC asociada</option>'+ocsDelProv.map(o=>`<option value="${o.id}">OC-${String(o.numero||0).padStart(3,'0')} — $${(parseFloat(o.total)||0).toLocaleString('es-AR')}</option>`).join('');
     }
-    const fechaEl=document.getElementById('fac-fecha');
-    if(fechaEl&&!fechaEl.value) fechaEl.value=fechaHoyARG();
-    ['fac-prefijo','fac-nrocomp'].forEach(fid=>{const e=document.getElementById(fid);if(e)e.value='';});
-    if(window._facturaModalAplicarTipo) window._facturaModalAplicarTipo();
+    const _editData = window._facEditData || null;
+    window._facEditData = null;
+    window._facEditLegacy = false;
+    if(!_editData) window._facEditId = '';
+    ['fac-prefijo','fac-nrocomp','fac-numero','fac-desc','fac-monto'].forEach(fid=>{const e=document.getElementById(fid);if(e)e.value='';});
+    window._facItems=[]; window._facOcActual=''; window._facPreciosConIVA=false;
+    const _cn=document.getElementById('fac-chip-neto'), _ci=document.getElementById('fac-chip-iva');
+    if(_cn) _cn.classList.add('active'); if(_ci) _ci.classList.remove('active');
+    const _titleEl=document.getElementById('fac-modal-title'); if(_titleEl) _titleEl.textContent='Cargar factura';
+    const _avisoEl=document.getElementById('fac-oc-aviso'); if(_avisoEl) _avisoEl.style.display='none';
+    if(sel) sel.value='';
+    const fechaEl=document.getElementById('fac-fecha'); if(fechaEl) fechaEl.value=_editData?'':fechaHoyARG();
+    if((!window._stockInsumos||!window._stockInsumos.length)){ try { getDocs(query(collection(db,'clientes',currentClientUID,'insumos'), where('activo','==',true), orderBy('nombre','asc'))).then(s=>{ window._stockInsumos=s.docs.map(d=>({id:d.id,...d.data()})); }).catch(()=>{}); } catch(_){} }
+    if((!window._prodCompra||!window._prodCompra.length)){ try { getDocs(collection(db,'clientes',currentClientUID,'prodCompra')).then(s=>{ window._prodCompra=s.docs.map(d=>({id:d.id,...d.data()})).filter(x=>!x.eliminado); }).catch(()=>{}); } catch(_){} }
+    if(_editData){ window._facturaModalCargarEdicion(_editData); }
+    else { if(window.facRenderItems) facRenderItems(); if(window._facturaModalAplicarTipo) window._facturaModalAplicarTipo(); }
   }
   if(id === 'newProveedorModal') { renderCatSelect(); loadCatsProveedor(); document.getElementById('nueva-cat-form').style.display='none'; const t=document.querySelector('#newProveedorModal .mt'); if(t) t.textContent='Nuevo proveedor'; }
   if(id === 'newNecesidadModal') {
