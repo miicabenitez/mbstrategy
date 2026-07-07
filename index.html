@@ -26776,6 +26776,8 @@ window.abrirCuentaCorriente = async function(provId) {
     todasFacturas.sort((a,b)=>((b.fecha||'').localeCompare(a.fecha||''))||((b.creadoEn||'').localeCompare(a.creadoEn||'')));
     _ccFacturas = todasFacturas.filter(f => !f.esOC);
     _ccOCsComoFactura = todasFacturas.filter(f => f.esOC === true);
+    window._ccFacturas = _ccFacturas;
+    window._ccOCsComoFactura = _ccOCsComoFactura;
     _ccPagos = [];
     pagSnap.forEach(d=>{ const data=d.data(); if(!data.eliminado) _ccPagos.push({id:d.id,...data}); });
     _ccPagos.sort((a,b)=>((b.fecha||'').localeCompare(a.fecha||''))||((b.creadoEn||'').localeCompare(a.creadoEn||'')));
@@ -27151,6 +27153,7 @@ window.facActualizarTotales = function() {
       else box.innerHTML = `<div class="fac-res-total"><span>TOTAL</span><span>$${window._facFmt(total)}</span></div>`;
     }
   }
+  if(window._facAjustarOC && window.facRenderOcToggle) facRenderOcToggle();
 };
 window.facOnSelectOC = function(val) {
   const aviso = document.getElementById('fac-oc-aviso');
@@ -27159,8 +27162,9 @@ window.facOnSelectOC = function(val) {
   const aplicar = () => {
     window._facOcActual = val;
     const oc = (_ordenesCompra||[]).find(o=>o.id===val);
+    const _rec = oc && (oc.estadoRecepcion==='recibida'||oc.estadoRecepcion==='parcial');
     window._facItems = (oc && (oc.items||[]).length)
-      ? oc.items.map(it=>({nombre:it.nombre||it.insumoNombre||it.productoNombre||'', cantidad:parseFloat(it.cantidad)||0, precioUnit:parseFloat(it.precioUnit)||0, insumoId:it.insumoId||null, productoId:it.productoId||null}))
+      ? oc.items.map(it=>({nombre:it.nombre||it.insumoNombre||it.productoNombre||'', cantidad:parseFloat((_rec && it.cantidadRecibida!=null) ? it.cantidadRecibida : it.cantidad)||0, precioUnit:parseFloat(it.precioUnit)||0, insumoId:it.insumoId||null, productoId:it.productoId||null}))
       : [];
     facRenderItems();
     if(aviso) aviso.style.display = (val && window._facItems.length) ? 'block' : 'none';
@@ -27187,23 +27191,70 @@ window.facRenderOcToggle = function() {
     return;
   }
   const on = !!window._facAjustarOC;
-  wrap.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;background:#faf8f4;border-radius:8px;">
-    <div><div style="font-size:12px;font-weight:600;color:#1e2e22;">Ajustar OC y stock con esta factura</div><div style="font-size:10px;color:#5f5e5a;margin-top:2px;">cruza cantidades por insumo y corrige la OC o el stock</div></div>
-    <div onclick="facToggleAjuste()" style="width:40px;height:22px;border-radius:11px;background:${on?'#4a5e4d':'#d0cfc9'};position:relative;cursor:pointer;flex-shrink:0;"><div style="position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;top:3px;left:${on?'21px':'3px'};transition:left .2s;"></div></div>
+  const ocId = window._facOcActual || (ocSel && ocSel.value);
+  const oc = (_ordenesCompra||window._ordenesCompra||[]).find(o=>o.id===ocId) || {};
+  const recibida = (oc.estadoRecepcion === 'recibida');
+  const subtitulo = recibida
+    ? 'El stock ya ingresó con la recepción. Si la factura muestra diferencias, se ajusta solo la diferencia — nunca se vuelve a ingresar todo.'
+    : 'Corrige las cantidades de la orden con lo facturado. El stock no se toca — entrará cuando marques la recepción.';
+  let resumen = '';
+  if(on) {
+    const prev = window._facCrucePreview ? window._facCrucePreview(oc, window._facItems||[]) : null;
+    const nq = n => (Math.round((parseFloat(n)||0)*1000)/1000).toLocaleString('es-AR');
+    if(prev && !prev.hayDif) {
+      resumen = `<div style="font-size:11px;color:#4a5e4d;margin-top:8px;line-height:1.5;">Sin diferencias — no se ajustará nada.</div>`;
+    } else if(prev && recibida) {
+      const partes = prev.cambios.map(c=>`${c.nombre||'—'} ${c.delta>0?'+':'−'}${nq(Math.abs(c.delta))}`);
+      const linea = partes.length<=2 ? partes.join(' · ') : partes.join('<br>');
+      resumen = `<div style="font-size:11px;color:#4a5e4d;margin-top:8px;line-height:1.5;"><span style="font-weight:600;">Ajuste de stock:</span> ${linea}</div>`;
+    } else if(prev) {
+      const partes = prev.cambios.map(c=>`${c.nombre||'—'} ${nq(c.from)} → ${nq(c.to)}`);
+      const linea = partes.length<=2 ? partes.join(' · ') : partes.join('<br>');
+      resumen = `<div style="font-size:11px;color:#4a5e4d;margin-top:8px;line-height:1.5;"><span style="font-weight:600;">Se actualizará la orden:</span> ${linea}</div>`;
+    }
+  }
+  wrap.innerHTML = `<div style="padding:10px 12px;background:#faf8f4;border-radius:8px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+      <div style="min-width:0;"><div style="font-size:12px;font-weight:600;color:#1e2e22;">Ajustar OC y stock con esta factura</div><div style="font-size:11px;color:#8a8578;margin-top:2px;line-height:1.4;">${subtitulo}</div></div>
+      <div onclick="facToggleAjuste()" style="width:40px;height:22px;border-radius:11px;background:${on?'#4a5e4d':'#d0cfc9'};position:relative;cursor:pointer;flex-shrink:0;"><div style="position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;top:3px;left:${on?'21px':'3px'};transition:left .2s;"></div></div>
+    </div>
+    ${resumen}
   </div>`;
 };
 window.facToggleAjuste = function() { window._facAjustarOC = !window._facAjustarOC; facRenderOcToggle(); };
+window._facCrucePreview = function(oc, items) {
+  if(!oc) return null;
+  const recibida = (oc.estadoRecepcion === 'recibida');
+  const sumBy = (arr, key, qty) => { const m={}; (arr||[]).forEach(x=>{ const id=x[key]; if(id) m[id]=(m[id]||0)+(qty(x)||0); }); return m; };
+  const qtyFac = x => parseFloat(x.cantidad)||0;
+  const qtyOc = recibida ? (x => parseFloat(x.cantidadRecibida!=null ? x.cantidadRecibida : x.cantidad)||0) : (x => parseFloat(x.cantidad)||0);
+  const ocItems = Array.isArray(oc.items) ? oc.items : [];
+  const facIns = sumBy(items,'insumoId',qtyFac), facProd = sumBy(items,'productoId',qtyFac);
+  const ocIns = sumBy(ocItems,'insumoId',qtyOc), ocProd = sumBy(ocItems,'productoId',qtyOc);
+  const nombreDe = (id, key) => {
+    let n = ocItems.find(x=>x[key]===id) || (items||[]).find(x=>x[key]===id);
+    if(n) return n.nombre||n.insumoNombre||n.productoNombre||'';
+    const src = key==='insumoId' ? (window._stockInsumos||[]) : (window._productos||[]);
+    const s = src.find(x=>x.id===id); return s?s.nombre:'';
+  };
+  const cambios = [];
+  new Set([...Object.keys(facIns),...Object.keys(ocIns)]).forEach(id=>{ const from=ocIns[id]||0, to=facIns[id]||0, d=to-from; if(Math.abs(d)>1e-9) cambios.push({nombre:nombreDe(id,'insumoId'), from, to, delta:d}); });
+  new Set([...Object.keys(facProd),...Object.keys(ocProd)]).forEach(id=>{ const from=ocProd[id]||0, to=facProd[id]||0, d=to-from; if(Math.abs(d)>1e-9) cambios.push({nombre:nombreDe(id,'productoId'), from, to, delta:d}); });
+  return { recibida, cambios, hayDif: cambios.length>0 };
+};
 window._facEjecutarCruceOC = async function(oc, items, numLabel) {
   if(!oc || !currentClientUID) return;
-  const sumBy = (arr, key) => { const m={}; (arr||[]).forEach(x=>{ const id=x[key]; if(id) m[id]=(m[id]||0)+(parseFloat(x.cantidad)||0); }); return m; };
-  const facIns = sumBy(items,'insumoId'), facProd = sumBy(items,'productoId');
+  const recibida = (oc.estadoRecepcion === 'recibida');
+  const sumBy = (arr, key, qty) => { const m={}; (arr||[]).forEach(x=>{ const id=x[key]; if(id) m[id]=(m[id]||0)+(qty(x)||0); }); return m; };
+  const qtyFac = x => parseFloat(x.cantidad)||0;
+  const qtyOc = recibida ? (x => parseFloat(x.cantidadRecibida!=null ? x.cantidadRecibida : x.cantidad)||0) : (x => parseFloat(x.cantidad)||0);
+  const facIns = sumBy(items,'insumoId',qtyFac), facProd = sumBy(items,'productoId',qtyFac);
   const ocItems = Array.isArray(oc.items) ? oc.items.map(x=>({...x})) : [];
-  const ocIns = sumBy(ocItems,'insumoId'), ocProd = sumBy(ocItems,'productoId');
+  const ocIns = sumBy(ocItems,'insumoId',qtyOc), ocProd = sumBy(ocItems,'productoId',qtyOc);
   const deltasIns = [], deltasProd = [];
   new Set([...Object.keys(facIns),...Object.keys(ocIns)]).forEach(id=>{ const d=(facIns[id]||0)-(ocIns[id]||0); if(Math.abs(d)>1e-9) deltasIns.push({id,delta:d}); });
   new Set([...Object.keys(facProd),...Object.keys(ocProd)]).forEach(id=>{ const d=(facProd[id]||0)-(ocProd[id]||0); if(Math.abs(d)>1e-9) deltasProd.push({id,delta:d}); });
   if(!deltasIns.length && !deltasProd.length) return;
-  const recibida = (oc.estadoRecepcion === 'recibida');
   const nota = 'Ajustada por factura ' + (numLabel||'');
   if(!recibida) {
     const nuevos = ocItems.map(x=>{
@@ -27838,7 +27889,7 @@ window.verDetalleMovCC = async function(tipo, m) {
     const estadoLabel = estado==='pagada' ? 'Pagada' : estado==='parcial' ? 'Pago parcial' : 'Pendiente';
     const estadoColor = estado==='pagada' ? '#2d6a35' : estado==='parcial' ? '#a06a1f' : '#b0402f';
     const oc = m.ocId ? (_ordenesCompra||window._ordenesCompra||[]).find(o=>o.id===m.ocId) : null;
-    const ocLinea = oc ? `OC-${String(oc.numero||0).padStart(3,'0')} — $${(parseFloat(oc.total)||0).toLocaleString('es-AR')}` : (m.ocId ? 'OC asociada' : 'Sin OC asociada');
+    const ocLinea = oc ? `OC-${String(oc.numero||0).padStart(3,'0')} — $${window._ocMontoReal(oc).toLocaleString('es-AR')}` : (m.ocId ? 'OC asociada' : 'Sin OC asociada');
     const fmt = v => '$'+Number(v||0).toLocaleString('es-AR');
     const chipStyle = fiscal ? 'background:#4a5e4d;color:#f4f0ea;' : 'background:#f4f0ea;color:#1e2e22;border:2px solid #4a5e4d;';
     const chipText = fiscal ? ('Factura '+ftipo) : 'Comprobante X';
@@ -32251,7 +32302,13 @@ window.openModal = function(id) {
     const sel=document.getElementById('fac-oc');
     if(sel){
       const ocsDelProv=_ordenesCompra.filter(o=>o.proveedorId===_ccProvId||o.proveedor===(_proveedores.find(p=>p.id===_ccProvId)?.nombre));
-      sel.innerHTML='<option value="">Sin OC asociada</option>'+ocsDelProv.map(o=>`<option value="${o.id}">OC-${String(o.numero||0).padStart(3,'0')} — $${(parseFloat(o.total)||0).toLocaleString('es-AR')}</option>`).join('');
+      let _visibles = ocsDelProv;
+      try {
+        const _editOcId = (window._facEditData && window._facEditData.ocId) || '';
+        const _facturadas = new Set((window._ccFacturas||[]).filter(f=>!f.eliminado && f.ocId).map(f=>f.ocId));
+        _visibles = ocsDelProv.filter(o=> o.id===_editOcId || !_facturadas.has(o.id));
+      } catch(_){ _visibles = ocsDelProv; }
+      sel.innerHTML='<option value="">Sin OC asociada</option>'+_visibles.map(o=>`<option value="${o.id}">OC-${String(o.numero||0).padStart(3,'0')} — $${window._ocMontoReal(o).toLocaleString('es-AR')}</option>`).join('');
     }
     const _editData = window._facEditData || null;
     window._facEditData = null;
@@ -32884,7 +32941,7 @@ function embiGetFinancialContext(){
     var prodCompraStr=prodCompra.length>0?prodCompra.map(function(p){return p.nombre;}).join(', '):'Sin productos de compra registrados';
     var listas=window._embi_listas||[];
     var listasStr=listas.length>0?listas.map(function(l){var pend=(l.items||[]).filter(function(i){return !i.completado;});return l.nombre+(pend.length>0?' ('+pend.map(function(i){return i.texto;}).join(', ')+')':' (vacía)');}).join('; '):'Sin listas';
-    var ocsDetalle=ocsPend.length>0?ocsPend.map(function(o){return 'OC-'+String(o.numero).padStart(3,'0')+' · '+o.proveedor+' · $'+(o.total||o.monto||0).toLocaleString('es-AR')+' (id: '+o.ocId+')';}).join(', '):'Sin OC pendientes';
+    var ocsDetalle=ocsPend.length>0?ocsPend.map(function(o){return 'OC-'+String(o.numero).padStart(3,'0')+' · '+o.proveedor+' · $'+((window._ocMontoReal&&window._ocMontoReal(o))||o.monto||0).toLocaleString('es-AR')+' (id: '+o.ocId+')';}).join(', '):'Sin OC pendientes';
     // Aviso de cierre que cruza meses (MISMA lógica que el banner de Indicadores, líneas 20487-20492). El ⚠ es marcador interno para el modelo, NO se muestra al usuario; Embi lo redacta con sus palabras.
     var _cierreCruce = _r ? (window._clientCierres||[]).filter(function(c){return !c.eliminado;})
       .find(function(c){ return c.fechaInicio && c.fechaFin && c.fechaFin>=_r.desde && c.fechaFin<=_r.hasta && c.fechaInicio<_r.desde; }) : null;
