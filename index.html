@@ -1347,6 +1347,11 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 .ocr-row input{width:84px;text-align:right;font-family:'DM Sans',sans-serif;margin-top:0;}
 #reporteCCModal .md,#reporteProvModal .md{max-width:840px;width:94vw;max-height:92vh;display:flex;flex-direction:column;padding:0;overflow:hidden;}
 #reporteCCModal .modal-header-verde,#reporteProvModal .modal-header-verde{flex-shrink:0;}
+.rep-periodo{flex-shrink:0;}
+.rep-chip{font-size:11px;padding:5px 12px;border-radius:20px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.rep-chip.on{background:#4a5e4d;color:#f4f0ea;border:none;}
+.rep-chip.off{background:#fff;border:.5px solid #d0cfc9;color:#5f5e5a;}
+.rep-chip svg{flex-shrink:0;}
 #reporteCCModal .rcc-body,#reporteProvModal .rcc-body{flex:1;overflow:auto;background:#e9e5dd;padding:18px;}
 #reporteCCModal .rcc-footer,#reporteProvModal .rcc-footer{flex-shrink:0;display:flex;gap:8px;flex-wrap:wrap;padding:14px 22px;border-top:.5px solid #e7e5df;background:#fff;}
 #cc-reporte-doc,#prov-resumen-doc{width:780px;margin:0 auto;background:#fff;box-shadow:0 2px 14px rgba(30,46,34,.12);font-family:'DM Sans',sans-serif;color:#2c2c2a;}
@@ -6510,6 +6515,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
       <div style="font-size:9px;font-weight:700;color:#b09088;text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">MB Strategy · Compras</div>
       <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700;color:#f4f0ea;">Reporte de cuenta corriente · proveedor</div>
     </div>
+    <div id="cc-rep-periodo" class="rep-periodo"></div>
     <div class="rcc-body"><div id="cc-reporte-doc-wrap"></div></div>
     <div class="rcc-footer">
       <button class="bp" onclick="_ccReportePDF()" style="background:#1e2e22;color:#f4f0ea;">↓ Descargar PDF</button>
@@ -6526,6 +6532,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
       <div style="font-size:9px;font-weight:700;color:#b09088;text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">MB Strategy · Compras</div>
       <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700;color:#f4f0ea;">Proveedores · Resumen de cuentas</div>
     </div>
+    <div id="prov-rep-periodo" class="rep-periodo"></div>
     <div class="rcc-body"><div id="prov-reporte-doc-wrap"></div></div>
     <div class="rcc-footer">
       <button class="bp" onclick="_provReportePDF()" style="background:#1e2e22;color:#f4f0ea;">↓ Descargar PDF</button>
@@ -26841,16 +26848,62 @@ window.cerrarCCView = function() {
   if(typeof loadProveedores === 'function') loadProveedores();
 };
 
-window._ccBuildLedger = function() {
+window._repRange = window._repRange || { cc:null, prov:null };
+window._repFmtD = d => d ? String(d).split('-').reverse().join('/') : '';
+window._repRenderPeriodoBar = function(kind) {
+  const cont = document.getElementById(kind+'-rep-periodo');
+  if(!cont) return;
+  const r = window._repRange[kind];
+  const todo = `<button class="rep-chip ${r?'off':'on'}" onclick="_repSetTodo('${kind}')">Todo</button>`;
+  const rango = r
+    ? `<span class="rep-chip on" style="display:inline-flex;align-items:center;gap:8px;">${window._repFmtD(r.desde)} — ${window._repFmtD(r.hasta)}<span onclick="_repSetTodo('${kind}')" style="cursor:pointer;font-weight:700;">✕</span></span>`
+    : `<button class="rep-chip off" onclick="_repToggleRango('${kind}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px;"><rect x="3" y="4.5" width="18" height="16.5" rx="2"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg>Elegir rango</button>`;
+  cont.innerHTML = `<div style="display:flex;align-items:center;gap:10px;padding:10px 22px;background:#f4f0ea;border-bottom:.5px solid #e7e5df;flex-wrap:wrap;">
+    <span style="font-size:9px;font-weight:700;letter-spacing:1px;color:#5f5e5a;text-transform:uppercase;">Período</span>
+    ${todo}${rango}
+    <div id="${kind}-rango-picker" style="display:none;align-items:center;gap:6px;flex-wrap:wrap;">
+      <input type="date" id="${kind}-rango-desde" class="fi" style="margin-top:0;width:auto;font-size:12px;padding:5px 8px;"/>
+      <span style="color:#8a8578;">—</span>
+      <input type="date" id="${kind}-rango-hasta" class="fi" style="margin-top:0;width:auto;font-size:12px;padding:5px 8px;"/>
+      <button class="rep-chip" style="background:#1e2e22;color:#f4f0ea;border:none;" onclick="_repAplicarRango('${kind}')">Aplicar</button>
+    </div>
+  </div>`;
+};
+window._repToggleRango = function(kind) {
+  const p = document.getElementById(kind+'-rango-picker'); if(!p) return;
+  p.style.display = (p.style.display==='none' || !p.style.display) ? 'flex' : 'none';
+};
+window._repAplicarRango = function(kind) {
+  const d = document.getElementById(kind+'-rango-desde')?.value;
+  const h = document.getElementById(kind+'-rango-hasta')?.value;
+  if(!d || !h) { showToast('Elegí desde y hasta', 'info'); return; }
+  window._repRange[kind] = { desde: (d<=h?d:h), hasta: (d<=h?h:d) };
+  window._repRenderPeriodoBar(kind);
+  if(kind==='cc') window._ccRepRerender(); else window._provRepRerender();
+};
+window._repSetTodo = function(kind) {
+  window._repRange[kind] = null;
+  window._repRenderPeriodoBar(kind);
+  if(kind==='cc') window._ccRepRerender(); else window._provRepRerender();
+};
+window._ccRepRerender = function() {
+  const D = window._ccBuildLedger(window._repRange.cc);
+  window._ccReporteLedger = D;
+  const wrap = document.getElementById('cc-reporte-doc-wrap');
+  if(wrap) wrap.innerHTML = window._ccReporteDocHTML(D);
+};
+window._provRepRerender = async function() {
+  const D = await window._provResumenData(window._repRange.prov);
+  window._provResumenD = D;
+  const wrap = document.getElementById('prov-reporte-doc-wrap');
+  if(wrap) wrap.innerHTML = window._provResumenDocHTML(D);
+};
+
+window._ccBuildLedger = function(range) {
   const prov = (_proveedores||[]).find(p=>p.id===_ccProvId) || {};
   const ocsRecibidas = (_ordenesCompra||[]).filter(o=> o.proveedorId===_ccProvId && (o.estadoRecepcion==='recibida'||o.estadoRecepcion==='parcial') && !o.eliminado);
-  const totalDeOCs = ocsRecibidas.reduce((a,o)=>a+(parseFloat(o.totalRecibido||o.total)||0),0);
   const totalFacturas = (_ccFacturas||[]).reduce((a,f)=> f.eliminado?a:a+(parseFloat(f.monto)||0),0);
-  const totalOCsComoFactura = (_ccOCsComoFactura||[]).reduce((a,f)=> f.eliminado?a:a+(parseFloat(f.monto)||0),0);
   const hayFacturas = totalFacturas>0 || (_ccOCsComoFactura||[]).length>0;
-  const comprado = hayFacturas ? (totalFacturas+totalOCsComoFactura) : totalDeOCs;
-  const pagado = (_ccPagos||[]).reduce((a,p)=> p.eliminado?a:a+(parseFloat(p.monto)||0),0);
-  const saldo = Math.max(0, comprado - pagado);
   const eventos = [];
   if(hayFacturas) {
     (_ccFacturas||[]).filter(f=>!f.eliminado).forEach(f=>{
@@ -26870,12 +26923,24 @@ window._ccBuildLedger = function() {
     eventos.push({ fecha:p.fecha||(p.creadoEn||'').slice(0,10), creadoEn:p.creadoEn||'', concepto:label, debe:0, haber:parseFloat(p.monto)||0 });
   });
   eventos.sort((a,b)=> (a.fecha||'').localeCompare(b.fecha||'') || (a.creadoEn||'').localeCompare(b.creadoEn||''));
-  let run = 0;
-  const filas = eventos.map(e=>{ run += (e.debe||0)-(e.haber||0); return {...e, saldo:run}; });
+  const r = (range && range.desde && range.hasta) ? range : null;
+  let saldoAnterior = 0, usados = eventos;
+  if(r) {
+    saldoAnterior = eventos.filter(e=>(e.fecha||'') < r.desde).reduce((a,e)=>a+(e.debe||0)-(e.haber||0),0);
+    usados = eventos.filter(e=>(e.fecha||'')>=r.desde && (e.fecha||'')<=r.hasta);
+  }
+  const comprado = usados.reduce((a,e)=>a+(e.debe||0),0);
+  const pagado = usados.reduce((a,e)=>a+(e.haber||0),0);
+  const saldoFinal = saldoAnterior + comprado - pagado;
+  let run = saldoAnterior;
+  const filasMov = usados.map(e=>{ run += (e.debe||0)-(e.haber||0); return {...e, saldo:run}; });
+  const filas = r ? [{esAnterior:true, fecha:r.desde, concepto:'Saldo anterior al '+window._repFmtD(r.desde), debe:0, haber:0, saldo:saldoAnterior}, ...filasMov] : filasMov;
   const neg = (typeof currentClientData!=='undefined' && currentClientData) || window.currentClientData || {};
   const negocioNombre = neg.negocioNombre || neg.razonSocial || neg.nombre || (document.getElementById('negocio-nombre-display')?.textContent) || 'Mi negocio';
   const fechaEmision = new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'});
-  return { provNombre: prov.nombre||prov.razonSocial||'Proveedor', rubro: prov.categoria||'', cuit:(prov.cuit||'').toString().trim(), negocioNombre, fechaEmision, comprado, pagado, saldo, filas };
+  const fechaCierre = r ? window._repFmtD(r.hasta) : fechaEmision;
+  const periodoLabel = r ? (window._repFmtD(r.desde)+' — '+window._repFmtD(r.hasta)) : 'Todos los movimientos';
+  return { provNombre: prov.nombre||prov.razonSocial||'Proveedor', rubro: prov.categoria||'', cuit:(prov.cuit||'').toString().trim(), negocioNombre, fechaEmision, comprado, pagado, saldo: Math.max(0, saldoFinal), filas, fechaCierre, periodoLabel, tieneRango: !!r, rango: r };
 };
 window._ccReporteDocHTML = function(L) {
   const fmt = v => '$'+(Math.round(parseFloat(v)||0)).toLocaleString('es-AR');
@@ -26883,6 +26948,11 @@ window._ccReporteDocHTML = function(L) {
   const th = t => `<th style="padding:9px 12px;text-align:${t==='Fecha'||t==='Concepto'?'left':'right'};font-size:8px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.9);font-weight:700;">${t}</th>`;
   const filasHtml = L.filas.length ? L.filas.map(r=>{
     const f = r.fecha ? new Date(r.fecha+'T12:00:00').toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'2-digit'}) : '—';
+    if(r.esAnterior) return `<tr style="border-top:.5px solid #eee7db;background:#f1efe8;">
+      <td style="padding:8px 12px;color:#5f5e5a;white-space:nowrap;">${f}</td>
+      <td colspan="3" style="padding:8px 12px;color:#1e2e22;font-weight:700;">${r.concepto}</td>
+      <td style="padding:8px 12px;text-align:right;color:#1e2e22;font-weight:700;">${fmt(r.saldo)}</td>
+    </tr>`;
     return `<tr style="border-top:.5px solid #eee7db;">
       <td style="padding:8px 12px;color:#5f5e5a;white-space:nowrap;">${f}</td>
       <td style="padding:8px 12px;color:#2c2c2a;">${r.concepto}</td>
@@ -26906,6 +26976,7 @@ window._ccReporteDocHTML = function(L) {
         <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1px;">emitido por</div>
         <div style="font-size:11px;font-weight:700;color:#fff;margin-top:2px;">${L.negocioNombre}</div>
         <div style="font-size:10px;color:rgba(255,255,255,.72);margin-top:2px;">${L.fechaEmision}</div>
+        <div style="font-size:9px;color:rgba(255,255,255,.6);margin-top:4px;">Período: ${L.periodoLabel}</div>
       </div>
     </div>
     <div style="padding:22px 26px;">
@@ -26920,7 +26991,7 @@ window._ccReporteDocHTML = function(L) {
       </div>
       <div style="display:flex;justify-content:flex-end;margin-top:16px;">
         <div style="background:#fff;border:1.5px solid #b09088;border-radius:10px;padding:12px 18px;display:flex;align-items:center;gap:14px;">
-          <span style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#7a4e46;font-weight:700;">Saldo al ${L.fechaEmision}</span>
+          <span style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#7a4e46;font-weight:700;">Saldo al ${L.fechaCierre}</span>
           <span style="font-size:18px;font-weight:700;color:#7a4e46;">${fmt(L.saldo)}</span>
         </div>
       </div>
@@ -26932,10 +27003,9 @@ window._ccReporteDocHTML = function(L) {
 };
 window.abrirReporteCC = function() {
   if(!_ccProvId) { showToast('Abrí la cuenta corriente de un proveedor', 'info'); return; }
-  const L = window._ccBuildLedger();
-  window._ccReporteLedger = L;
-  const wrap = document.getElementById('cc-reporte-doc-wrap');
-  if(wrap) wrap.innerHTML = window._ccReporteDocHTML(L);
+  window._repRange.cc = null;
+  window._repRenderPeriodoBar('cc');
+  window._ccRepRerender();
   openModal('reporteCCModal');
 };
 window._pdfCaptureDoc = async function(docEl, filename) {
@@ -26984,7 +27054,7 @@ window._ccReportePDF = async function() {
   if(btn){ btn.textContent='Generando...'; btn.disabled=true; }
   try {
     const L = window._ccReporteLedger || {};
-    await window._pdfCaptureDoc(doc, 'CC '+(L.provNombre||'Proveedor')+' - '+(L.negocioNombre||'')+' - '+(L.fechaEmision||'').replace(/\//g,'-')+'.pdf');
+    await window._pdfCaptureDoc(doc, 'CC '+(L.provNombre||'Proveedor')+' - '+(L.tieneRango ? L.periodoLabel.replace(/ — /g,' a ') : ((L.negocioNombre||'')+' - '+(L.fechaEmision||'')))+'.pdf');
   } catch(e){ console.error('Reporte PDF error:', e); showToast('No se pudo generar el PDF. Probá de nuevo.', 'error'); }
   finally { if(btn){ btn.textContent=orig; btn.disabled=false; } }
 };
@@ -26999,7 +27069,7 @@ window._ccReporteExcel = async function() {
     ws.columns = [{width:12},{width:44},{width:16},{width:16},{width:16}];
     const rT = ws.addRow(['Cuenta corriente · '+(L.provNombre||'Proveedor')]); ws.mergeCells(1,1,1,5); rT.height=24;
     rT.getCell(1).style={font:{bold:true,size:14,color:{argb:'FFFFFFFF'}},fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FF'+SAGE}},alignment:{vertical:'middle'}};
-    const rS = ws.addRow(['Emitido por '+(L.negocioNombre||'')+'   ·   '+(L.fechaEmision||'')]); ws.mergeCells(2,1,2,5); rS.height=16;
+    const rS = ws.addRow(['Emitido por '+(L.negocioNombre||'')+'   ·   '+(L.fechaEmision||'')+'   ·   Período: '+(L.periodoLabel||'')]); ws.mergeCells(2,1,2,5); rS.height=16;
     rS.getCell(1).style={font:{size:9,color:{argb:'FFFFFFFF'}},fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FF'+SAGE}}};
     ws.addRow([]);
     const rM = ws.addRow(['Total comprado', L.comprado, 'Total pagado', L.pagado, '']);
@@ -27018,31 +27088,35 @@ window._ccReporteExcel = async function() {
     const buf = await wb.xlsx.writeBuffer();
     const blob = new Blob([buf], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
     const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url;
-    a.download = ('CC '+(L.provNombre||'Proveedor')+' - '+(L.fechaEmision||'')+'.xlsx').replace(/[\\/:*?"<>|]/g,'-');
+    a.download = ('CC '+(L.provNombre||'Proveedor')+' - '+(L.tieneRango ? L.periodoLabel.replace(/ — /g,' a ') : (L.fechaEmision||''))+'.xlsx').replace(/[\\/:*?"<>|]/g,'-');
     a.click(); setTimeout(()=>URL.revokeObjectURL(url),1000);
   } catch(e){ console.error('Reporte Excel error:', e); showToast('No se pudo generar el Excel. Probá de nuevo.', 'error'); }
 };
-window._provResumenData = async function() {
+window._provResumenData = async function(range) {
+  const r = (range && range.desde && range.hasta) ? range : null;
   const provs = (_proveedores||[]).filter(p=>!p.eliminado && p.categoria!=='Retiro socio');
   const data = await Promise.all(provs.map(async p=>{
-    let comprado=0, pagado=0;
+    let comprado=0, pagado=0, antF=0, antP=0;
     try {
       const [fs,ps] = await Promise.all([
         getDocs(collection(db,'clientes',currentClientUID,'proveedores',p.id,'facturas')),
         getDocs(collection(db,'clientes',currentClientUID,'proveedores',p.id,'pagos'))
       ]);
-      fs.forEach(d=>{ const f=d.data(); if(!f.eliminado) comprado += parseFloat(f.monto)||0; });
-      ps.forEach(d=>{ const g=d.data(); if(!g.eliminado) pagado += parseFloat(g.monto)||0; });
+      fs.forEach(d=>{ const f=d.data(); if(f.eliminado) return; const m=parseFloat(f.monto)||0; const fe=f.fecha||(f.creadoEn||'').slice(0,10); if(r){ if(fe<r.desde) antF+=m; else if(fe<=r.hasta) comprado+=m; } else comprado+=m; });
+      ps.forEach(d=>{ const g=d.data(); if(g.eliminado) return; const m=parseFloat(g.monto)||0; const fe=g.fecha||(g.creadoEn||'').slice(0,10); if(r){ if(fe<r.desde) antP+=m; else if(fe<=r.hasta) pagado+=m; } else pagado+=m; });
     } catch(_){}
-    return { nombre:p.nombre||'—', categoria:p.categoria||'—', comprado, pagado, pendiente:Math.max(0, comprado-pagado) };
+    const pendiente = r ? Math.max(0, (antF-antP)+comprado-pagado) : Math.max(0, comprado-pagado);
+    return { nombre:p.nombre||'—', categoria:p.categoria||'—', comprado, pagado, pendiente };
   }));
-  const conMov = data.filter(r=>r.comprado>0 || r.pagado>0).sort((a,b)=> (b.pendiente-a.pendiente) || (b.comprado-a.comprado));
-  const sinMov = data.filter(r=>!(r.comprado>0 || r.pagado>0)).map(r=>r.nombre);
-  const totales = conMov.reduce((t,r)=>({comprado:t.comprado+r.comprado, pagado:t.pagado+r.pagado, pendiente:t.pendiente+r.pendiente}), {comprado:0,pagado:0,pendiente:0});
+  const conMov = data.filter(rr=>rr.comprado>0 || rr.pagado>0).sort((a,b)=> (b.pendiente-a.pendiente) || (b.comprado-a.comprado));
+  const sinMov = data.filter(rr=>!(rr.comprado>0 || rr.pagado>0)).map(rr=>rr.nombre);
+  const totales = conMov.reduce((t,rr)=>({comprado:t.comprado+rr.comprado, pagado:t.pagado+rr.pagado, pendiente:t.pendiente+rr.pendiente}), {comprado:0,pagado:0,pendiente:0});
   const neg = (typeof currentClientData!=='undefined' && currentClientData) || window.currentClientData || {};
   const negocioNombre = neg.negocioNombre || neg.razonSocial || neg.nombre || (document.getElementById('negocio-nombre-display')?.textContent) || 'Mi negocio';
   const fechaEmision = new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'});
-  return { conMov, sinMov, totales, negocioNombre, fechaEmision };
+  const fechaCierre = r ? window._repFmtD(r.hasta) : fechaEmision;
+  const periodoLabel = r ? (window._repFmtD(r.desde)+' — '+window._repFmtD(r.hasta)) : 'Todos los movimientos';
+  return { conMov, sinMov, totales, negocioNombre, fechaEmision, fechaCierre, periodoLabel, tieneRango: !!r };
 };
 window._provResumenDocHTML = function(D) {
   const fmt = v => '$'+(Math.round(parseFloat(v)||0)).toLocaleString('es-AR');
@@ -27070,6 +27144,7 @@ window._provResumenDocHTML = function(D) {
       <div style="text-align:right;flex-shrink:0;">
         <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1px;">emitido</div>
         <div style="font-size:10px;color:rgba(255,255,255,.82);margin-top:3px;">${D.fechaEmision}</div>
+        <div style="font-size:9px;color:rgba(255,255,255,.6);margin-top:4px;">Período: ${D.periodoLabel}</div>
       </div>
     </div>
     <div style="padding:22px 26px;">
@@ -27080,6 +27155,12 @@ window._provResumenDocHTML = function(D) {
         </table>
       </div>
       ${sinMovHtml}
+      <div style="display:flex;justify-content:flex-end;margin-top:16px;">
+        <div style="background:#fff;border:1.5px solid #b09088;border-radius:10px;padding:12px 18px;display:flex;align-items:center;gap:14px;">
+          <span style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#7a4e46;font-weight:700;">Pendiente total al ${D.fechaCierre}</span>
+          <span style="font-size:18px;font-weight:700;color:#7a4e46;">${fmt(D.totales.pendiente)}</span>
+        </div>
+      </div>
     </div>
     <div data-pdf-footer style="background:#4a5e4d;padding:12px;text-align:center;">
       <span style="font-size:10px;color:rgba(255,255,255,.85);">Generado con MB Strategy · mbstrategy.com.ar</span>
@@ -27089,10 +27170,9 @@ window._provResumenDocHTML = function(D) {
 window.abrirReporteProv = async function() {
   if(!currentClientUID) return;
   showToast('Preparando reporte…', 'info');
-  const D = await window._provResumenData();
-  window._provResumenD = D;
-  const wrap = document.getElementById('prov-reporte-doc-wrap');
-  if(wrap) wrap.innerHTML = window._provResumenDocHTML(D);
+  window._repRange.prov = null;
+  window._repRenderPeriodoBar('prov');
+  await window._provRepRerender();
   openModal('reporteProvModal');
 };
 window._provReportePDF = async function() {
@@ -27102,7 +27182,7 @@ window._provReportePDF = async function() {
   const orig = btn?btn.textContent:''; if(btn){ btn.textContent='Generando...'; btn.disabled=true; }
   try {
     const D = window._provResumenD || {};
-    await window._pdfCaptureDoc(doc, 'Proveedores - '+(D.negocioNombre||'')+' - '+(D.fechaEmision||'').replace(/\//g,'-')+'.pdf');
+    await window._pdfCaptureDoc(doc, 'Proveedores - '+(D.tieneRango ? D.periodoLabel.replace(/ — /g,' a ') : (D.fechaEmision||''))+'.pdf');
   } catch(e){ console.error('Proveedores PDF error:', e); showToast('No se pudo generar el PDF. Probá de nuevo.', 'error'); }
   finally { if(btn){ btn.textContent=orig; btn.disabled=false; } }
 };
@@ -27116,7 +27196,7 @@ window._provReporteExcel = async function() {
     ws.columns=[{width:30},{width:22},{width:16},{width:16},{width:16}];
     const rT=ws.addRow(['Proveedores · Resumen de cuentas']); ws.mergeCells(1,1,1,5); rT.height=24;
     rT.getCell(1).style={font:{bold:true,size:14,color:{argb:'FFFFFFFF'}},fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FF'+SAGE}},alignment:{vertical:'middle'}};
-    const rS=ws.addRow(['Emitido por '+(D.negocioNombre||'')+'   ·   '+(D.fechaEmision||'')]); ws.mergeCells(2,1,2,5); rS.height=16;
+    const rS=ws.addRow(['Emitido por '+(D.negocioNombre||'')+'   ·   '+(D.fechaEmision||'')+'   ·   Período: '+(D.periodoLabel||'')]); ws.mergeCells(2,1,2,5); rS.height=16;
     rS.getCell(1).style={font:{size:9,color:{argb:'FFFFFFFF'}},fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FF'+SAGE}}};
     ws.addRow([]);
     const rH=ws.addRow(['Nombre','Categoría','Comprado','Pagado','Pendiente']); rH.height=18;
@@ -27133,7 +27213,7 @@ window._provReporteExcel = async function() {
     if((D.sinMov||[]).length){ ws.addRow([]); const rSm=ws.addRow(['Sin movimientos ('+D.sinMov.length+')', D.sinMov.join(', ')]); ws.mergeCells(rSm.number,2,rSm.number,5); rSm.getCell(1).font={bold:true,color:{argb:'FF8A8578'}}; rSm.getCell(2).font={color:{argb:'FF8A8578'}}; }
     const buf=await wb.xlsx.writeBuffer(); const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
     const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url;
-    a.download=('Proveedores - '+(D.fechaEmision||'')+'.xlsx').replace(/[\\/:*?"<>|]/g,'-'); a.click(); setTimeout(()=>URL.revokeObjectURL(url),1000);
+    a.download=('Proveedores - '+(D.tieneRango ? D.periodoLabel.replace(/ — /g,' a ') : (D.fechaEmision||''))+'.xlsx').replace(/[\\/:*?"<>|]/g,'-'); a.click(); setTimeout(()=>URL.revokeObjectURL(url),1000);
   } catch(e){ console.error('Proveedores Excel error:', e); showToast('No se pudo generar el Excel. Probá de nuevo.', 'error'); }
 };
 
