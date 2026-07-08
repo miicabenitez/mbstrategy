@@ -1345,21 +1345,24 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 .ocr-ped{color:#8a8984;}
 .ocr-lbl{display:none;}
 .ocr-row input{width:84px;text-align:right;font-family:'DM Sans',sans-serif;margin-top:0;}
-#reporteCCModal .md,#reporteProvModal .md,#reporteCliModal .md{max-width:840px;width:94vw;max-height:92vh;display:flex;flex-direction:column;padding:0;overflow:hidden;}
-#reporteCCModal .modal-header-verde,#reporteProvModal .modal-header-verde,#reporteCliModal .modal-header-verde{flex-shrink:0;}
+#reporteCCModal .md,#reporteProvModal .md,#reporteCliModal .md,#reporteClientesModal .md{max-width:840px;width:94vw;max-height:92vh;display:flex;flex-direction:column;padding:0;overflow:hidden;}
+#reporteCCModal .modal-header-verde,#reporteProvModal .modal-header-verde,#reporteCliModal .modal-header-verde,#reporteClientesModal .modal-header-verde{flex-shrink:0;}
 .rep-periodo{flex-shrink:0;}
 .rep-chip{font-size:11px;padding:5px 12px;border-radius:20px;cursor:pointer;font-family:'DM Sans',sans-serif;}
 .rep-chip.on{background:#4a5e4d;color:#f4f0ea;border:none;}
 .rep-chip.off{background:#fff;border:.5px solid #d0cfc9;color:#5f5e5a;}
 .rep-chip svg{flex-shrink:0;}
-#reporteCCModal .rcc-body,#reporteProvModal .rcc-body,#reporteCliModal .rcc-body{flex:1;overflow:auto;background:#e9e5dd;padding:18px;}
-#reporteCCModal .rcc-footer,#reporteProvModal .rcc-footer,#reporteCliModal .rcc-footer{flex-shrink:0;display:flex;gap:8px;flex-wrap:wrap;padding:14px 22px;border-top:.5px solid #e7e5df;background:#fff;}
-#cc-reporte-doc,#prov-resumen-doc,#cli-reporte-doc{width:780px;margin:0 auto;background:#fff;box-shadow:0 2px 14px rgba(30,46,34,.12);font-family:'DM Sans',sans-serif;color:#2c2c2a;}
+.cligral-search-box{display:inline-flex;align-items:center;gap:6px;background:#fff;border:.5px solid #d0cfc9;border-radius:20px;padding:4px 12px;margin-left:auto;}
+.cligral-search-box input{border:none;outline:none;background:none;font-family:'DM Sans',sans-serif;font-size:12px;color:#1e2e22;width:150px;}
+@media(max-width:640px){ .cligral-search-box{flex:1;min-width:150px;margin-left:0;} .cligral-search-box input{width:100%;} }
+#reporteCCModal .rcc-body,#reporteProvModal .rcc-body,#reporteCliModal .rcc-body,#reporteClientesModal .rcc-body{flex:1;overflow:auto;background:#e9e5dd;padding:18px;}
+#reporteCCModal .rcc-footer,#reporteProvModal .rcc-footer,#reporteCliModal .rcc-footer,#reporteClientesModal .rcc-footer{flex-shrink:0;display:flex;gap:8px;flex-wrap:wrap;padding:14px 22px;border-top:.5px solid #e7e5df;background:#fff;}
+#cc-reporte-doc,#prov-resumen-doc,#cli-reporte-doc,#cli-gral-doc{width:780px;margin:0 auto;background:#fff;box-shadow:0 2px 14px rgba(30,46,34,.12);font-family:'DM Sans',sans-serif;color:#2c2c2a;}
 @media(max-width:640px){
-  #reporteCCModal .md,#reporteProvModal .md,#reporteCliModal .md{width:100%;max-width:100%;margin:0 6px;max-height:94vh;}
-  #reporteCCModal .rcc-body,#reporteProvModal .rcc-body,#reporteCliModal .rcc-body{padding:10px;}
-  #reporteCCModal .rcc-footer,#reporteProvModal .rcc-footer,#reporteCliModal .rcc-footer{padding:12px 14px;}
-  #reporteCCModal .rcc-footer .bp,#reporteCCModal .rcc-footer .bs,#reporteProvModal .rcc-footer .bp,#reporteProvModal .rcc-footer .bs,#reporteCliModal .rcc-footer .bp,#reporteCliModal .rcc-footer .bs{flex:1;min-width:120px;}
+  #reporteCCModal .md,#reporteProvModal .md,#reporteCliModal .md,#reporteClientesModal .md{width:100%;max-width:100%;margin:0 6px;max-height:94vh;}
+  #reporteCCModal .rcc-body,#reporteProvModal .rcc-body,#reporteCliModal .rcc-body,#reporteClientesModal .rcc-body{padding:10px;}
+  #reporteCCModal .rcc-footer,#reporteProvModal .rcc-footer,#reporteCliModal .rcc-footer,#reporteClientesModal .rcc-footer{padding:12px 14px;}
+  #reporteCCModal .rcc-footer .bp,#reporteCCModal .rcc-footer .bs,#reporteProvModal .rcc-footer .bp,#reporteProvModal .rcc-footer .bs,#reporteCliModal .rcc-footer .bp,#reporteCliModal .rcc-footer .bs,#reporteClientesModal .rcc-footer .bp,#reporteClientesModal .rcc-footer .bs{flex:1;min-width:120px;}
 }
 @media(max-width:640px){
   #ocRecepcionModal .md{width:100%;max-width:100%;margin:0 8px;max-height:92vh;}
@@ -4060,8 +4063,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
                     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#f5f0eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12m-4-4 4 4 4-4"/><line x1="4" y1="20" x2="20" y2="20"/></svg>
                   </button>
                   <div id="mc-dl-menu" class="cl-dropdown-menu" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:#fff;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.13);min-width:160px;overflow:hidden;z-index:200;">
-                    <button onclick="exportar('clientes','pdf')" style="width:100%;background:none;border:none;border-bottom:.5px solid var(--cream-d);padding:11px 16px;text-align:left;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);cursor:pointer;">↓ PDF</button>
-                    <button onclick="exportar('clientes','excel')" style="width:100%;background:none;border:none;padding:11px 16px;text-align:left;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);cursor:pointer;">↓ Excel</button>
+                    <button onclick="abrirReporteClientes()" style="width:100%;background:none;border:none;padding:11px 16px;text-align:left;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);cursor:pointer;">↓ Reporte (Cuentas / Directorio)</button>
                   </div>
                 </div>
               </div>
@@ -6556,6 +6558,23 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
       <button class="bp" onclick="_cliReportePDF()" style="background:#1e2e22;color:#f4f0ea;">↓ Descargar PDF</button>
       <button class="bs" onclick="_cliReporteExcel()" style="border:.5px solid #4a5e4d;color:#1e2e22;">↓ Descargar Excel</button>
       <button class="bs" onclick="closeModal('reporteCliModal')" style="border:.5px solid #d0cfc9;">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<div class="mo" id="reporteClientesModal">
+  <div class="md" style="position:relative;">
+    <button class="mc2" onclick="closeModal('reporteClientesModal')" style="position:absolute;top:14px;right:14px;z-index:2;color:rgba(244,240,234,.8);background:none;border:none;">×</button>
+    <div class="modal-header-verde">
+      <div style="font-size:9px;font-weight:700;color:#b09088;text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">MB Strategy · Comercial</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700;color:#f4f0ea;">Reporte de clientes</div>
+    </div>
+    <div id="cli-gral-bar" class="rep-periodo"></div>
+    <div class="rcc-body"><div id="cli-gral-doc-wrap"></div></div>
+    <div class="rcc-footer">
+      <button class="bp" onclick="_cliGralPDF()" style="background:#1e2e22;color:#f4f0ea;">↓ Descargar PDF</button>
+      <button class="bs" onclick="_cliGralExcel()" style="border:.5px solid #4a5e4d;color:#1e2e22;">↓ Descargar Excel</button>
+      <button class="bs" onclick="closeModal('reporteClientesModal')" style="border:.5px solid #d0cfc9;">Cerrar</button>
     </div>
   </div>
 </div>
@@ -23954,6 +23973,237 @@ window._cliReporteExcel = async function() {
     const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url;
     a.download=('CC '+(D.cliNombre||'Cliente')+' - '+(D.tieneRango ? D.periodoLabel.replace(/ — /g,' a ') : (D.fechaEmision||''))+'.xlsx').replace(/[\\/:*?"<>|]/g,'-'); a.click(); setTimeout(()=>URL.revokeObjectURL(url),1000);
   } catch(e){ console.error('Reporte cliente Excel error:', e); showToast('No se pudo generar el Excel. Probá de nuevo.', 'error'); }
+};
+
+window._cliListadoCuentasData = async function(range) {
+  const r = (range && range.desde && range.hasta) ? range : null;
+  const rows = await Promise.all((_mcClientes||[]).map(async c=>{
+    const L = await window._cliBuildLedger(c.id, r);
+    const ars = (L.bloques||[]).find(b=>b.moneda==='ARS') || {vendido:0,cobrado:0,saldo:0};
+    const usd = (L.bloques||[]).find(b=>b.moneda==='USD');
+    const actArs = (ars.vendido>0)||(ars.cobrado>0);
+    const actUsd = usd ? ((usd.vendido>0)||(usd.cobrado>0)) : false;
+    return { nombre:c.nombre||'—', vendido:ars.vendido||0, cobrado:ars.cobrado||0, saldo:ars.saldo||0, hasUsd:!!usd, usdSaldo:usd?usd.saldo:0, actividad:actArs||actUsd };
+  }));
+  const conMov = rows.filter(x=>x.actividad).sort((a,b)=> (b.saldo-a.saldo) || (b.vendido-a.vendido));
+  const sinMov = rows.filter(x=>!x.actividad).map(x=>x.nombre);
+  const totales = conMov.reduce((t,x)=>({vendido:t.vendido+x.vendido, cobrado:t.cobrado+x.cobrado, saldo:t.saldo+x.saldo}), {vendido:0,cobrado:0,saldo:0});
+  const usdClientes = conMov.filter(x=>x.hasUsd).length;
+  const neg = (typeof currentClientData!=='undefined' && currentClientData) || window.currentClientData || {};
+  const negocioNombre = neg.negocioNombre || neg.razonSocial || neg.nombre || (document.getElementById('negocio-nombre-display')?.textContent) || 'Mi negocio';
+  const fechaEmision = new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'});
+  const fechaCierre = r ? window._repFmtD(r.hasta) : fechaEmision;
+  const periodoLabel = r ? (window._repFmtD(r.desde)+' — '+window._repFmtD(r.hasta)) : 'Todos los movimientos';
+  return { conMov, sinMov, totales, usdClientes, hayUSD:usdClientes>0, negocioNombre, fechaEmision, fechaCierre, periodoLabel, tieneRango:!!r };
+};
+window._cliDirectorioData = function() {
+  const rows = (_mcClientes||[]).map(c=>({ nombre:c.nombre||'—', doc:(c.cuit?('CUIT '+c.cuit):(c.dni?('DNI '+c.dni):'')), tel:c.tel||'', email:c.email||'' }))
+    .sort((a,b)=> a.nombre.localeCompare(b.nombre,'es',{sensitivity:'base'}));
+  const neg = (typeof currentClientData!=='undefined' && currentClientData) || window.currentClientData || {};
+  const negocioNombre = neg.negocioNombre || neg.razonSocial || neg.nombre || (document.getElementById('negocio-nombre-display')?.textContent) || 'Mi negocio';
+  const fechaEmision = new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'});
+  return { rows, negocioNombre, fechaEmision, n:rows.length };
+};
+window._cliCuentasDocHTML = function(D, search) {
+  const fmt = v => '$'+(Math.round(parseFloat(v)||0)).toLocaleString('es-AR');
+  const s = (search||'').trim().toLowerCase();
+  const conMov = s ? D.conMov.filter(r=>(r.nombre||'').toLowerCase().includes(s)) : D.conMov;
+  const sinMov = s ? D.sinMov.filter(n=>(n||'').toLowerCase().includes(s)) : D.sinMov;
+  const totales = conMov.reduce((t,x)=>({vendido:t.vendido+x.vendido, cobrado:t.cobrado+x.cobrado, saldo:t.saldo+x.saldo}), {vendido:0,cobrado:0,saldo:0});
+  const usdClientes = conMov.filter(x=>x.hasUsd).length;
+  const hayUSD = usdClientes>0;
+  const filtroNote = s ? `<div style="font-size:9px;color:rgba(255,255,255,.6);margin-top:4px;">Filtro: '${(search||'').trim()}'</div>` : '';
+  const th = (t,rt)=>`<th style="padding:9px 12px;text-align:${rt?'right':'left'};font-size:8px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.9);font-weight:700;">${t}</th>`;
+  const pendCell = (saldo,hasUsd,usdSaldo) => {
+    const main = saldo<0
+      ? `<span style="color:#4a5e4d;font-weight:700;">a favor ${fmt(Math.abs(saldo))}</span>`
+      : `<span style="color:${saldo>0?'#7a4e46':'#8a8578'};font-weight:700;">${fmt(saldo)}</span>`;
+    const usd = hasUsd ? `<div style="font-size:9px;color:#8a8578;margin-top:2px;">${usdSaldo<0?'a favor ':'+ '}US$${(Math.round(Math.abs(usdSaldo))).toLocaleString('es-AR')}</div>` : '';
+    return main+usd;
+  };
+  const rowsHtml = conMov.length ? conMov.map(r=>`<tr style="border-top:.5px solid #eee7db;">
+    <td style="padding:8px 12px;color:#2c2c2a;font-weight:500;">${r.nombre}</td>
+    <td style="padding:8px 12px;text-align:right;color:#1e2e22;">${fmt(r.vendido)}</td>
+    <td style="padding:8px 12px;text-align:right;color:#4a5e4d;">${fmt(r.cobrado)}</td>
+    <td style="padding:8px 12px;text-align:right;">${pendCell(r.saldo,r.hasUsd,r.usdSaldo)}</td>
+  </tr>`).join('') : `<tr><td colspan="4" style="padding:20px;text-align:center;color:#8a8578;font-size:12px;">${s?'Sin clientes que coincidan con el filtro.':'Sin clientes con movimientos.'}</td></tr>`;
+  const totalRow = conMov.length ? `<tr style="border-top:1.5px solid #d8d6cf;background:#f1efe8;">
+    <td style="padding:10px 12px;font-weight:700;color:#1e2e22;">Totales (ARS)</td>
+    <td style="padding:10px 12px;text-align:right;font-weight:700;color:#1e2e22;">${fmt(totales.vendido)}</td>
+    <td style="padding:10px 12px;text-align:right;font-weight:700;color:#4a5e4d;">${fmt(totales.cobrado)}</td>
+    <td style="padding:10px 12px;text-align:right;font-weight:700;color:${totales.saldo<0?'#4a5e4d':'#7a4e46'};">${totales.saldo<0?('a favor '+fmt(Math.abs(totales.saldo))):fmt(totales.saldo)}</td>
+  </tr>` : '';
+  const sinMovHtml = sinMov.length ? `<div style="margin-top:14px;font-size:10px;color:#8a8578;line-height:1.6;"><span style="font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Sin movimientos (${sinMov.length}):</span> ${sinMov.join(' · ')}</div>` : '';
+  const usdNota = hayUSD ? `<div style="margin-top:8px;font-size:9px;color:#8a8578;line-height:1.5;">* ${usdClientes} cliente${usdClientes>1?'s':''} con movimientos en US$ — el detalle está en su reporte individual. Los totales de arriba son solo en pesos (ARS).</div>` : '';
+  const cierreVerde = totales.saldo<0;
+  return `<div id="cli-gral-doc">
+    <div style="background:#4a5e4d;padding:22px 26px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;">
+      <div style="min-width:0;">
+        <div style="font-size:9px;letter-spacing:2px;color:rgba(255,255,255,.72);text-transform:uppercase;font-weight:700;margin-bottom:6px;">Clientes · Resumen de cuentas</div>
+        <div style="font-size:18px;font-weight:700;color:#fff;line-height:1.15;">${D.negocioNombre}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1px;">emitido</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.82);margin-top:3px;">${D.fechaEmision}</div>
+        <div style="font-size:9px;color:rgba(255,255,255,.6);margin-top:4px;">Período: ${D.periodoLabel}</div>
+        ${filtroNote}
+      </div>
+    </div>
+    <div style="padding:22px 26px;">
+      <div style="border-radius:10px;overflow:hidden;border:.5px solid #e7e5df;">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+          <thead><tr style="background:#4a5e4d;">${th('Nombre',0)}${th('Vendido',1)}${th('Cobrado',1)}${th('Pendiente',1)}</tr></thead>
+          <tbody>${rowsHtml}${totalRow}</tbody>
+        </table>
+      </div>
+      ${sinMovHtml}${usdNota}
+      <div style="display:flex;justify-content:flex-end;margin-top:16px;">
+        <div style="background:#fff;border:1.5px solid ${cierreVerde?'#4a5e4d':'#b09088'};border-radius:10px;padding:12px 18px;display:flex;align-items:center;gap:14px;">
+          <span style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:${cierreVerde?'#4a5e4d':'#7a4e46'};font-weight:700;">${cierreVerde?'A favor total al':'Pendiente total al'} ${D.fechaCierre}</span>
+          <span style="font-size:18px;font-weight:700;color:${cierreVerde?'#4a5e4d':'#7a4e46'};">${fmt(Math.abs(D.totales.saldo))}</span>
+        </div>
+      </div>
+    </div>
+    <div data-pdf-footer style="background:#4a5e4d;padding:12px;text-align:center;">
+      <span style="font-size:10px;color:rgba(255,255,255,.85);">Generado con MB Strategy · mbstrategy.com.ar</span>
+    </div>
+  </div>`;
+};
+window._cliDirectorioDocHTML = function(D, search) {
+  const dash = '<span style="color:#8a8578;">—</span>';
+  const s = (search||'').trim().toLowerCase();
+  const rows = s ? D.rows.filter(r=>((r.nombre||'')+' '+(r.doc||'')+' '+(r.tel||'')+' '+(r.email||'')).toLowerCase().includes(s)) : D.rows;
+  const filtroNote = s ? `<div style="font-size:9px;color:rgba(255,255,255,.6);margin-top:4px;">Filtro: '${(search||'').trim()}'</div>` : '';
+  const th = t=>`<th style="padding:9px 12px;text-align:left;font-size:8px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.9);font-weight:700;">${t}</th>`;
+  const rowsHtml = rows.length ? rows.map(r=>`<tr style="border-top:.5px solid #eee7db;">
+    <td style="padding:8px 12px;color:#2c2c2a;font-weight:500;">${r.nombre}</td>
+    <td style="padding:8px 12px;color:#5f5e5a;">${r.doc||dash}</td>
+    <td style="padding:8px 12px;color:#5f5e5a;">${r.tel||dash}</td>
+    <td style="padding:8px 12px;color:#5f5e5a;">${r.email||dash}</td>
+  </tr>`).join('') : `<tr><td colspan="4" style="padding:20px;text-align:center;color:#8a8578;font-size:12px;">${s?'Sin clientes que coincidan con el filtro.':'Sin clientes.'}</td></tr>`;
+  return `<div id="cli-gral-doc">
+    <div style="background:#4a5e4d;padding:22px 26px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;">
+      <div style="min-width:0;">
+        <div style="font-size:9px;letter-spacing:2px;color:rgba(255,255,255,.72);text-transform:uppercase;font-weight:700;margin-bottom:6px;">Clientes · Directorio</div>
+        <div style="font-size:18px;font-weight:700;color:#fff;line-height:1.15;">${D.negocioNombre}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1px;">emitido</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.82);margin-top:3px;">${D.fechaEmision} · ${rows.length} cliente${rows.length===1?'':'s'}</div>
+        ${filtroNote}
+      </div>
+    </div>
+    <div style="padding:22px 26px;">
+      <div style="border-radius:10px;overflow:hidden;border:.5px solid #e7e5df;">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+          <thead><tr style="background:#4a5e4d;">${th('Nombre')}${th('DNI / CUIT')}${th('Teléfono')}${th('Email')}</tr></thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+      </div>
+    </div>
+    <div data-pdf-footer style="background:#4a5e4d;padding:12px;text-align:center;">
+      <span style="font-size:10px;color:rgba(255,255,255,.85);">Generado con MB Strategy · mbstrategy.com.ar</span>
+    </div>
+  </div>`;
+};
+window._cliGralView = window._cliGralView || 'cuentas';
+window._cliGralSearch = window._cliGralSearch || '';
+window._cliGralRenderBar = function() {
+  const cont = document.getElementById('cli-gral-bar'); if(!cont) return;
+  const v = window._cliGralView, r = window._repRange.cligral;
+  const cal = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px;"><rect x="3" y="4.5" width="18" height="16.5" rx="2"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg>';
+  const viewChips = `<button class="rep-chip ${v==='cuentas'?'on':'off'}" onclick="_cliGralSetView('cuentas')">Cuentas</button><button class="rep-chip ${v==='directorio'?'on':'off'}" onclick="_cliGralSetView('directorio')">Directorio</button>`;
+  let tail = '';
+  if(v==='cuentas') {
+    const todo = `<button class="rep-chip ${r?'off':'on'}" onclick="_cliGralSetTodo()">Todo</button>`;
+    const rango = r
+      ? `<span class="rep-chip on" style="display:inline-flex;align-items:center;gap:8px;">${window._repFmtD(r.desde)} — ${window._repFmtD(r.hasta)}<span onclick="_cliGralSetTodo()" style="cursor:pointer;font-weight:700;">✕</span></span>`
+      : `<button class="rep-chip off" onclick="_cliGralToggleRango()">${cal}Elegir rango</button>`;
+    tail = `<span style="width:1px;height:20px;background:#d0cfc9;margin:0 4px;"></span><span style="font-size:9px;font-weight:700;letter-spacing:1px;color:#5f5e5a;text-transform:uppercase;">Período</span>${todo}${rango}
+      <div id="cligral-rango-picker" style="display:none;align-items:center;gap:6px;flex-wrap:wrap;">
+        <input type="date" id="cligral-rango-desde" class="fi" style="margin-top:0;width:auto;font-size:12px;padding:5px 8px;"/><span style="color:#8a8578;">—</span><input type="date" id="cligral-rango-hasta" class="fi" style="margin-top:0;width:auto;font-size:12px;padding:5px 8px;"/><button class="rep-chip" style="background:#1e2e22;color:#f4f0ea;border:none;" onclick="_cliGralAplicarRango()">Aplicar</button>
+      </div>`;
+  }
+  const lupa = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8a8578" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>';
+  const searchBox = `<div class="cligral-search-box">${lupa}<input type="text" id="cligral-search" oninput="_cliGralOnSearch(this.value)" value="${(window._cliGralSearch||'').replace(/"/g,'&quot;')}" placeholder="Buscar cliente..."/></div>`;
+  cont.innerHTML = `<div style="display:flex;align-items:center;gap:10px;padding:10px 22px;background:#f4f0ea;border-bottom:.5px solid #e7e5df;flex-wrap:wrap;">
+    ${viewChips}${tail}${searchBox}
+  </div>`;
+};
+window._cliGralSetView = function(v){ window._cliGralView=v; window._cliGralRenderBar(); window._cliGralRerender(); };
+window._cliGralSetTodo = function(){ window._repRange.cligral=null; window._cliGralRenderBar(); window._cliGralRerender(); };
+window._cliGralToggleRango = function(){ const p=document.getElementById('cligral-rango-picker'); if(p) p.style.display=(p.style.display==='none'||!p.style.display)?'flex':'none'; };
+window._cliGralAplicarRango = function(){ const d=document.getElementById('cligral-rango-desde')?.value, h=document.getElementById('cligral-rango-hasta')?.value; if(!d||!h){ showToast('Elegí desde y hasta','info'); return; } window._repRange.cligral={desde:(d<=h?d:h),hasta:(d<=h?h:d)}; window._cliGralRenderBar(); window._cliGralRerender(); };
+window._cliGralOnSearch = function(val){ window._cliGralSearch = val||''; window._cliGralRenderDoc(); };
+window._cliGralRenderDoc = function(){
+  const wrap = document.getElementById('cli-gral-doc-wrap'); if(!wrap || !window._cliGralD) return;
+  const D = window._cliGralD;
+  wrap.innerHTML = D.view==='directorio' ? window._cliDirectorioDocHTML(D, window._cliGralSearch) : window._cliCuentasDocHTML(D, window._cliGralSearch);
+};
+window._cliGralRerender = async function(){
+  if(window._cliGralView==='directorio'){ const D = window._cliDirectorioData(); window._cliGralD = {view:'directorio', ...D}; }
+  else { const D = await window._cliListadoCuentasData(window._repRange.cligral); window._cliGralD = {view:'cuentas', ...D}; }
+  window._cliGralRenderDoc();
+};
+window.abrirReporteClientes = async function(){
+  if(!currentClientUID) return;
+  showToast('Preparando reporte…','info');
+  window._cliGralView='cuentas';
+  window._repRange.cligral=null;
+  window._cliGralSearch='';
+  window._cliGralRenderBar();
+  try { await window._cliGralRerender(); } catch(e){ console.error('[reporteClientes] error:', e); showToast('No se pudo armar el reporte: '+(e?.message||e),'error'); return; }
+  openModal('reporteClientesModal');
+};
+window._cliGralPDF = async function(){
+  const doc = document.querySelector('#reporteClientesModal #cli-gral-doc'); if(!doc) return;
+  const btn = document.querySelector('#reporteClientesModal .bp');
+  const orig = btn?btn.textContent:''; if(btn){ btn.textContent='Generando...'; btn.disabled=true; }
+  try {
+    const D = window._cliGralD || {};
+    const tag = D.view==='directorio' ? ('Directorio - '+(D.fechaEmision||'')) : ('Cuentas - '+(D.tieneRango ? D.periodoLabel.replace(/ — /g,' a ') : (D.fechaEmision||'')));
+    await window._pdfCaptureDoc(doc, 'Clientes - '+tag+'.pdf');
+  } catch(e){ console.error('Clientes PDF error:', e); showToast('No se pudo generar el PDF. Probá de nuevo.', 'error'); }
+  finally { if(btn){ btn.textContent=orig; btn.disabled=false; } }
+};
+window._cliGralExcel = async function(){
+  const D = window._cliGralD || {};
+  const s = (window._cliGralSearch||'').trim().toLowerCase();
+  const filtroTxt = s ? ('   ·   Filtro: \''+(window._cliGralSearch||'').trim()+'\'') : '';
+  try {
+    if(!window.ExcelJS) await new Promise((res,rej)=>{ const sc=document.createElement('script'); sc.src='https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js'; sc.onload=res; sc.onerror=rej; document.head.appendChild(sc); });
+    const SAGE='4A5E4D', CREAM='F1EFE8', TXT='1E2E22', TER='7A4E46', VER='4A5E4D';
+    const wb=new ExcelJS.Workbook(); wb.creator='MB Strategy'; wb.created=new Date();
+    const head5 = (ws,arr)=>{ const rH=ws.addRow(arr); rH.height=18; rH.eachCell(c=>{ c.style={font:{bold:true,size:10,color:{argb:'FFFFFFFF'}},fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FF'+SAGE}},alignment:{horizontal:'center',vertical:'middle'}}; }); return rH; };
+    if(D.view==='directorio'){
+      const dirRows = s ? (D.rows||[]).filter(r=>((r.nombre||'')+' '+(r.doc||'')+' '+(r.tel||'')+' '+(r.email||'')).toLowerCase().includes(s)) : (D.rows||[]);
+      const ws=wb.addWorksheet('Directorio'); ws.columns=[{width:30},{width:20},{width:18},{width:30}];
+      const rT=ws.addRow(['Clientes · Directorio']); ws.mergeCells(1,1,1,4); rT.height=24; rT.getCell(1).style={font:{bold:true,size:14,color:{argb:'FFFFFFFF'}},fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FF'+SAGE}},alignment:{vertical:'middle'}};
+      const rS=ws.addRow(['Emitido por '+(D.negocioNombre||'')+'   ·   '+(D.fechaEmision||'')+'   ·   '+dirRows.length+' clientes'+filtroTxt]); ws.mergeCells(2,1,2,4); rS.getCell(1).style={font:{size:9,color:{argb:'FFFFFFFF'}},fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FF'+SAGE}}};
+      ws.addRow([]); head5(ws,['Nombre','DNI / CUIT','Teléfono','Email']);
+      dirRows.forEach((r,i)=>{ const row=ws.addRow([r.nombre,r.doc||'',r.tel||'',r.email||'']); const alt=i%2===1; row.eachCell(c=>{ c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF'+(alt?CREAM:'FFFFFF')}}; }); });
+    } else {
+      const cuMov = s ? (D.conMov||[]).filter(r=>(r.nombre||'').toLowerCase().includes(s)) : (D.conMov||[]);
+      const cuSin = s ? (D.sinMov||[]).filter(n=>(n||'').toLowerCase().includes(s)) : (D.sinMov||[]);
+      const cuTot = cuMov.reduce((t,x)=>({vendido:t.vendido+x.vendido,cobrado:t.cobrado+x.cobrado,saldo:t.saldo+x.saldo}),{vendido:0,cobrado:0,saldo:0});
+      const cuUsd = cuMov.filter(x=>x.hasUsd).length;
+      const ws=wb.addWorksheet('Cuentas'); ws.columns=[{width:32},{width:16},{width:16},{width:18}];
+      const rT=ws.addRow(['Clientes · Resumen de cuentas']); ws.mergeCells(1,1,1,4); rT.height=24; rT.getCell(1).style={font:{bold:true,size:14,color:{argb:'FFFFFFFF'}},fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FF'+SAGE}},alignment:{vertical:'middle'}};
+      const rS=ws.addRow(['Emitido por '+(D.negocioNombre||'')+'   ·   '+(D.fechaEmision||'')+'   ·   Período: '+(D.periodoLabel||'')+filtroTxt]); ws.mergeCells(2,1,2,4); rS.getCell(1).style={font:{size:9,color:{argb:'FFFFFFFF'}},fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FF'+SAGE}}};
+      ws.addRow([]); head5(ws,['Nombre','Vendido (ARS)','Cobrado (ARS)','Pendiente (ARS)']);
+      cuMov.forEach((r,i)=>{ const row=ws.addRow([r.nombre, r.vendido, r.cobrado, r.saldo]); const alt=i%2===1;
+        row.eachCell((c,ci)=>{ c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF'+(alt?CREAM:'FFFFFF')}}; if(ci>=2){ c.numFmt='"$"#,##0'; c.alignment={horizontal:'right'}; } });
+        row.getCell(4).font={bold:true,color:{argb:'FF'+(r.saldo<0?VER:TER)}};
+      });
+      if(cuMov.length){ const rTot=ws.addRow(['Totales (ARS)', cuTot.vendido, cuTot.cobrado, cuTot.saldo]); rTot.eachCell((c,ci)=>{ c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF'+CREAM}}; c.font={bold:true,color:{argb:'FF'+(ci===4?(cuTot.saldo<0?VER:TER):TXT)}}; if(ci>=2){ c.numFmt='"$"#,##0'; c.alignment={horizontal:'right'}; } }); }
+      if(cuSin.length){ ws.addRow([]); const rSm=ws.addRow(['Sin movimientos ('+cuSin.length+')', cuSin.join(', ')]); ws.mergeCells(rSm.number,2,rSm.number,4); rSm.getCell(1).font={bold:true,color:{argb:'FF8A8578'}}; rSm.getCell(2).font={color:{argb:'FF8A8578'}}; }
+      if(cuUsd>0){ const rU=ws.addRow(['* '+cuUsd+' cliente(s) con movimientos en US$ — ver reporte individual. Totales solo en ARS.']); ws.mergeCells(rU.number,1,rU.number,4); rU.getCell(1).font={italic:true,size:9,color:{argb:'FF8A8578'}}; }
+    }
+    const buf=await wb.xlsx.writeBuffer(); const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url;
+    const tag = D.view==='directorio' ? ('Directorio - '+(D.fechaEmision||'')) : ('Cuentas - '+(D.tieneRango ? D.periodoLabel.replace(/ — /g,' a ') : (D.fechaEmision||'')));
+    a.download=('Clientes - '+tag+'.xlsx').replace(/[\\/:*?"<>|]/g,'-'); a.click(); setTimeout(()=>URL.revokeObjectURL(url),1000);
+  } catch(e){ console.error('Clientes Excel error:', e); showToast('No se pudo generar el Excel. Probá de nuevo.', 'error'); }
 };
 
 // Items para newClientPresupModal
