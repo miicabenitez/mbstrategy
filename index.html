@@ -1345,6 +1345,17 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 .ocr-ped{color:#8a8984;}
 .ocr-lbl{display:none;}
 .ocr-row input{width:84px;text-align:right;font-family:'DM Sans',sans-serif;margin-top:0;}
+#reporteCCModal .md,#reporteProvModal .md{max-width:840px;width:94vw;max-height:92vh;display:flex;flex-direction:column;padding:0;overflow:hidden;}
+#reporteCCModal .modal-header-verde,#reporteProvModal .modal-header-verde{flex-shrink:0;}
+#reporteCCModal .rcc-body,#reporteProvModal .rcc-body{flex:1;overflow:auto;background:#e9e5dd;padding:18px;}
+#reporteCCModal .rcc-footer,#reporteProvModal .rcc-footer{flex-shrink:0;display:flex;gap:8px;flex-wrap:wrap;padding:14px 22px;border-top:.5px solid #e7e5df;background:#fff;}
+#cc-reporte-doc,#prov-resumen-doc{width:780px;margin:0 auto;background:#fff;box-shadow:0 2px 14px rgba(30,46,34,.12);font-family:'DM Sans',sans-serif;color:#2c2c2a;}
+@media(max-width:640px){
+  #reporteCCModal .md,#reporteProvModal .md{width:100%;max-width:100%;margin:0 6px;max-height:94vh;}
+  #reporteCCModal .rcc-body,#reporteProvModal .rcc-body{padding:10px;}
+  #reporteCCModal .rcc-footer,#reporteProvModal .rcc-footer{padding:12px 14px;}
+  #reporteCCModal .rcc-footer .bp,#reporteCCModal .rcc-footer .bs,#reporteProvModal .rcc-footer .bp,#reporteProvModal .rcc-footer .bs{flex:1;min-width:120px;}
+}
 @media(max-width:640px){
   #ocRecepcionModal .md{width:100%;max-width:100%;margin:0 8px;max-height:92vh;}
   #ocRecepcionModal .ocr-body{padding:14px;}
@@ -4476,8 +4487,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
                     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#f5f0eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12m-4-4 4 4 4-4"/><line x1="4" y1="20" x2="20" y2="20"/></svg>
                   </button>
                   <div id="prov-dl-menu" class="cl-dropdown-menu" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:#fff;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.13);min-width:160px;overflow:hidden;z-index:200;">
-                    <button onclick="exportar('proveedores','pdf')" style="width:100%;background:none;border:none;border-bottom:.5px solid var(--cream-d);padding:11px 16px;text-align:left;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);cursor:pointer;">↓ PDF</button>
-                    <button onclick="exportar('proveedores','excel')" style="width:100%;background:none;border:none;padding:11px 16px;text-align:left;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);cursor:pointer;">↓ Excel</button>
+                    <button onclick="abrirReporteProv()" style="width:100%;background:none;border:none;padding:11px 16px;text-align:left;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);cursor:pointer;">↓ Reporte (PDF / Excel)</button>
                   </div>
                 </div>
               </div>
@@ -4585,6 +4595,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
               <div style="font-size:10px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:1px;">Movimientos</div>
               <div style="display:flex;gap:8px;">
+                <button class="bs" style="font-size:11px;" onclick="abrirReporteCC()">↓ Reporte</button>
                 <button class="bs" style="font-size:11px;" onclick="openModal('newFacturaModal')">+ Factura</button>
                 <button class="bp" style="font-size:11px;" onclick="openModal('newPagoProvModal')">+ Registrar pago</button>
               </div>
@@ -6488,6 +6499,38 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         <button class="bp" onclick="confirmarRecepcionOC()" style="background:#1e2e22;color:#f4f0ea;">Confirmar recepción</button>
         <button class="bs" onclick="closeModal('ocRecepcionModal')" style="border:.5px solid #d0cfc9;">Cancelar</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<div class="mo" id="reporteCCModal">
+  <div class="md" style="position:relative;">
+    <button class="mc2" onclick="closeModal('reporteCCModal')" style="position:absolute;top:14px;right:14px;z-index:2;color:rgba(244,240,234,.8);background:none;border:none;">×</button>
+    <div class="modal-header-verde">
+      <div style="font-size:9px;font-weight:700;color:#b09088;text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">MB Strategy · Compras</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700;color:#f4f0ea;">Reporte de cuenta corriente · proveedor</div>
+    </div>
+    <div class="rcc-body"><div id="cc-reporte-doc-wrap"></div></div>
+    <div class="rcc-footer">
+      <button class="bp" onclick="_ccReportePDF()" style="background:#1e2e22;color:#f4f0ea;">↓ Descargar PDF</button>
+      <button class="bs" onclick="_ccReporteExcel()" style="border:.5px solid #4a5e4d;color:#1e2e22;">↓ Descargar Excel</button>
+      <button class="bs" onclick="closeModal('reporteCCModal')" style="border:.5px solid #d0cfc9;">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<div class="mo" id="reporteProvModal">
+  <div class="md" style="position:relative;">
+    <button class="mc2" onclick="closeModal('reporteProvModal')" style="position:absolute;top:14px;right:14px;z-index:2;color:rgba(244,240,234,.8);background:none;border:none;">×</button>
+    <div class="modal-header-verde">
+      <div style="font-size:9px;font-weight:700;color:#b09088;text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">MB Strategy · Compras</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700;color:#f4f0ea;">Proveedores · Resumen de cuentas</div>
+    </div>
+    <div class="rcc-body"><div id="prov-reporte-doc-wrap"></div></div>
+    <div class="rcc-footer">
+      <button class="bp" onclick="_provReportePDF()" style="background:#1e2e22;color:#f4f0ea;">↓ Descargar PDF</button>
+      <button class="bs" onclick="_provReporteExcel()" style="border:.5px solid #4a5e4d;color:#1e2e22;">↓ Descargar Excel</button>
+      <button class="bs" onclick="closeModal('reporteProvModal')" style="border:.5px solid #d0cfc9;">Cerrar</button>
     </div>
   </div>
 </div>
@@ -26796,6 +26839,302 @@ window.cerrarCCView = function() {
   if(subnav) { subnav.style.display='flex'; subnav.classList.add('visible'); }
   // Recargar lista
   if(typeof loadProveedores === 'function') loadProveedores();
+};
+
+window._ccBuildLedger = function() {
+  const prov = (_proveedores||[]).find(p=>p.id===_ccProvId) || {};
+  const ocsRecibidas = (_ordenesCompra||[]).filter(o=> o.proveedorId===_ccProvId && (o.estadoRecepcion==='recibida'||o.estadoRecepcion==='parcial') && !o.eliminado);
+  const totalDeOCs = ocsRecibidas.reduce((a,o)=>a+(parseFloat(o.totalRecibido||o.total)||0),0);
+  const totalFacturas = (_ccFacturas||[]).reduce((a,f)=> f.eliminado?a:a+(parseFloat(f.monto)||0),0);
+  const totalOCsComoFactura = (_ccOCsComoFactura||[]).reduce((a,f)=> f.eliminado?a:a+(parseFloat(f.monto)||0),0);
+  const hayFacturas = totalFacturas>0 || (_ccOCsComoFactura||[]).length>0;
+  const comprado = hayFacturas ? (totalFacturas+totalOCsComoFactura) : totalDeOCs;
+  const pagado = (_ccPagos||[]).reduce((a,p)=> p.eliminado?a:a+(parseFloat(p.monto)||0),0);
+  const saldo = Math.max(0, comprado - pagado);
+  const eventos = [];
+  if(hayFacturas) {
+    (_ccFacturas||[]).filter(f=>!f.eliminado).forEach(f=>{
+      const label = (f.numeroComprobante || f.numero) ? ('Factura '+(f.numeroComprobante||f.numero)) : 'Factura';
+      eventos.push({ fecha:f.fecha||(f.creadoEn||'').slice(0,10), creadoEn:f.creadoEn||'', concepto:label, debe:parseFloat(f.monto)||0, haber:0 });
+    });
+    (_ccOCsComoFactura||[]).filter(f=>!f.eliminado).forEach(f=>{
+      eventos.push({ fecha:f.fecha||(f.creadoEn||'').slice(0,10), creadoEn:f.creadoEn||'', concepto:(f.numero||'OC')+' — Mercadería recibida', debe:parseFloat(f.monto)||0, haber:0 });
+    });
+  } else {
+    ocsRecibidas.forEach(o=>{
+      eventos.push({ fecha:o.fechaRecepcion||o.fecha||'', creadoEn:o.creadoEn||'', concepto:'OC-'+String(o.numero||0).padStart(3,'0')+' — Mercadería recibida', debe:parseFloat(o.totalRecibido||o.total)||0, haber:0 });
+    });
+  }
+  (_ccPagos||[]).filter(p=>!p.eliminado).forEach(p=>{
+    const label = p.numero ? (p.numero+' — Pago') : ('Pago registrado'+(p.concepto?(' — '+p.concepto):''));
+    eventos.push({ fecha:p.fecha||(p.creadoEn||'').slice(0,10), creadoEn:p.creadoEn||'', concepto:label, debe:0, haber:parseFloat(p.monto)||0 });
+  });
+  eventos.sort((a,b)=> (a.fecha||'').localeCompare(b.fecha||'') || (a.creadoEn||'').localeCompare(b.creadoEn||''));
+  let run = 0;
+  const filas = eventos.map(e=>{ run += (e.debe||0)-(e.haber||0); return {...e, saldo:run}; });
+  const neg = (typeof currentClientData!=='undefined' && currentClientData) || window.currentClientData || {};
+  const negocioNombre = neg.negocioNombre || neg.razonSocial || neg.nombre || (document.getElementById('negocio-nombre-display')?.textContent) || 'Mi negocio';
+  const fechaEmision = new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'});
+  return { provNombre: prov.nombre||prov.razonSocial||'Proveedor', rubro: prov.categoria||'', cuit:(prov.cuit||'').toString().trim(), negocioNombre, fechaEmision, comprado, pagado, saldo, filas };
+};
+window._ccReporteDocHTML = function(L) {
+  const fmt = v => '$'+(Math.round(parseFloat(v)||0)).toLocaleString('es-AR');
+  const dash = '<span style="color:#8a8578;">—</span>';
+  const th = t => `<th style="padding:9px 12px;text-align:${t==='Fecha'||t==='Concepto'?'left':'right'};font-size:8px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.9);font-weight:700;">${t}</th>`;
+  const filasHtml = L.filas.length ? L.filas.map(r=>{
+    const f = r.fecha ? new Date(r.fecha+'T12:00:00').toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'2-digit'}) : '—';
+    return `<tr style="border-top:.5px solid #eee7db;">
+      <td style="padding:8px 12px;color:#5f5e5a;white-space:nowrap;">${f}</td>
+      <td style="padding:8px 12px;color:#2c2c2a;">${r.concepto}</td>
+      <td style="padding:8px 12px;text-align:right;color:#7a4e46;">${r.debe?fmt(r.debe):dash}</td>
+      <td style="padding:8px 12px;text-align:right;color:#4a5e4d;font-weight:500;">${r.haber?fmt(r.haber):dash}</td>
+      <td style="padding:8px 12px;text-align:right;color:#1e2e22;font-weight:500;">${fmt(r.saldo)}</td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="5" style="padding:20px;text-align:center;color:#8a8578;font-size:12px;">Sin movimientos registrados.</td></tr>`;
+  const datosProv = [L.rubro, L.cuit?('CUIT '+L.cuit):''].filter(Boolean).join(' · ');
+  const caja = (lbl,val,ter)=>`<div style="background:#f1efe8;border-radius:10px;padding:14px;${ter?'border:1.5px solid #b09088;':''}">
+    <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:${ter?'#7a4e46':'#5f5e5a'};font-weight:700;margin-bottom:6px;">${lbl}</div>
+    <div style="font-size:19px;font-weight:700;color:${ter?'#7a4e46':'#1e2e22'};">${fmt(val)}</div></div>`;
+  return `<div id="cc-reporte-doc">
+    <div style="background:#4a5e4d;padding:22px 26px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;">
+      <div style="min-width:0;">
+        <div style="font-size:9px;letter-spacing:2px;color:rgba(255,255,255,.72);text-transform:uppercase;font-weight:700;margin-bottom:6px;">Cuenta corriente · Proveedor</div>
+        <div style="font-size:18px;font-weight:700;color:#fff;line-height:1.15;">${L.provNombre}</div>
+        ${datosProv?`<div style="font-size:11px;color:rgba(255,255,255,.82);margin-top:4px;">${datosProv}</div>`:''}
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1px;">emitido por</div>
+        <div style="font-size:11px;font-weight:700;color:#fff;margin-top:2px;">${L.negocioNombre}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.72);margin-top:2px;">${L.fechaEmision}</div>
+      </div>
+    </div>
+    <div style="padding:22px 26px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px;">
+        ${caja('Total comprado',L.comprado,false)}${caja('Total pagado',L.pagado,false)}${caja('Saldo pendiente',L.saldo,true)}
+      </div>
+      <div style="border-radius:10px;overflow:hidden;border:.5px solid #e7e5df;">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+          <thead><tr style="background:#4a5e4d;">${th('Fecha')}${th('Concepto')}${th('Debe')}${th('Haber')}${th('Saldo')}</tr></thead>
+          <tbody>${filasHtml}</tbody>
+        </table>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:16px;">
+        <div style="background:#fff;border:1.5px solid #b09088;border-radius:10px;padding:12px 18px;display:flex;align-items:center;gap:14px;">
+          <span style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#7a4e46;font-weight:700;">Saldo al ${L.fechaEmision}</span>
+          <span style="font-size:18px;font-weight:700;color:#7a4e46;">${fmt(L.saldo)}</span>
+        </div>
+      </div>
+    </div>
+    <div id="cc-reporte-footer" data-pdf-footer style="background:#4a5e4d;padding:12px;text-align:center;">
+      <span style="font-size:10px;color:rgba(255,255,255,.85);">Generado con MB Strategy · mbstrategy.com.ar</span>
+    </div>
+  </div>`;
+};
+window.abrirReporteCC = function() {
+  if(!_ccProvId) { showToast('Abrí la cuenta corriente de un proveedor', 'info'); return; }
+  const L = window._ccBuildLedger();
+  window._ccReporteLedger = L;
+  const wrap = document.getElementById('cc-reporte-doc-wrap');
+  if(wrap) wrap.innerHTML = window._ccReporteDocHTML(L);
+  openModal('reporteCCModal');
+};
+window._pdfCaptureDoc = async function(docEl, filename) {
+  if(!docEl) return;
+  if(!window.html2canvas) await new Promise((res,rej)=>{ const s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'; s.onload=res; s.onerror=rej; document.head.appendChild(s); });
+  if(!window.jspdf) await new Promise((res,rej)=>{ const s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'; s.onload=res; s.onerror=rej; document.head.appendChild(s); });
+  const ft = docEl.querySelector('[data-pdf-footer]');
+  const prevFtD = ft ? ft.style.display : '';
+  if(ft) ft.style.display='none';
+  let canvas;
+  try { canvas = await window.html2canvas(docEl, { scale:3, useCORS:true, backgroundColor:'#ffffff', logging:false }); }
+  finally { if(ft) ft.style.display=prevFtD; }
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+  const pageW=210, pageH=297, margin=8, footerBandH=11, usableW=pageW-margin*2;
+  const contentHmm = (pageH - footerBandH) - margin;
+  const pxPerMm = canvas.width / usableW;
+  const pageContentHpx = contentHmm * pxPerMm;
+  const drawFooter = () => {
+    pdf.setFillColor(74,94,77);
+    pdf.rect(0, pageH-footerBandH, pageW, footerBandH, 'F');
+    pdf.setTextColor(255,255,255); pdf.setFontSize(7.5); pdf.setFont('helvetica','normal');
+    pdf.text('Generado con MB Strategy · mbstrategy.com.ar', pageW/2, pageH-footerBandH/2+1.5, {align:'center'});
+  };
+  let y = 0, first = true;
+  while(y < canvas.height - 1) {
+    const sliceH = Math.min(pageContentHpx, canvas.height - y);
+    const pc = document.createElement('canvas');
+    pc.width = canvas.width; pc.height = sliceH;
+    const ctx = pc.getContext('2d');
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,pc.width,pc.height);
+    ctx.drawImage(canvas, 0, y, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
+    const hMm = sliceH / pxPerMm;
+    if(!first) pdf.addPage();
+    pdf.addImage(pc.toDataURL('image/jpeg', 0.93), 'JPEG', margin, margin, usableW, hMm);
+    drawFooter();
+    first = false; y += sliceH;
+  }
+  pdf.save((filename||'reporte.pdf').replace(/[\\/:*?"<>|]/g,'-'));
+};
+window._ccReportePDF = async function() {
+  const doc = document.getElementById('cc-reporte-doc');
+  if(!doc) return;
+  const btn = document.querySelector('#reporteCCModal .bp');
+  const orig = btn ? btn.textContent : '';
+  if(btn){ btn.textContent='Generando...'; btn.disabled=true; }
+  try {
+    const L = window._ccReporteLedger || {};
+    await window._pdfCaptureDoc(doc, 'CC '+(L.provNombre||'Proveedor')+' - '+(L.negocioNombre||'')+' - '+(L.fechaEmision||'').replace(/\//g,'-')+'.pdf');
+  } catch(e){ console.error('Reporte PDF error:', e); showToast('No se pudo generar el PDF. Probá de nuevo.', 'error'); }
+  finally { if(btn){ btn.textContent=orig; btn.disabled=false; } }
+};
+window._ccReporteExcel = async function() {
+  const L = window._ccReporteLedger || window._ccBuildLedger();
+  const btn = document.querySelector('#reporteCCModal .rcc-footer .bs');
+  try {
+    if(!window.ExcelJS) await new Promise((res,rej)=>{ const s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js'; s.onload=res; s.onerror=rej; document.head.appendChild(s); });
+    const SAGE='4A5E4D', CREAM='F1EFE8', TXT='1E2E22', TER='7A4E46';
+    const wb = new ExcelJS.Workbook(); wb.creator='MB Strategy'; wb.created=new Date();
+    const ws = wb.addWorksheet('Cuenta corriente');
+    ws.columns = [{width:12},{width:44},{width:16},{width:16},{width:16}];
+    const rT = ws.addRow(['Cuenta corriente · '+(L.provNombre||'Proveedor')]); ws.mergeCells(1,1,1,5); rT.height=24;
+    rT.getCell(1).style={font:{bold:true,size:14,color:{argb:'FFFFFFFF'}},fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FF'+SAGE}},alignment:{vertical:'middle'}};
+    const rS = ws.addRow(['Emitido por '+(L.negocioNombre||'')+'   ·   '+(L.fechaEmision||'')]); ws.mergeCells(2,1,2,5); rS.height=16;
+    rS.getCell(1).style={font:{size:9,color:{argb:'FFFFFFFF'}},fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FF'+SAGE}}};
+    ws.addRow([]);
+    const rM = ws.addRow(['Total comprado', L.comprado, 'Total pagado', L.pagado, '']);
+    const rSa = ws.addRow(['Saldo pendiente', L.saldo, '', '', '']);
+    [rM,rSa].forEach(r=>{ r.getCell(1).font={bold:true}; r.getCell(3).font={bold:true}; r.getCell(2).numFmt='"$"#,##0'; r.getCell(4).numFmt='"$"#,##0'; });
+    rSa.getCell(1).font={bold:true,color:{argb:'FF'+TER}}; rSa.getCell(2).font={bold:true,color:{argb:'FF'+TER}};
+    ws.addRow([]);
+    const rH = ws.addRow(['Fecha','Concepto','Debe','Haber','Saldo']); rH.height=18;
+    rH.eachCell(c=>{ c.style={font:{bold:true,size:10,color:{argb:'FFFFFFFF'}},fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FF'+SAGE}},alignment:{horizontal:'center',vertical:'middle'}}; });
+    (L.filas||[]).forEach((r,i)=>{
+      const fFmt = r.fecha ? new Date(r.fecha+'T12:00:00').toLocaleDateString('es-AR') : '';
+      const row = ws.addRow([fFmt, r.concepto, r.debe||null, r.haber||null, r.saldo]); const alt=i%2===1;
+      row.eachCell((c,ci)=>{ c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF'+(alt?CREAM:'FFFFFF')}}; if(ci>=3){ c.numFmt='"$"#,##0'; c.alignment={horizontal:'right'}; } });
+      row.getCell(3).font={color:{argb:'FF'+TER}}; row.getCell(4).font={color:{argb:'FF'+SAGE}}; row.getCell(5).font={bold:true,color:{argb:'FF'+TXT}};
+    });
+    const buf = await wb.xlsx.writeBuffer();
+    const blob = new Blob([buf], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url;
+    a.download = ('CC '+(L.provNombre||'Proveedor')+' - '+(L.fechaEmision||'')+'.xlsx').replace(/[\\/:*?"<>|]/g,'-');
+    a.click(); setTimeout(()=>URL.revokeObjectURL(url),1000);
+  } catch(e){ console.error('Reporte Excel error:', e); showToast('No se pudo generar el Excel. Probá de nuevo.', 'error'); }
+};
+window._provResumenData = async function() {
+  const provs = (_proveedores||[]).filter(p=>!p.eliminado && p.categoria!=='Retiro socio');
+  const data = await Promise.all(provs.map(async p=>{
+    let comprado=0, pagado=0;
+    try {
+      const [fs,ps] = await Promise.all([
+        getDocs(collection(db,'clientes',currentClientUID,'proveedores',p.id,'facturas')),
+        getDocs(collection(db,'clientes',currentClientUID,'proveedores',p.id,'pagos'))
+      ]);
+      fs.forEach(d=>{ const f=d.data(); if(!f.eliminado) comprado += parseFloat(f.monto)||0; });
+      ps.forEach(d=>{ const g=d.data(); if(!g.eliminado) pagado += parseFloat(g.monto)||0; });
+    } catch(_){}
+    return { nombre:p.nombre||'—', categoria:p.categoria||'—', comprado, pagado, pendiente:Math.max(0, comprado-pagado) };
+  }));
+  const conMov = data.filter(r=>r.comprado>0 || r.pagado>0).sort((a,b)=> (b.pendiente-a.pendiente) || (b.comprado-a.comprado));
+  const sinMov = data.filter(r=>!(r.comprado>0 || r.pagado>0)).map(r=>r.nombre);
+  const totales = conMov.reduce((t,r)=>({comprado:t.comprado+r.comprado, pagado:t.pagado+r.pagado, pendiente:t.pendiente+r.pendiente}), {comprado:0,pagado:0,pendiente:0});
+  const neg = (typeof currentClientData!=='undefined' && currentClientData) || window.currentClientData || {};
+  const negocioNombre = neg.negocioNombre || neg.razonSocial || neg.nombre || (document.getElementById('negocio-nombre-display')?.textContent) || 'Mi negocio';
+  const fechaEmision = new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'});
+  return { conMov, sinMov, totales, negocioNombre, fechaEmision };
+};
+window._provResumenDocHTML = function(D) {
+  const fmt = v => '$'+(Math.round(parseFloat(v)||0)).toLocaleString('es-AR');
+  const th = (t,r)=>`<th style="padding:9px 12px;text-align:${r?'right':'left'};font-size:8px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.9);font-weight:700;">${t}</th>`;
+  const rowsHtml = D.conMov.length ? D.conMov.map(r=>`<tr style="border-top:.5px solid #eee7db;">
+    <td style="padding:8px 12px;color:#2c2c2a;font-weight:500;">${r.nombre}</td>
+    <td style="padding:8px 12px;color:#5f5e5a;">${r.categoria}</td>
+    <td style="padding:8px 12px;text-align:right;color:#1e2e22;">${fmt(r.comprado)}</td>
+    <td style="padding:8px 12px;text-align:right;color:#4a5e4d;">${fmt(r.pagado)}</td>
+    <td style="padding:8px 12px;text-align:right;font-weight:700;color:${r.pendiente>0?'#7a4e46':'#8a8578'};">${fmt(r.pendiente)}</td>
+  </tr>`).join('') : `<tr><td colspan="5" style="padding:20px;text-align:center;color:#8a8578;font-size:12px;">Sin proveedores con movimientos.</td></tr>`;
+  const totalRow = D.conMov.length ? `<tr style="border-top:1.5px solid #d8d6cf;background:#f1efe8;">
+    <td style="padding:10px 12px;font-weight:700;color:#1e2e22;">Totales</td><td></td>
+    <td style="padding:10px 12px;text-align:right;font-weight:700;color:#1e2e22;">${fmt(D.totales.comprado)}</td>
+    <td style="padding:10px 12px;text-align:right;font-weight:700;color:#4a5e4d;">${fmt(D.totales.pagado)}</td>
+    <td style="padding:10px 12px;text-align:right;font-weight:700;color:#7a4e46;">${fmt(D.totales.pendiente)}</td>
+  </tr>` : '';
+  const sinMovHtml = D.sinMov.length ? `<div style="margin-top:14px;font-size:10px;color:#8a8578;line-height:1.6;"><span style="font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Sin movimientos (${D.sinMov.length}):</span> ${D.sinMov.join(' · ')}</div>` : '';
+  return `<div id="prov-resumen-doc" style="width:780px;background:#fff;font-family:'DM Sans',sans-serif;color:#2c2c2a;">
+    <div style="background:#4a5e4d;padding:22px 26px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;">
+      <div style="min-width:0;">
+        <div style="font-size:9px;letter-spacing:2px;color:rgba(255,255,255,.72);text-transform:uppercase;font-weight:700;margin-bottom:6px;">Proveedores · Resumen de cuentas</div>
+        <div style="font-size:18px;font-weight:700;color:#fff;line-height:1.15;">${D.negocioNombre}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1px;">emitido</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.82);margin-top:3px;">${D.fechaEmision}</div>
+      </div>
+    </div>
+    <div style="padding:22px 26px;">
+      <div style="border-radius:10px;overflow:hidden;border:.5px solid #e7e5df;">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+          <thead><tr style="background:#4a5e4d;">${th('Nombre',0)}${th('Categoría',0)}${th('Comprado',1)}${th('Pagado',1)}${th('Pendiente',1)}</tr></thead>
+          <tbody>${rowsHtml}${totalRow}</tbody>
+        </table>
+      </div>
+      ${sinMovHtml}
+    </div>
+    <div data-pdf-footer style="background:#4a5e4d;padding:12px;text-align:center;">
+      <span style="font-size:10px;color:rgba(255,255,255,.85);">Generado con MB Strategy · mbstrategy.com.ar</span>
+    </div>
+  </div>`;
+};
+window.abrirReporteProv = async function() {
+  if(!currentClientUID) return;
+  showToast('Preparando reporte…', 'info');
+  const D = await window._provResumenData();
+  window._provResumenD = D;
+  const wrap = document.getElementById('prov-reporte-doc-wrap');
+  if(wrap) wrap.innerHTML = window._provResumenDocHTML(D);
+  openModal('reporteProvModal');
+};
+window._provReportePDF = async function() {
+  const doc = document.querySelector('#reporteProvModal #prov-resumen-doc');
+  if(!doc) return;
+  const btn = document.querySelector('#reporteProvModal .bp');
+  const orig = btn?btn.textContent:''; if(btn){ btn.textContent='Generando...'; btn.disabled=true; }
+  try {
+    const D = window._provResumenD || {};
+    await window._pdfCaptureDoc(doc, 'Proveedores - '+(D.negocioNombre||'')+' - '+(D.fechaEmision||'').replace(/\//g,'-')+'.pdf');
+  } catch(e){ console.error('Proveedores PDF error:', e); showToast('No se pudo generar el PDF. Probá de nuevo.', 'error'); }
+  finally { if(btn){ btn.textContent=orig; btn.disabled=false; } }
+};
+window._provReporteExcel = async function() {
+  const D = window._provResumenD || await window._provResumenData();
+  try {
+    if(!window.ExcelJS) await new Promise((res,rej)=>{ const s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js'; s.onload=res; s.onerror=rej; document.head.appendChild(s); });
+    const SAGE='4A5E4D', CREAM='F1EFE8', TXT='1E2E22', TER='7A4E46';
+    const wb=new ExcelJS.Workbook(); wb.creator='MB Strategy'; wb.created=new Date();
+    const ws=wb.addWorksheet('Proveedores');
+    ws.columns=[{width:30},{width:22},{width:16},{width:16},{width:16}];
+    const rT=ws.addRow(['Proveedores · Resumen de cuentas']); ws.mergeCells(1,1,1,5); rT.height=24;
+    rT.getCell(1).style={font:{bold:true,size:14,color:{argb:'FFFFFFFF'}},fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FF'+SAGE}},alignment:{vertical:'middle'}};
+    const rS=ws.addRow(['Emitido por '+(D.negocioNombre||'')+'   ·   '+(D.fechaEmision||'')]); ws.mergeCells(2,1,2,5); rS.height=16;
+    rS.getCell(1).style={font:{size:9,color:{argb:'FFFFFFFF'}},fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FF'+SAGE}}};
+    ws.addRow([]);
+    const rH=ws.addRow(['Nombre','Categoría','Comprado','Pagado','Pendiente']); rH.height=18;
+    rH.eachCell(c=>{ c.style={font:{bold:true,size:10,color:{argb:'FFFFFFFF'}},fill:{type:'pattern',pattern:'solid',fgColor:{argb:'FF'+SAGE}},alignment:{horizontal:'center',vertical:'middle'}}; });
+    (D.conMov||[]).forEach((r,i)=>{
+      const row=ws.addRow([r.nombre,r.categoria,r.comprado,r.pagado,r.pendiente]); const alt=i%2===1;
+      row.eachCell((c,ci)=>{ c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF'+(alt?CREAM:'FFFFFF')}}; if(ci>=3){ c.numFmt='"$"#,##0'; c.alignment={horizontal:'right'}; } });
+      row.getCell(5).font={bold:true,color:{argb:'FF'+(r.pendiente>0?TER:'8A8578')}};
+    });
+    if((D.conMov||[]).length){
+      const rTot=ws.addRow(['Totales','',D.totales.comprado,D.totales.pagado,D.totales.pendiente]);
+      rTot.eachCell((c,ci)=>{ c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF'+CREAM}}; c.font={bold:true,color:{argb:'FF'+(ci===5?TER:TXT)}}; if(ci>=3){ c.numFmt='"$"#,##0'; c.alignment={horizontal:'right'}; } });
+    }
+    if((D.sinMov||[]).length){ ws.addRow([]); const rSm=ws.addRow(['Sin movimientos ('+D.sinMov.length+')', D.sinMov.join(', ')]); ws.mergeCells(rSm.number,2,rSm.number,5); rSm.getCell(1).font={bold:true,color:{argb:'FF8A8578'}}; rSm.getCell(2).font={color:{argb:'FF8A8578'}}; }
+    const buf=await wb.xlsx.writeBuffer(); const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url;
+    a.download=('Proveedores - '+(D.fechaEmision||'')+'.xlsx').replace(/[\\/:*?"<>|]/g,'-'); a.click(); setTimeout(()=>URL.revokeObjectURL(url),1000);
+  } catch(e){ console.error('Proveedores Excel error:', e); showToast('No se pudo generar el Excel. Probá de nuevo.', 'error'); }
 };
 
 function renderCuentaCorriente() {
