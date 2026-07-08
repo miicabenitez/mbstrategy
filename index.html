@@ -470,6 +470,13 @@ body.es-produccion #stock-insumo-modal #stk-btn-eliminar{display:none !important
 .modal-header-verde{background:linear-gradient(135deg,#1e2e22,#3d5242);padding:20px 24px 16px;border-radius:18px 18px 0 0;}
 /* El panel con header verde no lleva borde cream (el overflow:hidden + border-radius del .md ya le dan la forma). isolation:isolate compone el recorte en su propio stacking context y mata el sangrado blanco de antialiasing en las esquinas. */
 .md:has(> .modal-header-verde){border:none;isolation:isolate;}
+#newClientPresupModal .md,#newMcPresupModal .md{padding:0;overflow:hidden;display:flex;flex-direction:column;}
+#newClientPresupModal .mt,#newMcPresupModal .mt{flex-shrink:0;padding:22px 26px 12px;margin:0;}
+#newClientPresupModal .cp-modal-body,#newMcPresupModal .cp-modal-body{flex:1;overflow-y:auto;padding:2px 26px 18px;}
+#newClientPresupModal .cp-modal-foot,#newMcPresupModal .cp-modal-foot{flex-shrink:0;padding:14px 26px;border-top:.5px solid var(--cream-d);background:var(--white);}
+#newClientPresupModal .cp-modal-foot .br2,#newMcPresupModal .cp-modal-foot .br2{margin-top:0;}
+#newClientPresupModal .cp-modal-body::-webkit-scrollbar,#newMcPresupModal .cp-modal-body::-webkit-scrollbar{width:5px;}
+#newClientPresupModal .cp-modal-body::-webkit-scrollbar-thumb,#newMcPresupModal .cp-modal-body::-webkit-scrollbar-thumb{background:rgba(74,94,77,.25);border-radius:3px;}
 .mt{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;margin-bottom:18px;color:var(--text);}
 .mc2{position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-l);line-height:1;transition:color .15s;}
 .mc2:hover{color:var(--topbar);}
@@ -5686,15 +5693,16 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
   <div class="md" style="max-width:560px;">
     <button class="mc2" onclick="closeModal('newClientPresupModal')">×</button>
     <div class="mt">Nuevo presupuesto</div>
+    <div class="cp-modal-body">
     <div class="fg" style="position:relative;">
       <label class="fl">Cliente</label>
       <input type="text" class="fi" id="cp-cliente-search" placeholder="Buscar cliente o escribir nombre..." autocomplete="off" style="margin-top:0;" oninput="cpFiltrarClientes(this.value)" onfocus="cpFiltrarClientes(this.value)" onkeydown="cpClienteKeydown(event)"/>
       <input type="hidden" id="cp-cliente-id"/>
       <div id="cp-cliente-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:.5px solid var(--cream-d);border-radius:9px;box-shadow:0 4px 16px rgba(0,0,0,.1);z-index:200;max-height:200px;overflow-y:auto;margin-top:4px;"></div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;">
       <div class="fg"><label class="fl">Número</label><input type="text" class="fi" id="cp-numero" readonly style="background:var(--cream);color:var(--text-m);cursor:default;" placeholder="Auto-generado"/></div>
-      <div class="fg"><label class="fl">Fecha</label><input type="date" id="cp-fecha" style="margin-top:0;"/></div>
+      <div class="fg"><label class="fl">Fecha</label><input type="date" class="fi" id="cp-fecha" style="margin-top:0;"/></div>
     </div>
     <div class="fg"><label class="fl">Descripción del trabajo</label><input type="text" class="fi" id="cp-desc" placeholder="Ej: Pileta 8x4, Remodelación baño..."/></div>
     <div class="fg">
@@ -5728,12 +5736,16 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
         <div style="background:var(--sage-xl);border-radius:9px;padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:20px;font-weight:500;color:var(--topbar);">Total: $<span id="cp-total-display">0</span></div>
       </div>
     </div>
-    <div class="fg"><label class="fl">Validez</label><input type="date" id="cp-validez" style="margin-top:0;"/></div>
+    <div class="fg"><label class="fl">Validez</label><input type="date" class="fi" id="cp-validez" style="margin-top:0;"/></div>
     <div class="fg"><label class="fl">Estado</label><select class="fi" id="cp-estado" style="margin-top:0;"><option>Pendiente de enviar</option><option>Enviado</option><option>Consultado</option><option>Aprobado</option><option>Denegado</option><option>Cobrado</option></select></div>
     <div class="fg"><label class="fl">Condiciones / Notas</label><textarea class="na" id="cp-notas" style="min-height:50px;" placeholder="Ej: Seña 50% para confirmar..."></textarea></div>
+    <div class="fg"><label class="fl">Adjunto (opcional)</label><div id="cp-adjunto-zone"></div></div>
+    </div>
+    <div class="cp-modal-foot">
     <div class="br2"><button class="bp" id="btn-save-client-presup" onclick="createClientPresup()">Guardar</button><button class="bs" onclick="closeModal('newClientPresupModal')">Cancelar</button></div>
     <div class="saved-msg" id="cp-saved">✓ Presupuesto guardado</div>
     <div id="cp-error" style="display:none;background:var(--err-bg,#fdecea);color:var(--err,#b00020);font-size:12px;padding:9px 12px;border-radius:7px;margin-top:8px;"></div>
+    </div>
   </div>
 </div>
 
@@ -5903,6 +5915,17 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
     <div style="padding:20px;max-height:80vh;overflow-y:auto;background:#EDECE8;">
       <div id="presup-preview-content"></div>
     </div>
+    <div id="presup-preview-adjnote" style="display:none;padding:10px 20px;background:#faf8f4;border-top:.5px solid #e7e5df;font-size:11px;color:#8a8578;text-align:center;"></div>
+  </div>
+</div>
+
+<div class="mo" id="presupAdjViewerModal">
+  <div class="md" style="max-width:900px;width:94vw;padding:0;overflow:hidden;display:flex;flex-direction:column;max-height:92vh;">
+    <div class="modal-header-verde" style="display:flex;justify-content:space-between;align-items:center;">
+      <div id="presup-adj-viewer-title" style="font-size:13px;font-weight:500;color:#fff;">Adjunto</div>
+      <button onclick="closeModal('presupAdjViewerModal')" style="background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;">Cerrar</button>
+    </div>
+    <div id="presup-adj-viewer-body" style="padding:14px;background:#EDECE8;overflow:auto;flex:1;"></div>
   </div>
 </div>
 
@@ -5912,11 +5935,12 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
   <div class="md" style="max-width:560px;">
     <button class="mc2" onclick="closeModal('newMcPresupModal')">×</button>
     <div class="mt">Nuevo presupuesto</div>
+    <div class="cp-modal-body">
     <input type="hidden" id="mcp-presup-cliente-id"/>
     <!-- Número y fecha en fila -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;">
       <div class="fg"><label class="fl">Número</label><input type="text" class="fi" id="mcp-presup-numero" readonly style="background:var(--cream);color:var(--text-m);cursor:default;" placeholder="Auto-generado"/></div>
-      <div class="fg"><label class="fl">Fecha</label><input type="date" id="mcp-presup-fecha" style="margin-top:0;"/></div>
+      <div class="fg"><label class="fl">Fecha</label><input type="date" class="fi" id="mcp-presup-fecha" style="margin-top:0;"/></div>
     </div>
     <!-- Cliente (fijo) -->
     <div class="fg">
@@ -5960,11 +5984,15 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
       </div>
     </div>
 
-    <div class="fg"><label class="fl">Validez</label><input type="date" id="mcp-presup-validez" style="margin-top:0;"/></div>
+    <div class="fg"><label class="fl">Validez</label><input type="date" class="fi" id="mcp-presup-validez" style="margin-top:0;"/></div>
     <div class="fg"><label class="fl">Estado</label><select class="fi" id="mcp-presup-estado" style="margin-top:0;"><option>Pendiente de enviar</option><option>Enviado</option><option>Consultado</option><option>Aprobado</option><option>Denegado</option></select></div>
     <div class="fg"><label class="fl">Condiciones / Notas</label><textarea class="na" id="mcp-presup-notas" style="min-height:50px;" placeholder="Ej: Seña 50% para confirmar..."></textarea></div>
+    <div class="fg"><label class="fl">Adjunto (opcional)</label><div id="mcp-adjunto-zone"></div></div>
+    </div>
+    <div class="cp-modal-foot">
     <div class="br2"><button class="bp" id="btn-save-mc-presup" onclick="createMcPresup()">Guardar</button><button class="bs" onclick="closeModal('newMcPresupModal')">Cancelar</button></div>
     <div class="saved-msg" id="mcp-presup-saved">✓ Presupuesto guardado</div>
+    </div>
   </div>
 </div>
 
@@ -6848,18 +6876,9 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
     <input type="hidden" id="ep-origen"/> <!-- 'admin' o 'cliente' -->
     <div class="fg"><label class="fl">Cliente</label><input type="text" class="fi" id="ep-cliente" placeholder="Ej: Familia Rodríguez"/></div>
     <div class="fg"><label class="fl">Descripción del trabajo</label><input type="text" class="fi" id="ep-desc" placeholder="Ej: Pileta 8x4, Remodelación baño..."/></div>
-    <div class="fg"><label class="fl">Archivo PDF (opcional — reemplaza el actual)</label>
-      <div style="border:.5px solid var(--cream-d);border-radius:9px;padding:10px;background:var(--cream);cursor:pointer;" onclick="document.getElementById('ep-pdf-file').click()">
-        <div style="display:flex;align-items:center;gap:8px;">
-          <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><rect x="3" y="1" width="14" height="18" rx="2" stroke="var(--sage-dark)" stroke-width="1.3"/><path d="M3 14h14M7 5h6M7 8h4" stroke="var(--sage-dark)" stroke-width="1.2" stroke-linecap="round"/></svg>
-          <div id="ep-pdf-nombre" style="font-size:12px;color:var(--text);">Seleccionar PDF nuevo</div>
-        </div>
-      </div>
-      <input type="file" id="ep-pdf-file" accept=".pdf" style="display:none;" onchange="onEditPresupPDFSelected(this)"/>
-      <div id="ep-pdf-progress" style="display:none;margin-top:6px;">
-        <div style="height:3px;background:var(--cream-d);border-radius:4px;"><div id="ep-pdf-bar" style="height:100%;width:0%;background:var(--sage-dark);border-radius:4px;transition:width .3s;"></div></div>
-        <div id="ep-pdf-status" style="font-size:11px;color:var(--text-l);margin-top:3px;">Procesando...</div>
-      </div>
+    <div class="fg"><label class="fl">Adjunto (opcional)</label>
+      <div id="ep-adjunto-zone"></div>
+      <div id="ep-viejo-link-wrap" style="display:none;margin-top:6px;"><button type="button" onclick="_presupAdjVerLink()" style="background:none;border:none;padding:0;font-size:11px;color:var(--topbar);cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:underline;">Ver documento cargado (formato anterior) →</button></div>
     </div>
     <div class="fg"><label class="fl">Monto</label><input type="number" class="fi" id="ep-monto" placeholder="0"/></div>
     <div class="fg"><label class="fl">Moneda</label>
@@ -10962,8 +10981,10 @@ window.editPresup = function(id) {
   document.getElementById('ep-estado').value = p.estado || 'Pendiente de enviar';
   document.getElementById('ep-fecha').value = p.fecha || '';
   document.getElementById('ep-notas').value = p.notas || '';
-  document.getElementById('ep-pdf-nombre').textContent = p.link ? 'PDF ya cargado — subí uno nuevo para reemplazar' : 'Seleccionar PDF nuevo';
-  document.getElementById('ep-pdf-progress').style.display = 'none';
+  window._presupAdjReset(p.adjunto||null);
+  window._presupAdjRender('ep-adjunto-zone');
+  window._presupEditViejoLink = (p.link && !p.adjunto) ? p.link : null;
+  const _vlw = document.getElementById('ep-viejo-link-wrap'); if(_vlw) _vlw.style.display = window._presupEditViejoLink ? 'block' : 'none';
   window._editPresupPdfUrl = null;
   openModal('editPresupModal');
 };
@@ -10983,8 +11004,10 @@ window.editClientPresup = function(id) {
   document.getElementById('ep-estado').value = p.estado || 'Pendiente de enviar';
   document.getElementById('ep-fecha').value = p.fecha || '';
   document.getElementById('ep-notas').value = p.notas || '';
-  document.getElementById('ep-pdf-nombre').textContent = p.link ? 'PDF ya cargado — subí uno nuevo para reemplazar' : 'Seleccionar PDF nuevo';
-  document.getElementById('ep-pdf-progress').style.display = 'none';
+  window._presupAdjReset(p.adjunto||null);
+  window._presupAdjRender('ep-adjunto-zone');
+  window._presupEditViejoLink = (p.link && !p.adjunto) ? p.link : null;
+  const _vlw = document.getElementById('ep-viejo-link-wrap'); if(_vlw) _vlw.style.display = window._presupEditViejoLink ? 'block' : 'none';
   window._editPresupPdfUrl = null;
   openModal('editPresupModal');
 };
@@ -11014,15 +11037,22 @@ window.saveEditPresup = async function() {
   if (!id) return;
   const estadoNuevo = document.getElementById('ep-estado').value;
 
-  // Mantener el PDF existente si no se subió uno nuevo
+  // Mantener el PDF base64 viejo (retro-compat) si no se subió uno nuevo
   const allPresups = origen === 'cliente' ? (window._clientPresupuestos||[]).concat(_mcPresupuestos||[]) : _allPresupuestos;
   const pOld = allPresups.find(x=>x.id===id);
   const linkFinal = window._editPresupPdfUrl || pOld?.link || '';
+  const _epBtn = document.querySelector('#editPresupModal button[onclick="saveEditPresup()"]');
+  const _epTxt = _epBtn ? _epBtn.textContent : '';
+  let adjunto;
+  try { if(_epBtn){_epBtn.disabled=true;} adjunto = await window._presupAdjPersist(id, pct=>{ if(_epBtn) _epBtn.textContent='Subiendo… '+pct+'%'; }); }
+  catch(e){ if(_epBtn){_epBtn.disabled=false;_epBtn.textContent=_epTxt||'Guardar cambios';} showToast('Error al subir el adjunto: '+(e?.message||e), 'error'); return; }
+  if(_epBtn){ _epBtn.textContent='Guardando...'; }
 
   const data = {
     cliente: document.getElementById('ep-cliente').value,
     descripcion: document.getElementById('ep-desc').value,
     link: linkFinal,
+    adjunto: adjunto||null,
     monto: document.getElementById('ep-monto').value,
     moneda: document.getElementById('ep-moneda').value,
     estado: estadoNuevo,
@@ -11048,7 +11078,7 @@ window.saveEditPresup = async function() {
     const s = document.getElementById('ep-saved');
     s.style.display = 'block';
     setTimeout(()=>{ s.style.display='none'; closeModal('editPresupModal'); window._editPresupPdfUrl = null; }, 1500);
-  } catch(e) { showToast('Error: '+e.message, 'error'); }
+  } catch(e) { if(_epBtn){_epBtn.disabled=false;_epBtn.textContent=_epTxt||'Guardar cambios';} showToast('Error: '+e.message, 'error'); }
 };
 
 window.updatePresupEstado = async function(id, nuevoEstado) {
@@ -22124,7 +22154,7 @@ function renderMcPresupuestos(list) {
           ${m>0?`<div style="font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;margin-top:4px;">$${m.toLocaleString('es-AR')} ${p.moneda||'ARS'}</div>`:''}
         </div>
       </div>
-      ${p.link?`<a href="${p.link}" target="_blank" style="display:inline-block;margin-top:8px;font-size:11px;color:var(--topbar);text-decoration:none;">Ver presupuesto →</a>`:''}
+      <button onclick="event.stopPropagation();exportarPresupuestoPDF('${p.id}')" style="margin-top:8px;background:none;border:none;padding:0;font-size:11px;color:var(--topbar);cursor:pointer;font-family:'DM Sans',sans-serif;">Ver presupuesto →</button>
       <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
         ${cobrado
           ? `<span style="font-size:11px;color:#1A6637;font-weight:500;">✓ Cobrado — presupuesto cerrado</span>`
@@ -23083,6 +23113,7 @@ window.openMcPresupModal = async function(clienteId, clienteNombre) {
     allProds.filter(p=>p.activo!==false).map(p=>`<option value="${p.id}" data-precio="${p.precio||0}" data-nombre="${p.nombre||''}">${p.nombre}</option>`).join('') +
     '<option value="__nuevo__" style="color:#5A7A4E;font-weight:500;">＋ Agregar nuevo producto</option>';
   _mcPresupPdfUrl = '';
+  window._presupAdjReset(null); window._presupAdjRender('mcp-adjunto-zone');
   openModal('newMcPresupModal');
 };
 
@@ -23112,7 +23143,13 @@ window.createMcPresup = async function() {
     creadoEn:new Date().toISOString()
   };
   try {
-    await addDoc(collection(db,'clientes',currentClientUID,'presupuestos'),data);
+    const _newRef = doc(collection(db,'clientes',currentClientUID,'presupuestos'));
+    let _adj = null;
+    try { _adj = await window._presupAdjPersist(_newRef.id, pct=>{ if(_mcpBtn) _mcpBtn.textContent='Subiendo… '+pct+'%'; }); }
+    catch(e){ if(_mcpBtn){_mcpBtn.disabled=false;_mcpBtn.textContent='Guardar';} showToast('Error al subir el adjunto: '+(e?.message||e), 'error'); return; }
+    if(_adj) data.adjunto = _adj;
+    if(_mcpBtn) _mcpBtn.textContent='Guardando...';
+    await setDoc(_newRef,data);
     addDoc(collection(db,'clientes',currentClientUID,'alertas'), {
       tipo: 'info',
       mensaje: `Nuevo presupuesto creado: "${desc||'sin descripción'}" por $${total.toLocaleString('es-AR')}. Estado: ${data.estado}.`,
@@ -23502,8 +23539,144 @@ window.abrirFacturaDesdePresupuesto = async function(presupId) {
   nflRecalcular();
 };
 
-window.exportarPresupuestoPDF = async function(presupId) {
-  if(!currentClientUID) { showToast('Error: no se pudo identificar el cliente.', 'error'); return; }
+window._presupAdjTipos = ['application/pdf','image/jpeg','image/png','image/webp'];
+window._presupAdjMax = 20*1024*1024;
+window._presupAdj = { orig:null, file:null, remove:false };
+window._getStorageSDK = async function(){
+  if(window._storageSDK) return window._storageSDK;
+  const m = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-storage.js');
+  window._storageSDK = { storage:m.getStorage(), ref:m.ref, uploadBytesResumable:m.uploadBytesResumable, getDownloadURL:m.getDownloadURL, deleteObject:m.deleteObject, getBytes:m.getBytes };
+  return window._storageSDK;
+};
+window._getPdfLib = async function(){
+  if(window.PDFLib) return window.PDFLib;
+  await new Promise((res,rej)=>{ const s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js'; s.onload=res; s.onerror=rej; document.head.appendChild(s); });
+  return window.PDFLib;
+};
+window._dataURIToBytes = function(uri){
+  const b64 = uri.slice(uri.indexOf(',')+1);
+  const bin = atob(b64); const arr = new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i);
+  return arr.buffer;
+};
+window._presupMergeAdjunto = async function(baseBytes, adj, oldLink){
+  let PDFLib;
+  try { PDFLib = await window._getPdfLib(); } catch(e){ console.error('[presupMerge] pdf-lib no cargó del CDN:', e); throw e; }
+  const { PDFDocument } = PDFLib;
+  const out = await PDFDocument.load(baseBytes);
+  let tipo = '', bytes = null;
+  if(adj && (adj.path||adj.url)){
+    tipo = adj.tipo || 'application/pdf';
+    try { const s = await window._getStorageSDK(); bytes = await s.getBytes(s.ref(s.storage, adj.path||adj.url)); }
+    catch(e){ console.error('[presupMerge] getBytes falló ('+(adj.path||adj.url)+'):', e); throw e; }
+  } else if(oldLink){
+    try {
+      if(oldLink.slice(0,5)==='data:'){ tipo = (oldLink.match(/^data:([^;,]+)/)||[])[1] || 'application/pdf'; bytes = window._dataURIToBytes(oldLink); }
+      else { const r = await fetch(oldLink); if(!r.ok) throw new Error('HTTP '+r.status); bytes = await r.arrayBuffer(); tipo = r.headers.get('content-type') || 'application/pdf'; }
+    } catch(e){ console.error('[presupMerge] no se pudo leer el link viejo:', e); throw e; }
+  } else { return await out.save(); }
+  try {
+    if(tipo.indexOf('pdf') >= 0){
+      const src = await PDFDocument.load(bytes, { ignoreEncryption:false });
+      const pages = await out.copyPages(src, src.getPageIndices());
+      pages.forEach(pg=>out.addPage(pg));
+    } else if(tipo.indexOf('image') >= 0){
+      const bmp = await createImageBitmap(new Blob([bytes], {type:tipo}));
+      const cv = document.createElement('canvas'); cv.width=bmp.width; cv.height=bmp.height;
+      cv.getContext('2d').drawImage(bmp,0,0);
+      const pngBuf = await new Promise((res,rej)=>cv.toBlob(b=>{ if(!b) return rej(new Error('canvas toBlob null')); b.arrayBuffer().then(res,rej); }, 'image/png'));
+      const img = await out.embedPng(pngBuf);
+      const W=595.28, H=841.89, margin=32;
+      const scale = Math.min((W-margin*2)/img.width, (H-margin*2)/img.height);
+      const w=img.width*scale, h=img.height*scale;
+      const page = out.addPage([W,H]);
+      page.drawImage(img, { x:(W-w)/2, y:(H-h)/2, width:w, height:h });
+    } else { throw new Error('tipo no soportado: '+tipo); }
+  } catch(e){ console.error('[presupMerge] fusión falló (tipo '+tipo+'):', e); throw e; }
+  return await out.save();
+};
+window._presupExportUnificado = async function(docEl, filename, adj, oldLink){
+  const fn = (filename||'Presupuesto.pdf').replace(/[\\/:*?"<>|]/g,'-');
+  const dl = bytes => { const b=new Blob([bytes],{type:'application/pdf'}); const u=URL.createObjectURL(b); const a=document.createElement('a'); a.href=u; a.download=fn; a.click(); setTimeout(()=>URL.revokeObjectURL(u),1000); };
+  if(!adj && !oldLink){ await window._pdfCaptureDoc(docEl, fn); return; }
+  const baseBytes = await window._pdfCaptureDoc(docEl, fn, {returnBytes:true});
+  let merged = null;
+  try {
+    merged = await Promise.race([
+      window._presupMergeAdjunto(baseBytes, adj, oldLink),
+      new Promise((_,rej)=>setTimeout(()=>rej(new Error('merge-timeout-20s')), 20000))
+    ]);
+  } catch(e){ console.error('[presupMerge] no se pudo unir el adjunto:', e); }
+  if(merged){ dl(merged); }
+  else { dl(baseBytes); showToast('No se pudo incluir el adjunto — descargalo por separado desde el presupuesto.', 'info'); }
+};
+window._presupAdjViewSrc = function(src, tipo, nombre){
+  const body = document.getElementById('presup-adj-viewer-body');
+  const title = document.getElementById('presup-adj-viewer-title');
+  if(title) title.textContent = nombre||'Adjunto';
+  if(!body) return;
+  if((tipo||'').indexOf('image')>=0){ body.innerHTML = `<img src="${src}" style="max-width:100%;max-height:78vh;display:block;margin:0 auto;border-radius:8px;"/>`; }
+  else { body.innerHTML = `<iframe src="${src}" style="width:100%;height:78vh;border:none;border-radius:8px;background:#fff;"></iframe>`; }
+  openModal('presupAdjViewerModal');
+};
+window._presupAdjVer = function(){
+  const st = window._presupAdj;
+  if(st.file){ window._presupAdjViewSrc(URL.createObjectURL(st.file), st.file.type, st.file.name); }
+  else if(st.orig && st.orig.url){ window._presupAdjViewSrc(st.orig.url, st.orig.tipo, st.orig.nombre); }
+};
+window._presupAdjVerLink = function(){ if(window._presupEditViejoLink) window._presupAdjViewSrc(window._presupEditViejoLink, 'application/pdf', 'Documento adjunto (formato anterior)'); };
+window._presupAdjFmt = b => { b=parseFloat(b)||0; return b>=1048576 ? ((Math.round(b/1048576*10)/10)+' MB') : (Math.max(1,Math.round(b/1024))+' KB'); };
+window._presupAdjIcon = tipo => (tipo==='application/pdf')
+  ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>'
+  : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>';
+window._presupAdjReset = function(orig){ window._presupAdj = { orig:orig||null, file:null, remove:false }; };
+window._presupAdjActual = function(){ const st=window._presupAdj; if(st.file) return {nombre:st.file.name, tamano:st.file.size, tipo:st.file.type, nuevo:true}; if(st.orig && !st.remove) return {...st.orig, nuevo:false}; return null; };
+window._presupAdjPick = function(input, zoneId){
+  const f = input.files && input.files[0]; if(!f) return;
+  if(!window._presupAdjTipos.includes(f.type)){ showToast('Formato no permitido. Aceptamos PDF, JPG, PNG o WEBP.', 'error'); input.value=''; return; }
+  if(f.size > window._presupAdjMax){ showToast('El archivo pesa '+window._presupAdjFmt(f.size)+' y el máximo es 20MB. Comprimilo en ilovepdf.com y volvé a subirlo.', 'error'); input.value=''; return; }
+  window._presupAdj.file = f; window._presupAdj.remove = false;
+  window._presupAdjRender(zoneId); input.value='';
+};
+window._presupAdjRemove = function(zoneId){ const st=window._presupAdj; if(st.file){ st.file=null; } else if(st.orig && !st.remove){ st.remove=true; } window._presupAdjRender(zoneId); };
+window._presupAdjRender = function(zoneId){
+  const el = document.getElementById(zoneId); if(!el) return;
+  const cur = window._presupAdjActual();
+  if(cur){
+    el.innerHTML = `<div style="display:flex;align-items:center;gap:10px;background:#faf8f4;border:.5px solid #e7e5df;border-radius:10px;padding:10px 12px;">
+      <div onclick="_presupAdjVer()" title="Ver adjunto" style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;cursor:pointer;">
+        <div style="flex-shrink:0;color:#4a5e4d;">${window._presupAdjIcon(cur.tipo)}</div>
+        <div style="flex:1;min-width:0;"><div style="font-size:12px;color:#2c2c2a;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${cur.nombre}</div><div style="font-size:10px;color:#8a8578;">${window._presupAdjFmt(cur.tamano)}${cur.nuevo?'':' · guardado'} · toca para ver</div></div>
+      </div>
+      <button type="button" onclick="_presupAdjRemove('${zoneId}')" title="Quitar adjunto" style="width:36px;height:36px;min-width:36px;border-radius:8px;background:#f8ece9;border:.5px solid #d9a99f;color:#b0402f;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button>
+    </div>`;
+  } else {
+    const inputId = zoneId+'-input';
+    el.innerHTML = `<label for="${inputId}" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:1.5px dashed #c8c2b6;border-radius:10px;padding:16px;cursor:pointer;background:#fcfbf8;min-height:64px;text-align:center;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8a8578" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <span style="font-size:12px;color:#5f5e5a;font-weight:600;">Subir archivo</span>
+      <span style="font-size:10px;color:#8a8578;">PDF, JPG, PNG o WEBP · máx 20MB</span>
+      <input type="file" id="${inputId}" accept="application/pdf,image/jpeg,image/png,image/webp" onchange="_presupAdjPick(this,'${zoneId}')" style="display:none;"/>
+    </label>`;
+  }
+};
+window._presupAdjPersist = async function(presupId, onProgress){
+  const st = window._presupAdj;
+  if(st.file){
+    const s = await window._getStorageSDK();
+    const safe = (st.file.name||'archivo').replace(/[^\w.\-]+/g,'_');
+    const path = 'clientes/'+currentClientUID+'/presupuestos/'+presupId+'/'+Date.now()+'_'+safe;
+    const r = s.ref(s.storage, path);
+    await new Promise((res,rej)=>{ const task=s.uploadBytesResumable(r, st.file, {contentType:st.file.type}); task.on('state_changed', sn=>{ if(onProgress) onProgress(Math.round(sn.bytesTransferred/sn.totalBytes*100)); }, rej, ()=>res()); });
+    const url = await s.getDownloadURL(r);
+    if(st.orig && st.orig.path){ try{ await s.deleteObject(s.ref(s.storage, st.orig.path)); }catch(_){} }
+    return { nombre:st.file.name, url, tipo:st.file.type, tamano:st.file.size, path };
+  }
+  if(st.remove && st.orig){ try{ const s=await window._getStorageSDK(); await s.deleteObject(s.ref(s.storage, st.orig.path||st.orig.url)); }catch(_){} return null; }
+  return st.orig || null;
+};
+window._presupBuildDoc = async function(presupId, targetEl) {
+  if(!currentClientUID) { showToast('Error: no se pudo identificar el cliente.', 'error'); return false; }
   // Buscar en memoria primero, luego en Firestore si no se encuentra
   let p = [...(_mcPresupuestos||[]), ...(window._clientPresupuestos||[])].find(x=>x.id===presupId);
   if(!p) {
@@ -23512,7 +23685,7 @@ window.exportarPresupuestoPDF = async function(presupId) {
       if(snap.exists()) p = {id:snap.id,...snap.data()};
     } catch(e){}
   }
-  if(!p) { showToast('Presupuesto no encontrado', 'info'); return; }
+  if(!p) { showToast('Presupuesto no encontrado', 'info'); return false; }
 
   let negocio = {};
   try {
@@ -23589,11 +23762,40 @@ window.exportarPresupuestoPDF = async function(presupId) {
     </div>
   </div>`;
 
-  document.getElementById('presup-preview-content').innerHTML = html;
+  targetEl.innerHTML = html;
   window._presupPrintId = presupId;
   window._presupPrintNumero = numero;
   window._presupPrintCliente = p.cliente||cli.nombre||'cliente';
+  window._presupPrintAdjunto = p.adjunto || null;
+  window._presupPrintLink = (!p.adjunto && p.link) ? p.link : null;
+  return true;
+};
+window.exportarPresupuestoPDF = async function(presupId) {
+  const cont = document.getElementById('presup-preview-content');
+  if(!cont) return;
+  const ok = await window._presupBuildDoc(presupId, cont);
+  if(!ok) return;
+  const noteEl = document.getElementById('presup-preview-adjnote');
+  if(noteEl){
+    const a = window._presupPrintAdjunto;
+    if(a && a.nombre){ noteEl.textContent = 'La descarga incluye el adjunto: '+a.nombre; noteEl.style.display='block'; }
+    else { noteEl.style.display='none'; }
+  }
   openModal('presupPreviewModal');
+};
+window.descargarPresupuestoPDF = async function(presupId) {
+  showToast('Generando PDF...', 'info');
+  const cont = document.createElement('div');
+  cont.style.cssText = 'position:absolute;left:-9999px;top:0;width:780px;background:#fff;';
+  document.body.appendChild(cont);
+  try {
+    const ok = await window._presupBuildDoc(presupId, cont);
+    if(!ok) return;
+    const docEl = cont.querySelector('#presup-doc-new');
+    const fn = 'Presupuesto '+(window._presupPrintNumero||'')+' - '+(window._presupPrintCliente||'cliente')+'.pdf';
+    await window._presupExportUnificado(docEl, fn, window._presupPrintAdjunto, window._presupPrintLink);
+  } catch(e){ console.error('descargarPresupuestoPDF:', e); showToast('No se pudo generar el PDF. Probá de nuevo.', 'error'); }
+  finally { cont.remove(); }
 };
 
 window.imprimirPresupuesto = async function() {
@@ -23601,9 +23803,10 @@ window.imprimirPresupuesto = async function() {
   if(!doc) return;
   const btn = document.querySelector('#presupPreviewModal button[onclick="imprimirPresupuesto()"]');
   const originalText = btn ? btn.textContent : '';
-  if(btn) { btn.textContent = 'Generando...'; btn.disabled = true; }
+  if(btn) { btn.textContent = 'Generando PDF...'; btn.disabled = true; }
+  const filename = 'Presupuesto '+(window._presupPrintNumero||'')+' - '+(window._presupPrintCliente||'cliente')+'.pdf';
   try {
-    await window._pdfCaptureDoc(doc, 'Presupuesto '+(window._presupPrintNumero||'')+' - '+(window._presupPrintCliente||'cliente')+'.pdf');
+    await window._presupExportUnificado(doc, filename, window._presupPrintAdjunto, window._presupPrintLink);
   } catch(e) {
     console.error('Presupuesto PDF error:', e);
     showToast('No se pudo generar el PDF. Probá de nuevo.', 'error');
@@ -23710,8 +23913,8 @@ function renderClientPresup(list) {
           ${m>0?`<div style="font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:var(--text);">$${m.toLocaleString('es-AR')} <span style="font-size:10px;color:var(--text-l);font-weight:400;">${p.moneda||'ARS'}</span></div>`:''}
         </div>
         <div style="display:flex;gap:4px;justify-content:flex-end;align-items:center;padding-left:10px;">
-          ${p.link?`<button onclick="verPresupuestoPDF('${p.id}')" style="width:28px;height:28px;border-radius:6px;background:var(--sage-xl);border:.5px solid var(--sage-light);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Ver PDF"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--sage-dark)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>`:''}
-          <button onclick="exportarPresupuestoPDF('${p.id}')" style="width:28px;height:28px;border-radius:6px;background:var(--sage-xl);border:.5px solid var(--sage-light);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Ver / PDF"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--sage-dark)" stroke-width="1.8" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+          <button onclick="exportarPresupuestoPDF('${p.id}')" style="width:28px;height:28px;border-radius:6px;background:var(--sage-xl);border:.5px solid var(--sage-light);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Ver presupuesto"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--sage-dark)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+          <button onclick="descargarPresupuestoPDF('${p.id}')" style="width:28px;height:28px;border-radius:6px;background:var(--sage-xl);border:.5px solid var(--sage-light);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Descargar PDF"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--sage-dark)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
           ${!cobrado?`<button onclick="editClientPresup('${p.id}')" style="width:28px;height:28px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`:''}
           <button onclick="deleteClientPresup('${p.id}')" style="width:28px;height:28px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
         </div>
@@ -23747,8 +23950,8 @@ function renderClientPresup(list) {
         ${m>0?`<div style="font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;color:var(--text);">$${m.toLocaleString('es-AR')}</div><div style="font-size:11px;color:var(--text-l);">${p.moneda||'ARS'}</div>`:''}
       </div>
       <div style="display:flex;gap:4px;justify-content:flex-end;align-items:center;">
-        ${p.link?`<button onclick="verPresupuestoPDF('${p.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--sage-xl);border:.5px solid var(--sage-light);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Ver PDF"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--sage-dark)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>`:''}
-        <button onclick="exportarPresupuestoPDF('${p.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--sage-xl);border:.5px solid var(--sage-light);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Ver / PDF"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--sage-dark)" stroke-width="1.8" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+        <button onclick="exportarPresupuestoPDF('${p.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--sage-xl);border:.5px solid var(--sage-light);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Ver presupuesto"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--sage-dark)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+        <button onclick="descargarPresupuestoPDF('${p.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--sage-xl);border:.5px solid var(--sage-light);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Descargar PDF"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--sage-dark)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
         ${!cobrado?`<button onclick="editClientPresup('${p.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Editar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px;"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z" stroke="#888780" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`:''}
         <button onclick="deleteClientPresup('${p.id}')" style="width:26px;height:26px;border-radius:6px;background:var(--cream);border:.5px solid var(--cream-d);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Eliminar"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" stroke="#888780" stroke-width="1.2" stroke-linecap="round"/></svg></button>
       </div>
@@ -24578,7 +24781,13 @@ window.createClientPresup = async function() {
     creadoEn: new Date().toISOString()
   };
   try {
-    await addDoc(collection(db,'clientes',currentClientUID,'presupuestos'), data);
+    const _newRef = doc(collection(db,'clientes',currentClientUID,'presupuestos'));
+    let _adj = null;
+    try { _adj = await window._presupAdjPersist(_newRef.id, pct=>{ if(_cpBtn) _cpBtn.textContent='Subiendo… '+pct+'%'; }); }
+    catch(e){ showErr('Error al subir el adjunto: '+(e?.message||e)); if(_cpBtn){_cpBtn.disabled=false;_cpBtn.textContent='Guardar';} return; }
+    if(_adj) data.adjunto = _adj;
+    if(_cpBtn) _cpBtn.textContent='Guardando...';
+    await setDoc(_newRef, data);
     if(clienteId) await addHistorialEntry(clienteId, `Presupuesto creado: ${data.descripcion||''} · $${total.toLocaleString('es-AR')}`);
     const s=document.getElementById('cp-saved'); if(s) s.style.display='block';
     setTimeout(async()=>{
@@ -27597,7 +27806,7 @@ window.abrirReporteCC = function() {
   window._ccRepRerender();
   openModal('reporteCCModal');
 };
-window._pdfCaptureDoc = async function(docEl, filename) {
+window._pdfCaptureDoc = async function(docEl, filename, opts) {
   if(!docEl) return;
   if(!window.html2canvas) await new Promise((res,rej)=>{ const s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'; s.onload=res; s.onerror=rej; document.head.appendChild(s); });
   if(!window.jspdf) await new Promise((res,rej)=>{ const s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'; s.onload=res; s.onerror=rej; document.head.appendChild(s); });
@@ -27633,6 +27842,7 @@ window._pdfCaptureDoc = async function(docEl, filename) {
     drawFooter();
     first = false; y += sliceH;
   }
+  if(opts && opts.returnBytes) return pdf.output('arraybuffer');
   pdf.save((filename||'reporte.pdf').replace(/[\\/:*?"<>|]/g,'-'));
 };
 window._ccReportePDF = async function() {
@@ -30064,6 +30274,13 @@ window.eliminarPermanente = function(pathSegments, docId) {
   showConfirm('¿Eliminar permanentemente? Esta acción NO se puede deshacer.', async () => {
     try {
       const ref = doc(db, ...pathSegments, docId);
+      if(pathSegments[pathSegments.length-1]==='presupuestos'){
+        try {
+          const snap = await getDoc(ref);
+          const adj = snap.exists() && snap.data().adjunto;
+          if(adj && (adj.path||adj.url)){ const s = await window._getStorageSDK(); await s.deleteObject(s.ref(s.storage, adj.path||adj.url)); }
+        } catch(_e){}
+      }
       await deleteDoc(ref);
       _papeleraItems = _papeleraItems.filter(i => !(i.docId===docId && JSON.stringify(i.pathSegments)===JSON.stringify(pathSegments)));
       renderPapelera();
@@ -32889,6 +33106,7 @@ window.openModal = function(id) {
     if(numEl) numEl.value = window.formatPresupNumero(((window._mcPresupuestos)||[]).length + 1);
     ['cp-desc','cp-notas','cp-cliente-search','cp-cliente-id'].forEach(fid=>{const el=document.getElementById(fid);if(el)el.value='';}); 
     window._cpItems = []; if(window.renderCpItems) window.renderCpItems();
+    window._presupAdjReset(null); window._presupAdjRender('cp-adjunto-zone');
     const prodSel = document.getElementById('cp-item-prod');
     if(prodSel) {
       var cachedProds = (window._productosData && window._productosData.length) ? window._productosData : null;
