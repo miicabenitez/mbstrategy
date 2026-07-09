@@ -1388,6 +1388,10 @@ body.has-bcanc{padding-top:42px;}
 .rcc-mob{display:none;}
 /* KPIs mobile por clase (NO inline) para evitar que la regla .md [style*="grid-template-columns:1fr 1fr"] las apile */
 .rcc-kpis{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:14px;}
+/* Card de identidad: gradiente oscuro en la vista; en el PDF (.rcc-pdf-desk) se oculta y se usa el header plano estándar → PDF byte-identico */
+.rcc-ident-pdf{display:none !important;}
+.rcc-pdf-desk .rcc-ident-view{display:none !important;}
+.rcc-pdf-desk .rcc-ident-pdf{display:flex !important;}
 /* Anti-hairline (desktop + mobile): fondo del modal = gradiente del header verde → el subpíxel que asoma en la curva de las esquinas superiores es del mismo color (invisible), no blanco. Footer redondeado abajo (18px desktop; el media query mobile lo baja a 14px). */
 #reporteCliModal .md,#reporteCCModal .md,#reporteClientesModal .md,#reporteProvModal .md{background:linear-gradient(135deg,#1e2e22,#3d5242) !important;}
 #reporteCliModal .rcc-footer,#reporteCCModal .rcc-footer,#reporteClientesModal .rcc-footer,#reporteProvModal .rcc-footer{border-radius:0 0 18px 18px !important;}
@@ -24241,16 +24245,17 @@ window._cliReporteDocHTML = function(D) {
         </div>
       </div>`;
   };
-  const mobBody = `<div style="background:#4a5e4d;padding:10px 12px;">
-      <div style="font-size:7px;letter-spacing:1.5px;color:rgba(255,255,255,.7);text-transform:uppercase;font-weight:700;margin-bottom:4px;">Cuenta corriente · Cliente</div>
-      <div style="font-size:15px;font-weight:700;color:#fff;line-height:1.15;">${D.cliNombre}</div>
-      ${D.subt?`<div style="font-size:9px;color:rgba(255,255,255,.82);margin-top:3px;">${D.subt}</div>`:''}
-      <div style="font-size:8px;color:rgba(255,255,255,.55);margin-top:5px;">Emitido por ${D.negocioNombre} · ${D.fechaEmision}</div>
+  const mobBody = `<div style="background:linear-gradient(135deg,#1a3528,#0d1f1a,#060e0b);border-radius:14px;padding:14px 16px;margin:12px 12px 0;">
+      <div style="font-size:9px;letter-spacing:1.5px;color:#b09088;text-transform:uppercase;font-weight:700;margin-bottom:5px;">Cuenta corriente · Cliente</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:23px;font-weight:600;color:#f4f0ea;line-height:1.1;">${D.cliNombre}</div>
+      ${D.subt?`<div style="font-size:11px;color:rgba(244,240,234,.7);margin-top:4px;">${D.subt}</div>`:''}
+      <div style="font-size:9px;color:rgba(244,240,234,.45);margin-top:6px;">Emitido por ${D.negocioNombre} · ${D.fechaEmision}</div>
+      <div style="font-size:9px;color:rgba(244,240,234,.45);margin-top:2px;">Período: ${D.periodoLabel}</div>
     </div>
     <div style="padding:12px 12px 16px;">${D.bloques.map(bloqueMob).join('')}</div>`;
   return `<div id="cli-reporte-doc">
     <div class="rcc-desk">
-      <div style="background:#4a5e4d;padding:22px 26px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;">
+      <div class="rcc-ident-pdf" style="background:#4a5e4d;padding:22px 26px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;">
         <div style="min-width:0;">
           <div style="font-size:9px;letter-spacing:2px;color:rgba(255,255,255,.72);text-transform:uppercase;font-weight:700;margin-bottom:6px;">Cuenta corriente · Cliente</div>
           <div style="font-size:18px;font-weight:700;color:#fff;line-height:1.15;">${D.cliNombre}</div>
@@ -24263,7 +24268,16 @@ window._cliReporteDocHTML = function(D) {
           <div style="font-size:9px;color:rgba(255,255,255,.6);margin-top:4px;">Período: ${D.periodoLabel}</div>
         </div>
       </div>
-      <div style="padding:22px 26px;">${D.bloques.map(bloqueHtml).join('')}</div>
+      <div style="padding:22px 26px;">
+        <div class="rcc-ident-view" style="background:linear-gradient(135deg,#1a3528,#0d1f1a,#060e0b);border-radius:14px;padding:20px 22px;margin-bottom:18px;">
+          <div style="font-size:10px;letter-spacing:2px;color:#b09088;text-transform:uppercase;font-weight:700;margin-bottom:8px;">Cuenta corriente · Cliente</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:27px;font-weight:600;color:#f4f0ea;line-height:1.1;">${D.cliNombre}</div>
+          ${D.subt?`<div style="font-size:12px;color:rgba(244,240,234,.7);margin-top:5px;">${D.subt}</div>`:''}
+          <div style="font-size:10px;color:rgba(244,240,234,.45);margin-top:8px;">Emitido por ${D.negocioNombre} · ${D.fechaEmision}</div>
+          <div style="font-size:10px;color:rgba(244,240,234,.45);margin-top:3px;">Período: ${D.periodoLabel}</div>
+        </div>
+        ${D.bloques.map(bloqueHtml).join('')}
+      </div>
     </div>
     <div class="rcc-mob">${mobBody}</div>
     <div data-pdf-footer style="background:#4a5e4d;padding:12px;text-align:center;">
@@ -24276,7 +24290,6 @@ window.abrirReporteCli = async function(clienteId) {
   if(!currentClientUID) { console.warn('[reporteCli] abortado: sin currentClientUID'); return; }
   if(!clienteId) { console.warn('[reporteCli] abortado: sin clienteId — abrí la ficha de un cliente primero'); showToast('Abrí la ficha de un cliente primero', 'info'); return; }
   try {
-    showToast('Preparando reporte…', 'info');
     await window._ensureMcData();
     window._cliReporteId = clienteId;
     window._repRange.cli = null;
@@ -24583,7 +24596,6 @@ window._cliGralRerender = async function(){
 };
 window.abrirReporteClientes = async function(){
   if(!currentClientUID) return;
-  showToast('Preparando reporte…','info');
   window._cliGralView='cuentas';
   window._repRange.cligral=null;
   window._cliGralSearch='';
@@ -24765,7 +24777,6 @@ window._presRenderDoc = function(){ const wrap=document.getElementById('pres-doc
 window._presRerender = function(){ window._presD = window._presData(window._repRange.pres); window._presRenderDoc(); };
 window.abrirReportePresup = async function(){
   if(!currentClientUID) return;
-  showToast('Preparando reporte…','info');
   window._presEstado='Todos'; window._repRange.pres=null; window._presSearch='';
   window._presRenderBar();
   try { await window._presLoadRaw(); window._presRerender(); }
@@ -28149,11 +28160,12 @@ window._ccReporteDocHTML = function(L) {
     <div style="font-size:7px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:${tone?'#7a4e46':'#5f5e5a'};margin-bottom:3px;">${lbl}</div>
     <div style="font-size:12px;font-weight:700;color:${tone?'#7a4e46':'#1e2e22'};">${fmt(val)}</div></div>`;
   const cardsMob = L.filas.length ? L.filas.map(mMovCard).join('') : `<div style="text-align:center;color:#8a8578;font-size:11px;padding:14px;">Sin movimientos registrados.</div>`;
-  const mobBody = `<div style="background:#4a5e4d;padding:10px 12px;">
-      <div style="font-size:7px;letter-spacing:1.5px;color:rgba(255,255,255,.7);text-transform:uppercase;font-weight:700;margin-bottom:4px;">Cuenta corriente · Proveedor</div>
-      <div style="font-size:15px;font-weight:700;color:#fff;line-height:1.15;">${L.provNombre}</div>
-      ${datosProv?`<div style="font-size:9px;color:rgba(255,255,255,.82);margin-top:3px;">${datosProv}</div>`:''}
-      <div style="font-size:8px;color:rgba(255,255,255,.55);margin-top:5px;">Emitido por ${L.negocioNombre} · ${L.fechaEmision}</div>
+  const mobBody = `<div style="background:linear-gradient(135deg,#1a3528,#0d1f1a,#060e0b);border-radius:14px;padding:14px 16px;margin:12px 12px 0;">
+      <div style="font-size:9px;letter-spacing:1.5px;color:#b09088;text-transform:uppercase;font-weight:700;margin-bottom:5px;">Cuenta corriente · Proveedor</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:23px;font-weight:600;color:#f4f0ea;line-height:1.1;">${L.provNombre}</div>
+      ${datosProv?`<div style="font-size:11px;color:rgba(244,240,234,.7);margin-top:4px;">${datosProv}</div>`:''}
+      <div style="font-size:9px;color:rgba(244,240,234,.45);margin-top:6px;">Emitido por ${L.negocioNombre} · ${L.fechaEmision}</div>
+      <div style="font-size:9px;color:rgba(244,240,234,.45);margin-top:2px;">Período: ${L.periodoLabel}</div>
     </div>
     <div style="padding:12px 12px 16px;">
       <div class="rcc-kpis">
@@ -28170,7 +28182,7 @@ window._ccReporteDocHTML = function(L) {
     </div>`;
   return `<div id="cc-reporte-doc">
     <div class="rcc-desk">
-      <div style="background:#4a5e4d;padding:22px 26px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;">
+      <div class="rcc-ident-pdf" style="background:#4a5e4d;padding:22px 26px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;">
         <div style="min-width:0;">
           <div style="font-size:9px;letter-spacing:2px;color:rgba(255,255,255,.72);text-transform:uppercase;font-weight:700;margin-bottom:6px;">Cuenta corriente · Proveedor</div>
           <div style="font-size:18px;font-weight:700;color:#fff;line-height:1.15;">${L.provNombre}</div>
@@ -28184,6 +28196,13 @@ window._ccReporteDocHTML = function(L) {
         </div>
       </div>
       <div style="padding:22px 26px;">
+        <div class="rcc-ident-view" style="background:linear-gradient(135deg,#1a3528,#0d1f1a,#060e0b);border-radius:14px;padding:20px 22px;margin-bottom:18px;">
+          <div style="font-size:10px;letter-spacing:2px;color:#b09088;text-transform:uppercase;font-weight:700;margin-bottom:8px;">Cuenta corriente · Proveedor</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:27px;font-weight:600;color:#f4f0ea;line-height:1.1;">${L.provNombre}</div>
+          ${datosProv?`<div style="font-size:12px;color:rgba(244,240,234,.7);margin-top:5px;">${datosProv}</div>`:''}
+          <div style="font-size:10px;color:rgba(244,240,234,.45);margin-top:8px;">Emitido por ${L.negocioNombre} · ${L.fechaEmision}</div>
+          <div style="font-size:10px;color:rgba(244,240,234,.45);margin-top:3px;">Período: ${L.periodoLabel}</div>
+        </div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px;">
           ${caja('Total comprado',L.comprado,false)}${caja('Total pagado',L.pagado,false)}${caja('Saldo pendiente',L.saldo,true)}
         </div>
@@ -28417,7 +28436,6 @@ window._provResumenDocHTML = function(D) {
 };
 window.abrirReporteProv = async function() {
   if(!currentClientUID) return;
-  showToast('Preparando reporte…', 'info');
   window._repRange.prov = null;
   window._repRenderPeriodoBar('prov');
   await window._provRepRerender();
