@@ -189,11 +189,14 @@ exports.handler = async (event) => {
     const mpRes = await fetch(`https://api.mercadopago.com/preapproval/${subscriptionId}`, {
       headers: { 'Authorization': `Bearer ${process.env.MP_ACCESS_TOKEN}` }
     });
-    const sub = await mpRes.json();
+    let sub = null;
+    try { sub = await mpRes.json(); } catch (_) { sub = null; }
     console.log('SUB COMPLETO:', JSON.stringify(sub));
-    if (!mpRes.ok) {
-      console.error('MP fetch error:', sub);
-      return { statusCode: 502, headers: HEADERS, body: JSON.stringify({ error: 'Error consultando MP' }) };
+    // Preapproval inexistente (ej. simulación con Data ID fantasma), inaccesible o sin status → ignorar limpio.
+    // Nunca 5xx: MP interpretaría un bug nuestro y reintentaría el mismo evento por horas.
+    if (!mpRes.ok || !sub || !sub.status) {
+      console.warn(`[mp-webhook] preapproval ${subscriptionId} inexistente o sin status (MP ${mpRes.status}) — ignorado`);
+      return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ ignored: true, reason: 'preapproval inexistente o inaccesible en MP' }) };
     }
     const externalRef = sub.external_reference;
     if (!externalRef) {
@@ -319,9 +322,11 @@ exports.handler = async (event) => {
         return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ ok: true, msg: 'Cliente creado' }) };
 
       } catch (createErr) {
-        console.error('Error creando cliente desde pendiente:', createErr);
-        await pendienteSnap.ref.update({ estado: 'error', error: createErr.message });
-        return { statusCode: 500, headers: HEADERS, body: JSON.stringify({ error: 'Error creando cuenta' }) };
+        console.error('[mp-webhook] Error creando cliente desde pendiente (revisar manual):', createErr && createErr.stack ? createErr.stack : createErr);
+        try { await pendienteSnap.ref.update({ estado: 'error', error: createErr.message || String(createErr) }); } catch (_) {}
+        try { await pushoverMsg('🚨 Alta con error', `${pendiente.email || ''} · plan ${pendiente.plan || '—'} — revisar pendiente ${externalRef}`); } catch (_) {}
+        // 200 a propósito: el pendiente queda 'error' para recuperación manual; un 5xx haría reintentar a MP sin efecto (la dedup ya bloquea).
+        return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ ignored: true, reason: 'error creando cuenta (pendiente marcado, revisar manual)' }) };
       }
     } else if (pendienteSnap.exists) {
       // Pendiente existe pero no autorizado aún — no caer al flujo interno
@@ -381,7 +386,10 @@ exports.handler = async (event) => {
 
     return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ ok: true }) };
   } catch (err) {
-    console.error('Error mp-webhook:', err);
-    return { statusCode: 500, headers: HEADERS, body: JSON.stringify({ error: 'Error interno' }) };
+    // Robustez: cualquier excepción no prevista se loguea pero devolvemos 200. Un 5xx haría que MP
+    // reintente el mismo evento por horas por un bug nuestro. La dedup por x-request-id ya evita
+    // reprocesar si el error fue transitorio y MP reintenta igual.
+    console.error('[mp-webhook] excepción no prevista:', err && err.stack ? err.stack : err);
+    return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ ignored: true, reason: 'error interno (ver logs)' }) };
   }
 };
