@@ -1381,6 +1381,29 @@ body.has-bpf{padding-top:44px;}
 #reporteCCModal .rcc-footer,#reporteProvModal .rcc-footer,#reporteCliModal .rcc-footer,#reporteClientesModal .rcc-footer,#reportePresupModal .rcc-footer{flex-shrink:0;display:flex;gap:8px;flex-wrap:wrap;padding:14px 22px;border-top:.5px solid #e7e5df;background:#fff;}
 #cc-reporte-doc,#prov-resumen-doc,#cli-reporte-doc,#cli-gral-doc,#presup-doc-new,#pres-doc{width:780px;margin:0 auto;background:#fff;box-shadow:0 2px 14px rgba(30,46,34,.12);font-family:'DM Sans',sans-serif;color:#2c2c2a;}
 @media(max-width:640px){#presup-doc-new,#pres-doc{width:100%;}}
+/* ── Reportes CC individual (cliente + proveedor): rediseño mobile-first ≤640px. Desktop intacto ── */
+.rcc-mob{display:none;}
+/* KPIs mobile por clase (NO inline) para evitar que la regla .md [style*="grid-template-columns:1fr 1fr"] las apile */
+.rcc-kpis{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:14px;}
+/* PDF/Excel: forzar layout desktop 780px durante html2canvas, independiente del viewport (mayor especificidad que el media query) */
+#cli-reporte-doc.rcc-pdf-desk .rcc-desk,#cc-reporte-doc.rcc-pdf-desk .rcc-desk{display:block !important;}
+#cli-reporte-doc.rcc-pdf-desk .rcc-mob,#cc-reporte-doc.rcc-pdf-desk .rcc-mob{display:none !important;}
+#cli-reporte-doc.rcc-pdf-desk,#cc-reporte-doc.rcc-pdf-desk{width:780px !important;}
+@media(max-width:640px){
+  #cli-reporte-doc,#cc-reporte-doc{width:100% !important;}
+  #reporteCliModal .rcc-desk,#reporteCCModal .rcc-desk{display:none !important;}
+  #reporteCliModal .rcc-mob,#reporteCCModal .rcc-mob{display:block !important;}
+  #reporteCliModal .rcc-body,#reporteCCModal .rcc-body{overflow-x:hidden !important;}
+  #reporteCliModal .modal-header-verde,#reporteCCModal .modal-header-verde{padding:14px 16px !important;}
+  #reporteCliModal .modal-header-verde>div:last-child,#reporteCCModal .modal-header-verde>div:last-child{font-size:18px !important;line-height:1.15 !important;}
+  #reporteCliModal .mc2,#reporteCCModal .mc2{font-size:20px !important;width:40px;height:40px;display:flex;align-items:center;justify-content:center;top:6px !important;right:6px !important;}
+  #reporteCliModal .rep-periodo>div,#reporteCCModal .rep-periodo>div{padding:8px 12px !important;gap:6px !important;flex-wrap:nowrap !important;overflow-x:auto;}
+  #reporteCliModal .rep-periodo>div>span:first-child,#reporteCCModal .rep-periodo>div>span:first-child{font-size:8px !important;}
+  #reporteCliModal .rep-chip,#reporteCCModal .rep-chip{font-size:10px !important;padding:3px 10px !important;}
+  #reporteCliModal .rep-chip svg,#reporteCCModal .rep-chip svg{width:10px !important;height:10px !important;}
+  #reporteCliModal .rcc-footer,#reporteCCModal .rcc-footer{flex-direction:column !important;}
+  #reporteCliModal .rcc-footer .bp,#reporteCliModal .rcc-footer .bs,#reporteCCModal .rcc-footer .bp,#reporteCCModal .rcc-footer .bs{width:100% !important;flex:none !important;min-width:0 !important;}
+}
 @media(max-width:640px){
   #reporteCCModal .md,#reporteProvModal .md,#reporteCliModal .md,#reporteClientesModal .md,#reportePresupModal .md{width:100%;max-width:100%;margin:0 6px;max-height:94vh;}
   #reporteCCModal .rcc-body,#reporteProvModal .rcc-body,#reporteCliModal .rcc-body,#reporteClientesModal .rcc-body,#reportePresupModal .rcc-body{padding:10px;}
@@ -24129,21 +24152,71 @@ window._cliReporteDocHTML = function(D) {
         </div>
       </div>`;
   };
-  return `<div id="cli-reporte-doc">
-    <div style="background:#4a5e4d;padding:22px 26px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;">
-      <div style="min-width:0;">
-        <div style="font-size:9px;letter-spacing:2px;color:rgba(255,255,255,.72);text-transform:uppercase;font-weight:700;margin-bottom:6px;">Cuenta corriente · Cliente</div>
-        <div style="font-size:18px;font-weight:700;color:#fff;line-height:1.15;">${D.cliNombre}</div>
-        ${D.subt?`<div style="font-size:11px;color:rgba(255,255,255,.82);margin-top:4px;">${D.subt}</div>`:''}
+  // ── Mobile (≤640px): header compacto, KPIs chicos, movimientos como cards ──
+  const mFecha = r => r.fecha ? new Date(r.fecha+'T12:00:00').toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'2-digit'}) : '—';
+  const mMovCard = (r, mon) => {
+    if(r.esAnterior) return `<div style="background:#f1efe8;border:.5px solid #e7e5df;border-radius:6px;padding:9px 10px;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center;gap:8px;">
+      <div style="font-size:9px;font-weight:700;letter-spacing:.3px;color:#5f5e5a;">${r.concepto}</div>
+      <div style="font-size:11px;font-weight:700;color:#1e2e22;white-space:nowrap;">${money(r.saldo,mon)}</div></div>`;
+    const esCargo = (parseFloat(r.debe)||0) > 0;
+    const montoTxt = esCargo ? ('−'+money(r.debe,mon)) : ('+'+money(r.haber,mon));
+    const montoCol = esCargo ? '#7a4e46' : '#4a5e4d';
+    return `<div style="background:#fff;border:.5px solid #e7e5df;border-radius:6px;padding:9px 10px;margin-bottom:5px;">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;">
+        <span style="font-size:9px;color:#8a8578;white-space:nowrap;">${mFecha(r)}</span>
+        <span style="font-size:11px;font-weight:700;color:${montoCol};white-space:nowrap;">${montoTxt}</span>
       </div>
-      <div style="text-align:right;flex-shrink:0;">
-        <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1px;">emitido por</div>
-        <div style="font-size:11px;font-weight:700;color:#fff;margin-top:2px;">${D.negocioNombre}</div>
-        <div style="font-size:10px;color:rgba(255,255,255,.72);margin-top:2px;">${D.fechaEmision}</div>
-        <div style="font-size:9px;color:rgba(255,255,255,.6);margin-top:4px;">Período: ${D.periodoLabel}</div>
+      <div style="font-size:11px;font-weight:500;color:#1e2e22;margin-top:3px;line-height:1.3;">${r.concepto}</div>
+      <div style="font-size:9px;color:#8a8578;margin-top:3px;">Saldo: <span style="font-weight:700;color:#5f5e5a;">${money(r.saldo,mon)}</span></div>
+    </div>`;
+  };
+  const bloqueMob = b => {
+    const mon = b.moneda;
+    const mk = (lbl,val,tone) => `<div style="background:#f1efe8;border-radius:8px;padding:8px 6px;text-align:center;${tone?('border:1.2px solid '+(tone==='verde'?'#4a5e4d':'#b09088')+';'):''}">
+      <div style="font-size:7px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:${tone==='verde'?'#4a5e4d':(tone?'#7a4e46':'#5f5e5a')};margin-bottom:3px;">${lbl}</div>
+      <div style="font-size:12px;font-weight:700;color:${tone==='verde'?'#4a5e4d':(tone?'#7a4e46':'#1e2e22')};">${money(val,mon)}</div></div>`;
+    const saldoKpi = b.aFavor ? mk('Saldo a favor', Math.abs(b.saldo), 'verde') : mk('Pendiente', b.saldo, 'terra');
+    const monLabel = D.hayUSD ? `<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#4a5e4d;margin:${mon==='ARS'?'0':'18px'} 0 8px;">${mon==='USD'?'En dólares (USD)':'En pesos (ARS)'}</div>` : '';
+    const cards = b.filas.length ? b.filas.map(r=>mMovCard(r,mon)).join('') : `<div style="text-align:center;color:#8a8578;font-size:11px;padding:14px;">Sin movimientos.</div>`;
+    const cierreCol = b.aFavor ? '#4a5e4d' : '#7a4e46';
+    return `${monLabel}
+      <div class="rcc-kpis">
+        ${mk('Vendido',b.vendido,false)}${mk('Cobrado',b.cobrado,false)}${saldoKpi}
       </div>
+      <div style="font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#5f5e5a;margin-bottom:6px;">Movimientos</div>
+      ${cards}
+      <div style="display:flex;justify-content:center;margin-top:10px;">
+        <div style="background:#fff;border:1.2px solid ${cierreCol};border-radius:8px;padding:6px 12px;text-align:center;">
+          <div style="font-size:8px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:${cierreCol};">${b.aFavor?'Saldo a favor al':'Saldo al'} ${D.fechaCierre}${mon==='USD'?' (USD)':''}</div>
+          <div style="font-size:13px;font-weight:700;color:${cierreCol};margin-top:2px;">${money(Math.abs(b.saldo),mon)}</div>
+        </div>
+      </div>`;
+  };
+  const mobBody = `<div style="background:#4a5e4d;padding:10px 12px;">
+      <div style="font-size:7px;letter-spacing:1.5px;color:rgba(255,255,255,.7);text-transform:uppercase;font-weight:700;margin-bottom:4px;">Cuenta corriente · Cliente</div>
+      <div style="font-size:15px;font-weight:700;color:#fff;line-height:1.15;">${D.cliNombre}</div>
+      ${D.subt?`<div style="font-size:9px;color:rgba(255,255,255,.82);margin-top:3px;">${D.subt}</div>`:''}
+      <div style="font-size:8px;color:rgba(255,255,255,.55);margin-top:5px;">Emitido por ${D.negocioNombre} · ${D.fechaEmision}</div>
     </div>
-    <div style="padding:22px 26px;">${D.bloques.map(bloqueHtml).join('')}</div>
+    <div style="padding:12px 12px 16px;">${D.bloques.map(bloqueMob).join('')}</div>`;
+  return `<div id="cli-reporte-doc">
+    <div class="rcc-desk">
+      <div style="background:#4a5e4d;padding:22px 26px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;">
+        <div style="min-width:0;">
+          <div style="font-size:9px;letter-spacing:2px;color:rgba(255,255,255,.72);text-transform:uppercase;font-weight:700;margin-bottom:6px;">Cuenta corriente · Cliente</div>
+          <div style="font-size:18px;font-weight:700;color:#fff;line-height:1.15;">${D.cliNombre}</div>
+          ${D.subt?`<div style="font-size:11px;color:rgba(255,255,255,.82);margin-top:4px;">${D.subt}</div>`:''}
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1px;">emitido por</div>
+          <div style="font-size:11px;font-weight:700;color:#fff;margin-top:2px;">${D.negocioNombre}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.72);margin-top:2px;">${D.fechaEmision}</div>
+          <div style="font-size:9px;color:rgba(255,255,255,.6);margin-top:4px;">Período: ${D.periodoLabel}</div>
+        </div>
+      </div>
+      <div style="padding:22px 26px;">${D.bloques.map(bloqueHtml).join('')}</div>
+    </div>
+    <div class="rcc-mob">${mobBody}</div>
     <div data-pdf-footer style="background:#4a5e4d;padding:12px;text-align:center;">
       <span style="font-size:10px;color:rgba(255,255,255,.85);">Generado con MB Strategy · mbstrategy.com.ar</span>
     </div>
@@ -24176,9 +24249,10 @@ window._cliReportePDF = async function() {
   const orig = btn?btn.textContent:''; if(btn){ btn.textContent='Generando...'; btn.disabled=true; }
   try {
     const D = window._cliReporteD || {};
+    doc.classList.add('rcc-pdf-desk'); // PDF siempre en layout desktop A4, aunque se genere desde mobile
     await window._pdfCaptureDoc(doc, 'CC '+(D.cliNombre||'Cliente')+' - '+(D.tieneRango ? D.periodoLabel.replace(/ — /g,' a ') : (D.fechaEmision||''))+'.pdf');
   } catch(e){ console.error('Reporte cliente PDF error:', e); showToast('No se pudo generar el PDF. Probá de nuevo.', 'error'); }
-  finally { if(btn){ btn.textContent=orig; btn.disabled=false; } }
+  finally { doc.classList.remove('rcc-pdf-desk'); if(btn){ btn.textContent=orig; btn.disabled=false; } }
 };
 window._cliReporteExcel = async function() {
   const D = window._cliReporteD || await window._cliBuildLedger(window._cliReporteId, window._repRange.cli);
@@ -27853,37 +27927,81 @@ window._ccReporteDocHTML = function(L) {
   const caja = (lbl,val,ter)=>`<div style="background:#f1efe8;border-radius:10px;padding:14px;${ter?'border:1.5px solid #b09088;':''}">
     <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:${ter?'#7a4e46':'#5f5e5a'};font-weight:700;margin-bottom:6px;">${lbl}</div>
     <div style="font-size:19px;font-weight:700;color:${ter?'#7a4e46':'#1e2e22'};">${fmt(val)}</div></div>`;
-  return `<div id="cc-reporte-doc">
-    <div style="background:#4a5e4d;padding:22px 26px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;">
-      <div style="min-width:0;">
-        <div style="font-size:9px;letter-spacing:2px;color:rgba(255,255,255,.72);text-transform:uppercase;font-weight:700;margin-bottom:6px;">Cuenta corriente · Proveedor</div>
-        <div style="font-size:18px;font-weight:700;color:#fff;line-height:1.15;">${L.provNombre}</div>
-        ${datosProv?`<div style="font-size:11px;color:rgba(255,255,255,.82);margin-top:4px;">${datosProv}</div>`:''}
+  // ── Mobile (≤640px): header compacto, KPIs chicos, movimientos como cards ──
+  const mFecha = r => r.fecha ? new Date(r.fecha+'T12:00:00').toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'2-digit'}) : '—';
+  const mMovCard = r => {
+    if(r.esAnterior) return `<div style="background:#f1efe8;border:.5px solid #e7e5df;border-radius:6px;padding:9px 10px;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center;gap:8px;">
+      <div style="font-size:9px;font-weight:700;letter-spacing:.3px;color:#5f5e5a;">${r.concepto}</div>
+      <div style="font-size:11px;font-weight:700;color:#1e2e22;white-space:nowrap;">${fmt(r.saldo)}</div></div>`;
+    const esCargo = (parseFloat(r.debe)||0) > 0;
+    const montoTxt = esCargo ? ('−'+fmt(r.debe)) : ('+'+fmt(r.haber));
+    const montoCol = esCargo ? '#7a4e46' : '#4a5e4d';
+    return `<div style="background:#fff;border:.5px solid #e7e5df;border-radius:6px;padding:9px 10px;margin-bottom:5px;">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;">
+        <span style="font-size:9px;color:#8a8578;white-space:nowrap;">${mFecha(r)}</span>
+        <span style="font-size:11px;font-weight:700;color:${montoCol};white-space:nowrap;">${montoTxt}</span>
       </div>
-      <div style="text-align:right;flex-shrink:0;">
-        <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1px;">emitido por</div>
-        <div style="font-size:11px;font-weight:700;color:#fff;margin-top:2px;">${L.negocioNombre}</div>
-        <div style="font-size:10px;color:rgba(255,255,255,.72);margin-top:2px;">${L.fechaEmision}</div>
-        <div style="font-size:9px;color:rgba(255,255,255,.6);margin-top:4px;">Período: ${L.periodoLabel}</div>
-      </div>
+      <div style="font-size:11px;font-weight:500;color:#1e2e22;margin-top:3px;line-height:1.3;">${r.concepto}</div>
+      <div style="font-size:9px;color:#8a8578;margin-top:3px;">Saldo: <span style="font-weight:700;color:#5f5e5a;">${fmt(r.saldo)}</span></div>
+    </div>`;
+  };
+  const mk = (lbl,val,tone) => `<div style="background:#f1efe8;border-radius:8px;padding:8px 6px;text-align:center;${tone?'border:1.2px solid #b09088;':''}">
+    <div style="font-size:7px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:${tone?'#7a4e46':'#5f5e5a'};margin-bottom:3px;">${lbl}</div>
+    <div style="font-size:12px;font-weight:700;color:${tone?'#7a4e46':'#1e2e22'};">${fmt(val)}</div></div>`;
+  const cardsMob = L.filas.length ? L.filas.map(mMovCard).join('') : `<div style="text-align:center;color:#8a8578;font-size:11px;padding:14px;">Sin movimientos registrados.</div>`;
+  const mobBody = `<div style="background:#4a5e4d;padding:10px 12px;">
+      <div style="font-size:7px;letter-spacing:1.5px;color:rgba(255,255,255,.7);text-transform:uppercase;font-weight:700;margin-bottom:4px;">Cuenta corriente · Proveedor</div>
+      <div style="font-size:15px;font-weight:700;color:#fff;line-height:1.15;">${L.provNombre}</div>
+      ${datosProv?`<div style="font-size:9px;color:rgba(255,255,255,.82);margin-top:3px;">${datosProv}</div>`:''}
+      <div style="font-size:8px;color:rgba(255,255,255,.55);margin-top:5px;">Emitido por ${L.negocioNombre} · ${L.fechaEmision}</div>
     </div>
-    <div style="padding:22px 26px;">
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px;">
-        ${caja('Total comprado',L.comprado,false)}${caja('Total pagado',L.pagado,false)}${caja('Saldo pendiente',L.saldo,true)}
+    <div style="padding:12px 12px 16px;">
+      <div class="rcc-kpis">
+        ${mk('Comprado',L.comprado,false)}${mk('Pagado',L.pagado,false)}${mk('Pendiente',L.saldo,true)}
       </div>
-      <div style="border-radius:10px;overflow:hidden;border:.5px solid #e7e5df;">
-        <table style="width:100%;border-collapse:collapse;font-size:12px;">
-          <thead><tr style="background:#4a5e4d;">${th('Fecha')}${th('Concepto')}${th('Debe')}${th('Haber')}${th('Saldo')}</tr></thead>
-          <tbody>${filasHtml}</tbody>
-        </table>
+      <div style="font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#5f5e5a;margin-bottom:6px;">Movimientos</div>
+      ${cardsMob}
+      <div style="display:flex;justify-content:center;margin-top:10px;">
+        <div style="background:#fff;border:1.2px solid #7a4e46;border-radius:8px;padding:6px 12px;text-align:center;">
+          <div style="font-size:8px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#7a4e46;">Saldo al ${L.fechaCierre}</div>
+          <div style="font-size:13px;font-weight:700;color:#7a4e46;margin-top:2px;">${fmt(L.saldo)}</div>
+        </div>
       </div>
-      <div style="display:flex;justify-content:flex-end;margin-top:16px;">
-        <div style="background:#fff;border:1.5px solid #b09088;border-radius:10px;padding:12px 18px;display:flex;align-items:center;gap:14px;">
-          <span style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#7a4e46;font-weight:700;">Saldo al ${L.fechaCierre}</span>
-          <span style="font-size:18px;font-weight:700;color:#7a4e46;">${fmt(L.saldo)}</span>
+    </div>`;
+  return `<div id="cc-reporte-doc">
+    <div class="rcc-desk">
+      <div style="background:#4a5e4d;padding:22px 26px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;">
+        <div style="min-width:0;">
+          <div style="font-size:9px;letter-spacing:2px;color:rgba(255,255,255,.72);text-transform:uppercase;font-weight:700;margin-bottom:6px;">Cuenta corriente · Proveedor</div>
+          <div style="font-size:18px;font-weight:700;color:#fff;line-height:1.15;">${L.provNombre}</div>
+          ${datosProv?`<div style="font-size:11px;color:rgba(255,255,255,.82);margin-top:4px;">${datosProv}</div>`:''}
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1px;">emitido por</div>
+          <div style="font-size:11px;font-weight:700;color:#fff;margin-top:2px;">${L.negocioNombre}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.72);margin-top:2px;">${L.fechaEmision}</div>
+          <div style="font-size:9px;color:rgba(255,255,255,.6);margin-top:4px;">Período: ${L.periodoLabel}</div>
+        </div>
+      </div>
+      <div style="padding:22px 26px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px;">
+          ${caja('Total comprado',L.comprado,false)}${caja('Total pagado',L.pagado,false)}${caja('Saldo pendiente',L.saldo,true)}
+        </div>
+        <div style="border-radius:10px;overflow:hidden;border:.5px solid #e7e5df;">
+          <table style="width:100%;border-collapse:collapse;font-size:12px;">
+            <thead><tr style="background:#4a5e4d;">${th('Fecha')}${th('Concepto')}${th('Debe')}${th('Haber')}${th('Saldo')}</tr></thead>
+            <tbody>${filasHtml}</tbody>
+          </table>
+        </div>
+        <div style="display:flex;justify-content:flex-end;margin-top:16px;">
+          <div style="background:#fff;border:1.5px solid #b09088;border-radius:10px;padding:12px 18px;display:flex;align-items:center;gap:14px;">
+            <span style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#7a4e46;font-weight:700;">Saldo al ${L.fechaCierre}</span>
+            <span style="font-size:18px;font-weight:700;color:#7a4e46;">${fmt(L.saldo)}</span>
+          </div>
         </div>
       </div>
     </div>
+    <div class="rcc-mob">${mobBody}</div>
     <div id="cc-reporte-footer" data-pdf-footer style="background:#4a5e4d;padding:12px;text-align:center;">
       <span style="font-size:10px;color:rgba(255,255,255,.85);">Generado con MB Strategy · mbstrategy.com.ar</span>
     </div>
@@ -27943,9 +28061,10 @@ window._ccReportePDF = async function() {
   if(btn){ btn.textContent='Generando...'; btn.disabled=true; }
   try {
     const L = window._ccReporteLedger || {};
+    doc.classList.add('rcc-pdf-desk'); // PDF siempre en layout desktop A4, aunque se genere desde mobile
     await window._pdfCaptureDoc(doc, 'CC '+(L.provNombre||'Proveedor')+' - '+(L.tieneRango ? L.periodoLabel.replace(/ — /g,' a ') : ((L.negocioNombre||'')+' - '+(L.fechaEmision||'')))+'.pdf');
   } catch(e){ console.error('Reporte PDF error:', e); showToast('No se pudo generar el PDF. Probá de nuevo.', 'error'); }
-  finally { if(btn){ btn.textContent=orig; btn.disabled=false; } }
+  finally { doc.classList.remove('rcc-pdf-desk'); if(btn){ btn.textContent=orig; btn.disabled=false; } }
 };
 window._ccReporteExcel = async function() {
   const L = window._ccReporteLedger || window._ccBuildLedger();
