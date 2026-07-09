@@ -1394,7 +1394,7 @@ body.has-bpf{padding-top:44px;}
   #reporteCliModal .rcc-desk,#reporteCCModal .rcc-desk{display:none !important;}
   #reporteCliModal .rcc-mob,#reporteCCModal .rcc-mob{display:block !important;}
   #reporteCliModal .rcc-body,#reporteCCModal .rcc-body{overflow-x:hidden !important;}
-  #reporteCliModal .modal-header-verde,#reporteCCModal .modal-header-verde{padding:14px 16px !important;}
+  #reporteCliModal .modal-header-verde,#reporteCCModal .modal-header-verde{padding:14px 16px !important;border-radius:14px 14px 0 0 !important;}
   #reporteCliModal .modal-header-verde>div:last-child,#reporteCCModal .modal-header-verde>div:last-child{font-size:18px !important;line-height:1.15 !important;}
   #reporteCliModal .mc2,#reporteCCModal .mc2{font-size:20px !important;width:40px;height:40px;display:flex;align-items:center;justify-content:center;top:6px !important;right:6px !important;}
   #reporteCliModal .rep-periodo>div,#reporteCCModal .rep-periodo>div{padding:8px 12px !important;gap:6px !important;flex-wrap:nowrap !important;overflow-x:auto;}
@@ -1404,8 +1404,36 @@ body.has-bpf{padding-top:44px;}
   #reporteCliModal .rcc-footer,#reporteCCModal .rcc-footer{flex-direction:column !important;}
   #reporteCliModal .rcc-footer .bp,#reporteCliModal .rcc-footer .bs,#reporteCCModal .rcc-footer .bp,#reporteCCModal .rcc-footer .bs{width:100% !important;flex:none !important;min-width:0 !important;}
 }
+/* ── Reportes GENERALES (clientes cuentas/directorio + proveedores resumen): mobile-first ≤640px ── */
+#cli-gral-doc.rcc-pdf-desk .rcc-desk,#prov-resumen-doc.rcc-pdf-desk .rcc-desk{display:block !important;}
+#cli-gral-doc.rcc-pdf-desk .rcc-mob,#prov-resumen-doc.rcc-pdf-desk .rcc-mob{display:none !important;}
+#cli-gral-doc.rcc-pdf-desk,#prov-resumen-doc.rcc-pdf-desk{width:780px !important;}
 @media(max-width:640px){
-  #reporteCCModal .md,#reporteProvModal .md,#reporteCliModal .md,#reporteClientesModal .md,#reportePresupModal .md{width:100%;max-width:100%;margin:0 6px;max-height:94vh;}
+  #cli-gral-doc,#prov-resumen-doc{width:100% !important;}
+  #reporteClientesModal .rcc-desk,#reporteProvModal .rcc-desk{display:none !important;}
+  #reporteClientesModal .rcc-mob,#reporteProvModal .rcc-mob{display:block !important;}
+  #reporteClientesModal .rcc-body,#reporteProvModal .rcc-body{overflow-x:hidden !important;}
+  #reporteClientesModal .modal-header-verde,#reporteProvModal .modal-header-verde{padding:14px 16px !important;border-radius:14px 14px 0 0 !important;}
+  #reporteClientesModal .modal-header-verde>div:last-child,#reporteProvModal .modal-header-verde>div:last-child{font-size:18px !important;line-height:1.15 !important;}
+  #reporteClientesModal .mc2,#reporteProvModal .mc2{font-size:20px !important;width:40px;height:40px;display:flex;align-items:center;justify-content:center;top:6px !important;right:6px !important;}
+  #reporteClientesModal #cli-gral-bar>div{padding:8px 14px !important;gap:6px !important;}
+  #reporteProvModal .rep-periodo>div{padding:8px 14px !important;gap:6px !important;flex-wrap:nowrap !important;overflow-x:auto;}
+  #reporteProvModal .rep-periodo>div>span:first-child{font-size:8px !important;}
+  #reporteClientesModal .rep-chip,#reporteProvModal .rep-chip{font-size:10px !important;padding:3px 10px !important;}
+  #reporteClientesModal .rep-chip svg,#reporteProvModal .rep-chip svg{width:10px !important;height:10px !important;}
+  #reporteClientesModal .clg-views{display:flex !important;flex:1 1 100% !important;gap:6px !important;margin-bottom:6px;}
+  #reporteClientesModal .clg-views .rep-chip{flex:1 !important;text-align:center;}
+  #reporteClientesModal .clg-periodo{display:flex !important;flex:1 1 100% !important;align-items:center;gap:6px;flex-wrap:wrap;}
+  #reporteClientesModal .clg-periodo>span[style*="width:1px"]{display:none !important;}
+  #reporteClientesModal .cligral-search-box{flex:1 1 100% !important;margin-left:0 !important;}
+  #reporteClientesModal .rcc-footer,#reporteProvModal .rcc-footer{flex-direction:column !important;}
+  #reporteClientesModal .rcc-footer .bp,#reporteClientesModal .rcc-footer .bs,#reporteProvModal .rcc-footer .bp,#reporteProvModal .rcc-footer .bs{width:100% !important;flex:none !important;min-width:0 !important;}
+}
+@media(max-width:640px){
+  #reporteCCModal .md,#reporteProvModal .md,#reporteCliModal .md,#reporteClientesModal .md,#reportePresupModal .md{width:100%;max-width:100%;margin:0 6px;max-height:94vh;border-radius:14px;}
+  /* Anti-hairline: fondo del modal = verde del header → lo que asome en la curva de las esquinas superiores es verde (invisible), no blanco. Footer redondeado abajo. */
+  #reporteCliModal .md,#reporteCCModal .md,#reporteClientesModal .md,#reporteProvModal .md{background:linear-gradient(135deg,#1e2e22,#3d5242) !important;}
+  #reporteCliModal .rcc-footer,#reporteCCModal .rcc-footer,#reporteClientesModal .rcc-footer,#reporteProvModal .rcc-footer{border-radius:0 0 14px 14px !important;}
   #reporteCCModal .rcc-body,#reporteProvModal .rcc-body,#reporteCliModal .rcc-body,#reporteClientesModal .rcc-body,#reportePresupModal .rcc-body{padding:10px;}
   #reporteCCModal .rcc-footer,#reporteProvModal .rcc-footer,#reporteCliModal .rcc-footer,#reporteClientesModal .rcc-footer,#reportePresupModal .rcc-footer{padding:12px 14px;}
   #reporteCCModal .rcc-footer .bp,#reporteCCModal .rcc-footer .bs,#reporteProvModal .rcc-footer .bp,#reporteProvModal .rcc-footer .bs,#reporteCliModal .rcc-footer .bp,#reporteCliModal .rcc-footer .bs,#reporteClientesModal .rcc-footer .bp,#reporteClientesModal .rcc-footer .bs,#reportePresupModal .rcc-footer .bp,#reportePresupModal .rcc-footer .bs{flex:1;min-width:120px;}
@@ -24360,34 +24388,78 @@ window._cliCuentasDocHTML = function(D, search) {
   const sinMovHtml = sinMov.length ? `<div style="margin-top:14px;font-size:10px;color:#8a8578;line-height:1.6;"><span style="font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Sin movimientos (${sinMov.length}):</span> ${sinMov.join(' · ')}</div>` : '';
   const usdNota = hayUSD ? `<div style="margin-top:8px;font-size:9px;color:#8a8578;line-height:1.5;">* ${usdClientes} cliente${usdClientes>1?'s':''} con movimientos en US$ — el detalle está en su reporte individual. Los totales de arriba son solo en pesos (ARS).</div>` : '';
   const cierreVerde = totales.saldo<0;
-  return `<div id="cli-gral-doc">
-    <div style="background:#4a5e4d;padding:22px 26px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;">
-      <div style="min-width:0;">
-        <div style="font-size:9px;letter-spacing:2px;color:rgba(255,255,255,.72);text-transform:uppercase;font-weight:700;margin-bottom:6px;">Clientes · Resumen de cuentas</div>
-        <div style="font-size:18px;font-weight:700;color:#fff;line-height:1.15;">${D.negocioNombre}</div>
-      </div>
-      <div style="text-align:right;flex-shrink:0;">
-        <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1px;">emitido</div>
-        <div style="font-size:10px;color:rgba(255,255,255,.82);margin-top:3px;">${D.fechaEmision}</div>
-        <div style="font-size:9px;color:rgba(255,255,255,.6);margin-top:4px;">Período: ${D.periodoLabel}</div>
-        ${filtroNote}
-      </div>
+  // ── Mobile (≤640px): cards apiladas ──
+  const chipPendMob = (saldo,hasUsd,usdSaldo) => {
+    let chip;
+    if(saldo<0) chip = `<span style="background:#e6efe6;color:#4a5e4d;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;white-space:nowrap;">a favor ${fmt(Math.abs(saldo))}</span>`;
+    else if(saldo>0) chip = `<span style="background:#f8ece9;color:#7a4e46;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;white-space:nowrap;">${fmt(saldo)}</span>`;
+    else chip = `<span style="color:#8a8578;font-size:11px;">$0</span>`;
+    const usd = hasUsd ? `<div style="font-size:9px;color:#8a8578;margin-top:2px;">${usdSaldo<0?'a favor ':'+ '}US$${(Math.round(Math.abs(usdSaldo))).toLocaleString('es-AR')}</div>` : '';
+    return `<div style="flex-shrink:0;text-align:right;">${chip}${usd}</div>`;
+  };
+  const cardCliMob = r => `<div style="background:#fff;border:.5px solid #e7e5df;border-radius:6px;padding:9px 11px;margin-bottom:5px;">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;">
+      <span style="font-size:12px;font-weight:700;color:#1e2e22;">${r.nombre}</span>${chipPendMob(r.saldo,r.hasUsd,r.usdSaldo)}
     </div>
-    <div style="padding:22px 26px;">
-      <div style="border-radius:10px;overflow:hidden;border:.5px solid #e7e5df;">
-        <table style="width:100%;border-collapse:collapse;font-size:12px;">
-          <thead><tr style="background:#4a5e4d;">${th('Nombre',0)}${th('Vendido',1)}${th('Cobrado',1)}${th('Pendiente',1)}</tr></thead>
-          <tbody>${rowsHtml}${totalRow}</tbody>
-        </table>
+    <div style="font-size:9px;color:#5f5e5a;margin-top:3px;">Vendido: <span style="font-weight:700;color:#2c2c2a;">${fmt(r.vendido)}</span> · Cobrado: <span style="font-weight:700;color:#4a5e4d;">${fmt(r.cobrado)}</span></div>
+  </div>`;
+  const cardsCliMob = conMov.length ? conMov.map(cardCliMob).join('') : `<div style="text-align:center;color:#8a8578;font-size:11px;padding:14px;">${s?'Sin clientes que coincidan.':'Sin clientes con movimientos.'}</div>`;
+  const totalesCliMob = conMov.length ? `<div style="background:#f1efe8;border-radius:6px;padding:10px 11px;margin-top:8px;">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;">
+      <span style="font-size:10px;font-weight:700;letter-spacing:.5px;color:#1e2e22;">TOTALES (ARS)</span>
+      <span style="font-size:12px;font-weight:700;color:${totales.saldo<0?'#4a5e4d':'#7a4e46'};">${totales.saldo<0?('a favor '+fmt(Math.abs(totales.saldo))):fmt(totales.saldo)}</span>
+    </div>
+    <div style="font-size:9px;color:#5f5e5a;margin-top:3px;">Vendido: <span style="font-weight:700;color:#2c2c2a;">${fmt(totales.vendido)}</span> · Cobrado: <span style="font-weight:700;color:#4a5e4d;">${fmt(totales.cobrado)}</span></div>
+  </div>` : '';
+  const sinMovCliMob = sinMov.length ? `<div style="margin-top:12px;font-size:9px;color:#8a8578;line-height:1.5;"><span style="font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Sin movimientos (${sinMov.length}):</span> ${sinMov.join(' · ')}</div>` : '';
+  const usdNotaMob = hayUSD ? `<div style="margin-top:8px;font-size:9px;color:#8a8578;line-height:1.5;">* ${usdClientes} cliente${usdClientes>1?'s':''} con movimientos en US$ — ver reporte individual. Totales solo en ARS.</div>` : '';
+  const mobBody = `<div style="background:#4a5e4d;padding:10px 12px;">
+      <div style="font-size:7px;letter-spacing:1.5px;color:#d9e0d9;text-transform:uppercase;font-weight:700;margin-bottom:4px;">Clientes · Resumen de cuentas</div>
+      <div style="font-size:15px;font-weight:700;color:#fff;line-height:1.15;">${D.negocioNombre}</div>
+      <div style="font-size:9px;color:#d9e0d9;margin-top:4px;">${D.fechaEmision} · ${conMov.length} con mov.${s?(" · filtro '"+(search||'').trim()+"'"):''}</div>
+    </div>
+    <div style="padding:12px 12px 16px;">
+      <div style="font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#5f5e5a;margin-bottom:6px;">Clientes con movimientos</div>
+      ${cardsCliMob}${totalesCliMob}
+      <div style="display:flex;justify-content:center;margin-top:10px;">
+        <div style="background:#fff;border:1.2px solid ${cierreVerde?'#4a5e4d':'#b09088'};border-radius:6px;padding:6px 12px;text-align:center;">
+          <div style="font-size:8px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:${cierreVerde?'#4a5e4d':'#7a4e46'};">${cierreVerde?'A favor total al':'Pendiente total al'} ${D.fechaCierre}</div>
+          <div style="font-size:13px;font-weight:700;color:${cierreVerde?'#4a5e4d':'#7a4e46'};margin-top:2px;">${fmt(Math.abs(D.totales.saldo))}</div>
+        </div>
       </div>
-      ${sinMovHtml}${usdNota}
-      <div style="display:flex;justify-content:flex-end;margin-top:16px;">
-        <div style="background:#fff;border:1.5px solid ${cierreVerde?'#4a5e4d':'#b09088'};border-radius:10px;padding:12px 18px;display:flex;align-items:center;gap:14px;">
-          <span style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:${cierreVerde?'#4a5e4d':'#7a4e46'};font-weight:700;">${cierreVerde?'A favor total al':'Pendiente total al'} ${D.fechaCierre}</span>
-          <span style="font-size:18px;font-weight:700;color:${cierreVerde?'#4a5e4d':'#7a4e46'};">${fmt(Math.abs(D.totales.saldo))}</span>
+      ${sinMovCliMob}${usdNotaMob}
+    </div>`;
+  return `<div id="cli-gral-doc">
+    <div class="rcc-desk">
+      <div style="background:#4a5e4d;padding:22px 26px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;">
+        <div style="min-width:0;">
+          <div style="font-size:9px;letter-spacing:2px;color:rgba(255,255,255,.72);text-transform:uppercase;font-weight:700;margin-bottom:6px;">Clientes · Resumen de cuentas</div>
+          <div style="font-size:18px;font-weight:700;color:#fff;line-height:1.15;">${D.negocioNombre}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1px;">emitido</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.82);margin-top:3px;">${D.fechaEmision}</div>
+          <div style="font-size:9px;color:rgba(255,255,255,.6);margin-top:4px;">Período: ${D.periodoLabel}</div>
+          ${filtroNote}
+        </div>
+      </div>
+      <div style="padding:22px 26px;">
+        <div style="border-radius:10px;overflow:hidden;border:.5px solid #e7e5df;">
+          <table style="width:100%;border-collapse:collapse;font-size:12px;">
+            <thead><tr style="background:#4a5e4d;">${th('Nombre',0)}${th('Vendido',1)}${th('Cobrado',1)}${th('Pendiente',1)}</tr></thead>
+            <tbody>${rowsHtml}${totalRow}</tbody>
+          </table>
+        </div>
+        ${sinMovHtml}${usdNota}
+        <div style="display:flex;justify-content:flex-end;margin-top:16px;">
+          <div style="background:#fff;border:1.5px solid ${cierreVerde?'#4a5e4d':'#b09088'};border-radius:10px;padding:12px 18px;display:flex;align-items:center;gap:14px;">
+            <span style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:${cierreVerde?'#4a5e4d':'#7a4e46'};font-weight:700;">${cierreVerde?'A favor total al':'Pendiente total al'} ${D.fechaCierre}</span>
+            <span style="font-size:18px;font-weight:700;color:${cierreVerde?'#4a5e4d':'#7a4e46'};">${fmt(Math.abs(D.totales.saldo))}</span>
+          </div>
         </div>
       </div>
     </div>
+    <div class="rcc-mob">${mobBody}</div>
     <div data-pdf-footer style="background:#4a5e4d;padding:12px;text-align:center;">
       <span style="font-size:10px;color:rgba(255,255,255,.85);">Generado con MB Strategy · mbstrategy.com.ar</span>
     </div>
@@ -24405,26 +24477,45 @@ window._cliDirectorioDocHTML = function(D, search) {
     <td style="padding:8px 12px;color:#5f5e5a;">${r.tel||dash}</td>
     <td style="padding:8px 12px;color:#5f5e5a;">${r.email||dash}</td>
   </tr>`).join('') : `<tr><td colspan="4" style="padding:20px;text-align:center;color:#8a8578;font-size:12px;">${s?'Sin clientes que coincidan con el filtro.':'Sin clientes.'}</td></tr>`;
+  // ── Mobile (≤640px): cards apiladas, solo texto (sin íconos) ──
+  const cardDirMob = r => {
+    const datos = [r.doc, r.tel, r.email].filter(Boolean);
+    const lineas = datos.length ? datos.map(d=>`<div>${d}</div>`).join('') : `<div style="color:#8a8578;">Sin datos de contacto</div>`;
+    return `<div style="background:#fff;border:.5px solid #e7e5df;border-radius:6px;padding:9px 11px;margin-bottom:5px;">
+      <div style="font-size:12px;font-weight:700;color:#1e2e22;">${r.nombre}</div>
+      <div style="font-size:9px;color:#5f5e5a;line-height:1.5;margin-top:2px;">${lineas}</div>
+    </div>`;
+  };
+  const cardsDirMob = rows.length ? rows.map(cardDirMob).join('') : `<div style="text-align:center;color:#8a8578;font-size:11px;padding:14px;">${s?'Sin clientes que coincidan.':'Sin clientes.'}</div>`;
+  const mobBody = `<div style="background:#4a5e4d;padding:10px 12px;">
+      <div style="font-size:7px;letter-spacing:1.5px;color:#d9e0d9;text-transform:uppercase;font-weight:700;margin-bottom:4px;">Clientes · Directorio</div>
+      <div style="font-size:15px;font-weight:700;color:#fff;line-height:1.15;">${D.negocioNombre}</div>
+      <div style="font-size:9px;color:#d9e0d9;margin-top:4px;">${D.fechaEmision} · ${rows.length} cliente${rows.length===1?'':'s'}${s?(" · filtro '"+(search||'').trim()+"'"):''}</div>
+    </div>
+    <div style="padding:12px 12px 16px;">${cardsDirMob}</div>`;
   return `<div id="cli-gral-doc">
-    <div style="background:#4a5e4d;padding:22px 26px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;">
-      <div style="min-width:0;">
-        <div style="font-size:9px;letter-spacing:2px;color:rgba(255,255,255,.72);text-transform:uppercase;font-weight:700;margin-bottom:6px;">Clientes · Directorio</div>
-        <div style="font-size:18px;font-weight:700;color:#fff;line-height:1.15;">${D.negocioNombre}</div>
+    <div class="rcc-desk">
+      <div style="background:#4a5e4d;padding:22px 26px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;">
+        <div style="min-width:0;">
+          <div style="font-size:9px;letter-spacing:2px;color:rgba(255,255,255,.72);text-transform:uppercase;font-weight:700;margin-bottom:6px;">Clientes · Directorio</div>
+          <div style="font-size:18px;font-weight:700;color:#fff;line-height:1.15;">${D.negocioNombre}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1px;">emitido</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.82);margin-top:3px;">${D.fechaEmision} · ${rows.length} cliente${rows.length===1?'':'s'}</div>
+          ${filtroNote}
+        </div>
       </div>
-      <div style="text-align:right;flex-shrink:0;">
-        <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1px;">emitido</div>
-        <div style="font-size:10px;color:rgba(255,255,255,.82);margin-top:3px;">${D.fechaEmision} · ${rows.length} cliente${rows.length===1?'':'s'}</div>
-        ${filtroNote}
+      <div style="padding:22px 26px;">
+        <div style="border-radius:10px;overflow:hidden;border:.5px solid #e7e5df;">
+          <table style="width:100%;border-collapse:collapse;font-size:12px;">
+            <thead><tr style="background:#4a5e4d;">${th('Nombre')}${th('DNI / CUIT')}${th('Teléfono')}${th('Email')}</tr></thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>
+        </div>
       </div>
     </div>
-    <div style="padding:22px 26px;">
-      <div style="border-radius:10px;overflow:hidden;border:.5px solid #e7e5df;">
-        <table style="width:100%;border-collapse:collapse;font-size:12px;">
-          <thead><tr style="background:#4a5e4d;">${th('Nombre')}${th('DNI / CUIT')}${th('Teléfono')}${th('Email')}</tr></thead>
-          <tbody>${rowsHtml}</tbody>
-        </table>
-      </div>
-    </div>
+    <div class="rcc-mob">${mobBody}</div>
     <div data-pdf-footer style="background:#4a5e4d;padding:12px;text-align:center;">
       <span style="font-size:10px;color:rgba(255,255,255,.85);">Generado con MB Strategy · mbstrategy.com.ar</span>
     </div>
@@ -24451,7 +24542,7 @@ window._cliGralRenderBar = function() {
   const lupa = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8a8578" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>';
   const searchBox = `<div class="cligral-search-box">${lupa}<input type="text" id="cligral-search" oninput="_cliGralOnSearch(this.value)" value="${(window._cliGralSearch||'').replace(/"/g,'&quot;')}" placeholder="Buscar cliente..."/></div>`;
   cont.innerHTML = `<div style="display:flex;align-items:center;gap:10px;padding:10px 22px;background:#f4f0ea;border-bottom:.5px solid #e7e5df;flex-wrap:wrap;">
-    ${viewChips}${tail}${searchBox}
+    <span class="clg-views" style="display:contents">${viewChips}</span><span class="clg-periodo" style="display:contents">${tail}</span>${searchBox}
   </div>`;
 };
 window._cliGralSetView = function(v){ window._cliGralView=v; window._cliGralRenderBar(); window._cliGralRerender(); };
@@ -24483,12 +24574,14 @@ window._cliGralPDF = async function(){
   const doc = document.querySelector('#reporteClientesModal #cli-gral-doc'); if(!doc) return;
   const btn = document.querySelector('#reporteClientesModal .bp');
   const orig = btn?btn.textContent:''; if(btn){ btn.textContent='Generando...'; btn.disabled=true; }
+  const mask = window._rccPdfMask(doc);
   try {
     const D = window._cliGralD || {};
     const tag = D.view==='directorio' ? ('Directorio - '+(D.fechaEmision||'')) : ('Cuentas - '+(D.tieneRango ? D.periodoLabel.replace(/ — /g,' a ') : (D.fechaEmision||'')));
+    doc.classList.add('rcc-pdf-desk'); // PDF siempre en layout desktop A4, aunque se genere desde mobile
     await window._pdfCaptureDoc(doc, 'Clientes - '+tag+'.pdf');
   } catch(e){ console.error('Clientes PDF error:', e); showToast('No se pudo generar el PDF. Probá de nuevo.', 'error'); }
-  finally { if(btn){ btn.textContent=orig; btn.disabled=false; } }
+  finally { doc.classList.remove('rcc-pdf-desk'); mask.remove(); if(btn){ btn.textContent=orig; btn.disabled=false; } }
 };
 window._cliGralExcel = async function(){
   const D = window._cliGralD || {};
@@ -28154,33 +28247,72 @@ window._provResumenDocHTML = function(D) {
     <td style="padding:10px 12px;text-align:right;font-weight:700;color:#7a4e46;">${fmt(D.totales.pendiente)}</td>
   </tr>` : '';
   const sinMovHtml = D.sinMov.length ? `<div style="margin-top:14px;font-size:10px;color:#8a8578;line-height:1.6;"><span style="font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Sin movimientos (${D.sinMov.length}):</span> ${D.sinMov.join(' · ')}</div>` : '';
-  return `<div id="prov-resumen-doc" style="width:780px;background:#fff;font-family:'DM Sans',sans-serif;color:#2c2c2a;">
-    <div style="background:#4a5e4d;padding:22px 26px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;">
-      <div style="min-width:0;">
-        <div style="font-size:9px;letter-spacing:2px;color:rgba(255,255,255,.72);text-transform:uppercase;font-weight:700;margin-bottom:6px;">Proveedores · Resumen de cuentas</div>
-        <div style="font-size:18px;font-weight:700;color:#fff;line-height:1.15;">${D.negocioNombre}</div>
-      </div>
-      <div style="text-align:right;flex-shrink:0;">
-        <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1px;">emitido</div>
-        <div style="font-size:10px;color:rgba(255,255,255,.82);margin-top:3px;">${D.fechaEmision}</div>
-        <div style="font-size:9px;color:rgba(255,255,255,.6);margin-top:4px;">Período: ${D.periodoLabel}</div>
-      </div>
+  // ── Mobile (≤640px): cards apiladas con línea de categoría ──
+  const chipPendProvMob = pend => pend>0
+    ? `<span style="background:#f8ece9;color:#7a4e46;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;white-space:nowrap;">${fmt(pend)}</span>`
+    : `<span style="color:#8a8578;font-size:11px;">$0</span>`;
+  const cardProvMob = r => `<div style="background:#fff;border:.5px solid #e7e5df;border-radius:6px;padding:9px 11px;margin-bottom:5px;">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;">
+      <span style="font-size:12px;font-weight:700;color:#1e2e22;">${r.nombre}</span>${chipPendProvMob(r.pendiente)}
     </div>
-    <div style="padding:22px 26px;">
-      <div style="border-radius:10px;overflow:hidden;border:.5px solid #e7e5df;">
-        <table style="width:100%;border-collapse:collapse;font-size:12px;">
-          <thead><tr style="background:#4a5e4d;">${th('Nombre',0)}${th('Categoría',0)}${th('Comprado',1)}${th('Pagado',1)}${th('Pendiente',1)}</tr></thead>
-          <tbody>${rowsHtml}${totalRow}</tbody>
-        </table>
+    <div style="font-size:9px;color:#5f5e5a;margin-top:2px;">${r.categoria}</div>
+    <div style="font-size:9px;color:#5f5e5a;margin-top:3px;">Comprado: <span style="font-weight:700;color:#2c2c2a;">${fmt(r.comprado)}</span> · Pagado: <span style="font-weight:700;color:#4a5e4d;">${fmt(r.pagado)}</span></div>
+  </div>`;
+  const cardsProvMob = D.conMov.length ? D.conMov.map(cardProvMob).join('') : `<div style="text-align:center;color:#8a8578;font-size:11px;padding:14px;">Sin proveedores con movimientos.</div>`;
+  const totalesProvMob = D.conMov.length ? `<div style="background:#f1efe8;border-radius:6px;padding:10px 11px;margin-top:8px;">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;">
+      <span style="font-size:10px;font-weight:700;letter-spacing:.5px;color:#1e2e22;">TOTALES</span>
+      <span style="font-size:12px;font-weight:700;color:#7a4e46;">${fmt(D.totales.pendiente)}</span>
+    </div>
+    <div style="font-size:9px;color:#5f5e5a;margin-top:3px;">Comprado: <span style="font-weight:700;color:#2c2c2a;">${fmt(D.totales.comprado)}</span> · Pagado: <span style="font-weight:700;color:#4a5e4d;">${fmt(D.totales.pagado)}</span></div>
+  </div>` : '';
+  const sinMovProvMob = D.sinMov.length ? `<div style="margin-top:12px;font-size:9px;color:#8a8578;line-height:1.5;"><span style="font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Sin movimientos (${D.sinMov.length}):</span> ${D.sinMov.join(' · ')}</div>` : '';
+  const mobBody = `<div style="background:#4a5e4d;padding:10px 12px;">
+      <div style="font-size:7px;letter-spacing:1.5px;color:#d9e0d9;text-transform:uppercase;font-weight:700;margin-bottom:4px;">Proveedores · Resumen de cuentas</div>
+      <div style="font-size:15px;font-weight:700;color:#fff;line-height:1.15;">${D.negocioNombre}</div>
+      <div style="font-size:9px;color:#d9e0d9;margin-top:4px;">${D.fechaEmision} · ${D.conMov.length} con mov.</div>
+    </div>
+    <div style="padding:12px 12px 16px;">
+      <div style="font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#5f5e5a;margin-bottom:6px;">Proveedores con movimientos</div>
+      ${cardsProvMob}${totalesProvMob}
+      <div style="display:flex;justify-content:center;margin-top:10px;">
+        <div style="background:#fff;border:1.2px solid #b09088;border-radius:6px;padding:6px 12px;text-align:center;">
+          <div style="font-size:8px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#7a4e46;">Pendiente total al ${D.fechaCierre}</div>
+          <div style="font-size:13px;font-weight:700;color:#7a4e46;margin-top:2px;">${fmt(D.totales.pendiente)}</div>
+        </div>
       </div>
-      ${sinMovHtml}
-      <div style="display:flex;justify-content:flex-end;margin-top:16px;">
-        <div style="background:#fff;border:1.5px solid #b09088;border-radius:10px;padding:12px 18px;display:flex;align-items:center;gap:14px;">
-          <span style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#7a4e46;font-weight:700;">Pendiente total al ${D.fechaCierre}</span>
-          <span style="font-size:18px;font-weight:700;color:#7a4e46;">${fmt(D.totales.pendiente)}</span>
+      ${sinMovProvMob}
+    </div>`;
+  return `<div id="prov-resumen-doc" style="width:780px;background:#fff;font-family:'DM Sans',sans-serif;color:#2c2c2a;">
+    <div class="rcc-desk">
+      <div style="background:#4a5e4d;padding:22px 26px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;">
+        <div style="min-width:0;">
+          <div style="font-size:9px;letter-spacing:2px;color:rgba(255,255,255,.72);text-transform:uppercase;font-weight:700;margin-bottom:6px;">Proveedores · Resumen de cuentas</div>
+          <div style="font-size:18px;font-weight:700;color:#fff;line-height:1.15;">${D.negocioNombre}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1px;">emitido</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.82);margin-top:3px;">${D.fechaEmision}</div>
+          <div style="font-size:9px;color:rgba(255,255,255,.6);margin-top:4px;">Período: ${D.periodoLabel}</div>
+        </div>
+      </div>
+      <div style="padding:22px 26px;">
+        <div style="border-radius:10px;overflow:hidden;border:.5px solid #e7e5df;">
+          <table style="width:100%;border-collapse:collapse;font-size:12px;">
+            <thead><tr style="background:#4a5e4d;">${th('Nombre',0)}${th('Categoría',0)}${th('Comprado',1)}${th('Pagado',1)}${th('Pendiente',1)}</tr></thead>
+            <tbody>${rowsHtml}${totalRow}</tbody>
+          </table>
+        </div>
+        ${sinMovHtml}
+        <div style="display:flex;justify-content:flex-end;margin-top:16px;">
+          <div style="background:#fff;border:1.5px solid #b09088;border-radius:10px;padding:12px 18px;display:flex;align-items:center;gap:14px;">
+            <span style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#7a4e46;font-weight:700;">Pendiente total al ${D.fechaCierre}</span>
+            <span style="font-size:18px;font-weight:700;color:#7a4e46;">${fmt(D.totales.pendiente)}</span>
+          </div>
         </div>
       </div>
     </div>
+    <div class="rcc-mob">${mobBody}</div>
     <div data-pdf-footer style="background:#4a5e4d;padding:12px;text-align:center;">
       <span style="font-size:10px;color:rgba(255,255,255,.85);">Generado con MB Strategy · mbstrategy.com.ar</span>
     </div>
@@ -28199,11 +28331,13 @@ window._provReportePDF = async function() {
   if(!doc) return;
   const btn = document.querySelector('#reporteProvModal .bp');
   const orig = btn?btn.textContent:''; if(btn){ btn.textContent='Generando...'; btn.disabled=true; }
+  const mask = window._rccPdfMask(doc);
   try {
     const D = window._provResumenD || {};
+    doc.classList.add('rcc-pdf-desk'); // PDF siempre en layout desktop A4, aunque se genere desde mobile
     await window._pdfCaptureDoc(doc, 'Proveedores - '+(D.tieneRango ? D.periodoLabel.replace(/ — /g,' a ') : (D.fechaEmision||''))+'.pdf');
   } catch(e){ console.error('Proveedores PDF error:', e); showToast('No se pudo generar el PDF. Probá de nuevo.', 'error'); }
-  finally { if(btn){ btn.textContent=orig; btn.disabled=false; } }
+  finally { doc.classList.remove('rcc-pdf-desk'); mask.remove(); if(btn){ btn.textContent=orig; btn.disabled=false; } }
 };
 window._provReporteExcel = async function() {
   const D = window._provResumenD || await window._provResumenData();
