@@ -24242,17 +24242,27 @@ window._cliRepRerender = async function() {
   const wrap = document.getElementById('cli-reporte-doc-wrap');
   if(wrap) wrap.innerHTML = window._cliReporteDocHTML(D);
 };
+window._rccPdfMask = function(doc) {
+  // Máscara "Generando PDF…" que tapa el reflow momentáneo a layout desktop durante html2canvas (mobile)
+  const md = doc && doc.closest('.md'); if(!md) return { remove(){} };
+  const ov = document.createElement('div');
+  ov.style.cssText = 'position:absolute;inset:0;z-index:30;background:rgba(233,229,221,.97);display:flex;align-items:center;justify-content:center;';
+  ov.innerHTML = '<div style="font-family:\'DM Sans\',sans-serif;font-size:13px;color:#4a5e4d;font-weight:600;display:flex;align-items:center;gap:9px;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#4a5e4d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>Generando PDF…</div>';
+  md.appendChild(ov);
+  return ov;
+};
 window._cliReportePDF = async function() {
   const doc = document.querySelector('#reporteCliModal #cli-reporte-doc');
   if(!doc) return;
   const btn = document.querySelector('#reporteCliModal .bp');
   const orig = btn?btn.textContent:''; if(btn){ btn.textContent='Generando...'; btn.disabled=true; }
+  const mask = window._rccPdfMask(doc);
   try {
     const D = window._cliReporteD || {};
     doc.classList.add('rcc-pdf-desk'); // PDF siempre en layout desktop A4, aunque se genere desde mobile
     await window._pdfCaptureDoc(doc, 'CC '+(D.cliNombre||'Cliente')+' - '+(D.tieneRango ? D.periodoLabel.replace(/ — /g,' a ') : (D.fechaEmision||''))+'.pdf');
   } catch(e){ console.error('Reporte cliente PDF error:', e); showToast('No se pudo generar el PDF. Probá de nuevo.', 'error'); }
-  finally { doc.classList.remove('rcc-pdf-desk'); if(btn){ btn.textContent=orig; btn.disabled=false; } }
+  finally { doc.classList.remove('rcc-pdf-desk'); mask.remove(); if(btn){ btn.textContent=orig; btn.disabled=false; } }
 };
 window._cliReporteExcel = async function() {
   const D = window._cliReporteD || await window._cliBuildLedger(window._cliReporteId, window._repRange.cli);
@@ -28059,12 +28069,13 @@ window._ccReportePDF = async function() {
   const btn = document.querySelector('#reporteCCModal .bp');
   const orig = btn ? btn.textContent : '';
   if(btn){ btn.textContent='Generando...'; btn.disabled=true; }
+  const mask = window._rccPdfMask(doc);
   try {
     const L = window._ccReporteLedger || {};
     doc.classList.add('rcc-pdf-desk'); // PDF siempre en layout desktop A4, aunque se genere desde mobile
     await window._pdfCaptureDoc(doc, 'CC '+(L.provNombre||'Proveedor')+' - '+(L.tieneRango ? L.periodoLabel.replace(/ — /g,' a ') : ((L.negocioNombre||'')+' - '+(L.fechaEmision||'')))+'.pdf');
   } catch(e){ console.error('Reporte PDF error:', e); showToast('No se pudo generar el PDF. Probá de nuevo.', 'error'); }
-  finally { doc.classList.remove('rcc-pdf-desk'); if(btn){ btn.textContent=orig; btn.disabled=false; } }
+  finally { doc.classList.remove('rcc-pdf-desk'); mask.remove(); if(btn){ btn.textContent=orig; btn.disabled=false; } }
 };
 window._ccReporteExcel = async function() {
   const L = window._ccReporteLedger || window._ccBuildLedger();
