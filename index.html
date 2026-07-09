@@ -1368,9 +1368,12 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
   #welcome-screen .ws-num{width:26px;height:26px;}
 }
 body.has-bpf{padding-top:44px;}
+body.has-bcanc{padding-top:42px;}
 #banner-pago-fallido button:hover{opacity:.9;}
+#banner-cancelada a:hover{opacity:.85;}
 @media(max-width:640px){
   body.has-bpf{padding-top:74px;}
+  body.has-bcanc{padding-top:60px;}
   #banner-pago-fallido .bpf-inner{flex-wrap:wrap;padding:8px 14px;gap:8px;}
   #banner-pago-fallido .bpf-inner > button{flex:1 1 100%;}
 }
@@ -1565,6 +1568,13 @@ body.has-bpf{padding-top:44px;}
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7a4e46" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
     <div id="bpf-texto" style="flex:1;min-width:0;font-size:13px;color:#2c2c2a;line-height:1.4;"></div>
     <button onclick="actualizarTarjeta()" style="flex-shrink:0;background:#1e2e22;color:#f4f0ea;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;">Actualizar tarjeta</button>
+  </div>
+</div>
+
+<div id="banner-cancelada" style="display:none;position:fixed;top:0;left:0;right:0;z-index:2000;background:#e6efe7;border-bottom:1px solid #c9dccd;">
+  <div style="max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:center;gap:8px;padding:9px 18px;min-height:42px;flex-wrap:wrap;text-align:center;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3d4f40" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+    <span style="font-size:13px;color:#3d4f40;line-height:1.4;">Tu suscripción está cancelada — tenés acceso hasta el <span id="bcanc-fecha" style="font-weight:600;">—</span>. <a href="#" onclick="event.preventDefault();navigateToMiCuentaMembresia();" style="color:#4a5e4d;font-weight:700;text-decoration:underline;">Reactivar suscripción</a></span>
   </div>
 </div>
 
@@ -5405,7 +5415,7 @@ body.has-bpf{padding-top:44px;}
             </div>
             <div style="flex:1;">
               <div style="font-family:'DM Sans',sans-serif;font-size:22px;font-weight:700;color:var(--text);line-height:1.2;">Membresía</div>
-              <div style="font-size:11px;color:var(--text-l);margin-top:2px;">Tu plan y próximo cobro</div>
+              <div id="memb-header-sub" style="font-size:11px;color:var(--text-l);margin-top:2px;">Tu plan y próximo cobro</div>
             </div>
           </div>
           <!-- Estado: activo -->
@@ -5415,20 +5425,23 @@ body.has-bpf{padding-top:44px;}
               <div style="position:absolute;right:-25px;top:-25px;width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,.04);"></div>
               <div style="display:flex;align-items:center;gap:7px;margin-bottom:14px;position:relative;">
                 <div style="width:7px;height:7px;border-radius:50%;background:#a8d4a8;"></div>
-                <div style="font-size:11px;font-weight:500;color:#a8d4a8;text-transform:uppercase;letter-spacing:.5px;">Plan activo</div>
+                <div id="memb-estado-badge" style="font-size:11px;font-weight:500;color:#a8d4a8;text-transform:uppercase;letter-spacing:.5px;">Plan activo</div>
               </div>
               <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px;position:relative;">
                 <div id="memb-plan-nombre" style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;line-height:1;"></div>
                 <div id="memb-monto" style="font-size:14px;font-weight:500;color:rgba(255,255,255,.85);"></div>
               </div>
-              <div style="font-size:11.5px;color:rgba(255,255,255,.6);margin-bottom:14px;position:relative;">Próximo cobro: <span id="memb-proximo-cobro" style="color:rgba(255,255,255,.9);font-weight:500;">—</span></div>
+              <div style="font-size:11.5px;color:rgba(255,255,255,.6);margin-bottom:14px;position:relative;"><span id="memb-cobro-label">Próximo cobro:</span> <span id="memb-proximo-cobro" style="color:rgba(255,255,255,.9);font-weight:500;">—</span></div>
             </div>
-            <div style="margin-top:10px;text-align:center;">
+            <div id="memb-acciones-activo" style="margin-top:10px;text-align:center;">
               <button onclick="actualizarTarjeta()" style="display:block;margin:0 auto 8px;background:#f0f5f0;border:.5px solid #c8d5c9;color:#1e2e22;border-radius:8px;padding:9px 18px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;">Actualizar método de pago</button>
               <button onclick="cancelarMembresia()" style="background:none;border:none;color:#C4786A;font-family:'DM Sans',sans-serif;font-size:11.5px;cursor:pointer;text-decoration:underline;padding:4px;">Cancelar suscripción</button>
             </div>
+            <div id="memb-reactivar-wrap" style="display:none;margin-top:10px;">
+              <button onclick="reactivarSuscripcion()" class="bp" style="width:100%;background:#4a5e4d;">Reactivar suscripción</button>
+            </div>
             <div id="memb-cards-activo" style="margin-top:14px;"></div>
-            <div style="font-size:11px;color:var(--text-l);margin-top:10px;">Al cambiar de plan se generará una nueva suscripción en Mercado Pago. Tu plan actual se cancelará.</div>
+            <div id="memb-legend-cambio" style="font-size:11px;color:var(--text-l);margin-top:10px;">Al cambiar de plan se generará una nueva suscripción en Mercado Pago. Tu plan actual se cancelará.</div>
           </div>
           <!-- Estado: pendiente -->
           <div id="memb-pendiente" style="display:none;">
@@ -7811,6 +7824,8 @@ window.showClientUI = async function(email, clientData) {
     }
     // Bloqueo por membresía cancelada
     if(_estado === 'cancelado') {
+      window._ocultarBannerCancelada();
+      window._ocultarBannerPagoFallido();
       document.getElementById('lp').style.display = 'none';
       document.getElementById('app').classList.remove('visible');
       const mc = document.getElementById('memb-cancelada');
@@ -7822,7 +7837,10 @@ window.showClientUI = async function(email, clientData) {
     // Precedencia: si la baja fue voluntaria (cancelado_pendiente vigente), NO se molesta por pago fallido.
     if(_estado === 'cancelado_pendiente') {
       window._ocultarBannerPagoFallido();
+      const _pxCancMs = _toMs(_memb.proximoCobro);
+      window._mostrarBannerCancelada(_pxCancMs ? new Date(_pxCancMs).toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'}) : '');
     } else {
+      window._ocultarBannerCancelada();
       const _falloMs = _toMs(_memb.pagoFalladoEn);
       let _bloqueado = _memb.accesoBloqueado === true;
       if(!_bloqueado && _falloMs && Math.floor((_nowMs - _falloMs)/(1000*60*60*24)) >= 3) {
@@ -25394,13 +25412,13 @@ window._renderPlanCards = function(containerId, planes, currentPlan, modo){
     var badge = esActual ? '<div style="position:absolute;top:10px;right:10px;background:#4a5e4d;color:#fff;font-size:9px;font-weight:600;padding:2px 8px;border-radius:10px;font-family:\'DM Sans\',sans-serif;">Tu plan</div>' : '';
     var btn = esActual
       ? '<button disabled style="width:100%;background:#e8e5e0;color:#9a978f;border:none;border-radius:8px;padding:9px;font-family:\'DM Sans\',sans-serif;font-size:12px;font-weight:500;cursor:default;">Plan actual</button>'
-      : '<button onclick="' + (modo === 'cambiar' ? 'cambiarPlan' : 'suscribirseMP') + '(\'' + p.key + '\')" style="width:100%;background:#b09088;color:#fff;border:none;border-radius:8px;padding:9px;font-family:\'DM Sans\',sans-serif;font-size:12px;font-weight:500;cursor:pointer;">' + label + '</button>';
+      : (modo === 'info' ? '' : '<button onclick="' + (modo === 'cambiar' ? 'cambiarPlan' : 'suscribirseMP') + '(\'' + p.key + '\')" style="width:100%;background:#b09088;color:#fff;border:none;border-radius:8px;padding:9px;font-family:\'DM Sans\',sans-serif;font-size:12px;font-weight:500;cursor:pointer;">' + label + '</button>');
     html += '<div style="position:relative;background:#fbf9f5;border:' + borde + ';border-radius:12px;padding:16px 14px;">'
       + badge
       + '<div style="font-family:\'Cormorant Garamond\',serif;font-size:19px;font-weight:600;color:#4a5e4d;line-height:1;margin-bottom:6px;">' + p.nombre + '</div>'
       + '<div style="margin-bottom:12px;"><span style="font-family:\'DM Sans\',sans-serif;font-size:22px;font-weight:600;color:#3a4039;">$' + precio.toLocaleString('es-AR') + '</span><span style="font-size:11px;color:var(--text-l);"> /mes</span></div>'
       + feats
-      + '<div style="margin-top:12px;">' + btn + '</div>'
+      + (btn ? '<div style="margin-top:12px;">' + btn + '</div>' : '')
       + '</div>';
   });
   html += '</div>';
@@ -25434,6 +25452,35 @@ window.loadMembresiaSection = async function() {
         if(_cbt) _cbt.textContent = 'Suscripción cancelada — tenés acceso hasta el ' + _f.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'}) + '.';
         if(_cb) _cb.style.display = 'flex';
       } else if(_cb) { _cb.style.display = 'none'; }
+      const _esCancelado = estado === 'cancelado_pendiente';
+      // Badge: "Plan activo" vs "Cancelada — activa hasta {fecha}"
+      const _badge = document.getElementById('memb-estado-badge');
+      if(_badge) {
+        if(_esCancelado && memb.proximoCobro) {
+          const _bf = memb.proximoCobro.toDate ? memb.proximoCobro.toDate() : new Date(memb.proximoCobro);
+          _badge.textContent = 'Cancelada — activa hasta ' + _bf.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'});
+        } else _badge.textContent = 'Plan activo';
+      }
+      // Acciones (actualizar tarjeta + cancelar): ocultas si está cancelado
+      const _acc = document.getElementById('memb-acciones-activo');
+      if(_acc) _acc.style.display = _esCancelado ? 'none' : 'block';
+      // Bug 1: resetear el botón cancelar (no quedar en "Cancelando..." para siempre)
+      const _btnC = document.querySelector('#memb-activo button[onclick="cancelarMembresia()"]');
+      if(_btnC && !_esCancelado) { _btnC.textContent = 'Cancelar suscripción'; _btnC.disabled = false; }
+      // Reactivar: única acción visible en modo cancelada (reset del texto en cada render)
+      const _reac = document.getElementById('memb-reactivar-wrap');
+      if(_reac) _reac.style.display = _esCancelado ? 'block' : 'none';
+      const _reacBtn = _reac ? _reac.querySelector('button') : null;
+      if(_reacBtn) { _reacBtn.textContent = 'Reactivar suscripción'; _reacBtn.disabled = false; }
+      // Card oscura: "Acceso hasta" en cancelada, "Próximo cobro" en activo/trial
+      const _cobroLbl = document.getElementById('memb-cobro-label');
+      if(_cobroLbl) _cobroLbl.textContent = _esCancelado ? 'Acceso hasta:' : 'Próximo cobro:';
+      // Leyenda de cambio de plan: oculta si las cards están en modo info (sin botones)
+      const _legend = document.getElementById('memb-legend-cambio');
+      if(_legend) _legend.style.display = _esCancelado ? 'none' : 'block';
+      // Subtítulo del header: sin "próximo cobro" en cancelada (no hay cobro futuro)
+      const _hsub = document.getElementById('memb-header-sub');
+      if(_hsub) _hsub.textContent = _esCancelado ? 'Tu plan' : 'Tu plan y próximo cobro';
       const planNombre = document.getElementById('memb-plan-nombre');
       if(planNombre) planNombre.textContent = _planLbl;
       const proximoCobro = document.getElementById('memb-proximo-cobro');
@@ -25446,7 +25493,7 @@ window.loadMembresiaSection = async function() {
         const precio = planes?.[window.normalizarPlan(memb.plan)]?.precioPesos;
         if(precio) monto.textContent = '$' + precio.toLocaleString('es-AR');
       }
-      window._renderPlanCards('memb-cards-activo', planes, _planActualNorm, 'cambiar');
+      window._renderPlanCards('memb-cards-activo', planes, _planActualNorm, _esCancelado ? 'info' : 'cambiar');
     } else if(estado === 'pendiente') {
       const el = document.getElementById('memb-pendiente');
       if(el) el.style.display = 'block';
@@ -25518,6 +25565,49 @@ window._mostrarBannerPagoFallido = function(dias) {
 window._ocultarBannerPagoFallido = function() {
   const b = document.getElementById('banner-pago-fallido'); if(b) b.style.display = 'none';
   document.body.classList.remove('has-bpf');
+};
+window._mostrarBannerCancelada = function(fecha) {
+  const b = document.getElementById('banner-cancelada'); if(!b) return;
+  const f = document.getElementById('bcanc-fecha'); if(f) f.textContent = fecha || '—';
+  b.style.display = 'block';
+  document.body.classList.add('has-bcanc');
+};
+window._ocultarBannerCancelada = function() {
+  const b = document.getElementById('banner-cancelada'); if(b) b.style.display = 'none';
+  document.body.classList.remove('has-bcanc');
+};
+// Reactivar suscripción cancelada: reutiliza el circuito de creación de preapproval (mp-subscription
+// interno). El cancel del preapproval viejo es no-op inofensivo (ya está cancelled en MP) y trialUsado
+// ya está en true → el nuevo preapproval NO otorga trial (cobro día 1). NO toca cancelarMembresia/mp-cancel.
+window.reactivarSuscripcion = function() {
+  const plan = window.normalizarPlan(currentClientData?.membresia?.plan) || 'esencial';
+  const planLbl = {esencial:'Esencial',pro:'Pro',premium:'Premium'}[plan] || 'Esencial';
+  showConfirm(
+    'Se creará una nueva suscripción a tu plan ' + planLbl + '. Como ya usaste tu período de prueba, el primer cobro es inmediato.',
+    async () => {
+      if(!currentClientUID) return;
+      const btn = document.querySelector('#memb-reactivar-wrap button');
+      if(btn) { btn.textContent = 'Reactivando...'; btn.disabled = true; }
+      showToast('Te llevamos a Mercado Pago para reactivar tu suscripción… (no cierres la pestaña)', 'info');
+      try {
+        const _tk = await window._auth?.currentUser?.getIdToken(true);
+        if(!_tk){ showToast('Tu sesión expiró. Recargá la página e ingresá de nuevo.', 'error'); if(btn){ btn.textContent='Reactivar suscripción'; btn.disabled=false; } return; }
+        const res = await fetch('/.netlify/functions/mp-subscription', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _tk },
+          body: JSON.stringify({ clienteId: currentClientUID, plan })
+        });
+        const data = await res.json();
+        if(!res.ok || !data.init_point) throw new Error(data.error || 'Error al reactivar la suscripción');
+        setTimeout(() => { window.location.href = data.init_point; }, 1800);
+      } catch(e) {
+        console.error('reactivarSuscripcion:', e);
+        showToast('No se pudo reactivar: ' + (e?.message||e), 'error');
+        if(btn){ btn.textContent = 'Reactivar suscripción'; btn.disabled = false; }
+      }
+    },
+    'Reactivar suscripción'
+  );
 };
 window.cancelarMembresia = function() {
   showConfirm(
