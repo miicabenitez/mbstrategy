@@ -5,7 +5,7 @@ if (!getApps().length) {
   initializeApp({ credential: cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)) });
 }
 const db = getFirestore();
-const { PLAN_SERVER, normalizarPlan } = require('./_planConfig');
+const { PLAN_SERVER, TRIAL_DIAS, normalizarPlan } = require('./_planConfig');
 const { verifyAuth } = require('./_auth');
 const ALLOWED_ORIGINS = ['https://sistema.mbstrategy.com.ar', 'https://dev--creative-griffin-98f177.netlify.app'];
 
@@ -27,7 +27,7 @@ async function crearSuscripcionMP(plan, planData, email, externalRef, freeTrial)
     currency_id: 'ARS'
   };
   if (freeTrial) {
-    autoRecurring.free_trial = { frequency: 10, frequency_type: 'days' };
+    autoRecurring.free_trial = { frequency: TRIAL_DIAS, frequency_type: 'days' };
   }
   const mpRes = await fetch('https://api.mercadopago.com/preapproval', {
     method: 'POST',
@@ -46,6 +46,16 @@ async function crearSuscripcionMP(plan, planData, email, externalRef, freeTrial)
     })
   });
   return mpRes;
+}
+
+async function cancelarPreapprovalMP(subscriptionId) {
+  try {
+    await fetch(`https://api.mercadopago.com/preapproval/${subscriptionId}`, {
+      method: 'PUT',
+      headers: { 'Authorization': `Bearer ${process.env.MP_ACCESS_TOKEN}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'cancelled' })
+    });
+  } catch (e) { console.error('cancelarPreapprovalMP error:', e); }
 }
 
 exports.handler = async (event) => {
@@ -74,15 +84,16 @@ exports.handler = async (event) => {
       if (!nombre) {
         return { statusCode: 400, headers: HEADERS, body: JSON.stringify({ error: 'Nombre requerido' }) };
       }
-      // Guardar en pendientes
+      // Trial no reutilizable: flag trialUsado como fuente primaria, activoDesde como fallback retro-compat
+      const clientesSnap = await db.collection('clientes').where('email', '==', email).get();
+      const tuvoTrial = !clientesSnap.empty && clientesSnap.docs.some(d => { const m = d.data().membresia; return m && (m.trialUsado || m.activoDesde); });
+      const freeTrial = (PLAN_SERVER[normalizarPlan(plan)]?.trial) && !tuvoTrial;
+      // Guardar en pendientes (freeTrial se propaga al webhook para marcar trialUsado al crear la cuenta)
       const pendienteRef = await db.collection('pendientes_suscripcion').add({
         email, nombre, negocioNombre: negocioNombre || '',
-        plan, estado: 'pendiente',
+        plan, estado: 'pendiente', freeTrial,
         creadoEn: FieldValue.serverTimestamp()
       });
-      const clientesSnap = await db.collection('clientes').where('email', '==', email).get();
-      const tuvoTrial = !clientesSnap.empty && clientesSnap.docs.some(d => d.data().membresia?.activoDesde);
-      const freeTrial = (PLAN_SERVER[normalizarPlan(plan)]?.trial) && !tuvoTrial;
       const mpRes = await crearSuscripcionMP(plan, planData, email, pendienteRef.id, freeTrial);
       const mpData = await mpRes.json();
       if (!mpRes.ok || !mpData.init_point) {
@@ -112,22 +123,30 @@ exports.handler = async (event) => {
     if (cliente.membresia?.estado === 'activo') {
       return { statusCode: 409, headers: HEADERS, body: JSON.stringify({ error: 'El cliente ya tiene una suscripción activa' }) };
     }
-    // Free trial solo si es base y no tiene historial de suscripción
-    const freeTrial = (PLAN_SERVER[normalizarPlan(plan)]?.trial) && !cliente.membresia?.activoDesde;
+    // Trial no reutilizable: flag trialUsado como fuente primaria, activoDesde como fallback retro-compat
+    const yaTuvoTrial = !!(cliente.membresia?.trialUsado || cliente.membresia?.activoDesde);
+    const freeTrial = (PLAN_SERVER[normalizarPlan(plan)]?.trial) && !yaTuvoTrial;
+    // Actualizar tarjeta / re-suscribir: cancelar el preapproval viejo en MP antes de crear el nuevo (evita doble suscripción)
+    const subVieja = cliente.membresia?.mpSubscriptionId;
+    if (subVieja) await cancelarPreapprovalMP(subVieja);
     const mpRes = await crearSuscripcionMP(plan, planData, cliente.email, clienteId, freeTrial);
     const mpData = await mpRes.json();
     if (!mpRes.ok || !mpData.init_point) {
       console.error('MP API error:', JSON.stringify(mpData));
       return { statusCode: 502, headers: HEADERS, body: JSON.stringify({ error: 'Error al crear suscripción en Mercado Pago' }) };
     }
-    await db.collection('clientes').doc(clienteId).update({
+    const updateInterno = {
       'membresia.plan': plan,
       'membresia.estado': 'pendiente',
       'membresia.mpSubscriptionId': mpData.id,
       'membresia.precioPesos': planData.precioPesos,
       'membresia.precioUSD': planData.precioUSD,
+      'membresia.accesoBloqueado': false,
+      'membresia.pagoFalladoEn': FieldValue.delete(),
       'membresia.creadoEn': FieldValue.serverTimestamp()
-    });
+    };
+    if (freeTrial) updateInterno['membresia.trialUsado'] = true;
+    await db.collection('clientes').doc(clienteId).update(updateInterno);
     return {
       statusCode: 200,
       headers: HEADERS,

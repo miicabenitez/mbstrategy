@@ -14,7 +14,7 @@ const transporter = nodemailer.createTransport({
 
 function buildEmailHTML({ nombre, negocioNombre, email, password, plan, trialEnd }) {
   const planLabel = PLAN_SERVER[normalizarPlan(plan)].label + ' · ' + TRIAL_DIAS + ' días gratis';
-  const isBase = true;
+  const isBase = normalizarPlan(plan) === 'esencial';
   return `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
 <body style="margin:0;padding:0;background:#F5F4EF;font-family:Arial,Helvetica,sans-serif;">

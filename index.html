@@ -1359,6 +1359,13 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
 .rep-chip.on{background:#4a5e4d;color:#f4f0ea;border:none;}
 .rep-chip.off{background:#fff;border:.5px solid #d0cfc9;color:#5f5e5a;}
 .rep-chip svg{flex-shrink:0;}
+body.has-bpf{padding-top:44px;}
+#banner-pago-fallido button:hover{opacity:.9;}
+@media(max-width:640px){
+  body.has-bpf{padding-top:74px;}
+  #banner-pago-fallido .bpf-inner{flex-wrap:wrap;padding:8px 14px;gap:8px;}
+  #banner-pago-fallido .bpf-inner > button{flex:1 1 100%;}
+}
 .cligral-search-box{display:inline-flex;align-items:center;gap:6px;background:#fff;border:.5px solid #d0cfc9;border-radius:20px;padding:4px 12px;margin-left:auto;}
 .cligral-search-box input{border:none;outline:none;background:none;font-family:'DM Sans',sans-serif;font-size:12px;color:#1e2e22;width:150px;}
 @media(max-width:640px){ .cligral-search-box{flex:1;min-width:150px;margin-left:0;} .cligral-search-box input{width:100%;} }
@@ -1486,9 +1493,17 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
     </div>
     <div style="font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:400;color:#2c2c2c;margin-bottom:12px;line-height:1.2;">Tu pago no pudo procesarse</div>
     <div style="font-size:14px;color:#888780;line-height:1.65;margin-bottom:36px;">Actualizá tu método de pago<br>para continuar usando MB Strategy.</div>
-    <button onclick="navigateToMiCuentaMembresia();document.getElementById('memb-pago-fallido').style.display='none';document.getElementById('app').classList.add('visible');" style="display:block;width:100%;background:#4a5e4d;color:#fff;padding:14px 24px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;border:none;cursor:pointer;margin-bottom:10px;">Ir a Mi cuenta</button>
+    <button onclick="actualizarTarjeta()" style="display:block;width:100%;background:#1e2e22;color:#f4f0ea;padding:14px 24px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;border:none;cursor:pointer;margin-bottom:10px;">Actualizar tarjeta</button>
     <a href="https://wa.me/5491176553318" target="_blank" rel="noopener" style="display:block;background:transparent;color:#4a5e4d;padding:13px 24px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;text-decoration:none;border:.5px solid rgba(74,94,77,.4);margin-bottom:28px;">Contactar soporte</a>
     <a href="#" onclick="doLogout();return false;" style="font-size:12px;color:#aaa;text-decoration:none;font-family:'DM Sans',sans-serif;">Cerrar sesión</a>
+  </div>
+</div>
+
+<div id="banner-pago-fallido" style="display:none;position:fixed;top:0;left:0;right:0;z-index:2000;background:#f8ece9;border-bottom:2px solid #7a4e46;">
+  <div class="bpf-inner" style="max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:12px;padding:8px 18px;min-height:44px;">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7a4e46" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    <div id="bpf-texto" style="flex:1;min-width:0;font-size:13px;color:#2c2c2a;line-height:1.4;"></div>
+    <button onclick="actualizarTarjeta()" style="flex-shrink:0;background:#1e2e22;color:#f4f0ea;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;">Actualizar tarjeta</button>
   </div>
 </div>
 
@@ -5333,6 +5348,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
           </div>
           <!-- Estado: activo -->
           <div id="memb-activo" style="display:none;">
+            <div id="memb-cancel-banner" style="display:none;background:#e8f0e9;border:1px solid #b8d4bb;border-radius:10px;padding:10px 14px;margin-bottom:12px;align-items:center;gap:8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2e6a35" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span id="memb-cancel-banner-txt" style="font-size:12px;color:#2e6a35;line-height:1.4;"></span></div>
             <div style="background:linear-gradient(135deg,#1a3528 0%,#0d1f1a 60%,#060e0b 100%) !important;border-radius:14px;padding:18px;color:#fff;position:relative;overflow:hidden;">
               <div style="position:absolute;right:-25px;top:-25px;width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,.04);"></div>
               <div style="display:flex;align-items:center;gap:7px;margin-bottom:14px;position:relative;">
@@ -5346,6 +5362,7 @@ body.admin-micaela .card,body.admin-micaela .ct,body.admin-micaela .cli-grid,bod
               <div style="font-size:11.5px;color:rgba(255,255,255,.6);margin-bottom:14px;position:relative;">Próximo cobro: <span id="memb-proximo-cobro" style="color:rgba(255,255,255,.9);font-weight:500;">—</span></div>
             </div>
             <div style="margin-top:10px;text-align:center;">
+              <button onclick="actualizarTarjeta()" style="display:block;margin:0 auto 8px;background:#f0f5f0;border:.5px solid #c8d5c9;color:#1e2e22;border-radius:8px;padding:9px 18px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;">Actualizar método de pago</button>
               <button onclick="cancelarMembresia()" style="background:none;border:none;color:#C4786A;font-family:'DM Sans',sans-serif;font-size:11.5px;cursor:pointer;text-decoration:underline;padding:4px;">Cancelar suscripción</button>
             </div>
             <div id="memb-cards-activo" style="margin-top:14px;"></div>
@@ -7719,8 +7736,20 @@ window.showClientUI = async function(email, clientData) {
       // No se encontró cliente para este email — mostrar mensaje claro
       return;
     }
+    const _memb = clientData.membresia || {};
+    const _nowMs = Date.now();
+    const _toMs = v => v ? (v.seconds ? v.seconds*1000 : (v.toDate ? v.toDate().getTime() : new Date(v).getTime())) : null;
+    // Baja en trial: acceso hasta proximoCobro; pasada la fecha, degradación lazy a 'cancelado'
+    let _estado = _memb.estado;
+    if(_estado === 'cancelado_pendiente') {
+      const _pxMs = _toMs(_memb.proximoCobro);
+      if(!_pxMs || _pxMs <= _nowMs) {
+        _estado = 'cancelado';
+        try { updateDoc(doc(db,'clientes',clientData.id), {'membresia.estado':'cancelado'}); } catch(e){}
+      }
+    }
     // Bloqueo por membresía cancelada
-    if(clientData.membresia?.estado === 'cancelado') {
+    if(_estado === 'cancelado') {
       document.getElementById('lp').style.display = 'none';
       document.getElementById('app').classList.remove('visible');
       const mc = document.getElementById('memb-cancelada');
@@ -7728,14 +7757,32 @@ window.showClientUI = async function(email, clientData) {
       if(window.embiShow) window.embiShow(false);
       return;
     }
-    // Bloqueo por pago fallido
-    if(clientData.membresia?.accesoBloqueado === true) {
-      document.getElementById('lp').style.display = 'none';
-      document.getElementById('app').classList.remove('visible');
-      const pf = document.getElementById('memb-pago-fallido');
-      if(pf) pf.style.display = 'flex';
-      if(window.embiShow) window.embiShow(false);
-      return;
+    // Pago fallido: 3 días de gracia (banner sticky), después bloqueo total.
+    // Precedencia: si la baja fue voluntaria (cancelado_pendiente vigente), NO se molesta por pago fallido.
+    if(_estado === 'cancelado_pendiente') {
+      window._ocultarBannerPagoFallido();
+    } else {
+      const _falloMs = _toMs(_memb.pagoFalladoEn);
+      let _bloqueado = _memb.accesoBloqueado === true;
+      if(!_bloqueado && _falloMs && Math.floor((_nowMs - _falloMs)/(1000*60*60*24)) >= 3) {
+        _bloqueado = true;
+        try { updateDoc(doc(db,'clientes',clientData.id), {'membresia.accesoBloqueado':true}); } catch(e){}
+      }
+      if(_bloqueado) {
+        window._ocultarBannerPagoFallido();
+        document.getElementById('lp').style.display = 'none';
+        document.getElementById('app').classList.remove('visible');
+        const pf = document.getElementById('memb-pago-fallido');
+        if(pf) pf.style.display = 'flex';
+        if(window.embiShow) window.embiShow(false);
+        return;
+      }
+      if(_falloMs) {
+        const _diasRest = Math.max(1, 3 - Math.floor((_nowMs - _falloMs)/(1000*60*60*24)));
+        window._mostrarBannerPagoFallido(_diasRest);
+      } else {
+        window._ocultarBannerPagoFallido();
+      }
     }
     if(clientData) {
       currentClientId = clientData.id;
@@ -8063,13 +8110,15 @@ window.renderAdminDashboard = function() {
 
   // — Alertas priorizadas —
   const trials = clients.filter(c=>c.membresia?.estado==='trial');
+  // proximoCobro (Timestamp/Date) → ms. Fuente de verdad única del fin de trial / próximo cobro.
+  const _pxMs = m => { const p=m&&m.proximoCobro; return p ? (p.seconds ? p.seconds*1000 : (p.toDate ? p.toDate().getTime() : new Date(p).getTime())) : null; };
   // P1: trials que vencen en ≤3 días
   const trialsVencen = trials.filter(function(c) {
-    if(!c.membresia?.fin) return false;
-    var dias = Math.ceil((new Date(c.membresia.fin)-now)/(1000*60*60*24));
+    var ms = _pxMs(c.membresia); if(ms===null) return false;
+    var dias = Math.ceil((ms-now)/(1000*60*60*24));
     return dias>=0 && dias<=3;
   }).map(function(c) {
-    var dias = Math.ceil((new Date(c.membresia.fin)-now)/(1000*60*60*24));
+    var dias = Math.ceil((_pxMs(c.membresia)-now)/(1000*60*60*24));
     return {c:c, dias:dias};
   }).sort(function(a,b){return a.dias-b.dias;});
   // P2: sin actividad >7d (activos)
@@ -8077,8 +8126,8 @@ window.renderAdminDashboard = function() {
     Math.floor((Date.now()-new Date(c.lastLogin).getTime())/(1000*60*60*24))>7);
   // P3: trials activos (resto)
   const trialsActivos = trials.filter(function(c) {
-    if(!c.membresia?.fin) return true;
-    var dias = Math.ceil((new Date(c.membresia.fin)-now)/(1000*60*60*24));
+    var ms = _pxMs(c.membresia); if(ms===null) return true;
+    var dias = Math.ceil((ms-now)/(1000*60*60*24));
     return dias>3;
   });
 
@@ -8408,7 +8457,7 @@ function renderClientList(clients) {
                      : c.membresia?.estado === 'trial' ? 'trial'
                      : c.membresia?.estado === 'beta' ? 'beta'
                      : c.programa ? 'fin'
-                     : c.membresia?.estado === 'cancelado' ? 'cancelado'
+                     : c.membresia?.estado === 'cancelado' || c.membresia?.estado === 'cancelado_pendiente' ? 'cancelado'
                      : c.membresia?.estado === 'pending' ? 'pendiente'
                      : 'otros';
   const secLabels = { academia:'Academia activa', sistema:'Sistema activo', trial:'Trial', beta:'Beta', fin:'Fin de programa', cancelado:'Cancelados', pendiente:'Pendiente de pago', otros:'Sin clasificar' };
@@ -8425,7 +8474,7 @@ function renderClientList(clients) {
   const esPro = c.membresia?.plan === 'pro';
   const planBg = esPro ? '#eaf3de' : '#e8ede9';
   const planColor = esPro ? '#3b6d11' : '#3d5240';
-  const estadoLabel = c.membresia?.estado === 'activo' ? 'Activo' : c.membresia?.estado === 'trial' ? 'Trial' : c.membresia?.estado === 'beta' ? 'Beta' : c.membresia?.estado === 'cancelado' ? 'Cancelado' : c.membresia?.estado === 'pending' ? 'Pend. pago' : c.programa ? 'Fin programa' : 'Sin estado';
+  const estadoLabel = c.membresia?.estado === 'activo' ? 'Activo' : c.membresia?.estado === 'trial' ? 'Trial' : c.membresia?.estado === 'beta' ? 'Beta' : c.membresia?.estado === 'cancelado_pendiente' ? 'Baja programada' : c.membresia?.estado === 'cancelado' ? 'Cancelado' : c.membresia?.estado === 'pending' ? 'Pend. pago' : c.programa ? 'Fin programa' : 'Sin estado';
   const estadoBg = c.membresia?.estado === 'activo' ? '#eaf3de' : c.membresia?.estado === 'trial' ? '#fff8f0' : c.membresia?.estado === 'beta' ? '#e8ecf0' : c.membresia?.estado === 'pending' ? '#fdf0ee' : '#f5eeec';
   const estadoColor = c.membresia?.estado === 'activo' ? '#3b6d11' : c.membresia?.estado === 'trial' ? '#9a7030' : c.membresia?.estado === 'beta' ? '#3a4a5a' : c.membresia?.estado === 'pending' ? '#c0392b' : '#9a7870';
   const _mrrN = {esencial:110000,pro:175000,premium:220000}[window.normalizarPlan(c.membresia?.plan)];
@@ -25190,9 +25239,16 @@ window.loadMembresiaSection = async function() {
       const el = document.getElementById(id);
       if(el) el.style.display = 'none';
     });
-    if(estado === 'activo' || estado === 'trial') {
+    if(estado === 'activo' || estado === 'trial' || estado === 'cancelado_pendiente') {
       const el = document.getElementById('memb-activo');
       if(el) el.style.display = 'block';
+      const _cb = document.getElementById('memb-cancel-banner');
+      const _cbt = document.getElementById('memb-cancel-banner-txt');
+      if(estado === 'cancelado_pendiente' && memb.proximoCobro) {
+        const _f = memb.proximoCobro.toDate ? memb.proximoCobro.toDate() : new Date(memb.proximoCobro);
+        if(_cbt) _cbt.textContent = 'Suscripción cancelada — tenés acceso hasta el ' + _f.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'}) + '.';
+        if(_cb) _cb.style.display = 'flex';
+      } else if(_cb) { _cb.style.display = 'none'; }
       const planNombre = document.getElementById('memb-plan-nombre');
       if(planNombre) planNombre.textContent = _planLbl;
       const proximoCobro = document.getElementById('memb-proximo-cobro');
@@ -25248,6 +25304,35 @@ window.continuarPago = async function() {
     const initPoint = snap.data()?.membresia?.initPoint;
     if(initPoint) window.location.href = initPoint;
   } catch(e) { console.error(e); }
+};
+window.actualizarTarjeta = async function() {
+  if(!currentClientUID) return;
+  const plan = window.normalizarPlan(currentClientData?.membresia?.plan) || 'esencial';
+  showToast('Te llevamos a Mercado Pago para actualizar tu tarjeta… (no cierres la pestaña)', 'info');
+  try {
+    const _tk = await window._auth?.currentUser?.getIdToken(true);
+    if(!_tk){ showToast('Tu sesión expiró. Recargá la página e ingresá de nuevo.', 'error'); return; }
+    const res = await fetch('/.netlify/functions/mp-subscription', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _tk },
+      body: JSON.stringify({ clienteId: currentClientUID, plan })
+    });
+    const data = await res.json();
+    if(!res.ok || !data.init_point) throw new Error(data.error || 'Error al iniciar la actualización');
+    setTimeout(() => { window.location.href = data.init_point; }, 1800);
+  } catch(e) { console.error('actualizarTarjeta:', e); showToast('No se pudo iniciar la actualización de tarjeta: ' + (e?.message||e), 'error'); }
+};
+window._mostrarBannerPagoFallido = function(dias) {
+  const b = document.getElementById('banner-pago-fallido'); if(!b) return;
+  const txt = document.getElementById('bpf-texto');
+  const restante = dias === 1 ? 'te queda 1 día' : ('te quedan ' + dias + ' días');
+  if(txt) txt.innerHTML = 'Tu último pago no se pudo procesar. Actualizá tu tarjeta para no perder acceso a MB Strategy — <strong>' + restante + '</strong>.';
+  b.style.display = 'block';
+  document.body.classList.add('has-bpf');
+};
+window._ocultarBannerPagoFallido = function() {
+  const b = document.getElementById('banner-pago-fallido'); if(b) b.style.display = 'none';
+  document.body.classList.remove('has-bpf');
 };
 window.cancelarMembresia = function() {
   showConfirm(

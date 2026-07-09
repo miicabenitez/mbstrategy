@@ -77,9 +77,11 @@ exports.handler = async (event) => {
       return { statusCode: 502, headers: HEADERS, body: JSON.stringify({ error: 'Error al cancelar en Mercado Pago' }) };
     }
 
-    // Update optimista en Firestore
+    // Update optimista en Firestore. Si está en trial: 'cancelado_pendiente' → mantiene acceso hasta
+    // proximoCobro (el gate compara la fecha). Si no, baja normal e inmediata.
+    const enTrial = cliente.membresia?.estado === 'trial';
     await db.collection('clientes').doc(clienteId).update({
-      'membresia.estado': 'cancelado',
+      'membresia.estado': enTrial ? 'cancelado_pendiente' : 'cancelado',
       'membresia.mpEstado': 'cancelled',
       'membresia.canceladoEn': FieldValue.serverTimestamp(),
       'membresia.actualizadoEn': FieldValue.serverTimestamp()

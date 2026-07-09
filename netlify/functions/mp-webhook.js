@@ -81,6 +81,70 @@ async function notificarPushover({ nombreCliente, email, plan, monto }) {
   }
 }
 
+async function pushoverMsg(title, message) {
+  try {
+    await fetch('https://api.pushover.net/1/messages.json', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: process.env.PUSHOVER_TOKEN, user: process.env.PUSHOVER_USER, title, message, priority: 0 })
+    });
+  } catch (e) { console.error('Error Pushover:', e); }
+}
+
+async function enviarPagoEmail(tipo, data) {
+  try {
+    const { handler } = require('./send-pago-email');
+    await handler({ httpMethod: 'POST', headers: { 'x-internal-secret': process.env.INTERNAL_SECRET || '' }, body: JSON.stringify({ tipo, ...data }) });
+  } catch (e) { console.error('Error enviando pago email:', e); }
+}
+
+async function findClienteByPreapproval(preapprovalId) {
+  const snap = await db.collection('clientes').where('membresia.mpSubscriptionId', '==', preapprovalId).limit(1).get();
+  return snap.empty ? null : snap.docs[0];
+}
+
+async function manejarAuthorizedPayment(payId) {
+  const r = await fetch(`https://api.mercadopago.com/authorized_payments/${payId}`, { headers: { 'Authorization': `Bearer ${process.env.MP_ACCESS_TOKEN}` } });
+  const ap = await r.json();
+  if (!r.ok) { console.error('authorized_payment fetch error:', JSON.stringify(ap)); return; }
+  const preapprovalId = ap.preapproval_id;
+  if (!preapprovalId) { console.warn('authorized_payment sin preapproval_id'); return; }
+  const doc = await findClienteByPreapproval(preapprovalId);
+  if (!doc) { console.warn('authorized_payment sin cliente para preapproval', preapprovalId); return; }
+  const c = doc.data();
+  const pago = ap.payment || {};
+  const exito = ap.status === 'processed' || pago.status === 'approved';
+  const monto = ap.transaction_amount || pago.transaction_amount || null;
+  try {
+    await doc.ref.collection('pagosMP').add({
+      tipoEvento: 'authorized_payment', authorizedPaymentId: String(payId),
+      estado: exito ? 'aprobado' : 'rechazado', monto,
+      mpStatus: ap.status || null, mpDetail: pago.status_detail || null,
+      fecha: FieldValue.serverTimestamp()
+    });
+  } catch (e) { console.error('Error log pagosMP:', e); }
+  if (exito) {
+    const veniaDeFallo = !!(c.membresia?.pagoFalladoEn || c.membresia?.accesoBloqueado);
+    const upd = {
+      'membresia.estado': 'activo', 'membresia.mpEstado': 'authorized',
+      'membresia.accesoBloqueado': false, 'membresia.pagoFalladoEn': FieldValue.delete(),
+      'membresia.actualizadoEn': FieldValue.serverTimestamp()
+    };
+    if (ap.next_payment_date) upd['membresia.proximoCobro'] = new Date(ap.next_payment_date);
+    await doc.ref.update(upd);
+    if (veniaDeFallo) {
+      await pushoverMsg('✅ Pago recuperado', `${c.negocioNombre || c.nombre || '—'} (${c.email || ''})`);
+      await enviarPagoEmail('reactivado', { email: c.email, nombre: c.nombre, negocioNombre: c.negocioNombre });
+    }
+  } else {
+    if (!c.membresia?.pagoFalladoEn) {
+      await doc.ref.update({ 'membresia.pagoFalladoEn': FieldValue.serverTimestamp(), 'membresia.mpEstado': 'past_due', 'membresia.actualizadoEn': FieldValue.serverTimestamp() });
+      await pushoverMsg('⚠️ Pago fallido', `${c.negocioNombre || c.nombre || '—'} (${c.email || ''}) · plan ${c.membresia?.plan || '—'}`);
+      await enviarPagoEmail('fallido', { email: c.email, nombre: c.nombre, negocioNombre: c.negocioNombre });
+    }
+  }
+}
+
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
@@ -110,6 +174,11 @@ exports.handler = async (event) => {
       });
     }
 
+    if (type === 'subscription_authorized_payment') {
+      const payId = data?.id;
+      if (payId) await manejarAuthorizedPayment(payId);
+      return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ ok: true, msg: 'authorized_payment procesado' }) };
+    }
     if (type !== 'subscription_preapproval') {
       return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ ok: true, msg: 'Evento ignorado' }) };
     }
@@ -216,6 +285,7 @@ exports.handler = async (event) => {
             plan: plan,
             estado: sub.status === 'authorized' ? (PLAN_SERVER[plan].trial ? 'trial' : 'activo') : 'pendiente',
             activoDesde: FieldValue.serverTimestamp(),
+            trialUsado: pendiente.freeTrial === true,
             mpSubscriptionId: subscriptionId,
             mpEstado: sub.status,
             proximoCobro: sub.next_payment_date ? new Date(sub.next_payment_date) : null
@@ -260,37 +330,53 @@ exports.handler = async (event) => {
     }
 
     // ── FLUJO INTERNO (cliente existente) ──
-    let proximoCobro = null;
-    if (sub.next_payment_date) {
-      proximoCobro = new Date(sub.next_payment_date);
+    const existSnap = await db.collection('clientes').doc(externalRef).get();
+    if (!existSnap.exists) {
+      console.warn(`Cliente ${externalRef} no existe (posible pendiente no-authorized)`);
+      return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ ok: true, msg: 'Cliente inexistente' }) };
     }
+    const cActual = existSnap.data();
+    // Guard anti-race: solo procesar la suscripción vigente (ignora webhooks de un preapproval viejo ya reemplazado)
+    const subVigente = cActual.membresia?.mpSubscriptionId;
+    if (subVigente && subVigente !== subscriptionId) {
+      console.log(`Webhook de preapproval viejo ${subscriptionId} ignorado (vigente: ${subVigente})`);
+      return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ ok: true, msg: 'Suscripción no vigente' }) };
+    }
+    const proximoCobro = sub.next_payment_date ? new Date(sub.next_payment_date) : null;
+    // 'paused' es el estado real de MP cuando fallan los cobros → arranca la gracia (el gate bloquea a los 3 días)
+    const entraEnFallo = sub.status === 'paused' || ['failed', 'past_due'].includes(sub.status);
+    const antesEnFallo = !!(cActual.membresia?.pagoFalladoEn || cActual.membresia?.accesoBloqueado);
     const update = {
       'membresia.estado': estadoInterno,
       'membresia.mpSubscriptionId': subscriptionId,
       'membresia.mpEstado': sub.status,
       'membresia.actualizadoEn': FieldValue.serverTimestamp()
     };
-    try {
-      const existSnap = await db.collection('clientes').doc(externalRef).get();
-      if (existSnap.exists) {
-        const planActual = existSnap.data().membresia?.plan;
-        if (planActual) update['plan'] = normalizarPlan(planActual);
-      }
-    } catch(e) { console.warn('No se pudo leer plan del cliente:', e.message); }
+    const planActual = cActual.membresia?.plan;
+    if (planActual) update['plan'] = normalizarPlan(planActual);
     if (proximoCobro) update['membresia.proximoCobro'] = proximoCobro;
     if (sub.status === 'authorized') {
       update['membresia.activoDesde'] = FieldValue.serverTimestamp();
       update['membresia.accesoBloqueado'] = false;
+      update['membresia.pagoFalladoEn'] = FieldValue.delete();
     }
     if (sub.status === 'cancelled') update['membresia.canceladoEn'] = FieldValue.serverTimestamp();
-    if (['failed','past_due'].includes(sub.status)) update['membresia.accesoBloqueado'] = true;
+    if (entraEnFallo && !cActual.membresia?.pagoFalladoEn) update['membresia.pagoFalladoEn'] = FieldValue.serverTimestamp();
 
     try {
-      await db.collection('clientes').doc(externalRef).set(update, { merge: true });
+      await existSnap.ref.update(update);
       console.log(`Cliente ${externalRef} → membresia.estado: ${estadoInterno}`);
     } catch (updateErr) {
-      // Podría ser un pendiente no-authorized, ignorar
       console.warn(`No se pudo actualizar cliente ${externalRef}:`, updateErr.message);
+    }
+
+    // Notificaciones (una vez por transición)
+    if (entraEnFallo && !cActual.membresia?.pagoFalladoEn) {
+      await pushoverMsg('⚠️ Pago fallido', `${cActual.negocioNombre || cActual.nombre || '—'} (${cActual.email || ''}) · plan ${cActual.membresia?.plan || '—'}`);
+      await enviarPagoEmail('fallido', { email: cActual.email, nombre: cActual.nombre, negocioNombre: cActual.negocioNombre });
+    } else if (sub.status === 'authorized' && antesEnFallo) {
+      await pushoverMsg('✅ Pago recuperado', `${cActual.negocioNombre || cActual.nombre || '—'} (${cActual.email || ''})`);
+      await enviarPagoEmail('reactivado', { email: cActual.email, nombre: cActual.nombre, negocioNombre: cActual.negocioNombre });
     }
 
     return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ ok: true }) };
