@@ -270,29 +270,45 @@ exports.handler = async (event) => {
           trialEnd = formatTrialEnd(trialDate);
         }
 
-        // 4. Crear documento en Firestore
-        await db.collection('clientes').doc(userRecord.uid).set({
-          email: pendiente.email,
-          nombre: pendiente.nombre,
-          negocioNombre: pendiente.negocioNombre || '',
-          uid: userRecord.uid,
-          creadoEn: FieldValue.serverTimestamp(),
-          primerLogin: true,
-          plan: plan,
-          productos: {
-            sistema: true,
-            academia: false,
-            embi: PLAN_SERVER[plan].embi
-          },
-          membresia: {
+        // 4. Crear documento en Firestore con negocioId secuencial (MB-N).
+        //    El counter (config/negocioCounter.ultimoId) se incrementa en la MISMA transacción
+        //    que crea el cliente: o la cuenta nace con negocioId o no nace (nunca una cuenta sin
+        //    negocioId, que es lo que rompía Equipo). La transacción serializa el correlativo
+        //    aunque entren dos altas a la vez. Mismo contrato que la migración one-shot.
+        const clienteRef = db.collection('clientes').doc(userRecord.uid);
+        const counterRef = db.collection('config').doc('negocioCounter');
+        const negocioId = await db.runTransaction(async (tx) => {
+          const counterSnap = await tx.get(counterRef);
+          if (!counterSnap.exists) throw new Error('config/negocioCounter no existe');
+          const ultimoId = parseInt(counterSnap.data().ultimoId, 10);
+          if (isNaN(ultimoId)) throw new Error('config/negocioCounter.ultimoId no es un número válido');
+          const nid = `MB-${ultimoId + 1}`;
+          tx.set(clienteRef, {
+            email: pendiente.email,
+            nombre: pendiente.nombre,
+            negocioNombre: pendiente.negocioNombre || '',
+            negocioId: nid,
+            uid: userRecord.uid,
+            creadoEn: FieldValue.serverTimestamp(),
+            primerLogin: true,
             plan: plan,
-            estado: sub.status === 'authorized' ? (PLAN_SERVER[plan].trial ? 'trial' : 'activo') : 'pendiente',
-            activoDesde: FieldValue.serverTimestamp(),
-            trialUsado: pendiente.freeTrial === true,
-            mpSubscriptionId: subscriptionId,
-            mpEstado: sub.status,
-            proximoCobro: sub.next_payment_date ? new Date(sub.next_payment_date) : null
-          }
+            productos: {
+              sistema: true,
+              academia: false,
+              embi: PLAN_SERVER[plan].embi
+            },
+            membresia: {
+              plan: plan,
+              estado: sub.status === 'authorized' ? (PLAN_SERVER[plan].trial ? 'trial' : 'activo') : 'pendiente',
+              activoDesde: FieldValue.serverTimestamp(),
+              trialUsado: pendiente.freeTrial === true,
+              mpSubscriptionId: subscriptionId,
+              mpEstado: sub.status,
+              proximoCobro: sub.next_payment_date ? new Date(sub.next_payment_date) : null
+            }
+          });
+          tx.update(counterRef, { ultimoId: ultimoId + 1 });
+          return nid;
         });
 
         // 5. Enviar email de bienvenida
@@ -318,7 +334,7 @@ exports.handler = async (event) => {
           completadoEn: FieldValue.serverTimestamp()
         });
 
-        console.log(`Nuevo cliente creado: ${pendiente.email} (${userRecord.uid}) — Plan ${plan}`);
+        console.log(`Nuevo cliente creado: ${pendiente.email} (${userRecord.uid}) — ${negocioId} — Plan ${plan}`);
         return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ ok: true, msg: 'Cliente creado' }) };
 
       } catch (createErr) {
