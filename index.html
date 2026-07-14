@@ -4304,7 +4304,7 @@ body.has-bcanc{padding-top:42px;}
           </div>
           <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;">
             <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
-              <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Total pendiente</div>
+              <div id="cb-kpi-total-label" style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Total pendiente</div>
               <div style="font-family:inherit;font-size:20px;font-weight:600;color:#b09088;line-height:1;" id="cb-kpi-total">—</div>
             </div>
             <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
@@ -4313,8 +4313,13 @@ body.has-bcanc{padding-top:42px;}
             </div>
           </div>
         </div>
+        <!-- Vista: Pendientes / Cobradas -->
+        <div style="background:#fff;padding:10px 16px 0;display:flex;gap:6px;">
+          <div onclick="cbVista('pendientes')" id="cbv-pendientes" style="padding:5px 14px;border-radius:20px;font-size:11px;cursor:pointer;border:.5px solid #4a5e4d;color:#fff;background:#4a5e4d;">Pendientes</div>
+          <div onclick="cbVista('cobradas')" id="cbv-cobradas" style="padding:5px 14px;border-radius:20px;font-size:11px;cursor:pointer;border:.5px solid var(--cream-d);color:var(--text-l);background:var(--white);">Cobradas</div>
+        </div>
         <!-- Filtro período -->
-        <div style="background:#fff;padding:10px 16px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+        <div id="cb-periodo-row" style="background:#fff;padding:10px 16px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
           <div onclick="cbFiltrarPeriodo('todos')" id="cbf-todos" style="padding:5px 12px;border-radius:20px;font-size:11px;cursor:pointer;border:.5px solid #4a5e4d;color:#fff;background:#4a5e4d;">Todos</div>
           <div onclick="cbFiltrarPeriodo('semana')" id="cbf-semana" style="padding:5px 12px;border-radius:20px;font-size:11px;cursor:pointer;border:.5px solid var(--cream-d);color:var(--text-l);background:var(--white);">Esta semana</div>
           <div onclick="cbFiltrarPeriodo('mes')" id="cbf-mes" style="padding:5px 12px;border-radius:20px;font-size:11px;cursor:pointer;border:.5px solid var(--cream-d);color:var(--text-l);background:var(--white);">Este mes</div>
@@ -22140,6 +22145,8 @@ async function loadCobranzasModule() {
   if(!currentClientUID) return;
   const setEl = (id,v) => { const el = document.getElementById(id); if(el) el.textContent = v; };
   window._cbPeriodo = window._cbPeriodo || 'todos';
+  window._cbVista = window._cbVista || 'pendientes';
+  _cbSyncVistaUI();
   try {
     const csSnap = await getDocs(collection(db,'clientes',currentClientUID,'misClientes'));
     const clientesById = new Map();
@@ -22155,6 +22162,8 @@ async function loadCobranzasModule() {
       getDocs(collection(db,'clientes',currentClientUID,'presupuestos')),
       getDocs(query(collection(db,'clientes',currentClientUID,'cobros'), where('estado','==','pendiente')))
     ]);
+    // Vista "Cobradas": los presupuestos saldados no desaparecen — se ven acá (nada muere en silencio).
+    if(window._cbVista === 'cobradas') return _cbRenderCobradas(psSnap, clientesById);
     const pendientes = [];
     const hoy = new Date();
     cobrosSnap.forEach(d => {
@@ -22180,7 +22189,10 @@ async function loadCobranzasModule() {
       const cli = p.clienteId ? clientesById.get(p.clienteId) : (p.cliente ? clientesByName.get((p.cliente||'').toLowerCase().trim()) : null);
       const nombre = cli?.nombre || p.cliente || '—';
       const tel = String(cli?.tel || cli?.telefono || '').replace(/[^\d]/g,'');
-      const monto = getPresupMonto(p);
+      // Neteo: mostrar el pendiente real (total − ya cobrado). Los saldados (estado 'Cobrado') ya no
+      // caen acá; viven en la vista "Cobradas". Guard extra por si quedó Aprobado con saldo 0.
+      const monto = getPresupMonto(p) - (parseFloat(p.cobradoPorPresup)||0);
+      if(monto <= 0) return;
       const fechaStr = p.fecha || p.creadoEn || '';
       const fechaDt = fechaStr ? new Date(fechaStr) : null;
       const dias = fechaDt && !isNaN(fechaDt) ? Math.max(0, Math.floor((hoy - fechaDt) / 86400000)) : 0;
@@ -22289,6 +22301,65 @@ window.cbFiltrarPeriodo = function(v) {
     el.style.color = active ? '#fff' : 'var(--text-l)';
     el.style.borderColor = active ? '#4a5e4d' : 'var(--cream-d)';
   });
+  loadCobranzasModule();
+};
+
+// Vista "Cobradas": presupuestos saldados (estado 'Cobrado'). Reusa la tabla de Cobranzas.
+function _cbRenderCobradas(psSnap, clientesById) {
+  const setEl = (id,v) => { const el = document.getElementById(id); if(el) el.textContent = v; };
+  const saldados = [];
+  psSnap.forEach(d => {
+    const p = {id:d.id, ...d.data()};
+    if(p.eliminado || p.estado !== 'Cobrado') return;
+    const cli = p.clienteId ? clientesById.get(p.clienteId) : null;
+    saldados.push({
+      cliente: cli?.nombre || p.cliente || '—',
+      descripcion: p.descripcion || ('Presupuesto '+(p.numero||'')),
+      monto: getPresupMonto(p)
+    });
+  });
+  const totalCobrado = saldados.reduce((s,p)=>s+p.monto,0);
+  setEl('cb-kpi-total', '$' + totalCobrado.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}));
+  setEl('cb-kpi-cantidad', String(saldados.length));
+  const empty = document.getElementById('cb-empty');
+  const tabla = document.getElementById('cb-tabla');
+  const tbody = document.getElementById('cb-tbody');
+  const _noP = document.getElementById('cb-no-periodo'); if(_noP) _noP.style.display='none';
+  var _sw = document.getElementById('cb-search-wrap'); if(_sw) _sw.style.display='none';
+  if(!tbody) return;
+  if(!saldados.length) {
+    if(empty) empty.style.display='block';
+    if(tabla) tabla.style.display='none';
+    tbody.innerHTML='';
+    return;
+  }
+  if(empty) empty.style.display='none';
+  if(tabla) tabla.style.display='';
+  const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  tbody.innerHTML = saldados.map(p => `<tr>
+    <td>${esc(p.cliente)}</td>
+    <td class="cb-col-tel">—</td>
+    <td>${esc(p.descripcion)}</td>
+    <td class="r">$${p.monto.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+    <td class="cb-col-fecha">—</td>
+    <td style="text-align:center"><span style="display:inline-block;padding:3px 9px;border-radius:8px;background:#dcfce7;color:#166534;font-size:11px;font-weight:600;">Saldado</span></td>
+    <td></td><td></td>
+  </tr>`).join('');
+}
+// Sincroniza la UI (tabs, fila de período, label del KPI) con window._cbVista. Idempotente,
+// se llama desde loadCobranzasModule → consistente entre a cualquier entrada al módulo.
+function _cbSyncVistaUI() {
+  const v = window._cbVista || 'pendientes';
+  const pe = document.getElementById('cbv-pendientes'), co = document.getElementById('cbv-cobradas');
+  if(pe){ const a=v==='pendientes'; pe.style.background=a?'#4a5e4d':'var(--white)'; pe.style.color=a?'#fff':'var(--text-l)'; pe.style.borderColor=a?'#4a5e4d':'var(--cream-d)'; }
+  if(co){ const a=v==='cobradas'; co.style.background=a?'#4a5e4d':'var(--white)'; co.style.color=a?'#fff':'var(--text-l)'; co.style.borderColor=a?'#4a5e4d':'var(--cream-d)'; }
+  const perRow = document.getElementById('cb-periodo-row');
+  if(perRow) perRow.style.display = v==='cobradas' ? 'none' : 'flex';
+  const lbl = document.getElementById('cb-kpi-total-label');
+  if(lbl) lbl.textContent = v==='cobradas' ? 'Total cobrado' : 'Total pendiente';
+}
+window.cbVista = function(v) {
+  window._cbVista = v;
   loadCobranzasModule();
 };
 
@@ -22964,33 +23035,28 @@ window.abrirModalCobroLibre = function(clienteId, clienteNombre) {
   document.getElementById('mcl-cobro-concepto').value = '';
   document.getElementById('mcl-cobro-fecha').value = fechaHoyARG();
   document.getElementById('mcl-cobro-forma').value = 'Transferencia';
-  // Checkbox vincular a presupuesto
-  const chk = document.getElementById('mcl-vincular-check');
+  // "¿A qué corresponde este cobro?": presupuestos Aprobados con saldo pendiente + Cuenta general.
+  // Si hay UN solo presupuesto pendiente, viene preseleccionado (el resto → Cuenta general).
   const presupSel = document.getElementById('mcl-presup-sel');
-  if(chk) chk.checked = false;
-  if(presupSel) presupSel.style.display = 'none';
-  // Populate presupuestos pendientes
   if(presupSel) {
     const pendientes = (_mcPresupuestos||[]).filter(p =>
       (p.clienteId===clienteId || p.cliente===clienteNombre) &&
       (p.estado==='Aprobado') &&
       (getPresupMonto(p) - (parseFloat(p.cobradoPorPresup)||0)) > 0
     );
-    presupSel.innerHTML = '<option value="">Sin vincular</option>' +
+    presupSel.innerHTML =
       pendientes.map(p => {
         const pend = getPresupMonto(p) - (parseFloat(p.cobradoPorPresup)||0);
-        return '<option value="'+p.id+'">'+( p.descripcion||'Presupuesto')+' — $'+pend.toLocaleString('es-AR')+' pendiente</option>';
-      }).join('');
+        return '<option value="'+p.id+'">'+(p.descripcion||('Presupuesto '+(p.numero||'')))+' — $'+pend.toLocaleString('es-AR')+' pendiente</option>';
+      }).join('') +
+      '<option value="">Cuenta general (sin presupuesto)</option>';
+    presupSel.value = pendientes.length === 1 ? pendientes[0].id : '';
   }
   const btn = document.getElementById('mcl-cobro-btn');
   if(btn) { btn.disabled=false; btn.textContent='Registrar cobro'; }
   const saved = document.getElementById('mcl-cobro-saved');
   if(saved) saved.style.display='none';
   modal.style.display = 'flex';
-};
-window.mcl_togglePresup = function(chk) {
-  const sel = document.getElementById('mcl-presup-sel');
-  if(sel) sel.style.display = chk.checked ? 'block' : 'none';
 };
 window.cerrarModalCobroLibre = function() {
   const modal = document.getElementById('modal-cobro-libre');
@@ -23005,9 +23071,8 @@ window.guardarCobroLibre = async function() {
   const fecha = document.getElementById('mcl-cobro-fecha').value || fechaHoyARG();
   const concepto = document.getElementById('mcl-cobro-concepto').value.trim() || ('Cobro de '+clienteNombre);
   const formaPago = document.getElementById('mcl-cobro-forma').value;
-  const presupId = (document.getElementById('mcl-vincular-check')?.checked)
-    ? (document.getElementById('mcl-presup-sel')?.value || '')
-    : '';
+  // Selector "¿A qué corresponde?": valor = id del presupuesto, o '' = Cuenta general (sin vincular).
+  const presupId = document.getElementById('mcl-presup-sel')?.value || '';
   const btn = document.getElementById('mcl-cobro-btn');
   if(btn && btn.disabled) return;
   if(btn) { btn.disabled=true; btn.textContent='Registrando...'; }
@@ -35680,10 +35745,8 @@ window.doResetPassword = async function(){
       <input type="text" id="mcl-cobro-concepto" class="fi" placeholder="Ej: seña, cuota 1..." style="margin-top:0;">
     </div>
     <div style="margin-bottom:16px;">
-      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text-m);">
-        <input type="checkbox" id="mcl-vincular-check" onchange="mcl_togglePresup(this)"> Vincular a presupuesto pendiente
-      </label>
-      <select id="mcl-presup-sel" class="fi" style="margin-top:8px;display:none;"></select>
+      <label style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;display:block;margin-bottom:5px;">¿A qué corresponde este cobro?</label>
+      <select id="mcl-presup-sel" class="fi" style="margin-top:0;"></select>
     </div>
     <div style="display:flex;gap:8px;justify-content:flex-end;">
       <button onclick="cerrarModalCobroLibre()" style="padding:9px 18px;border-radius:8px;border:.5px solid var(--cream-d);background:var(--cream);color:var(--text-m);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;">Cancelar</button>
