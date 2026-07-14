@@ -7299,6 +7299,7 @@ window._query = query;
 window._where = where;
 window._orderBy = orderBy;
 window._updateDoc = updateDoc;
+window._writeBatch = writeBatch;
 window._runTransaction = runTransaction;
 
 let currentUser = null;
@@ -18060,29 +18061,34 @@ window.vrcGuardar = async function() {
       // Para el dueño no se crea espejo: el primary ya tiene la cuenta correcta.
       const _esEfectivoCajero = _cuentaObj?.nombre === 'Caja mostrador' || _vrcMetodo === '__tarjeta__';
       if (_esCajero && !_esEfectivoCajero) {
-        // Resolver cuenta real: si _cuentaObj existe usar su nombre; si no, buscar primer cuenta tipo banco; fallback 'Mercado Pago'
-        const _cuentaEspejo = _cuentaObj?.nombre || (_vrcCuentas.find(x => x.tipo === 'banco')?.nombre) || 'Mercado Pago';
-        await addDoc(collection(db, 'clientes', currentClientUID, 'libroCaja'), {
-          uid: currentClientUID,
-          fecha: hoy,
-          tipo: 'ingreso',
-          concepto: 'Venta caja',
-          cuenta: _cuentaEspejo,
-          medioPago: _medioPago,
-          monto: Math.round(total * 100) / 100,
-          productos,
-          mes,
-          origen: 'venta_caja_espejo',
-          eliminado: false,
-          creadoEn: new Date().toISOString(),
-          observacion: document.getElementById('vrc-observacion')?.value?.trim() || '',
-          turnoId: window.turnoActual?.id || '',
-          ticketNum: _ticketNum,
-          refMovId: _vcDocRef.id,
-          creadoPor: window.currentOperadorNombre || 'Admin',
-          cajaOrigenId: window._cajaActivaId || '',
-          cajaOrigenNombre: window._cajaActivaNombre || 'Caja mostrador'
-        });
+        // Doctrina: MP/Transferencia espejan a la cuenta real del dueño (la seleccionada). Un espejo sin
+        // cuenta destino JAMÁS cae en silencio — avisamos en vez de crear un huérfano en 'Mercado Pago'.
+        const _cuentaEspejo = _cuentaObj?.nombre;
+        if (!_cuentaEspejo) {
+          showConfirm('La venta se registró, pero no se pudo reflejar en la cuenta del dueño: falta la cuenta destino. Configurala en Finanzas → Configuración.', function(){}, 'Falta cuenta destino');
+        } else {
+          await addDoc(collection(db, 'clientes', currentClientUID, 'libroCaja'), {
+            uid: currentClientUID,
+            fecha: hoy,
+            tipo: 'ingreso',
+            concepto: 'Venta caja',
+            cuenta: _cuentaEspejo,
+            medioPago: _medioPago,
+            monto: Math.round(total * 100) / 100,
+            productos,
+            mes,
+            origen: 'venta_caja_espejo',
+            eliminado: false,
+            creadoEn: new Date().toISOString(),
+            observacion: document.getElementById('vrc-observacion')?.value?.trim() || '',
+            turnoId: window.turnoActual?.id || '',
+            ticketNum: _ticketNum,
+            refMovId: _vcDocRef.id,
+            creadoPor: window.currentOperadorNombre || 'Admin',
+            cajaOrigenId: window._cajaActivaId || '',
+            cajaOrigenNombre: window._cajaActivaNombre || 'Caja mostrador'
+          });
+        }
       }
       const _vcCarritoSnap = {..._vrcCarrito};
       const _obsVenta = document.getElementById('vrc-observacion')?.value?.trim() || '';
@@ -32707,6 +32713,20 @@ window.cajaMovModificarMedio = function(id) {
     '</div>'
   ].join('');
 };
+// Doctrina del espejo: ¿el medio espeja? ¿a qué cuenta del dueño?
+// MP → cuenta tipo 'mp'; Transferencia → cuenta tipo 'banco'; Efectivo y Tarjeta D/C → no espejan.
+function _reconcMedioDestino(medio) {
+  var cuentas = window._cajaCuentasUnicas || [];
+  if(medio === 'Mercado Pago') {
+    var c = cuentas.find(function(x){ return x.tipo === 'mp' || x.nombre === 'Mercado Pago'; });
+    return { espeja: true, cuenta: c ? c.nombre : null };
+  }
+  if(medio === 'Transferencia') {
+    var b = cuentas.find(function(x){ return x.tipo === 'banco'; });
+    return { espeja: true, cuenta: b ? b.nombre : null };
+  }
+  return { espeja: false, cuenta: null };
+}
 window.cajaMovModificarMedioConfirmar = async function(id) {
   var m = (window._cajaMovimientos||[]).find(function(x){return x.id===id;});
   if(!m) return;
@@ -32714,6 +32734,16 @@ window.cajaMovModificarMedioConfirmar = async function(id) {
   var nuevo = sel ? sel.value : '';
   var medioAnt = m.medioPago || ((m.cuenta && m.cuenta!=='Caja mostrador') ? m.cuenta : 'Efectivo');
   if(!nuevo || nuevo===medioAnt) { cajaMovDetalle(id); return; }
+
+  // Reconciliación del espejo (doctrina): sólo en ventas del cajero (primary en Caja mostrador).
+  // Las ventas del dueño (cuenta real) no espejan y quedan como estaban.
+  var esVentaCajero = m.origen === 'venta_caja' && m.cuenta === 'Caja mostrador';
+  var dest = _reconcMedioDestino(nuevo);
+  // TODO O NADA: si el nuevo medio debe espejar pero no hay cuenta destino, no se aplica nada.
+  if(esVentaCajero && dest.espeja && !dest.cuenta) {
+    showConfirm('No se puede cambiar a "'+nuevo+'": falta la cuenta destino en Finanzas → Configuración. La modificación no se aplicó.', function(){}, 'Falta cuenta destino');
+    return;
+  }
   try {
     var nuevaMod = {
       campo: 'medioPago',
@@ -32723,10 +32753,56 @@ window.cajaMovModificarMedioConfirmar = async function(id) {
       creadoEn: new Date().toISOString()
     };
     var nuevasModif = (m.modificaciones||[]).concat([nuevaMod]);
-    await window._updateDoc(
-      window._doc(window.db,'clientes',currentClientUID,'libroCaja',id),
-      { medioPago: nuevo, modificaciones: nuevasModif }
-    );
+
+    // Todo en un batch atómico: primario + espejo se aplican juntos o no se aplican.
+    var batch = window._writeBatch(window.db);
+    batch.update(window._doc(window.db,'clientes',currentClientUID,'libroCaja',id), { medioPago: nuevo, modificaciones: nuevasModif });
+
+    if(esVentaCajero) {
+      // Buscar el espejo activo de esta venta (si lo hay). Un solo where (evita índice compuesto);
+      // el origen y el eliminado se filtran en memoria.
+      var espSnap = await window._getDocs(window._query(
+        window._collection(window.db,'clientes',currentClientUID,'libroCaja'),
+        window._where('refMovId','==',id)
+      ));
+      var espejoRef = null;
+      espSnap.forEach(function(d){ var dd = d.data(); if(dd.origen==='venta_caja_espejo' && !dd.eliminado && !espejoRef) espejoRef = d.ref; });
+
+      if(dest.espeja) {
+        if(espejoRef) {
+          // Ya espejaba → mover/relabelear a la cuenta destino nueva
+          batch.update(espejoRef, { cuenta: dest.cuenta, medioPago: nuevo });
+        } else {
+          // No espejaba (venía de Efectivo/Tarjeta o le faltaba el espejo) → crear
+          batch.set(window._doc(window._collection(window.db,'clientes',currentClientUID,'libroCaja')), {
+            uid: currentClientUID,
+            fecha: m.fecha || '',
+            tipo: 'ingreso',
+            concepto: m.concepto || 'Venta caja',
+            cuenta: dest.cuenta,
+            medioPago: nuevo,
+            monto: parseFloat(m.monto)||0,
+            productos: m.productos || [],
+            mes: m.mes || '',
+            origen: 'venta_caja_espejo',
+            eliminado: false,
+            creadoEn: new Date().toISOString(),
+            observacion: m.observacion || '',
+            turnoId: m.turnoId || '',
+            ticketNum: m.ticketNum || '',
+            refMovId: id,
+            creadoPor: window.currentOperadorNombre || 'Cajero',
+            cajaOrigenId: window._cajaActivaId || '',
+            cajaOrigenNombre: window._cajaActivaNombre || 'Caja mostrador'
+          });
+        }
+      } else if(espejoRef) {
+        // Nuevo medio NO espeja (Efectivo/Tarjeta) → dar de baja el espejo que había
+        batch.update(espejoRef, { eliminado: true });
+      }
+    }
+
+    await batch.commit();
     m.medioPago = nuevo;
     m.modificaciones = nuevasModif;
     cajaMovDetalle(id);
