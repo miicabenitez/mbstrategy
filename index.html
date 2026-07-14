@@ -12984,20 +12984,30 @@ window._aplicarFiltrosCaja = function() {
     });
   }
   filtrados.sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')||((a.creadoEn||'').localeCompare(b.creadoEn||'')));
+  // Doctrina (28/05): la Caja del dueño muestra SOLO sus cuentas + espejos + retiro por cierre.
+  // Los primarios del turno del cajero (cuenta 'Caja mostrador') viven ÚNICAMENTE en Auditoría.
+  // Se aplica en la vista "Todas" (default); si el dueño elige una caja física puntual, no se filtra (drill-down).
+  let _filtradosLista = filtrados;
+  if(window.currentRol !== 'cajero' && !window._cajaOrigenFiltro) {
+    const _dueno = (window._cajaCuentasUnicas || []).filter(_esCuentaDueno).map(c => c.nombre);
+    if(_dueno.length) {
+      _filtradosLista = filtrados.filter(m => _dueno.includes(m.cuenta) || _dueno.includes(m.cuentaDesde) || _dueno.includes(m.cuentaHacia));
+    }
+  }
   // FASE 5.A PASO 3: paginación — tabla muestra los últimos N (más recientes en ASC)
   const limite = window._cajaPaginaLimite || 15;
-  const paginados = filtrados.length > limite ? filtrados.slice(-limite) : filtrados;
-  renderCajaKPIs(filtrados);
-  // COMMIT FIX SALDO: pasa filtrados para el banner (acumulado real) + paginados para rows visibles
-  renderCajaTable(paginados, undefined, filtrados);
-  // Re-render KPI cards (TODAS/EFECTIVO/MP/BANCO) con los movs filtrados (no paginados)
+  const paginados = _filtradosLista.length > limite ? _filtradosLista.slice(-limite) : _filtradosLista;
+  renderCajaKPIs(_filtradosLista);
+  // COMMIT FIX SALDO: pasa la vista dueño para el banner (acumulado real) + paginados para rows visibles
+  renderCajaTable(paginados, undefined, _filtradosLista);
+  // Re-render KPI cards (TODAS/EFECTIVO/MP/BANCO). Los chips ya filtran por cuenta del dueño internamente → reciben `filtrados`.
   if(window._cajaCuentasUnicas) {
     renderCajaChips(window._cajaCuentasUnicas, filtrados);
   }
   // Visibilidad y label de la fila "Cargar más antiguos" (Fase 5.B PASO 1.1: integrada al card)
   const cargarMasRow = document.getElementById('caja-cargar-mas-row');
   const cargarMasLabel = document.getElementById('caja-cargar-mas-label');
-  const restantes = filtrados.length - limite;
+  const restantes = _filtradosLista.length - limite;
   if(cargarMasRow && cargarMasLabel) {
     if(restantes > 0 && window.currentRol !== 'cajero') {
       const cant = Math.min(15, restantes);
