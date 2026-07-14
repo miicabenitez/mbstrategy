@@ -3954,7 +3954,7 @@ body.has-bcanc{padding-top:42px;}
       <div style="background:rgba(255,255,255,.08);border-radius:12px;padding:14px 16px;border:0.5px solid rgba(255,255,255,.1);">
         <div style="font-size:9px;font-weight:500;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Por cobrar</div>
         <div id="ck-cobros-pend" style="font-family:'DM Sans',sans-serif;font-size:22px;font-weight:600;color:#fff;line-height:1;">$0</div>
-        <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:4px;">presupuestos aprobados</div>
+        <div id="ck-cobros-pend-sub" style="font-size:10px;color:rgba(255,255,255,.4);margin-top:4px;">presupuestos aprobados</div>
       </div>
     </div>
     <!-- ck-margen oculto para compatibilidad JS -->
@@ -20875,7 +20875,7 @@ function renderCkFunnel(presupuestos) {
   const enviados = presupuestos.filter(p=>p.estado==='Enviado').length;
   const aprobados = presupuestos.filter(p=>p.estado==='Aprobado').length;
   const cobrados = presupuestos.filter(p=>p.estado==='Cobrado').length;
-  const sinCobrar = presupuestos.filter(p=>p.estado==='Aprobado').reduce((a,p)=>a+getPresupMonto(p),0);
+  const sinCobrar = presupuestos.filter(p=>p.estado==='Aprobado').reduce((a,p)=>a+_presupSaldo(p),0);
   const conv = (enviados+aprobados+cobrados) > 0 ? Math.round((aprobados+cobrados)/(enviados+aprobados+cobrados)*100) : 0;
   const fmt = v => '$'+Math.round(v).toLocaleString('es-AR');
 
@@ -20909,6 +20909,8 @@ function renderCkFunnel(presupuestos) {
   `;
 }
 
+// Saldo pendiente de un presupuesto, neteado por lo ya cobrado (mismo criterio que Cobranzas).
+function _presupSaldo(p){ return Math.max(0, getPresupMonto(p) - (parseFloat(p.cobradoPorPresup)||0)); }
 function renderCkKpis(ingresos, egresos, presupuestos, mcClientes) {
   const setEl=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
   const totalIng=ingresos.reduce((a,i)=>a+(parseFloat(i.monto)||0),0);
@@ -20959,10 +20961,11 @@ function renderCkKpis(ingresos, egresos, presupuestos, mcClientes) {
   setEl('bn-kpi-margen',margen+'%');
   setEl('bn-kpi-tick','$'+Math.round(ticketProm).toLocaleString('es-AR'));
 
-  // Cobros pendientes = presupuestos Aprobados sin cobrar aún
-  const pendientes = presupuestos.filter(p => p.estado === 'Aprobado');
-  const cobrosPend = pendientes.reduce((a,p) => a + getPresupMonto(p), 0);
+  // Cobros pendientes = presupuestos Aprobados, neteado por lo ya cobrado (parciales no cuentan al total).
+  const _saldosPend = presupuestos.filter(p => p.estado === 'Aprobado').map(_presupSaldo).filter(s => s > 0);
+  const cobrosPend = _saldosPend.reduce((a,s) => a + s, 0);
   setEl('ck-cobros-pend', '$' + cobrosPend.toLocaleString('es-AR'));
+  setEl('ck-cobros-pend-sub', _saldosPend.length + (_saldosPend.length === 1 ? ' presupuesto' : ' presupuestos') + ' con saldo pendiente');
 
   // Ventas del período — cantidad de ventas reales (mostrador + cuenta cliente)
   const ventasMes = ventasPeriodo.length;
@@ -21051,8 +21054,8 @@ function renderCkResumen(ingresos, egresos, ticketProm) {
     if(topEg) lineas.push({color:'#b09088', texto:`Mayor egreso: ${topEg.concepto||'Sin concepto'} — $${Math.round(parseFloat(topEg.monto)||0).toLocaleString('es-AR')}.`});
   }
   const pend = (window._clientPresupuestos||[]).filter(p=>p.estado==='Aprobado');
-  if(pend.length > 0) {
-    const montoPend = pend.reduce((a,p)=>a+getPresupMonto(p),0);
+  const montoPend = pend.reduce((a,p)=>a+_presupSaldo(p),0);
+  if(montoPend > 0) {
     lineas.push({color:'#b09088', texto:`$${Math.round(montoPend).toLocaleString('es-AR')} en presupuestos aprobados sin cobrar.`});
   }
   if(ticketProm > 0) lineas.push({color:'#b09088', texto:`Ticket promedio: $${Math.round(ticketProm).toLocaleString('es-AR')} por transacción.`});
@@ -21066,10 +21069,10 @@ function renderCkAlertas(ingresos, egresos) {
   const grid = document.getElementById('ck-alertas-grid');
   if(!wrap || !grid) return;
   const alertas = [];
-  const pend = (window._clientPresupuestos||[]).filter(p=>p.estado==='Aprobado');
+  const pend = (window._clientPresupuestos||[]).filter(p=>p.estado==='Aprobado' && _presupSaldo(p) > 0);
   if(pend.length > 0) {
-    const monto = pend.reduce((a,p)=>a+getPresupMonto(p),0);
-    alertas.push({tipo:'warn', titulo:`$${Math.round(monto).toLocaleString('es-AR')} sin cobrar`, desc:`${pend.length} presupuesto${pend.length>1?'s':''} aprobado${pend.length>1?'s':''} pendiente${pend.length>1?'s':''} de cobro.`});
+    const monto = pend.reduce((a,p)=>a+_presupSaldo(p),0);
+    alertas.push({tipo:'warn', titulo:`$${Math.round(monto).toLocaleString('es-AR')} sin cobrar`, desc:`${pend.length} presupuesto${pend.length>1?'s':''} con saldo pendiente.`});
   }
   const totalIng = ingresos.reduce((a,i)=>a+(parseFloat(i.monto)||0),0);
   const totalEg = egresos.reduce((a,e)=>a+(parseFloat(e.monto)||0),0);
