@@ -11994,9 +11994,12 @@ async function _cajaMaybeInit(uid) {
     // Cuentas
     if(cuentasSnap.empty) {
       // FIX: seeds con tipo explicito (antes se creaban sin tipo y rompian helpers que filtran por tipo)
+      // Blindaje: las 4 cuentas base (mismos nombres/tipos que espera el circuito cajero — 'Caja mostrador' y 'Banco' incluidas)
       await Promise.all([
         addDoc(collection(db,'clientes',uid,'cuentas'), {nombre:'Efectivo', tipo:'efectivo', saldo:0, orden:0}),
-        addDoc(collection(db,'clientes',uid,'cuentas'), {nombre:'Mercado Pago', tipo:'mp', saldo:0, orden:1})
+        addDoc(collection(db,'clientes',uid,'cuentas'), {nombre:'Mercado Pago', tipo:'mp', saldo:0, orden:1}),
+        addDoc(collection(db,'clientes',uid,'cuentas'), {nombre:'Banco', tipo:'banco', saldo:0, orden:2}),
+        addDoc(collection(db,'clientes',uid,'cuentas'), {nombre:'Caja mostrador', tipo:'efectivo', saldo:0, orden:3})
       ]);
     } else {
       // Dedup cuentas por nombre
@@ -17519,6 +17522,19 @@ function _vrcRenderMetodos() {
     <div style="margin-bottom:5px;"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 17c0-3.314 3.134-6 7-6s7 2.686 7 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
     <div class="vrc-mlabel">Cuenta cliente</div>
   </button>`;
+  // Defensa suave: nada muere en silencio. Si al cajero le falta la cuenta de efectivo ('Caja mostrador')
+  // o una cuenta banco (Transferencia), avisamos en vez de omitir el medio sin explicación.
+  const avisoEl = document.getElementById('vrc-cuentas-aviso');
+  if(avisoEl) {
+    const _faltaEfectivo = !_vrcCuentas.some(c => c.nombre === 'Caja mostrador');
+    const _faltaBanco = !_vrcCuentas.some(c => c.tipo === 'banco');
+    if(window.currentRol === 'cajero' && (_faltaEfectivo || _faltaBanco)) {
+      avisoEl.textContent = 'Faltan cuentas por configurar en Finanzas → Configuración';
+      avisoEl.style.display = 'block';
+    } else {
+      avisoEl.style.display = 'none';
+    }
+  }
   const tipoDiv = document.getElementById('vrc-tarjeta-tipo');
   if(tipoDiv) {
     if(isTarjeta) {
@@ -35388,6 +35404,7 @@ window.doResetPassword = async function(){
       <div>
         <span class="cj-slabel">MÉTODO DE PAGO</span>
         <div id="vrc-metodos" style="display:grid;gap:8px;grid-template-columns:1fr 1fr 1fr;margin-top:0;"></div>
+        <div id="vrc-cuentas-aviso" style="display:none;margin-top:8px;font-size:11px;color:#b09088;text-align:center;line-height:1.4;"></div>
         <div id="vrc-tarjeta-tipo" style="display:none;"></div>
         <div id="vrc-cta-search" style="display:none;"></div>
       </div>

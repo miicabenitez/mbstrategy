@@ -12,6 +12,24 @@ const auth = getAuth();
 const { PLAN_SERVER, TRIAL_DIAS, normalizarPlan } = require('./_planConfig');
 const HEADERS = { 'Content-Type': 'application/json' };
 
+// Cuentas base del blindaje: toda cuenta nueva nace con estas 4 (mismos nombres/tipos que espera el circuito cajero).
+const CUENTAS_BASE = [
+  { nombre: 'Efectivo',       tipo: 'efectivo', orden: 0 },
+  { nombre: 'Mercado Pago',   tipo: 'mp',       orden: 1 },
+  { nombre: 'Banco',          tipo: 'banco',    orden: 2 },
+  { nombre: 'Caja mostrador', tipo: 'efectivo', orden: 3 }
+];
+// Crea las cuentas base que falten (idempotente por nombre, batch atómico). No pisa las existentes.
+async function crearCuentasBase(clienteRef) {
+  const snap = await clienteRef.collection('cuentas').get();
+  const existentes = new Set(snap.docs.map(d => d.data().nombre));
+  const faltan = CUENTAS_BASE.filter(c => !existentes.has(c.nombre));
+  if (!faltan.length) return;
+  const batch = db.batch();
+  faltan.forEach(c => batch.set(clienteRef.collection('cuentas').doc(), { nombre: c.nombre, tipo: c.tipo, saldo: 0, orden: c.orden }));
+  await batch.commit();
+}
+
 function verificarFirma(event) {
   const xSignature = event.headers['x-signature'];
   const xRequestId = event.headers['x-request-id'];
@@ -310,6 +328,14 @@ exports.handler = async (event) => {
           tx.update(counterRef, { ultimoId: ultimoId + 1 });
           return nid;
         });
+
+        // 4b. Cuentas base del blindaje (idempotente). Fuera de la tx del correlativo: si falla, el seed
+        //     client-side las completa en el primer login; nunca bloquea el alta.
+        try {
+          await crearCuentasBase(clienteRef);
+        } catch (ccErr) {
+          console.error('[mp-webhook] error creando cuentas base (se completarán en el primer login):', ccErr);
+        }
 
         // 5. Enviar email de bienvenida
         await enviarWelcomeEmail({
