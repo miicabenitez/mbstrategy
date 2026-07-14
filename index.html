@@ -26359,7 +26359,7 @@ window.saveProdCompra = async function() {
   if(!nombre){showToast('Ingresá un nombre', 'info');return;}
   const catVal = document.getElementById('pc-cat').value;
   if(!catVal){showToast('Seleccioná una categoría', 'info');return;}
-  const data = { nombre, categoria:catVal, unidad:document.getElementById('pc-unidad').value, descripcion:document.getElementById('pc-desc').value, creadoEn:new Date().toISOString() };
+  const data = { nombre, categoria:catVal, unidad:(document.getElementById('pc-unidad').value||'').toLowerCase(), descripcion:document.getElementById('pc-desc').value, creadoEn:new Date().toISOString() };
   try {
     if(id) await updateDoc(doc(db,'clientes',currentClientUID,'prodCompra',id),data);
     else await addDoc(collection(db,'clientes',currentClientUID,'prodCompra'),data);
@@ -26591,10 +26591,17 @@ window.saveNecesidad = async function() {
   if(!currentClientUID) return;
   const cat = document.getElementById('nc-cat').value;
   if(!cat){showToast('Seleccioná una categoría', 'info');return;}
-  const items = _prodCompra.filter(p=>{const cb=document.getElementById('ncp-'+p.id);return cb&&cb.checked;}).map(p=>({
-    id:p.id, nombre:p.nombre, unidad:p.unidad,
-    cantidad:parseFloat(document.getElementById('ncq-'+p.id)?.value)||1
-  }));
+  // Asegurar cache de insumos para la auto-sugerencia de vínculo (igual que la OC directa).
+  if(!(window._stockInsumos && window._stockInsumos.length)) { try { await window.loadStockModule(); } catch(e){} }
+  const items = _prodCompra.filter(p=>{const cb=document.getElementById('ncp-'+p.id);return cb&&cb.checked;}).map(p=>{
+    // Auto-sugerencia de vínculo con stock (misma lógica que la OC directa) → propaga a la OC vía cotización.
+    const _v = window._matchVinculoStock(p.nombre);
+    return {
+      id:p.id, nombre:p.nombre, unidad:(p.unidad||'').toLowerCase(),
+      cantidad:parseFloat(document.getElementById('ncq-'+p.id)?.value)||1,
+      ...(_v || {})
+    };
+  });
   if(items.length===0){showToast('Seleccioná al menos un producto', 'info');return;}
   const btn = document.getElementById('btn-save-necesidad');
   if(btn){btn.disabled=true;btn.textContent='Guardando...';}
@@ -27317,12 +27324,27 @@ function _nocRenderItems() {
       + '</div>';
   }).join('');
 }
+// Match EXACTO normalizado (lowercase+trim, sin fuzzy) del nombre contra insumos y productos de
+// reventa. Devuelve los campos de vínculo del ítem, o null. Es una SUGERENCIA (editable/borrable).
+window._matchVinculoStock = function(nombre) {
+  const n = (nombre||'').toLowerCase().trim();
+  if(!n) return null;
+  const ins = (window._stockInsumos||[]).find(x => !x.eliminado && (x.nombre||'').toLowerCase().trim() === n);
+  if(ins) return { insumoId: ins.id, insumoNombre: ins.nombre, insumoUnidad: ins.unidad||'', productoId: null, productoNombre: '' };
+  const prod = (window._productos||[]).find(p => p.manejaStock === true && !p.eliminado && (p.nombre||'').toLowerCase().trim() === n);
+  if(prod) return { productoId: prod.id, productoNombre: prod.nombre, insumoId: null, insumoNombre: '', insumoUnidad: '' };
+  return null;
+};
 window.nocSeleccionarProducto = function(i, val) {
   if(val === '__otro__') {
     _nocItems[i] = { ..._nocItems[i], esOtro: true, prodId: null, nombre: '' };
   } else if(val) {
     const prod = (_prodCompra||[]).find(p => p.id === val);
-    _nocItems[i] = { ..._nocItems[i], esOtro: false, prodId: val, nombre: prod ? prod.nombre : '' };
+    const nombre = prod ? prod.nombre : '';
+    // Auto-sugerencia de vínculo con stock por nombre exacto. El vínculo sigue al producto elegido
+    // (si el nuevo producto no matchea, se limpia). Queda visible y editable en el campo "Vincular con stock".
+    const _v = window._matchVinculoStock(nombre) || { insumoId:null, insumoNombre:'', insumoUnidad:'', productoId:null, productoNombre:'' };
+    _nocItems[i] = { ..._nocItems[i], esOtro: false, prodId: val, nombre, ..._v };
   } else {
     _nocItems[i] = { ..._nocItems[i], esOtro: false, prodId: null, nombre: '' };
   }
@@ -27760,7 +27782,25 @@ window.ejecutarRecepcionOC = async function(ocId, cantidades) {
     }
   } catch(e) { console.error('Stock trigger OC recibida:', ocId, e); }
 
-  return { totalRecibido, oc };
+  // Aviso "nada muere en silencio": ítems recibidos SIN vínculo pero que matchean por nombre exacto un
+  // insumo/producto de reventa existente. Los sin match no avisan (compras que no van a stock son legítimas).
+  let sinVinculoConMatch = 0;
+  try {
+    const _sinV = itemsConRec.filter(it => !it.insumoId && !it.productoId && (parseFloat(it.cantidadRecibida)||0) !== 0);
+    if(_sinV.length) {
+      const _norm = s => (s||'').toLowerCase().trim();
+      const [insSnap, prodSnap] = await Promise.all([
+        getDocs(collection(db,'clientes',currentClientUID,'insumos')),
+        getDocs(collection(db,'clientes',currentClientUID,'productos'))
+      ]);
+      const nombres = new Set();
+      insSnap.forEach(d => { const x=d.data(); if(!x.eliminado && x.nombre) nombres.add(_norm(x.nombre)); });
+      prodSnap.forEach(d => { const p=d.data(); if(p.manejaStock===true && !p.eliminado && p.nombre) nombres.add(_norm(p.nombre)); });
+      sinVinculoConMatch = _sinV.filter(it => nombres.has(_norm(it.nombre||it.insumoNombre||it.productoNombre||''))).length;
+    }
+  } catch(e) { console.error('aviso sin-vínculo OC:', e); }
+
+  return { totalRecibido, oc, sinVinculoConMatch };
 };
 window.confirmarRecepcionOC = async function() {
   const ocId = window._ocRecOcId;
@@ -27775,7 +27815,12 @@ window.confirmarRecepcionOC = async function() {
     await loadOrdenesCompra();
     const provId = res && res.oc ? res.oc.proveedorId : null;
     if(_ccProvId && provId===_ccProvId) await abrirCuentaCorriente(_ccProvId);
-    showToast('Recepción registrada.', 'ok');
+    const _sv = (res && res.sinVinculoConMatch) || 0;
+    if(_sv > 0) {
+      showConfirm(`${_sv} ítem${_sv>1?'s':''} recibido${_sv>1?'s':''} no impactó el stock porque no está${_sv>1?'n':''} vinculado${_sv>1?'s':''} a un insumo. Podés vincularlo${_sv>1?'s':''} editando la OC.`, function(){}, 'Stock no actualizado');
+    } else {
+      showToast('Recepción registrada.', 'ok');
+    }
   } catch(e) { showToast('Error: '+e.message, 'error'); }
   finally { if(btn){ btn.disabled=false; btn.style.opacity='1'; } }
 };
@@ -34639,12 +34684,14 @@ async function embiEjecutarAccion(tipo,datos){
       var _ocData=_ocDoc.data();
       if(_ocData.estadoRecepcion==='recibida'){embiAddMsg('bot','La OC #'+_ocData.numero+' ya fue marcada como recibida.');return;}
       var _pvId=datos.proveedorId||_ocData.proveedorId||'';
-      await window.ejecutarRecepcionOC(_ocDoc.id, null);
+      var _rrEmbi = await window.ejecutarRecepcionOC(_ocDoc.id, null);
       if(window.loadOrdenesCompra)await window.loadOrdenesCompra();
       if(window.loadProveedores)await window.loadProveedores();
       if(window._ccProvId && _pvId && window._ccProvId===_pvId && window.abrirCuentaCorriente) await window.abrirCuentaCorriente(_pvId);
       if(window.loadInicio)window.loadInicio();
-      embiAddMsg('bot','OC #'+(_ocData.numero||datos.numero)+' ('+datos.proveedor+') marcada como recibida. Se registró la deuda en la cuenta corriente.');
+      var _svEmbi = (_rrEmbi && _rrEmbi.sinVinculoConMatch) || 0;
+      var _avisoStk = _svEmbi > 0 ? ' ⚠️ '+_svEmbi+' ítem'+(_svEmbi>1?'s':'')+' no impactó el stock (sin vínculo a insumo) — vinculalos editando la OC.' : '';
+      embiAddMsg('bot','OC #'+(_ocData.numero||datos.numero)+' ('+datos.proveedor+') marcada como recibida. Se registró la deuda en la cuenta corriente.'+_avisoStk);
     }else if(tipo==='PROVEEDOR_NUEVO'){
       await window._addDoc(window._collection(window.db,'clientes',currentClientUID,'proveedores'),{nombre:datos.nombre,tel:datos.tel||'',email:datos.email||'',categoria:datos.categoria||'',creadoEn:new Date().toISOString(),eliminado:false});
       if(window._embi_proveedores) window._embi_proveedores.push({nombre:datos.nombre,_saldo:0});
