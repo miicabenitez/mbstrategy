@@ -23580,13 +23580,13 @@ window.saveMcCliente = async function(id) {
 
 window.deleteMcCliente = function(id, event) {
   if(event) event.stopPropagation();
-  showConfirm('¿Eliminar este cliente? Se borrarán también sus cobros, historial y notas.',async()=>{
+  showConfirm('El cliente se archivará en la Papelera y vas a poder recuperarlo cuando quieras. Sus cobros, historial y notas se conservan intactos.',async()=>{
     try {
       await updateDoc(doc(db,'clientes',currentClientUID,'misClientes',id), {eliminado:true, eliminadoEn:new Date().toISOString()});
       await loadMcModule();
       closeMcDetalle();
     }catch(e){ console.log(e); }
-  },'Eliminar cliente');
+  },'Archivar cliente');
 };
 
 // ===== VENTAS — presupuestos aprobados + pedidos caja =====
@@ -30277,7 +30277,6 @@ async function loadProveedores() {
 window.loadProveedores = loadProveedores;
 
 function renderProveedoresModule() {
-  const egresos = window._clientEgresos || [];
   const setEl = (id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
   const metalGrads=[
     'linear-gradient(135deg,#3d5240 0%,#4a5e4d 45%,#5e7562 70%,#4a5e4d 100%)',
@@ -30288,20 +30287,15 @@ function renderProveedoresModule() {
     'linear-gradient(135deg,#9a7870 0%,#b09088 45%,#ccb0a8 65%,#b09088 100%)'
   ];
 
-  // Solo egresos vinculados a proveedores registrados
-  const egresosConProv = egresos.filter(e=>e.proveedorId && _proveedores.find(p=>p.id===e.proveedorId));
+  // Total gastado = total facturado por proveedor (p._totalFac: facturas reales + esOC de OCs
+  // recibidas, cada compra UNA vez — al facturar una OC se convierte su esOC, no se duplica).
+  // Antes sumaba egresos(pagos) + OCs por separado, así que toda OC recibida y pagada se contaba
+  // DOS veces ($137.500 → $275.000): el pago es cash-out, no "gastado"; la parte impaga ya vive
+  // en "Pendiente de pago" (p._saldo).
   const gastosPorProv = {};
-  egresosConProv.forEach(e=>{
-    const prov = _proveedores.find(p=>p.id===e.proveedorId);
-    const k = prov ? prov.nombre : e.concepto||'—';
-    gastosPorProv[k]=(gastosPorProv[k]||0)+(parseFloat(e.monto)||0);
-  });
-
-  // También sumar lo de OC por proveedor
-  (window._ordenesCompra||[]).forEach(o=>{
-    if(o.proveedor && o.total && o.proveedorId && !o.eliminado && _proveedores.find(p=>p.id===o.proveedorId)){
-      gastosPorProv[o.proveedor]=(gastosPorProv[o.proveedor]||0)+window._ocMontoReal(o);
-    }
+  _proveedores.forEach(p=>{
+    const fac = parseFloat(p._totalFac)||0;
+    if(fac>0) gastosPorProv[p.nombre]=(gastosPorProv[p.nombre]||0)+fac;
   });
 
   const totalGastado = Object.values(gastosPorProv).reduce((a,v)=>a+v,0);
