@@ -4178,7 +4178,7 @@ body.has-bcanc{padding-top:42px;}
               <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;">
                 <div style="font-size:10px;font-weight:500;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;">Pendiente</div>
                 <div style="font-family:'DM Sans',sans-serif;font-size:22px;font-weight:500;color:#fff;line-height:1;" id="mc-kpi-pendiente">$0</div>
-                <div style="font-size:10px;color:rgba(255,255,255,.55);margin-top:4px;">aprobado sin cobrar</div>
+                <div style="font-size:10px;color:rgba(255,255,255,.55);margin-top:4px;">con saldo pendiente</div>
               </div>
             </div>
           </div>
@@ -18340,7 +18340,7 @@ async function loadInicio() {
     try {
       if(!window._clientPresupuestos || window._clientPresupuestos.length === 0) await loadClientPresupuestos();
       const aprobados = (window._clientPresupuestos||[]).filter(p=>p.estado==='Aprobado');
-      porCobrar = aprobados.reduce((s,p)=>s+getPresupMonto(p),0);
+      porCobrar = aprobados.reduce((s,p)=>s+_presupSaldo(p),0);
     } catch(e) { console.log(e); }
     animateCounter(document.getElementById('inicio-por-cobrar'), porCobrar, 800, v=>'$'+v.toLocaleString('es-AR'));
 
@@ -22194,7 +22194,7 @@ async function loadCobranzasModule() {
       const tel = String(cli?.tel || cli?.telefono || '').replace(/[^\d]/g,'');
       // Neteo: mostrar el pendiente real (total − ya cobrado). Los saldados (estado 'Cobrado') ya no
       // caen acá; viven en la vista "Cobradas". Guard extra por si quedó Aprobado con saldo 0.
-      const monto = getPresupMonto(p) - (parseFloat(p.cobradoPorPresup)||0);
+      const monto = _presupSaldo(p);
       if(monto <= 0) return;
       const fechaStr = p.fecha || p.creadoEn || '';
       const fechaDt = fechaStr ? new Date(fechaStr) : null;
@@ -22370,9 +22370,11 @@ function renderMcModule() {
   const setEl=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
 
   // KPIs financieros
-  const totalAprobado = _mcPresupuestos.filter(p=>p.estado==='Aprobado').reduce((s,p)=>s+getPresupMonto(p),0);
   const cobrado = _mcClientes.reduce((s,c)=>s+(parseFloat(c.totalCobrado)||0),0);
-  const pendiente = Math.max(0, totalAprobado - cobrado);
+  // Pendiente = Σ saldo pendiente de cada presupuesto Aprobado (neteado por lo ya cobrado),
+  // misma definición que Cobranzas e Indicadores (_presupSaldo). Antes restaba el totalCobrado
+  // GLOBAL del total aprobado, lo que hundía el KPI a $0 apenas había cualquier cobro (parcial incluido).
+  const pendiente = _mcPresupuestos.filter(p=>p.estado==='Aprobado').reduce((s,p)=>s+_presupSaldo(p),0);
   setEl('mc-kpi-total', _mcClientes.length);
   setEl('mc-kpi-cobrado', '$'+cobrado.toLocaleString('es-AR'));
   setEl('mc-kpi-pendiente', '$'+pendiente.toLocaleString('es-AR'));
@@ -23045,11 +23047,11 @@ window.abrirModalCobroLibre = function(clienteId, clienteNombre) {
     const pendientes = (_mcPresupuestos||[]).filter(p =>
       (p.clienteId===clienteId || p.cliente===clienteNombre) &&
       (p.estado==='Aprobado') &&
-      (getPresupMonto(p) - (parseFloat(p.cobradoPorPresup)||0)) > 0
+      _presupSaldo(p) > 0
     );
     presupSel.innerHTML =
       pendientes.map(p => {
-        const pend = getPresupMonto(p) - (parseFloat(p.cobradoPorPresup)||0);
+        const pend = _presupSaldo(p);
         return '<option value="'+p.id+'">'+(p.descripcion||('Presupuesto '+(p.numero||'')))+' — $'+pend.toLocaleString('es-AR')+' pendiente</option>';
       }).join('') +
       '<option value="">Cuenta general (sin presupuesto)</option>';
@@ -24106,7 +24108,7 @@ async function loadClientPresupuestos() {
     const cobrados=list.filter(p=>p.estado==='Cobrado');
     const montoTotal=list.reduce((a,p)=>a+getPresupMonto(p),0);
     // Por cobrar: saldo restante de cada presupuesto aprobado (considerando cobros parciales ya registrados)
-    const porCobrarBn=aprobados.reduce((a,p)=>a+Math.max(0,getPresupMonto(p)-(parseFloat(p.cobradoPorPresup)||0)),0);
+    const porCobrarBn=aprobados.reduce((a,p)=>a+_presupSaldo(p),0);
     setEl('bn-pre-monto', '$'+montoTotal.toLocaleString('es-AR'));
     setEl('bn-pre-porcobrar', '$'+porCobrarBn.toLocaleString('es-AR'));
     setEl('bn-pre-aprob', aprobados.length);
@@ -34455,11 +34457,7 @@ function embiGetFinancialContext(){
     var ticketProm = ventasR.length>0 ? Math.round(ventasR.reduce(function(a,v){return a+(parseFloat(v.monto)||0);},0)/ventasR.length) : 0;
     var cobPend=(window._clientPresupuestos||[])
       .filter(p=>p.estado==='Aprobado')
-      .reduce((a,p)=>{
-        if(p.items && p.items.length > 0)
-          return a + p.items.reduce((s,it) => s + (parseFloat(it.cant||0) * parseFloat(it.precio||0)), 0);
-        return a + (parseFloat(p.monto) || 0);
-      }, 0);
+      .reduce((a,p)=>a+_presupSaldo(p), 0);
     var clientes=window._embi_clientes||window._mcClientes||[];
     var clientesNombres=clientes.length>0?clientes.map(c=>c.nombre||'Sin nombre').join(', '):'Sin clientes registrados';
     var proveedores=window._proveedores||window._embi_proveedores||[];
@@ -34496,11 +34494,7 @@ function embiGetFinancialContext(){
       proyeccionStr='\n\nPERÍODO CERRADO/PERSONALIZADO: el análisis corresponde al rango '+(_r?(_r.desde+' → '+_r.hasta):'seleccionado')+', no al mes en curso. No se incluye proyección mensual (la proyección solo aplica cuando el período es el mes calendario actual).';
     }
     var presupAprobados=(window._clientPresupuestos||[]).filter(function(p){return p.estado==='Aprobado';});
-    var montoSinCobrar=presupAprobados.reduce(function(s,p){
-      if(p.items && p.items.length > 0)
-        return s + p.items.reduce(function(it_s,it){ return it_s + (parseFloat(it.cant||0) * parseFloat(it.precio||0)); }, 0);
-      return s + (parseFloat(p.monto) || 0);
-    },0);
+    var montoSinCobrar=presupAprobados.reduce(function(s,p){ return s + _presupSaldo(p); },0);
     var catalogo=window._embi_catalogo||[];
     var catalogoStr=catalogo.length>0?catalogo.map(function(p){return p.nombre+' ($'+p.precio.toLocaleString('es-AR')+')';}).join(', '):'Sin productos en catálogo';
     var prodCompra=window._embi_prodCompra||[];
