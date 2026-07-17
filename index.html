@@ -7509,6 +7509,19 @@ window.mb_doLogin = async function() {
   }
 };
 
+// Higiene de sesión: oculta todo módulo renderizado (ct-*) y la CC de proveedor, para que el
+// usuario entrante NUNCA vea el DOM del anterior. Caso compu compartida del local: el cajero no
+// debe ver los números del dueño (saldos, reserva, retiros) detrás del modal de apertura.
+// Se llama al inicio de showClientUI (cubre login normal, cambio de usuario y post-expiración) y
+// en el logout. No vacía innerHTML (rompería los shells estáticos); ocultar + los resets de
+// variables de showClientUI dejan el render entrante limpio.
+window._limpiarDOMSesion = function() {
+  try {
+    document.querySelectorAll('[id^="ct-"]').forEach(function(el){ el.style.display = 'none'; });
+    var ccv = document.getElementById('prov-cc-view');
+    if(ccv) ccv.style.display = 'none';
+  } catch(e){}
+};
 window.doLogout = async function() {
   if(window.currentRol === 'cajero') {
     window._skipAuthRedirect = true;
@@ -7519,6 +7532,7 @@ window.doLogout = async function() {
   try { await signOut(auth); } catch(ex) {}
   document.getElementById('lp').style.display = 'flex';
   document.getElementById('app').classList.remove('visible');
+  if(window._limpiarDOMSesion) window._limpiarDOMSesion();
   currentUser = null;
   // COMMIT 3.6.4.7: reset variables del operador para evitar leak entre logins en la misma pestaña
   window._operadorRoles = null;
@@ -7638,6 +7652,7 @@ onAuthStateChanged(auth, async (user) => {
     }
     currentUser = user;
     window.currentUser = user;
+    window._huboSesion = true; // hubo sesión activa → al cerrarse (logout/expiración) recargamos para purgar el DOM
     console.log('[AUTH] user:', user.uid, user.email);
     try {
       // Si es impersonation, mostrar UI del cliente directamente
@@ -7679,8 +7694,14 @@ onAuthStateChanged(auth, async (user) => {
     }
   } else {
     if(!window._skipAuthRedirect) {
+      // Si hubo una sesión activa (logout manual o expiración), recargamos para purgar TODO el
+      // DOM/estado del usuario saliente — nada sensible sobrevive al próximo login (caso compu
+      // compartida del local). En la carga inicial _huboSesion es undefined → no hay loop. El
+      // handoff cajero (_skipAuthRedirect) queda afuera: usa su pantalla de espera, sin recarga.
+      if(window._huboSesion) { window._huboSesion = false; location.reload(); return; }
       document.getElementById('lp').style.display = 'flex';
       document.getElementById('app').classList.remove('visible');
+      if(window._limpiarDOMSesion) window._limpiarDOMSesion();
     }
   }
 });
@@ -7808,6 +7829,9 @@ window.showClientUI = async function(email, clientData) {
   window._allCobros = [];
   window.calcData = {};
   window._clientTareas = null;
+  // Higiene de sesión: ocultar el DOM renderizado del usuario anterior ANTES de mostrar/renderizar
+  // al entrante. Evita que el cajero vea "Mis cajas" del dueño detrás del modal de apertura.
+  if(window._limpiarDOMSesion) window._limpiarDOMSesion();
 
   // Reset UI visual — SIEMPRE, antes de cargar datos del nuevo cliente
   const logoWrap = document.getElementById('negocio-logo-wrap');
@@ -8048,10 +8072,14 @@ window.showClientUI = async function(email, clientData) {
       const negNombre = document.getElementById('negocio-nombre-display');
       if(negNombre) negNombre.textContent = clientData.negocioNombre || clientData.nombre || 'Mi negocio';
     }
-    if(clientData && clientData.primerLogin === true) {
-      setTimeout(() => openModal('primerLoginModal'), 300);
-    } else if(clientData && clientData.onboardingCompletado !== true) {
-      setTimeout(() => window.showWelcomeScreen(clientData), 500);
+    // Solo el dueño ve el primer-login / welcome de onboarding. Un operador (cajero/comercial/
+    // compras) entra al negocio del dueño y NO debe ver su wizard de configuración.
+    if(window.currentRol === 'admin') {
+      if(clientData && clientData.primerLogin === true) {
+        setTimeout(() => openModal('primerLoginModal'), 300);
+      } else if(clientData && clientData.onboardingCompletado !== true) {
+        setTimeout(() => window.showWelcomeScreen(clientData), 500);
+      }
     }
     // SEGURIDAD: Embi solo para el dueño/admin. Backend embi.js rechaza a no-dueños con 401
     // (verifiedUid del idToken !== clienteUID). Alineamos el frontend: solo admin ve Embi
@@ -18726,6 +18754,8 @@ window.dismissEmbiNotif = async function(docId) {
 };
 
 window.showWelcomeScreen = function(clientData) {
+  // Defensa: el welcome de onboarding es solo del dueño (admin). Los operadores no lo ven.
+  if(window.currentRol !== 'admin') return;
   const ws = document.getElementById('welcome-screen');
   if(!ws) return;
   // Nombre del negocio en uppercase + ✦
@@ -18773,6 +18803,9 @@ window.checkOnboardingStatus = function() {
 async function renderOnboardingChecklist() {
   const el = document.getElementById('onboarding-checklist');
   if(!el) return;
+  // Solo el dueño configura negocio/fiscal/cierre/equipo. Los sub-usuarios (cajero, comercial,
+  // compras) no ven el wizard de onboarding "El caos terminó".
+  if(window.currentRol !== 'admin') { el.style.display = 'none'; return; }
   const d = currentClientData || {};
   // Checks que leen colecciones aparte (async), igual que antes con libroCaja/presupuestos.
   let tieneCierreCfg = false, tieneEquipo = false;
