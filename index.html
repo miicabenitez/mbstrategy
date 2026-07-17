@@ -24417,7 +24417,7 @@ window.abrirReporteCli = async function(clienteId) {
     window._repRenderPeriodoBar('cli');
     await window._cliRepRerender();
     openModal('reporteCliModal');
-  } catch(e) { console.error('[reporteCli] error al abrir el reporte:', e); showToast('No se pudo abrir el reporte: '+(e?.message||e), 'error'); }
+  } catch(e) { console.error('[reporteCli] error al generar el reporte:', e); showToast('No pudimos generar el reporte', 'error'); }
 };
 window._cliRepRerender = async function() {
   const D = await window._cliBuildLedger(window._cliReporteId, window._repRange.cli);
@@ -28169,7 +28169,7 @@ window.abrirCuentaCorriente = async function(provId) {
     window._ccOCsComoFactura = _ccOCsComoFactura;
     _ccPagos = [];
     pagSnap.forEach(d=>{ const data=d.data(); if(!data.eliminado) _ccPagos.push({id:d.id,...data}); });
-    _ccPagos.sort((a,b)=>((b.fecha||'').localeCompare(a.fecha||''))||((b.creadoEn||'').localeCompare(a.creadoEn||'')));
+    _ccPagos.sort((a,b)=>((window._fechaComparable(b.fecha)).localeCompare(window._fechaComparable(a.fecha)))||((window._fechaComparable(b.creadoEn)).localeCompare(window._fechaComparable(a.creadoEn))));
     renderCuentaCorriente();
   }catch(e){console.log(e);}
 };
@@ -28189,6 +28189,16 @@ window.cerrarCCView = function() {
 
 window._repRange = window._repRange || { cc:null, prov:null, cli:null, cligral:null, pres:null };
 window._repFmtD = d => d ? String(d).split('-').reverse().join('/') : '';
+// Normaliza fecha/creadoEn a string ISO comparable: tolera string, Firestore Timestamp, Date o null.
+// Blinda los sorts contra datos que quedaron como Timestamp (savePagoProveedor escribía new Date()).
+window._fechaComparable = function(v){
+  if(v==null) return '';
+  if(typeof v==='string') return v;
+  if(v && typeof v.toDate==='function'){ try{ return v.toDate().toISOString(); }catch(_){ return ''; } }
+  if(v instanceof Date) return isNaN(v.getTime()) ? '' : v.toISOString();
+  if(v && typeof v.seconds==='number') return new Date(v.seconds*1000).toISOString();
+  return String(v);
+};
 window._repRenderPeriodoBar = function(kind) {
   const cont = document.getElementById(kind+'-rep-periodo');
   if(!cont) return;
@@ -28244,24 +28254,27 @@ window._ccBuildLedger = function(range) {
   const totalFacturas = (_ccFacturas||[]).reduce((a,f)=> f.eliminado?a:a+(parseFloat(f.monto)||0),0);
   const hayFacturas = totalFacturas>0 || (_ccOCsComoFactura||[]).length>0;
   const eventos = [];
+  // creadoEn se normaliza con _fechaComparable: algún pago viejo lo tiene como Timestamp
+  // (savePagoProveedor escribía new Date()), y el desempate del sort por creadoEn tiraba
+  // "localeCompare is not a function" → reporte mudo. Normalizado, el ledger es inmune para siempre.
   if(hayFacturas) {
     (_ccFacturas||[]).filter(f=>!f.eliminado).forEach(f=>{
       const label = (f.numeroComprobante || f.numero) ? ('Factura '+(f.numeroComprobante||f.numero)) : 'Factura';
-      eventos.push({ fecha:f.fecha||(f.creadoEn||'').slice(0,10), creadoEn:f.creadoEn||'', concepto:label, debe:parseFloat(f.monto)||0, haber:0 });
+      eventos.push({ fecha:f.fecha||window._fechaComparable(f.creadoEn).slice(0,10), creadoEn:window._fechaComparable(f.creadoEn), concepto:label, debe:parseFloat(f.monto)||0, haber:0 });
     });
     (_ccOCsComoFactura||[]).filter(f=>!f.eliminado).forEach(f=>{
-      eventos.push({ fecha:f.fecha||(f.creadoEn||'').slice(0,10), creadoEn:f.creadoEn||'', concepto:(f.numero||'OC')+' — Mercadería recibida', debe:parseFloat(f.monto)||0, haber:0 });
+      eventos.push({ fecha:f.fecha||window._fechaComparable(f.creadoEn).slice(0,10), creadoEn:window._fechaComparable(f.creadoEn), concepto:(f.numero||'OC')+' — Mercadería recibida', debe:parseFloat(f.monto)||0, haber:0 });
     });
   } else {
     ocsRecibidas.forEach(o=>{
-      eventos.push({ fecha:o.fechaRecepcion||o.fecha||'', creadoEn:o.creadoEn||'', concepto:'OC-'+String(o.numero||0).padStart(3,'0')+' — Mercadería recibida', debe:parseFloat(o.totalRecibido||o.total)||0, haber:0 });
+      eventos.push({ fecha:o.fechaRecepcion||o.fecha||'', creadoEn:window._fechaComparable(o.creadoEn), concepto:'OC-'+String(o.numero||0).padStart(3,'0')+' — Mercadería recibida', debe:parseFloat(o.totalRecibido||o.total)||0, haber:0 });
     });
   }
   (_ccPagos||[]).filter(p=>!p.eliminado).forEach(p=>{
     const label = p.numero ? (p.numero+' — Pago') : ('Pago registrado'+(p.concepto?(' — '+p.concepto):''));
-    eventos.push({ fecha:p.fecha||(p.creadoEn||'').slice(0,10), creadoEn:p.creadoEn||'', concepto:label, debe:0, haber:parseFloat(p.monto)||0 });
+    eventos.push({ fecha:p.fecha||window._fechaComparable(p.creadoEn).slice(0,10), creadoEn:window._fechaComparable(p.creadoEn), concepto:label, debe:0, haber:parseFloat(p.monto)||0 });
   });
-  eventos.sort((a,b)=> (a.fecha||'').localeCompare(b.fecha||'') || (a.creadoEn||'').localeCompare(b.creadoEn||''));
+  eventos.sort((a,b)=> window._fechaComparable(a.fecha).localeCompare(window._fechaComparable(b.fecha)) || window._fechaComparable(a.creadoEn).localeCompare(window._fechaComparable(b.creadoEn)));
   const r = (range && range.desde && range.hasta) ? range : null;
   let saldoAnterior = 0, usados = eventos;
   if(r) {
@@ -28394,10 +28407,12 @@ window._ccReporteDocHTML = function(L) {
 };
 window.abrirReporteCC = function() {
   if(!_ccProvId) { showToast('Abrí la cuenta corriente de un proveedor', 'info'); return; }
-  window._repRange.cc = null;
-  window._repRenderPeriodoBar('cc');
-  window._ccRepRerender();
-  openModal('reporteCCModal');
+  try {
+    window._repRange.cc = null;
+    window._repRenderPeriodoBar('cc');
+    window._ccRepRerender();
+    openModal('reporteCCModal');
+  } catch(e){ console.error('[reporteCC] error al generar el reporte:', e); showToast('No pudimos generar el reporte', 'error'); }
 };
 window._pdfCaptureDoc = async function(docEl, filename, opts) {
   if(!docEl) return;
@@ -29476,12 +29491,12 @@ window.savePagoProveedor = async function() {
       facturasIds: facturasSeleccionadas.map(f => f.id),
       facturasNombres: facturasSeleccionadas.map(f => f.numero || f.desc || f.descripcion || 'Factura'),
       facturasMontos: facturasSeleccionadas.map(f => f.pendiente || parseFloat(f.monto) || 0),
-      creadoEn: new Date()
+      creadoEn: new Date().toISOString()
     };
     const opRef = await addDoc(collection(db,'clientes',currentClientUID,'proveedores',window._ccProvId,'pagos'), opData);
     window._ultimaOP = { ...opData, id: opRef.id };
     _ccPagos.push({ ...opData, id: opRef.id });
-    _ccPagos.sort((a,b)=>((b.fecha||'').localeCompare(a.fecha||''))||((b.creadoEn||'').localeCompare(a.creadoEn||'')));
+    _ccPagos.sort((a,b)=>((window._fechaComparable(b.fecha)).localeCompare(window._fechaComparable(a.fecha)))||((window._fechaComparable(b.creadoEn)).localeCompare(window._fechaComparable(a.creadoEn))));
     // Registrar egreso automático en contabilidad
     const provSnap = await getDoc(doc(db,'clientes',currentClientUID,'proveedores',window._ccProvId));
     const provNombre = provSnap.exists() ? provSnap.data().nombre : 'Proveedor';
@@ -29495,7 +29510,7 @@ window.savePagoProveedor = async function() {
       proveedorId: window._ccProvId,
       opId: opRef.id,
       eliminado: false,
-      creadoEn: new Date()
+      creadoEn: new Date().toISOString()
     });
 
     // Escribir en libroCaja
