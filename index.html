@@ -34169,9 +34169,11 @@ async function createProducto() {
   const id     = document.getElementById('prod-edit-id').value;
   const nombre = document.getElementById('prod-nombre').value.trim();
   if(!nombre){ showToast('Ingresá un nombre', 'info'); return; }
+  const precio = parseFloat((document.getElementById('prod-precio')?.value||'').replace(/\./g,'').replace(',','.')) || 0;
+  if(!(precio > 0)){ showToast('Ingresá un precio mayor a $0', 'info'); return; }
   const data = {
     nombre,
-    precio:      parseFloat((document.getElementById('prod-precio')?.value||'').replace(/\./g,'').replace(',','.')) || 0,
+    precio,
     descripcion: document.getElementById('prod-desc').value,
     activo: true,
     updatedAt: new Date().toISOString()
