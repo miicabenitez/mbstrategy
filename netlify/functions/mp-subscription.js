@@ -135,14 +135,19 @@ exports.handler = async (event) => {
       console.error('MP API error:', JSON.stringify(mpData));
       return { statusCode: 502, headers: HEADERS, body: JSON.stringify({ error: 'Error al crear suscripción en Mercado Pago' }) };
     }
+    // Crear la preapproval NO cambia el estado de ACCESO: ni lo otorga ni lo quita. Solo registra la
+    // suscripción nueva (mpSubscriptionId + initPoint para "Continuar con el pago"). El acceso lo abre
+    // SOLO el webhook cuando MP confirma el pago (mismo contrato que el alta pública). Por eso NO se
+    // tocan estado / accesoBloqueado / pagoFalladoEn:
+    //  - un cliente vencido/cancelado/bloqueado sigue bloqueado hasta el pago (no más acceso gratis);
+    //  - un cliente en gracia legítima (pago falló, días vigentes) NO se castiga: conserva su acceso
+    //    con su banner de gracia (precisión: pendiente-de-pago nunca otorga acceso nuevo ni quita el vigente).
     const updateInterno = {
       'membresia.plan': plan,
-      'membresia.estado': 'pendiente',
       'membresia.mpSubscriptionId': mpData.id,
       'membresia.precioPesos': planData.precioPesos,
       'membresia.precioUSD': planData.precioUSD,
-      'membresia.accesoBloqueado': false,
-      'membresia.pagoFalladoEn': FieldValue.delete(),
+      'membresia.initPoint': mpData.init_point,
       'membresia.creadoEn': FieldValue.serverTimestamp()
     };
     if (freeTrial) updateInterno['membresia.trialUsado'] = true;

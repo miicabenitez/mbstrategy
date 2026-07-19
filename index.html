@@ -1547,7 +1547,7 @@ body.has-bcanc{padding-top:42px;}
     </div>
     <div style="font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:400;color:#2c2c2c;margin-bottom:12px;line-height:1.2;">Tu suscripción fue cancelada</div>
     <div style="font-size:14px;color:#888780;line-height:1.65;margin-bottom:36px;">Para seguir usando MB Strategy<br>reactivá tu suscripción.</div>
-    <a href="#" onclick="event.preventDefault();reactivarSuscripcion();return false;" style="display:block;background:#4a5e4d;color:#fff;padding:14px 24px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;text-decoration:none;margin-bottom:10px;cursor:pointer;">Reactivar suscripción</a>
+    <a href="#" data-react-btn onclick="event.preventDefault();reactivarSuscripcion();return false;" style="display:block;background:#4a5e4d;color:#fff;padding:14px 24px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;text-decoration:none;margin-bottom:10px;cursor:pointer;">Reactivar suscripción</a>
     <a href="https://wa.me/5491176553318" target="_blank" rel="noopener" style="display:block;background:transparent;color:#4a5e4d;padding:13px 24px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;text-decoration:none;border:.5px solid rgba(74,94,77,.4);margin-bottom:28px;">Contactar soporte</a>
     <a href="#" onclick="doLogout();return false;" style="font-size:12px;color:#aaa;text-decoration:none;font-family:'DM Sans',sans-serif;">Cerrar sesión</a>
   </div>
@@ -7520,8 +7520,28 @@ window._limpiarDOMSesion = function() {
     document.querySelectorAll('[id^="ct-"]').forEach(function(el){ el.style.display = 'none'; });
     var ccv = document.getElementById('prov-cc-view');
     if(ccv) ccv.style.display = 'none';
+    if(window._membPollStop) window._membPollStop();
   } catch(e){}
 };
+// Poll suave para la pantalla de bloqueo: tras pagar, el webhook confirma en segundos/minutos.
+// Re-chequea el doc y levanta el bloqueo SOLO cuando el estado pasa a activo/trial (nunca antes).
+// Así un pago exitoso con webhook demorado no deja a la clienta trabada con la plata cobrada.
+window._membPollStart = function() {
+  if(window._membPollId) return;
+  var uid = window.currentUser && window.currentUser.uid;
+  if(!uid) return;
+  window._membPollId = setInterval(async function() {
+    try {
+      var snap = await getDoc(doc(db,'clientes',uid));
+      var m = (snap.data() && snap.data().membresia) || {};
+      if(m.estado === 'activo' || m.estado === 'trial') {
+        window._membPollStop();
+        location.reload();
+      }
+    } catch(e){}
+  }, 5000);
+};
+window._membPollStop = function() { if(window._membPollId){ clearInterval(window._membPollId); window._membPollId = null; } };
 window.doLogout = async function() {
   if(window.currentRol === 'cajero') {
     window._skipAuthRedirect = true;
@@ -7865,9 +7885,18 @@ window.showClientUI = async function(email, clientData) {
       const mc = document.getElementById('memb-cancelada');
       if(mc) mc.style.display = 'flex';
       if(window.embiShow) window.embiShow(false);
-      // Contexto para reactivar desde el bloqueo: acá showClientUI hace early-return ANTES de setear
-      // currentClientUID/currentClientData, así que stasheamos clienteId + plan para reactivarSuscripcion().
-      window._reactivarBloqueo = { clienteId: clientData.id, plan: window.normalizarPlan(_memb.plan) };
+      // Contexto para reactivar/continuar desde el bloqueo: acá showClientUI hace early-return ANTES de
+      // setear currentClientUID/currentClientData, así que stasheamos lo necesario.
+      window._reactivarBloqueo = { clienteId: clientData.id, plan: window.normalizarPlan(_memb.plan), initPoint: _memb.initPoint, mpEstado: _memb.mpEstado };
+      // Si ya hay una preapproval pendiente (initPoint + mpEstado 'pending') → "Continuar con el pago"
+      // (mismo checkout, sin crear otra); si no → "Reactivar" (crea la preapproval).
+      const _rb = document.querySelector('#memb-cancelada [data-react-btn]');
+      if(_rb) {
+        const _pend = _memb.initPoint && _memb.mpEstado === 'pending';
+        _rb.textContent = _pend ? 'Continuar con el pago' : 'Reactivar suscripción';
+        _rb.setAttribute('onclick', _pend ? "event.preventDefault();continuarPago();return false;" : "event.preventDefault();reactivarSuscripcion();return false;");
+      }
+      if(window._membPollStart) window._membPollStart(); // el bloqueo se levanta solo cuando el webhook confirme el pago
       return;
     }
     // Pago fallido: 3 días de gracia (banner sticky), después bloqueo total.
@@ -7891,6 +7920,7 @@ window.showClientUI = async function(email, clientData) {
         const pf = document.getElementById('memb-pago-fallido');
         if(pf) pf.style.display = 'flex';
         if(window.embiShow) window.embiShow(false);
+        if(window._membPollStart) window._membPollStart(); // levanta el bloqueo solo cuando el webhook confirme el pago
         return;
       }
       if(_falloMs) {
@@ -25698,9 +25728,11 @@ window.suscribirseMP = async function(plan) {
   }
 };
 window.continuarPago = async function() {
-  if(!currentClientUID) return;
+  // Robusto para la pantalla de bloqueo: ahí currentClientUID no está seteado (early-return de showClientUI).
+  const uid = currentClientUID || (window._reactivarBloqueo && window._reactivarBloqueo.clienteId) || window.currentUser?.uid;
+  if(!uid) return;
   try {
-    const snap = await getDoc(doc(db,'clientes',currentClientUID));
+    const snap = await getDoc(doc(db,'clientes',uid));
     const initPoint = snap.data()?.membresia?.initPoint;
     if(initPoint) window.location.href = initPoint;
   } catch(e) { console.error(e); }

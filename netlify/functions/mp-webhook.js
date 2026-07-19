@@ -394,11 +394,14 @@ exports.handler = async (event) => {
     const entraEnFallo = sub.status === 'paused' || ['failed', 'past_due'].includes(sub.status);
     const antesEnFallo = !!(cActual.membresia?.pagoFalladoEn || cActual.membresia?.accesoBloqueado);
     const update = {
-      'membresia.estado': estadoInterno,
       'membresia.mpSubscriptionId': subscriptionId,
       'membresia.mpEstado': sub.status,
       'membresia.actualizadoEn': FieldValue.serverTimestamp()
     };
+    // Un evento 'pending' (preapproval recién creada, sin cobro aún) NUNCA cambia el acceso: preserva
+    // el estado actual (bloqueado sigue bloqueado, gracia sigue gracia). El acceso se otorga SOLO en
+    // 'authorized'. Los estados finales (activo/cancelado/pausado/inactivo) sí se escriben.
+    if (sub.status !== 'pending') update['membresia.estado'] = estadoInterno;
     const planActual = cActual.membresia?.plan;
     if (planActual) update['plan'] = normalizarPlan(planActual);
     if (proximoCobro) update['membresia.proximoCobro'] = proximoCobro;
@@ -421,8 +424,10 @@ exports.handler = async (event) => {
     if (entraEnFallo && !cActual.membresia?.pagoFalladoEn) {
       await pushoverMsg('⚠️ Pago fallido', `${cActual.negocioNombre || cActual.nombre || '—'} (${cActual.email || ''}) · plan ${cActual.membresia?.plan || '—'}`);
       await enviarPagoEmail('fallido', { email: cActual.email, nombre: cActual.nombre, negocioNombre: cActual.negocioNombre });
-    } else if (sub.status === 'authorized' && antesEnFallo) {
-      await pushoverMsg('✅ Pago recuperado', `${cActual.negocioNombre || cActual.nombre || '—'} (${cActual.email || ''})`);
+    } else if (sub.status === 'authorized' && cActual.membresia?.estado !== 'activo') {
+      // Cliente NO estaba activo (cancelado, vencido, o en fallo) y ahora pagó → reactivación confirmada.
+      // Cubre tanto "recuperado de fallo" como reactivación desde cancelado (antes solo saltaba con antesEnFallo).
+      await pushoverMsg('✅ Suscripción reactivada', `${cActual.negocioNombre || cActual.nombre || '—'} (${cActual.email || ''}) · plan ${cActual.membresia?.plan || '—'}`);
       await enviarPagoEmail('reactivado', { email: cActual.email, nombre: cActual.nombre, negocioNombre: cActual.negocioNombre });
     }
 
