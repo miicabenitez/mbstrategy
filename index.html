@@ -7559,8 +7559,13 @@ window.doLogout = async function() {
   window._modoActivo = null;
 };
 
-window.fechaHoyARG = function() {
-  return new Date().toLocaleDateString('es-AR',{timeZone:'America/Argentina/Buenos_Aires'}).split('/').reverse().map(p=>p.padStart(2,'0')).join('-');
+window.fechaHoyARG = function(offsetDias) {
+  // Única definición de "hoy" en hora Argentina (UTC-3). Nunca derivar fechas de negocio con
+  // new Date().toISOString() (eso es UTC → a la tarde-noche ART ya es "mañana"). offsetDias opcional
+  // (ej. +30 para validez de presupuestos) sin perder la zona horaria.
+  const d = new Date();
+  if(offsetDias) d.setDate(d.getDate() + offsetDias);
+  return d.toLocaleDateString('es-AR',{timeZone:'America/Argentina/Buenos_Aires'}).split('/').reverse().map(p=>p.padStart(2,'0')).join('-');
 };
 
 // COMMIT 3.6.1: helper multi-rol (lee tanto el formato nuevo roles[] como el legacy rol string)
@@ -8680,7 +8685,7 @@ function renderClientList(clients) {
 
   // Calendario en página clientes
   const reuniones = clients.filter(c=>c.proximaReunion?.fecha).sort((a,b)=>new Date(a.proximaReunion.fecha)-new Date(b.proximaReunion.fecha));
-  const today = new Date().toISOString().split('T')[0];
+  const today = fechaHoyARG();
   const calHtml = reuniones.length === 0
     ? '<div style="text-align:center;padding:16px;color:var(--text-l);font-size:13px;">Sin reuniones. Agendá desde el detalle del cliente.</div>'
     : reuniones.map(c => {
@@ -9241,7 +9246,7 @@ function loadReuniones(clients) {
     return;
   }
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = fechaHoyARG();
   el.innerHTML = reuniones.map(c => {
     const r = c.proximaReunion;
     const esHoy = r.fecha === today;
@@ -9731,7 +9736,7 @@ window.loadCcBalance = async function() {
     document.getElementById('cc-monto').value = '';
     document.getElementById('cc-concepto') && (document.getElementById('cc-concepto').value = '');
     // Pre-completar fecha con hoy
-    const hoy = new Date().toISOString().split('T')[0];
+    const hoy = fechaHoyARG();
     const fechaEl = document.getElementById('cc-fecha');
     if(fechaEl && !fechaEl.value) fechaEl.value = hoy;
     document.getElementById('cc-concepto').value = '';
@@ -15826,7 +15831,7 @@ async function _generarPdfComprobante(f, c, opts) {
       try {
         const d = f.creadoEn?.toDate ? f.creadoEn.toDate() : new Date(f.creadoEn);
         return d.toISOString().slice(0,10);
-      } catch(e) { return new Date().toISOString().slice(0,10); }
+      } catch(e) { return fechaHoyARG(); }
     })();
     const fechaEmisionFmt = fmtFechaISO(fechaEmisionISO);
     const caeFechaVtoFmt = fmtFechaAfip(f.caeFechaVto);
@@ -17190,7 +17195,7 @@ window.cajaNuevoMovimiento = async function() {
     _mvmTipo = 'ingreso'; _mvmConceptoSel = null;
     _mvmRenderCuentas();
     // Reset fields
-    const hoy = new Date().toISOString().split('T')[0];
+    const hoy = fechaHoyARG();
     ['mvm-fecha','mvm-tr-fecha'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=hoy;});
     ['mvm-monto','mvm-tr-monto','mvm-contado'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
     ['mvm-detalle','mvm-tr-detalle'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
@@ -23417,10 +23422,9 @@ window.openMcPresupModal = async function(clienteId, clienteNombre) {
   const total = (_mcPresupuestos||[]).length + 1;
   const numEl = document.getElementById('mcp-presup-numero');
   if(numEl) numEl.value = formatPresupNumero(total);
-  const hoy = new Date().toISOString().split('T')[0];
+  const hoy = fechaHoyARG();
   document.getElementById('mcp-presup-fecha').value = hoy;
-  const validez = new Date(); validez.setDate(validez.getDate()+30);
-  document.getElementById('mcp-presup-validez').value = validez.toISOString().split('T')[0];
+  document.getElementById('mcp-presup-validez').value = fechaHoyARG(30);
   ['mcp-presup-desc','mcp-presup-notas'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   _mcPresupItems = [];
   renderMcPresupItems();
@@ -27242,7 +27246,7 @@ window.generarPDFNecesidad = async function(ncId) {
   setTextC(WHITE_C); pdf.setFontSize(7); pdf.setFont('helvetica','normal');
   pdf.text('Generado por MB Strategy · sistema.mbstrategy.com.ar', W/2, FOOTER_Y+9, {align:'center'});
 
-  pdf.save(`Solicitud_Cotizacion_${(nc.categoria||'NC').replace(/\s+/g,'_')}_${new Date().toISOString().split('T')[0]}.pdf`);
+  pdf.save(`Solicitud_Cotizacion_${(nc.categoria||'NC').replace(/\s+/g,'_')}_${fechaHoyARG()}.pdf`);
 };
 
 // ─ Órdenes de Compra ─
@@ -27602,7 +27606,7 @@ window.guardarNuevaOCDirecta = async function() {
   if(items.length === 0) { showToast('Seleccioná al menos un producto o completá el ítem libre.', 'info'); return; }
   if(items.some(it => !(parseFloat(it.precio)||0))) { showToast('Todos los productos deben tener un precio mayor a $0.', 'info'); return; }
   const total = items.reduce((a, it) => a + (parseFloat(it.cantidad||0) * parseFloat(it.precio||0)), 0);
-  const fecha = document.getElementById('noc-fecha')?.value || new Date().toISOString().split('T')[0];
+  const fecha = document.getElementById('noc-fecha')?.value || fechaHoyARG();
   const notas = (document.getElementById('noc-notas')?.value || '').trim();
   const nextNum = (_ordenesCompra.length > 0 ? Math.max(..._ordenesCompra.map(o=>o.numero||0)) : 0) + 1;
   const btn = document.getElementById('noc-btn-guardar');
@@ -29421,7 +29425,7 @@ window.openModal_newPagoProvModal_extra = async function() {
   const saved = document.getElementById('npp-saved');
   if(saved) saved.style.display = 'none';
   // Fecha hoy
-  const hoy = new Date().toISOString().split('T')[0];
+  const hoy = fechaHoyARG();
   const fechaEl = document.getElementById('npp-fecha');
   if(fechaEl) fechaEl.value = hoy;
   // Limpiar campos
@@ -33889,10 +33893,9 @@ window.openModal = function(id) {
     if(searchEl) searchEl.value = '';
     const hiddenId = document.getElementById('cp-cliente-id');
     if(hiddenId) hiddenId.value = '';
-    const hoy = new Date().toISOString().split('T')[0];
+    const hoy = fechaHoyARG();
     document.getElementById('cp-fecha').value = hoy;
-    const validez = new Date(); validez.setDate(validez.getDate()+30);
-    document.getElementById('cp-validez').value = validez.toISOString().split('T')[0];
+    document.getElementById('cp-validez').value = fechaHoyARG(30);
     const numEl = document.getElementById('cp-numero');
     if(numEl) numEl.value = window.formatPresupNumero(((window._mcPresupuestos)||[]).length + 1);
     ['cp-desc','cp-notas','cp-cliente-search','cp-cliente-id'].forEach(fid=>{const el=document.getElementById(fid);if(el)el.value='';}); 
@@ -34140,7 +34143,7 @@ async function loadMcReunionesExternas() {
     var fsi = await import('https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js');
     var fdb = window.db || fsi.getFirestore();
     const snap = await fsi.getDocs(fsi.collection(fdb, 'clientes', currentClientUID, 'reunionesExternas'));
-    const hoy = new Date().toISOString().split('T')[0];
+    const hoy = fechaHoyARG();
     window._mcReunionesExternas = [];
     snap.forEach(d => {
       const r = {id: d.id, ...d.data(), externo: true};
@@ -34712,7 +34715,7 @@ async function embiLogAccion(tipo,estado,datos){
 async function embiEjecutarAccion(tipo,datos){
   if(!currentClientUID){embiAddMsg('bot','No hay sesión activa.');return;}
   try{
-    var hoy=new Date().toISOString().split('T')[0];
+    var hoy=fechaHoyARG();
     var d=new Date();
     var mesTxt=d.toLocaleDateString('es-AR',{month:'long',year:'numeric'});
     mesTxt=mesTxt.charAt(0).toUpperCase()+mesTxt.slice(1);
