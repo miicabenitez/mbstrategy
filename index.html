@@ -14942,6 +14942,10 @@ async function _cierreEjecutarCierre(movimientos, provPagos, retiroPagos) {
   const uid = currentClientUID;
   const doc_ = _cierreBuildDoc('cerrado');
   doc_.cerradoEn = new Date().toISOString();
+  // La etiqueta refleja el alcance REAL: hasta la fecha de EJECUCIÓN (hoy ART), no la quincena rodante
+  // del picker. El snapshot de saldos incluye todo lo cargado hasta este instante, así que el fin honesto
+  // del período es hoy. (La proyección no pasa por acá, conserva su ventana planificada.)
+  doc_.fechaFin = fechaHoyARG();
   try {
     // Correlativo oficial AÑO-NNNN: contador transaccional por negocio/año (sin duplicados ni huecos)
     try {
@@ -14956,7 +14960,7 @@ async function _cierreEjecutarCierre(movimientos, provPagos, retiroPagos) {
       doc_.numero = anio + '-' + String(n).padStart(4,'0');
     } catch(e) { console.log('[correlativo cierre]', e); }
     const cierreRef = await addDoc(collection(db,'cierres'), doc_);
-    const fecha = document.getElementById('cierre-fecha-fin')?.value || fechaHoyARG();
+    const fecha = doc_.fechaFin; // los movimientos del cierre se fechan en la ejecución (coherente con la etiqueta)
     const mes = mesHoyARG(fecha);
     const creadoEn = new Date().toISOString();
     // Guardar movimientos en libroCaja con metadata completa
@@ -18418,13 +18422,18 @@ async function loadInicio() {
     try {
       const ultimoCierre = await _getUltimoCierre(currentClientUID);
       window._ultimoCierreDoc = ultimoCierre;
-      const _fmtDDMM = iso => { if(!iso) return '—'; const p=String(iso).split('-'); return p.length===3 ? p[2]+'/'+p[1] : iso; };
+      // Frontera del ciclo = el INSTANTE del cierre (cerradoEn), no la fechaFin calendario. Un movimiento
+      // es del ciclo nuevo si se CREÓ después de ese instante (creadoEn > cerradoEn): lo cargado antes del
+      // cierre queda en el período cerrado aunque su fecha calendario sea posterior (ej. cargado 18/07 23hs
+      // y fechado 19/07). Ambos creadoEn son ISO UTC → comparación de strings correcta.
+      const _cierreTs = ultimoCierre ? (ultimoCierre.cerradoEn || ultimoCierre.creadoEn || '') : '';
+      const _fmtTsDDMM = ts => { try { return new Date(ts).toLocaleDateString('es-AR',{timeZone:'America/Argentina/Buenos_Aires',day:'2-digit',month:'2-digit'}); } catch(e){ return '—'; } };
       const _desdeEl = document.getElementById('inicio-ciclo-desde');
-      if(_desdeEl) _desdeEl.textContent = ultimoCierre ? _fmtDDMM(ultimoCierre.fechaFin) : 'el inicio';
-      const _cicloDesde = ultimoCierre ? (ultimoCierre.fechaFin||'') : '';
+      if(_desdeEl) _desdeEl.textContent = _cierreTs ? _fmtTsDDMM(_cierreTs) : 'el inicio';
       const _ctasDueno = new Set(window._cuentasDuenoNombres||[]);
-      // cuenta del dueño + fecha posterior al último cierre; los retiros de socio (esRetiroSocio) NO son egreso operativo
-      const _enCiclo = m => (!_cicloDesde || (m.fecha||'') > _cicloDesde) && _ctasDueno.has(m.cuenta);
+      // cuenta del dueño + creado DESPUÉS del cierre; excluye los movimientos del propio cierre (origen
+      // 'cierre' = la distribución del período que cerró) y los retiros de socio (no son egreso operativo).
+      const _enCiclo = m => (!_cierreTs || (m.creadoEn||'') > _cierreTs) && m.origen !== 'cierre' && _ctasDueno.has(m.cuenta);
       const _ingCiclo = ingresos.filter(_enCiclo).reduce((a,i)=>a+(parseFloat(i.monto)||0),0);
       const _egCiclo  = egresos.filter(m=>_enCiclo(m) && !m.esRetiroSocio).reduce((a,e)=>a+(parseFloat(e.monto)||0),0);
       const _setTxt=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
