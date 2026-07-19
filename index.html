@@ -1547,7 +1547,7 @@ body.has-bcanc{padding-top:42px;}
     </div>
     <div style="font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:400;color:#2c2c2c;margin-bottom:12px;line-height:1.2;">Tu suscripción fue cancelada</div>
     <div style="font-size:14px;color:#888780;line-height:1.65;margin-bottom:36px;">Para seguir usando MB Strategy<br>reactivá tu suscripción.</div>
-    <a href="/planes.html" style="display:block;background:#4a5e4d;color:#fff;padding:14px 24px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;text-decoration:none;margin-bottom:10px;">Reactivar suscripción</a>
+    <a href="#" onclick="event.preventDefault();reactivarSuscripcion();return false;" style="display:block;background:#4a5e4d;color:#fff;padding:14px 24px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;text-decoration:none;margin-bottom:10px;cursor:pointer;">Reactivar suscripción</a>
     <a href="https://wa.me/5491176553318" target="_blank" rel="noopener" style="display:block;background:transparent;color:#4a5e4d;padding:13px 24px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;text-decoration:none;border:.5px solid rgba(74,94,77,.4);margin-bottom:28px;">Contactar soporte</a>
     <a href="#" onclick="doLogout();return false;" style="font-size:12px;color:#aaa;text-decoration:none;font-family:'DM Sans',sans-serif;">Cerrar sesión</a>
   </div>
@@ -7865,6 +7865,9 @@ window.showClientUI = async function(email, clientData) {
       const mc = document.getElementById('memb-cancelada');
       if(mc) mc.style.display = 'flex';
       if(window.embiShow) window.embiShow(false);
+      // Contexto para reactivar desde el bloqueo: acá showClientUI hace early-return ANTES de setear
+      // currentClientUID/currentClientData, así que stasheamos clienteId + plan para reactivarSuscripcion().
+      window._reactivarBloqueo = { clienteId: clientData.id, plan: window.normalizarPlan(_memb.plan) };
       return;
     }
     // Pago fallido: 3 días de gracia (banner sticky), después bloqueo total.
@@ -25745,12 +25748,17 @@ window._ocultarBannerCancelada = function() {
 // interno). El cancel del preapproval viejo es no-op inofensivo (ya está cancelled en MP) y trialUsado
 // ya está en true → el nuevo preapproval NO otorga trial (cobro día 1). NO toca cancelarMembresia/mp-cancel.
 window.reactivarSuscripcion = function() {
-  const plan = window.normalizarPlan(currentClientData?.membresia?.plan) || 'esencial';
+  // Fuentes robustas: desde Mi cuenta usa las globales; desde la pantalla de bloqueo (cancelada/
+  // expirada) NO están seteadas (early-return de showClientUI) → caemos a _reactivarBloqueo (stasheado
+  // al render del bloqueo) y a currentUser.uid. Así el mismo flujo interno sirve para ambos orígenes.
+  const _rctx = window._reactivarBloqueo || {};
+  const _reactClienteId = currentClientUID || _rctx.clienteId || window.currentUser?.uid || null;
+  const plan = window.normalizarPlan(currentClientData?.membresia?.plan || _rctx.plan) || 'esencial';
   const planLbl = {esencial:'Esencial',pro:'Pro',premium:'Premium'}[plan] || 'Esencial';
   showConfirm(
     'Se creará una nueva suscripción a tu plan ' + planLbl + '. Como ya usaste tu período de prueba, el primer cobro es inmediato.',
     async () => {
-      if(!currentClientUID) return;
+      if(!_reactClienteId) { showToast('No pudimos identificar tu cuenta. Recargá la página e ingresá de nuevo.', 'error'); return; }
       const btn = document.querySelector('#memb-reactivar-wrap button');
       if(btn) { btn.textContent = 'Reactivando...'; btn.disabled = true; }
       showToast('Te llevamos a Mercado Pago para reactivar tu suscripción… (no cierres la pestaña)', 'info');
@@ -25760,7 +25768,7 @@ window.reactivarSuscripcion = function() {
         const res = await fetch('/.netlify/functions/mp-subscription', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _tk },
-          body: JSON.stringify({ clienteId: currentClientUID, plan })
+          body: JSON.stringify({ clienteId: _reactClienteId, plan })
         });
         const data = await res.json();
         if(!res.ok || !data.init_point) throw new Error(data.error || 'Error al reactivar la suscripción');
