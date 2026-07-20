@@ -307,7 +307,10 @@ exports.handler = async (event) => {
             negocioNombre: pendiente.negocioNombre || '',
             negocioId: nid,
             uid: userRecord.uid,
-            creadoEn: FieldValue.serverTimestamp(),
+            // creadoEn como string ISO (misma convención que el resto del sistema: new Date().toISOString()).
+            // serverTimestamp() nacía un Timestamp que rompe operaciones de string (.slice/.localeCompare)
+            // — mismo bug que los pagos. No usar serverTimestamp para fechas de negocio en el alta.
+            creadoEn: new Date().toISOString(),
             primerLogin: true,
             plan: plan,
             productos: {
@@ -318,7 +321,7 @@ exports.handler = async (event) => {
             membresia: {
               plan: plan,
               estado: sub.status === 'authorized' ? (PLAN_SERVER[plan].trial ? 'trial' : 'activo') : 'pendiente',
-              activoDesde: FieldValue.serverTimestamp(),
+              activoDesde: new Date().toISOString(),   // string ISO, no Timestamp (ver creadoEn arriba)
               trialUsado: pendiente.freeTrial === true,
               mpSubscriptionId: subscriptionId,
               mpEstado: sub.status,
@@ -406,7 +409,7 @@ exports.handler = async (event) => {
     if (planActual) update['plan'] = normalizarPlan(planActual);
     if (proximoCobro) update['membresia.proximoCobro'] = proximoCobro;
     if (sub.status === 'authorized') {
-      update['membresia.activoDesde'] = FieldValue.serverTimestamp();
+      update['membresia.activoDesde'] = new Date().toISOString();   // string ISO (consistente con el alta)
       update['membresia.accesoBloqueado'] = false;
       update['membresia.pagoFalladoEn'] = FieldValue.delete();
     }
