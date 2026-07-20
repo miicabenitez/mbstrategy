@@ -7568,6 +7568,13 @@ window.fechaHoyARG = function(offsetDias) {
   return d.toLocaleDateString('es-AR',{timeZone:'America/Argentina/Buenos_Aires'}).split('/').reverse().map(p=>p.padStart(2,'0')).join('-');
 };
 
+// Único predicado de "doc espejo": el reflejo de una venta/devolución del cajero en la cuenta REAL del
+// dueño (venta_caja_espejo / devolucion_caja_espejo). No es un movimiento propio de la caja ni del mes:
+// cada venta se cuenta UNA vez por su primario. Consumidores que deben excluirlo: Auditoría, Actividad
+// reciente, totales del mes (Salud), y la vista de Caja del cajero. (El ciclo del Inicio NO lo excluye:
+// ahí el espejo ES el registro del dueño y el primario ya cae por el scope de cuentas del dueño.)
+window._esEspejo = m => ['venta_caja_espejo','devolucion_caja_espejo'].includes(m && m.origen);
+
 // COMMIT 3.6.1: helper multi-rol (lee tanto el formato nuevo roles[] como el legacy rol string)
 window.hasRol = function(op, rol) {
   if(!op || !rol) return false;
@@ -12237,7 +12244,10 @@ window._auditoriaRender = function() {
   // Auditoría solo muestra movs de cajas físicas (con cajaId/cajaOrigenId).
   // Fallback legacy: movs pre-Fase 3 sin cajaId se rescatan si m.cuenta matchea el nombre de una caja física.
   const _cajasNombres = new Set((window._equipoCajas||[]).map(c => c.nombre).filter(Boolean));
-  movs = movs.filter(m => m.cajaId || m.cajaOrigenId || (m.cuenta && _cajasNombres.has(m.cuenta)));
+  // Excluir espejos (helper _esEspejo): la Auditoría muestra los movimientos REALES de la caja (el
+  // primario), no el reflejo en la cuenta del dueño. El espejo trae cajaOrigenId, así que pasaba el filtro
+  // de caja y aparecía junto al primario → doble asiento. El turno muestra SUS movimientos, no sus reflejos.
+  movs = movs.filter(m => !window._esEspejo(m) && (m.cajaId || m.cajaOrigenId || (m.cuenta && _cajasNombres.has(m.cuenta))));
   if(window._auditoriaCajaFiltro) {
     const _cajaSel = (window._equipoCajas||[]).find(c => c.id === window._auditoriaCajaFiltro);
     const _cajaNombre = _cajaSel?.nombre || '';
@@ -12781,7 +12791,7 @@ async function loadCajaModule() {
     movsSnap.forEach(d => { const data = d.data(); if(!data.eliminado) todosMovs.push({id:d.id,...data}); });
     if(window.currentRol === 'cajero') {
       const _cajaActiva = window._cajaActivaNombre || 'Caja mostrador';
-      todosMovs = todosMovs.filter(m => !['venta_caja_espejo','devolucion_caja_espejo'].includes(m.origen) && (m.cuenta===_cajaActiva || m.cuentaHacia===_cajaActiva || m.cuentaDesde===_cajaActiva || (m.turnoId && m.turnoId===window.turnoActual?.id)));
+      todosMovs = todosMovs.filter(m => !window._esEspejo(m) && (m.cuenta===_cajaActiva || m.cuentaHacia===_cajaActiva || m.cuentaDesde===_cajaActiva || (m.turnoId && m.turnoId===window.turnoActual?.id)));
     }
     // Cajero: tabla/chips usan movimientos del turno; admin usa histórico completo
     let movsVista = todosMovs;
@@ -13923,7 +13933,7 @@ function _mdvBuildBody(m, editing) {
     return html;
   }
 
-  const esEspejo = ['venta_caja_espejo','devolucion_caja_espejo'].includes(m.origen);
+  const esEspejo = window._esEspejo(m);
   if(esEspejo) {
     const _facInfo = window._facturadosMap?.get(m.id) || window._facturadosMap?.get(m.ticketNum) || window._facturadosMap?.get(m.refMovId);
     const _facNro = _facInfo ? `${_facInfo.puntoVenta}-${_facInfo.nroComprobante}` : null;
@@ -13996,7 +14006,7 @@ function _mdvRender() {
   const m = _mdvMovimiento;
   if(!m) return;
   const editing = _mdvEditing;
-  const esEspejo = ['venta_caja_espejo','devolucion_caja_espejo'].includes(m.origen);
+  const esEspejo = window._esEspejo(m);
 
   // Eyebrow & title
   const eyebrow = document.getElementById('mdv-eyebrow');
@@ -18361,10 +18371,11 @@ async function loadInicio() {
       const anio = parts[parts.length - 1];
       return storedMes.toLowerCase().includes(nombre) && storedMes.includes(anio);
     };
-    const ingMes = ingresos.filter(i=>mesFiltro(i.mes, mesActual));
-    const egMes  = egresos.filter(e=>mesFiltro(e.mes, mesActual));
-    const ingAnt = ingresos.filter(i=>mesFiltro(i.mes, mesAnterior));
-    const egAnt  = egresos.filter(e=>mesFiltro(e.mes, mesAnterior));
+    // Excluir espejos (helper _esEspejo): cada venta cuenta UNA vez por su primario → sin doble en Salud.
+    const ingMes = ingresos.filter(i=>!window._esEspejo(i) && mesFiltro(i.mes, mesActual));
+    const egMes  = egresos.filter(e=>!window._esEspejo(e) && mesFiltro(e.mes, mesActual));
+    const ingAnt = ingresos.filter(i=>!window._esEspejo(i) && mesFiltro(i.mes, mesAnterior));
+    const egAnt  = egresos.filter(e=>!window._esEspejo(e) && mesFiltro(e.mes, mesAnterior));
 
     const totalIngMes = ingMes.reduce((a,i)=>a+(parseFloat(i.monto)||0),0);
     const totalEgMes = egMes.reduce((a,e)=>a+(parseFloat(e.monto)||0),0);
@@ -18664,9 +18675,9 @@ async function loadInicio() {
         const _uid = currentClientUID;
         const eventos = [];
 
-        // 1. Caja
-        ingresos.forEach(i=>eventos.push({subtipo:'ingreso',desc:(i.origen==='cobro_cliente'&&(i.clienteNombre||i.detalle)?i.concepto+' · '+(i.clienteNombre||i.detalle):i.concepto||i.categoria||'Ingreso'),monto:parseFloat(i.monto)||0,creadoEn:i.creadoEn||i.fecha||''}));
-        egresos.forEach(e=>eventos.push({subtipo:'egreso',desc:e.concepto||e.categoria||'Egreso',monto:parseFloat(e.monto)||0,creadoEn:e.creadoEn||e.fecha||''}));
+        // 1. Caja — excluir espejos (helper _esEspejo): cada venta se muestra UNA vez (el primario).
+        ingresos.filter(i=>!window._esEspejo(i)).forEach(i=>eventos.push({subtipo:'ingreso',desc:(i.origen==='cobro_cliente'&&(i.clienteNombre||i.detalle)?i.concepto+' · '+(i.clienteNombre||i.detalle):i.concepto||i.categoria||'Ingreso'),monto:parseFloat(i.monto)||0,creadoEn:i.creadoEn||i.fecha||''}));
+        egresos.filter(e=>!window._esEspejo(e)).forEach(e=>eventos.push({subtipo:'egreso',desc:e.concepto||e.categoria||'Egreso',monto:parseFloat(e.monto)||0,creadoEn:e.creadoEn||e.fecha||''}));
 
         // 2. Presupuestos (ya cargados)
         const _pDescMap={'Pendiente de enviar':'Presupuesto creado','Enviado':'Presupuesto enviado','Aprobado':'Presupuesto aprobado','Cobrado':'Presupuesto cobrado','Denegado':'Presupuesto denegado','Consultado':'Presupuesto consultado'};
