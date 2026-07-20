@@ -34573,6 +34573,14 @@ function embiGetFinancialContext(){
     var cobPend=(window._clientPresupuestos||[])
       .filter(p=>p.estado==='Aprobado')
       .reduce((a,p)=>a+_presupSaldo(p), 0);
+    // DATOS DEL DÍA (último día del taller) — independientes del rango del período.
+    // ventasHoy: mismo criterio que la card VENDIDO (todas las ventas sin espejos, helper _esEspejo) filtradas por fecha=hoy.
+    // ingresosHoy: mismo criterio que el KPI INGRESOS (modelo junio, cuentas del dueño vía _esDuenoFn) filtrado por fecha=hoy.
+    var _hoy = fechaHoyARG();
+    var _ventasHoyArr = (window._clientVentas||[]).filter(function(v){ return !window._esEspejo(v) && (v.fecha||'')===_hoy; });
+    var ventasHoy   = _ventasHoyArr.reduce(function(a,v){return a+(parseFloat(v.monto)||0);},0);
+    var ventasHoyN  = _ventasHoyArr.length;
+    var ingresosHoy = (window._clientIngresos||[]).filter(_esDuenoFn).filter(function(i){ return (i.fecha||'')===_hoy; }).reduce(function(a,i){return a+(parseFloat(i.monto)||0);},0);
     var clientes=window._embi_clientes||window._mcClientes||[];
     var clientesNombres=clientes.length>0?clientes.map(c=>c.nombre||'Sin nombre').join(', '):'Sin clientes registrados';
     var proveedores=window._proveedores||window._embi_proveedores||[];
@@ -34627,7 +34635,7 @@ function embiGetFinancialContext(){
       var _mesFin = _MESES_CR[(+_cierreCruce.fechaFin.slice(5,7))-1];
       cierreCruceStr = '\n\n⚠ IMPORTANTE PARA TU ANÁLISIS: este período incluye un cierre que cruza de '+_mesIni+' a '+_mesFin+'. Los ingresos entraron en '+_mesIni+' pero parte de los egresos quedaron en '+_mesFin+', por eso la ganancia del rango puede verse negativa o baja SIN ser una pérdida real. Antes de dar los números, explicale esto al usuario para que no se alarme, y recomendale analizar de cierre a cierre para ver la rentabilidad real.';
     }
-    return '\n\nDATA FINANCIERA (período '+(_r?(_r.desde+' → '+_r.hasta):'mes actual')+'):\n- Ingresos: $'+Math.round(ingMes).toLocaleString('es-AR')+'\n- Egresos: $'+Math.round(egrMes).toLocaleString('es-AR')+'\n- Ganancia: $'+Math.round(ganancia).toLocaleString('es-AR')+' | Margen: '+margen+'%'+cierreCruceStr+'\n- Ticket promedio: $'+ticketProm.toLocaleString('es-AR')+' ('+ventasR.length+' venta'+(ventasR.length===1?'':'s')+' en el período)\n- Cobros pendientes: $'+Math.round(cobPend).toLocaleString('es-AR')+'\n- Clientes ('+clientes.length+'): '+clientesNombres+'\n- Proveedores: '+provDetalle+'\n- OC pendientes ('+ocsPend.length+'): '+ocsDetalle+'\n- Egresos por categoría: '+(catDetalle||'sin datos')+'\n- Cuentas: '+cuentasDetalle+'\n- Presupuestos activos: '+presupStr+'\n- Presupuestos aprobados sin cobrar: $'+Math.round(montoSinCobrar).toLocaleString('es-AR')+' (ingreso probable adicional)'+proyeccionStr+'\nCATÁLOGO DE PRODUCTOS (ventas, '+catalogo.length+'): '+catalogoStr+'\nPRODUCTOS DE COMPRA ('+prodCompra.length+'): '+prodCompraStr+'\nMIS LISTAS ('+listas.length+'): '+listasStr;
+    return '\n\nDATA FINANCIERA (período '+(_r?(_r.desde+' → '+_r.hasta):'mes actual')+'):\n- Ingresos: $'+Math.round(ingMes).toLocaleString('es-AR')+'\n- Egresos: $'+Math.round(egrMes).toLocaleString('es-AR')+'\n- Ganancia: $'+Math.round(ganancia).toLocaleString('es-AR')+' | Margen: '+margen+'%'+cierreCruceStr+'\n- Ticket promedio: $'+ticketProm.toLocaleString('es-AR')+' ('+ventasR.length+' venta'+(ventasR.length===1?'':'s')+' en el período)\n- Cobros pendientes: $'+Math.round(cobPend).toLocaleString('es-AR')+'\n- VENTAS DE HOY ('+_hoy+'): vendido $'+Math.round(ventasHoy).toLocaleString('es-AR')+' ('+ventasHoyN+' venta'+(ventasHoyN===1?'':'s')+'); de eso ya ingresó a tus cuentas $'+Math.round(ingresosHoy).toLocaleString('es-AR')+'.\nCuando te pregunten "¿cuánto vendimos hoy?" respondé con lo VENDIDO de hoy; si te preguntan cuánto de eso ya entró a las cuentas, aclarales el ingresado.'+'\n- Clientes ('+clientes.length+'): '+clientesNombres+'\n- Proveedores: '+provDetalle+'\n- OC pendientes ('+ocsPend.length+'): '+ocsDetalle+'\n- Egresos por categoría: '+(catDetalle||'sin datos')+'\n- Cuentas: '+cuentasDetalle+'\n- Presupuestos activos: '+presupStr+'\n- Presupuestos aprobados sin cobrar: $'+Math.round(montoSinCobrar).toLocaleString('es-AR')+' (ingreso probable adicional)'+proyeccionStr+'\nCATÁLOGO DE PRODUCTOS (ventas, '+catalogo.length+'): '+catalogoStr+'\nPRODUCTOS DE COMPRA ('+prodCompra.length+'): '+prodCompraStr+'\nMIS LISTAS ('+listas.length+'): '+listasStr;
   }catch(e){console.error('embiGetFinancialContext ERROR:', e); return '';}
 }
 
