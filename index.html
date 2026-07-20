@@ -3014,7 +3014,8 @@ body.has-bcanc{padding-top:42px;}
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#f5f0eb" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           </button>
           <div id="caja-plus-menu" style="display:none;position:absolute;top:42px;right:0;background:#fff;border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.15);overflow:hidden;min-width:160px;z-index:200;">
-            <div onclick="toggleCajaPlus(event);cajaVentaRapida()" style="display:none;padding:12px 16px;font-size:13px;color:#2d2a26;cursor:pointer;align-items:center;gap:10px;border-bottom:0.5px solid #f0ebe6;font-family:'DM Sans',sans-serif;font-weight:500;" onmouseover="this.style.background='#f5f0eb'" onmouseout="this.style.background=''">
+            <!-- +Venta rama dueño: oculto por defecto (decisión junio: negocios con equipo NO lo ven). loadCajaModule lo des-oculta SOLO si el plan no tiene gestionCajas (Esencial). -->
+            <div id="caja-plus-venta" onclick="toggleCajaPlus(event);cajaVentaRapida()" style="display:none;padding:12px 16px;font-size:13px;color:#2d2a26;cursor:pointer;align-items:center;gap:10px;border-bottom:0.5px solid #f0ebe6;font-family:'DM Sans',sans-serif;font-weight:500;" onmouseover="this.style.background='#f5f0eb'" onmouseout="this.style.background=''">
               <div style="width:26px;height:26px;border-radius:7px;background:#eaf3de;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3a4e3d" stroke-width="2" stroke-linecap="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></div>
               Venta caja
             </div>
@@ -12861,6 +12862,10 @@ async function loadCajaModule() {
     const _showOrigen = window.currentRol !== 'cajero';
     if(_origenWrap) _origenWrap.style.display = _showOrigen ? 'inline-block' : 'none';
     if(_origenSep) _origenSep.style.display = _showOrigen ? 'inline-block' : 'none';
+    // +Venta en el menú "+": SOLO para planes sin gestión de cajas (Esencial — dueña que es administración y mostrador a la vez).
+    // Pro/Premium (con gestionCajas) siguen sin verlo: la venta rápida va por el circuito cajero (decisión de seguridad de junio, intacta).
+    const _ventaItem = document.getElementById('caja-plus-venta');
+    if(_ventaItem) _ventaItem.style.display = window.tieneAccesoPlan('gestionCajas') ? 'none' : 'flex';
     // Render unificado: aplica filtros + paginación + KPIs + chips + tabla + botón "Cargar más"
     _aplicarFiltrosCaja();
     // Animación staggered de cards
@@ -17602,7 +17607,11 @@ function _vrcRenderMetodos() {
   const defIcon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>';
   const isCta = _vrcMetodo === '__cta__';
   const isTarjeta = _vrcMetodo === '__tarjeta__';
-  container.style.gridTemplateColumns = `repeat(${Math.min(_vrcCuentas.length+2,4)},1fr)`;
+  // "Cuenta cliente" solo para cajero: su rama hardcodea origen/creadoPor de cajero y ensuciaría el libro de la dueña
+  // (la venta a cuenta de la dueña vive en el circuito comercial). Modal dueño = cuentas + Tarjeta.
+  const _mostrarCta = window.currentRol === 'cajero';
+  const _extraMetodos = _mostrarCta ? 2 : 1;   // Tarjeta (siempre) + Cuenta cliente (solo cajero)
+  container.style.gridTemplateColumns = `repeat(${Math.min(_vrcCuentas.length+_extraMetodos,4)},1fr)`;
   container.innerHTML = _vrcCuentas.map(c=>{
     const isSel = c.nombre === _vrcMetodo;
     const safe = c.nombre.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
@@ -17614,10 +17623,10 @@ function _vrcRenderMetodos() {
   }).join('') + `<button class="vrc-metodo-btn${isTarjeta?' sel':''}" onclick="vrcSetMetodo('__tarjeta__')">
     <div style="margin-bottom:5px;">${icons['Tarjeta']}</div>
     <div class="vrc-mlabel">${isTarjeta && _vrcTarjetaTipo ? (_vrcTarjetaTipo === 'debito' ? 'Débito' : 'Crédito') : 'Tarjeta'}</div>
-  </button>` + `<button class="vrc-metodo-btn${isCta?' sel':''}" onclick="vrcSetMetodo('__cta__')" style="border-color:rgba(176,144,136,0.5);color:#b09088;">
+  </button>` + (_mostrarCta ? `<button class="vrc-metodo-btn${isCta?' sel':''}" onclick="vrcSetMetodo('__cta__')" style="border-color:rgba(176,144,136,0.5);color:#b09088;">
     <div style="margin-bottom:5px;"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 17c0-3.314 3.134-6 7-6s7 2.686 7 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
     <div class="vrc-mlabel">Cuenta cliente</div>
-  </button>`;
+  </button>` : '');
   // Defensa suave: nada muere en silencio. Si al cajero le falta la cuenta de efectivo ('Caja mostrador')
   // o una cuenta banco (Transferencia), avisamos en vez de omitir el medio sin explicación.
   const avisoEl = document.getElementById('vrc-cuentas-aviso');
