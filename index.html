@@ -25587,6 +25587,10 @@ window.guardarMiCuenta = async function() {
 
   try {
     await updateDoc(doc(db,'clientes',currentClientUID), data);
+    // Reflejar en el cache local + refrescar el checklist de onboarding, para que "Datos del negocio"
+    // y "Datos fiscales" se tilden EN VIVO (antes solo el logo lo hacía → quedaba en 2/4 hasta recargar).
+    if(currentClientData) Object.assign(currentClientData, data);
+    if(window.renderOnboardingChecklist) await window.renderOnboardingChecklist();
 
     // Cambio de contraseña si se completó
     const actual = document.getElementById('mc-pass-actual').value;
@@ -26156,7 +26160,8 @@ window.guardarMiCuentaPage = async function() {
     if(negNombre) negNombre.textContent = data.negocioNombre || 'Mi negocio';
     const inicioNombre = document.getElementById('inicio-negocio-nombre');
     if(inicioNombre) inicioNombre.textContent = data.negocioNombre || 'Mi negocio';
-    if(currentClientData) { currentClientData.negocioNombre = data.negocioNombre; currentClientData.titularNombre = data.titularNombre; }
+    if(currentClientData) Object.assign(currentClientData, data);   // reflejar TODOS los campos guardados en el cache (no solo nombre/titular)
+    if(window.renderOnboardingChecklist) await window.renderOnboardingChecklist();  // tilda "Datos del negocio" en vivo
     const s = document.getElementById('micuenta-saved');
     if(s){ s.style.display='block'; setTimeout(()=>s.style.display='none', 2000); }
     if(errEl) errEl.style.display='none';
