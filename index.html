@@ -17572,7 +17572,15 @@ window.cajaVentaRapida = async function() {
         if(b.nombre === 'Caja mostrador') return 1;
         return 0;
       });
+    } else {
+      // Rama dueña: SOLO cuentas operativas del dueño (efectivo/banco/mp; excluye 'Caja mostrador' y tipo reserva/retiros).
+      // Mismo criterio que INGRESOS/Indicadores (_esCuentaDueno) → todo método mostrado cae en una cuenta que sus KPIs ven.
+      // Garantía: cualquier cuenta que la dueña cree en Configuración (tipo efectivo/banco/mp) aparece sola como método acá.
+      _vrcCuentas = _vrcCuentas.filter(_esCuentaDueno);
     }
+    // Header: el rótulo "Cajero" solo en el circuito cajero; para la dueña, únicamente "Nueva venta".
+    var _vrcEyebrow = document.getElementById('vrc-header-eyebrow');
+    if(_vrcEyebrow) _vrcEyebrow.style.display = (window.currentRol === 'cajero') ? '' : 'none';
     _vrcMetodo = _vrcCuentas[0]?.nombre || 'Efectivo';
     const buscarEl = document.getElementById('vrc-buscar');
     if(buscarEl) buscarEl.value = '';
@@ -17607,10 +17615,12 @@ function _vrcRenderMetodos() {
   const defIcon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>';
   const isCta = _vrcMetodo === '__cta__';
   const isTarjeta = _vrcMetodo === '__tarjeta__';
-  // "Cuenta cliente" solo para cajero: su rama hardcodea origen/creadoPor de cajero y ensuciaría el libro de la dueña
-  // (la venta a cuenta de la dueña vive en el circuito comercial). Modal dueño = cuentas + Tarjeta.
-  const _mostrarCta = window.currentRol === 'cajero';
-  const _extraMetodos = _mostrarCta ? 2 : 1;   // Tarjeta (siempre) + Cuenta cliente (solo cajero)
+  // Modal dueña = SOLO sus cuentas. "Tarjeta" flotante y "Cuenta cliente" son del circuito cajero:
+  //  - Cuenta cliente hardcodea origen/creadoPor de cajero (ensuciaría el libro de la dueña).
+  //  - Tarjeta no es cuenta y caía en 'Caja mostrador' por fallback → invisible en INGRESOS. Si la dueña cobra con
+  //    tarjeta, crea su cuenta "Tarjeta" en Configuración y aparece como método sola (cae en cuentas del dueño).
+  const _esCajeroModal = window.currentRol === 'cajero';
+  const _extraMetodos = _esCajeroModal ? 2 : 0;   // cajero: Tarjeta + Cuenta cliente; dueña: 0 (solo sus cuentas)
   container.style.gridTemplateColumns = `repeat(${Math.min(_vrcCuentas.length+_extraMetodos,4)},1fr)`;
   container.innerHTML = _vrcCuentas.map(c=>{
     const isSel = c.nombre === _vrcMetodo;
@@ -17620,10 +17630,10 @@ function _vrcRenderMetodos() {
       <div style="margin-bottom:5px;">${icons[c.nombre]||defIcon}</div>
       <div class="vrc-mlabel">${_label}</div>
     </button>`;
-  }).join('') + `<button class="vrc-metodo-btn${isTarjeta?' sel':''}" onclick="vrcSetMetodo('__tarjeta__')">
+  }).join('') + (_esCajeroModal ? `<button class="vrc-metodo-btn${isTarjeta?' sel':''}" onclick="vrcSetMetodo('__tarjeta__')">
     <div style="margin-bottom:5px;">${icons['Tarjeta']}</div>
     <div class="vrc-mlabel">${isTarjeta && _vrcTarjetaTipo ? (_vrcTarjetaTipo === 'debito' ? 'Débito' : 'Crédito') : 'Tarjeta'}</div>
-  </button>` + (_mostrarCta ? `<button class="vrc-metodo-btn${isCta?' sel':''}" onclick="vrcSetMetodo('__cta__')" style="border-color:rgba(176,144,136,0.5);color:#b09088;">
+  </button>` : '') + (_esCajeroModal ? `<button class="vrc-metodo-btn${isCta?' sel':''}" onclick="vrcSetMetodo('__cta__')" style="border-color:rgba(176,144,136,0.5);color:#b09088;">
     <div style="margin-bottom:5px;"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 17c0-3.314 3.134-6 7-6s7 2.686 7 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
     <div class="vrc-mlabel">Cuenta cliente</div>
   </button>` : '');
@@ -35686,7 +35696,7 @@ window.doResetPassword = async function(){
     <div style="height:3px;background:linear-gradient(90deg,#b09088,#c4a098,#b09088);flex-shrink:0;"></div>
     <div style="background:#3a4e3d;padding:22px 28px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
       <div>
-        <div style="font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:4px;">Cajero</div>
+        <div id="vrc-header-eyebrow" style="font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:4px;">Cajero</div>
         <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#fff;letter-spacing:-.3px;">Nueva venta</div>
       </div>
       <div style="display:flex;align-items:center;gap:16px;">
