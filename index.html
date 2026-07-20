@@ -13923,6 +13923,8 @@ function _mdvBuildBody(m, editing) {
       `<div class="mdv-fv">${m.cuenta||'—'}</div>`,
       `<select class="cj-input" id="mdv-cuenta">${cuentasOpts}</select>`,
       false);
+    if(m.ticketNum) html += _mdvField('TICKET',
+      `<div class="mdv-fv">N° ${m.ticketNum}</div>`, '', false);
     if(m.productos && m.productos.length) {
       html += '<div style="margin-bottom:12px;">';
       html += '<div style="font-size:10px;font-weight:700;color:#888;letter-spacing:.06em;margin-bottom:6px;">PRODUCTOS</div>';
@@ -14063,6 +14065,8 @@ window.mdvEliminar = async function() {
       await updateDoc(doc(db,'clientes',currentClientUID,'libroCaja',m.id), {eliminado:true});
       window.mdvCerrar();
       loadCajaModule();
+      // Rama dueña: refrescar contabilidad para que Indicadores refleje el borrado sin recargar (igual que en la venta).
+      if(window.currentRol !== 'cajero') await loadClientContabilidad();
     } catch(e) {
       showToast('Error al eliminar: '+(e?.message||e, 'error'));
     }
@@ -18212,6 +18216,9 @@ window.vrcGuardar = async function() {
       if(window._triggerStockPorVenta) window._triggerStockPorVenta(_vcCarritoSnap, _vcDocRef.id).catch(()=>{});
       _btnReset();
       loadCajaModule();
+      // Rama dueña: refrescar _clientVentas/_clientIngresos para que Indicadores (VENDIDO/INGRESOS) refleje la venta
+      // sin recargar la página (loadCajaModule solo refresca la Caja). El cajero no tiene Indicadores.
+      if(window.currentRol !== 'cajero') await loadClientContabilidad();
     }
   } catch(e){
     console.log('vrcGuardar:',e);
