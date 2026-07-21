@@ -22940,6 +22940,24 @@ async function renderMcHistorial(clienteId) {
   } catch(e) {}
 }
 
+// --- Cobros: selector de medio/cuenta unificado (doctrina +Venta, ver reference_mbstrategy_venta_duena_metodos) ---
+// Dueño: sus cuentas operativas reales (_esCuentaDueno) → el cobro cae en cuenta visible en Indicadores y cierre.
+// Cajero: los medios fijos del circuito mostrador; _cobroResolver mantiene _cajaActivaNombre + turnoId, sin tocar.
+let _cobroCuentasDueno = [];   // cuentas del dueño cacheadas al abrir el modal, para resolver la cuenta al guardar
+function _cobroMediosPorRol(cuentasDueno) {
+  if (window.currentRol === 'cajero')
+    return [{v:'Efectivo'},{v:'Transferencia'},{v:'Mercado Pago'},{v:'Tarjeta'}];
+  return (cuentasDueno||[]).filter(_esCuentaDueno)
+    .map(c => ({ v:c.nombre, tipo:c.tipo, label: c.tipo==='banco' ? 'Transferencia' : c.nombre }));
+}
+function _cobroResolver(sel, cuentasDueno) {
+  if (window.currentRol === 'cajero')
+    return { cuenta: sel==='Efectivo' ? (window._cajaActivaNombre||'Caja mostrador') : sel, medioPago: sel };
+  const c = (cuentasDueno||[]).find(x => x.nombre === sel) || {};
+  return { cuenta: c.nombre || sel,
+           medioPago: c.tipo==='banco' ? 'Transferencia' : c.tipo==='efectivo' ? 'Efectivo' : c.tipo==='mp' ? 'Mercado Pago' : (c.nombre || sel) };
+}
+
 // --- Cobros por cliente ---
 window.openMcCobroModal = async function(clienteId, presupId, concepto, monto, libroCajaId) {
   document.getElementById('mcc-cobro-cliente-id').value   = clienteId   || '';
@@ -23176,7 +23194,7 @@ window.eliminarCobro = function(clienteId, cobroId, monto) {
 };
 
 // ===== COBRO LIBRE DESDE CC CLIENTE =====
-window.abrirModalCobroLibre = function(clienteId, clienteNombre) {
+window.abrirModalCobroLibre = async function(clienteId, clienteNombre) {
   const modal = document.getElementById('modal-cobro-libre');
   if(!modal) return;
   document.getElementById('mcl-cobro-cliente-id').value = clienteId || '';
@@ -23184,7 +23202,18 @@ window.abrirModalCobroLibre = function(clienteId, clienteNombre) {
   document.getElementById('mcl-cobro-monto').value = '';
   document.getElementById('mcl-cobro-concepto').value = '';
   document.getElementById('mcl-cobro-fecha').value = fechaHoyARG();
-  document.getElementById('mcl-cobro-forma').value = 'Transferencia';
+  // Selector de medio/cuenta según rol: dueño = sus cuentas operativas reales; cajero = medios fijos del mostrador.
+  _cobroCuentasDueno = [];
+  if (window.currentRol !== 'cajero' && currentClientUID) {
+    try {
+      const _cs = await getDocs(collection(db,'clientes',currentClientUID,'cuentas'));
+      _cs.forEach(d => _cobroCuentasDueno.push({id:d.id, ...d.data()}));
+      _cobroCuentasDueno.sort((a,b)=>(a.orden||0)-(b.orden||0));
+    } catch(e){ console.log('cobro-libre cuentas fetch:', e); }
+  }
+  const _formaSel = document.getElementById('mcl-cobro-forma');
+  if (_formaSel) _formaSel.innerHTML = _cobroMediosPorRol(_cobroCuentasDueno)
+    .map(o => `<option value="${sanitize(o.v)}">${sanitize(o.label||o.v)}</option>`).join('');
   // "¿A qué corresponde este cobro?": presupuestos Aprobados con saldo pendiente + Cuenta general.
   // Si hay UN solo presupuesto pendiente, viene preseleccionado (el resto → Cuenta general).
   const presupSel = document.getElementById('mcl-presup-sel');
@@ -23221,13 +23250,16 @@ window.guardarCobroLibre = async function() {
   const fecha = document.getElementById('mcl-cobro-fecha').value || fechaHoyARG();
   const concepto = document.getElementById('mcl-cobro-concepto').value.trim() || ('Cobro de '+clienteNombre);
   const formaPago = document.getElementById('mcl-cobro-forma').value;
+  // Resolver cuenta + medioPago según rol (dueño = cuenta real; cajero = circuito mostrador). El medioPago
+  // resuelto es la etiqueta que se guarda en el cobro y en libroCaja (coherente para dueño y cajero).
+  const { cuenta: _cuentaCobro, medioPago: _medioCobro } = _cobroResolver(formaPago, _cobroCuentasDueno);
   // Selector "¿A qué corresponde?": valor = id del presupuesto, o '' = Cuenta general (sin vincular).
   const presupId = document.getElementById('mcl-presup-sel')?.value || '';
   const btn = document.getElementById('mcl-cobro-btn');
   if(btn && btn.disabled) return;
   if(btn) { btn.disabled=true; btn.textContent='Registrando...'; }
   try {
-    const data = { concepto, formaPago, monto, moneda:'ARS', fecha, presupId: presupId||null, creadoEn: new Date().toISOString() };
+    const data = { concepto, formaPago: _medioCobro, monto, moneda:'ARS', fecha, presupId: presupId||null, creadoEn: new Date().toISOString() };
     await addDoc(collection(db,'clientes',currentClientUID,'misClientes',clienteId,'cobros'), data);
     // Actualizar totalCobrado
     const cLocal = _mcClientes.find(x=>x.id===clienteId);
@@ -23257,6 +23289,21 @@ window.guardarCobroLibre = async function() {
       concepto, categoria:'Cobro de cliente', monto, fecha, mes:mesIngreso,
       origen:'comercial', clienteId, cliente:clienteNombre, creadoEn:new Date().toISOString()
     });
+    // FIX cobros invisibles: escribir en libroCaja para que el cobro entre a una CUENTA REAL → visible en
+    // Indicadores INGRESOS y en el disponible del cierre. Mismo doc que Cobranzas (mcc). Dueño = cuenta operativa;
+    // cajero = circuito mostrador (_cajaActivaNombre + turnoId). NO crea espejo (igual que Cobranzas).
+    await addDoc(collection(db,'clientes',currentClientUID,'libroCaja'), {
+      uid: currentClientUID, fecha, tipo:'ingreso',
+      concepto: 'Cobro · ' + (clienteNombre || 'Cliente'),
+      cuenta: _cuentaCobro, medioPago: _medioCobro, monto,
+      origen: 'cobro_cliente',
+      ...(window.currentRol === 'cajero' && window.turnoActual?.id ? { turnoId: window.turnoActual.id } : {}),
+      clienteId, clienteNombre,
+      ...(presupId ? { referenciaId: presupId } : {}),
+      detalle: concepto || '', mes: mesIngreso, eliminado: false,
+      creadoEn: new Date().toISOString(), creadoPor: window.currentOperadorNombre || 'Admin'
+    });
+    await loadClientContabilidad();   // refresca _clientVentas/_clientIngresos → Indicadores refleja el cobro sin recargar
     if(btn) { btn.disabled=false; btn.textContent='Registrar cobro'; }
     const saved = document.getElementById('mcl-cobro-saved');
     if(saved) saved.style.display='block';
