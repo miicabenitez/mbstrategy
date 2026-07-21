@@ -22967,17 +22967,22 @@ window.openMcCobroModal = async function(clienteId, presupId, concepto, monto, l
   document.getElementById('mcc-cobro-monto').value       = monto     || '';
   document.getElementById('mcc-cobro-notas').value       = '';
   document.getElementById('mcc-cobro-fecha').value       = fechaHoyARG();
-  // Cargar cuentas activas
-  const cuentaSel = document.getElementById('mcc-cobro-cuenta');
-  if(cuentaSel && currentClientUID) {
+  // Cargar cuentas del dueño y renderizar las pills de medio/cuenta según rol (doctrina +Venta):
+  // dueño = sus cuentas operativas reales (sin Tarjeta flotante); cajero = medios fijos del mostrador.
+  _cobroCuentasDueno = [];
+  if (window.currentRol !== 'cajero' && currentClientUID) {
     try {
       const snap = await getDocs(collection(db,'clientes',currentClientUID,'cuentas'));
-      const cuentas = [];
-      snap.forEach(d=>cuentas.push({id:d.id,...d.data()}));
-      cuentas.sort((a,b)=>(a.orden||0)-(b.orden||0));
-      cuentaSel.innerHTML = cuentas.map(c=>`<option value="${sanitize(c.nombre)}">${sanitize(c.nombre)}</option>`).join('');
-    } catch(e) { cuentaSel.innerHTML = '<option value="Efectivo">Efectivo</option>'; }
+      snap.forEach(d => _cobroCuentasDueno.push({id:d.id, ...d.data()}));
+      _cobroCuentasDueno.sort((a,b)=>(a.orden||0)-(b.orden||0));
+    } catch(e) { console.log('mcc cuentas fetch:', e); }
   }
+  const _mediosCont = document.getElementById('mcc-cobro-medios');
+  const _opts = _cobroMediosPorRol(_cobroCuentasDueno);
+  if (_mediosCont) _mediosCont.innerHTML = _opts.map(o => {
+    const _safe = String(o.v).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    return `<button type="button" onclick="mccSelMedio(this,'${_safe}')" class="mcc-medio" style="padding:9px 16px;border-radius:20px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border:1.5px solid rgba(176,144,136,0.3);background:#fff;color:#6a7a68;">${sanitize(o.label||o.v)}</button>`;
+  }).join('');
   // poblar nuevo diseño
   // resetear botón
   var _btn = document.querySelector('#newMcCobroModal button[onclick="createMcCobro()"]');
@@ -22991,7 +22996,8 @@ window.openMcCobroModal = async function(clienteId, presupId, concepto, monto, l
   elMonto.style.cssText += ';font-family:DM Sans,sans-serif!important;font-size:28px!important;';
   document.getElementById('mcc-cobro-subtitle').textContent = (concepto||'') + (monto ? ' · $' + parseFloat(monto).toLocaleString('es-AR') : '');
   document.getElementById('mcc-cobro-concepto').value = concepto || '';
-  mccSelMedio(document.querySelector('.mcc-medio'), 'Efectivo');
+  const _firstPill = document.querySelector('#mcc-cobro-medios .mcc-medio');
+  if(_firstPill && _opts.length) mccSelMedio(_firstPill, _opts[0].v);
   openModal('newMcCobroModal');
 };
 
@@ -22999,9 +23005,10 @@ window.mccSelMedio = function(el, medio) {
   document.querySelectorAll('.mcc-medio').forEach(function(b){
     b.style.background='#fff'; b.style.color='#6a7a68'; b.style.borderColor='rgba(176,144,136,0.3)';
   });
-  el.style.background='#4a5e4d'; el.style.color='#f4f0ea'; el.style.borderColor='#4a5e4d';
-  document.getElementById('mcc-cobro-forma').value = medio;
-  var cuenta = medio === 'Efectivo' ? (window._cajaActivaNombre || 'Caja mostrador') : medio;
+  if(el){ el.style.background='#4a5e4d'; el.style.color='#f4f0ea'; el.style.borderColor='#4a5e4d'; }
+  // Resolver cuenta + medioPago según rol (dueño = cuenta operativa real; cajero = _cajaActivaNombre + medio string).
+  const { cuenta, medioPago } = _cobroResolver(medio, _cobroCuentasDueno);
+  document.getElementById('mcc-cobro-forma').value = medioPago;
   document.getElementById('mcc-cobro-cuenta').value = cuenta;
 };
 
