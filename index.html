@@ -14535,6 +14535,7 @@ let _cierreCompromisosLista = [];     // [{id,nombre,monto,origen,origenLabel,pa
 let _cierreCuentas = [];              // [{id,nombre,tipo,saldo}]
 let _cierreManualCompromisos = [];    // compromisos manuales agregados en esta sesión
 let _cierreRevItems = [];             // [{tipo,nombre,monto,origen,origenId,cuentas:{[nombre]:0}}]
+let _cierreMovsCache = [];            // libroCaja completo, cacheado para recomputar el disponible al mover fecha-fin
 
 async function loadCierrePeriodo() {
   if(!currentClientUID) return;
@@ -14573,13 +14574,13 @@ async function loadCierrePeriodo() {
       if(c.nombre === 'Caja mostrador') return;  // su plata ya está en las cuentas del dueño vía retiro de caja → incluirla = doble conteo
       _cierreCuentas.push({id:d.id,...c});
     });
-    // 4. Calcular saldo real de cada cuenta desde libroCaja
-    // FIX SALDOS: usa helper unico (mismo numero que el codigo anterior con guard !==undefined).
+    // 4. Cachear libroCaja y calcular el saldo real de cada cuenta AL CORTE (fin del día de fecha-fin en ART).
+    // El disponible del cierre es la plata que había al corte, no el saldo actual: lo cargado DESPUÉS de fecha-fin
+    // (creadoEn > corte) es del ciclo siguiente. _cierreRecalcDisponible se re-ejecuta al mover el picker (proyección).
     const movsSnap = await getDocs(collection(db,'clientes',uid,'libroCaja'));
-    const movsArr = [];
-    movsSnap.forEach(d => movsArr.push(d.data()));
-    _cierreCuentas.forEach(c => { c.saldoReal = window._calcularSaldoCuenta(c.nombre, movsArr); });
-    _cierreDisponibleTotal = _cierreCuentas.reduce((a,c)=>a+(c.saldoReal||0),0);
+    _cierreMovsCache = [];
+    movsSnap.forEach(d => _cierreMovsCache.push(d.data()));
+    _cierreRecalcDisponible();
     // 5. Cargar compromisos (CC proveedores pendientes)
     await _cierreCargarCompromisos(uid);
     // 6. Preparar distribución desde config
@@ -14727,18 +14728,7 @@ function _cierreRenderTodo() {
   // Frecuencia
   document.querySelectorAll('.cierre-freq-btn').forEach(b=>b.classList.toggle('active',b.dataset.frec===_cierreFrec));
   // Paso 1
-  const el1 = document.getElementById('cierre-cuentas-list');
-  if(el1) {
-    if(!_cierreCuentas.length) { el1.innerHTML='<div style="padding:12px 0;color:#bbb;font-size:13px;text-align:center;">Sin cuentas operativas configuradas.</div>'; }
-    else {
-      el1.innerHTML = _cierreCuentas.map(c=>`
-        <div class="cierre-cuenta-row">
-          <span class="cierre-cuenta-nombre">${c.nombre}</span>
-          <span class="cierre-cuenta-saldo ${c.saldoReal<0?'style="color:#993C1D;"':''}">${_moneyFmt(c.saldoReal)}</span>
-        </div>`).join('')+
-        `<div class="cierre-total-row"><span class="cierre-total-label">Total disponible</span><span class="cierre-total-val">${_moneyFmt(_cierreDisponibleTotal)}</span></div>`;
-    }
-  }
+  _cierreRenderCuentas();
   // Paso 2
   _cierreRenderCompromisos();
   // Paso 3
@@ -14796,7 +14786,41 @@ window.cierreConfirmarCompromisoManual = function() {
   closeModal('cierre-compromiso-modal');
 };
 
+// Instante de corte del cierre = fin del día de la fecha-fin (picker) en hora Argentina (UTC-3), como ISO UTC.
+// Se compara contra creadoEn (ISO UTC) — lección de 708df76: importa cuándo se CARGÓ el movimiento, no su fecha
+// nominal. Sin fecha-fin → '' (sin corte, degrada al saldo actual = comportamiento previo, sin romper nada).
+function _cierreInstanteCorte() {
+  const ff = document.getElementById('cierre-fecha-fin')?.value || '';
+  if(!ff) return '';
+  try { return new Date(ff + 'T23:59:59.999-03:00').toISOString(); }
+  catch(e){ return ''; }
+}
+// Fuente ÚNICA del disponible: saldo de cada cuenta contando SOLO movimientos cargados hasta el corte.
+// La usan la carga inicial (loadCierrePeriodo) y cada cambio de fecha-fin (vía _cierreActualizarTotales) →
+// proyección y ejecución comparten este valor. Movimientos sin creadoEn (data vieja) cuentan como previos al corte.
+function _cierreRecalcDisponible() {
+  if(!_cierreCuentas.length) return;
+  const corte = _cierreInstanteCorte();
+  const movs = corte ? _cierreMovsCache.filter(m => (m.creadoEn||'') <= corte) : _cierreMovsCache;
+  _cierreCuentas.forEach(c => { c.saldoReal = window._calcularSaldoCuenta(c.nombre, movs); });
+  _cierreDisponibleTotal = _cierreCuentas.reduce((a,c)=>a+(c.saldoReal||0),0);
+}
+// Render del Paso 1 (saldo por cuenta + total). Extraído para refrescarlo también al mover la fecha-fin.
+function _cierreRenderCuentas() {
+  const el1 = document.getElementById('cierre-cuentas-list');
+  if(!el1) return;
+  if(!_cierreCuentas.length) { el1.innerHTML='<div style="padding:12px 0;color:#bbb;font-size:13px;text-align:center;">Sin cuentas operativas configuradas.</div>'; return; }
+  el1.innerHTML = _cierreCuentas.map(c=>`
+    <div class="cierre-cuenta-row">
+      <span class="cierre-cuenta-nombre">${c.nombre}</span>
+      <span class="cierre-cuenta-saldo ${c.saldoReal<0?'style="color:#993C1D;"':''}">${_moneyFmt(c.saldoReal)}</span>
+    </div>`).join('')+
+    `<div class="cierre-total-row"><span class="cierre-total-label">Total disponible</span><span class="cierre-total-val">${_moneyFmt(_cierreDisponibleTotal)}</span></div>`;
+}
+
 function _cierreActualizarTotales() {
+  _cierreRecalcDisponible();   // recomputar disponible al corte actual (por si cambió la fecha-fin) — mantiene la proyección en vivo
+  _cierreRenderCuentas();      // refrescar el saldo por-cuenta y el total con el nuevo corte
   const pagados = _cierreCompromisosLista.filter(c=>c.pagado).reduce((a,c)=>a+(parseFloat(c.monto)||0),0);
   _cierreCompromisosSeleccionados = pagados;
   const aDistribuir = Math.max(0, _cierreDisponibleTotal - pagados);
@@ -15231,6 +15255,7 @@ function _cierreBuildDoc(estado) {
     tipo: _cierreModo==='real' ? 'cierre' : _cierreModo,
     frecuencia: _cierreFrec,
     fechaInicio, fechaFin,
+    corteEn: _cierreInstanteCorte(),   // instante de corte (fin del día de fecha-fin en ART, ISO UTC). Frontera del ciclo para el Inicio.
     disponibleTotal: _cierreDisponibleTotal,
     cuentasSnapshot: _cierreCuentas.map(c=>su({nombre:c.nombre,tipo:c.tipo,saldo:c.saldoReal||0})),
     compromisos: _cierreCompromisosLista.map(c=>su({...c})),
@@ -18459,11 +18484,11 @@ async function loadInicio() {
     try {
       const ultimoCierre = await _getUltimoCierre(currentClientUID);
       window._ultimoCierreDoc = ultimoCierre;
-      // Frontera del ciclo = el INSTANTE del cierre (cerradoEn), no la fechaFin calendario. Un movimiento
-      // es del ciclo nuevo si se CREÓ después de ese instante (creadoEn > cerradoEn): lo cargado antes del
-      // cierre queda en el período cerrado aunque su fecha calendario sea posterior (ej. cargado 18/07 23hs
-      // y fechado 19/07). Ambos creadoEn son ISO UTC → comparación de strings correcta.
-      const _cierreTs = ultimoCierre ? (ultimoCierre.cerradoEn || ultimoCierre.creadoEn || '') : '';
+      // Frontera del ciclo = el INSTANTE DE CORTE del cierre (corteEn = fin del día de fecha-fin en ART), el MISMO
+      // que definió qué plata entró al disponible. Un movimiento es del ciclo nuevo si se CREÓ después (creadoEn >
+      // corteEn): lo cargado después del corte NO se distribuyó, así que es del ciclo siguiente — sin hueco ni doble
+      // conteo. Fallback a cerradoEn/creadoEn para cierres viejos sin corteEn. Todos ISO UTC → comparación de strings.
+      const _cierreTs = ultimoCierre ? (ultimoCierre.corteEn || ultimoCierre.cerradoEn || ultimoCierre.creadoEn || '') : '';
       const _fmtTsDDMM = ts => { try { return new Date(ts).toLocaleDateString('es-AR',{timeZone:'America/Argentina/Buenos_Aires',day:'2-digit',month:'2-digit'}); } catch(e){ return '—'; } };
       const _desdeEl = document.getElementById('inicio-ciclo-desde');
       if(_desdeEl) _desdeEl.textContent = _cierreTs ? _fmtTsDDMM(_cierreTs) : 'el inicio';
