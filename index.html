@@ -18953,8 +18953,8 @@ async function renderOnboardingChecklist() {
   }
   const pct = Math.round((done/total)*100);
   const steps = [
-    { key:'negocio', label:'Datos del negocio',               sub:'Nombre, logo y mail',                        action:"openModal('miCuentaModal')", btn:'Configurar' },
-    { key:'fiscal',  label:'Datos fiscales',                  sub:'CUIT y condición frente a AFIP',             action:"openModal('miCuentaModal')", btn:'Configurar' },
+    { key:'negocio', label:'Datos del negocio',               sub:'Nombre, logo y mail',                        action:"navigateToMiCuenta(); setTimeout(function(){ var el=document.getElementById('micuenta-negocio-nombre'); if(el) el.closest('.card').scrollIntoView({behavior:'smooth',block:'start'}); }, 100)", btn:'Configurar' },
+    { key:'fiscal',  label:'Datos fiscales',                  sub:'CUIT y condición frente a AFIP',             action:"navigateToMiCuenta(); setTimeout(function(){ var el=document.getElementById('micuenta-negocio-cuit'); if(el) el.closest('.card').scrollIntoView({behavior:'smooth',block:'start'}); }, 100)", btn:'Configurar' },
     { key:'cierre',  label:'Configurar el cierre de período', sub:'Socios, distribución, frecuencia y reserva', action:"sidebarNav('finanzas','caja-config'); setTimeout(function(){ if(window.cprdShowCfgTab) cprdShowCfgTab('cierre'); }, 300)", btn:'Configurar' }
   ];
   // "Mi equipo" solo en planes con equipo (Pro/Premium). En Esencial no se agrega → checklist de 3 pasos.
