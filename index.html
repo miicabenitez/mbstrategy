@@ -34556,6 +34556,8 @@ window.toggleActivoProducto = async function(id, nuevoEstado) {
 };
 
 window.toggleManejaStock = async function(id, nuevoEstado) {
+  // Stock es feature Pro+. En Esencial el toggle queda bloqueado: mismo cartelito que el resto de features Pro.
+  if(!window.tieneAccesoPlan('stock')) { window._proToast('Stock', 'pro'); return; }
   var uid = window.currentClientUID;
   if(!uid) return;
   try {
