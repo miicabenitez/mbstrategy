@@ -6734,7 +6734,7 @@ body.has-bcanc{padding-top:42px;}
     <div class="modal-header-verde">
       <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;color:#f4f0ea;">Nuevo proveedor</div>
     </div>
-    <div style="padding:18px 24px;max-height:65vh;overflow-y:auto;">
+    <div id="nprov-modal-body" style="padding:18px 24px;max-height:65vh;overflow-y:auto;">
     <div class="fg"><label class="fl">Nombre</label><input type="text" class="fi" id="nprov-nombre" placeholder="Ej: Materiales Rodriguez, Mano de obra García..."/></div>
     <div class="fg"><label class="fl">CUIT</label><input type="text" class="fi" id="mprov-cuit" placeholder="20-12345678-9"/></div>
     <div class="fg">
@@ -10369,7 +10369,7 @@ window.toggleExpressPanel = function() {
   const open = p.style.display !== 'none';
   p.style.display = open ? 'none' : 'block';
   const btn = document.getElementById('calc-express-btn');
-  if(btn) btn.style.background = open ? '#f5f4f2' : '#E7F0E8';
+  if(btn) btn.style.background = open ? '#f5f4f2' : '#e8ede8';
 };
 
 window.recalcExpress = function() {
@@ -19503,6 +19503,12 @@ window.loadRecetasModule = async function() {
   try {
     const snap = await getDocs(query(collection(db,'clientes',currentClientUID,'recetas'), where('activo','==',true)));
     window._stockRecetas = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>((a.itemNombre||a.productoNombre||'')).localeCompare(b.itemNombre||b.productoNombre||'','es'));
+    // Cargar insumos para recomputar el costo de receta con el precio ACTUAL del insumo. La lista mostraba el
+    // costoTotal guardado (calculado al guardar), que queda viejo si cambió el precio del insumo; el detalle ya
+    // recalcula en vivo. Con los insumos cargados, stkRenderRecetas usa el mismo criterio que el detalle.
+    if(!window._stockInsumos || !window._stockInsumos.length) {
+      try { const _si = await getDocs(query(collection(db,'clientes',currentClientUID,'insumos'), where('activo','==',true))); window._stockInsumos = _si.docs.map(d=>({id:d.id,...d.data()})); } catch(_){}
+    }
   } catch(e) {
     console.log('loadRecetasModule:',e);
     window._stockRecetas = window._stockRecetas || [];
@@ -19525,7 +19531,14 @@ function stkRenderRecetas() {
   }
   if(welcome) welcome.style.display='none';
   if(content) content.style.display='block';
-  const costos = recs.map(r=>parseFloat(r.costoTotal||0));
+  // Costo de receta al precio ACTUAL del insumo (mismo criterio que el detalle stkRecActualizarCosto); fallback
+  // al costoTotal guardado si los insumos no están cargados. Evita mostrar costos viejos cuando cambió el precio.
+  const _costoRecetaActual = r => {
+    const _ins = window._stockInsumos || [];
+    if(!_ins.length) return parseFloat(r.costoTotal||0);
+    return (r.items||[]).reduce((s,it)=>{ const x=_ins.find(y=>y.id===it.insumoId); const cb=_stkConvertirABase(it.cantidad, it.unidad||it.unidadBase||'', it.unidadBase||it.unidad||''); return s+(cb*parseFloat(x?.costoUnitario||0)); }, 0);
+  };
+  const costos = recs.map(_costoRecetaActual);
   const promedio = costos.reduce((a,b)=>a+b,0)/costos.length;
   if(kpiRec) kpiRec.textContent=recs.length;
   if(kpiCosto) kpiCosto.textContent='$'+promedio.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -19533,7 +19546,7 @@ function stkRenderRecetas() {
   if(!lista) return;
   lista.innerHTML = recs.map(r=>{
     const resumen = (r.items||[]).map(it=>it.insumoNombre).filter(Boolean).join(', ').slice(0,60)||'—';
-    const costoStr = '$'+parseFloat(r.costoTotal||0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
+    const costoStr = '$'+_costoRecetaActual(r).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
     const itemNombre = r.itemNombre || r.productoNombre || '—';
     const itemTipo = r.itemTipo || 'producto';
     const tipoBadge = itemTipo === 'insumo'
@@ -21566,6 +21579,7 @@ async function loadClientTareas() {
 let _paSessionCurrentMod = null;
 let _paSessionEntradaTime = null;
 function paTrackModEntry(mod) { _paSessionCurrentMod = mod; _paSessionEntradaTime = Date.now(); }
+window.paTrackModEntry = paTrackModEntry;   // expuesto para re-marcar el módulo activo desde sidebarNav (fix Gestión)
 function paTrackModExit() {
   if(!currentClientUID || !_paSessionCurrentMod || !_paSessionEntradaTime) return;
   const elapsed = Date.now() - _paSessionEntradaTime;
@@ -22469,7 +22483,8 @@ function _cbRenderCobradas(psSnap, clientesById) {
     saldados.push({
       cliente: cli?.nombre || p.cliente || '—',
       descripcion: p.descripcion || ('Presupuesto '+(p.numero||'')),
-      monto: getPresupMonto(p)
+      monto: getPresupMonto(p),
+      fecha: p.fecha || p.creadoEn || ''
     });
   });
   const totalCobrado = saldados.reduce((s,p)=>s+p.monto,0);
@@ -22490,12 +22505,13 @@ function _cbRenderCobradas(psSnap, clientesById) {
   if(empty) empty.style.display='none';
   if(tabla) tabla.style.display='';
   const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const _fmtCobFecha = f => { if(!f) return '—'; const s=String(f).slice(0,10).split('-'); return s.length===3 ? s[2]+'/'+s[1]+'/'+s[0] : String(f); };
   tbody.innerHTML = saldados.map(p => `<tr>
     <td>${esc(p.cliente)}</td>
     <td class="cb-col-tel">—</td>
     <td>${esc(p.descripcion)}</td>
     <td class="r">$${p.monto.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
-    <td class="cb-col-fecha">—</td>
+    <td class="cb-col-fecha">${_fmtCobFecha(p.fecha)}</td>
     <td style="text-align:center"><span style="display:inline-block;padding:3px 9px;border-radius:8px;background:#dcfce7;color:#166534;font-size:11px;font-weight:600;">Saldado</span></td>
     <td></td><td></td>
   </tr>`).join('');
@@ -30759,12 +30775,14 @@ window.editProveedor = function(id) {
   document.getElementById('nprov-tel').value=p.tel||'';
   document.getElementById('nprov-costo-fijo').value=p.costoFijo||'';
   document.getElementById('nprov-notas').value=p.notas||'';
+  // openModal PRIMERO: en su caso newProveedorModal resetea título ("Nuevo proveedor") y el cat-select a default.
+  // Los overrides de edición (título, categoría, botón) van DESPUÉS para que no los pise.
+  openModal('newProveedorModal');
   loadCatsProveedor().then(()=>renderCatSelect(p.categoria||'Materiales'));
   const btn=document.querySelector('#newProveedorModal .bp');
   if(btn){btn.textContent='Guardar cambios';btn.onclick=()=>saveProveedor(id);}
-  const titulo=document.querySelector('#newProveedorModal .mt');
+  const titulo=document.querySelector('#newProveedorModal .modal-header-verde div');
   if(titulo) titulo.textContent='Editar proveedor';
-  openModal('newProveedorModal');
 };
 
 window.saveProveedor = async function(id) {
@@ -34161,7 +34179,7 @@ window.openModal = function(id) {
     if(_editData){ window._facturaModalCargarEdicion(_editData); }
     else { if(window.facRenderItems) facRenderItems(); if(window._facturaModalAplicarTipo) window._facturaModalAplicarTipo(); if(window.facRenderOcToggle) facRenderOcToggle(); }
   }
-  if(id === 'newProveedorModal') { renderCatSelect(); loadCatsProveedor(); document.getElementById('nueva-cat-form').style.display='none'; const t=document.querySelector('#newProveedorModal .mt'); if(t) t.textContent='Nuevo proveedor'; }
+  if(id === 'newProveedorModal') { renderCatSelect(); loadCatsProveedor(); document.getElementById('nueva-cat-form').style.display='none'; const t=document.querySelector('#newProveedorModal .modal-header-verde div'); if(t) t.textContent='Nuevo proveedor'; const _b=document.getElementById('nprov-modal-body'); if(_b) _b.scrollTop=0; }
   if(id === 'newNecesidadModal') {
     // BUG-004: resetear formulario antes de abrir para que no retenga valores anteriores
     const editId = document.getElementById('nc-edit-id'); if(editId) editId.value='';
@@ -35435,6 +35453,9 @@ window.sidebarNav=function(mod,sub){
       window.showClientMod('herramientas',null);
       window._sbNavInProgress=false;
       if(sub==='planaccion')window.showCTab('tareas',null);
+      // El render interno de 'herramientas' dejó el tracker de productividad en 'Control del negocio' (y descartó
+      // la entrada 'Gestión' por <10s). Re-marcar 'Gestión' para que el tiempo del Plan de acción se acumule ahí.
+      if(window.paTrackModEntry) window.paTrackModEntry('Gestión');
     }else if(mod==='stock'){
       if(sub==='insumos')window.showCTab('insumos',null);
       else if(sub==='productos'){window.showCTab('productos-stock',null);if(window.tieneAccesoPlan('stock')&&window.loadProductosStockModule)loadProductosStockModule();}
