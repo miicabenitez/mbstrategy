@@ -22954,8 +22954,12 @@ function _cobroMediosPorRol(cuentasDueno) {
     .map(c => ({ v:c.nombre, tipo:c.tipo, label: c.tipo==='banco' ? 'Transferencia' : c.nombre }));
 }
 function _cobroResolver(sel, cuentasDueno) {
+  // Cajero: el primario SIEMPRE cae en su caja física (Caja mostrador), igual que la venta. Antes usaba el string
+  // del medio para no-efectivo, y 'Mercado Pago' coincide con el nombre de una cuenta del dueño → el primario
+  // entraba a la Caja del dueño y duplicaba con el espejo. El espejo (_cobroEscribirEspejo) es el ÚNICO que lleva
+  // MP/Transferencia a la cuenta real del dueño. medioPago = el medio elegido (para el desglose por medio del turno).
   if (window.currentRol === 'cajero')
-    return { cuenta: sel==='Efectivo' ? (window._cajaActivaNombre||'Caja mostrador') : sel, medioPago: sel };
+    return { cuenta: (window._cajaActivaNombre || 'Caja mostrador'), medioPago: sel };
   const c = (cuentasDueno||[]).find(x => x.nombre === sel) || {};
   return { cuenta: c.nombre || sel,
            medioPago: c.tipo==='banco' ? 'Transferencia' : c.tipo==='efectivo' ? 'Efectivo' : c.tipo==='mp' ? 'Mercado Pago' : (c.nombre || sel) };
