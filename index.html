@@ -835,7 +835,6 @@ input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus
   .rv-kpi-grid,.rc-kpi-grid{grid-template-columns:1fr 1fr !important;}
   #cp-list{padding:0 !important;}
   #prod-lista{min-width:0 !important;}
-  .prod-header{display:none !important;}
 }
 /* ── CAJA MODALES ── */
 @keyframes modalIn{from{opacity:0;transform:scale(.97) translateY(10px);}to{opacity:1;transform:none;}}
@@ -4565,14 +4564,7 @@ body.has-bcanc{padding-top:42px;}
 
         <!-- Tabla -->
         <div class="card">
-          <!-- Headers columnas -->
-          <div class="prod-header" style="display:grid;grid-template-columns:1fr 120px 110px 50px 60px;gap:10px;padding-bottom:10px;border-bottom:.5px solid var(--cream-d);">
-            <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;">Producto / Servicio</span>
-            <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;text-align:right;">Precio actual</span>
-            <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;text-align:right;">Nuevo precio</span>
-            <span style="font-size:11px;font-weight:500;color:var(--text-l);text-transform:uppercase;letter-spacing:.6px;text-align:center;">Activo</span>
-            <span></span>
-          </div>
+          <!-- Header de columnas: lo renderiza loadProductos junto con las filas (incluye Stock, mismo grid 6-col que los datos). Se eliminó el header estático de 5-col (sin Stock) que duplicaba en desktop. -->
           <div id="prod-lista"><div style="text-align:center;padding:28px;color:var(--text-l);font-size:13px;">Sin ítems. ¡Agregá el primero!</div></div>
           <!-- Footer guardar precios -->
           <div id="prod-footer-guardar" style="display:none;margin-top:16px;padding-top:14px;border-top:.5px solid var(--cream-d);justify-content:space-between;align-items:center;">
