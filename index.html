@@ -18914,6 +18914,8 @@ async function renderOnboardingChecklist() {
   // compras) no ven el wizard de onboarding "El caos terminó".
   if(window.currentRol !== 'admin') { el.style.display = 'none'; return; }
   const d = currentClientData || {};
+  // "Mi equipo" solo aplica a planes CON equipo (Pro/Premium, maxUsuarios>1). Esencial es 1 usuario → 3 pasos.
+  const tieneEquipoStep = (window.tieneAccesoPlan ? window.tieneAccesoPlan('maxUsuarios') : Infinity) > 1;
   // Checks que leen colecciones aparte (async), igual que antes con libroCaja/presupuestos.
   let tieneCierreCfg = false, tieneEquipo = false;
   if(currentClientUID) {
@@ -18921,18 +18923,20 @@ async function renderOnboardingChecklist() {
       const cierreCfgSnap = await getDocs(query(collection(db,'configuracionCierre'), where('uid','==',currentClientUID)));
       tieneCierreCfg = !cierreCfgSnap.empty;
     } catch(e) {}
-    try {
-      const opsSnap = await getDocs(collection(db,'clientes',currentClientUID,'operadores'));
-      tieneEquipo = !opsSnap.empty;
-    } catch(e) {}
+    if(tieneEquipoStep) {
+      try {
+        const opsSnap = await getDocs(collection(db,'clientes',currentClientUID,'operadores'));
+        tieneEquipo = !opsSnap.empty;
+      } catch(e) {}
+    }
   }
   const s = {
     negocio: !!(d.negocioNombre?.trim() && d.logoNegocio && d.negocioEmail?.trim()),
     fiscal:  !!(d.negocioCuit && d.negocioPuntoVenta && d.negocioCondicionIVA),
-    cierre:  tieneCierreCfg,
-    equipo:  tieneEquipo
+    cierre:  tieneCierreCfg
   };
-  const total = 4;
+  if(tieneEquipoStep) s.equipo = tieneEquipo;
+  const total = Object.keys(s).length;   // 3 en Esencial, 4 en Pro/Premium
   const done = Object.values(s).filter(Boolean).length;
   if(done === total) {
     el.style.display = 'none';
@@ -18947,9 +18951,10 @@ async function renderOnboardingChecklist() {
   const steps = [
     { key:'negocio', label:'Datos del negocio',               sub:'Nombre, logo y mail',                        action:"openModal('miCuentaModal')", btn:'Configurar' },
     { key:'fiscal',  label:'Datos fiscales',                  sub:'CUIT y condición frente a AFIP',             action:"openModal('miCuentaModal')", btn:'Configurar' },
-    { key:'cierre',  label:'Configurar el cierre de período', sub:'Socios, distribución, frecuencia y reserva', action:"sidebarNav('finanzas','caja-config'); setTimeout(function(){ if(window.cprdShowCfgTab) cprdShowCfgTab('cierre'); }, 300)", btn:'Configurar' },
-    { key:'equipo',  label:'Mi equipo',                       sub:'Creá los roles y usuarios de tu negocio',    action:"navigateToEquipo()", btn:'Cargar' }
+    { key:'cierre',  label:'Configurar el cierre de período', sub:'Socios, distribución, frecuencia y reserva', action:"sidebarNav('finanzas','caja-config'); setTimeout(function(){ if(window.cprdShowCfgTab) cprdShowCfgTab('cierre'); }, 300)", btn:'Configurar' }
   ];
+  // "Mi equipo" solo en planes con equipo (Pro/Premium). En Esencial no se agrega → checklist de 3 pasos.
+  if(tieneEquipoStep) steps.push({ key:'equipo', label:'Mi equipo', sub:'Creá los roles y usuarios de tu negocio', action:"navigateToEquipo()", btn:'Cargar' });
   const checkSvg = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 6l2.5 2.5L9 4" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   const stepsHtml = steps.map((st,i) => {
     const ok = s[st.key];
