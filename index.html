@@ -12241,14 +12241,17 @@ window._auditoriaRender = function() {
   if(window._auditoriaTipos.size > 0) movs = movs.filter(m => window._auditoriaTipos.has(m.origen));
   if(window._auditoriaCajero) movs = movs.filter(m => m.creadoPor === window._auditoriaCajero);
 
-  // FASE 6 COMMIT 3: filtro por caja física.
-  // Auditoría solo muestra movs de cajas físicas (con cajaId/cajaOrigenId).
-  // Fallback legacy: movs pre-Fase 3 sin cajaId se rescatan si m.cuenta matchea el nombre de una caja física.
+  // FASE 6 COMMIT 3: filtro por caja física + TURNO.
+  // Auditoría = ventana completa del cajero: muestra TODO lo del turno. Un mov entra si tiene cajaId/cajaOrigenId,
+  // o turnoId (cualquier mov del turno), o su cuenta es una caja física. El criterio turnoId captura los cobros
+  // NO-efectivo, cuya cuenta es el string del medio ('Transferencia'/'Mercado Pago'/'Tarjeta') y no una caja física
+  // → así la LISTA queda alineada con los KPIs de arriba, que ya suman todos los medios. Fallback legacy: movs
+  // pre-Fase 3 sin cajaId ni turnoId se rescatan por nombre de cuenta.
   const _cajasNombres = new Set((window._equipoCajas||[]).map(c => c.nombre).filter(Boolean));
-  // Excluir espejos (helper _esEspejo): la Auditoría muestra los movimientos REALES de la caja (el
-  // primario), no el reflejo en la cuenta del dueño. El espejo trae cajaOrigenId, así que pasaba el filtro
-  // de caja y aparecía junto al primario → doble asiento. El turno muestra SUS movimientos, no sus reflejos.
-  movs = movs.filter(m => !window._esEspejo(m) && (m.cajaId || m.cajaOrigenId || (m.cuenta && _cajasNombres.has(m.cuenta))));
+  // Excluir espejos (helper _esEspejo) SIEMPRE, aunque tengan turnoId: la Auditoría muestra el movimiento REAL (el
+  // primario), no el reflejo en la cuenta del dueño. El espejo trae turnoId + cajaOrigenId, pero _esEspejo lo corta
+  // ANTES del OR → no reaparece como doble asiento. El turno muestra SUS movimientos, no sus reflejos.
+  movs = movs.filter(m => !window._esEspejo(m) && (m.cajaId || m.cajaOrigenId || m.turnoId || (m.cuenta && _cajasNombres.has(m.cuenta))));
   if(window._auditoriaCajaFiltro) {
     const _cajaSel = (window._equipoCajas||[]).find(c => c.id === window._auditoriaCajaFiltro);
     const _cajaNombre = _cajaSel?.nombre || '';
