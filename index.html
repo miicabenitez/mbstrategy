@@ -7569,12 +7569,12 @@ window.fechaHoyARG = function(offsetDias) {
   return d.toLocaleDateString('es-AR',{timeZone:'America/Argentina/Buenos_Aires'}).split('/').reverse().map(p=>p.padStart(2,'0')).join('-');
 };
 
-// Único predicado de "doc espejo": el reflejo de una venta/devolución del cajero en la cuenta REAL del
-// dueño (venta_caja_espejo / devolucion_caja_espejo). No es un movimiento propio de la caja ni del mes:
-// cada venta se cuenta UNA vez por su primario. Consumidores que deben excluirlo: Auditoría, Actividad
-// reciente, totales del mes (Salud), y la vista de Caja del cajero. (El ciclo del Inicio NO lo excluye:
+// Único predicado de "doc espejo": el reflejo de una venta/devolución/COBRO del cajero en la cuenta REAL del
+// dueño (venta_caja_espejo / devolucion_caja_espejo / cobro_caja_espejo). No es un movimiento propio de la caja
+// ni del mes: cada operación se cuenta UNA vez por su primario. Consumidores que deben excluirlo: Auditoría,
+// Actividad reciente, totales del mes (Salud), y la vista de Caja del cajero. (El ciclo del Inicio NO lo excluye:
 // ahí el espejo ES el registro del dueño y el primario ya cae por el scope de cuentas del dueño.)
-window._esEspejo = m => ['venta_caja_espejo','devolucion_caja_espejo'].includes(m && m.origen);
+window._esEspejo = m => ['venta_caja_espejo','devolucion_caja_espejo','cobro_caja_espejo'].includes(m && m.origen);
 
 // COMMIT 3.6.1: helper multi-rol (lee tanto el formato nuevo roles[] como el legacy rol string)
 window.hasRol = function(op, rol) {
@@ -22960,6 +22960,36 @@ function _cobroResolver(sel, cuentasDueno) {
   return { cuenta: c.nombre || sel,
            medioPago: c.tipo==='banco' ? 'Transferencia' : c.tipo==='efectivo' ? 'Efectivo' : c.tipo==='mp' ? 'Mercado Pago' : (c.nombre || sel) };
 }
+// Espejo del cobro del cajero — MISMA doctrina que la venta (vrcGuardar): MP/Transferencia reflejan a la cuenta
+// REAL del dueño; Efectivo/Tarjeta no espejan. origen 'cobro_caja_espejo' → _esEspejo lo captura, así NO duplica en
+// Auditoría ni en la Caja del cajero (que muestran primarios), y SÍ aparece en la Caja/Indicadores del dueño.
+// Resuelve la cuenta destino por tipo (Transferencia→banco, MP→mp) sobre las cuentas del dueño ya fetchadas al abrir
+// (_cobroCuentasDueno, mismas de +Venta). Sin cuenta destino → avisa, no cae en silencio (igual que la venta).
+async function _cobroEscribirEspejo(primaryRefId, d) {
+  if (window.currentRol !== 'cajero') return;
+  if (d.medioPago !== 'Transferencia' && d.medioPago !== 'Mercado Pago') return;
+  const _tipo = d.medioPago === 'Transferencia' ? 'banco' : 'mp';
+  const _cta = (_cobroCuentasDueno||[]).filter(_esCuentaDueno).find(c => c.tipo === _tipo);
+  if (!_cta) {
+    showConfirm('El cobro se registró, pero no se pudo reflejar en la cuenta del dueño: falta la cuenta destino ('+d.medioPago+'). Configurala en Finanzas → Configuración.', function(){}, 'Falta cuenta destino');
+    return;
+  }
+  await addDoc(collection(db,'clientes',currentClientUID,'libroCaja'), {
+    uid: currentClientUID, fecha: d.fecha, tipo: 'ingreso',
+    concepto: 'Cobro · ' + (d.clienteNombre || 'Cliente'),
+    cuenta: _cta.nombre, medioPago: d.medioPago, monto: d.monto,
+    origen: 'cobro_caja_espejo',
+    turnoId: window.turnoActual?.id || '',
+    clienteId: d.clienteId, clienteNombre: d.clienteNombre,
+    ...(d.presupId ? { referenciaId: d.presupId } : {}),
+    detalle: d.concepto || '', mes: d.mes, eliminado: false,
+    creadoEn: new Date().toISOString(),
+    refMovId: primaryRefId,
+    creadoPor: window.currentOperadorNombre || 'Cajero',
+    cajaOrigenId: window._cajaActivaId || '',
+    cajaOrigenNombre: window._cajaActivaNombre || 'Caja mostrador'
+  });
+}
 
 // --- Cobros por cliente ---
 window.openMcCobroModal = async function(clienteId, presupId, concepto, monto, libroCajaId) {
@@ -22972,8 +23002,9 @@ window.openMcCobroModal = async function(clienteId, presupId, concepto, monto, l
   document.getElementById('mcc-cobro-fecha').value       = fechaHoyARG();
   // Cargar cuentas del dueño y renderizar las pills de medio/cuenta según rol (doctrina +Venta):
   // dueño = sus cuentas operativas reales (sin Tarjeta flotante); cajero = medios fijos del mostrador.
+  // Se fetchean SIEMPRE (también para el cajero): el cajero las usa para resolver la cuenta destino del espejo.
   _cobroCuentasDueno = [];
-  if (window.currentRol !== 'cajero' && currentClientUID) {
+  if (currentClientUID) {
     try {
       const snap = await getDocs(collection(db,'clientes',currentClientUID,'cuentas'));
       snap.forEach(d => _cobroCuentasDueno.push({id:d.id, ...d.data()}));
@@ -23107,7 +23138,7 @@ window.createMcCobro = async function() {
     // 4b. Escribir en libroCaja
     const cuentaCobro = document.getElementById('mcc-cobro-cuenta')?.value || formaPago;
     const presupNumero = document.getElementById('mcc-cobro-presup-id')?.value || '';
-    await addDoc(collection(db,'clientes',currentClientUID,'libroCaja'), {
+    const _cobroPrimRef = await addDoc(collection(db,'clientes',currentClientUID,'libroCaja'), {
       uid      : currentClientUID,
       fecha    : fecha || fechaHoyARG(),
       tipo     : 'ingreso',
@@ -23127,6 +23158,8 @@ window.createMcCobro = async function() {
       creadoEn : new Date().toISOString(),
       creadoPor: window.currentOperadorNombre || 'Admin'
     });
+    // Espejo del cobro del cajero (MP/Transferencia → cuenta real del dueño). No-op para el dueño y para efectivo/tarjeta.
+    await _cobroEscribirEspejo(_cobroPrimRef.id, { fecha: fecha||fechaHoyARG(), clienteId, clienteNombre, presupId: presupNumero, concepto, monto: parseFloat(monto)||0, medioPago: formaPago, mes: mesIngreso });
 
     // 5. Recargar ingresos en contabilidad para que aparezca solo
     await loadClientContabilidad();
@@ -23213,8 +23246,9 @@ window.abrirModalCobroLibre = async function(clienteId, clienteNombre) {
   document.getElementById('mcl-cobro-concepto').value = '';
   document.getElementById('mcl-cobro-fecha').value = fechaHoyARG();
   // Selector de medio/cuenta según rol: dueño = sus cuentas operativas reales; cajero = medios fijos del mostrador.
+  // Se fetchean SIEMPRE (también para el cajero): el cajero las usa para resolver la cuenta destino del espejo.
   _cobroCuentasDueno = [];
-  if (window.currentRol !== 'cajero' && currentClientUID) {
+  if (currentClientUID) {
     try {
       const _cs = await getDocs(collection(db,'clientes',currentClientUID,'cuentas'));
       _cs.forEach(d => _cobroCuentasDueno.push({id:d.id, ...d.data()}));
@@ -23301,8 +23335,8 @@ window.guardarCobroLibre = async function() {
     });
     // FIX cobros invisibles: escribir en libroCaja para que el cobro entre a una CUENTA REAL → visible en
     // Indicadores INGRESOS y en el disponible del cierre. Mismo doc que Cobranzas (mcc). Dueño = cuenta operativa;
-    // cajero = circuito mostrador (_cajaActivaNombre + turnoId). NO crea espejo (igual que Cobranzas).
-    await addDoc(collection(db,'clientes',currentClientUID,'libroCaja'), {
+    // cajero = circuito mostrador (_cajaActivaNombre + turnoId) + espejo MP/Transferencia (abajo, igual que mcc).
+    const _cobroPrimRef = await addDoc(collection(db,'clientes',currentClientUID,'libroCaja'), {
       uid: currentClientUID, fecha, tipo:'ingreso',
       concepto: 'Cobro · ' + (clienteNombre || 'Cliente'),
       cuenta: _cuentaCobro, medioPago: _medioCobro, monto,
@@ -23313,6 +23347,8 @@ window.guardarCobroLibre = async function() {
       detalle: concepto || '', mes: mesIngreso, eliminado: false,
       creadoEn: new Date().toISOString(), creadoPor: window.currentOperadorNombre || 'Admin'
     });
+    // Espejo del cobro del cajero (MP/Transferencia → cuenta real del dueño). No-op para el dueño y para efectivo/tarjeta.
+    await _cobroEscribirEspejo(_cobroPrimRef.id, { fecha, clienteId, clienteNombre, presupId, concepto, monto, medioPago: _medioCobro, mes: mesIngreso });
     await loadClientContabilidad();   // refresca _clientVentas/_clientIngresos → Indicadores refleja el cobro sin recargar
     if(btn) { btn.disabled=false; btn.textContent='Registrar cobro'; }
     const saved = document.getElementById('mcl-cobro-saved');
