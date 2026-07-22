@@ -175,7 +175,10 @@ body.cajero-mode #ct-contabilidad{padding:0 !important;margin:0 !important;}
 body.es-cajero .mc-card-actions{display:none !important;}
 body.es-cajero #mc-btn-pdf,body.es-cajero #mc-btn-excel{display:none !important;}
 body.es-cajero .fc-icon-btn.danger{display:none;}
-body.es-cajero #mcd-quick-cobro{display:none !important;}
+/* "+ Cobro" (cobro libre) HABILITADO para el cajero: única forma de registrar un abono a la CC del cliente desde
+   el mostrador (libre y parcial, netea la CC). Prerequisitos listos: cae en su turno (turnoId), espeja MP/Transferencia
+   a la cuenta del dueño (cobro_caja_espejo), y aparece en Auditoría (por turnoId). Revierte 9d9ac7d, cuyo motivo (el
+   cobro no routeaba a cuenta/turno ni espejaba) ya lo resolvieron los fixes de cobros (Parte A/B + espejo). */
 /* COMMIT 3.5.1: rol produccion → insumos read-only (oculta botones agregar/editar/eliminar) */
 body.es-produccion #ct-insumos button[onclick*="stkNuevoInsumo"]{display:none !important;}
 body.es-produccion #ct-insumos button[onclick*="stkEditarInsumo"]{display:none !important;}
