@@ -26190,6 +26190,43 @@ window.navigateToMiCuentaMembresia = function() {
   }, 100);
 };
 
+// Render del stepper de activación de facturación (Datos fiscales → Delegación → Verificación → Listo).
+// Reutilizable: lo usa loadMiCuentaPage (al entrar) y guardarDatosFiscalesPage (al guardar, sin refetch).
+window.renderAfipTracker = function(data) {
+  const _afipStatus = document.getElementById('micuenta-afip-status');
+  if (!_afipStatus) return;
+  const _hasCuit = !!(data.negocioCuit && String(data.negocioCuit).trim());
+  const _hasPv = !!(data.negocioPuntoVenta && String(data.negocioPuntoVenta).trim());
+  const _ts = (!_hasCuit || !_hasPv) ? 1 : (data.afipAprobado === true) ? 4 : 2;
+  const _chk = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const _G = '#4a5e4d';
+  const _circle = (n) => {
+    const done = _ts === 4 || _ts > n;
+    const active = _ts === n;
+    if (done) return '<div style="width:28px;height:28px;border-radius:50%;border:2px solid '+_G+';background:'+_G+';display:flex;align-items:center;justify-content:center;flex-shrink:0;">'+_chk+'</div>';
+    if (active) return '<div style="width:28px;height:28px;border-radius:50%;border:2px solid '+_G+';background:'+_G+';display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 4px rgba(74,94,77,.18);flex-shrink:0;"><span style="font-size:11px;font-weight:700;color:#fff;">'+n+'</span></div>';
+    return '<div style="width:28px;height:28px;border-radius:50%;border:2px solid #d0d5db;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="font-size:11px;font-weight:500;color:#9ca3af;">'+n+'</span></div>';
+  };
+  const _line = (a) => '<div style="flex:1;height:2px;background:'+(_ts===4||_ts>a?_G:'#e5e7eb')+';margin-top:13px;"></div>';
+  const _lbl = (t) => '<div style="font-size:10px;color:var(--text-m);text-align:center;margin-top:5px;line-height:1.3;">'+t+'</div>';
+  const _step = (n,l) => '<div style="display:flex;flex-direction:column;align-items:center;flex:0 0 auto;">'+_circle(n)+_lbl(l)+'</div>';
+  const _tracker =
+    '<div style="font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--text-l);margin-bottom:14px;">Activación de facturación electrónica</div>' +
+    '<div style="display:flex;align-items:flex-start;margin-bottom:16px;">' +
+      _step(1,'Datos<br>fiscales') + _line(1) +
+      _step(2,'Delegación<br>en ARCA') + _line(2) +
+      _step(3,'Verificación<br>MB Strategy') + _line(3) +
+      _step(4,'Listo para<br>facturar') +
+    '</div>';
+  const _msgs = {
+    1: ['#fffaeb','#e5d48a','#856c00','⚠️ Completá tu CUIT y punto de venta ARCA para activar la facturación.'],
+    2: ['#eff6ff','#bfdbfe','#1e40af','🕐 Datos recibidos. Estamos verificando tu configuración con ARCA — te avisamos cuando esté lista (24-48hs hábiles).'],
+    3: ['#eff6ff','#bfdbfe','#1e40af','🕐 MB Strategy está verificando tu delegación con ARCA. Te avisamos cuando esté lista (24-48hs hábiles).'],
+    4: ['#eef5ef','#c8d8c9','#3f6149','✅ Tu facturación electrónica está activa. Ya podés emitir facturas.']
+  };
+  const [_mb,_mbd,_mc,_mt] = _msgs[_ts];
+  _afipStatus.innerHTML = _tracker + '<div style="background:'+_mb+';border:.5px solid '+_mbd+';border-radius:10px;padding:10px 14px;font-size:12px;font-weight:500;color:'+_mc+';">'+_mt+'</div>';
+};
 
 async function loadMiCuentaPage() {
   if(!currentClientUID) return;
@@ -26207,40 +26244,7 @@ async function loadMiCuentaPage() {
       setVal('micuenta-negocio-dir', data.negocioDir||'');
       selectMiCuentaCondicionIVA(data.negocioCondicionIVA||'');
       setVal('micuenta-punto-venta', data.negocioPuntoVenta||'');
-      const _afipStatus = document.getElementById('micuenta-afip-status');
-      if (_afipStatus) {
-        const _hasCuit = !!(data.negocioCuit && String(data.negocioCuit).trim());
-        const _hasPv = !!(data.negocioPuntoVenta && String(data.negocioPuntoVenta).trim());
-        const _ts = (!_hasCuit || !_hasPv) ? 1 : (data.afipAprobado === true) ? 4 : 2;
-        const _chk = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-        const _G = '#4a5e4d';
-        const _circle = (n) => {
-          const done = _ts === 4 || _ts > n;
-          const active = _ts === n;
-          if (done) return '<div style="width:28px;height:28px;border-radius:50%;border:2px solid '+_G+';background:'+_G+';display:flex;align-items:center;justify-content:center;flex-shrink:0;">'+_chk+'</div>';
-          if (active) return '<div style="width:28px;height:28px;border-radius:50%;border:2px solid '+_G+';background:'+_G+';display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 4px rgba(74,94,77,.18);flex-shrink:0;"><span style="font-size:11px;font-weight:700;color:#fff;">'+n+'</span></div>';
-          return '<div style="width:28px;height:28px;border-radius:50%;border:2px solid #d0d5db;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="font-size:11px;font-weight:500;color:#9ca3af;">'+n+'</span></div>';
-        };
-        const _line = (a) => '<div style="flex:1;height:2px;background:'+(_ts===4||_ts>a?_G:'#e5e7eb')+';margin-top:13px;"></div>';
-        const _lbl = (t) => '<div style="font-size:10px;color:var(--text-m);text-align:center;margin-top:5px;line-height:1.3;">'+t+'</div>';
-        const _step = (n,l) => '<div style="display:flex;flex-direction:column;align-items:center;flex:0 0 auto;">'+_circle(n)+_lbl(l)+'</div>';
-        const _tracker =
-          '<div style="font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--text-l);margin-bottom:14px;">Activación de facturación electrónica</div>' +
-          '<div style="display:flex;align-items:flex-start;margin-bottom:16px;">' +
-            _step(1,'Datos<br>fiscales') + _line(1) +
-            _step(2,'Delegación<br>en ARCA') + _line(2) +
-            _step(3,'Verificación<br>MB Strategy') + _line(3) +
-            _step(4,'Listo para<br>facturar') +
-          '</div>';
-        const _msgs = {
-          1: ['#fffaeb','#e5d48a','#856c00','⚠️ Completá tu CUIT y punto de venta ARCA para activar la facturación.'],
-          2: ['#eff6ff','#bfdbfe','#1e40af','🕐 Datos recibidos. Estamos verificando tu configuración con ARCA — te avisamos cuando esté lista (24-48hs hábiles).'],
-          3: ['#eff6ff','#bfdbfe','#1e40af','🕐 MB Strategy está verificando tu delegación con ARCA. Te avisamos cuando esté lista (24-48hs hábiles).'],
-          4: ['#eef5ef','#c8d8c9','#3f6149','✅ Tu facturación electrónica está activa. Ya podés emitir facturas.']
-        };
-        const [_mb,_mbd,_mc,_mt] = _msgs[_ts];
-        _afipStatus.innerHTML = _tracker + '<div style="background:'+_mb+';border:.5px solid '+_mbd+';border-radius:10px;padding:10px 14px;font-size:12px;font-weight:500;color:'+_mc+';">'+_mt+'</div>';
-      }
+      renderAfipTracker(data);
       if (data.negocioPvComprobante) {
         document.getElementById('micuenta-pv-preview').style.display = 'block';
         document.getElementById('micuenta-pv-empty').style.display = 'none';
@@ -26411,6 +26415,8 @@ window.guardarDatosFiscalesPage = async function() {
   try {
     await updateDoc(doc(db,'clientes',currentClientUID), data);
     if(currentClientData) Object.assign(currentClientData, data);
+    // Refrescar el stepper en vivo: al completar CUIT+PV pasa al punto 2 "Delegación en ARCA" sin recargar.
+    renderAfipTracker(currentClientData || data);
     const s = document.getElementById('micuenta-fiscal-saved');
     if(s){ s.style.display='block'; setTimeout(()=>s.style.display='none', 2000); }
     showToast('Datos fiscales guardados', 'success');
