@@ -1624,7 +1624,7 @@ body.has-bcanc{padding-top:42px;}
           <div class="ws-num">3</div>
           <div><div class="ws-step-t">Configurá el cierre de período</div><div class="ws-step-s">Socios, distribución, frecuencia y reserva</div></div>
         </div>
-        <div class="ws-step" style="opacity:0;animation:wsStep .42s ease 2.7s both;display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:#f1efe8;border-radius:12px;">
+        <div id="ws-step-equipo" class="ws-step" style="opacity:0;animation:wsStep .42s ease 2.7s both;display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:#f1efe8;border-radius:12px;">
           <div class="ws-num">4</div>
           <div><div class="ws-step-t">Mi equipo</div><div class="ws-step-s">Creá los roles y usuarios de tu negocio</div></div>
         </div>
@@ -18879,6 +18879,10 @@ window.showWelcomeScreen = function(clientData) {
       '<span style="display:inline-block;opacity:0;animation:wsWord .38s ease '+(0.8+i*0.11)+'s both;margin-right:.22em;">'+w+'</span>'
     ).join('');
   }
+  // "Mi equipo" solo en planes con equipo (Pro/Premium, maxUsuarios>1). En Esencial → 3 pasos.
+  const tieneEquipoStep = (window.tieneAccesoPlan ? window.tieneAccesoPlan('maxUsuarios') : Infinity) > 1;
+  const equipoStep = document.getElementById('ws-step-equipo');
+  if(equipoStep) equipoStep.style.display = tieneEquipoStep ? 'flex' : 'none';
   ws.style.display = 'flex';
 };
 
